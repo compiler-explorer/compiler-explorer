@@ -29,10 +29,9 @@ var Alert = require('../alert');
 var Components = require('../components');
 var local = require('../local');
 var ga = require('../analytics');
-var options = require('../options');
+var mf = require('../multifile-service');
+var MultifileService = mf.MultifileService;
 require('selectize');
-
-var languages = options.languages;
 
 function Tree(hub, state, container) {
     this.id = state.id || hub.nextTreeId();
@@ -53,12 +52,8 @@ function Tree(hub, state, container) {
     this.namedItems = this.domRoot.find('.named-editors');
     this.unnamedItems = this.domRoot.find('.unnamed-editors');
 
+    this.multifileService = new MultifileService(this.hub, this.eventHub, this.alertSystem, state);
     this.ourCompilers = {};
-
-    this.isCMakeProject = state.isCMakeProject || false;
-    this.compilerLanguageId = state.compilerLanguageId || '';
-    this.files = state.files || [];
-    this.newFileId = state.newFileId || 1;
 
     this.initButtons(state);
     this.initCallbacks();
@@ -77,13 +72,9 @@ function Tree(hub, state, container) {
 }
 
 Tree.prototype.updateState = function () {
-    var state = {
+    var state = Object.assign({
         id: this.id,
-        isCMakeProject: this.isCMakeProject,
-        compilerLanguageId: this.compilerLanguageId,
-        files: this.files,
-        newFileId: this.newFileId,
-    };
+    }, this.multifileService.getState());
     this.container.setState(state);
 
     this.updateButtons();
@@ -111,15 +102,33 @@ Tree.prototype.onLanguageChange = function () {
 };
 
 Tree.prototype.sendCompilerChangesToEditor = function (compilerId) {
-    _.each(this.files, _.bind(function (file) {
-        if (file.isOpen && file.editorId > 0) {
-            if (file.isIncluded) {
-                this.eventHub.emit('treeCompilerEditorIncludeChange', this.id, file.editorId, compilerId);
-            } else {
-                this.eventHub.emit('treeCompilerEditorExcludeChange', this.id, file.editorId, compilerId);
-            }
+    this.multifileService.forEachOpenFile(_.bind(function (file) {
+        if (file.isIncluded) {
+            this.eventHub.emit('treeCompilerEditorIncludeChange', this.id, file.editorId, compilerId);
+        } else {
+            this.eventHub.emit('treeCompilerEditorExcludeChange', this.id, file.editorId, compilerId);
         }
     }, this));
+};
+
+Tree.prototype.isEditorPartOfProject = function (editorId) {
+    return this.multifileService.isEditorPartOfProject(editorId);
+};
+
+Tree.prototype.getMainSource = function () {
+    return this.multifileService.getMainSource();
+};
+
+Tree.prototype.getFiles = function () {
+    return this.multifileService.getFiles();
+};
+
+Tree.prototype.getEditorIdForMainsource = function () {
+    return this.multifileService.getEditorIdForMainsource();
+};
+
+Tree.prototype.getEditorIdByFilename = function (filename) {
+    return this.multifileService.getEditorIdByFilename(filename);
 };
 
 Tree.prototype.sendChangesToAllEditors = function () {
@@ -142,29 +151,16 @@ Tree.prototype.onCompilerClose = function (compilerId, unused, treeId) {
 };
 
 Tree.prototype.onEditorOpen = function (editorId) {
-    var file = this.getFileByEditorId(editorId);
+    var file = this.multifileService.getFileByEditorId(editorId);
     if (file) return;
 
-    file = {
-        fileId: this.newFileId,
-        isIncluded: false,
-        isOpen: true,
-        isMainSource: false,
-        filename: '',
-        content: '',
-        editorId: editorId,
-        langId: '',
-    };
-    this.newFileId++;
-    this.files.push(file);
-
+    this.multifileService.addFileForEditorId(editorId);
     this.refresh();
-
     this.sendChangesToAllEditors();
 };
 
 Tree.prototype.onEditorClose = function (editorId) {
-    var file = this.getFileByEditorId(editorId);
+    var file = this.multifileService.getFileByEditorId(editorId);
 
     if (file) {
         file.isOpen = false;
@@ -178,12 +174,8 @@ Tree.prototype.onEditorClose = function (editorId) {
 };
 
 Tree.prototype.removeFile = function (fileId) {
-    var file = this.getFileByFileId(fileId);
+    var file = this.multifileService.removeFileByFileId(fileId);
     if (file) {
-        this.files = this.files.filter(function (obj) {
-            return obj.fileId !== fileId;
-        });
-
         if (file.isOpen) {
             var editor = this.hub.getEditorById(file.editorId);
             if (editor) {
@@ -219,7 +211,7 @@ Tree.prototype.addRowToTreelist = function (file) {
 
     renameButton.on('click', _.bind(function (e) {
         var fileId = $(e.currentTarget).parent('li').data('fileId');
-        this.renameFile(fileId, _.bind(function () {
+        this.multifileService.renameFile(fileId).then(_.bind(function () {
             this.refresh();
         }, this));
     }, this));
@@ -233,14 +225,18 @@ Tree.prototype.addRowToTreelist = function (file) {
         stagingButton.removeClass('fa-plus').addClass('fa-minus');
         stagingButton.on('click', _.bind(function (e) {
             var fileId = $(e.currentTarget).parent('li').data('fileId');
-            this.moveToExclude(fileId);
+            this.multifileService.excludeByFileId(fileId).then(_.bind(function () {
+                this.refresh();
+            }, this));
         }, this));
         this.namedItems.append(item);
     } else {
         stagingButton.removeClass('fa-minus').addClass('fa-plus');
         stagingButton.on('click', _.bind(function (e) {
             var fileId = $(e.currentTarget).parent('li').data('fileId');
-            this.moveToInclude(fileId);
+            this.multifileService.includeByFileId(fileId).then(_.bind(function () {
+                this.refresh();
+            }, this));
         }, this));
         this.unnamedItems.append(item);
     }
@@ -252,13 +248,13 @@ Tree.prototype.refresh = function () {
     this.namedItems.html('');
     this.unnamedItems.html('');
 
-    _.each(this.files, _.bind(function (file) {
+    this.multifileService.forEachFile(_.bind(function (file) {
         this.addRowToTreelist(file);
     }, this));
 };
 
 Tree.prototype.editFile = function (fileId) {
-    var file = this.getFileByFileId(fileId);
+    var file = this.multifileService.getFileByFileId(fileId);
     if (!file.isOpen) {
         var dragConfig = this.getConfigForNewEditor(file);
         file.isOpen = true;
@@ -267,180 +263,17 @@ Tree.prototype.editFile = function (fileId) {
     }
 };
 
-Tree.prototype.getFileByFileId = function (fileId) {
-    return _.find(this.files, function (file) {
-        return file.fileId === fileId;
-    });
-};
-
-Tree.prototype.getFileByEditorId = function (editorId) {
-    return _.find(this.files, function (file) {
-        return file.editorId === editorId;
-    });
-};
-
-Tree.prototype.getEditorIdByFilename = function (filename) {
-    if (!filename) return false;
-
-    var found = _.find(this.files, function (file) {
-        if (filename.includes('/')) {
-            if (filename.endsWith('/' + file.filename)) {
-                return true;
-            }
-        } else if (filename === file.filename) {
-            return true;
-        }
-        return false;
-    });
-
-    if (found) {
-        return found.editorId;
-    } else {
-        return false;
-    }
-};
-
-Tree.prototype.isEditorPartOfProject = function (editorId) {
-    var found = _.find(this.files, function (file) {
-        return (file.isIncluded) && file.isOpen && (editorId === file.editorId);
-    });
-
-    return !!found;
-};
-
-Tree.prototype.setAsMainSource = function (mainFileId) {
-    _.each(this.files, function (file) {
-        file.isMainSource = false;
-    });
-
-    var mainfile = this.getFileByFileId(mainFileId);
-    mainfile.isMainSource = true;
-};
-
-Tree.prototype.setAsCMakeProject = function () {
-    this.compilerLanguageId = 'c++';
-    this.isCMakeProject = true;
-};
-
-Tree.prototype.renameFile = function (fileId, callback) {
-    var file = this.getFileByFileId(fileId);
-
-    var suggestedFilename = file.filename;
-    if (file.filename === '') {
-        var langId = file.langId;
-        if (file.isOpen && file.editorId > 0) {
-            var editor = this.hub.getEditorById(file.editorId);
-            langId = editor.currentLanguage.id;
-            if (editor.customPaneName) {
-                suggestedFilename = editor.customPaneName;
-            }
-        }
-
-        if (!suggestedFilename) {
-            var lang = languages[langId];
-            var ext0 = lang.extensions[0];
-            suggestedFilename = 'example' + ext0;
-        }
-    }
-
-    this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {
-        yes: _.bind(function (value) {
-            file.filename = value;
-
-            if (file.isOpen && file.editorId > 0) {
-                var editor = this.hub.getEditorById(file.editorId);
-                editor.setCustomPaneName(file.filename);
-            }
-
-            callback();
-        }, this),
-    });
-};
-
 Tree.prototype.moveToInclude = function (fileId) {
-    var file = this.getFileByFileId(fileId);
-
-    if (file.filename === '') {
-        this.renameFile(fileId, _.bind(function () {
-            this.moveToInclude(fileId);
-        }, this));
-    } else {
-        file.isIncluded = true;
-
-        if (file.filename === 'CMakeLists.txt') {
-            this.setAsCMakeProject();
-            this.setAsMainSource(fileId);
-        }
-
+    this.multifileService.includeByFileId(fileId).then(_.bind(function () {
         this.refresh();
-    }
-
-    this.sendChangesToAllEditors();
+        this.sendChangesToAllEditors();
+    }, this));
 };
 
 Tree.prototype.moveToExclude = function (fileId) {
-    var file = this.getFileByFileId(fileId);
-    file.isIncluded = false;
-    this.refresh();
-
-    this.sendChangesToAllEditors();
-};
-
-Tree.prototype.getFileContents = function (file) {
-    if (file.isOpen) {
-        var editor = this.hub.getEditorById(file.editorId);
-        if (editor) {
-            return editor.getSource();
-        } else {
-            file.isOpen = false;
-            file.editorId = -1;
-        }
-    } else {
-        return file.content;
-    }
-};
-
-Tree.prototype.getMainSource = function () {
-    var mainFile = _.find(this.files, function (file) {
-        return file.isMainSource && file.isIncluded;
-    });
-
-    if (mainFile) {
-        return this.getFileContents(mainFile);
-    } else {
-        return '';
-    }
-};
-
-Tree.prototype.getEditorIdForMainsource = function () {
-    var mainFile = null;
-    if (this.isCMakeProject) {
-        mainFile = _.find(this.files, function (file) {
-            return file.isIncluded && (file.filename === 'example.cpp');
-        });
-
-        if (mainFile) return mainFile.editorId;
-    } else {
-        mainFile = _.find(this.files, function (file) {
-            return file.isMainSource && file.isIncluded;
-        });
-
-        if (mainFile) return mainFile.editorId;
-    }
-
-    return false;
-};
-
-Tree.prototype.getFiles = function () {
-    var filtered = _.filter(this.files, function (file) {
-        return !file.isMainSource && file.isIncluded;
-    });
-
-    return _.map(filtered, _.bind(function (file) {
-        return {
-            filename: file.filename,
-            contents: this.getFileContents(file),
-        };
+    this.multifileService.excludeByFileId(fileId).then(_.bind(function () {
+        this.refresh();
+        this.sendChangesToAllEditors();
     }, this));
 };
 
@@ -527,6 +360,9 @@ Tree.prototype.onCompileResponse = function (compilerId, compiler, result) {
 
     // todo: parse errors and warnings and relate them to lines in the code
     // note: requires info about the filename, do we currently have that?
+
+    // eslint-disable-next-line max-len
+    // {"text":"/tmp/compiler-explorer-compiler2021428-7126-95g4xc.zfo8p/example.cpp:4:21: error: expected ‘;’ before ‘}’ token"}
 
     if (result.result && result.result.asm) {
         this.asmByCompiler[compilerId] = result.result.asm;

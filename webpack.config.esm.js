@@ -84,6 +84,7 @@ export default {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
         },
         modules: ['./static', './node_modules'],
+        extensions: [ '.tsx', '.ts', '.js' ],
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -151,6 +152,14 @@ export default {
             {
                 test: /\.(html)$/,
                 loader: 'html-loader',
+            },
+            {
+                test: /\.tsx?$/,
+                loader: 'ts-loader',
+            },
+            {
+                test: /\.js$/,
+                loader: 'source-map-loader',
             },
         ],
     },
