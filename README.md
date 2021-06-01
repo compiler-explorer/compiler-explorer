@@ -1,9 +1,16 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-![Compiler Explorer](docs/logo.svg)
 
-# Compiler Explorer
+![image](https://user-images.githubusercontent.com/11953157/120336339-d4b80200-c324-11eb-8a62-7aebbb65a07a.png)
+
+
+# Compiler Explorer - for DELPHI, Free Pascal, and C++ BUILDER.
+
+[See Windows install guideline for Delphi & fpc here](https://github.com/pmcgee69/compiler-explorer/blob/main/Delphi%20&%20C++Builder%20Specifics.md)
+
+
+![Compiler Explorer](docs/logo.svg)
 
 **Compiler Explorer** is an interactive compiler exploration website. Edit C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/) or other language code, and see how that code looks after being compiled in real time.
   Multiple compilers are supported, many different tools and visualations are available, and the UI layout
