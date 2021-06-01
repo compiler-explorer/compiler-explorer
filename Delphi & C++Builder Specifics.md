@@ -13,10 +13,10 @@ In the directory, run :
 - npm update webpack
 
 Substitute the following files from this repo :  (make changes to directories and installed versions as necessary)
-- languages.js
-- pascal.js
-- pascal-win.js
-- pascal.defaults.properties
+- \lib\languages.js
+- \lib\compilers\pascal.js
+- \lib\compilers\pascal-win.js
+- \etc\config\pascal.defaults.properties
 
 Finally : 
 - npm start 
