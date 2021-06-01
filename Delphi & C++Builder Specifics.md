@@ -19,6 +19,8 @@ For Object Pascal compilers :
 - \lib\compilers\pascal.js
 - \lib\compilers\pascal-win.js
 - \etc\config\pascal.defaults.properties
+- \etc\config\pascal.local.properties
+- \etc\config\pascal-win.local.properties
 
 For C++ compilers :
 - \etc\config\c++.win32.properties
@@ -28,6 +30,10 @@ Finally :
 - npm start 
 
 To access Compiler Explorer, browse to : (http://localhost:10240/)
+
+//   ---   ---   ---   ---   ---   ---   ---   ---   
+
+Note that the .gitignore for the main Compiler Explorer repository ignores \etc\config\*.local.properties
 
 //   ---   ---   ---   ---   ---   ---   ---   ---   
 ![Install](https://user-images.githubusercontent.com/11953157/120332379-455d1f80-c321-11eb-85ae-e9cd31cc9814.png)
