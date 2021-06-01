@@ -33,7 +33,7 @@ To access Compiler Explorer, browse to : (http://localhost:10240/)
 
 //   ---   ---   ---   ---   ---   ---   ---   ---   
 
-Note that the .gitignore for the main Compiler Explorer repository ignores \etc\config\*.local.properties
+Note that the .gitignore for the main Compiler Explorer repository ignores \etc\config\\*.local.properties
 
 //   ---   ---   ---   ---   ---   ---   ---   ---   
 ![Install](https://user-images.githubusercontent.com/11953157/120332379-455d1f80-c321-11eb-85ae-e9cd31cc9814.png)
