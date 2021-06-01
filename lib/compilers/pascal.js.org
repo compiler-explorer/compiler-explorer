@@ -82,15 +82,11 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     getOutputFilename(dirPath) {
-		//console.log("1");//
-		//console.log(dirPath);//
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.s`);
     }
 
     getExecutableFilename(dirPath) {
-		//console.log("2");//
-		//console.log(dirPath);//
-        return path.join(dirPath, 'output.exe');  // 'prog'
+        return path.join(dirPath, 'output');
     }
 
     static preProcessBinaryAsm(input) {
@@ -109,46 +105,12 @@ export class FPCCompiler extends BaseCompiler {
         }
         return input;
     }
-	
-
-	//
-    objdump(outputFilename, result, maxSize, intelAsm) {
-		console.log("8 "+outputFilename);//
-		let d = path.dirname(outputFilename);//
-		var mkdirp = require('mkdirp');
-		mkdirp(d, fs.writeFile(d+'\output.t', 'x'));
-        outputFilename = this.getExecutableFilename(path.dirname(outputFilename));// Output
-		console.log(d);//
-		
-        let args = ['-d', outputFilename];										 
-        if (intelAsm) args = args.concat(['-M', 'intel']);
-		
-		console.log(this.compiler.objdumper);//
-		console.log(args);//
-        return 	
-		    this.exec(this.compiler.objdumper, args, {maxOutput: 1024 * 1024 * 1024})
-            .then((objResult) => {
-                if (objResult.code !== 0) {
-                    result.asm = '<No output: objdump returned ' + objResult.code + '>';
-                } else {
-									   
-                    result.asm = objResult.stdout;
-                }
-                return result;
-            });
-    }	
-	//
-	
 
     getObjdumpOutputFilename(defaultOutputFilename) {
-		console.log("3");//
-		console.log(defaultOutputFilename);//
         return this.getExecutableFilename(path.dirname(defaultOutputFilename));
     }
 
     postProcessObjdumpOutput(output) {
-		console.log("4");//
-		console.log(output);//
         return FPCCompiler.preProcessBinaryAsm(output);
     }
 
@@ -168,9 +130,7 @@ export class FPCCompiler extends BaseCompiler {
         }
 
         const dirPath = path.dirname(inputFilename);
-		//console.log("5");//
-		//console.log(inputFilename);//
-        const projectFile = path.join(dirPath, 'output.dpr');  //'prog.dpr'
+        const projectFile = path.join(dirPath, 'output.dpr');
         execOptions.customCwd = dirPath;
         if (this.nasmPath) {
             execOptions.env = _.clone(process.env);
@@ -179,9 +139,7 @@ export class FPCCompiler extends BaseCompiler {
         await this.saveDummyProjectFile(projectFile);
 
         options.pop();
-        options.push('-FE' + dirPath);
-        options.push('-B');
-	    options.push(inputFilename);//  /*  options.push(projectFile);  */
+        options.push('-FE' + dirPath, '-B', inputFilename);
 
         return this.parseOutput(await this.exec(compiler, options, execOptions), inputFilename, dirPath);
     }
@@ -195,15 +153,8 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     execBinary(executable, maxSize, executeParameters) {
-		//console.log("6");//
-		//console.log(executable);//
         executable = this.getExecutableFilename(path.dirname(executable));
-		/*
-		let d = path.dirname(executable);//  
-		var mkdirp = require('mkdirp');
-		mkdirp(d, fs.writeFile(d+'\output.t', 'x'));		
-		executable = this.compiler.objdumper + ' -d -S ' +d+'\\output.exe';   */
-		console.log(executable);//
+
         return super.execBinary(executable, maxSize, executeParameters);
     }
 

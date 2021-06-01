@@ -49,7 +49,6 @@ import _ from 'underscore';
  * @type {CELanguages}
  */
 export const languages = {
-/*
     'c++': {
         name: 'C++',
         monaco: 'cppp',
@@ -70,36 +69,48 @@ export const languages = {
         alias: [],
         previewFilter: /^\s*#include/,
     },
+    cppx_gold: {
+        name: 'Cppx-Gold',
+        monaco: 'cppx-gold',
+        extensions: ['.usyntax', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
+        alias: [],
+    },
+    cppx_blue: {
+        name: 'Cppx-Blue',
+        monaco: 'cppp',
+        extensions: ['.blue', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.c'],
+        alias: [],
+    },
     c: {
         name: 'C',
         monaco: 'nc',
         extensions: ['.c', '.h'],
         alias: [],
-        previewFilter: /^\s*#include/
+        previewFilter: /^\s*#include/,
     },
     rust: {
         name: 'Rust',
         monaco: 'rust',
         extensions: ['.rs'],
-        alias: []
+        alias: [],
     },
     d: {
         name: 'D',
         monaco: 'd',
         extensions: ['.d'],
-        alias: []
+        alias: [],
     },
     go: {
         name: 'Go',
         monaco: 'go',
         extensions: ['.go'],
-        alias: []
+        alias: [],
     },
     ispc: {
         name: 'ispc',
         monaco: 'ispc',
         extensions: ['.ispc'],
-        alias: []
+        alias: [],
     },
     haskell: {
         name: 'Haskell',
@@ -107,13 +118,12 @@ export const languages = {
         extensions: ['.hs', '.haskell'],
         alias: [],
     },
-    // Temporarily disabled: see #1438
-    // java: {
-    //     name: 'Java',
-    //     monaco: 'java',
-    //     extensions: ['.java'],
-    //     alias: []
-    // },
+    java: {
+        name: 'Java',
+        monaco: 'java',
+        extensions: ['.java'],
+        alias: [],
+    },
     ocaml: {
         name: 'OCaml',
         monaco: 'ocaml',
@@ -132,63 +142,63 @@ export const languages = {
         extensions: ['.swift'],
         alias: [],
     },
-*/
     pascal: {
         name: 'Pascal',
         monaco: 'pascal',
         extensions: ['.pas'],
         alias: [],
     },
-/*
     fortran: {
         id: 'fortran',
         name: 'Fortran',
         monaco: 'fortran',
-        extensions: ['.f90','.F90','.f95','.F95'],
-        alias: []
+        extensions: ['.f90', '.F90', '.f95', '.F95'],
+        alias: [],
     },
     assembly: {
         name: 'Assembly',
         monaco: 'asm',
         extensions: ['.asm'],
-        alias: ['asm']
+        alias: ['asm'],
     },
     analysis: {
         name: 'Analysis',
         monaco: 'asm',
         extensions: ['.asm'],  // maybe add more? Change to a unique one?
-        alias: ['tool', 'tools']
+        alias: ['tool', 'tools'],
     },
     cuda: {
         name: 'CUDA',
         monaco: 'cuda',
         extensions: ['.cu'],
         alias: ['nvcc'],
-        monacoDisassembly: 'ptx'
+        monacoDisassembly: 'ptx',
     },
     zig: {
         name: 'Zig',
         monaco: 'zig',
         extensions: ['.zig'],
-        alias: []
+        alias: [],
     },
     clean: {
         name: 'Clean',
         monaco: 'clean',
         extensions: ['.icl'],
-        alias: []
+        alias: [],
     },
-*/
     ada: {
         name: 'Ada',
         monaco: 'ada',
         extensions: ['.adb', '.ads'],
-        alias: []
+        alias: [],
+    },
+    nim: {
+        name: 'Nim',
+        monaco: 'nim',
+        extensions: ['.nim'],
+        alias: [],
     },
 };
-
-
-
 
 _.each(languages, (lang, key) => {
     lang.id = key;
@@ -198,4 +208,3 @@ _.each(languages, (lang, key) => {
         lang.example = 'Oops, something went wrong and we could not get the default code for this language.';
     }
 });
-

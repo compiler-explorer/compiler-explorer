@@ -57,7 +57,7 @@ export class PascalWinCompiler extends BaseCompiler {
     }
 
     getOutputFilename(dirPath) {
-        return path.join(dirPath, 'output.exe');   // 'prog'
+        return path.join(dirPath, 'output.exe');
     }
 
     filename(fn) {
@@ -80,7 +80,8 @@ export class PascalWinCompiler extends BaseCompiler {
                 } else {
                     result.asm = objResult.stdout;
                 }
-                return result;//
+
+                return result;
             });
     }
 
@@ -88,6 +89,7 @@ export class PascalWinCompiler extends BaseCompiler {
         if (dprfile.startsWith('Z:')) {
             dprfile = dprfile.substr(2);
         }
+
         fs.writeFileSync(dprfile,
             'program prog; ' +
             "uses output in '" + sourcefile + "'; " +
@@ -101,9 +103,9 @@ export class PascalWinCompiler extends BaseCompiler {
         }
 
         const tempPath = path.dirname(inputFilename);
-        const projectFile = path.join(tempPath, 'output.dpr');  // 'prog.dpr'  
+        const projectFile = path.join(tempPath, 'output.dpr');
 
-        this.mapFilename  = path.join(tempPath, 'output.map');  // 'prog.map'
+        this.mapFilename = path.join(tempPath, 'output.map');
 
         inputFilename = inputFilename.replace(/\//g, '\\');
         this.saveDummyProjectFile(projectFile, inputFilename);
@@ -119,7 +121,7 @@ export class PascalWinCompiler extends BaseCompiler {
             '-V',
             '-B');
 
-        options.push(inputFilename.replace(/\//g, '\\'));//   /*  projectFile  */
+        options.push(inputFilename.replace(/\//g, '\\'));
 
         return this.exec(compiler, options, execOptions).then((result) => {
             result.inputFilename = inputFilename;

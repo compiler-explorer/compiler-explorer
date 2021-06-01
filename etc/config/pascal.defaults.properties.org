@@ -1,8 +1,6 @@
-# new
-
 # Default settings for Pascal
-compilers=&fpc:&delphi:&delphi64
-defaultCompiler=
+compilers=/usr/bin/fpc
+defaultCompiler=/usr/bin/fpc
 postProcess=
 demangler=/dev/null
 objdumper=objdump
@@ -12,7 +10,6 @@ supportsBinary=true
 compilerType=pascal
 demanglerType=pascal
 rpathFlag=-Xr
-ldPath=
 
 #################################
 #################################
