@@ -29,7 +29,7 @@ For C++ compilers :
 Finally : 
 - npm start 
 
-To access Compiler Explorer, browse to : (http://localhost:10240/)
+To access Compiler Explorer, browse to :  http://localhost:10240/
 
 //   ---   ---   ---   ---   ---   ---   ---   ---   
 
