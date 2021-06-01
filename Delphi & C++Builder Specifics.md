@@ -4,14 +4,15 @@ Installation:
 - Install latest Node.js  ( my current = v14.17.0 )
 - Install latest npm      ( my current = 7.14.0 )
 
-- Clone the main Compiler Explorer repository : https://github.com/compiler-explorer/compiler-explorer 
+- Clone the main Compiler Explorer repository into a directory : https://github.com/compiler-explorer/compiler-explorer 
 
+In the directory, run :
 - npm install
 - npm install webpack -g
 - npm install webpack-cli -g
 - npm update webpack
 
-Substitute the following files from this repo :
+Substitute the following files from this repo :  (make changes to directories and installed versions as necessary)
 - languages.js
 - pascal.js
 - pascal-win.js
