@@ -22,6 +22,8 @@ Finally :
 
 Browse to : http://localhost:10240/
 
-![](https://drive.google.com/file/d/1nP379Axci-IO8jwKF-5j4o7XchtZ7ml3/view)
 
-![](https://drive.google.com/file/d/16xkYuSJhX2Dbx3r5CYX3A9sq26Ou3ZlU/view)
+![Install](https://user-images.githubusercontent.com/11953157/120332379-455d1f80-c321-11eb-85ae-e9cd31cc9814.png)
+
+![Start Server](https://user-images.githubusercontent.com/11953157/120332478-5d34a380-c321-11eb-9bd5-a2a86447e963.png)
+
