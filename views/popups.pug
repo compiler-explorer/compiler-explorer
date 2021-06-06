@@ -38,7 +38,7 @@
               label.btn.btn-outline-secondary.btn-file.save-btn(role="button") Save to file
                 input.save-file(type="button")
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal" aria-label="Close") Close
 
 #alert.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
@@ -50,7 +50,7 @@
             | &times;
       .modal-body
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
 
 #yes-no.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
@@ -62,149 +62,135 @@
             | &times;
       .modal-body
       .modal-footer
-        button.btn.btn-light.no(type="button" data-dismiss="modal") No
-        button.btn.btn-light.yes(type="button" data-dismiss="modal") Yes
+        button.btn.btn-link.no(type="button" data-dismiss="modal") No
+        button.btn.btn-link.yes(type="button" data-dismiss="modal") Yes
 
 #settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog.modal-lg
+  .modal-dialog.modal-lg(role="document")
     .modal-content
       .modal-header
-        h5.modal-title Compiler Explorer Settings
-        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
-          span(aria-hidden="true")
-            | &times;
+        h5.modal-title
+          | Compiler Explorer Settings
+        | These settings control how Compiler Explorer acts for you. They are not
+        | preserved as part of shared URLs, and are persisted locally using browser
+        | local storage.
+        button.close(type="button" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
       .modal-body
         .card
           .card-header
-            | These settings control how Compiler Explorer acts for you. They are not
-            | preserved as part of shared URLs, and are persisted locally using browser
-            | local storage.
-          .card-body
             .card-title
               h4 Site behaviour
+          .card-body
             .form-group(role="group")
               label
-                | Default language&nbsp;
+                | Default language
                 small
                   span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
-                select.defaultLanguage
+              select.defaultLanguage
               .checkbox
-                label
-                  input.allowStoreCodeDebug(type="checkbox")
-                  | Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
+                input.allowStoreCodeDebug(type="checkbox")
+                label Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
               div
                 label
-                  | Theme&nbsp;
-                  select.theme
+                  | Theme
+                select.theme
               .checkbox
-                label
-                  input.newEditorLastLang(type="checkbox")
-                  | Use last selected language when opening new Editors
+                input.newEditorLastLang(type="checkbox")
+                label Use last selected language when opening new Editors
               .checkbox
-                label
-                  input.enableCommunityAds(type="checkbox")
-                  | Show community events
+                input.enableCommunityAds(type="checkbox")
+                label Show community events
         .card
-          .card-body
+          .card-header
             .card-title
               h4 Keybindings
+          .card-body
             .form-group(role="group")
               .checkbox
+                input.useVim(type="checkbox")
+                label Vim editor mode
+              .checkbox
+                input.enableCtrlS(type="checkbox")
                 label
-                  input.useVim(type="checkbox")
-                  | Vim
+                  | Make
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;save to local file instead of creating a share link
         .card
-          .card-body
+          .card-header
             .card-title
               h4 Editor
+          .card-body
             .form-group(role="group")
               div
                 label
                   | Desired Font Family in editors
                 input.editorsFFont(type="text" style="width:100%")
               .checkbox
-                label
-                  input.editorsFLigatures(type="checkbox")
-                  | Enable font ligatures
+                input.editorsFLigatures(type="checkbox")
+                label Enable font ligatures
               .checkbox
-                label
-                  input.autoCloseBrackets(type="checkbox")
-                  | Automatically insert matching brackets and parentheses
+                input.autoCloseBrackets(type="checkbox")
+                label Automatically insert matching brackets and parentheses
               .checkbox
-                label
-                  input.autoIndent(type="checkbox")
-                  | Automatically indent code (reload page after changing)
+                input.autoIndent(type="checkbox")
+                label Automatically indent code (reload page after changing)
               .checkbox
-                label
-                  input.hoverShowSource(type="checkbox")
-                  | Highlight linked code lines on hover
+                input.hoverShowSource(type="checkbox")
+                label Highlight linked code lines on hover
               .checkbox
-                label
-                  input.hoverShowAsmDoc(type="checkbox")
-                  | Show asm description on hover
+                input.hoverShowAsmDoc(type="checkbox")
+                label Show asm description on hover
               .checkbox
-                label
-                  input.showQuickSuggestions(type="checkbox")
-                  | Show quick suggestions
+                input.showQuickSuggestions(type="checkbox")
+                label Show quick suggestions
               .checkbox
-                label
-                  input.useCustomContextMenu(type="checkbox")
-                  | Use custom context menu
+                input.useCustomContextMenu(type="checkbox")
+                label Use custom context menu
               .checkbox
-                label
-                  input.showMinimap(type="checkbox")
-                  | Show editor minimap
+                input.showMinimap(type="checkbox")
+                label Show editor minimap
               .checkbox
-                label
-                  input.keepSourcesOnLangChange(type="checkbox")
-                  | Keep editor source on language change
+                input.keepSourcesOnLangChange(type="checkbox")
+                label Keep editor source on language change
               .checkbox
-                label
-                  input.useSpaces(type="checkbox")
-                  | Use spaces for indentation
+                input.useSpaces(type="checkbox")
+                label Use spaces for indentation
               div
-                label
-                  | &nbsp;Tab width&nbsp;
-                  input.tabWidth(type="numeric")
+                label Tab width
+                input.tabWidth(type="numeric")
               div
-                label
-                  | Format based on&nbsp;
-                  select.formatBase
+                label Format based on
+                select.formatBase
               .checkbox
-                label
-                  input.enableCtrlS(type="checkbox")
-                  | Make
-                  kbd Ctrl
-                  | +
-                  kbd S
-                  | &nbsp;save to local file instead of creating a share link
-              .checkbox
-                label
-                  input.wordWrap(type="checkbox")
-                  | Enable Word Wrapping
+                input.wordWrap(type="checkbox")
+                label Enable Word Wrapping
         .card
-          .card-body
+          .card-header
             .card-title
               h4 Compilation
+          .card-body
             .form-group(role="group")
               div
                 .checkbox
-                  label
-                    input.compileOnChange(type="checkbox")
-                    | Compile automatically when source changes
-                div Delay before compiling:&nbsp;
-                  b 0.25s&nbsp;
-                  .slider.slider-horizontal.delay
-                  b &nbsp;3s
+                  input.compileOnChange(type="checkbox")
+                  label Compile automatically when source changes
+                div
+                  label Delay before compiling
+                  .slider-input
+                    b 0.25s&nbsp;
+                    .slider.slider-horizontal.delay
+                    b &nbsp;3s
               .checkbox
-                label
-                  input.colourise(type="checkbox")
-                  | Colourise lines to show how the source maps to the output
+                input.colourise(type="checkbox")
+                label Colourise lines to show how the source maps to the output
               label
                 | Colour scheme&nbsp;
                 select.colourScheme
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
 
 #simplecook.gl_keep(tabindex="-1" role="dialog" style="display:none")
   .message
@@ -214,12 +200,12 @@
         | &nbsp;Read the new cookie policy
       p.new-cookie-msg Compiler Explorer uses cookies and other related techs to serve you
     .btn-group.btn-group-sm(role="group" aria-label="Consent options" style="float:right")
-      button.btn.btn-light.btn-sm.cook-do-consent.consent-cookie-yes(title="Consent cookie policy" aria-label="Consent cookie policy")
-        span.fas.fa-thumbs-up
-        | &nbsp;Consent
-      button.btn.btn-light.btn-sm.cook-dont-consent.consent-cookie-no(title="Do not consent cookie policy" aria-label="Oppose cookie policy")
+      button.btn.btn-secondary.btn-sm.cook-dont-consent(title="Do not consent cookie policy" aria-label="Oppose cookie policy")
         span.fas.fa-thumbs-down
         | &nbsp;Don't consent
+      button.btn.btn-primary.btn-sm.cook-do-consent(title="Consent cookie policy" aria-label="Consent cookie policy")
+        span.fas.fa-thumbs-up
+        | &nbsp;Consent
 
 #notifications
 

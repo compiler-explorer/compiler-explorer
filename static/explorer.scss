@@ -274,10 +274,6 @@ pre.content.wrap * {
     border-radius: 3px;
 }
 
-.modal-footer {
-    border-top: none;
-}
-
 .navbar-nav.navbar-center {
     float: left; /* by default */
 }
@@ -402,6 +398,14 @@ button.dropdown-item.btn.btn-light.btn-sm {
 
 label#vim-label {
     top: 3px;
+}
+
+#settings label {
+    margin-left: 3px;
+}
+
+#settings select, #settings input:not([type=checkbox]), #settings .slider-input {
+    display: block;
 }
 
 input.vim-check {

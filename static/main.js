@@ -102,6 +102,7 @@ function setupSettings(hub) {
                 eventAction: newSettings.colourScheme,
             });
         }
+        $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
         local.set('settings', JSON.stringify(newSettings));
         eventHub.emit('settingsChange', newSettings);

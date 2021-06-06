@@ -30,7 +30,7 @@ var themes = {
     default: {
         path: 'default',
         id: 'default',
-        name: 'Default',
+        name: 'Light',
         'main-color': '#f2f2f2',
         monaco: 'vs', // Optional field
     },
