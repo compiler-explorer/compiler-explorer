@@ -338,13 +338,14 @@ Tree.prototype.numberUsedLines = function () {
 
 Tree.prototype.updateColours = function () {
     _.each(this.ourCompilers, _.bind(function (unused, compilerId) {
-        this.eventHub.emit('coloursForCompiler', parseInt(compilerId),
-            this.lineColouring.getColoursForCompiler(compilerId), this.settings.colourScheme);
+        var id = parseInt(compilerId);
+        this.eventHub.emit('coloursForCompiler', id,
+            this.lineColouring.getColoursForCompiler(id), this.settings.colourScheme);
     }, this));
 
     this.multifileService.forEachOpenFile(_.bind(function (file) {
         this.eventHub.emit('coloursForEditor', file.editorId,
-            this.lineColouring.getColoursForCompiler(file.editorId), this.settings.colourScheme);
+            this.lineColouring.getColoursForEditor(file.editorId), this.settings.colourScheme);
     }, this));
 };
 

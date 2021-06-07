@@ -48,7 +48,7 @@ export class LineColouring {
                         sourceLine: asmLine.source.line - 1,
                         compilerId: compilerId,
                         compilerLine: asmLineIdx,
-                        colourIdx: 0,
+                        colourIdx: -1,
                     });
                 }
             }
@@ -91,10 +91,11 @@ export class LineColouring {
         const compilerIds = _.keys(this.linesAndColourByCompiler);
         const editorIds = _.keys(this.linesAndColourByEditor);
 
-        for (const compilerId of compilerIds) {
+        for (const compilerIdStr of compilerIds) {
+            const compilerId = parseInt(compilerIdStr);
             for (const editorId of _.keys(this.colouredSourceLinesByEditor)) {
                 for (const info of this.colouredSourceLinesByEditor[editorId]) {
-                    if (info.compilerId === compilerId && info.colourIdx > 0) {
+                    if (info.compilerId === compilerId && info.colourIdx >= 0) {
                         this.linesAndColourByCompiler[compilerId][info.compilerLine] = info.colourIdx;
                     }
                 }
@@ -103,7 +104,7 @@ export class LineColouring {
 
         for (const editorId of editorIds) {
             for (const info of this.colouredSourceLinesByEditor[editorId]) {
-                if (info.colourIdx > 0) {
+                if (info.colourIdx >= 0) {
                     this.linesAndColourByEditor[editorId][info.sourceLine] = info.colourIdx;
                 }
             }
