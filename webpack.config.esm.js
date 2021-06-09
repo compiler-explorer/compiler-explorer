@@ -46,7 +46,7 @@ const staticPath = path.join(distPath, 'static');
 const webjackJsHack = '.v4.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java' ],
+        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin' ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new CopyWebpackPlugin([

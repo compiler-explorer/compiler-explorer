@@ -54,7 +54,7 @@ rules:
     - ignoreRegExpLiterals: true
   max-statements:
     - error
-    - 50
+    - 100 # TODO reduce...was 50
   no-control-regex: 0
   no-duplicate-imports: error
   no-useless-call: error
@@ -133,7 +133,6 @@ rules:
   unicorn/prevent-abbreviations: off
   # things we'd like to turn on but need fairly extensive code changes:
   unicorn/prefer-ternary: off
-  unicorn/no-array-for-each: off
   unicorn/prefer-array-some: off
   unicorn/prefer-spread: off
   unicorn/no-lonely-if: off
