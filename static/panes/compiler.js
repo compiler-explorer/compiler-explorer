@@ -1928,7 +1928,13 @@ Compiler.prototype.onMouseMove = function (e) {
                     sourceColEnd = sourceColBegin;
                 }
             }
-            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, sourceColBegin, sourceColEnd, false);
+            if (this.sourceEditorId) {
+                this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, sourceColBegin, sourceColEnd, false);
+            } else if (this.sourceTreeId) {
+                var tree = this.hub.getTreeById(this.sourceTreeId);
+                var editorId = tree.getEditorIdByFilename(hoverAsm.source.file);
+                this.eventHub.emit('editorLinkLine', editorId, sourceLine, sourceColBegin, sourceColEnd, false);
+            }        
             this.eventHub.emit('panesLinkLine', this.id,
                 sourceLine, sourceColBegin, sourceColEnd,
                 false, this.getPaneName());
