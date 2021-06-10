@@ -50,6 +50,7 @@ require('../modes/zig-mode');
 require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('../modes/nim-mode');
+require('../modes/cmake-mode');
 require('selectize');
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -130,7 +131,7 @@ function Editor(hub, state, container) {
     }
 
     var usableLanguages = _.filter(languages, function (language) {
-        return hub.compilerService.compilersByLang[language.id];
+        return hub.compilerService.compilersByLang[language.id] || language.id === 'cmake';
     });
 
     this.languageBtn.selectize({
@@ -1256,7 +1257,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
         if (newLangId !== this.currentLanguage.id) {
             var oldLangId = this.currentLanguage.id;
             this.currentLanguage = languages[newLangId];
-            if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange) {
+            if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && (newLangId !== 'cmake')) {
                 this.editorSourceByLang[oldLangId] = this.getSource();
                 this.updateEditorCode();
             }
@@ -1293,7 +1294,11 @@ Editor.prototype.setCustomPaneName = function (name) {
 };
 
 Editor.prototype.updateTitle = function () {
-    this.container.setTitle(this.getPaneName());
+    var name = this.getPaneName();
+    if (name === 'CMakeLists.txt') {
+        this.changeLanguage('cmake');
+    }
+    this.container.setTitle(name);
 };
 
 // Called every time we change language, so we get the relevant code
