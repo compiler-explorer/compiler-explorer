@@ -622,8 +622,10 @@ async function main() {
         staticHeaders(res);
         contentPolicyHeader(res);
 
-        res.render('index', renderConfig({
-            embedded: false,
+        const embedded = req.query.embedded === 'true' ? true : false;
+
+        res.render(embedded ? 'embed' : 'index', renderConfig({
+            embedded: embedded,
             mobileViewer: isMobileViewer(req),
             config: config,
             metadata: metadata,
