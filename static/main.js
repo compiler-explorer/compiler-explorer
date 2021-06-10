@@ -32,7 +32,7 @@ require('popper.js');
 require('bootstrap');
 require('bootstrap-slider');
 
-var sharing = require('./sharing');
+var Sharing = require('./sharing').Sharing;
 var _ = require('underscore');
 var cloneDeep = require('lodash.clonedeep');
 var $ = require('jquery');
@@ -226,7 +226,7 @@ function setupButtons(options) {
 }
 
 function findConfig(defaultConfig, options) {
-    var config = null;
+    var config;
     if (!options.embedded) {
         if (options.slides) {
             presentation.init(window.compilerExplorerOptions.slides.length);
@@ -260,7 +260,7 @@ function findConfig(defaultConfig, options) {
                 showCloseIcon: false,
                 hasHeaders: false,
             },
-        }, sharing.configFromEmbedded(window.location.hash.substr(1)));
+        }, Sharing.configFromEmbedded(window.location.hash.substr(1)));
     }
     return config;
 }
@@ -478,28 +478,8 @@ function start() {
     }
 
     var lastState = null;
-    var storedPaths = {};  // TODO maybe make this an LRU cache?
 
-    layout.on('stateChanged', function () {
-        var config = filterComponentState(layout.toConfig(), ['selection']);
-        var stringifiedConfig = JSON.stringify(config);
-        if (stringifiedConfig !== lastState) {
-            if (storedPaths[stringifiedConfig]) {
-                window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
-            } else if (window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, null, window.httpRoot);
-                // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
-            }
-            lastState = stringifiedConfig;
 
-            History.push(stringifiedConfig);
-        }
-        if (options.embedded) {
-            var strippedToLast = window.location.pathname;
-            strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
-            $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
-        }
-    });
 
     function sizeRoot() {
         var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
@@ -525,19 +505,6 @@ function start() {
     if (!options.embedded) {
         setupButtons(options);
     }
-
-    function storeCurrentConfig(config, extra) {
-        window.history.pushState(null, null, extra);
-        storedPaths[JSON.stringify(config)] = extra;
-    }
-
-    sharing.initShareButton($('#shareShort'), layout, storeCurrentConfig, 'Short');
-    sharing.initShareButton($('#shareFull'), layout, storeCurrentConfig, 'Full');
-    sharing.initShareButton($('#shareEmbed'), layout, storeCurrentConfig, 'Embed');
-
-    layout.eventHub.on('displaySharingPopover', function () {
-        $('#shareShort').trigger('click');
-    });
 
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
@@ -601,9 +568,7 @@ function start() {
     };
 
     sizeRoot();
-    var initialConfig = JSON.stringify(filterComponentState(layout.toConfig(), ['selection']));
-    lastState = initialConfig;
-    storedPaths[initialConfig] = window.location.href;
+    new Sharing(layout);
 }
 
 $(start);

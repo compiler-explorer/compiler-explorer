@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,192 @@ var options = require('./options');
 var Components = require('./components');
 var url = require('./url');
 var ga = require('./analytics');
+var cloneDeep = require('lodash.clonedeep');
+
+
+function Sharing(layout) {
+    this.layout = layout;
+    this.lastState = null;
+    this.storedPaths = {};
+
+    this.share = $('#share');
+    this.shareShort = $('#shareShort');
+    this.shareFull = $('#shareFull');
+    this.shareEmbed = $('#shareEmebed');
+
+    this.initButtons();
+    this.initCallbacks();
+    this.setInitialConfig();
+}
+
+Sharing.prototype.initButtons = function () {
+    this.shareShortOpenModalBtn = this.shareShort.find('.open-modal');
+    this.shareShortCopyToClipBtn = this.shareShort.find('.clip-icon');
+    this.shareFullOpenModalBtn = this.shareFull.find('.open-modal');
+    this.shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
+    this.shareEmbedOpenModalBtn = this.shareEmbed.find('.open-modal');
+    this.shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
+
+    if (navigator.clipboard == null) {
+        this.shareShortCopyToClipBtn.hide();
+        this.shareFullCopyToClipBtn.hide();
+        this.shareEmbedCopyToClipBtn.hide();
+    } else {
+        this.shareShortCopyToClipBtn.on('click', _.bind(function (e) {
+            e.preventDefault();
+            this.getCurrentLink('Short');
+        }, this));
+        this.shareFullCopyToClipBtn.on('click', _.bind(function (e) {
+            e.preventDefault();
+            this.getCurrentLink('Full');
+        }, this));
+        this.shareEmbedCopyToClipBtn.on('click', _.bind(function (e) {
+            e.preventDefault();
+            this.getCurrentLink('Embeded');
+        }, this));
+    }
+};
+
+
+
+Sharing.prototype.onOpenModalPane = function (event) {
+    var button = $(event.relatedTarget);
+    var currentBind = button.data('bind');
+    var modal = $(event.currentTarget);
+    var socialSharingElements = modal.find('.socialsharing');
+    var permalink = modal.find('.permalink');
+    var embedsettings = modal.find('#embedsettings');
+
+    socialSharingElements.empty();
+    if (currentBind === 'Embed') {
+        embedsettings.show();
+    } else {
+        embedsettings.hide();
+    }
+
+
+    var config = this.layout.toConfig();
+    getLinks(config, currentBind, _.bind(function (error, newUrl, extra, updateState) {
+        if (error || !newUrl) {
+            permalink.prop('disabled', true);
+            permalink.val(error || 'Error providing URL');
+        } else {
+            if (updateState) {
+                this.storeCurrentConfig(config, extra);
+            }
+            permalink.val(newUrl);
+            if (options.sharingEnabled) {
+                updateShares(socialSharingElements, newUrl);
+                // Disable the links for every share item which does not support embed html as links
+                if (currentBind === 'Embed') {
+                    socialSharingElements.children('.share-no-embeddable')
+                        .addClass('share-disabled')
+                        .prop('title', 'Embed links are not supported in this service')
+                        .on('click', false);
+                }
+            }
+        }
+    }, this));
+};
+
+Sharing.prototype.onStateChanged = function () {
+    var layoutConfig = this.layout.toConfig();
+    var config = filterComponentState(layoutConfig, ['selection']);
+    var stringifiedConfig = JSON.stringify(config);
+    if (stringifiedConfig !== this.lastState) {
+        if (this.storedPaths[stringifiedConfig]) {
+            window.history.replaceState(null, null, this.storedPaths[stringifiedConfig]);
+        } else if (window.location.pathname !== window.httpRoot) {
+            window.history.replaceState(null, null, window.httpRoot);
+            // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
+        }
+        this.lastState = stringifiedConfig;
+
+        History.push(stringifiedConfig);
+    }
+    if (options.embedded) {
+        var strippedToLast = window.location.pathname;
+        strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
+        $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
+    }
+};
+
+Sharing.prototype.initCallbacks = function () {
+    this.layout.eventHub.on('displaySharingPopover', _.bind(function () {
+        this.shareShort.trigger('click');
+    }, this));
+    this.layout.on('stateChanged', _.bind(this.onStateChanged, this));
+
+    $('#sharelinkdialog').on('show.bs.modal', _.bind(this.onOpenModalPane, this));
+};
+
+Sharing.prototype.displayTooltip = function (message) {
+    this.share.tooltip('dispose');
+    this.share.tooltip({
+        placement: 'bottom',
+        trigger: 'manual',
+        title: message,
+    });
+    this.share.tooltip('show');
+    // Manual triggering of tooltips does not hide them automatically.
+    setTimeout(_.bind(function () {
+        this.share.tooltip('hide');
+    }, this), 1500);
+};
+
+Sharing.prototype.getCurrentLink = function (type) {
+    var config = this.layout.toConfig();
+    getLinks(config, type, _.bind(function (error, newUrl, extra, updateState) {
+        if (error || !newUrl) {
+            // TODO pop up something saying "there was a problem"
+        } else {
+            if (updateState) {
+                this.storeCurrentConfig(config, extra);
+            }
+            navigator.clipboard.writeText(newUrl)
+                .then(_.bind(function () {
+                    this.displayTooltip('Link copied to clipboard');
+                }, this))
+                .catch(_.bind(function () {
+                    this.displayTooltip('Error copying link to clipboard');
+                }, this));
+        }
+    }, this));
+};
+
+Sharing.prototype.setInitialConfig = function () {
+    var initialConfig = JSON.stringify(filterComponentState(this.layout.toConfig(), ['selection']));
+    this.lastState = initialConfig;
+    this.storedPaths[initialConfig] = window.location.href;
+};
+
+
+function filterComponentState(config, keysToRemove) {
+    function filterComponentStateImpl(component) {
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                filterComponentStateImpl(component.content[i], keysToRemove);
+            }
+        }
+
+        if (component.componentState) {
+            Object.keys(component.componentState)
+                .filter(function (key) { return keysToRemove.includes(key); })
+                .forEach(function (key) { delete component.componentState[key]; });
+        }
+    }
+
+    config = cloneDeep(config);
+    filterComponentStateImpl(config);
+    return config;
+}
+
+Sharing.prototype.storeCurrentConfig = function (config, extra) {
+    window.history.pushState(null, null, extra);
+    this.storedPaths[JSON.stringify(config)] = extra;
+};
+
+
 
 var shareServices = {
     twitter: {
@@ -53,7 +239,7 @@ var shareServices = {
     },
 };
 
-function configFromEmbedded(embeddedUrl) {
+Sharing.prototype.configFromEmbedded = function (embeddedUrl) {
     // Old-style link?
     var params;
     try {
@@ -82,7 +268,7 @@ function configFromEmbedded(embeddedUrl) {
     } else {
         return url.deserialiseState(embeddedUrl);
     }
-}
+};
 
 function updateShares(container, url) {
     var baseTemplate = $('#share-item');
@@ -156,51 +342,12 @@ function initShareButton(getLink, layout, noteNewState, startingBind) {
         socialSharing.empty();
         if (!currentBind) return;
         permalink.prop('disabled', false);
-        var config = layout.toConfig();
+
         permalink.val('');
-        getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
-            if (error || !newUrl) {
-                permalink.prop('disabled', true);
-                permalink.val(error || 'Error providing URL');
-            } else {
-                onUpdate(socialSharing, config, currentBind, {
-                    updateState: updateState,
-                    extra: extra,
-                    url: newUrl,
-                });
-            }
-        });
+
     }
 
     // TODO, if navigator.clipboard is undefined, hide the clip icon. For IE. Or ignore it
-    getLink.find('.clip-icon').on('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var config = layout.toConfig();
-        getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
-            if (error || !newUrl) {
-                // TODO pop up something saying "there was a problem"
-            } else {
-                if (updateState) {
-                    noteNewState(config, extra);
-                }
-                navigator.clipboard.writeText(newUrl)
-                    .then(function () {
-                        // TODO pop up "yay copied"
-                        console.log('yay copied');
-                    })
-                    .catch(function () {
-                        // TODO pop up "oh that didn't work"
-                        // This happens e.g. if you have a breakpoint over here and so lose focus before the clipboard
-                        // stuff happens.
-                        console.log('oh noes');
-                    });
-            }
-        });
-        // TODO once this has happened the modals are broken...
-        getLink.closest('.dropdown-menu').dropdown('toggle');
-        return false;
-    });
 
     getLink.on('click', function () {
         ga.proxy('send', {
@@ -299,6 +446,5 @@ function getLinks(config, currentBind, done) {
 }
 
 module.exports = {
-    initShareButton: initShareButton,
-    configFromEmbedded: configFromEmbedded,
+    Sharing: Sharing,
 };

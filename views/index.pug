@@ -60,20 +60,27 @@ block prepend content
           a.nav-link.dropdown-toggle#share(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
           div.dropdown-menu.dropdown-menu-right
             if storageSolution !== "null"
-              a.dropdown-item#shareShort(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
-                span.dropdown-icon.fas.fa-cloud
-                | Short Link
-                | &nbsp;
-                button.dropdown-icon.fa.fa-clipboard.ml-auto.pull-right.clip-icon(data-toggle="none")
-            a.dropdown-item#shareFull(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
-              span.dropdown-icon.fas.fa-store-slash
-              | Full Link
-              | &nbsp;
-            a.dropdown-item#shareEmbed(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
-              span.dropdown-icon.fas.fa-window-restore
-              | Embed in iframe
-              | &nbsp;
-
+              .dropdown-item
+                #shareShort
+                  button.btn.btn-sm.open-modal(data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
+                    span.dropdown-icon.fas.fa-cloud
+                    | Short Link
+                  button.btn.btn-sm.clip-icon.float-right(data-toggle="none")
+                    span.dropdown-icon.fa.fa-clipboard
+            .dropdown-item
+              #shareFull
+                button.btn.btn-sm.open-modal(data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
+                  span.dropdown-icon.fas.fa-store-slash
+                  | Full Link
+                button.btn.btn-sm.clip-icon.float-right(data-toggle="none")
+                  span.dropdown-icon.fa.fa-clipboard
+            .dropdown-item
+              #shareEmbed
+                button.btn.btn-sm.open-modal(data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
+                  span.dropdown-icon.fas.fa-window-restore
+                  | Embed in iframe
+                button.btn.btn-sm.clip-icon(data-toggle="none")
+                  span.dropdown-icon.fa.fa-clipboard
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
           div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
