@@ -1733,15 +1733,15 @@ Compiler.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
+Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender, editorId) {
     if (Number(compilerId) === this.id) {
         var lineNums = [];
         var directlyLinkedLineNums = [];
         var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.assembly, _.bind(function (asmLine, i) {
             if (asmLine.source && asmLine.source.line === lineNumber) {
-                var editorId = this.getEditorIdBySourcefile(asmLine.source);
-                if (editorId) {
+                var fileEditorId = this.getEditorIdBySourcefile(asmLine.source);
+                if (fileEditorId && (editorId === fileEditorId)) {
                     var line = i + 1;
                     lineNums.push(line);
                     var currentCol = asmLine.source.column;
@@ -1928,16 +1928,22 @@ Compiler.prototype.onMouseMove = function (e) {
                     sourceColEnd = sourceColBegin;
                 }
             }
+
             if (this.sourceEditorId) {
                 this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, sourceColBegin, sourceColEnd, false);
-            } else if (this.sourceTreeId) {
+
+                this.eventHub.emit('panesLinkLine', this.id,
+                    sourceLine, sourceColBegin, sourceColEnd,
+                    false, this.getPaneName(), this.sourceEditorId);
+            } else if (this.sourceTreeId && hoverAsm.source) {
                 var tree = this.hub.getTreeById(this.sourceTreeId);
                 var editorId = tree.getEditorIdByFilename(hoverAsm.source.file);
                 this.eventHub.emit('editorLinkLine', editorId, sourceLine, sourceColBegin, sourceColEnd, false);
-            }        
-            this.eventHub.emit('panesLinkLine', this.id,
-                sourceLine, sourceColBegin, sourceColEnd,
-                false, this.getPaneName());
+
+                this.eventHub.emit('panesLinkLine', this.id,
+                    sourceLine, sourceColBegin, sourceColEnd,
+                    false, this.getPaneName(), editorId);
+            }
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);

@@ -641,7 +641,7 @@ Editor.prototype.tryPanesLinkLine = function (thisLineNumber, column, reveal) {
     var selectedToken = this.getTokenSpan(thisLineNumber, column);
     _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
         this.eventHub.emit('panesLinkLine', compilerId, thisLineNumber,
-            selectedToken.colBegin, selectedToken.colEnd, reveal);
+            selectedToken.colBegin, selectedToken.colEnd, reveal, undefined, this.id);
     }, this));
 };
 
