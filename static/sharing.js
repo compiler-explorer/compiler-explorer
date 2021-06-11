@@ -26,11 +26,33 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var options = require('./options');
-var Components = require('./components');
 var url = require('./url');
 var ga = require('./analytics');
 var cloneDeep = require('lodash.clonedeep');
 
+
+var shareServices = {
+    twitter: {
+        embedValid: false,
+        logoClass: 'fab fa-twitter',
+        cssClass: 'share-twitter',
+        getLink: function (title, url) {
+            return 'https://twitter.com/intent/tweet?text=' +
+                encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore';
+        },
+        text: 'Tweet',
+    },
+    reddit: {
+        embedValid: false,
+        logoClass: 'fab fa-reddit',
+        cssClass: 'share-reddit',
+        getLink: function (title, url) {
+            return 'http://www.reddit.com/submit?url=' +
+                encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
+        },
+        text: 'Share on Reddit',
+    },
+};
 
 function Sharing(layout) {
     this.layout = layout;
@@ -40,7 +62,7 @@ function Sharing(layout) {
     this.share = $('#share');
     this.shareShort = $('#shareShort');
     this.shareFull = $('#shareFull');
-    this.shareEmbed = $('#shareEmebed');
+    this.shareEmbed = $('#shareEmbed');
 
     this.initButtons();
     this.initCallbacks();
@@ -48,11 +70,8 @@ function Sharing(layout) {
 }
 
 Sharing.prototype.initButtons = function () {
-    this.shareShortOpenModalBtn = this.shareShort.find('.open-modal');
     this.shareShortCopyToClipBtn = this.shareShort.find('.clip-icon');
-    this.shareFullOpenModalBtn = this.shareFull.find('.open-modal');
     this.shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
-    this.shareEmbedOpenModalBtn = this.shareEmbed.find('.open-modal');
     this.shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
 
     if (navigator.clipboard == null) {
@@ -70,12 +89,10 @@ Sharing.prototype.initButtons = function () {
         }, this));
         this.shareEmbedCopyToClipBtn.on('click', _.bind(function (e) {
             e.preventDefault();
-            this.getCurrentLink('Embeded');
+            this.getCurrentLink('Embed');
         }, this));
     }
 };
-
-
 
 Sharing.prototype.onOpenModalPane = function (event) {
     var button = $(event.relatedTarget);
@@ -85,36 +102,51 @@ Sharing.prototype.onOpenModalPane = function (event) {
     var permalink = modal.find('.permalink');
     var embedsettings = modal.find('#embedsettings');
 
-    socialSharingElements.empty();
+    function updatePermaLink() {
+        socialSharingElements.empty();
+        var config = this.layout.toConfig();
+        getLinks(config, currentBind, _.bind(function (error, newUrl, extra, updateState) {
+            if (error || !newUrl) {
+                permalink.prop('disabled', true);
+                permalink.val(error || 'Error providing URL');
+            } else {
+                if (updateState) {
+                    this.storeCurrentConfig(config, extra);
+                }
+                permalink.val(newUrl);
+                if (options.sharingEnabled) {
+                    updateShares(socialSharingElements, newUrl);
+                    // Disable the links for every share item which does not support embed html as links
+                    if (currentBind === 'Embed') {
+                        socialSharingElements.children('.share-no-embeddable')
+                            .addClass('share-disabled')
+                            .prop('title', 'Embed links are not supported in this service')
+                            .on('click', false);
+                    }
+                }
+            }
+        }, this));
+    }
+
     if (currentBind === 'Embed') {
         embedsettings.show();
+        embedsettings.find('input')
+            // Off any prev click handlers to avoid multiple events triggering after opening the modal more than once
+            .off('click')
+            .on('click', _.bind(function () {
+                updatePermaLink.apply(this);
+            }, this));
     } else {
         embedsettings.hide();
     }
 
+    updatePermaLink.apply(this);
 
-    var config = this.layout.toConfig();
-    getLinks(config, currentBind, _.bind(function (error, newUrl, extra, updateState) {
-        if (error || !newUrl) {
-            permalink.prop('disabled', true);
-            permalink.val(error || 'Error providing URL');
-        } else {
-            if (updateState) {
-                this.storeCurrentConfig(config, extra);
-            }
-            permalink.val(newUrl);
-            if (options.sharingEnabled) {
-                updateShares(socialSharingElements, newUrl);
-                // Disable the links for every share item which does not support embed html as links
-                if (currentBind === 'Embed') {
-                    socialSharingElements.children('.share-no-embeddable')
-                        .addClass('share-disabled')
-                        .prop('title', 'Embed links are not supported in this service')
-                        .on('click', false);
-                }
-            }
-        }
-    }, this));
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'OpenModalPane',
+        eventAction: 'Sharing',
+    });
 };
 
 Sharing.prototype.onStateChanged = function () {
@@ -156,7 +188,7 @@ Sharing.prototype.displayTooltip = function (message) {
         title: message,
     });
     this.share.tooltip('show');
-    // Manual triggering of tooltips does not hide them automatically.
+    // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
     setTimeout(_.bind(function () {
         this.share.tooltip('hide');
     }, this), 1500);
@@ -188,6 +220,10 @@ Sharing.prototype.setInitialConfig = function () {
     this.storedPaths[initialConfig] = window.location.href;
 };
 
+Sharing.prototype.storeCurrentConfig = function (config, extra) {
+    window.history.pushState(null, null, extra);
+    this.storedPaths[JSON.stringify(config)] = extra;
+};
 
 function filterComponentState(config, keysToRemove) {
     function filterComponentStateImpl(component) {
@@ -209,66 +245,6 @@ function filterComponentState(config, keysToRemove) {
     return config;
 }
 
-Sharing.prototype.storeCurrentConfig = function (config, extra) {
-    window.history.pushState(null, null, extra);
-    this.storedPaths[JSON.stringify(config)] = extra;
-};
-
-
-
-var shareServices = {
-    twitter: {
-        embedValid: false,
-        logoClass: 'fab fa-twitter',
-        cssClass: 'share-twitter',
-        getLink: function (title, url) {
-            return 'https://twitter.com/intent/tweet?text=' +
-                encodeURIComponent(title) + '&url=' + encodeURIComponent(url) + '&via=CompileExplore';
-        },
-        text: 'Tweet',
-    },
-    reddit: {
-        embedValid: false,
-        logoClass: 'fab fa-reddit',
-        cssClass: 'share-reddit',
-        getLink: function (title, url) {
-            return 'http://www.reddit.com/submit?url=' +
-                encodeURIComponent(url) + '&title=' + encodeURIComponent(title);
-        },
-        text: 'Share on Reddit',
-    },
-};
-
-Sharing.prototype.configFromEmbedded = function (embeddedUrl) {
-    // Old-style link?
-    var params;
-    try {
-        params = url.unrisonify(embeddedUrl);
-    } catch (e) {
-        // Ignore this, it's not a problem
-    }
-    if (params && params.source && params.compiler) {
-        var filters = _.chain((params.filters || '').split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
-        return {
-            content: [
-                {
-                    type: 'row',
-                    content: [
-                        Components.getEditorWith(1, params.source, filters),
-                        Components.getCompilerWith(1, filters, params.options, params.compiler),
-                    ],
-                },
-            ],
-        };
-    } else {
-        return url.deserialiseState(embeddedUrl);
-    }
-};
 
 function updateShares(container, url) {
     var baseTemplate = $('#share-item');
@@ -293,80 +269,6 @@ function updateShares(container, url) {
     });
 }
 
-function initShareButton(getLink, layout, noteNewState, startingBind) {
-    // Explicit because webstorm gets confused about the type of this variable.
-    /***
-     * Current URL bind
-     * @type {string}
-     */
-    var currentBind = startingBind;
-
-    var popoverModal = $('#sharelinkdialog');
-    var socialSharingElements = popoverModal.find('.socialsharing');
-    var permalink = $('.permalink');
-
-    var embedsettings = $('#embedsettings');
-
-    function setCurrent(node) {
-        currentBind = node.data().bind;
-        if (currentBind === 'Embed') {
-            embedsettings.show();
-        } else {
-            embedsettings.hide();
-        }
-    }
-
-    function setSocialSharing(element, sharedUrl) {
-        if (options.sharingEnabled) {
-            updateShares(element, sharedUrl);
-            // Disable the links for every share item which does not support embed html as links
-            if (currentBind === 'Embed') {
-                element.children('.share-no-embeddable')
-                    .addClass('share-disabled')
-                    .prop('title', 'Embed links are not supported in this service')
-                    .on('click', false);
-            }
-        }
-    }
-
-    function onUpdate(socialSharing, config, bind, result) {
-        if (result.updateState) {
-            noteNewState(config, result.extra);
-        }
-        permalink.val(result.url);
-        setSocialSharing(socialSharing, result.url);
-    }
-
-    function update() {
-        var socialSharing = socialSharingElements;
-        socialSharing.empty();
-        if (!currentBind) return;
-        permalink.prop('disabled', false);
-
-        permalink.val('');
-
-    }
-
-    // TODO, if navigator.clipboard is undefined, hide the clip icon. For IE. Or ignore it
-
-    getLink.on('click', function () {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'Sharing',
-        });
-
-        setCurrent($(this));
-        update();
-    });
-
-    if (startingBind === 'Embed') {
-        embedsettings.find('input').on('click', function () {
-            setCurrent(getLink);
-            update();
-        });
-    }
-}
 
 function getEmbeddedUrl(config, root, readOnly, extraOptions) {
     var location = window.location.origin + root;
@@ -400,9 +302,7 @@ function getEmbeddedHtml(config, root, isReadOnly, extraOptions) {
 function getShortLink(config, root, done) {
     var useExternalShortener = options.urlShortenService !== 'default';
     var data = JSON.stringify({
-        config: useExternalShortener
-            ? url.serialiseState(config)
-            : config,
+        config: useExternalShortener ? url.serialiseState(config) : config,
     });
     $.ajax({
         type: 'POST',
@@ -424,6 +324,11 @@ function getShortLink(config, root, done) {
 
 function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'CreateShareLink',
+        eventAction: 'Sharing',
+    });
     switch (currentBind) {
         case 'Short':
             getShortLink(config, root, done);
