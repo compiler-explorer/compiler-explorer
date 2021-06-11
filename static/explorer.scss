@@ -274,10 +274,6 @@ pre.content.wrap * {
     border-radius: 3px;
 }
 
-.modal-footer {
-    border-top: none;
-}
-
 .navbar-nav.navbar-center {
     float: left; /* by default */
 }
@@ -292,8 +288,8 @@ pre.content.wrap * {
 }
 
 .community-advert {
-    display: none;
-    max-width: 300px;
+    display: flex;
+    max-width: 500px;
     height: 44px;
     margin-top: 3px;
     margin-bottom: 3px;
@@ -306,15 +302,9 @@ pre.content.wrap * {
     padding-right: 4px;
 }
 
-@media (min-width: 1000px) {
+@media (max-width: 1200px) {
     .community-advert {
-        display: flex;
-    }
-}
-
-@media (min-width: 1200px) {
-    .community-advert {
-        max-width: 500px;
+        display: none;
     }
 }
 
@@ -408,6 +398,14 @@ button.dropdown-item.btn.btn-light.btn-sm {
 
 label#vim-label {
     top: 3px;
+}
+
+#settings label {
+    margin-left: 3px;
+}
+
+#settings select, #settings input:not([type=checkbox]), #settings .slider-input {
+    display: block;
 }
 
 input.vim-check {
@@ -586,6 +584,12 @@ div.populararguments div.dropdown-menu {
 @media (max-width: 1000px) {
     .ces-content-root {
         font-size: 60%;
+    }
+}
+
+@media (max-width: 1250px) {
+    #ces-banner-text {
+        display: none;
     }
 }
 
