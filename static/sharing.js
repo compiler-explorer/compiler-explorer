@@ -28,6 +28,7 @@ var _ = require('underscore');
 var options = require('./options');
 var url = require('./url');
 var ga = require('./analytics');
+var Sentry = require('@sentry/browser');
 var cloneDeep = require('lodash.clonedeep');
 
 
@@ -57,7 +58,6 @@ var shareServices = {
 function Sharing(layout) {
     this.layout = layout;
     this.lastState = null;
-    this.storedPaths = {};
 
     this.share = $('#share');
     this.shareShort = $('#shareShort');
@@ -66,7 +66,6 @@ function Sharing(layout) {
 
     this.initButtons();
     this.initCallbacks();
-    this.setInitialConfig();
 }
 
 Sharing.prototype.initButtons = function () {
@@ -74,23 +73,29 @@ Sharing.prototype.initButtons = function () {
     this.shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
     this.shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
 
-    if (navigator.clipboard == null) {
+    if (this.isNavigatorClipboardAvailable()) {
+        var onClipButtonPressed = _.bind(function (e, type) {
+            // Dont let the modal show up.
+            // We need this because the button is a child of the dropdown-item with a data-toggle=modal
+            e.stopPropagation();
+            this.copyLinkTypeToClipboard(type);
+            // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
+            this.share.dropdown('hide');
+        }, this);
+
+        this.shareShortCopyToClipBtn.on('click', _.bind(function (e) {
+            onClipButtonPressed(e, 'Short');
+        }, this));
+        this.shareFullCopyToClipBtn.on('click', _.bind(function (e) {
+            onClipButtonPressed(e, 'Full');
+        }, this));
+        this.shareEmbedCopyToClipBtn.on('click', _.bind(function (e) {
+            onClipButtonPressed(e, 'Embed');
+        }, this));
+    } else {
         this.shareShortCopyToClipBtn.hide();
         this.shareFullCopyToClipBtn.hide();
         this.shareEmbedCopyToClipBtn.hide();
-    } else {
-        this.shareShortCopyToClipBtn.on('click', _.bind(function (e) {
-            e.preventDefault();
-            this.getCurrentLink('Short');
-        }, this));
-        this.shareFullCopyToClipBtn.on('click', _.bind(function (e) {
-            e.preventDefault();
-            this.getCurrentLink('Full');
-        }, this));
-        this.shareEmbedCopyToClipBtn.on('click', _.bind(function (e) {
-            e.preventDefault();
-            this.getCurrentLink('Embed');
-        }, this));
     }
 };
 
@@ -109,6 +114,7 @@ Sharing.prototype.onOpenModalPane = function (event) {
             if (error || !newUrl) {
                 permalink.prop('disabled', true);
                 permalink.val(error || 'Error providing URL');
+                Sentry.captureException(error);
             } else {
                 if (updateState) {
                     this.storeCurrentConfig(config, extra);
@@ -152,22 +158,22 @@ Sharing.prototype.onOpenModalPane = function (event) {
 Sharing.prototype.onStateChanged = function () {
     var layoutConfig = this.layout.toConfig();
     var config = filterComponentState(layoutConfig, ['selection']);
-    var stringifiedConfig = JSON.stringify(config);
-    if (stringifiedConfig !== this.lastState) {
-        if (this.storedPaths[stringifiedConfig]) {
-            window.history.replaceState(null, null, this.storedPaths[stringifiedConfig]);
-        } else if (window.location.pathname !== window.httpRoot) {
-            window.history.replaceState(null, null, window.httpRoot);
-            // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
-        }
-        this.lastState = stringifiedConfig;
-
-        History.push(stringifiedConfig);
-    }
+    this.ensureUrlIsNotOutdated(config);
     if (options.embedded) {
         var strippedToLast = window.location.pathname;
         strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
         $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
+    }
+};
+
+// This keeps the URL from displaying a link of an outdated page state
+Sharing.prototype.ensureUrlIsNotOutdated = function (config) {
+    var stringifiedConfig = JSON.stringify(config);
+    if (stringifiedConfig !== this.lastState) {
+        if (window.location.pathname !== window.httpRoot) {
+            window.history.replaceState(null, null, window.httpRoot);
+        }
+        this.lastState = stringifiedConfig;
     }
 };
 
@@ -194,11 +200,12 @@ Sharing.prototype.displayTooltip = function (message) {
     }, this), 1500);
 };
 
-Sharing.prototype.getCurrentLink = function (type) {
+Sharing.prototype.copyLinkTypeToClipboard = function (type) {
     var config = this.layout.toConfig();
     getLinks(config, type, _.bind(function (error, newUrl, extra, updateState) {
         if (error || !newUrl) {
-            // TODO pop up something saying "there was a problem"
+            this.displayTooltip('Oops, something went wrong');
+            Sentry.captureException(error);
         } else {
             if (updateState) {
                 this.storeCurrentConfig(config, extra);
@@ -214,15 +221,12 @@ Sharing.prototype.getCurrentLink = function (type) {
     }, this));
 };
 
-Sharing.prototype.setInitialConfig = function () {
-    var initialConfig = JSON.stringify(filterComponentState(this.layout.toConfig(), ['selection']));
-    this.lastState = initialConfig;
-    this.storedPaths[initialConfig] = window.location.href;
-};
-
 Sharing.prototype.storeCurrentConfig = function (config, extra) {
     window.history.pushState(null, null, extra);
-    this.storedPaths[JSON.stringify(config)] = extra;
+};
+
+Sharing.prototype.isNavigatorClipboardAvailable = function () {
+    return navigator.clipboard != null;
 };
 
 function filterComponentState(config, keysToRemove) {
