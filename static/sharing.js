@@ -289,7 +289,7 @@ Sharing.prototype.onStateChanged = function () {
     }
 };
 
-// This keeps the URL from displaying a link of an outdated page state
+// This keeps the URL from displaying a short link of an outdated page state
 Sharing.prototype.ensureUrlIsNotOutdated = function (config) {
     var stringifiedConfig = JSON.stringify(config);
     if (stringifiedConfig !== this.lastState) {
