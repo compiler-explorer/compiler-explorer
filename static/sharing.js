@@ -55,6 +55,129 @@ var shareServices = {
     },
 };
 
+function filterComponentState(config, keysToRemove) {
+    function filterComponentStateImpl(component) {
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                filterComponentStateImpl(component.content[i], keysToRemove);
+            }
+        }
+
+        if (component.componentState) {
+            Object.keys(component.componentState)
+                .filter(function (key) { return keysToRemove.includes(key); })
+                .forEach(function (key) { delete component.componentState[key]; });
+        }
+    }
+
+    config = cloneDeep(config);
+    filterComponentStateImpl(config);
+    return config;
+}
+
+function updateShares(container, url) {
+    var baseTemplate = $('#share-item');
+    _.each(shareServices, function (service, serviceName) {
+        var newElement = baseTemplate.children('a.share-item').clone();
+        if (service.logoClass) {
+            newElement.prepend($('<span>')
+                .addClass('dropdown-icon')
+                .addClass(service.logoClass)
+                .prop('title', serviceName)
+            );
+        }
+        if (service.text) {
+            newElement.children('span.share-item-text')
+                .text(service.text);
+        }
+        newElement
+            .prop('href', service.getLink('Compiler Explorer', url))
+            .addClass(service.cssClass)
+            .toggleClass('share-no-embeddable', !service.embedValid)
+            .appendTo(container);
+    });
+}
+
+function getEmbeddedUrl(config, root, readOnly, extraOptions) {
+    var location = window.location.origin + root;
+    var path = '';
+    var parameters = '';
+
+    _.forEach(extraOptions, function (value, key) {
+        if (parameters === '') {
+            parameters = '?';
+        } else {
+            parameters += '&';
+        }
+
+        parameters += key + '=' + value;
+    });
+
+    if (readOnly) {
+        path = 'embed-ro' + parameters + '#';
+    } else {
+        path = 'e' + parameters + '#';
+    }
+
+    return location + path + url.serialiseState(config);
+}
+
+function getEmbeddedHtml(config, root, isReadOnly, extraOptions) {
+    return '<iframe width="800px" height="200px" src="' +
+        getEmbeddedUrl(config, root, isReadOnly, extraOptions) + '"></iframe>';
+}
+
+function getShortLink(config, root, done) {
+    var useExternalShortener = options.urlShortenService !== 'default';
+    var data = JSON.stringify({
+        config: useExternalShortener ? url.serialiseState(config) : config,
+    });
+    $.ajax({
+        type: 'POST',
+        url: window.location.origin + root + 'api/shortener',
+        dataType: 'json',  // Expected
+        contentType: 'application/json',  // Sent
+        data: data,
+        success: _.bind(function (result) {
+            var pushState = useExternalShortener ? null : result.url;
+            done(null, result.url, pushState, true);
+        }, this),
+        error: _.bind(function (err) {
+            // Notify the user that we ran into trouble?
+            done(err.statusText, null, false);
+        }, this),
+        cache: true,
+    });
+}
+
+function getLinks(config, currentBind, done) {
+    var root = window.httpRoot;
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'CreateShareLink',
+        eventAction: 'Sharing',
+    });
+    switch (currentBind) {
+        case 'Short':
+            getShortLink(config, root, done);
+            return;
+        case 'Full':
+            done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
+            return;
+        default:
+            if (currentBind.substr(0, 5) === 'Embed') {
+                var options = {};
+                $('#sharelinkdialog input:checked').each(function () {
+                    options[$(this).prop('class')] = true;
+                });
+                done(null, getEmbeddedHtml(config, root, false, options), false);
+                return;
+            }
+            // Hmmm
+            done('Unknown link type', null);
+    }
+}
+
 function Sharing(layout) {
     this.layout = layout;
     this.lastState = null;
@@ -73,7 +196,7 @@ Sharing.prototype.initButtons = function () {
     this.shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
     this.shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
 
-    if (this.isNavigatorClipboardAvailable()) {
+    if (this.areClipboardOperationSupported()) {
         var onClipButtonPressed = _.bind(function (e, type) {
             // Dont let the modal show up.
             // We need this because the button is a child of the dropdown-item with a data-toggle=modal
@@ -210,149 +333,38 @@ Sharing.prototype.copyLinkTypeToClipboard = function (type) {
             if (updateState) {
                 this.storeCurrentConfig(config, extra);
             }
-            navigator.clipboard.writeText(newUrl)
-                .then(_.bind(function () {
-                    this.displayTooltip('Link copied to clipboard');
-                }, this))
-                .catch(_.bind(function () {
-                    this.displayTooltip('Error copying link to clipboard');
-                }, this));
+            this.doLinkCopyToClipboard(newUrl);
         }
     }, this));
+};
+
+Sharing.prototype.doLinkCopyToClipboard = function (link) {
+    // TODO: Add more ways for users to be able to copy the link text
+    // Right now, only the newer navigator.clipboard is available, but more can be added
+    if (this.isNavigatorClipboardAvailable()) {
+        navigator.clipboard.writeText(link)
+            .then(_.bind(function () {
+                this.displayTooltip('Link copied to clipboard');
+            }, this))
+            .catch(_.bind(function () {
+                this.displayTooltip('Error copying link to clipboard');
+            }, this));
+    }
 };
 
 Sharing.prototype.storeCurrentConfig = function (config, extra) {
     window.history.pushState(null, null, extra);
 };
 
+// True if there's at least one way to copy a link to the user's clipboard.
+// Currently, only navigator.clipboard is supported
+Sharing.prototype.areClipboardOperationSupported = function () {
+    return this.isNavigatorClipboardAvailable();
+};
+
 Sharing.prototype.isNavigatorClipboardAvailable = function () {
     return navigator.clipboard != null;
 };
-
-function filterComponentState(config, keysToRemove) {
-    function filterComponentStateImpl(component) {
-        if (component.content) {
-            for (var i = 0; i < component.content.length; i++) {
-                filterComponentStateImpl(component.content[i], keysToRemove);
-            }
-        }
-
-        if (component.componentState) {
-            Object.keys(component.componentState)
-                .filter(function (key) { return keysToRemove.includes(key); })
-                .forEach(function (key) { delete component.componentState[key]; });
-        }
-    }
-
-    config = cloneDeep(config);
-    filterComponentStateImpl(config);
-    return config;
-}
-
-
-function updateShares(container, url) {
-    var baseTemplate = $('#share-item');
-    _.each(shareServices, function (service, serviceName) {
-        var newElement = baseTemplate.children('a.share-item').clone();
-        if (service.logoClass) {
-            newElement.prepend($('<span>')
-                .addClass('dropdown-icon')
-                .addClass(service.logoClass)
-                .prop('title', serviceName)
-            );
-        }
-        if (service.text) {
-            newElement.children('span.share-item-text')
-                .text(service.text);
-        }
-        newElement
-            .prop('href', service.getLink('Compiler Explorer', url))
-            .addClass(service.cssClass)
-            .toggleClass('share-no-embeddable', !service.embedValid)
-            .appendTo(container);
-    });
-}
-
-
-function getEmbeddedUrl(config, root, readOnly, extraOptions) {
-    var location = window.location.origin + root;
-    var path = '';
-    var parameters = '';
-
-    _.forEach(extraOptions, function (value, key) {
-        if (parameters === '') {
-            parameters = '?';
-        } else {
-            parameters += '&';
-        }
-
-        parameters += key + '=' + value;
-    });
-
-    if (readOnly) {
-        path = 'embed-ro' + parameters + '#';
-    } else {
-        path = 'e' + parameters + '#';
-    }
-
-    return location + path + url.serialiseState(config);
-}
-
-function getEmbeddedHtml(config, root, isReadOnly, extraOptions) {
-    return '<iframe width="800px" height="200px" src="' +
-        getEmbeddedUrl(config, root, isReadOnly, extraOptions) + '"></iframe>';
-}
-
-function getShortLink(config, root, done) {
-    var useExternalShortener = options.urlShortenService !== 'default';
-    var data = JSON.stringify({
-        config: useExternalShortener ? url.serialiseState(config) : config,
-    });
-    $.ajax({
-        type: 'POST',
-        url: window.location.origin + root + 'api/shortener',
-        dataType: 'json',  // Expected
-        contentType: 'application/json',  // Sent
-        data: data,
-        success: _.bind(function (result) {
-            var pushState = useExternalShortener ? null : result.url;
-            done(null, result.url, pushState, true);
-        }, this),
-        error: _.bind(function (err) {
-            // Notify the user that we ran into trouble?
-            done(err.statusText, null, false);
-        }, this),
-        cache: true,
-    });
-}
-
-function getLinks(config, currentBind, done) {
-    var root = window.httpRoot;
-    ga.proxy('send', {
-        hitType: 'event',
-        eventCategory: 'CreateShareLink',
-        eventAction: 'Sharing',
-    });
-    switch (currentBind) {
-        case 'Short':
-            getShortLink(config, root, done);
-            return;
-        case 'Full':
-            done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
-            return;
-        default:
-            if (currentBind.substr(0, 5) === 'Embed') {
-                var options = {};
-                $('#sharelinkdialog input:checked').each(function () {
-                    options[$(this).prop('class')] = true;
-                });
-                done(null, getEmbeddedHtml(config, root, false, options), false);
-                return;
-            }
-            // Hmmm
-            done('Unknown link type', null);
-    }
-}
 
 module.exports = {
     Sharing: Sharing,
