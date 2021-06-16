@@ -268,13 +268,13 @@ CompilerService.prototype.doesCompilationResultHaveWarnings = function (result) 
     var stderr = result.stderr || [];
     // TODO: Pass what compiler did this and check if it it's actually skippable
     // Right now we're ignoring outputs that match the input filename
-    // Compiler.js is capable of giving us the info, but conformance view is not
+    // Compiler & Executor are capable of giving us the info, but conformance view is not
     if (stdout.length === 1 && stderr.length === 0) {
         // We could also move this calculation to the server at some point
         var lastSlashPos = _.findLastIndex(result.inputFilename, function (ch) {
-            return ch === '/';
+            return ch === '\\';
         });
-        return result.inputFilename.substr(lastSlashPos) === stdout[0].text;
+        return result.inputFilename.substr(lastSlashPos + 1) !== stdout[0].text;
     }
     return stdout.length > 0 || stderr.length > 0;
 };
