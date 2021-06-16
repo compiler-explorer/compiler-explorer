@@ -274,7 +274,7 @@ CompilerService.prototype.doesCompilationResultHaveWarnings = function (result) 
         var lastSlashPos = _.findLastIndex(result.inputFilename, function (ch) {
             return ch === '/';
         });
-        return result.inputFilename.substr(lastSlashPos) === stdout[0];
+        return result.inputFilename.substr(lastSlashPos) === stdout[0].text;
     }
     return stdout.length > 0 || stderr.length > 0;
 };
@@ -344,6 +344,23 @@ CompilerService.prototype.handleCompilationStatus = function (statusLabel, statu
             .toggleClass('fa-times-circle', status.code === 3)
             .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
     }
+};
+
+CompilerService.prototype.handleOutputButtonTitle = function (element, result) {
+    var stdout = result.stdout || [];
+    var stderr = result.stderr || [];
+
+    var asciiColorsRe = RegExp(/\x1b\[[0-9;]*m(.\[K)?/g);
+
+    function filterAsciiColors(line) {
+        return line.text.replace(asciiColorsRe, '');
+    }
+
+    var output =_.map(stdout, filterAsciiColors)
+        .concat(_.map(stderr, filterAsciiColors))
+        .join('\n');
+
+    element.prop('title', output);
 };
 
 module.exports = CompilerService;

@@ -639,8 +639,7 @@ Compiler.prototype.sendCompile = function (request) {
             } else if (x) {
                 message = x.error || x.code;
             }
-            onCompilerResponse(request,
-                errorResult('<Compilation failed: ' + message + '>'), false);
+            onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
 };
 
@@ -800,7 +799,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
         this.outputBtn.prop('title', '');
     } else{
-        this.outputBtn.prop('title', 'Open Output pane to see current compiler output');
+        this.compilerService.handleOutputButtonTitle(this.outputBtn, result);
     }
     var infoLabelText = '';
     if (cached) {

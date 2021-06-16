@@ -263,14 +263,28 @@ Conformance.prototype.onEditorClose = function (editorId) {
     }
 };
 
-Conformance.prototype.onCompileResponse = function (child, result) {
-    var stdout = result.stdout || [];
-    var stderr = result.stderr || [];
+function hasResultAnyOutput(result) {
+    return (result.stdout || []).length > 0 || (result.stderr || []).length > 0;
+}
 
-    this.setCompilationOptionsPopover(child.find('.prepend-options'),
-        result.compilationOptions ? result.compilationOptions.join(' ') : '');
-    child.find('.compiler-out')
-        .toggleClass('d-none', stdout.length === 0 && stderr.length === 0);
+Conformance.prototype.handleCompileOutIcon = function (element, result) {
+    var hasOutput = hasResultAnyOutput(result);
+    element.toggleClass('d-none', !hasOutput);
+    if (hasOutput) {
+        this.compilerService.handleOutputButtonTitle(element, result);
+    }
+
+};
+
+Conformance.prototype.onCompileResponse = function (child, result) {
+    var compilationOptions = '';
+    if (result.compilationOptions) {
+        compilationOptions = result.compilationOptions.join(' ');
+    }
+
+    this.setCompilationOptionsPopover(child.find('.prepend-options'), compilationOptions);
+
+    this.handleCompileOutIcon(child.find('.compiler-out'), result);
 
     this.handleStatusIcon(child.find('.status-icon'), this.compilerService.calculateStatusIcon(result));
     this.saveState();
