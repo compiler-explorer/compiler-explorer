@@ -43,11 +43,13 @@
   #compiler
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
-        select.compiler-picker(placeholder="Select a compiler...")
-        .input-group.mb-auto
-          .input-group-prepend(title="Show all compilation options")
-            button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
-              span.status-icon
+        .input-group
+          .input-group-prepend
+            .input-group
+              select.compiler-picker(placeholder="Select a compiler...")
+              .input-group-append
+                button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+                  span.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
           .input-group-append.populararguments(title="Popular arguments")
             button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")

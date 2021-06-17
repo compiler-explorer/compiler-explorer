@@ -768,6 +768,10 @@ html[data-theme=dark] {
     max-width: 250px;
 }
 
+.ts-input {
+    height: 100%
+}
+
 .ts-input, .ts-dropdown .option {
     font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
     font-size: 14px;
@@ -778,4 +782,9 @@ html[data-theme=dark] {
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
+}
+
+.options {
+    border-top-left-radius: .2rem !important;
+    border-bottom-left-radius: .2rem !important;
 }
