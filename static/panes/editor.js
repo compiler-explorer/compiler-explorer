@@ -967,8 +967,11 @@ Editor.prototype.numberUsedLines = function () {
             }, this));
 
             if (!foundInTrees) {
-                if (asmLine.source && asmLine.source.file === null && asmLine.source.line > 0)
+                if (asmLine.source &&
+                    (asmLine.source.file === null || asmLine.source.mainsource) &&
+                    asmLine.source.line > 0) {
                     result[asmLine.source.line - 1] = true;
+                }
             }
         }, this));
     }, this));

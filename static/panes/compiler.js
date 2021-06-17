@@ -189,7 +189,7 @@ Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
             return tree.getEditorIdByFilename(sourcefile.file);
         }
     } else {
-        if (sourcefile !== null && sourcefile.file === null) {
+        if (sourcefile !== null && (sourcefile.file === null || sourcefile.mainsource)) {
             return this.sourceEditorId;
         }
     }
@@ -898,8 +898,6 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
             failed = failed | (step.code !== 0);
         });
     }
-
-    var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
 
     this.handleCompilationStatus(this.compilerService.calculateStatusIcon(result));
     this.outputTextCount.text(stdout.length);

@@ -20,7 +20,8 @@
       ],
       "source": {
         "file": null,
-        "line": 3
+        "line": 3,
+        "mainsource": true
       },
       "text": " MOV R1, c[0x0][0x44]"
     },
@@ -39,7 +40,8 @@
       ],
       "source": {
         "file": null,
-        "line": 3
+        "line": 3,
+        "mainsource": true
       },
       "text": " S2R R0, SR_CTAID.X"
     },
@@ -58,7 +60,8 @@
       ],
       "source": {
         "file": null,
-        "line": 4
+        "line": 4,
+        "mainsource": true
       },
       "text": " ISETP.GE.AND P0, PT, R0, c[0x0][0x148], PT"
     },
@@ -77,7 +80,8 @@
       ],
       "source": {
         "file": null,
-        "line": 4
+        "line": 4,
+        "mainsource": true
       },
       "text": " @P0 EXIT"
     },
@@ -96,7 +100,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " ISCADD R2.CC, R0, c[0x0][0x140], 0x2"
     },
@@ -115,7 +120,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " MOV32I R3, 0x4"
     },
@@ -134,7 +140,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " IMAD.HI.X R3, R0, R3, c[0x0][0x144]"
     },
@@ -153,7 +160,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " LD.E R0, [R2]"
     },
@@ -172,7 +180,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " IMUL R4, R0, R0"
     },
@@ -191,7 +200,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " ST.E [R2], R4"
     },
@@ -210,7 +220,8 @@
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " EXIT"
     },
@@ -234,7 +245,8 @@
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " BRA `(.L_1)"
     },
