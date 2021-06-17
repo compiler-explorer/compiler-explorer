@@ -53,7 +53,8 @@
                     "compilerOutputVisible": true,
                     "compilerVisible": false,
                     "stdin": "",
-                    "stdinVisible": false
+                    "stdinVisible": false,
+                    "wrap": false
                 }
             ]
         }

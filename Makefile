@@ -37,6 +37,7 @@ NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
 	$(NPM) install --only=prod $(NPM_FLAGS)
 	$(NPM) install --only=dev $(NPM_FLAGS)
+	@rm -rf node_modules/.cache/esm/*
 	@touch $@
 
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js

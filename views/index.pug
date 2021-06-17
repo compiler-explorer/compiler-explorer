@@ -54,7 +54,8 @@ block prepend content
           button.close(type="button" aria-hidden="true") &times;
       ul.navbar-nav.navbar-right
         if showSponsors
-          li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal") Sponsors
+          li.nav-item.btn.btn-outline-primary#ces(data-toggle="modal")
+            span#ces-banner-text Sponsors
             include sponsor-icons.pug
         li.nav-item.dropdown
           a.nav-link.dropdown-toggle#share(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share

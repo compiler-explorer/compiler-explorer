@@ -28,16 +28,16 @@ import { fs, path, should } from './utils';
 
 describe('Language definitions tests', () => {
     it('Has id equal to object key', () => {
-        Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].id, languageKey));
+        for (const languageKey of Object.keys(languages))  should.equal(languages[languageKey].id, languageKey);
     });
     it('Has extensions with leading dots', () => {
-        Object.keys(languages).forEach(languageKey => should.equal(languages[languageKey].extensions[0][0], '.'));
+        for (const languageKey of Object.keys(languages))  should.equal(languages[languageKey].extensions[0][0], '.');
     });
     it('Has examples & are initialized', () => {
-        Object.keys(languages).forEach(languageKey => {
+        for (const languageKey of Object.keys(languages)) {
             const lang = languages[languageKey];
             const example = fs.readFileSync(path.join('examples', lang.id, 'default' + lang.extensions[0]), 'utf-8');
             should.equal(example, lang.example);
-        });
+        }
     });
 });
