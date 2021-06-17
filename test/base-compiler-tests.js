@@ -558,7 +558,7 @@ Args: []
 
         try {
             compiler.getExtraFilepath('/tmp/somefolder', '../test.h');
-            throw 'Should throw exception';
+            throw 'Should throw exception 1';
         } catch (error) {
             if (!(error instanceof Error)) {
                 throw error;
@@ -567,7 +567,7 @@ Args: []
 
         try {
             compiler.getExtraFilepath('/tmp/somefolder', './../test.h');
-            throw 'Should throw exception';
+            throw 'Should throw exception 2';
         } catch (error) {
             if (!(error instanceof Error)) {
                 throw error;
@@ -575,8 +575,7 @@ Args: []
         }
 
         try {
-            compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h');
-            throw 'Should throw exception';
+            compiler.getExtraFilepath('/tmp/somefolder', '/tmp/someotherfolder/test.h').should.equal('/tmp/somefolder/tmp/someotherfolder/test.h');
         } catch (error) {
             if (!(error instanceof Error)) {
                 throw error;
@@ -584,8 +583,7 @@ Args: []
         }
 
         try {
-            compiler.getExtraFilepath('/tmp/somefolder', '\\test.h');
-            throw 'Should throw exception';
+            compiler.getExtraFilepath('/tmp/somefolder', '\\test.h').should.equal('/tmp/somefolder/test.h');
         } catch (error) {
             if (!(error instanceof Error)) {
                 throw error;
@@ -594,7 +592,7 @@ Args: []
 
         try {
             compiler.getExtraFilepath('/tmp/somefolder', 'test_hello/../../etc/passwd');
-            throw 'Should throw exception';
+            throw 'Should throw exception 5';
         } catch (error) {
             if (!(error instanceof Error)) {
                 throw error;
@@ -607,10 +605,8 @@ Args: []
             compiler.getExtraFilepath('/tmp/somefolder', 'test.txt').should.equal('/tmp/somefolder/test.txt');
         }
 
-        // note: subfolders currently not supported, but maybe in the future?
         try {
-            compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h');
-            throw 'Should throw exception';
+            compiler.getExtraFilepath('/tmp/somefolder', 'subfolder/hello.h').should.equal('/tmp/somefolder/subfolder/hello.h');
         } catch (error) {
             if (!(error instanceof Error)) {
                 throw error;
