@@ -776,36 +776,39 @@ Executor.prototype.onSettingsChange = function (newSettings) {
     this.settings = _.clone(newSettings);
 };
 
+function ariaLabel(status) {
+    // Compiling...
+    if (status.code === 4) return 'Compiling';
+    if (status.didExecute) {
+        return 'Program compiled & executed';
+    } else {
+        return 'Program could not be executed';
+    }
+}
+
+function color(status) {
+    // Compiling...
+    if (status.code === 4) return 'black';
+    if (status.didExecute) return '#12BB12';
+    return '#FF1212';
+}
+
 Executor.prototype.handleCompilationStatus = function (status) {
-    if (!this.statusLabel || !this.statusIcon) return;
+    // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
+    this.compilerService.handleCompilationStatus(this.statusLabel, null, status);
 
-    function ariaLabel() {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.didExecute) {
-            return 'Program compiled & executed';
-        } else {
-            return 'Program could not be executed';
-        }
+    if (this.statusIcon != null) {
+        this.statusIcon
+            .removeClass()
+            .addClass('status-icon fas')
+            .css('color', color(status))
+            .toggle(status.code !== 0)
+            .prop('aria-label', ariaLabel(status))
+            .prop('data-status', status.code)
+            .toggleClass('fa-spinner', status.code === 4)
+            .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
+            .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
     }
-
-    function color() {
-        // Compiling...
-        if (status.code === 4) return 'black';
-        if (status.didExecute) return '#12BB12';
-        return '#FF1212';
-    }
-
-    this.statusIcon
-        .removeClass()
-        .addClass('status-icon fas')
-        .css('color', color())
-        .toggle(status.code !== 0)
-        .prop('aria-label', ariaLabel())
-        .prop('data-status', status.code)
-        .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
-        .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
 };
 
 Executor.prototype.updateLibraries = function () {

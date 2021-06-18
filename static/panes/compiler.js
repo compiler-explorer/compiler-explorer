@@ -639,8 +639,7 @@ Compiler.prototype.sendCompile = function (request) {
             } else if (x) {
                 message = x.error || x.code;
             }
-            onCompilerResponse(request,
-                errorResult('<Compilation failed: ' + message + '>'), false);
+            onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
 };
 
@@ -794,16 +793,13 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
 
-    var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
-    var failed = result.code !== 0;
-    var warns = !failed && !!allText;
-    this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
+    this.handleCompilationStatus(this.compilerService.calculateStatusIcon(result));
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
-    if (this.isOutputOpened) {
+    if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
         this.outputBtn.prop('title', '');
-    } else {
-        this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''));
+    } else{
+        this.compilerService.handleOutputButtonTitle(this.outputBtn, result);
     }
     var infoLabelText = '';
     if (cached) {
@@ -1895,58 +1891,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {
-    if (!this.statusLabel || !this.statusIcon) return;
-
-    function ariaLabel() {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.compilerOut === 0) {
-            // StdErr.length > 0
-            if (status.code === 3) return 'Compilation succeeded with errors';
-            // StdOut.length > 0
-            if (status.code === 2) return 'Compilation succeeded with warnings';
-            return 'Compilation succeeded';
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return 'Compilation failed with errors';
-            // StdOut.length > 0
-            if (status.code === 2) return 'Compilation failed with warnings';
-            return 'Compilation failed';
-        }
-    }
-
-    function color() {
-        // Compiling...
-        if (status.code === 4) return 'black';
-        if (status.compilerOut === 0) {
-            // StdErr.length > 0
-            if (status.code === 3) return '#FF6645';
-            // StdOut.length > 0
-            if (status.code === 2) return '#FF6500';
-            return '#12BB12';
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return '#FF1212';
-            // StdOut.length > 0
-            if (status.code === 2) return '#BB8700';
-            return '#FF6645';
-        }
-    }
-
-    this.statusIcon
-        .removeClass()
-        .addClass('status-icon fas')
-        .css('color', color())
-        .toggle(status.code !== 0)
-        .prop('aria-label', ariaLabel())
-        .prop('data-status', status.code)
-        .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-times-circle', status.code === 3)
-        .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
-
-    this.statusLabel
-        .toggleClass('error', status === 3)
-        .toggleClass('warning', status === 2);
+    this.compilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId) {

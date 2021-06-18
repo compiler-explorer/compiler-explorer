@@ -71,12 +71,14 @@
       .modal-header
         h5.modal-title
           | Compiler Explorer Settings
-        | These settings control how Compiler Explorer acts for you. They are not
-        | preserved as part of shared URLs, and are persisted locally using browser
-        | local storage.
         button.close(type="button" data-dismiss="modal" aria-label="Close")
           span(aria-hidden="true") &times;
       .modal-body
+        .card.mb-1
+          .card-header
+            | These settings control how Compiler Explorer acts for you. They are not
+            | preserved as part of shared URLs, and are persisted locally using browser
+            | local storage.
         .card
           .card-header
             .card-title

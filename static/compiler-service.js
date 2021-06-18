@@ -263,4 +263,104 @@ CompilerService.prototype.getSelectizerOrder = function () {
     ];
 };
 
+CompilerService.prototype.doesCompilationResultHaveWarnings = function (result) {
+    var stdout = result.stdout || [];
+    var stderr = result.stderr || [];
+    // TODO: Pass what compiler did this and check if it it's actually skippable
+    // Right now we're ignoring outputs that match the input filename
+    // Compiler & Executor are capable of giving us the info, but conformance view is not
+    if (stdout.length === 1 && stderr.length === 0) {
+        // We could also move this calculation to the server at some point
+        var lastSlashPos = _.findLastIndex(result.inputFilename, function (ch) {
+            return ch === '\\';
+        });
+        return result.inputFilename.substr(lastSlashPos + 1) !== stdout[0].text;
+    }
+    return stdout.length > 0 || stderr.length > 0;
+};
+
+CompilerService.prototype.calculateStatusIcon = function (result) {
+    var code = 1;
+    if (result.code !== 0) {
+        code = 3;
+    } else if (this.doesCompilationResultHaveWarnings(result)) {
+        code = 2;
+    }
+    return {code: code, compilerOut: result.code};
+};
+
+function ariaLabel(status) {
+    // Compiling...
+    if (status.code === 4) return 'Compiling';
+    if (status.compilerOut === 0) {
+        // StdErr.length > 0
+        if (status.code === 3) return 'Compilation succeeded with errors';
+        // StdOut.length > 0
+        if (status.code === 2) return 'Compilation succeeded with warnings';
+        return 'Compilation succeeded';
+    } else {
+        // StdErr.length > 0
+        if (status.code === 3) return 'Compilation failed with errors';
+        // StdOut.length > 0
+        if (status.code === 2) return 'Compilation failed with warnings';
+        return 'Compilation failed';
+    }
+}
+
+function color(status) {
+    // Compiling...
+    if (status.code === 4) return 'black';
+    if (status.compilerOut === 0) {
+        // StdErr.length > 0
+        if (status.code === 3) return '#FF6645';
+        // StdOut.length > 0
+        if (status.code === 2) return '#FF6500';
+        return '#12BB12';
+    } else {
+        // StdErr.length > 0
+        if (status.code === 3) return '#FF1212';
+        // StdOut.length > 0
+        if (status.code === 2) return '#BB8700';
+        return '#FF6645';
+    }
+}
+
+CompilerService.prototype.handleCompilationStatus = function (statusLabel, statusIcon, status) {
+    if (statusLabel != null) {
+        statusLabel
+            .toggleClass('error', status.code === 3)
+            .toggleClass('warning', status.code === 2);
+    }
+
+    if (statusIcon != null) {
+        statusIcon
+            .removeClass()
+            .addClass('status-icon fas')
+            .css('color', color(status))
+            .toggle(status.code !== 0)
+            .prop('aria-label', ariaLabel(status))
+            .prop('data-status', status.code)
+            .toggleClass('fa-spinner', status.code === 4)
+            .toggleClass('fa-times-circle', status.code === 3)
+            .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
+    }
+};
+
+CompilerService.prototype.handleOutputButtonTitle = function (element, result) {
+    var stdout = result.stdout || [];
+    var stderr = result.stderr || [];
+
+    var asciiColorsRe = RegExp(/\x1b\[[0-9;]*m(.\[K)?/g);
+
+    function filterAsciiColors(line) {
+        return line.text.replace(asciiColorsRe, '');
+    }
+
+    var output =_.map(stdout, filterAsciiColors)
+        .concat(_.map(stderr, filterAsciiColors))
+        .join('\n');
+
+    element.prop('title', output);
+};
+
 module.exports = CompilerService;
