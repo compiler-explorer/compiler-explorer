@@ -89,6 +89,14 @@ export class MultifileService {
         mainfile.isMainSource = true;
     }
 
+    private isValidFile(file: File): boolean {
+        return (file.editorId > 0) || !!file.filename;
+    }
+
+    private filterOutNonsense() {
+        this.files = _.filter(this.files, (file: File) => this.isValidFile(file));
+    }
+
     // public getEditorIdForMainsource() {
     //     let mainFile: File = null;
     //     if (this.isCMakeProject) {
@@ -109,6 +117,8 @@ export class MultifileService {
     // }
 
     public getFiles(): Array<FiledataPair> {
+        this.filterOutNonsense();
+
         var filtered = _.filter(this.files, (file: File) => {
             return !file.isMainSource && file.isIncluded;
         });
@@ -194,6 +204,8 @@ export class MultifileService {
     }
 
     public forEachOpenFile(callback: (File) => void) {
+        this.filterOutNonsense();
+
         for (const file of this.files) {
             if (file.isOpen && file.editorId > 0) {
                 callback(file);
@@ -202,6 +214,8 @@ export class MultifileService {
     }
 
     public forEachFile(callback: (File) => void) {
+        this.filterOutNonsense();
+
         for (const file of this.files) {
             callback(file);
         }

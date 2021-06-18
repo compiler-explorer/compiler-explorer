@@ -215,7 +215,7 @@ Compiler.prototype.close = function () {
 
 Compiler.prototype.initPanerButtons = function () {
     var outputConfig = _.bind(function () {
-        return Components.getOutput(this.id, this.sourceEditorId);
+        return Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
@@ -538,9 +538,7 @@ Compiler.prototype.getEffectiveFilters = function () {
 
 Compiler.prototype.findTools = function (content, tools) {
     if (content.componentName === 'tool') {
-        if (
-            (content.componentState.editor === this.sourceEditorId) &&
-            (content.componentState.compiler === this.id)) {
+        if (content.componentState.compiler === this.id) {
             tools.push({
                 id: content.componentState.toolId,
                 args: content.componentState.args,
@@ -1270,7 +1268,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
             args = langTools[toolId].tool.args;
         }
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, this.sourceTreeId);
     }, this);
 
     this.container.layoutManager
@@ -1650,7 +1648,6 @@ Compiler.prototype.saveState = function () {
 };
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {
-    // todo: what to do about the editor param?
     var asmColours = {};
     _.each(this.assembly, _.bind(function (x, index) {
         if (x.source && x.source.line > 0) {

@@ -101,14 +101,14 @@ module.exports = {
             componentState: {id: id},
         };
     },
-    getOutput: function (compiler, editor) {
+    getOutput: function (compiler, editor, tree) {
         return {
             type: 'component',
             componentName: 'output',
-            componentState: {compiler: compiler, editor: editor},
+            componentState: {compiler: compiler, editor: editor, tree: tree},
         };
     },
-    getToolViewWith: function (compiler, editor, toolId, args) {
+    getToolViewWith: function (compiler, editor, toolId, args, tree) {
         return {
             type: 'component',
             componentName: 'tool',
@@ -117,6 +117,7 @@ module.exports = {
                 editor: editor,
                 toolId: toolId,
                 args: args,
+                tree: tree,
             },
         };
     },
