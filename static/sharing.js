@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,9 +26,11 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var options = require('./options');
-var Components = require('./components');
 var url = require('./url');
 var ga = require('./analytics');
+var Sentry = require('@sentry/browser');
+var cloneDeep = require('lodash.clonedeep');
+
 
 var shareServices = {
     twitter: {
@@ -53,35 +55,24 @@ var shareServices = {
     },
 };
 
-function configFromEmbedded(embeddedUrl) {
-    // Old-style link?
-    var params;
-    try {
-        params = url.unrisonify(embeddedUrl);
-    } catch (e) {
-        // Ignore this, it's not a problem
+function filterComponentState(config, keysToRemove) {
+    function filterComponentStateImpl(component) {
+        if (component.content) {
+            for (var i = 0; i < component.content.length; i++) {
+                filterComponentStateImpl(component.content[i], keysToRemove);
+            }
+        }
+
+        if (component.componentState) {
+            Object.keys(component.componentState)
+                .filter(function (key) { return keysToRemove.includes(key); })
+                .forEach(function (key) { delete component.componentState[key]; });
+        }
     }
-    if (params && params.source && params.compiler) {
-        var filters = _.chain((params.filters || '').split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
-        return {
-            content: [
-                {
-                    type: 'row',
-                    content: [
-                        Components.getEditorWith(1, params.source, filters),
-                        Components.getCompilerWith(1, filters, params.options, params.compiler),
-                    ],
-                },
-            ],
-        };
-    } else {
-        return url.deserialiseState(embeddedUrl);
-    }
+
+    config = cloneDeep(config);
+    filterComponentStateImpl(config);
+    return config;
 }
 
 function updateShares(container, url) {
@@ -105,90 +96,6 @@ function updateShares(container, url) {
             .toggleClass('share-no-embeddable', !service.embedValid)
             .appendTo(container);
     });
-}
-
-function initShareButton(getLink, layout, noteNewState, startingBind) {
-    // Explicit because webstorm gets confused about the type of this variable.
-    /***
-     * Current URL bind
-     * @type {string}
-     */
-    var currentBind = startingBind;
-
-    var popoverModal = $('#sharelinkdialog');
-    var socialSharingElements = popoverModal.find('.socialsharing');
-    var permalink = $('.permalink');
-
-    var embedsettings = $('#embedsettings');
-
-    function setCurrent(node) {
-        currentBind = node.data().bind;
-        if (currentBind === 'Embed') {
-            embedsettings.show();
-        } else {
-            embedsettings.hide();
-        }
-    }
-
-    function setSocialSharing(element, sharedUrl) {
-        if (options.sharingEnabled) {
-            updateShares(element, sharedUrl);
-            // Disable the links for every share item which does not support embed html as links
-            if (currentBind === 'Embed') {
-                element.children('.share-no-embeddable')
-                    .addClass('share-disabled')
-                    .prop('title', 'Embed links are not supported in this service')
-                    .on('click', false);
-            }
-        }
-    }
-
-    function onUpdate(socialSharing, config, bind, result) {
-        if (result.updateState) {
-            noteNewState(config, result.extra);
-        }
-        permalink.val(result.url);
-        setSocialSharing(socialSharing, result.url);
-    }
-
-    function update() {
-        var socialSharing = socialSharingElements;
-        socialSharing.empty();
-        if (!currentBind) return;
-        permalink.prop('disabled', false);
-        var config = layout.toConfig();
-        permalink.val('');
-        getLinks(config, currentBind, function (error, newUrl, extra, updateState) {
-            if (error || !newUrl) {
-                permalink.prop('disabled', true);
-                permalink.val(error || 'Error providing URL');
-            } else {
-                onUpdate(socialSharing, config, currentBind, {
-                    updateState: updateState,
-                    extra: extra,
-                    url: newUrl,
-                });
-            }
-        });
-    }
-
-    getLink.on('click', function () {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenModalPane',
-            eventAction: 'Sharing',
-        });
-
-        setCurrent($(this));
-        update();
-    });
-
-    if (startingBind === 'Embed') {
-        embedsettings.find('input').on('click', function () {
-            setCurrent(getLink);
-            update();
-        });
-    }
 }
 
 function getEmbeddedUrl(config, root, readOnly, extraOptions) {
@@ -223,9 +130,7 @@ function getEmbeddedHtml(config, root, isReadOnly, extraOptions) {
 function getShortLink(config, root, done) {
     var useExternalShortener = options.urlShortenService !== 'default';
     var data = JSON.stringify({
-        config: useExternalShortener
-            ? url.serialiseState(config)
-            : config,
+        config: useExternalShortener ? url.serialiseState(config) : config,
     });
     $.ajax({
         type: 'POST',
@@ -247,6 +152,11 @@ function getShortLink(config, root, done) {
 
 function getLinks(config, currentBind, done) {
     var root = window.httpRoot;
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'CreateShareLink',
+        eventAction: 'Sharing',
+    });
     switch (currentBind) {
         case 'Short':
             getShortLink(config, root, done);
@@ -268,7 +178,194 @@ function getLinks(config, currentBind, done) {
     }
 }
 
+function Sharing(layout) {
+    this.layout = layout;
+    this.lastState = null;
+
+    this.share = $('#share');
+    this.shareShort = $('#shareShort');
+    this.shareFull = $('#shareFull');
+    this.shareEmbed = $('#shareEmbed');
+
+    this.initButtons();
+    this.initCallbacks();
+}
+
+Sharing.prototype.initButtons = function () {
+    this.shareShortCopyToClipBtn = this.shareShort.find('.clip-icon');
+    this.shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
+    this.shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
+
+    if (this.areClipboardOperationSupported()) {
+        var onClipButtonPressed = _.bind(function (e, type) {
+            // Dont let the modal show up.
+            // We need this because the button is a child of the dropdown-item with a data-toggle=modal
+            e.stopPropagation();
+            this.copyLinkTypeToClipboard(type);
+            // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
+            this.share.dropdown('hide');
+        }, this);
+
+        this.shareShortCopyToClipBtn.on('click', _.bind(function (e) {
+            onClipButtonPressed(e, 'Short');
+        }, this));
+        this.shareFullCopyToClipBtn.on('click', _.bind(function (e) {
+            onClipButtonPressed(e, 'Full');
+        }, this));
+        this.shareEmbedCopyToClipBtn.on('click', _.bind(function (e) {
+            onClipButtonPressed(e, 'Embed');
+        }, this));
+    } else {
+        this.shareShortCopyToClipBtn.hide();
+        this.shareFullCopyToClipBtn.hide();
+        this.shareEmbedCopyToClipBtn.hide();
+    }
+};
+
+Sharing.prototype.onOpenModalPane = function (event) {
+    var button = $(event.relatedTarget);
+    var currentBind = button.data('bind');
+    var modal = $(event.currentTarget);
+    var socialSharingElements = modal.find('.socialsharing');
+    var permalink = modal.find('.permalink');
+    var embedsettings = modal.find('#embedsettings');
+
+    function updatePermaLink() {
+        socialSharingElements.empty();
+        var config = this.layout.toConfig();
+        getLinks(config, currentBind, _.bind(function (error, newUrl, extra, updateState) {
+            if (error || !newUrl) {
+                permalink.prop('disabled', true);
+                permalink.val(error || 'Error providing URL');
+                Sentry.captureException(error);
+            } else {
+                if (updateState) {
+                    this.storeCurrentConfig(config, extra);
+                }
+                permalink.val(newUrl);
+                if (options.sharingEnabled) {
+                    updateShares(socialSharingElements, newUrl);
+                    // Disable the links for every share item which does not support embed html as links
+                    if (currentBind === 'Embed') {
+                        socialSharingElements.children('.share-no-embeddable')
+                            .addClass('share-disabled')
+                            .prop('title', 'Embed links are not supported in this service')
+                            .on('click', false);
+                    }
+                }
+            }
+        }, this));
+    }
+
+    if (currentBind === 'Embed') {
+        embedsettings.show();
+        embedsettings.find('input')
+            // Off any prev click handlers to avoid multiple events triggering after opening the modal more than once
+            .off('click')
+            .on('click', _.bind(function () {
+                updatePermaLink.apply(this);
+            }, this));
+    } else {
+        embedsettings.hide();
+    }
+
+    updatePermaLink.apply(this);
+
+    ga.proxy('send', {
+        hitType: 'event',
+        eventCategory: 'OpenModalPane',
+        eventAction: 'Sharing',
+    });
+};
+
+Sharing.prototype.onStateChanged = function () {
+    var layoutConfig = this.layout.toConfig();
+    var config = filterComponentState(layoutConfig, ['selection']);
+    this.ensureUrlIsNotOutdated(config);
+    if (options.embedded) {
+        var strippedToLast = window.location.pathname;
+        strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
+        $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
+    }
+};
+
+// This keeps the URL from displaying a short link of an outdated page state
+Sharing.prototype.ensureUrlIsNotOutdated = function (config) {
+    var stringifiedConfig = JSON.stringify(config);
+    if (stringifiedConfig !== this.lastState) {
+        if (window.location.pathname !== window.httpRoot) {
+            window.history.replaceState(null, null, window.httpRoot);
+        }
+        this.lastState = stringifiedConfig;
+    }
+};
+
+Sharing.prototype.initCallbacks = function () {
+    this.layout.eventHub.on('displaySharingPopover', _.bind(function () {
+        this.shareShort.trigger('click');
+    }, this));
+    this.layout.on('stateChanged', _.bind(this.onStateChanged, this));
+
+    $('#sharelinkdialog').on('show.bs.modal', _.bind(this.onOpenModalPane, this));
+};
+
+Sharing.prototype.displayTooltip = function (message) {
+    this.share.tooltip('dispose');
+    this.share.tooltip({
+        placement: 'bottom',
+        trigger: 'manual',
+        title: message,
+    });
+    this.share.tooltip('show');
+    // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
+    setTimeout(_.bind(function () {
+        this.share.tooltip('hide');
+    }, this), 1500);
+};
+
+Sharing.prototype.copyLinkTypeToClipboard = function (type) {
+    var config = this.layout.toConfig();
+    getLinks(config, type, _.bind(function (error, newUrl, extra, updateState) {
+        if (error || !newUrl) {
+            this.displayTooltip('Oops, something went wrong');
+            Sentry.captureException(error);
+        } else {
+            if (updateState) {
+                this.storeCurrentConfig(config, extra);
+            }
+            this.doLinkCopyToClipboard(newUrl);
+        }
+    }, this));
+};
+
+Sharing.prototype.doLinkCopyToClipboard = function (link) {
+    // TODO: Add more ways for users to be able to copy the link text
+    // Right now, only the newer navigator.clipboard is available, but more can be added
+    if (this.isNavigatorClipboardAvailable()) {
+        navigator.clipboard.writeText(link)
+            .then(_.bind(function () {
+                this.displayTooltip('Link copied to clipboard');
+            }, this))
+            .catch(_.bind(function () {
+                this.displayTooltip('Error copying link to clipboard');
+            }, this));
+    }
+};
+
+Sharing.prototype.storeCurrentConfig = function (config, extra) {
+    window.history.pushState(null, null, extra);
+};
+
+// True if there's at least one way to copy a link to the user's clipboard.
+// Currently, only navigator.clipboard is supported
+Sharing.prototype.areClipboardOperationSupported = function () {
+    return this.isNavigatorClipboardAvailable();
+};
+
+Sharing.prototype.isNavigatorClipboardAvailable = function () {
+    return navigator.clipboard != null;
+};
+
 module.exports = {
-    initShareButton: initShareButton,
-    configFromEmbedded: configFromEmbedded,
+    Sharing: Sharing,
 };
