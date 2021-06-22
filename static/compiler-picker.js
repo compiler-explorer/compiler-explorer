@@ -139,7 +139,7 @@ CompilerPicker.prototype.getOptions = function (langId, compilerId) {
         .map(function (e) {
             e.$groups = [e.group];
             if (favorites[e.id])
-                e.$groups.push(favoriteGroupName);
+                e.$groups.unshift(favoriteGroupName);
             return e;
         })
         .value();
