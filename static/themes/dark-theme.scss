@@ -132,18 +132,31 @@ a.navbar-brand img.logo.normal {
     color-stop(1.00, violet));
 }
 
-.selectize-control.single .selectize-input {
+.ts-control.single .ts-input {
+    border: none;
     color: #f2f2f2 !important;
     background: #666 linear-gradient(to bottom, #555, #222) !important;
     text-shadow: none !important;
 }
 
-.selectize-dropdown {
-    color: #f2f2f2 !important;
-    background-color: #303030 !important;
+.ts-control.single .ts-input:after {
+    border-color: #728690 transparent transparent transparent;
 }
 
-.selectize-control.single .selectize-input.disabled {
+.ts-dropdown .option:hover{
+    background-color: #8d8d8e;
+}
+.ts-dropdown .active {
+    background-color: #68688e;
+}
+
+.ts-dropdown {
+    color: #f2f2f2 !important;
+    background-color: #303030 !important;
+	margin: 0 !important;
+}
+
+.ts-control.single .ts-input.disabled {
     color: #f2f2f2 !important;
     background-color: #383838 !important;
 }
@@ -469,6 +482,10 @@ a {
 
 #library-selection .libs-results-col .lib-fav-button {
     color: white;
+}
+
+.copy-link-btn:hover {
+    background-color: #12161a !important;
 }
 
 .conformance-wrapper .compiler-list .form-row {

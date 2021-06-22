@@ -29,7 +29,7 @@
 // These blocks should be removed once a downstream release of monaco is cut
 :root {
     // updated at runtime
-    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace; 
+    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace;
 }
 .monaco-editor .codelens-decoration {
     font-family: var(--user-selected-font-stack);
@@ -88,7 +88,7 @@ body {
     min-width: 14em;
 }
 
-.compiler-picker .selectize-input {
+.compiler-picker .ts-input {
     text-align: center;
 }
 
@@ -459,11 +459,11 @@ input.vim-check {
 }
 
 /* While we find a better solution, lets up this a bit */
-.compiler-picker .selectize-dropdown-content {
+.compiler-picker .ts-dropdown-content {
     max-height: 300px !important;
 }
 
-.compiler-picker .selectize-dropdown-content .option {
+.compiler-picker .ts-dropdown-content .option {
     padding: 0 10px;
 }
 
@@ -760,8 +760,41 @@ html[data-theme=dark] {
     background-color: #333 !important;
 }
 
+.toggle-fav {
+    color: #6c757d; // text-muted
+}
+
+.option.fav .toggle-fav .fas {
+    color: #e3cf7a;
+}
+
 .socialsharing {
     max-width: 250px;
+}
+
+.ts-input {
+    height: 100%
+}
+
+.ts-input, .ts-dropdown .option {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ts-dropdown .optgroup-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.options {
+    border-top-left-radius: .2rem !important;
+    border-bottom-left-radius: .2rem !important;
+}
+
+.copy-link-btn {
+    padding-top: 0;
 }
 
 .conformance-wrapper .compiler-list .form-row {
