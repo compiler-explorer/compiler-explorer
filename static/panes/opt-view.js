@@ -32,7 +32,7 @@ var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
 
 require('../modes/asm-mode');
-require('selectize');
+
 
 function Opt(hub, container, state) {
     state = state || {};
