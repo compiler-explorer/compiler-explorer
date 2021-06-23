@@ -85,10 +85,10 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
         duplicates: true,
         render: {
             option: function (data, escape) {
-                var extraClasses = data.$groups.indexOf(favoriteGroupName) !== -1 ? ' fav' : '';
-                return '<div class="d-flex' + extraClasses + '"><div>' + escape(data.name) + '</div>' +
+                var extraClasses = data.$groups.indexOf(favoriteGroupName) !== -1 ? 'fas fa-star fav' : 'far fa-star';
+                return '<div class="d-flex"><div>' + escape(data.name) + '</div>' +
                     '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
-                    '<i class="fas fa-star"></i>' +
+                    '<i class="' + extraClasses + '"></i>' +
                     '</div>' +
                     '</div>';
             },
