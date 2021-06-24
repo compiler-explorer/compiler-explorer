@@ -139,7 +139,7 @@ CompilerPicker.prototype.getOptions = function (langId, compilerId) {
     var favorites = this.getFavorites();
     return _.chain(this.compilerService.getCompilersForLang(langId))
         .filter(_.bind(function (e) {
-            return this.compilerIsVisible(e) && (!e.hidden || e.id === compilerId);
+            return (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId;
         }, this))
         .map(function (e) {
             e.$groups = [e.group];
