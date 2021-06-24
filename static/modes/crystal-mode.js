@@ -53,12 +53,18 @@ function configuration() {
             { open: '"', close: '"' },
             { open: "'", close: "'" },
         ],
+
+        indentationRules: {
+            increaseIndentPattern: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#\{;]|("|'|\/).*\4|\{\{.*\}\}|\{.*\})*(#.*)?$/,
+            decreaseIndentPattern: /^\s*([}\]]([,)]?\s*(#|$)|\.[a-zA-Z_]\w*\b)|(end|rescue|ensure|else|elsif|when)\b)/,
+        },
     };
 }
 
 function definition() {
     return {
         keywords: [
+            'abstract',
             'alias',
             'annotation',
             'asm',
@@ -128,6 +134,7 @@ function definition() {
             '=', '[]=', '+=', '&+=', '-=', '&-=', '*=', '&*=', '/=', '//=', '%=', '|=',
             '&=', '^=', '**=', '<<=', '>>=', '||=', '&&=',
             '[]', '[]?',
+            '&.',
         ],
 
         symbols: /[=><!~?:&|+\-*\/\^%\.]+/,
@@ -145,14 +152,17 @@ function definition() {
                     }
                 }],
 
+                [/[A-Z][A-Za-z0-9_]*/, 'type.identifier'],
+
+                [/[;,.]/, 'delimiter'],
+                [/::/, 'delimiter'],
+
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
                         '@default': ''
                     }
                 }],
-
-                [/[;,]/, 'delimiter'],
 
                 [/[{}()\[\]]/, '@brackets'],
 
