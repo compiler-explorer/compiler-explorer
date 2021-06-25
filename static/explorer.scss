@@ -80,6 +80,9 @@ body {
 
 .compiler-picker .ts-input {
     text-align: center;
+    border-left: none !important;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .function-picker {
@@ -359,6 +362,12 @@ pre.content.wrap * {
 .change-language {
     line-height: 14px;
     min-width: 100px !important;
+}
+
+.change-language .ts-input {
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
 }
 
 .short-compiler-name {
