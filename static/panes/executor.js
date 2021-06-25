@@ -91,7 +91,8 @@ function Executor(hub, container, state) {
         this.hub,
         this.currentLangId,
         this.compiler ? this.compiler.id : null,
-        _.bind(this.onCompilerChange, this)
+        _.bind(this.onCompilerChange, this),
+        this.compilerIsVisible
     );
 
     this.initLibraries(state);
@@ -106,6 +107,10 @@ function Executor(hub, container, state) {
         eventAction: 'Executor',
     });
 }
+
+Executor.prototype.compilerIsVisible = function (compiler) {
+    return compiler.supportsExecute;
+};
 
 Executor.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;

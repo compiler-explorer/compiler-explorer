@@ -33,7 +33,7 @@ var favoriteGroupName = '__favorites__';
 var favoriteStoreKey = 'favCompilerIds';
 var nextSelectorId = 1;
 
-function CompilerPicker(domRoot, hub, langId, compilerId, onCompilerChange) {
+function CompilerPicker(domRoot, hub, langId, compilerId, onCompilerChange, compilerIsVisible) {
     this.eventHub = hub.createEventHub();
     this.id = nextSelectorId++;
     this.domNode = domRoot.find('.compiler-picker')[0];
@@ -43,6 +43,11 @@ function CompilerPicker(domRoot, hub, langId, compilerId, onCompilerChange) {
     this.tomSelect = null;
     this.lastLangId = null;
     this.lastCompilerId = null;
+    if (_.isFunction(compilerIsVisible)) {
+        this.compilerIsVisible = compilerIsVisible;
+    } else {
+        this.compilerIsVisible = function () { return true; };
+    }
 
     this.initialize(langId, compilerId);
 }
@@ -133,9 +138,9 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
 CompilerPicker.prototype.getOptions = function (langId, compilerId) {
     var favorites = this.getFavorites();
     return _.chain(this.compilerService.getCompilersForLang(langId))
-        .filter(function (e) {
-            return !e.hidden || e.id === compilerId;
-        })
+        .filter(_.bind(function (e) {
+            return (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId;
+        }, this))
         .map(function (e) {
             e.$groups = [e.group];
             if (favorites[e.id])
