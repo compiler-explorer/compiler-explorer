@@ -1,16 +1,6 @@
 @import "~@fortawesome/fontawesome-free/css/all.min.css";
 @import "~vis/dist/vis.css";
 
-/* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
-.quick-open-tree .row {
-    margin-left: 0;
-}
-
-/* workaround high DPI issues in monaco. SEE: https://github.com/compiler-explorer/compiler-explorer/issues/1488 */
-.monaco-editor .margin-view-overlays .line-numbers {
-    cursor: default !important;
-}
-
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
  * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
