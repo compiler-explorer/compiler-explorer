@@ -308,7 +308,7 @@ Tool.prototype.setLanguage = function (languageId) {
 };
 
 Tool.prototype.onCompileResult = function (id, compiler, result) {
-    try{
+    try {
         if (id !== this.compilerId) return;
         if (compiler) this.compilerName = compiler.name;
 
@@ -375,7 +375,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         } else {
             this.setEditorContent('No tool result');
         }
-    } catch(e) {
+    } catch (e) {
         this.setLanguage(false);
         this.add('javascript error: ' + e.message);
     }

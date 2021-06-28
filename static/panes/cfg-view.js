@@ -103,14 +103,14 @@ function Cfg(hub, container, state) {
     this._binaryFilter = false;
 
     var pickerEl = this.domRoot[0].querySelector('.function-picker');
-    this.functionPicker = new TomSelect(pickerEl,{
+    this.functionPicker = new TomSelect(pickerEl, {
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
         dropdownParent: 'body',
-        plugins:['input_autogrow'],
-        onChange: _.bind(function (val){
+        plugins: ['input_autogrow'],
+        onChange: _.bind(function (val) {
             var selectedFn = this.functions[val];
             if (selectedFn) {
                 this.currentFunc = val;
@@ -224,8 +224,10 @@ Cfg.prototype.initCallbacks = function () {
 
     this.toggleNavigationButton.on('click', _.bind(function () {
         this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
-        this.cfgVisualiser.setOptions({interaction: {
-            navigationButtons: this.networkOpts.interaction.navigationButtons},
+        this.cfgVisualiser.setOptions({
+            interaction: {
+                navigationButtons: this.networkOpts.interaction.navigationButtons,
+            },
         });
     }, this));
     this.toggles.on('change', _.bind(function () {
