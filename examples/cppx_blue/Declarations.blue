@@ -1,0 +1,40 @@
+// Every declaration of a variable, function, or type is of the following form:
+//     name : kind = definition
+// where the components mean (and most are optional):
+//     name is the name being declared
+//     kind is the kind of entity being declared
+//     definition can be any expression, including a block expression
+
+// For example, these are declaration statements (and definitions):
+
+widget: type = int;                // define a type
+
+x: widget = 42;                    // a named variable
+
+shape: type = { x: int; y: int; }  // a named type
+
+add: (x:_, y:_) = { return x+y; }  // a named generic function
+
+// add: (x, y) = x+y;              // same, using defaults
+
+// In expression scope, omit name to declare an unnamed entity. For example, these are declaration expressions:
+:widget = 42;                      // an unnamed (temporary) object expression
+
+:type = { x: int; y: int; }        // an unnamed type expression
+
+//:(x, y) = x+y                    // an unnamed (lambda) function expression
+
+// Note	These : expressions have very low precedence, so a trailing ; is not needed when lambdas are passed as arguments.
+// A local variable declaration statement may omit kind or definition.
+// If kind is omitted, it is deduced as if specified _.
+// If = definition is omitted, name must be defined by initialization before use (see §3.4.1). For example:
+
+y : int = 42;                       // y is an int with initial value 42
+
+z :     = 42;                       // z, the same, “_” is implicit default
+
+w := 42;                            // same, stylistic convenience
+
+// s: string;                       // declares s, unconstructed
+
+// t = f();                         // constructs t, definite first use

@@ -39,6 +39,7 @@ var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
+require('../modes/cppx-blue-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
