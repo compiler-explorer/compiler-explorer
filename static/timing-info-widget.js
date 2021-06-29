@@ -31,8 +31,6 @@ var Settings = require('settings');
 // eslint-disable-next-line requirejs/no-js-extension
 var Chart = require('chart.js');
 
-function TimingInfo() {
-}
 
 function pushTimingInfo(data, step, time) {
     data.labels.push(step);
@@ -64,7 +62,7 @@ function addBuildResultToTimings(data, buildResult) {
     }
 }
 
-TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, totalTime) {
+function initializeChartDataFromResult(compileResult, totalTime) {
     var data = {
         steps: 0,
         labels: [],
@@ -144,7 +142,7 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
                     'Download binary from cache',
                     compileResult.buildResult.packageDownloadAndUnzipTime);
             } else {
-                if (compileResult.execResult.buildResult) {
+                if (compileResult.execResult && compileResult.execResult.buildResult) {
                     addBuildResultToTimings(data, compileResult.execResult.buildResult);
                 }
             }
@@ -163,9 +161,9 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
 
     delete data.steps;
     return data;
-};
+}
 
-TimingInfo.prototype.displayData = function (data) {
+function displayData(data) {
     var modal = $('#timing-info');
 
     var chartDiv = modal.find('#chart');
@@ -214,13 +212,13 @@ TimingInfo.prototype.displayData = function (data) {
         },
     });
     modal.modal('show');
-};
+}
 
-TimingInfo.prototype.run = function (compileResult, totalTime) {
-    var data = this.initializeChartDataFromResult(compileResult, totalTime);
-    this.displayData(data);
-};
+function displayCompilationTiming(compileResult, totalTime) {
+    var data = initializeChartDataFromResult(compileResult, totalTime);
+    displayData(data);
+}
 
 module.exports = {
-    TimingInfo: TimingInfo,
+    displayCompilationTiming: displayCompilationTiming,
 };

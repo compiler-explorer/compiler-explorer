@@ -39,14 +39,12 @@ var bigInt = require('big-integer');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
-var timingInfoWidget = require('../timing-info-widget');
+var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-var timingInfo = new timingInfoWidget.TimingInfo();
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -1337,7 +1335,7 @@ Compiler.prototype.initListeners = function () {
     this.fullTimingInfo
         .off('click')
         .click(_.bind(function () {
-            timingInfo.run(this.lastResult, this.lastTimeTaken);
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
         }, this));
 };
 
