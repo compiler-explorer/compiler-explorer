@@ -141,13 +141,10 @@ function initializeChartDataFromResult(compileResult, totalTime) {
                 pushTimingInfo(data,
                     'Download binary from cache',
                     compileResult.buildResult.packageDownloadAndUnzipTime);
-            } else {
-                if (compileResult.execResult && compileResult.execResult.buildResult) {
-                    addBuildResultToTimings(data, compileResult.execResult.buildResult);
-                }
             }
+        } else if (compileResult.execResult && compileResult.execResult.buildResult) {
+            addBuildResultToTimings(data, compileResult.execResult.buildResult);
         }
-
         pushTimingInfo(data, 'Execution', compileResult.execTime);
     }
 
