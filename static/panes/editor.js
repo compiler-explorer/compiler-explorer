@@ -39,6 +39,7 @@ var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
+require('../modes/cppx-blue-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
@@ -130,8 +131,7 @@ function Editor(hub, state, container) {
         return hub.compilerService.compilersByLang[language.id];
     });
 
-    var self = this;
-    this.selectize = new TomSelect(this.languageBtn,{
+    this.selectize = new TomSelect(this.languageBtn, {
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -139,10 +139,8 @@ function Editor(hub, state, container) {
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-        plugins:['input_autogrow'],
-        onChange:function (value){
-            self.onLanguageChange(value);
-        },
+        plugins: ['input_autogrow'],
+        onChange: _.bind(this.onLanguageChange, this),
     });
 
 
@@ -1075,15 +1073,15 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
                 }
                 var currentOffset = tokens[0][i].offset;
                 if (column <= currentOffset) {
-                    return { colBegin : lastOffset, colEnd : currentOffset };
+                    return {colBegin: lastOffset, colEnd: currentOffset};
                 } else {
                     lastOffset = currentOffset;
                 }
             }
-            return { colBegin : lastOffset, colEnd : line.length };
+            return {colBegin: lastOffset, colEnd: line.length};
         }
     }
-    return { colBegin : column, colEnd : column + 1 };
+    return {colBegin: column, colEnd: column + 1};
 };
 
 Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {

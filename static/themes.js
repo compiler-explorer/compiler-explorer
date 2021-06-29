@@ -32,16 +32,32 @@ var themes = {
         id: 'default',
         name: 'Light',
         'main-color': '#f2f2f2',
-        monaco: 'vs', // Optional field
+        monaco: 'ce',
     },
     dark: {
         path: 'dark',
         id: 'dark',
         name: 'Dark',
         'main-color': '#333333',
-        monaco: 'vs-dark',
+        monaco: 'ce-dark',
     },
 };
+
+monaco.editor.defineTheme('ce', {
+    base: 'vs',
+    inherit: true,
+    rules: [
+        { token: 'identifier.definition.cppx-blue', foreground: '004400', fontStyle: 'bold' },
+    ],
+});
+
+monaco.editor.defineTheme('ce-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+        { token: 'identifier.definition.cppx-blue', foreground: 'bbccbb', fontStyle: 'bold' },
+    ],
+});
 
 function Themer(eventHub, initialSettings) {
     this.currentTheme = null;

@@ -777,7 +777,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     this.outputErrorCount.text(stderr.length);
     if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
         this.outputBtn.prop('title', '');
-    } else{
+    } else {
         this.compilerService.handleOutputButtonTitle(this.outputBtn, result);
     }
     var infoLabelText = '';
