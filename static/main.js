@@ -41,7 +41,7 @@ var url = require('./url');
 var clipboard = require('clipboard');
 var Hub = require('./hub');
 var Sentry = require('@sentry/browser');
-var settings = require('./settings');
+var Settings = require('./settings');
 var local = require('./local');
 var Alert = require('./alert');
 var themer = require('./themes');
@@ -112,7 +112,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         setSettings(_.extend(currentSettings, newSettings));
     });

@@ -32,11 +32,11 @@ var Components = require('../components');
 var monaco = require('monaco-editor');
 var options = require('../options');
 var Alert = require('../alert');
-var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
+var Settings = require('../settings');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
 require('../modes/cppx-blue-mode');
@@ -65,7 +65,7 @@ function Editor(hub, state, container) {
     this.hub = hub;
     this.eventHub = hub.createEventHub();
     // Should probably be its own function somewhere
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.ourCompilers = {};
     this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
