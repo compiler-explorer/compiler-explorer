@@ -32,12 +32,14 @@ var Components = require('../components');
 var monaco = require('monaco-editor');
 var options = require('../options');
 var Alert = require('../alert');
-var local = require('../local');
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
+var TomSelect = require('tom-select');
+var Settings = require('../settings');
 require('../modes/cppp-mode');
 require('../modes/cppx-gold-mode');
+require('../modes/cppx-blue-mode');
 require('../modes/d-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
@@ -53,6 +55,7 @@ require('../modes/nim-mode');
 require('../modes/cmake-mode');
 require('selectize');
 
+
 var loadSave = new loadSaveLib.LoadSave();
 var languages = options.languages;
 
@@ -65,7 +68,7 @@ function Editor(hub, state, container) {
     this.hub = hub;
     this.eventHub = hub.createEventHub();
     // Should probably be its own function somewhere
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.ourCompilers = {};
     this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
@@ -134,7 +137,7 @@ function Editor(hub, state, container) {
         return hub.compilerService.compilersByLang[language.id] || language.id === 'cmake';
     });
 
-    this.languageBtn.selectize({
+    this.selectize = new TomSelect(this.languageBtn, {
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -142,10 +145,11 @@ function Editor(hub, state, container) {
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-    }).on('change', _.bind(function (e) {
-        this.onLanguageChange($(e.target).val());
-    }, this));
-    this.selectize = this.languageBtn[0].selectize;
+        plugins: ['input_autogrow'],
+        onChange: _.bind(this.onLanguageChange, this),
+    });
+
+
     // We suppress posting changes until the user has stopped typing by:
     // * Using _.debounce() to run emitChange on any key event or change
     //   only after a delay.
@@ -1158,15 +1162,15 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
                 }
                 var currentOffset = tokens[0][i].offset;
                 if (column <= currentOffset) {
-                    return { colBegin : lastOffset, colEnd : currentOffset };
+                    return {colBegin: lastOffset, colEnd: currentOffset};
                 } else {
                     lastOffset = currentOffset;
                 }
             }
-            return { colBegin : lastOffset, colEnd : line.length };
+            return {colBegin: lastOffset, colEnd: line.length};
         }
     }
-    return { colBegin : column, colEnd : column + 1 };
+    return {colBegin: column, colEnd: column + 1};
 };
 
 Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {

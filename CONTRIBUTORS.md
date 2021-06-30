@@ -101,3 +101,4 @@ From oldest to newest contributor, we would like to thank:
 - [Shivam Gupta](https://github.com/xgupta)
 - [Tamir Bahar](https://github.com/tmr232)
 - [Daniel Below](https://github.com/DanielBelow)
+- [Oleksandr Muliar](https://github.com/msdinit)

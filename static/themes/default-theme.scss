@@ -272,14 +272,27 @@ div.argmenuitem span.argdescription {
     fill: #3c3c3f;
 }
 
+.copy-link-btn:hover {
+    color: #007bfd;
+}
+
 .conformance-wrapper .compiler-list .form-row {
     border-bottom: 1px solid #e3e3e3;
+}
+
+.toggle-fav {
+    color: #6c757d; // text-muted
+}
+
+.fas.fav {
+    color: #e3cf7a;
 }
 
 .lm_content .tree {
     background-color: #fff;
     height: 100%;
 }
-    .lm_content .tree span.filename {
-        padding-left: 10px;
-    }
+
+.lm_content .tree span.filename {
+    padding-left: 10px;
+}

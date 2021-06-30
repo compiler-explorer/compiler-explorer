@@ -30,16 +30,14 @@ var Toggles = require('../toggles');
 var FontScale = require('../fontscale');
 var options = require('../options');
 var Alert = require('../alert');
-var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
-var timingInfoWidget = require('../timing-info-widget');
+var TimingWidget = require('../timing-info-widget');
+var CompilerPicker = require('../compiler-picker');
+var Settings = require('../settings');
+
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-require('selectize');
-
-var timingInfo = new timingInfoWidget.TimingInfo();
 
 var languages = options.languages;
 
@@ -63,7 +61,7 @@ function Executor(hub, container, state) {
     this.contentRoot = this.domRoot.find('.content');
     this.sourceEditorId = state.source || 1;
     this.id = state.id || hub.nextExecutorId();
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.initLangAndCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
@@ -86,32 +84,14 @@ function Executor(hub, container, state) {
     this.initButtons(state);
 
     this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
-
-    this.compilerPicker.selectize({
-        sortField: this.compilerService.getSelectizerOrder(),
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
-        lockOptgroupOrder: true,
-        options: _.map(this.getCurrentLangCompilers(), _.identity),
-        items: this.compiler ? [this.compiler.id] : [],
-        dropdownParent: 'body',
-        closeAfterSelect: true,
-    }).on('change', _.bind(function (e) {
-        var val = $(e.target).val();
-        if (val) {
-            ga.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'SelectCompiler',
-                eventAction: val,
-            });
-            this.onCompilerChange(val);
-        }
-    }, this));
-
-    this.compilerSelectizer = this.compilerPicker[0].selectize;
+    this.compilerPicker = new CompilerPicker(
+        this.domRoot,
+        this.hub,
+        this.currentLangId,
+        this.compiler ? this.compiler.id : null,
+        _.bind(this.onCompilerChange, this),
+        this.compilerIsVisible
+    );
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -126,6 +106,10 @@ function Executor(hub, container, state) {
     });
 }
 
+Executor.prototype.compilerIsVisible = function (compiler) {
+    return compiler.supportsExecute;
+};
+
 Executor.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
     var compilerId = state.compiler;
@@ -137,6 +121,7 @@ Executor.prototype.initLangAndCompiler = function (state) {
 
 Executor.prototype.close = function () {
     this.eventHub.unsubscribe();
+    this.compilerPicker.close();
     this.eventHub.emit('executorClose', this.id);
 };
 
@@ -361,7 +346,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     this.compileTimeLabel.text(timeLabelText);
 
     this.setCompilationOptionsPopover(result.buildResult &&
-        result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
+    result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
 
@@ -522,8 +507,7 @@ Executor.prototype.initListeners = function () {
     this.fullTimingInfo
         .off('click')
         .click(_.bind(function () {
-            timingInfo.run(_.bind(function () {
-            }, this), this.lastResult, this.lastTimeTaken);
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
         }, this));
 };
 
@@ -677,8 +661,8 @@ Executor.prototype.onCompilerChange = function (value) {
 
 Executor.prototype.onToggleWrapChange = function () {
     var state = this.currentState();
-    this.contentRoot.toggleClass('wrap',state.wrap);
-    this.wrapButton.prop('title', '['+(state.wrap ? 'ON' : 'OFF')+'] '+ this.wrapTitle);
+    this.contentRoot.toggleClass('wrap', state.wrap);
+    this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
     this.saveState();
 };
 
@@ -850,20 +834,12 @@ Executor.prototype.getCurrentLangCompilers = function () {
         allCompilers,
         _.bind(function (compiler) {
             return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
-                   (this.compiler && compiler.id === this.compiler.id);
+                (this.compiler && compiler.id === this.compiler.id);
         }, this));
 };
 
 Executor.prototype.updateCompilersSelector = function (info) {
-    this.compilerSelectizer.clearOptions(true);
-    this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
-        this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
-    }, this);
-    this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(this.getCurrentLangCompilers(), _.identity));
-    }, this));
-    this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.compilerPicker.update(this.currentLangId, this.compiler ? this.compiler.id : null);
     this.options = info.options || '';
     this.optionsField.val(this.options);
     this.executionArguments = info.execArgs || '';

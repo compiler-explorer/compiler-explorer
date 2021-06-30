@@ -127,8 +127,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
 
     if (result.hasAstOutput) {
         this.showAstResults(result.astOutput);
-    }
-    else if (compiler.supportsAstView) {
+    } else if (compiler.supportsAstView) {
         this.showAstResults([{text: '<No output>'}]);
     }
 
@@ -155,7 +154,9 @@ Ast.prototype.getDisplayableAst = function (astResult) {
 };
 
 Ast.prototype.showAstResults = function (results) {
-    var fullText = results.map(function (x) { return x.text; }).join('\n');
+    var fullText = results.map(function (x) {
+        return x.text;
+    }).join('\n');
     this.astEditor.setValue(fullText);
     this.astCode = results;
 

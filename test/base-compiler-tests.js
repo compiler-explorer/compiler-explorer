@@ -45,13 +45,13 @@ describe('Basic compiler invariants', function () {
     };
 
     before(() => {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(info, ce);
     });
 
     it('should recognize when optOutput has been request', () => {
         compiler.optOutputRequested(['please', 'recognize', '-fsave-optimization-record']).should.equal(true);
-        compiler.optOutputRequested(['please', "don't", 'recognize']).should.equal(false);
+        compiler.optOutputRequested(['please', 'don\'t', 'recognize']).should.equal(false);
     });
     // Overkill test, but now we're safer!
     it('should recognize cfg compilers', () => {
@@ -126,7 +126,7 @@ describe('Compiler execution', function () {
     };
 
     before(() => {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
         compiler = new BaseCompiler(executingCompilerInfo, ce);
         win32compiler = new Win32Compiler(win32CompilerInfo, ce);
         compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
@@ -373,15 +373,7 @@ describe('Compiler execution', function () {
             stdout: 'exec stdout',
             stderr: 'exec stderr',
         });
-        const result = await compiler.compile(
-            'source',
-            'options',
-            {},
-            {execute: true},
-            false,
-            [],
-            {},
-            []);
+        const result = await compiler.compile('source', 'options', {}, {execute: true}, false, [], {}, []);
         result.code.should.equal(0);
         result.execResult.didExecute.should.be.true;
         result.stdout.should.deep.equal([{text: 'asm stdout'}]);
@@ -390,6 +382,33 @@ describe('Compiler execution', function () {
         result.stderr.should.deep.equal([{text: 'asm stderr'}]);
         result.execResult.stderr.should.deep.equal([{text: 'exec stderr'}]);
         result.execResult.buildResult.stderr.should.deep.equal([{text: 'binary stderr'}]);
+        execMock.verify();
+    });
+
+    it('should execute with an execution wrapper', async () => {
+        const executionWrapper = '/some/wrapper/script.sh';
+        compiler.compiler.executionWrapper = executionWrapper;
+        const execMock = sinon.mock(exec);
+        const execStub = sinon.stub(compiler, 'exec');
+        stubOutCallToExec(execStub, compiler, 'This is the output asm file', {
+            code: 0,
+            okToCache: true,
+            stdout: 'asm stdout',
+            stderr: 'asm stderr',
+        }, 0);
+        stubOutCallToExec(execStub, compiler, 'This is the output binary file', {
+            code: 0,
+            okToCache: true,
+            stdout: 'binary stdout',
+            stderr: 'binary stderr',
+        }, 1);
+        execMock.expects('sandbox').withArgs(executionWrapper, sinon.match.array, sinon.match.object).resolves({
+            code: 0,
+            stdout: 'exec stdout',
+            stderr: 'exec stderr',
+        });
+        await compiler.compile('source', 'options', {}, {execute: true}, false, [], {}, []);
+        execMock.verify();
     });
 
     it('should not execute where not supported', async () => {
@@ -407,20 +426,7 @@ describe('Compiler execution', function () {
             stdout: 'binary stdout',
             stderr: 'binary stderr',
         }, 1);
-        execMock.expects('sandbox').withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
-            code: 0,
-            stdout: 'exec stdout',
-            stderr: 'exec stderr',
-        });
-        const result = await compilerNoExec.compile(
-            'source',
-            'options',
-            {},
-            {execute: true},
-            false,
-            [],
-            {},
-            []);
+        const result = await compilerNoExec.compile('source', 'options', {}, {execute: true}, false, [], {}, []);
         result.code.should.equal(0);
         result.execResult.didExecute.should.be.false;
         result.stdout.should.deep.equal([{text: 'asm stdout'}]);
@@ -429,6 +435,7 @@ describe('Compiler execution', function () {
         result.stderr.should.deep.equal([{text: 'asm stderr'}]);
         result.execResult.stderr.should.deep.equal([{text: 'Compiler does not support execution'}]);
         result.execResult.buildResult.stderr.should.deep.equal([{text: 'binary stderr'}]);
+        execMock.verify();
     });
 
     it('should demangle', async () => {
