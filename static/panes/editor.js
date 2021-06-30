@@ -53,7 +53,6 @@ require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('../modes/nim-mode');
 require('../modes/cmake-mode');
-require('selectize');
 
 
 var loadSave = new loadSaveLib.LoadSave();

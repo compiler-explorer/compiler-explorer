@@ -33,7 +33,6 @@ var mf = require('../multifile-service');
 var lc = require('../line-colouring');
 var LineColouring = lc.LineColouring;
 var MultifileService = mf.MultifileService;
-require('selectize');
 
 function Tree(hub, state, container) {
     this.id = state.id || hub.nextTreeId();
