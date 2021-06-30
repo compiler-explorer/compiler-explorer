@@ -51,16 +51,31 @@ export class MultifileService {
         return this.compilerLanguageId;
     }
 
-    public setLanguageId(id: string) {
-        this.compilerLanguageId = id;
-        if (id !== 'c++' && id !== 'c') {
-            this.isCMakeProject = false;
+    public isCompatibleWithCMake(): boolean {
+        if (this.compilerLanguageId !== 'c++' && this.compilerLanguageId !== 'c') {
+            return false;
+        } else {
+            return true;
         }
     }
 
-    public setAsCMakeProject() {
-        this.compilerLanguageId = 'c++';
-        this.isCMakeProject = true;
+    public setLanguageId(id: string) {
+        this.compilerLanguageId = id;
+        // if (!this.isCompatibleWithCMake()) {
+        //     this.isCMakeProject = false;
+        // }
+    }
+
+    public isACMakeProject(): boolean {
+        return this.isCompatibleWithCMake() && this.isCMakeProject;
+    }
+
+    public setAsCMakeProject(yes: boolean) {
+        if (yes) {
+            this.isCMakeProject = true;
+        } else {
+            this.isCMakeProject = false;
+        }
     }
 
     public getFileContents(file: File) {
@@ -207,10 +222,10 @@ export class MultifileService {
         } else {
             file.isIncluded = true;
 
-            if (file.filename === 'CMakeLists.txt') {
-                this.setAsCMakeProject();
-                this.setAsMainSource(fileId);
-            }
+            // if (file.filename === 'CMakeLists.txt') {
+            //     this.setAsCMakeProject(true);
+            //     this.setAsMainSource(fileId);
+            // }
         }
     }
 

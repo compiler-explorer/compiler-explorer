@@ -401,7 +401,7 @@
 
   #filelisting
     .top-bar.btn-toolbar.bg-light(role="toolbar")
-      .btn-group.btn-group-sm(role="group" aria-label="Tree settings")
+      .btn-group.btn-group-sm.options(role="group" aria-label="Tree settings")
         button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-plus
           span.hideable &nbsp;Add new...
@@ -412,6 +412,10 @@
           button.dropdown-item.btn.btn-sm.btn-light.add-executor(title="Add a new executor for this source" aria-label="New executor")
             span.dropdown-icon.fas.fa-microchip
             | Execution only
+        .button-checkbox
+          button.btn.btn-sm.btn-light.cmake-project(type="button" title="CMake project" data-bind="isCMakeProject" aria-pressed="false" aria-label="CMake project")
+            span CMake
+          input.d-none(type="checkbox" checked=false)
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Language")
         select.change-language(title="Change the language" placeholder="Language" disabled=embedded && readOnly)
     .tree

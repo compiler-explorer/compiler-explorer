@@ -32,6 +32,7 @@ var ga = require('../analytics');
 var mf = require('../multifile-service');
 var lc = require('../line-colouring');
 var TomSelect = require('tom-select');
+var Toggles = require('../toggles');
 var LineColouring = lc.LineColouring;
 var MultifileService = mf.MultifileService;
 var options = require('../options');
@@ -120,12 +121,24 @@ Tree.prototype.initCallbacks = function () {
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
 
     this.eventHub.on('compileResult', this.onCompileResponse, this);
+
+    this.toggleCMakeButton.on('change', _.bind(this.onToggleCMakeChange, this));
+};
+
+Tree.prototype.onToggleCMakeChange = function () {
+    var isOn = this.toggleCMakeButton.state.isCMakeProject;
+    this.multifileService.setAsCMakeProject(isOn);
+
+    this.domRoot.find('.cmake-project').prop('title', '[' + (isOn ? 'ON' : 'OFF') + '] ' + 'CMake project');
+    this.updateState();
 };
 
 Tree.prototype.onLanguageChange = function (newLangId) {
     if (languages[newLangId]) {
         this.multifileService.setLanguageId(newLangId);
     }
+
+    this.toggleCMakeButton.enableToggle('isCMakeProject', this.multifileService.isCompatibleWithCMake());
 
     this.refresh();
 };
@@ -322,8 +335,7 @@ Tree.prototype.getConfigForNewEditor = function (file) {
     file.editorId = this.hub.nextEditorId();
     var editor = Components.getEditor(
         file.editorId,
-        file.compilerLanguageId
-    );
+        file.compilerLanguageId);
 
     editor.componentState.source = file.content;
     if (file.filename) {
@@ -333,7 +345,7 @@ Tree.prototype.getConfigForNewEditor = function (file) {
     return editor;
 };
 
-Tree.prototype.initButtons = function (/*state*/) {
+Tree.prototype.initButtons = function (state) {
     var addCompilerButton = this.domRoot.find('.add-compiler');
     var addExecutorButton = this.domRoot.find('.add-executor');
 
@@ -345,6 +357,8 @@ Tree.prototype.initButtons = function (/*state*/) {
     if (this.langKeys.length <= 1) {
         this.languageBtn.prop('disabled', true);
     }
+
+    this.toggleCMakeButton = new Toggles(this.domRoot.find('.options'), state);
 };
 
 Tree.prototype.numberUsedLines = function () {
@@ -410,6 +424,7 @@ Tree.prototype.onCompileResponse = function (compilerId, compiler, result) {
 };
 
 Tree.prototype.updateButtons = function () {
+    // this.languageBtn ...
 };
 
 Tree.prototype.resize = function () {
