@@ -30,16 +30,14 @@ var Toggles = require('../toggles');
 var FontScale = require('../fontscale');
 var options = require('../options');
 var Alert = require('../alert');
-var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
-var timingInfoWidget = require('../timing-info-widget');
+var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
+var Settings = require('../settings');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-var timingInfo = new timingInfoWidget.TimingInfo();
 
 var languages = options.languages;
 
@@ -63,7 +61,7 @@ function Executor(hub, container, state) {
     this.contentRoot = this.domRoot.find('.content');
     this.sourceEditorId = state.source || 1;
     this.id = state.id || hub.nextExecutorId();
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.initLangAndCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
@@ -508,8 +506,7 @@ Executor.prototype.initListeners = function () {
     this.fullTimingInfo
         .off('click')
         .click(_.bind(function () {
-            timingInfo.run(_.bind(function () {
-            }, this), this.lastResult, this.lastTimeTaken);
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
         }, this));
 };
 

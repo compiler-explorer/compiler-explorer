@@ -365,9 +365,9 @@ pre.content.wrap * {
 }
 
 .change-language .ts-input {
+    border-bottom: none;
     border-right: none;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 0;
 }
 
 .short-compiler-name {

@@ -36,17 +36,15 @@ var options = require('../options');
 var monaco = require('monaco-editor');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
-var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
-var timingInfoWidget = require('../timing-info-widget');
+var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
+var Settings = require('../settings');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-var timingInfo = new timingInfoWidget.TimingInfo();
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -83,7 +81,7 @@ function Compiler(hub, container, state) {
     this.domRoot.html($('#compiler').html());
     this.id = state.id || hub.nextCompilerId();
     this.sourceEditorId = state.source || 1;
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.originalCompilerId = state.compiler;
     this.initLangAndCompiler(state);
     this.infoByLang = {};
@@ -1337,8 +1335,7 @@ Compiler.prototype.initListeners = function () {
     this.fullTimingInfo
         .off('click')
         .click(_.bind(function () {
-            timingInfo.run(_.bind(function () {
-            }, this), this.lastResult, this.lastTimeTaken);
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
         }, this));
 };
 

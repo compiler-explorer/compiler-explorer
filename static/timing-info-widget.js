@@ -25,24 +25,52 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
-var Alert = require('./alert');
+var Settings = require('settings');
 
-// eslint-disable-next-line
+// The name of the package itself contains .js, it's not referencing a file
+// eslint-disable-next-line requirejs/no-js-extension
 var Chart = require('chart.js');
 
-function TimingInfo() {
-    this.modal = null;
-    this.alertSystem = new Alert();
-    this.onLoad = _.identity;
-    this.base = window.httpRoot;
-    this.ctx = null;
 
-    this.data = {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+function pushTimingInfo(data, step, time) {
+    data.labels.push(step);
+    data.datasets[0].data.push(time);
+    data.steps += parseInt(time, 10);
+}
+
+function concatTimings(data, timings) {
+    _.forEach(timings, function (timing) {
+        pushTimingInfo(data.timing.step, timing.time);
+    });
+}
+
+function addBuildResultToTimings(data, buildResult) {
+    if (buildResult.packageDownloadAndUnzipTime) {
+        pushTimingInfo(data, 'Download binary from cache', buildResult.packageDownloadAndUnzipTime);
+    } else {
+        if (buildResult.downloads) {
+            concatTimings(data, buildResult.downloads);
+        }
+
+        if (buildResult.buildsteps) {
+            _.forEach(buildResult.buildsteps, function (step) {
+                pushTimingInfo(data, step.step, step.execTime);
+            });
+        } else if (buildResult.execTime) {
+            pushTimingInfo(data, 'Compilation', buildResult.execTime);
+        }
+    }
+}
+
+function initializeChartDataFromResult(compileResult, totalTime) {
+    var data = {
+        steps: 0,
+        labels: [],
         datasets: [{
             label: 'time in ms',
-            data: [12, 19, 3, 5, 2, 3],
+            data: [],
             borderWidth: 1,
+            barThickness: 20,
             backgroundColor: [
                 'red',
                 'orange',
@@ -54,120 +82,54 @@ function TimingInfo() {
             ],
         }],
     };
-}
-
-TimingInfo.prototype.addBuildResultToTimings = function (timings, buildResult) {
-    if (buildResult.packageDownloadAndUnzipTime) {
-        timings.push({
-            step: 'Download binary from cache',
-            time: buildResult.packageDownloadAndUnzipTime,
-        });
-    } else {
-        if (buildResult.downloads) {
-            timings = timings.concat(buildResult.downloads);
-        }
-
-        if (buildResult.buildsteps) {
-            _.forEach(buildResult.buildsteps, function (step) {
-                timings.push({
-                    step: step.step,
-                    time: step.execTime,
-                });
-            });
-        } else if (buildResult.execTime) {
-            timings.push({
-                step: 'Compilation',
-                time: buildResult.execTime,
-            });
-        }
-    }
-};
-
-TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, totalTime) {
-    var timings = [];
-
-    this.data.labels = [];
-    this.data.datasets[0].barThickness = 20;
-    this.data.datasets[0].data = [];
 
     if (compileResult.retreivedFromCache) {
-        timings.push({
-            step: 'Retreive result from cache',
-            time: compileResult.retreivedFromCacheTime,
-        });
+        pushTimingInfo(data, 'Retrieve result from cache', compileResult.retreivedFromCacheTime);
 
         if (compileResult.packageDownloadAndUnzipTime) {
-            timings.push({
-                step: 'Download binary from cache',
-                time: compileResult.execTime,
-            });
+            pushTimingInfo(data, 'Download binary from cache', compileResult.execTime);
         }
 
         if (compileResult.execResult && compileResult.execResult.execTime) {
-            timings.push({
-                step: 'Execution',
-                time: compileResult.execResult.execTime,
-            });
+            pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
 
         if (compileResult.packageDownloadAndUnzipTime) {
-            timings.push({
-                step: 'Download binary from cache',
-                time: compileResult.execTime,
-            });
+            pushTimingInfo(data, 'Download binary from cache', compileResult.execTime);
         } else {
-
             if (compileResult.execResult) {
                 if (compileResult.execResult.buildResult) {
-                    this.addBuildResultToTimings(timings, compileResult.execResult.buildResult);
+                    addBuildResultToTimings(data, compileResult.execResult.buildResult);
                 }
 
                 if (compileResult.objdumpTime) {
-                    timings.push({
-                        step: 'Disassembly',
-                        time: compileResult.objdumpTime,
-                    });
+                    pushTimingInfo(data, 'Disassembly', compileResult.objdumpTime);
                 }
 
                 if (compileResult.parsingTime) {
-                    timings.push({
-                        step: 'ASM parsing',
-                        time: compileResult.parsingTime,
-                    });
+                    pushTimingInfo(data, 'ASM parsing', compileResult.parsingTime);
                 }
 
                 if (compileResult.execResult.execTime) {
-                    timings.push({
-                        step: 'Execution',
-                        time: compileResult.execResult.execTime,
-                    });
+                    pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
                 }
 
             } else {
                 if (compileResult.downloads) {
-                    timings = timings.concat(compileResult.downloads);
+                    concatTimings(data, compileResult.downloads);
                 }
 
                 if (!compileResult.didExecute && compileResult.execTime) {
-                    timings.push({
-                        step: 'Compilation',
-                        time: compileResult.execTime,
-                    });
+                    pushTimingInfo(data, 'Compilation', compileResult.execTime);
                 }
 
                 if (compileResult.objdumpTime) {
-                    timings.push({
-                        step: 'Disassembly',
-                        time: compileResult.objdumpTime,
-                    });
+                    pushTimingInfo(data, 'Disassembly', compileResult.objdumpTime);
                 }
 
                 if (compileResult.parsingTime) {
-                    timings.push({
-                        step: 'ASM parsing',
-                        time: compileResult.parsingTime,
-                    });
+                    pushTimingInfo(data, 'ASM parsing', compileResult.parsingTime);
                 }
             }
         }
@@ -176,76 +138,84 @@ TimingInfo.prototype.initializeChartDataFromResult = function (compileResult, to
     if (compileResult.didExecute) {
         if (compileResult.buildResult) {
             if (compileResult.buildResult.packageDownloadAndUnzipTime) {
-                timings.push({
-                    step: 'Download binary from cache',
-                    time: compileResult.buildResult.packageDownloadAndUnzipTime,
-                });
-            } else {
-                if (compileResult.execResult.buildResult) {
-                    this.addBuildResultToTimings(timings, compileResult.execResult.buildResult);
-                }
+                pushTimingInfo(data,
+                    'Download binary from cache',
+                    compileResult.buildResult.packageDownloadAndUnzipTime);
             }
+        } else if (compileResult.execResult && compileResult.execResult.buildResult) {
+            addBuildResultToTimings(data, compileResult.execResult.buildResult);
         }
-
-        timings.push({
-            step: 'Execution',
-            time: compileResult.execTime,
-        });
+        pushTimingInfo(data, 'Execution', compileResult.execTime);
     }
 
-    var stepsTotal = 0;
-    timings.forEach(_.bind(function (timing) {
-        this.data.labels.push(timing.step);
-        this.data.datasets[0].data.push(timing.time);
-
-        stepsTotal += parseInt(timing.time, 10);
-    }, this));
-
-    this.data.labels.push('Network, JS, waiting, etc.');
-    this.data.datasets[0].data.push(totalTime - stepsTotal);
+    var stepsTotal = data.steps;
+    pushTimingInfo(data, 'Network, JS, waiting, etc.', totalTime - stepsTotal);
 
     if (totalTime - stepsTotal < 0) {
-        this.data.datasets[0].data = [totalTime];
-        this.data.labels = ['Browser cache'];
-    }
-};
-
-TimingInfo.prototype.initializeIfNeeded = function () {
-    if ((this.modal === null) || (this.modal.length === 0)) {
-        this.modal = $('#timing-info');
+        data.datasets[0].data = [totalTime];
+        data.labels = ['Browser cache'];
     }
 
-    var chartDiv = this.modal.find('#chart');
+    delete data.steps;
+    return data;
+}
+
+function displayData(data) {
+    var modal = $('#timing-info');
+
+    var chartDiv = modal.find('#chart');
     chartDiv.html('');
 
     var canvas = $('<canvas id="timing-chart" width="400" height="400"></canvas>');
     chartDiv.append(canvas);
 
-    this.ctx = canvas[0].getContext('2d');
-    this.chart = new Chart(this.ctx, {
+    var settings = Settings.getStoredSettings();
+    var fontColour = Chart.defaults.color;
+    if (settings != null && settings.theme === 'dark') {
+        fontColour = '#ffffff';
+    }
+
+    var ctx = canvas[0].getContext('2d');
+    new Chart(ctx, {
         type: 'bar',
-        data: this.data,
+        data: data,
         options: {
+            legend: {
+                labels: {
+                    fontColor: fontColour,
+                    fontSize: 18,
+                },
+            },
             scales: {
                 xAxes: [{
+                    gridLines: {
+                        color: fontColour,
+                    },
                     ticks: {
+                        fontColor: fontColour,
                         beginAtZero: true,
                     },
                 }],
                 yAxes: [{
+                    gridLines: {
+                        color: fontColour,
+                    },
                     ticks: {
+                        fontColor: fontColour,
                         beginAtZero: true,
                     },
                 }],
             },
         },
     });
-};
+    modal.modal('show');
+}
 
-TimingInfo.prototype.run = function (onLoad, compileResult, totalTime) {
-    this.initializeChartDataFromResult(compileResult, totalTime);
-    this.initializeIfNeeded();
-    this.modal.modal('show');
-};
+function displayCompilationTiming(compileResult, totalTime) {
+    var data = initializeChartDataFromResult(compileResult, totalTime);
+    displayData(data);
+}
 
-module.exports = { TimingInfo: TimingInfo };
+module.exports = {
+    displayCompilationTiming: displayCompilationTiming,
+};
