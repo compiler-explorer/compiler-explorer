@@ -31,8 +31,11 @@ var local = require('../local');
 var ga = require('../analytics');
 var mf = require('../multifile-service');
 var lc = require('../line-colouring');
+var TomSelect = require('tom-select');
 var LineColouring = lc.LineColouring;
 var MultifileService = mf.MultifileService;
+var options = require('../options');
+var languages = options.languages;
 
 function Tree(hub, state, container) {
     this.id = state.id || hub.nextTreeId();
@@ -53,6 +56,12 @@ function Tree(hub, state, container) {
     this.namedItems = this.domRoot.find('.named-editors');
     this.unnamedItems = this.domRoot.find('.unnamed-editors');
 
+    this.langKeys = _.keys(languages);
+
+    var usableLanguages = _.filter(languages, function (language) {
+        return hub.compilerService.compilersByLang[language.id];
+    });
+
     this.multifileService = new MultifileService(this.hub, this.eventHub, this.alertSystem, state);
     this.lineColouring = new LineColouring(this.multifileService);
     this.ourCompilers = {};
@@ -62,6 +71,18 @@ function Tree(hub, state, container) {
     this.initButtons(state);
     this.initCallbacks();
     this.onSettingsChange(this.settings);
+
+    this.selectize = new TomSelect(this.languageBtn, {
+        sortField: 'name',
+        valueField: 'id',
+        labelField: 'name',
+        searchField: ['name'],
+        options: _.map(usableLanguages, _.identity),
+        items: [this.multifileService.getLanguageId()],
+        dropdownParent: 'body',
+        plugins: ['input_autogrow'],
+        onChange: _.bind(this.onLanguageChange, this),
+    });
 
     this.updateTitle();
     this.updateState();
@@ -101,7 +122,11 @@ Tree.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
 };
 
-Tree.prototype.onLanguageChange = function () {
+Tree.prototype.onLanguageChange = function (newLangId) {
+    if (languages[newLangId]) {
+        this.multifileService.setLanguageId(newLangId);
+    }
+
     this.refresh();
 };
 
@@ -314,6 +339,12 @@ Tree.prototype.initButtons = function (/*state*/) {
 
     this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
     this.bindClickToOpenPane(addExecutorButton, this.getConfigForNewExecutor);
+
+    this.languageBtn = this.domRoot.find('.change-language');
+
+    if (this.langKeys.length <= 1) {
+        this.languageBtn.prop('disabled', true);
+    }
 };
 
 Tree.prototype.numberUsedLines = function () {

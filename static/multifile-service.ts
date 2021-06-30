@@ -47,6 +47,17 @@ export class MultifileService {
         };
     }
 
+    public getLanguageId() {
+        return this.compilerLanguageId;
+    }
+
+    public setLanguageId(id: string) {
+        this.compilerLanguageId = id;
+        if (id !== 'c++' && id !== 'c') {
+            this.isCMakeProject = false;
+        }
+    }
+
     public setAsCMakeProject() {
         this.compilerLanguageId = 'c++';
         this.isCMakeProject = true;
