@@ -259,9 +259,13 @@ export class MultifileService {
             }
 
             if (!suggestedFilename) {
-                const lang = languages[langId];
-                const ext0 = lang.extensions[0];
-                suggestedFilename = 'example' + ext0;
+                if (langId === 'cmake') { 
+                    suggestedFilename = 'CMakeLists.txt';
+                } else {
+                    const lang = languages[langId];
+                    const ext0 = lang.extensions[0];
+                    suggestedFilename = 'example' + ext0;
+                }
             }
         }
 
