@@ -117,14 +117,24 @@ Alert.prototype.enterSomething = function (title, question, defaultValue, handle
     var modal = $('#enter-something');
     this.yesHandler = handlers ? handlers.yes : function () {};
     this.noHandler = handlers ? handlers.no : function () {};
+
+    var yesButton = modal.find('.modal-footer .yes');
+    var answerEdit = modal.find('.modal-body .question-answer');
+
     modal.find('.modal-title').html(title);
     modal.find('.modal-body .question').html(question);
-    modal.find('.modal-body .question-answer').val(defaultValue);
+    answerEdit.val(defaultValue);
+    answerEdit.on('keyup', function (e) {
+        if (e.keyCode === 13 || e.which === 13) {
+            yesButton.trigger('click');
+        }
+    });
+
     if (handlers.yesHtml) {
-        modal.find('.modal-footer .yes').html(handlers.yesHtml);
+        yesButton.html(handlers.yesHtml);
     }
     if (handlers.yesClass) {
-        modal.find('.modal-footer .yes').addClass(handlers.yesClass);
+        yesButton.addClass(handlers.yesClass);
     }
     if (handlers.noHtml) {
         modal.find('.modal-footer .no').html(handlers.noHtml);
@@ -138,7 +148,7 @@ Alert.prototype.enterSomething = function (title, question, defaultValue, handle
     }
 
     modal.on('shown.bs.modal', function () {
-        modal.find('.modal-body .question-answer').trigger('focus');
+        answerEdit.trigger('focus');
     });
 
     return modal.modal();
