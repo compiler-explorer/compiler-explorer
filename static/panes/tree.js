@@ -317,9 +317,7 @@ Tree.prototype.moveToExclude = function (fileId) {
 
 Tree.prototype.bindClickToOpenPane = function (dragSource, dragConfig) {
     dragSource.on('click', _.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(_.bind(dragConfig, this));
+        this.hub.addInEditorStackIfPossible(_.bind(dragConfig, this));
     }, this));
 };
 
@@ -332,14 +330,23 @@ Tree.prototype.getConfigForNewExecutor = function () {
 };
 
 Tree.prototype.getConfigForNewEditor = function (file) {
-    file.editorId = this.hub.nextEditorId();
-    var editor = Components.getEditor(
-        file.editorId,
-        file.compilerLanguageId);
+    var editor;
+    var editorId = this.hub.nextEditorId();
 
-    editor.componentState.source = file.content;
-    if (file.filename) {
-        editor.componentState.customPaneName = file.filename;
+    if (file) {
+        file.editorId = editorId;
+        editor = Components.getEditor(
+            editorId,
+            file.compilerLanguageId);
+
+        editor.componentState.source = file.content;
+        if (file.filename) {
+            editor.componentState.customPaneName = file.filename;
+        }
+    } else {
+        editor = Components.getEditor(
+            editorId,
+            this.multifileService.getLanguageId());
     }
 
     return editor;
@@ -348,9 +355,11 @@ Tree.prototype.getConfigForNewEditor = function (file) {
 Tree.prototype.initButtons = function (state) {
     var addCompilerButton = this.domRoot.find('.add-compiler');
     var addExecutorButton = this.domRoot.find('.add-executor');
+    var addEditorButton = this.domRoot.find('.add-editor');
 
     this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
     this.bindClickToOpenPane(addExecutorButton, this.getConfigForNewExecutor);
+    this.bindClickToOpenPane(addEditorButton, this.getConfigForNewEditor);
 
     this.languageBtn = this.domRoot.find('.change-language');
 
