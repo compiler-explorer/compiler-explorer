@@ -488,6 +488,10 @@ function start() {
         hub = new Hub(layout, subLangId, defaultLangId);
     }
 
+    if (hub.hasTree()) {
+        $('#add-tree').prop('disabled', true);
+    }
+
     function sizeRoot() {
         var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
         root.height(height);
@@ -531,6 +535,7 @@ function start() {
         return Components.getDiff();
     });
     setupAdd($('#add-tree'), function () {
+        $('#add-tree').prop('disabled', true);
         return Components.getTree();
     });
 

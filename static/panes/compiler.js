@@ -610,9 +610,13 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         files: tree.getFiles(),
     };
 
+    var cmakeProject = tree.multifileService.getState().isCMakeProject;
+
     if (bypassCache) request.bypassCache = true;
     if (!this.compiler) {
         this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+    } else if (cmakeProject && request.source === '') {
+        this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
     } else {
         if (tree.multifileService.getState().isCMakeProject) {
             this.sendCMakeCompile(request);
