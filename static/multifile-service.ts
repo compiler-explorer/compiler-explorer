@@ -209,27 +209,22 @@ export class MultifileService {
 
         if (file.filename === '') {
             const isRenamed = await this.renameFile(fileId);
-            if (isRenamed) this.includeByFileId(fileId);
+            if (isRenamed) {
+                this.includeByFileId(fileId);
+            } else {
+                file.isIncluded = false;
+            }
         } else {
             file.isIncluded = true;
-
-            // if (file.filename === 'CMakeLists.txt') {
-            //     this.setAsCMakeProject(true);
-            //     this.setAsMainSource(fileId);
-            // }
         }
+
+        return;
     }
 
     public async includeByEditorId(editorId: number): Promise<void> {
         const file: File = this.getFileByEditorId(editorId);
-        file.isIncluded = true;
 
-        if (file.filename === '') {
-            const isRenamed = await this.renameFile(file.fileId);
-            if (isRenamed) this.includeByFileId(file.fileId);
-        } else {
-            file.isIncluded = true;
-        }
+        return this.includeByFileId(file.fileId);
     }
 
     public forEachOpenFile(callback: (File) => void) {
@@ -288,13 +283,17 @@ export class MultifileService {
         return new Promise((resolve) => {
             this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {
                 yes: (value) => {
-                    file.filename = value;
+                    if (value !== '' && value[0] !== '/') {
+                        file.filename = value;
 
-                    if (editor) {
-                        editor.setCustomPaneName(file.filename);
+                        if (editor) {
+                            editor.setCustomPaneName(file.filename);
+                        }
+
+                        resolve(true);
+                    } else {
+                        resolve(false);
                     }
-
-                    resolve(true);
                 },
                 no: () => {
                     resolve(false);

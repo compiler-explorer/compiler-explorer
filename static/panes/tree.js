@@ -237,7 +237,12 @@ Tree.prototype.addRowToTreelist = function (file) {
         item.find('.filename').html(file.filename);
     } else if (file.editorId > 0) {
         var editor = this.hub.getEditorById(file.editorId);
-        item.find('.filename').html(editor.getPaneName());
+        if (editor) {
+            item.find('.filename').html(editor.getPaneName());
+        } else {
+            // wait for editor to appear first
+            return;
+        }
     } else {
         item.find('.filename').html('Unknown file');
     }

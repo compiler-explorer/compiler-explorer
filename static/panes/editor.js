@@ -100,7 +100,7 @@ function Editor(hub, state, container) {
     var legacyReadOnly = state.options && !!state.options.readOnly;
     this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: this.currentLanguage.monaco,
-        readOnly: !!options.readOnly || legacyReadOnly || window.compilerExplorerOptions.mobileViewer,
+        readOnly: !!options.readOnly || legacyReadOnly || (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
         glyphMargin: !options.embedded,
     }, this.settings));
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
