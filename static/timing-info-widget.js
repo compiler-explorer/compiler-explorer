@@ -40,7 +40,7 @@ function pushTimingInfo(data, step, time) {
 
 function concatTimings(data, timings) {
     _.forEach(timings, function (timing) {
-        pushTimingInfo(data.timing.step, timing.time);
+        pushTimingInfo(data, timing.step, timing.time);
     });
 }
 

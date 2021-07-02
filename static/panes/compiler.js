@@ -1241,12 +1241,20 @@ Compiler.prototype.updateLibraries = function () {
     if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
 };
 
+Compiler.prototype.isSupportedTool = function (tool) {
+    if (this.sourceTreeId) {
+        return tool.tool.type === 'postcompilation';
+    } else {
+        return true;
+    }
+};
+
 Compiler.prototype.supportsTool = function (toolId) {
     if (!this.compiler) return;
 
-    return _.find(this.compiler.tools, function (tool) {
-        return (tool.tool.id === toolId);
-    });
+    return _.find(this.compiler.tools, _.bind(function (tool) {
+        return (tool.tool.id === toolId && this.isSupportedTool(tool));
+    }, this));
 };
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
@@ -1292,9 +1300,11 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     if (_.isEmpty(this.compiler.tools)) {
         addTool('none', 'No tools available');
     } else {
-        _.each(this.compiler.tools, function (tool) {
-            addTool(tool.tool.id, tool.tool.name);
-        });
+        _.each(this.compiler.tools, _.bind(function (tool) {
+            if (this.isSupportedTool(tool)) {
+                addTool(tool.tool.id, tool.tool.name);
+            }
+        }, this));
     }
 };
 
