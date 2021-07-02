@@ -602,8 +602,10 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
 Compiler.prototype.compileFromTree = function (options, bypassCache) {
     var tree = this.hub.getTreeById(this.sourceTreeId);
 
+    var mainsource = tree.getMainSource();
+
     var request = {
-        source: tree.getMainSource(),
+        source: mainsource,
         compiler: this.compiler ? this.compiler.id : '',
         options: options,
         lang: this.currentLangId,

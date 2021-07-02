@@ -1,0 +1,2136 @@
+{
+    "code": 0,
+    "okToCache": true,
+    "stdout": [],
+    "stderr": [],
+    "execTime": "812",
+    "inputFilename": "/tmp/compiler-explorer-compiler202157-8545-nc3i2e.b8lzg/example.cpp",
+    "compilationOptions": [
+        "-g",
+        "-o",
+        "/tmp/compiler-explorer-compiler202157-8545-nc3i2e.b8lzg/output.s",
+        "-fdiagnostics-color=always",
+        "-isystem/opt/compiler-explorer/libs/ctre/main/include",
+        "-L.",
+        "-Wl,-rpath,.",
+        "-Wl,-rpath,/opt/compiler-explorer/gcc-10.3.0/lib64",
+        "-Wl,-rpath,/opt/compiler-explorer/gcc-10.3.0/lib32",
+        "-std=c++2a",
+        "-O1",
+        "/tmp/compiler-explorer-compiler202157-8545-nc3i2e.b8lzg/example.cpp"
+    ],
+    "downloads": [],
+    "tools": [],
+    "asmSize": 207336,
+    "objdumpTime": "40",
+    "asm": [
+        {
+            "text": "strlen@plt:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "ff",
+                "25",
+                "e2",
+                "2f",
+                "00",
+                "00"
+            ],
+            "address": 4198448,
+            "text": " jmp    QWORD PTR [rip+0x2fe2]        # 404018 <strlen@GLIBC_2.2.5>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "68",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198454,
+            "text": " push   0x0",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e9",
+                "e0",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4198459,
+            "text": " jmp    401020 <.plt>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "std::__throw_logic_error(char const*)@plt:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "ff",
+                "25",
+                "da",
+                "2f",
+                "00",
+                "00"
+            ],
+            "address": 4198464,
+            "text": " jmp    QWORD PTR [rip+0x2fda]        # 404020 <std::__throw_logic_error(char const*)@GLIBCXX_3.4>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "68",
+                "01",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198470,
+            "text": " push   0x1",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e9",
+                "d0",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4198475,
+            "text": " jmp    401020 <.plt>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "memcpy@plt:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "ff",
+                "25",
+                "d2",
+                "2f",
+                "00",
+                "00"
+            ],
+            "address": 4198480,
+            "text": " jmp    QWORD PTR [rip+0x2fd2]        # 404028 <memcpy@GLIBC_2.14>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "68",
+                "02",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198486,
+            "text": " push   0x2",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e9",
+                "c0",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4198491,
+            "text": " jmp    401020 <.plt>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "operator new(unsigned long)@plt:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "ff",
+                "25",
+                "ca",
+                "2f",
+                "00",
+                "00"
+            ],
+            "address": 4198496,
+            "text": " jmp    QWORD PTR [rip+0x2fca]        # 404030 <operator new(unsigned long)@GLIBCXX_3.4>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "68",
+                "03",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198502,
+            "text": " push   0x3",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e9",
+                "b0",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4198507,
+            "text": " jmp    401020 <.plt>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "operator delete(void*, unsigned long)@plt:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "ff",
+                "25",
+                "c2",
+                "2f",
+                "00",
+                "00"
+            ],
+            "address": 4198512,
+            "text": " jmp    QWORD PTR [rip+0x2fc2]        # 404038 <operator delete(void*, unsigned long)@CXXABI_1.3.9>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "68",
+                "04",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198518,
+            "text": " push   0x4",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e9",
+                "a0",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4198523,
+            "text": " jmp    401020 <.plt>",
+            "source": null,
+            "labels": []
+        },
+        {
+            "text": "main:",
+            "source": null,
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "55"
+            ],
+            "address": 4198754,
+            "text": " push   rbp",
+            "source": {
+                "file": "example.cpp",
+                "line": 4,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "53"
+            ],
+            "address": 4198755,
+            "text": " push   rbx",
+            "source": {
+                "file": "example.cpp",
+                "line": 4,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "ec",
+                "28"
+            ],
+            "address": 4198756,
+            "text": " sub    rsp,0x28",
+            "source": {
+                "file": "example.cpp",
+                "line": 4,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "8b",
+                "6e",
+                "08"
+            ],
+            "address": 4198760,
+            "text": " mov    rbp,QWORD PTR [rsi+0x8]",
+            "source": {
+                "file": "example.cpp",
+                "line": 5,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "8d",
+                "44",
+                "24",
+                "10"
+            ],
+            "address": 4198764,
+            "text": " lea    rax,[rsp+0x10]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 157,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "04",
+                "24"
+            ],
+            "address": 4198769,
+            "text": " mov    QWORD PTR [rsp],rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 157,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "85",
+                "ed"
+            ],
+            "address": 4198773,
+            "text": " test   rbp,rbp",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 527,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "49"
+            ],
+            "address": 4198776,
+            "text": " je     4011c3 <main+0x61>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 527,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "ef"
+            ],
+            "address": 4198778,
+            "text": " mov    rdi,rbp",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 371,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e8",
+                "ae",
+                "fe",
+                "ff",
+                "ff"
+            ],
+            "address": 4198781,
+            "text": " call   401030 <strlen@plt>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 371,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "strlen@plt",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 27
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "c3"
+            ],
+            "address": 4198786,
+            "text": " mov    rbx,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 371,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "f8",
+                "0f"
+            ],
+            "address": 4198789,
+            "text": " cmp    rax,0xf",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.tcc",
+                "line": 217,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "77",
+                "42"
+            ],
+            "address": 4198793,
+            "text": " ja     4011cd <main+0x6b>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.tcc",
+                "line": 217,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "f8",
+                "01"
+            ],
+            "address": 4198795,
+            "text": " cmp    rax,0x1",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 348,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "75",
+                "5e"
+            ],
+            "address": 4198799,
+            "text": " jne    4011ef <main+0x8d>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 348,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "0f",
+                "b6",
+                "45",
+                "00"
+            ],
+            "address": 4198801,
+            "text": " movzx  eax,BYTE PTR [rbp+0x0]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 329,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "88",
+                "44",
+                "24",
+                "10"
+            ],
+            "address": 4198805,
+            "text": " mov    BYTE PTR [rsp+0x10],al",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 329,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "5c",
+                "24",
+                "08"
+            ],
+            "address": 4198809,
+            "text": " mov    QWORD PTR [rsp+0x8],rbx",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 183,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "8b",
+                "04",
+                "24"
+            ],
+            "address": 4198814,
+            "text": " mov    rax,QWORD PTR [rsp]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 329,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "c6",
+                "04",
+                "18",
+                "00"
+            ],
+            "address": 4198818,
+            "text": " mov    BYTE PTR [rax+rbx*1],0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 329,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "4c",
+                "8b",
+                "0c",
+                "24"
+            ],
+            "address": 4198822,
+            "text": " mov    r9,QWORD PTR [rsp]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 187,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "4c",
+                "89",
+                "cf"
+            ],
+            "address": 4198826,
+            "text": " mov    rdi,r9",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 814,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "03",
+                "7c",
+                "24",
+                "08"
+            ],
+            "address": 4198829,
+            "text": " add    rdi,QWORD PTR [rsp+0x8]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 814,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "49",
+                "39",
+                "f9"
+            ],
+            "address": 4198834,
+            "text": " cmp    r9,rdi",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "0f",
+                "84",
+                "9d",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198837,
+            "text": " je     401258 <main+0xf6>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "4c",
+                "89",
+                "c8"
+            ],
+            "address": 4198843,
+            "text": " mov    rax,r9",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e9",
+                "c5",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4198846,
+            "text": " jmp    401288 <main+0x126>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "bf",
+                "08",
+                "20",
+                "40",
+                "00"
+            ],
+            "address": 4198851,
+            "text": " mov    edi,0x402008",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.tcc",
+                "line": 212,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e8",
+                "73",
+                "fe",
+                "ff",
+                "ff"
+            ],
+            "address": 4198856,
+            "text": " call   401040 <std::__throw_logic_error(char const*)@plt>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.tcc",
+                "line": 212,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "std::__throw_logic_error(char const*)@plt",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 58
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "8d",
+                "78",
+                "01"
+            ],
+            "address": 4198861,
+            "text": " lea    rdi,[rax+0x1]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.tcc",
+                "line": 153,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e8",
+                "8a",
+                "fe",
+                "ff",
+                "ff"
+            ],
+            "address": 4198865,
+            "text": " call   401060 <operator new(unsigned long)@plt>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/ext/new_allocator.h",
+                "line": 115,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "operator new(unsigned long)@plt",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 48
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "c7"
+            ],
+            "address": 4198870,
+            "text": " mov    rdi,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/ext/new_allocator.h",
+                "line": 115,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "04",
+                "24"
+            ],
+            "address": 4198873,
+            "text": " mov    QWORD PTR [rsp],rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 179,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "5c",
+                "24",
+                "10"
+            ],
+            "address": 4198877,
+            "text": " mov    QWORD PTR [rsp+0x10],rbx",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 211,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "da"
+            ],
+            "address": 4198882,
+            "text": " mov    rdx,rbx",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 409,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "ee"
+            ],
+            "address": 4198885,
+            "text": " mov    rsi,rbp",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 409,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e8",
+                "63",
+                "fe",
+                "ff",
+                "ff"
+            ],
+            "address": 4198888,
+            "text": " call   401050 <memcpy@plt>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 409,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "memcpy@plt",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 27
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "eb",
+                "aa"
+            ],
+            "address": 4198893,
+            "text": " jmp    401199 <main+0x37>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 409,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "85",
+                "c0"
+            ],
+            "address": 4198895,
+            "text": " test   rax,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 403,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "a5"
+            ],
+            "address": 4198898,
+            "text": " je     401199 <main+0x37>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/char_traits.h",
+                "line": 403,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "8d",
+                "7c",
+                "24",
+                "10"
+            ],
+            "address": 4198900,
+            "text": " lea    rdi,[rsp+0x10]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 187,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "eb",
+                "e7"
+            ],
+            "address": 4198905,
+            "text": " jmp    4011e2 <main+0x80>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 187,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "4c",
+                "8d",
+                "42",
+                "02"
+            ],
+            "address": 4198907,
+            "text": " lea    r8,[rdx+0x2]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 1039,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "4c",
+                "89",
+                "c2"
+            ],
+            "address": 4198911,
+            "text": " mov    rdx,r8",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 256,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "eb",
+                "04"
+            ],
+            "address": 4198914,
+            "text": " jmp    401208 <main+0xa6>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 256,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "c2",
+                "01"
+            ],
+            "address": 4198916,
+            "text": " add    rdx,0x1",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 975,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "d0"
+            ],
+            "address": 4198920,
+            "text": " mov    rax,rdx",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 975,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "39",
+                "fa"
+            ],
+            "address": 4198923,
+            "text": " cmp    rdx,rdi",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 112,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "1e"
+            ],
+            "address": 4198926,
+            "text": " je     40122e <main+0xcc>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 112,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "0f",
+                "b6",
+                "32"
+            ],
+            "address": 4198928,
+            "text": " movzx  esi,BYTE PTR [rdx]",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "89",
+                "f1"
+            ],
+            "address": 4198931,
+            "text": " mov    ecx,esi",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "83",
+                "e1",
+                "df"
+            ],
+            "address": 4198933,
+            "text": " and    ecx,0xffffffdf",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "83",
+                "e9",
+                "41"
+            ],
+            "address": 4198936,
+            "text": " sub    ecx,0x41",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "80",
+                "f9",
+                "19"
+            ],
+            "address": 4198939,
+            "text": " cmp    cl,0x19",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "76",
+                "e4"
+            ],
+            "address": 4198942,
+            "text": " jbe    401204 <main+0xa2>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "8d",
+                "4e",
+                "d0"
+            ],
+            "address": 4198944,
+            "text": " lea    ecx,[rsi-0x30]",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 52,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "80",
+                "f9",
+                "09"
+            ],
+            "address": 4198947,
+            "text": " cmp    cl,0x9",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "76",
+                "dc"
+            ],
+            "address": 4198950,
+            "text": " jbe    401204 <main+0xa2>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "40",
+                "80",
+                "fe",
+                "5f"
+            ],
+            "address": 4198952,
+            "text": " cmp    sil,0x5f",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "d6"
+            ],
+            "address": 4198956,
+            "text": " je     401204 <main+0xa2>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "4c",
+                "29",
+                "c0"
+            ],
+            "address": 4198958,
+            "text": " sub    rax,r8",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 1202,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "c3"
+            ],
+            "address": 4198961,
+            "text": " mov    rbx,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 1202,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "8d",
+                "44",
+                "24",
+                "10"
+            ],
+            "address": 4198964,
+            "text": " lea    rax,[rsp+0x10]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 231,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "49",
+                "39",
+                "c1"
+            ],
+            "address": 4198969,
+            "text": " cmp    r9,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 231,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "11"
+            ],
+            "address": 4198972,
+            "text": " je     40124f <main+0xed>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 231,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "8b",
+                "44",
+                "24",
+                "10"
+            ],
+            "address": 4198974,
+            "text": " mov    rax,QWORD PTR [rsp+0x10]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 237,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "8d",
+                "70",
+                "01"
+            ],
+            "address": 4198979,
+            "text": " lea    rsi,[rax+0x1]",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/basic_string.h",
+                "line": 237,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "4c",
+                "89",
+                "cf"
+            ],
+            "address": 4198983,
+            "text": " mov    rdi,r9",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/ext/new_allocator.h",
+                "line": 133,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "e8",
+                "21",
+                "fe",
+                "ff",
+                "ff"
+            ],
+            "address": 4198986,
+            "text": " call   401070 <operator delete(void*, unsigned long)@plt>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/ext/new_allocator.h",
+                "line": 133,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "operator delete(void*, unsigned long)@plt",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 58
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "89",
+                "d8"
+            ],
+            "address": 4198991,
+            "text": " mov    eax,ebx",
+            "source": {
+                "file": "example.cpp",
+                "line": 9,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "c4",
+                "28"
+            ],
+            "address": 4198993,
+            "text": " add    rsp,0x28",
+            "source": {
+                "file": "example.cpp",
+                "line": 9,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "5b"
+            ],
+            "address": 4198997,
+            "text": " pop    rbx",
+            "source": {
+                "file": "example.cpp",
+                "line": 9,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "5d"
+            ],
+            "address": 4198998,
+            "text": " pop    rbp",
+            "source": {
+                "file": "example.cpp",
+                "line": 9,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "c3"
+            ],
+            "address": 4198999,
+            "text": " ret    ",
+            "source": {
+                "file": "example.cpp",
+                "line": 9,
+                "mainsource": true
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "b8",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199000,
+            "text": " mov    eax,0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "41",
+                "b8",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199005,
+            "text": " mov    r8d,0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "eb",
+                "c9"
+            ],
+            "address": 4199011,
+            "text": " jmp    40122e <main+0xcc>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "b8",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199013,
+            "text": " mov    eax,0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "41",
+                "b8",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199018,
+            "text": " mov    r8d,0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "eb",
+                "bc"
+            ],
+            "address": 4199024,
+            "text": " jmp    40122e <main+0xcc>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "b8",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199026,
+            "text": " mov    eax,0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "41",
+                "b8",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199031,
+            "text": " mov    r8d,0x0",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "eb",
+                "af"
+            ],
+            "address": 4199037,
+            "text": " jmp    40122e <main+0xcc>",
+            "source": {
+                "file": "/opt/compiler-explorer/gcc-10.3.0/include/c++/10.3.0/bits/stl_iterator.h",
+                "line": 972,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "c0",
+                "01"
+            ],
+            "address": 4199039,
+            "text": " add    rax,0x1",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "39",
+                "c7"
+            ],
+            "address": 4199043,
+            "text": " cmp    rdi,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "ea"
+            ],
+            "address": 4199046,
+            "text": " je     401272 <main+0x110>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "89",
+                "c2"
+            ],
+            "address": 4199048,
+            "text": " mov    rdx,rax",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "80",
+                "38",
+                "2c"
+            ],
+            "address": 4199051,
+            "text": " cmp    BYTE PTR [rax],0x2c",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "75",
+                "ef"
+            ],
+            "address": 4199054,
+            "text": " jne    40127f <main+0x11d>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "8d",
+                "48",
+                "01"
+            ],
+            "address": 4199056,
+            "text": " lea    rcx,[rax+0x1]",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 112,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "48",
+                "39",
+                "cf"
+            ],
+            "address": 4199060,
+            "text": " cmp    rdi,rcx",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 112,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "74",
+                "cc"
+            ],
+            "address": 4199063,
+            "text": " je     401265 <main+0x103>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 112,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "0f",
+                "b6",
+                "48",
+                "01"
+            ],
+            "address": 4199065,
+            "text": " movzx  ecx,BYTE PTR [rax+0x1]",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "80",
+                "f9",
+                "20"
+            ],
+            "address": 4199069,
+            "text": " cmp    cl,0x20",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "0f",
+                "84",
+                "55",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4199072,
+            "text": " je     4011fb <main+0x99>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "80",
+                "f9",
+                "09"
+            ],
+            "address": 4199078,
+            "text": " cmp    cl,0x9",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "0f",
+                "84",
+                "4c",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4199081,
+            "text": " je     4011fb <main+0x99>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "0f",
+                "be",
+                "c9"
+            ],
+            "address": 4199087,
+            "text": " movsx  ecx,cl",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 22,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "81",
+                "e9",
+                "00",
+                "20",
+                "00",
+                "00"
+            ],
+            "address": 4199090,
+            "text": " sub    ecx,0x2000",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/atoms_characters.hpp",
+                "line": 38,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "83",
+                "f9",
+                "0a"
+            ],
+            "address": 4199096,
+            "text": " cmp    ecx,0xa",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "0f",
+                "86",
+                "3a",
+                "ff",
+                "ff",
+                "ff"
+            ],
+            "address": 4199099,
+            "text": " jbe    4011fb <main+0x99>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 113,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "48",
+                "83",
+                "c0",
+                "01"
+            ],
+            "address": 4199105,
+            "text": " add    rax,0x1",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        },
+        {
+            "opcodes": [
+                "eb",
+                "c1"
+            ],
+            "address": 4199109,
+            "text": " jmp    401288 <main+0x126>",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": [
+                {
+                    "name": "main",
+                    "range": {
+                        "startCol": 17,
+                        "endCol": 21
+                    }
+                }
+            ]
+        },
+        {
+            "opcodes": [
+                "66",
+                "0f",
+                "1f",
+                "84",
+                "00",
+                "00",
+                "00",
+                "00",
+                "00"
+            ],
+            "address": 4199111,
+            "text": " nop    WORD PTR [rax+rax*1+0x0]",
+            "source": {
+                "file": "/opt/compiler-explorer/libs/ctre/main/include/ctre/evaluation.hpp",
+                "line": 60,
+                "mainsource": false
+            },
+            "labels": []
+        }
+    ],
+    "labelDefinitions": {
+        "strlen@plt": 1,
+        "std::__throw_logic_error(char const*)@plt": 5,
+        "memcpy@plt": 9,
+        "operator new(unsigned long)@plt": 13,
+        "operator delete(void*, unsigned long)@plt": 17,
+        "main": 21
+    },
+    "parsingTime": "1",
+    "filteredCount": 246,
+    "popularArguments": {
+        "-fwhole-program": {
+            "description": "Perform whole program optimizations.",
+            "timesused": 0
+        },
+        "-fvpt": {
+            "description": "Use expression value profiles in optimizations.",
+            "timesused": 0
+        },
+        "-funsafe-math-optimizations": {
+            "description": "Allow math optimizations that may violate IEEE or ISO standards.",
+            "timesused": 0
+        },
+        "-ftree-pre": {
+            "description": "Enable SSA-PRE optimization on trees.",
+            "timesused": 0
+        },
+        "-ftree-partial-pre": {
+            "description": "In SSA-PRE optimization on trees, enable partial-partial redundancy elimination.",
+            "timesused": 0
+        }
+    }
+}

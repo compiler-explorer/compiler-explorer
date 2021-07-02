@@ -362,6 +362,10 @@ Hub.prototype.getTreesWithEditorId = function (editorId) {
     });
 };
 
+Hub.prototype.getTrees = function () {
+    return this.trees;
+};
+
 Hub.prototype.findEditorInChildren = function (elem) {
     var count = elem.contentItems.length;
     var idx = 0;

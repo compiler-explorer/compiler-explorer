@@ -123,25 +123,6 @@ export class MultifileService {
         this.files = _.filter(this.files, (file: File) => this.isValidFile(file));
     }
 
-    // public getEditorIdForMainsource() {
-    //     let mainFile: File = null;
-    //     if (this.isCMakeProject) {
-    //         mainFile = _.find(this.files, (file: File) => {
-    //             return file.isIncluded && (file.filename === 'example.cpp');
-    //         });
-
-    //         if (mainFile) return mainFile.editorId;
-    //     } else {
-    //         mainFile = _.find(this.files, (file: File) => {
-    //             return file.isMainSource && file.isIncluded;
-    //         });
-
-    //         if (mainFile) return mainFile.editorId;
-    //     }
-
-    //     return false;
-    // }
-
     public getFiles(): Array<FiledataPair> {
         this.filterOutNonsense();
 
@@ -157,9 +138,19 @@ export class MultifileService {
         });
     }
 
+    private isMainSourceFile(file: File): boolean {
+        if (this.isCMakeProject) {
+            if (file.filename === 'CMakeLists.txt') {
+                this.setAsMainSource(file.fileId);
+            }
+        }
+
+        return file.isMainSource
+    }
+
     public getMainSource(): string {
         var mainFile = _.find(this.files, (file: File) => {
-            return file.isMainSource && file.isIncluded;
+            return file.isIncluded && this.isMainSourceFile(file);
         });
 
         if (mainFile) {
@@ -226,6 +217,18 @@ export class MultifileService {
             //     this.setAsCMakeProject(true);
             //     this.setAsMainSource(fileId);
             // }
+        }
+    }
+
+    public async includeByEditorId(editorId: number): Promise<void> {
+        const file: File = this.getFileByEditorId(editorId);
+        file.isIncluded = true;
+
+        if (file.filename === '') {
+            const isRenamed = await this.renameFile(file.fileId);
+            if (isRenamed) this.includeByFileId(file.fileId);
+        } else {
+            file.isIncluded = true;
         }
     }
 
@@ -298,5 +301,11 @@ export class MultifileService {
                 }
             });
         });
+    }
+
+    public async renameFileByEditorId(editorId: number): Promise<boolean> {
+        var file = this.getFileByEditorId(editorId);
+
+        return this.renameFile(file.fileId);
     }
 }

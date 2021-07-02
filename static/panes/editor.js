@@ -468,7 +468,15 @@ Editor.prototype.initButtons = function (state) {
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
-            if (this.settings.enableCtrlS) {
+            if (this.settings.enableCtrlStree && this.hub.hasTree()) {
+                var trees = this.hub.trees;
+                // todo: change when multiple trees are used
+                if (trees && trees.length > 0) {
+                    trees[0].multifileService.includeByEditorId(this.id).then(_.bind(function () {
+                        trees[0].refresh();
+                    }, this));
+                }
+            } else if (this.settings.enableCtrlS) {
                 loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
@@ -943,8 +951,7 @@ Editor.prototype.numberUsedLines = function () {
         return;
     }
 
-    var trees = this.hub.getTreesWithEditorId(this.id);
-    if (trees.length > 0) {
+    if (this.hub.hasTree()) {
         return;
     }
 
