@@ -342,7 +342,7 @@ Tree.prototype.getConfigForNewEditor = function (file) {
         file.editorId = editorId;
         editor = Components.getEditor(
             editorId,
-            file.compilerLanguageId);
+            file.langId);
 
         editor.componentState.source = file.content;
         if (file.filename) {
