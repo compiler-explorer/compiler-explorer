@@ -270,6 +270,12 @@ export class MultifileService {
         return suggestedFilename;
     }
 
+    private fileExists(filename: string, excludeFile: File): boolean {
+        return !!_.find(this.files, (file: File) => {
+            return (file !== excludeFile) && (file.filename === filename);
+        });
+    }
+
     public async renameFile(fileId: number): Promise<boolean> {
         var file = this.getFileByFileId(fileId);
 
@@ -284,14 +290,20 @@ export class MultifileService {
             this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {
                 yes: (value) => {
                     if (value !== '' && value[0] !== '/') {
-                        file.filename = value;
+                        if (!this.fileExists(value, file)) {
+                            file.filename = value;
 
-                        if (editor) {
-                            editor.setCustomPaneName(file.filename);
+                            if (editor) {
+                                editor.setCustomPaneName(file.filename);
+                            }
+    
+                            resolve(true);
+                        } else {
+                            this.alertSystem.alert('Rename file', 'Filename already exists');
+                            resolve(false);
                         }
-
-                        resolve(true);
                     } else {
+                        this.alertSystem.alert('Rename file', 'Filename cannot be empty or start with a "/"');
                         resolve(false);
                     }
                 },
