@@ -296,3 +296,7 @@ div.argmenuitem span.argdescription {
 .lm_content .tree span.filename {
     padding-left: 10px;
 }
+
+.tree li.filelisting-editor-file:hover {
+    background-color: #dae5e0 !important;
+}
