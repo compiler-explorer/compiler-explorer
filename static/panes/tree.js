@@ -129,7 +129,8 @@ Tree.prototype.onToggleCMakeChange = function () {
     var isOn = this.toggleCMakeButton.state.isCMakeProject;
     this.multifileService.setAsCMakeProject(isOn);
 
-    this.domRoot.find('.cmake-project').prop('title', '[' + (isOn ? 'ON' : 'OFF') + '] ' + 'CMake project');
+    this.domRoot.find('.cmake-project').prop('title',
+        '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
     this.updateState();
 };
 
