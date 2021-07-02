@@ -488,7 +488,7 @@ describe('Compiler execution', function () {
             return Promise.resolve({
                 code: 0,
                 filenameTransform: x => x,
-                stdout: 'the output',
+                stdout: '<No output file>',
                 stderr: '',
             });
         });
@@ -499,7 +499,7 @@ describe('Compiler execution', function () {
             123456,
             true,
             true);
-        result.asm.should.deep.equal('the output');
+        result.asm.should.deep.equal('<No output file>');
     }
 
     it('should run default objdump properly', async () => {
