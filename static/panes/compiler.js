@@ -905,7 +905,12 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.compileInfoLabel.text(infoLabelText);
 
-    this.postCompilationResult(request, result);
+    if (result.result) {
+        this.postCompilationResult(request, result.result);
+    } else {
+        this.postCompilationResult(request, result);
+    }
+
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
 
     if (this.nextRequest) {
