@@ -1087,6 +1087,20 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     var output = (result.stdout || []).concat(result.stderr || []);
     var widgets = _.compact(_.map(output, function (obj) {
         if (!obj.tag) return;
+
+        var trees = this.hub.trees;
+        if (trees && trees.length > 0) {
+            if (obj.tag.file) {
+                if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
+                    return;
+                }
+            } else {
+                if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
+                    return;
+                }
+            }
+        }
+
         var severity = 3; // error
         if (obj.tag.text.match(/^warning/)) severity = 2;
         if (obj.tag.text.match(/^note/)) severity = 1;

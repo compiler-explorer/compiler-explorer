@@ -140,7 +140,11 @@ export class MultifileService {
 
     private isMainSourceFile(file: File): boolean {
         if (this.isCMakeProject) {
-            if (file.filename === 'CMakeLists.txt') {
+            if (file.filename === this.getDefaultMainCMakeFilename()) {
+                this.setAsMainSource(file.fileId);
+            }
+        } else if (!file.isMainSource) {
+            if (file.filename === this.getDefaultMainSourceFilename(this.compilerLanguageId)) {
                 this.setAsMainSource(file.fileId);
             }
         }
@@ -169,6 +173,14 @@ export class MultifileService {
     public getEditorIdByFilename(filename: string): number {
         const file: File = _.find(this.files, (file: File) => {
             return file.isIncluded && (file.filename === filename);
+        });
+
+        return (file && file.editorId > 0) ? file.editorId : null;
+    }
+
+    public getMainSourceEditorId(): number {
+        const file: File = _.find(this.files, (file: File) => {
+            return file.isIncluded && this.isMainSourceFile(file);
         });
 
         return (file && file.editorId > 0) ? file.editorId : null;
@@ -245,6 +257,16 @@ export class MultifileService {
         }
     }
 
+    private getDefaultMainCMakeFilename() {
+        return 'CMakeLists.txt';
+    }
+
+    private getDefaultMainSourceFilename(langId) {
+        const lang = languages[langId];
+        const ext0 = lang.extensions[0];
+        return 'example' + ext0;
+    }
+
     private getSuggestedFilename(file: File, editor: any): string {
         let suggestedFilename = file.filename;
         if (file.filename === '') {
@@ -258,11 +280,9 @@ export class MultifileService {
 
             if (!suggestedFilename) {
                 if (langId === 'cmake') { 
-                    suggestedFilename = 'CMakeLists.txt';
+                    suggestedFilename = this.getDefaultMainCMakeFilename();
                 } else {
-                    const lang = languages[langId];
-                    const ext0 = lang.extensions[0];
-                    suggestedFilename = 'example' + ext0;
+                    suggestedFilename = this.getDefaultMainSourceFilename(langId);
                 }
             }
         }
