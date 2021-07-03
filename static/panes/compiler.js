@@ -705,13 +705,14 @@ Compiler.prototype.sendCompile = function (request) {
             clearTimeout(progress);
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
-        .catch(function (x) {
+        .catch(function (e) {
             clearTimeout(progress);
             var message = 'Unknown error';
-            if (_.isString(x)) {
-                message = x;
-            } else if (x) {
-                message = x.error || x.code;
+            if (_.isString(e)) {
+                message = e;
+            } else if (e) {
+                message = e.error || e.code || e.message;
+                if (e.stack) console.log(e);
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
