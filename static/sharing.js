@@ -298,7 +298,6 @@ Sharing.prototype.ensureUrlIsNotOutdated = function (config) {
     var stringifiedConfig = JSON.stringify(config);
     if (stringifiedConfig !== this.lastState) {
         if (this.lastState != null && window.location.pathname !== window.httpRoot) {
-            console.log('It\'s an url change too');
             window.history.replaceState(null, null, window.httpRoot);
         }
         this.lastState = stringifiedConfig;
