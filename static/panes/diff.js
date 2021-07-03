@@ -103,7 +103,6 @@ function Diff(hub, container, state) {
     this.domRoot.html($('#diff').html());
     this.compilers = {};
     var root = this.domRoot.find('.monaco-placeholder');
-    var self = this;
 
     this.outputEditor = monaco.editor.createDiffEditor(root[0], {
         fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -114,23 +113,23 @@ function Diff(hub, container, state) {
 
     this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
     this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
-    this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
+    this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
     this.selectize = {};
 
-    this.domRoot[0].querySelectorAll('.difftype-picker').forEach( function (picker) {
+    this.domRoot[0].querySelectorAll('.difftype-picker').forEach(_.bind(function (picker) {
 
-        var instance = new TomSelect(picker,{
+        var instance = new TomSelect(picker, {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
             options: [
-                { id: DiffType_ASM, name: 'Assembly' },
-                { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
-                { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
-                { id: DiffType_ExecStdOut, name: 'Execution stdout' },
-                { id: DiffType_ExecStdErr, name: 'Execution stderr' },
+                {id: DiffType_ASM, name: 'Assembly'},
+                {id: DiffType_CompilerStdOut, name: 'Compiler stdout'},
+                {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
+                {id: DiffType_ExecStdOut, name: 'Execution stdout'},
+                {id: DiffType_ExecStdErr, name: 'Execution stderr'},
             ],
             items: [],
             render: {
@@ -139,31 +138,30 @@ function Diff(hub, container, state) {
                 },
             },
             dropdownParent: 'body',
-            plugins:['input_autogrow'],
-            onChange: function (value) {
-                if( picker.classList.contains('lhsdifftype') ){
-                    self.lhs.difftype = parseInt(value);
-                    self.lhs.refresh();
+            plugins: ['input_autogrow'],
+            onChange: _.bind(function (value) {
+                if (picker.classList.contains('lhsdifftype')) {
+                    this.lhs.difftype = parseInt(value);
+                    this.lhs.refresh();
                 } else {
-                    self.rhs.difftype = parseInt(value);
-                    self.rhs.refresh();
+                    this.rhs.difftype = parseInt(value);
+                    this.rhs.refresh();
                 }
-                self.updateState();
-            },
+                this.updateState();
+            }, this),
         });
 
-        if( picker.classList.contains('lhsdifftype') ){
-            self.selectize.lhsdifftype = instance;
-        }else{
-            self.selectize.rhsdifftype = instance;
+        if (picker.classList.contains('lhsdifftype')) {
+            this.selectize.lhsdifftype = instance;
+        } else {
+            this.selectize.rhsdifftype = instance;
         }
 
-    });
+    }, this));
 
 
-    this.domRoot[0].querySelectorAll('.diff-picker').forEach( function (picker) {
-
-        var instance = new TomSelect(picker,{
+    this.domRoot[0].querySelectorAll('.diff-picker').forEach(_.bind(function (picker) {
+        var instance = new TomSelect(picker, {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
@@ -182,29 +180,28 @@ function Diff(hub, container, state) {
                 },
             },
             dropdownParent: 'body',
-            plugins:['input_autogrow'],
-            onChange: function (value) {
+            plugins: ['input_autogrow'],
+            onChange: _.bind(function (value) {
 
-                var compiler = self.compilers[value];
+                var compiler = this.compilers[value];
                 if (!compiler) return;
                 if (picker.classList.contains('lhs')) {
-                    self.lhs.compiler = compiler;
-                    self.lhs.id = compiler.id;
+                    this.lhs.compiler = compiler;
+                    this.lhs.id = compiler.id;
                 } else {
-                    self.rhs.compiler = compiler;
-                    self.rhs.id = compiler.id;
+                    this.rhs.compiler = compiler;
+                    this.rhs.id = compiler.id;
                 }
-                self.onDiffSelect(compiler.id);
-            },
+                this.onDiffSelect(compiler.id);
+            }, this),
         });
 
         if (picker.classList.contains('lhs')) {
-            self.selectize.lhs = instance;
-        }else{
-            self.selectize.rhs = instance;
+            this.selectize.lhs = instance;
+        } else {
+            this.selectize.rhs = instance;
         }
-
-    });
+    }, this));
 
 
     this.initButtons(state);
@@ -380,7 +377,7 @@ Diff.prototype.updateState = function () {
 
 Diff.prototype.onThemeChange = function (newTheme) {
     if (this.outputEditor)
-        this.outputEditor.updateOptions({ theme: newTheme.monaco });
+        this.outputEditor.updateOptions({theme: newTheme.monaco});
 };
 
 Diff.prototype.onSettingsChange = function (newSettings) {
@@ -399,7 +396,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: { lhs: lhs, rhs: rhs },
+            componentState: {lhs: lhs, rhs: rhs},
         };
     },
 };

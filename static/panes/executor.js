@@ -91,7 +91,8 @@ function Executor(hub, container, state) {
         this.hub,
         this.currentLangId,
         this.compiler ? this.compiler.id : null,
-        _.bind(this.onCompilerChange, this)
+        _.bind(this.onCompilerChange, this),
+        this.compilerIsVisible
     );
 
     this.initLibraries(state);
@@ -106,6 +107,10 @@ function Executor(hub, container, state) {
         eventAction: 'Executor',
     });
 }
+
+Executor.prototype.compilerIsVisible = function (compiler) {
+    return compiler.supportsExecute;
+};
 
 Executor.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
@@ -342,7 +347,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     this.compileTimeLabel.text(timeLabelText);
 
     this.setCompilationOptionsPopover(result.buildResult &&
-        result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
+    result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
 
@@ -658,8 +663,8 @@ Executor.prototype.onCompilerChange = function (value) {
 
 Executor.prototype.onToggleWrapChange = function () {
     var state = this.currentState();
-    this.contentRoot.toggleClass('wrap',state.wrap);
-    this.wrapButton.prop('title', '['+(state.wrap ? 'ON' : 'OFF')+'] '+ this.wrapTitle);
+    this.contentRoot.toggleClass('wrap', state.wrap);
+    this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
     this.saveState();
 };
 
@@ -831,7 +836,7 @@ Executor.prototype.getCurrentLangCompilers = function () {
         allCompilers,
         _.bind(function (compiler) {
             return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
-                   (this.compiler && compiler.id === this.compiler.id);
+                (this.compiler && compiler.id === this.compiler.id);
         }, this));
 };
 
