@@ -116,7 +116,6 @@ Tree.prototype.initCallbacks = function () {
 
     this.eventHub.on('editorOpen', this.onEditorOpen, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
-    this.eventHub.on('languageChange', this.onLanguageChange, this);
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
 
@@ -137,6 +136,7 @@ Tree.prototype.onToggleCMakeChange = function () {
 Tree.prototype.onLanguageChange = function (newLangId) {
     if (languages[newLangId]) {
         this.multifileService.setLanguageId(newLangId);
+        this.eventHub.emit('languageChange', false, newLangId, this.id);
     }
 
     this.toggleCMakeButton.enableToggle('isCMakeProject', this.multifileService.isCompatibleWithCMake());
@@ -387,7 +387,7 @@ Tree.prototype.numberUsedLines = function () {
     this.lineColouring.clear();
 
     _.each(this.asmByCompiler, _.bind(function (asm, compilerId) {
-        this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
+        if (asm) this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
     }, this));
 
     this.lineColouring.calculate();

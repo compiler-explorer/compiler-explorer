@@ -2047,8 +2047,8 @@ Compiler.prototype.handleCompilationStatus = function (status) {
     this.compilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
 };
 
-Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
-    if (this.sourceEditorId === editorId) {
+Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {
+    if ((this.sourceEditorId && this.sourceEditorId === editorId) || (this.sourceTreeId && this.sourceTreeId === treeId)) {
         var oldLangId = this.currentLangId;
         this.currentLangId = newLangId;
         // Store the current selected stuff to come back to it later in the same session (Not state stored!)
