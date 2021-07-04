@@ -418,4 +418,9 @@ Hub.prototype.addAtRoot = function (newElem) {
     }
 };
 
+Hub.prototype.activateTabForContainer = function (container) {
+    if (container && container.tab)
+        container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
+};
+
 module.exports = Hub;

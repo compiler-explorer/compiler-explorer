@@ -78,15 +78,22 @@ export class MultifileService {
         }
     }
 
-    public getFileContents(file: File) {
-        if (file.isOpen) {
+    private checkFileEditor(file: File) {
+        if (file.editorId > 0) {
             const editor = this.hub.getEditorById(file.editorId);
-            if (editor) {
-                return editor.getSource();
-            } else {
+            if (!editor) {
                 file.isOpen = false;
                 file.editorId = -1;
             }
+        }
+    }
+
+    public getFileContents(file: File) {
+        this.checkFileEditor(file);
+
+        if (file.isOpen) {
+            const editor = this.hub.getEditorById(file.editorId);
+            return editor.getSource();
         } else {
             return file.content;
         }
@@ -101,9 +108,13 @@ export class MultifileService {
     }
 
     public getFileByFileId(fileId: Number) {
-        return _.find(this.files, (file: File) => {
+        const file = _.find(this.files, (file: File) => {
             return file.fileId === fileId;
         });
+
+        this.checkFileEditor(file);
+
+        return file;
     }
 
     public setAsMainSource(mainFileId: Number) {
@@ -182,6 +193,8 @@ export class MultifileService {
         const file: File = _.find(this.files, (file: File) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
+
+        this.checkFileEditor(file);
 
         return (file && file.editorId > 0) ? file.editorId : null;
     }

@@ -304,6 +304,9 @@ Tree.prototype.editFile = function (fileId) {
         file.isOpen = true;
 
         this.hub.addInEditorStackIfPossible(dragConfig);
+    } else {
+        var editor = this.hub.getEditorById(file.editorId);
+        this.hub.activateTabForContainer(editor.container);
     }
 };
 
