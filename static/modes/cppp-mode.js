@@ -63,10 +63,6 @@ function definition() {
         'char32_t', 'compl', 'concept', 'consteval', 'constinit', 'co_await', 'co_return', 'co_yield', 'not', 'not_eq',
         'or', 'or_eq', 'requires', 'xor', 'xor_eq']);
 
-    // See #879 and waiting on monaco-languages#127
-    cppp.tokenizer.root.unshift([/^\s*#\s*\w+/, 'keyword.directive']);
-    cppp.tokenizer.root.unshift([/^\s*#\s*include/, { token: 'keyword.directive.include', next: '@include' }]);
-
     return cppp;
 }
 

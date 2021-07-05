@@ -209,8 +209,9 @@ Output.prototype.add = function (msg, lineNum, column) {
 };
 
 Output.prototype.updateCompilerName = function () {
-    var name = '#' + this.compilerId;
-    if (this.compilerName) name += ' with ' + this.compilerName;
+    var name = 'Output';
+    if (this.compilerName) name += ' of ' + this.compilerName;
+    name += ' (Compiler #' + this.compilerId + ')';
     this.container.setTitle(name);
 };
 

@@ -21,6 +21,7 @@ From oldest to newest contributor, we would like to thank:
 - [Amila Welihinda](https://github.com/amilajack)
 - [Jason Turner](https://github.com/lefticus)
 - [Adrian Bibby Walther](https://github.com/Som1Lse)
+- [Johan Engelen](https://github.com/JohanEngelen)
 - [Sahnvour](https://github.com/Sahnvour)
 - [Brian Cain](https://github.com/androm3da)
 - [Alexander Monakov](https://github.com/amonakov)
@@ -101,3 +102,5 @@ From oldest to newest contributor, we would like to thank:
 - [Tamir Bahar](https://github.com/tmr232)
 - [Jason Meisel](https://github.com/jasonmeisel)
 - [Nabeel Omer](https://github.com/nabeelomer)
+- [Daniel Below](https://github.com/DanielBelow)
+- [Oleksandr Muliar](https://github.com/msdinit)

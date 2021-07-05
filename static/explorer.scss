@@ -1,16 +1,6 @@
 @import "~@fortawesome/fontawesome-free/css/all.min.css";
 @import "~vis/dist/vis.css";
 
-/* TEMP HACK: https://github.com/Microsoft/monaco-editor/issues/349 */
-.quick-open-tree .row {
-    margin-left: 0;
-}
-
-/* workaround high DPI issues in monaco. SEE: https://github.com/compiler-explorer/compiler-explorer/issues/1488 */
-.monaco-editor .margin-view-overlays .line-numbers {
-    cursor: default !important;
-}
-
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
  * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
@@ -29,7 +19,7 @@
 // These blocks should be removed once a downstream release of monaco is cut
 :root {
     // updated at runtime
-    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace; 
+    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace;
 }
 .monaco-editor .codelens-decoration {
     font-family: var(--user-selected-font-stack);
@@ -88,8 +78,11 @@ body {
     min-width: 14em;
 }
 
-.compiler-picker .selectize-input {
+.compiler-picker .ts-input {
     text-align: center;
+    border-left: none !important;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
 }
 
 .function-picker {
@@ -274,10 +267,6 @@ pre.content.wrap * {
     border-radius: 3px;
 }
 
-.modal-footer {
-    border-top: none;
-}
-
 .navbar-nav.navbar-center {
     float: left; /* by default */
 }
@@ -292,8 +281,8 @@ pre.content.wrap * {
 }
 
 .community-advert {
-    display: none;
-    max-width: 300px;
+    display: flex;
+    max-width: 500px;
     height: 44px;
     margin-top: 3px;
     margin-bottom: 3px;
@@ -306,15 +295,9 @@ pre.content.wrap * {
     padding-right: 4px;
 }
 
-@media (min-width: 1000px) {
+@media (max-width: 1200px) {
     .community-advert {
-        display: flex;
-    }
-}
-
-@media (min-width: 1200px) {
-    .community-advert {
-        max-width: 500px;
+        display: none;
     }
 }
 
@@ -381,6 +364,12 @@ pre.content.wrap * {
     min-width: 100px !important;
 }
 
+.change-language .ts-input {
+    border-bottom: none;
+    border-right: none;
+    border-radius: 0;
+}
+
 .short-compiler-name {
     font-size: 12px;
     padding-left: 3px;
@@ -408,6 +397,14 @@ button.dropdown-item.btn.btn-light.btn-sm {
 
 label#vim-label {
     top: 3px;
+}
+
+#settings label {
+    margin-left: 3px;
+}
+
+#settings select, #settings input:not([type=checkbox]), #settings .slider-input {
+    display: block;
 }
 
 input.vim-check {
@@ -461,11 +458,11 @@ input.vim-check {
 }
 
 /* While we find a better solution, lets up this a bit */
-.compiler-picker .selectize-dropdown-content {
+.compiler-picker .ts-dropdown-content {
     max-height: 300px !important;
 }
 
-.compiler-picker .selectize-dropdown-content .option {
+.compiler-picker .ts-dropdown-content .option {
     padding: 0 10px;
 }
 
@@ -586,6 +583,12 @@ div.populararguments div.dropdown-menu {
 @media (max-width: 1000px) {
     .ces-content-root {
         font-size: 60%;
+    }
+}
+
+@media (max-width: 1250px) {
+    #ces-banner-text {
+        display: none;
     }
 }
 
@@ -758,4 +761,33 @@ html[data-theme=dark] {
 
 .socialsharing {
     max-width: 250px;
+}
+
+.ts-input {
+    height: 100%
+}
+
+.ts-input, .ts-dropdown .option {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ts-dropdown .optgroup-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.options {
+    border-top-left-radius: .2rem !important;
+    border-bottom-left-radius: .2rem !important;
+}
+
+.copy-link-btn {
+    padding-top: 0;
+}
+
+.conformance-wrapper .compiler-list .form-row {
+    padding-top: 3px;
 }

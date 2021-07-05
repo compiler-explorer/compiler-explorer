@@ -75,7 +75,7 @@ function setup() {
             ],
         });
 
-        AWS.mock('SSM', 'getParametersByPath', {
+        AWS.mock('SSM', 'getParameters', {
             Parameters: [
                 {
                     Name: '/compiler-explorer/configValue',

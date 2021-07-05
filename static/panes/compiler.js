@@ -36,17 +36,15 @@ var options = require('../options');
 var monaco = require('monaco-editor');
 var Alert = require('../alert');
 var bigInt = require('big-integer');
-var local = require('../local');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
-var timingInfoWidget = require('../timing-info-widget');
+var TimingWidget = require('../timing-info-widget');
+var CompilerPicker = require('../compiler-picker');
+var Settings = require('../settings');
+
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-require('selectize');
-
-var timingInfo = new timingInfoWidget.TimingInfo();
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -83,7 +81,7 @@ function Compiler(hub, container, state) {
     this.domRoot.html($('#compiler').html());
     this.id = state.id || hub.nextCompilerId();
     this.sourceEditorId = state.source || 1;
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.originalCompilerId = state.compiler;
     this.initLangAndCompiler(state);
     this.infoByLang = {};
@@ -129,34 +127,13 @@ function Compiler(hub, container, state) {
     }, this.settings));
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
-
-    this.compilerPicker.selectize({
-        sortField: this.compilerService.getSelectizerOrder(),
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
-        lockOptgroupOrder: true,
-        options: _.filter(this.getCurrentLangCompilers(), function (e) {
-            return !e.hidden || e.id === state.compiler;
-        }),
-        items: this.compiler ? [this.compiler.id] : [],
-        dropdownParent: 'body',
-        closeAfterSelect: true,
-    }).on('change', _.bind(function (e) {
-        var val = $(e.target).val();
-        if (val) {
-            ga.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'SelectCompiler',
-                eventAction: val,
-            });
-            this.onCompilerChange(val);
-        }
-    }, this));
-
-    this.compilerSelectizer = this.compilerPicker[0].selectize;
+    this.compilerPicker = new CompilerPicker(
+        this.domRoot,
+        this.hub,
+        this.currentLangId,
+        this.compiler ? this.compiler.id : null,
+        _.bind(this.onCompilerChange, this)
+    );
 
     this.initLibraries(state);
 
@@ -639,8 +616,7 @@ Compiler.prototype.sendCompile = function (request) {
             } else if (x) {
                 message = x.error || x.code;
             }
-            onCompilerResponse(request,
-                errorResult('<Compilation failed: ' + message + '>'), false);
+            onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
 };
 
@@ -794,16 +770,13 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
 
-    var allText = _.pluck(stdout.concat(stderr), 'text').join('\n');
-    var failed = result.code !== 0;
-    var warns = !failed && !!allText;
-    this.handleCompilationStatus({code: failed ? 3 : (warns ? 2 : 1), compilerOut: result.code});
+    this.handleCompilationStatus(this.compilerService.calculateStatusIcon(result));
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
-    if (this.isOutputOpened) {
+    if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
         this.outputBtn.prop('title', '');
     } else {
-        this.outputBtn.prop('title', allText.replace(/\x1b\[[0-9;]*m(.\[K)?/g, ''));
+        this.compilerService.handleOutputButtonTitle(this.outputBtn, result);
     }
     var infoLabelText = '';
     if (cached) {
@@ -1362,8 +1335,7 @@ Compiler.prototype.initListeners = function () {
     this.fullTimingInfo
         .off('click')
         .click(_.bind(function () {
-            timingInfo.run(_.bind(function () {
-            }, this), this.lastResult, this.lastTimeTaken);
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
         }, this));
 };
 
@@ -1895,58 +1867,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {
-    if (!this.statusLabel || !this.statusIcon) return;
-
-    function ariaLabel() {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.compilerOut === 0) {
-            // StdErr.length > 0
-            if (status.code === 3) return 'Compilation succeeded with errors';
-            // StdOut.length > 0
-            if (status.code === 2) return 'Compilation succeeded with warnings';
-            return 'Compilation succeeded';
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return 'Compilation failed with errors';
-            // StdOut.length > 0
-            if (status.code === 2) return 'Compilation failed with warnings';
-            return 'Compilation failed';
-        }
-    }
-
-    function color() {
-        // Compiling...
-        if (status.code === 4) return 'black';
-        if (status.compilerOut === 0) {
-            // StdErr.length > 0
-            if (status.code === 3) return '#FF6645';
-            // StdOut.length > 0
-            if (status.code === 2) return '#FF6500';
-            return '#12BB12';
-        } else {
-            // StdErr.length > 0
-            if (status.code === 3) return '#FF1212';
-            // StdOut.length > 0
-            if (status.code === 2) return '#BB8700';
-            return '#FF6645';
-        }
-    }
-
-    this.statusIcon
-        .removeClass()
-        .addClass('status-icon fas')
-        .css('color', color())
-        .toggle(status.code !== 0)
-        .prop('aria-label', ariaLabel())
-        .prop('data-status', status.code)
-        .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-times-circle', status.code === 3)
-        .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
-
-    this.statusLabel
-        .toggleClass('error', status === 3)
-        .toggleClass('warning', status === 2);
+    this.compilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
@@ -1972,21 +1893,7 @@ Compiler.prototype.getCurrentLangCompilers = function () {
 };
 
 Compiler.prototype.updateCompilersSelector = function (info) {
-    this.compilerSelectizer.clearOptions(true);
-    this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
-        this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
-    }, this);
-
-    var selectedCompilerId = this.compiler ? this.compiler.id : null;
-    var filteredCompilers = _.filter(this.getCurrentLangCompilers(), function (e) {
-        return !e.hidden || e.id === selectedCompilerId;
-    });
-
-    this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(filteredCompilers, _.identity));
-    }, this));
-    this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.compilerPicker.update(this.currentLangId, this.compiler ? this.compiler.id : null);
     this.options = info.options || '';
     this.optionsField.val(this.options);
 };

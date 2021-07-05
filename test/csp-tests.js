@@ -26,19 +26,19 @@ import * as csp from '../lib/csp';
 
 describe('CSP', () => {
     it('Should work in the godbolt.org domain for every field', () => {
-        Object.keys(csp.data).forEach(value => {
+        for (const value of Object.keys(csp.data)) {
             csp.data[value].should.include.members(['https://*.godbolt.org', "'self'"]);
-        });
+        }
     });
     it('Should work in the compiler-explorer domain for every field', () => {
-        Object.keys(csp.data).forEach(value => {
+        for (const value of Object.keys(csp.data)) {
             csp.data[value].should.include.members(['https://*.compiler-explorer.com', "'self'"]);
-        });
+        }
     });
     it('Should work in a localhost environment for every field', () => {
-        Object.keys(csp.data).forEach(value => {
+        for (const value of Object.keys(csp.data)) {
             csp.data[value].should.include.members(['localhost:*', "'self'"]);
-        });
+        }
     });
     it('Should be a valid policy', () => {
         csp.policy.should.be.a('string');
