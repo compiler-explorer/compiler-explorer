@@ -79,7 +79,7 @@ export class MultifileService {
     }
 
     private checkFileEditor(file: File) {
-        if (file.editorId > 0) {
+        if (file && file.editorId > 0) {
             const editor = this.hub.getEditorById(file.editorId);
             if (!editor) {
                 file.isOpen = false;
