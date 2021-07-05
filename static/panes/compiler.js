@@ -1239,7 +1239,11 @@ Compiler.prototype.initLibraries = function (state) {
 };
 
 Compiler.prototype.updateLibraries = function () {
-    if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
+    if (this.libsWidget) {
+        this.libsWidget.setNewLangId(this.currentLangId,
+            this.compiler ? this.compiler.id : false,
+            this.compiler ? this.compiler.libs : {});
+    }
 };
 
 Compiler.prototype.isSupportedTool = function (tool) {
