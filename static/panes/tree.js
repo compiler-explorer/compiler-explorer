@@ -63,6 +63,16 @@ function Tree(hub, state, container) {
         return hub.compilerService.compilersByLang[language.id];
     });
 
+    if (state) {
+        if (!state.compilerLanguageId) {
+            state.compilerLanguageId = this.settings.defaultLanguage;
+        }
+    } else {
+        state = {
+            compilerLanguageId: this.settings.defaultLanguage,
+        };
+    }
+
     this.multifileService = new MultifileService(this.hub, this.eventHub, this.alertSystem, state);
     this.lineColouring = new LineColouring(this.multifileService);
     this.ourCompilers = {};
@@ -87,6 +97,8 @@ function Tree(hub, state, container) {
 
     this.updateTitle();
     this.updateState();
+    this.onLanguageChange(this.multifileService.getLanguageId());
+
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
