@@ -29,14 +29,14 @@ import * as utils from '../lib/utils';
 import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
-    pascal: {id: 'pascal'},
+    pascal: { id: 'pascal' },
 };
 
 describe('Pascal', () => {
     let compiler;
 
     before(() => {
-        const ce = makeCompilationEnvironment({languages});
+        const ce = makeCompilationEnvironment({ languages });
         const info = {
             exe: null,
             remote: true,
@@ -60,17 +60,25 @@ describe('Pascal', () => {
         it('Handle 0 parameter methods', function () {
             demangler.composeReadableMethodSignature('', '', 'myfunc', '').should.equal('myfunc()');
             demangler.composeReadableMethodSignature('output', '', 'myfunc', '').should.equal('myfunc()');
-            demangler.composeReadableMethodSignature('output', 'tmyclass', 'myfunc', '').should.equal('tmyclass.myfunc()');
+            demangler
+                .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', '')
+                .should.equal('tmyclass.myfunc()');
         });
 
         it('Handle 1 parameter methods', function () {
             demangler.composeReadableMethodSignature('output', '', 'myfunc', 'integer').should.equal('myfunc(integer)');
-            demangler.composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer').should.equal('tmyclass.myfunc(integer)');
+            demangler
+                .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer')
+                .should.equal('tmyclass.myfunc(integer)');
         });
 
         it('Handle 2 parameter methods', function () {
-            demangler.composeReadableMethodSignature('output', '', 'myfunc', 'integer,string').should.equal('myfunc(integer,string)');
-            demangler.composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer,string').should.equal('tmyclass.myfunc(integer,string)');
+            demangler
+                .composeReadableMethodSignature('output', '', 'myfunc', 'integer,string')
+                .should.equal('myfunc(integer,string)');
+            demangler
+                .composeReadableMethodSignature('output', 'tmyclass', 'myfunc', 'integer,string')
+                .should.equal('tmyclass.myfunc(integer,string)');
         });
     });
 
@@ -78,7 +86,9 @@ describe('Pascal', () => {
         const demangler = new PascalDemangler();
 
         it('Should demangle OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', function () {
-            demangler.demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:').should.equal('maxarray(array_of_double,array_of_double)');
+            demangler
+                .demangle('OUTPUT_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
+                .should.equal('maxarray(array_of_double,array_of_double)');
         });
 
         it('Should demangle OUTPUT_TMYCLASS_$__MYPROC$ANSISTRING', function () {
@@ -118,11 +128,15 @@ describe('Pascal', () => {
         });
 
         it('Should demangle OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE', function () {
-            demangler.demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:').should.equal('maxarray(array_of_double,array_of_double)');
+            demangler
+                .demangle('OUTPUT_$$_MAXARRAY$array_of_DOUBLE$array_of_DOUBLE:')
+                .should.equal('maxarray(array_of_double,array_of_double)');
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING', function () {
-            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING:').should.equal('tmyclass.myproc(ansistring)');
+            demangler
+                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYPROC$ANSISTRING:')
+                .should.equal('tmyclass.myproc(ansistring)');
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$$ANSISTRING', function () {
@@ -130,11 +144,15 @@ describe('Pascal', () => {
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER', function () {
-            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:').should.equal('tmyclass.myfunc(ansistring)');
+            demangler
+                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$$INTEGER:')
+                .should.equal('tmyclass.myfunc(ansistring)');
         });
 
         it('Should demangle OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER', function () {
-            demangler.demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:').should.equal('tmyclass.myfunc(ansistring,integer,integer)');
+            demangler
+                .demangle('OUTPUT$_$TMYCLASS_$__$$_MYFUNC$ANSISTRING$INTEGER$INTEGER$$INTEGER:')
+                .should.equal('tmyclass.myfunc(ansistring,integer,integer)');
         });
 
         it('Should demangle OUTPUT_$$_NOPARAMFUNC$$ANSISTRING', function () {
@@ -259,8 +277,12 @@ describe('Pascal', () => {
         demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax').should.equal('  movl myglobalvar,%eax');
         demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal('  call tmyclass.mytest2()');
         demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST').should.equal('  call tmyclass.mytest()');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING').should.equal('  call tmyclass.myoverload(ansistring)');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER').should.equal('  call tmyclass.myoverload(integer)');
+        demangler
+            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')
+            .should.equal('  call tmyclass.myoverload(ansistring)');
+        demangler
+            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')
+            .should.equal('  call tmyclass.myoverload(integer)');
 
         demangler.demangleIfNeeded('.Le1').should.equal('.Le1');
         demangler.demangleIfNeeded('_$SomeThing').should.equal('_$SomeThing');
@@ -279,8 +301,12 @@ describe('Pascal', () => {
         demangler.demangleIfNeeded('  movl U_$OUTPUT_$$_MYGLOBALVAR,%eax').should.equal('  movl myglobalvar,%eax');
         demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST2').should.equal('  call tmyclass.mytest2()');
         demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYTEST').should.equal('  call tmyclass.mytest()');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING').should.equal('  call tmyclass.myoverload(ansistring)');
-        demangler.demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER').should.equal('  call tmyclass.myoverload(integer)');
+        demangler
+            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$ANSISTRING')
+            .should.equal('  call tmyclass.myoverload(ansistring)');
+        demangler
+            .demangleIfNeeded('  call OUTPUT$_$TMYCLASS_$__$$_MYOVERLOAD$INTEGER')
+            .should.equal('  call tmyclass.myoverload(integer)');
 
         demangler.demangleIfNeeded('.Le1').should.equal('.Le1');
     });
@@ -311,14 +337,16 @@ describe('Pascal', () => {
                     const asmLines = utils.splitLines(buffer.toString());
                     compiler.preProcessLines(asmLines);
 
-                    resolve(Promise.all([
-                        asmLines.should.include('# [output.pas]'),
-                        asmLines.should.include('  .file 1 "<stdin>"'),
-                        asmLines.should.include('# [13] Square := num * num + 14;'),
-                        asmLines.should.include('  .loc 1 13 0'),
-                        asmLines.should.include('.Le0:'),
-                        asmLines.should.include('  .cfi_endproc'),
-                    ]));
+                    resolve(
+                        Promise.all([
+                            asmLines.should.include('# [output.pas]'),
+                            asmLines.should.include('  .file 1 "<stdin>"'),
+                            asmLines.should.include('# [13] Square := num * num + 14;'),
+                            asmLines.should.include('  .loc 1 13 0'),
+                            asmLines.should.include('.Le0:'),
+                            asmLines.should.include('  .cfi_endproc'),
+                        ]),
+                    );
                 });
             });
         });
@@ -329,11 +357,13 @@ describe('Pascal', () => {
             return new Promise(function (resolve) {
                 fs.readFile('test/pascal/objdump-example.s', function (err, buffer) {
                     const output = FPCCompiler.preProcessBinaryAsm(buffer.toString());
-                    resolve(Promise.all([
-                        utils.splitLines(output).length.should.be.below(500),
-                        output.should.not.include('fpc_zeromem():'),
-                        output.should.include('SQUARE():'),
-                    ]));
+                    resolve(
+                        Promise.all([
+                            utils.splitLines(output).length.should.be.below(500),
+                            output.should.not.include('fpc_zeromem():'),
+                            output.should.include('SQUARE():'),
+                        ]),
+                    );
                 });
             });
         });
@@ -348,9 +378,11 @@ describe('Pascal', () => {
 
             compiler.parseOutput(result, '/tmp/path/output.pas', '/tmp/path').should.deep.equal({
                 inputFilename: 'output.pas',
-                stdout: [{
-                    text: 'Hello, world!',
-                }],
+                stdout: [
+                    {
+                        text: 'Hello, world!',
+                    },
+                ],
                 stderr: [],
             });
         });

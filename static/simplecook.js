@@ -30,15 +30,9 @@ function SimpleCook() {
     this.elem = $('#simplecook');
     this.elem.hide();
 
-    this.onDoConsent = function () {
-
-    };
-    this.onDontConsent = function () {
-
-    };
-    this.onHide = function () {
-
-    };
+    this.onDoConsent = function () {};
+    this.onDontConsent = function () {};
+    this.onHide = function () {};
     this.elem.find('.cookies').on('click', function () {
         $('#cookies').trigger('click');
     });

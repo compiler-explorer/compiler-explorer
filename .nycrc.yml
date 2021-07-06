@@ -1,12 +1,12 @@
 all: true
 include:
-  - app.js
-  - lib/**/*.js
+    - app.js
+    - lib/**/*.js
 exclude:
-  - lib/handlers/asm-docs.js
-  - lib/compilers/fake-for-test.js
+    - lib/handlers/asm-docs.js
+    - lib/compilers/fake-for-test.js
 report-dir: ./out/coverage
 reporter:
-  - lcov
+    - lcov
 require:
-  - esm
+    - esm

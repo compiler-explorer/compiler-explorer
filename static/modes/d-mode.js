@@ -141,19 +141,72 @@ function definition() {
             '__gshared',
             '__traits',
             '__vector',
-            '__parameters'],
+            '__parameters',
+        ],
 
         typeKeywords: [
-            'bool', 'byte', 'ubyte', 'short', 'ushort', 'int', 'uint', 'long', 'ulong', 'char', 'wchar', 'dchar',
-            'float', 'double', 'real', 'ifloat', 'idouble', 'ireal', 'cfloat', 'cdouble', 'creal', 'void',
+            'bool',
+            'byte',
+            'ubyte',
+            'short',
+            'ushort',
+            'int',
+            'uint',
+            'long',
+            'ulong',
+            'char',
+            'wchar',
+            'dchar',
+            'float',
+            'double',
+            'real',
+            'ifloat',
+            'idouble',
+            'ireal',
+            'cfloat',
+            'cdouble',
+            'creal',
+            'void',
         ],
 
         operators: [
-            '=', '>', '<', '!', '~', '?', ':',
-            '==', '<=', '>=', '!=', '&&', '||', '++', '--',
-            '+', '-', '*', '/', '&', '|', '^', '%', '<<',
-            '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-            '^=', '%=', '<<=', '>>=', '>>>=',
+            '=',
+            '>',
+            '<',
+            '!',
+            '~',
+            '?',
+            ':',
+            '==',
+            '<=',
+            '>=',
+            '!=',
+            '&&',
+            '||',
+            '++',
+            '--',
+            '+',
+            '-',
+            '*',
+            '/',
+            '&',
+            '|',
+            '^',
+            '%',
+            '<<',
+            '>>',
+            '>>>',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
+            '&=',
+            '|=',
+            '^=',
+            '%=',
+            '<<=',
+            '>>=',
+            '>>>=',
         ],
 
         // we include these common regular expressions
@@ -164,27 +217,33 @@ function definition() {
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
-                    cases: {
-                        '@typeKeywords': 'keyword',
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-z_$][\w$]*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
-                [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
+                ],
+                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                {include: '@whitespace'},
+                { include: '@whitespace' },
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'operator',
-                        '@default': '',
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 // numbers
                 [/\d*\.\d+([eE][-+]?\d+)?[fFdD]?/, 'number.float'],
@@ -197,7 +256,7 @@ function definition() {
                 [/[;,.]/, 'delimiter'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
                 [/"/, 'string', '@string'],
                 [/`/, 'string', '@rawstring'],
 
@@ -257,25 +316,25 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            {open: '{', close: '}'},
-            {open: '[', close: ']'},
-            {open: '(', close: ')'},
-            {open: '`', close: '`', notIn: ['string']},
-            {open: '"', close: '"', notIn: ['string']},
-            {open: '\'', close: '\'', notIn: ['string', 'comment']},
+            { open: '{', close: '}' },
+            { open: '[', close: ']' },
+            { open: '(', close: ')' },
+            { open: '`', close: '`', notIn: ['string'] },
+            { open: '"', close: '"', notIn: ['string'] },
+            { open: "'", close: "'", notIn: ['string', 'comment'] },
         ],
 
         surroundingPairs: [
-            {open: '{', close: '}'},
-            {open: '[', close: ']'},
-            {open: '(', close: ')'},
-            {open: '`', close: '`'},
-            {open: '"', close: '"'},
-            {open: '\'', close: '\''},
+            { open: '{', close: '}' },
+            { open: '[', close: ']' },
+            { open: '(', close: ')' },
+            { open: '`', close: '`' },
+            { open: '"', close: '"' },
+            { open: "'", close: "'" },
         ],
     };
 }
 
-monaco.languages.register({id: 'd'});
+monaco.languages.register({ id: 'd' });
 monaco.languages.setMonarchTokensProvider('d', definition());
 monaco.languages.setLanguageConfiguration('d', configuration());

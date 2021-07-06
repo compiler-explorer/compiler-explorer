@@ -63,17 +63,15 @@ describe('Find unique subhash tests', () => {
     });
     it('works when empty', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        dynamoDbQueryHandlers.push((q) => {
+        dynamoDbQueryHandlers.push(q => {
             q.TableName.should.equal('table');
             return {};
         });
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
-            {
-                alreadyPresent: false,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEFGHI',
-            },
-        );
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+            alreadyPresent: false,
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFGHI',
+        });
     });
     it('works when not empty', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
@@ -81,39 +79,35 @@ describe('Find unique subhash tests', () => {
             return {
                 Items: [
                     {
-                        full_hash: {S: 'ZZVZT'},
-                        unique_subhash: {S: 'ZZVZT'},
+                        full_hash: { S: 'ZZVZT' },
+                        unique_subhash: { S: 'ZZVZT' },
                     },
                 ],
             };
         });
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
-            {
-                alreadyPresent: false,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEFGHI',
-            },
-        );
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+            alreadyPresent: false,
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFGHI',
+        });
     });
-    it('works when there\' a collision', () => {
+    it("works when there' a collision", () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
                     {
-                        full_hash: {S: 'ABCDEFGHIZZ'},
-                        unique_subhash: {S: 'ABCDEFGHI'},
+                        full_hash: { S: 'ABCDEFGHIZZ' },
+                        unique_subhash: { S: 'ABCDEFGHI' },
                     },
                 ],
             };
         });
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
-            {
-                alreadyPresent: false,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEFGHIJ',
-            },
-        );
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+            alreadyPresent: false,
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFGHIJ',
+        });
     });
     it('finds an existing match', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
@@ -121,19 +115,17 @@ describe('Find unique subhash tests', () => {
             return {
                 Items: [
                     {
-                        full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
-                        unique_subhash: {S: 'ABCDEFGHI'},
+                        full_hash: { S: 'ABCDEFGHIJKLMNOPQRSTUV' },
+                        unique_subhash: { S: 'ABCDEFGHI' },
                     },
                 ],
             };
         });
-        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal(
-            {
-                alreadyPresent: true,
-                prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEFGHI',
-            },
-        );
+        return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
+            alreadyPresent: true,
+            prefix: 'ABCDEF',
+            uniqueSubHash: 'ABCDEFGHI',
+        });
     });
 });
 
@@ -157,30 +149,30 @@ describe('Stores to s3', () => {
             config: 'yo',
         };
 
-        const ran = {s3: false, dynamo: false};
-        s3PutObjectHandlers.push((q) => {
+        const ran = { s3: false, dynamo: false };
+        s3PutObjectHandlers.push(q => {
             q.Bucket.should.equal('bucket');
             q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
             q.Body.should.equal('yo');
             ran.s3 = true;
             return {};
         });
-        dynamoDbPutItemHandlers.push((q) => {
+        dynamoDbPutItemHandlers.push(q => {
             q.TableName.should.equals('table');
             q.Item.should.deep.equals({
-                prefix: {S: 'ABCDEF'},
-                unique_subhash: {S: 'ABCDEFG'},
-                full_hash: {S: 'ABCDEFGHIJKLMNOP'},
-                stats: {M: {clicks: {N: '0'}}},
-                creation_ip: {S: 'localhost'},
+                prefix: { S: 'ABCDEF' },
+                unique_subhash: { S: 'ABCDEFG' },
+                full_hash: { S: 'ABCDEFGHIJKLMNOP' },
+                stats: { M: { clicks: { N: '0' } } },
+                creation_ip: { S: 'localhost' },
                 // Cheat the date
-                creation_date: {S: q.Item.creation_date.S},
+                creation_date: { S: q.Item.creation_date.S },
             });
             ran.dynamo = true;
             return {};
         });
-        return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
-            ran.should.deep.equal({s3: true, dynamo: true});
+        return storage.storeItem(object, { get: () => 'localhost' }).then(() => {
+            ran.should.deep.equal({ s3: true, dynamo: true });
         });
     });
 });
@@ -198,15 +190,15 @@ describe('Retrieves from s3', () => {
     });
     it('fetches in the happy path', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        const ran = {s3: false, dynamo: false};
+        const ran = { s3: false, dynamo: false };
         dynamoDbGetItemHandlers.push(q => {
             q.TableName.should.equals('table');
             q.Key.should.deep.equals({
-                prefix: {S: 'ABCDEF'},
-                unique_subhash: {S: 'ABCDEF'},
+                prefix: { S: 'ABCDEF' },
+                unique_subhash: { S: 'ABCDEF' },
             });
             ran.dynamo = true;
-            return {Item: {full_hash: {S: 'ABCDEFGHIJKLMNOP'}}};
+            return { Item: { full_hash: { S: 'ABCDEFGHIJKLMNOP' } } };
         });
         s3GetObjectHandlers.push(q => {
             q.Bucket.should.equal('bucket');
@@ -218,13 +210,12 @@ describe('Retrieves from s3', () => {
         });
 
         const result = await storage.expandId('ABCDEF');
-        ran.should.deep.equal({s3: true, dynamo: true});
-        result.should.deep.equal({config: 'I am a monkey', specialMetadata: null});
+        ran.should.deep.equal({ s3: true, dynamo: true });
+        result.should.deep.equal({ config: 'I am a monkey', specialMetadata: null });
     });
     it('should handle failures', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        for (let i = 0; i < 10; ++i)
-            dynamoDbGetItemHandlers.push(() => ({}));
+        for (let i = 0; i < 10; ++i) dynamoDbGetItemHandlers.push(() => ({}));
         return storage.expandId('ABCDEF').should.be.rejectedWith(Error, 'ID ABCDEF not present in links table');
     });
 });
@@ -243,18 +234,16 @@ describe('Updates counts in s3', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         let called = false;
         dynamoDbUpdateItemHandlers.push(q => {
-            q.should.deep.equals(
-                {
-                    ExpressionAttributeValues: {':inc': {N: '1'}},
-                    Key: {
-                        prefix: {S: 'ABCDEF'},
-                        unique_subhash: {S: 'ABCDEF'},
-                    },
-                    ReturnValues: 'NONE',
-                    TableName: 'table',
-                    UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
+            q.should.deep.equals({
+                ExpressionAttributeValues: { ':inc': { N: '1' } },
+                Key: {
+                    prefix: { S: 'ABCDEF' },
+                    unique_subhash: { S: 'ABCDEF' },
                 },
-            );
+                ReturnValues: 'NONE',
+                TableName: 'table',
+                UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
+            });
             called = true;
         });
         await storage.incrementViewCount('ABCDEF');

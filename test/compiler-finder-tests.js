@@ -118,7 +118,6 @@ describe('Compiler-finder', function () {
     });
 
     it('should not hang for undefined groups (Bug #860)', () => {
-
         const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), {}, optionsHandler);
         return finder.getCompilers().should.eventually.have.lengthOf(2);
     });

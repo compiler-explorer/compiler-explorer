@@ -46,9 +46,7 @@
                         "trim": false
                     },
                     "libs": [],
-                    "specialoutputs": [
-                        "compilerOutput"
-                    ],
+                    "specialoutputs": ["compilerOutput"],
                     "tools": [
                         {
                             "id": "strings",

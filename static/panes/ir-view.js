@@ -42,12 +42,15 @@ function Ir(hub, container, state) {
     this.prevDecorations = [];
     var root = this.domRoot.find('.monaco-placeholder');
 
-    this.irEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
-        language: 'llvm-ir',
-        readOnly: true,
-        glyphMargin: true,
-        lineNumbersMinChars: 3,
-    }));
+    this.irEditor = monaco.editor.create(
+        root[0],
+        monacoConfig.extendConfig({
+            language: 'llvm-ir',
+            readOnly: true,
+            glyphMargin: true,
+            lineNumbersMinChars: 3,
+        })
+    );
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
@@ -105,15 +108,18 @@ Ir.prototype.initButtons = function (state) {
 Ir.prototype.initCallbacks = function () {
     this.linkedFadeTimeoutId = -1;
     this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
-    this.irEditor.onMouseMove(_.bind(function (e) {
-        this.mouseMoveThrottledFunction(e);
-    }, this));
+    this.irEditor.onMouseMove(
+        _.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
+        }, this)
+    );
 
-    this.cursorSelectionThrottledFunction =
-        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-    this.irEditor.onDidChangeCursorSelection(_.bind(function (e) {
-        this.cursorSelectionThrottledFunction(e);
-    }, this));
+    this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.irEditor.onDidChangeCursorSelection(
+        _.bind(function (e) {
+            this.cursorSelectionThrottledFunction(e);
+        }, this)
+    );
 
     this.fontScale.on('change', _.bind(this.updateState, this));
 
@@ -148,7 +154,7 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
     } else if (compiler.supportsIrView) {
-        this.showIrResults([{text: '<No output>'}]);
+        this.showIrResults([{ text: '<No output>' }]);
     }
 };
 
@@ -168,8 +174,7 @@ Ir.prototype.showIrResults = function (irCode) {
     if (!this.awaitingInitialResults) {
         if (this.selection) {
             this.irEditor.setSelection(this.selection);
-            this.irEditor.revealLinesInCenter(this.selection.startLineNumber,
-                this.selection.endLineNumber);
+            this.irEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
         }
         this.awaitingInitialResults = true;
     }
@@ -263,9 +268,15 @@ Ir.prototype.onMouseMove = function (e) {
                 }
             }
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, sourceColBegin, sourceColEnd, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid,
-                sourceLine, sourceColBegin, sourceColEnd,
-                false, this.getPaneName());
+            this.eventHub.emit(
+                'panesLinkLine',
+                this._compilerid,
+                sourceLine,
+                sourceColBegin,
+                sourceColEnd,
+                false,
+                this.getPaneName()
+            );
         }
     }
 };
@@ -277,10 +288,8 @@ Ir.prototype.onDidChangeCursorSelection = function (e) {
     }
 };
 
-
 Ir.prototype.updateDecorations = function () {
-    this.prevDecorations = this.irEditor.deltaDecorations(
-        this.prevDecorations, _.flatten(_.values(this.decorations)));
+    this.prevDecorations = this.irEditor.deltaDecorations(this.prevDecorations, _.flatten(_.values(this.decorations)));
 };
 
 Ir.prototype.clearLinkedLines = function () {
@@ -328,10 +337,13 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEn
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }
-        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
-            this.clearLinkedLines();
-            this.linkedFadeTimeoutId = -1;
-        }, this), 5000);
+        this.linkedFadeTimeoutId = setTimeout(
+            _.bind(function () {
+                this.clearLinkedLines();
+                this.linkedFadeTimeoutId = -1;
+            }, this),
+            5000
+        );
         this.updateDecorations();
     }
 };

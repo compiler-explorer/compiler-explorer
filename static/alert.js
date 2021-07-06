@@ -32,12 +32,16 @@ function Alert() {
     this.noHandler = null;
     this.prefixMessage = '';
     var yesNo = $('#yes-no');
-    yesNo.find('button.yes').click(_.bind(function () {
-        if (this.yesHandler) this.yesHandler();
-    }, this));
-    yesNo.find('button.no').click(_.bind(function () {
-        if (this.noHandler) this.noHandler();
-    }, this));
+    yesNo.find('button.yes').click(
+        _.bind(function () {
+            if (this.yesHandler) this.yesHandler();
+        }, this)
+    );
+    yesNo.find('button.no').click(
+        _.bind(function () {
+            if (this.noHandler) this.noHandler();
+        }, this)
+    );
 }
 
 Alert.prototype.alert = function (title, body, onClose) {
@@ -117,18 +121,23 @@ Alert.prototype.ask = function (title, question, handlers) {
 Alert.prototype.notify = function (body, options) {
     var container = $('#notifications');
     if (!container) return;
-    var newElement = $('<div class="alert notification" tabindex="-1" role="dialog">' +
-        '<button type="button" class="close" style="float: left;margin-right: 5px;" data-dismiss="alert">' +
+    var newElement = $(
+        '<div class="alert notification" tabindex="-1" role="dialog">' +
+            '<button type="button" class="close" style="float: left;margin-right: 5px;" data-dismiss="alert">' +
             '&times;' +
-        '</button>' +
-        '<span id="msg">' + this.prefixMessage + body + '</span>' +
-        '</div>');
+            '</button>' +
+            '<span id="msg">' +
+            this.prefixMessage +
+            body +
+            '</span>' +
+            '</div>'
+    );
     if (!options) options = {};
     // Set defaults
     // Collapse similar by default
-    options.collapseSimilar = ('collapseSimilar' in options) ? options.collapseSimilar : true;
+    options.collapseSimilar = 'collapseSimilar' in options ? options.collapseSimilar : true;
     // autoDismiss by default
-    options.autoDismiss = ('autoDismiss' in options) ? options.autoDismiss : true;
+    options.autoDismiss = 'autoDismiss' in options ? options.autoDismiss : true;
     // Dismiss this after 5000ms by default
     options.dismissTime = options.dismissTime ? Math.max(1000, options.dismissTime) : 5000;
     if (options.group) {
@@ -136,19 +145,21 @@ Alert.prototype.notify = function (body, options) {
             // Only collapsing if a group has been specified
             container.find('[data-group="' + options.group + '"]').remove();
         }
-        newElement.attr('data-group', options.group);  // Add the group to the data-group
+        newElement.attr('data-group', options.group); // Add the group to the data-group
     }
-    if (options.alertClass) {  // If we want a custom class, apply it
+    if (options.alertClass) {
+        // If we want a custom class, apply it
         newElement.addClass(options.alertClass);
     }
-    if (options.autoDismiss) {  // Dismiss this after dismissTime
+    if (options.autoDismiss) {
+        // Dismiss this after dismissTime
         setTimeout(function () {
             newElement.fadeOut('slow', function () {
                 newElement.remove();
             });
         }, options.dismissTime);
     }
-    container.append(newElement);  // Add the new notification to the container
+    container.append(newElement); // Add the new notification to the container
 };
 
 module.exports = Alert;

@@ -86,27 +86,23 @@ function definition() {
             'with',
         ],
 
-        typeKeywords: [
-            'int',
-            'int32',
-            'int64',
-            'bool',
-            'char',
-            'unit',
-        ],
+        typeKeywords: ['int', 'int32', 'int64', 'bool', 'char', 'unit'],
 
         numbers: /-?[0-9.]/,
 
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
-                    cases: {
-                        '@typeKeywords': 'keyword',
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-z_$][\w$]*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
+                ],
 
                 { include: '@whitespace' },
 
@@ -130,5 +126,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({id: 'ocaml'});
+monaco.languages.register({ id: 'ocaml' });
 monaco.languages.setMonarchTokensProvider('ocaml', definition());

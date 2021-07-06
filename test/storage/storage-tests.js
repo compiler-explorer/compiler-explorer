@@ -43,14 +43,17 @@ describe('Hash tests', () => {
         StorageBase.isCleanText(badResult).should.be.false;
     });
     it('should avoid profanities and illegible characters in hashes', () => {
-        const testCase = {some: 'test'};
+        const testCase = { some: 'test' };
         const goodResult = 'uy3AkJTC9PRg8LfxqcxuUgKrCb-OatsRW7FAAVi3-4M'; // L in 13th place: OK
-        const callback = sinon.stub()
-            .onFirstCall().returns(badResult)
-            .onSecondCall().returns(badResult) // force nonce to update a couple of times
+        const callback = sinon
+            .stub()
+            .onFirstCall()
+            .returns(badResult)
+            .onSecondCall()
+            .returns(badResult) // force nonce to update a couple of times
             .returns(goodResult);
         sinon.replace(StorageBase, 'encodeBuffer', callback);
-        const {config, configHash} = StorageBase.getSafeHash(testCase);
+        const { config, configHash } = StorageBase.getSafeHash(testCase);
         configHash.should.not.equal(badResult);
         configHash.should.equal(goodResult);
         const asObj = JSON.parse(config);
@@ -59,8 +62,8 @@ describe('Hash tests', () => {
     });
 
     it('should not modify ok hashes', () => {
-        const testCase = {some: 'test'};
-        const {config} = StorageBase.getSafeHash(testCase);
+        const testCase = { some: 'test' };
+        const { config } = StorageBase.getSafeHash(testCase);
         const asObj = JSON.parse(config);
         should.not.exist(asObj.nonce);
     });

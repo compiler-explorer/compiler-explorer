@@ -41,6 +41,6 @@ function definition() {
     return cppx_blue;
 }
 
-monaco.languages.register({id: 'cppx-blue'});
+monaco.languages.register({ id: 'cppx-blue' });
 monaco.languages.setLanguageConfiguration('cppx-blue', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cppx-blue', definition());

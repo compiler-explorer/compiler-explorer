@@ -24,8 +24,7 @@
 
 'use strict';
 
-var
-    local = require('./local');
+var local = require('./local');
 
 var _currentPresentation = null;
 

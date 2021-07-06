@@ -26,7 +26,7 @@
 // to `before`.
 import { suppressConsoleLog } from '../lib/logger';
 
-if (typeof (before) === 'function') {
+if (typeof before === 'function') {
     // this hook will run once before any tests are executed
     before(() => {
         suppressConsoleLog();

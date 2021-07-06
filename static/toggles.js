@@ -27,7 +27,6 @@ var _ = require('underscore');
 var $ = require('jquery');
 var EventEmitter = require('events');
 
-
 function Togglesv2(root, state) {
     EventEmitter.call(this);
     var buttons = root.find('.button-checkbox');
@@ -68,10 +67,11 @@ function Togglesv2(root, state) {
             var isChecked = $checkbox.is(':checked');
 
             // Set the button's state
-            $button.data('state', (isChecked) ? 'on' : 'off');
+            $button.data('state', isChecked ? 'on' : 'off');
 
             // Set the button's icon
-            $button.find('.state-icon')
+            $button
+                .find('.state-icon')
                 .removeClass()
                 .addClass('state-icon ' + settings[$button.data('state')].icon);
 
@@ -102,9 +102,11 @@ Togglesv2.prototype.get = function () {
 };
 
 Togglesv2.prototype.set = function (key, value) {
-    this._change(function () {
-        this.state[key] = value;
-    }.bind(this));
+    this._change(
+        function () {
+            this.state[key] = value;
+        }.bind(this)
+    );
 };
 
 Togglesv2.prototype.enableToggle = function (key, enable) {

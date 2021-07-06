@@ -92,7 +92,8 @@ describe('API handling', () => {
                 handleCmake: res => res.send('cmake'),
                 handlePopularArguments: res => res.send('ok'),
                 handleOptimizationArguments: res => res.send('ok'),
-            }, (key, def) => {
+            },
+            (key, def) => {
                 switch (key) {
                     case 'formatters':
                         return 'formatt:badformatt';
@@ -107,14 +108,16 @@ describe('API handling', () => {
                 }
             },
             new StorageNull('/', {}),
-            'default');
+            'default',
+        );
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
     });
 
     it('should respond to plain text compiler requests', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/compilers')
             .then(res => {
                 res.should.have.status(200);
@@ -128,7 +131,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to JSON compiler requests', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/compilers')
             .set('Accept', 'application/json')
             .then(res => {
@@ -141,7 +145,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to JSON compiler requests with all fields', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/compilers?fields=all')
             .set('Accept', 'application/json')
             .then(res => {
@@ -154,7 +159,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to JSON compiler requests with limited fields', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/compilers?fields=id,name')
             .set('Accept', 'application/json')
             .then(res => {
@@ -167,7 +173,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to ASM doc requests', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/asm/MOV')
             .set('Accept', 'application/json')
             .then(res => {
@@ -180,7 +187,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to JSON compilers requests with c++ filter', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/compilers/c++')
             .set('Accept', 'application/json')
             .then(res => {
@@ -193,7 +201,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to JSON compilers requests with pascal filter', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/compilers/pascal')
             .set('Accept', 'application/json')
             .then(res => {
@@ -206,7 +215,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to plain text language requests', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/languages')
             .then(res => {
                 res.should.have.status(200);
@@ -222,7 +232,8 @@ describe('API handling', () => {
             });
     });
     it('should respond to JSON languages requests', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/api/languages')
             .set('Accept', 'application/json')
             .then(res => {
@@ -235,14 +246,16 @@ describe('API handling', () => {
             });
     });
     it('should list the formatters', () => {
-        if (process.platform !== 'win32') { // Expects an executable called echo
-            return chai.request(app)
+        if (process.platform !== 'win32') {
+            // Expects an executable called echo
+            return chai
+                .request(app)
                 .get('/api/formats')
                 .set('Accept', 'application/json')
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.should.deep.equals([{name: 'FormatT', version: 'Release'}]);
+                    res.body.should.deep.equals([{ name: 'FormatT', version: 'Release' }]);
                 })
                 .catch(err => {
                     throw err;
@@ -250,13 +263,14 @@ describe('API handling', () => {
         }
     });
     it('should not go through with invalid tools', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .post('/api/format/invalid')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(422);
                 res.should.be.json;
-                res.body.should.deep.equals({exit: 2, answer: 'Tool not supported'});
+                res.body.should.deep.equals({ exit: 2, answer: 'Tool not supported' });
             });
     });
     /*

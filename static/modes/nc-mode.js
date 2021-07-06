@@ -32,19 +32,58 @@ var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 function definition() {
     var nc = $.extend(true, {}, cpp.language); // deep copy
     // https://en.cppreference.com/w/c/keyword
-    nc.keywords = ['auto', 'break', 'case', 'char', 'const', 'continue', 'default',
-        'do', 'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
-        'int', 'long', 'register', 'restrict', 'return', 'short', 'signed', 'sizeof', 'static',
-        'struct', 'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
-        '_Alignas', '_Alignof', '_Atomic', '_Bool', '_Complex', '_Generic', '_Imaginary',
-        '_Noreturn', '_Static_assert', '_Thread_local',
+    nc.keywords = [
+        'auto',
+        'break',
+        'case',
+        'char',
+        'const',
+        'continue',
+        'default',
+        'do',
+        'double',
+        'else',
+        'enum',
+        'extern',
+        'float',
+        'for',
+        'goto',
+        'if',
+        'inline',
+        'int',
+        'long',
+        'register',
+        'restrict',
+        'return',
+        'short',
+        'signed',
+        'sizeof',
+        'static',
+        'struct',
+        'switch',
+        'typedef',
+        'union',
+        'unsigned',
+        'void',
+        'volatile',
+        'while',
+        '_Alignas',
+        '_Alignof',
+        '_Atomic',
+        '_Bool',
+        '_Complex',
+        '_Generic',
+        '_Imaginary',
+        '_Noreturn',
+        '_Static_assert',
+        '_Thread_local',
     ];
     return nc;
 }
 
 var def = definition();
 
-monaco.languages.register({id: 'nc'});
+monaco.languages.register({ id: 'nc' });
 monaco.languages.setLanguageConfiguration('nc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('nc', def);
 

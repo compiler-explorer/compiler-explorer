@@ -151,11 +151,41 @@ function definition() {
         ],
 
         operators: [
-            '=', '>', '<', '!', '~', '?', ':',
-            '==', '<=', '>=', '<>', '&&', '||',
-            '+', '-', '*', '/', '&', '|', '^', '%', '<<',
-            '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-            '^=', '%=', '<<=', '>>=', '>>>=',
+            '=',
+            '>',
+            '<',
+            '!',
+            '~',
+            '?',
+            ':',
+            '==',
+            '<=',
+            '>=',
+            '<>',
+            '&&',
+            '||',
+            '+',
+            '-',
+            '*',
+            '/',
+            '&',
+            '|',
+            '^',
+            '%',
+            '<<',
+            '>>',
+            '>>>',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
+            '&=',
+            '|=',
+            '^=',
+            '%=',
+            '<<=',
+            '>>=',
+            '>>>=',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -165,27 +195,33 @@ function definition() {
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
-                    cases: {
-                        '@typeKeywords': 'keyword',
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-z_$][\w$]*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
-                [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
+                ],
+                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                {include: '@whitespace'},
+                { include: '@whitespace' },
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'operator',
-                        '@default': '',
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 // numbers
                 [/\d*\.\d+([eE][-+]?\d+)?[fFdD]?/, 'number.float'],
@@ -195,7 +231,7 @@ function definition() {
                 [/\d+[lL]?/, 'number'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
                 [/"/, 'string', '@string'],
 
                 // characters
@@ -224,9 +260,7 @@ function definition() {
                 [/#.*$/, 'comment'],
             ],
 
-            comment: [
-                [/[#]/, 'comment'],
-            ],
+            comment: [[/[#]/, 'comment']],
 
             nestingcomment: [
                 [/[^<#]+/, 'comment'],
@@ -256,7 +290,7 @@ function configuration() {
             { open: '[', close: ']' },
             { open: '{', close: '}' },
             { open: '(', close: ')' },
-            { open: '\'', close: '\'', notIn: ['string', 'comment'] },
+            { open: "'", close: "'", notIn: ['string', 'comment'] },
             { open: '"', close: '"', notIn: ['string'] },
         ],
 
@@ -265,11 +299,11 @@ function configuration() {
             { open: '[', close: ']' },
             { open: '(', close: ')' },
             { open: '"', close: '"' },
-            { open: '\'', close: '\'' },
+            { open: "'", close: "'" },
         ],
     };
 }
 
-monaco.languages.register({id: 'cppx-gold'});
+monaco.languages.register({ id: 'cppx-gold' });
 monaco.languages.setMonarchTokensProvider('cppx-gold', definition());
 monaco.languages.setLanguageConfiguration('cppx-gold', configuration());

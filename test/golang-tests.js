@@ -28,7 +28,7 @@ import * as utils from '../lib/utils';
 import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
-    go: {id: 'go'},
+    go: { id: 'go' },
 };
 
 let ce;
@@ -44,7 +44,7 @@ function testGoAsm(basefilename) {
     const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
 
     const result = {
-        stderr: asmLines.map((line) => {
+        stderr: asmLines.map(line => {
             return {
                 text: line,
             };
@@ -66,7 +66,7 @@ function testGoAsm(basefilename) {
 
 describe('GO asm tests', () => {
     before(() => {
-        ce = makeCompilationEnvironment({languages});
+        ce = makeCompilationEnvironment({ languages });
     });
 
     it('Handles unknown line number correctly', () => {

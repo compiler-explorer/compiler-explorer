@@ -44,13 +44,16 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
     };
     this.availableLibs = {};
     this.updateAvailableLibs(possibleLibs);
-    _.each(state.libs, _.bind(function (lib) {
-        if (lib.name && lib.ver) {
-            this.markLibrary(lib.name, lib.ver, true);
-        } else {
-            this.markLibrary(lib.id, lib.version, true);
-        }
-    }, this));
+    _.each(
+        state.libs,
+        _.bind(function (lib) {
+            if (lib.name && lib.ver) {
+                this.markLibrary(lib.name, lib.ver, true);
+            } else {
+                this.markLibrary(lib.id, lib.version, true);
+            }
+        }, this)
+    );
 
     this.fullRefresh();
 
@@ -64,17 +67,26 @@ function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback
         searchInput.trigger('focus');
     });
 
-    searchInput.on('input', _.bind(function () {
-        this.startSearching();
-    }, this));
+    searchInput.on(
+        'input',
+        _.bind(function () {
+            this.startSearching();
+        }, this)
+    );
 
-    this.domRoot.find('.lib-search-button').on('click', _.bind(function () {
-        this.startSearching();
-    }, this));
+    this.domRoot.find('.lib-search-button').on(
+        'click',
+        _.bind(function () {
+            this.startSearching();
+        }, this)
+    );
 
-    this.dropdownButton.on('click', _.bind(function () {
-        this.domRoot.modal({});
-    }, this));
+    this.dropdownButton.on(
+        'click',
+        _.bind(function () {
+            this.domRoot.modal({});
+        }, this)
+    );
 
     this.updateButton();
 }
@@ -131,7 +143,7 @@ LibsWidgetExt.prototype.removeFromFavorites = function (libId, versionId) {
     var faves = this.getFavorites();
     if (faves[libId]) {
         faves[libId] = _.filter(faves[libId], function (v) {
-            return (v !== versionId);
+            return v !== versionId;
         });
     }
 
@@ -145,11 +157,14 @@ LibsWidgetExt.prototype.newFavoriteLibDiv = function (libId, versionId, lib, ver
 
     var quickSelectButton = libDiv.find('.lib-name-and-version');
     quickSelectButton.html(lib.name + ' ' + version.version);
-    quickSelectButton.on('click', _.bind(function () {
-        this.selectLibAndVersion(libId, versionId);
-        this.showSelectedLibs();
-        this.onChangeCallback();
-    }, this));
+    quickSelectButton.on(
+        'click',
+        _.bind(function () {
+            this.selectLibAndVersion(libId, versionId);
+            this.showSelectedLibs();
+            this.onChangeCallback();
+        }, this)
+    );
 
     return libDiv;
 };
@@ -159,18 +174,24 @@ LibsWidgetExt.prototype.showFavorites = function () {
     favoritesDiv.html('');
 
     var faves = this.getFavorites();
-    _.each(faves, _.bind(function (versionArr, libId) {
-        _.each(versionArr, _.bind(function (versionId) {
-            var lib = this.getLibInfoById(libId);
-            if (lib) {
-                var version = lib.versions[versionId];
-                if (version) {
-                    var div = this.newFavoriteLibDiv(libId, versionId, lib, version);
-                    favoritesDiv.append(div);
-                }
-            }
-        }, this));
-    }, this));
+    _.each(
+        faves,
+        _.bind(function (versionArr, libId) {
+            _.each(
+                versionArr,
+                _.bind(function (versionId) {
+                    var lib = this.getLibInfoById(libId);
+                    if (lib) {
+                        var version = lib.versions[versionId];
+                        if (version) {
+                            var div = this.newFavoriteLibDiv(libId, versionId, lib, version);
+                            favoritesDiv.append(div);
+                        }
+                    }
+                }, this)
+            );
+        }, this)
+    );
 };
 
 LibsWidgetExt.prototype.getAndEmptySearchResults = function () {
@@ -186,20 +207,26 @@ LibsWidgetExt.prototype.newSelectedLibDiv = function (libId, versionId, lib, ver
 
     var detailsButton = libDiv.find('.lib-name-and-version');
     detailsButton.html(lib.name + ' ' + version.version);
-    detailsButton.on('click', _.bind(function () {
-        var searchResults = this.getAndEmptySearchResults();
-        this.addSearchResult(libId, lib, searchResults);
-    }, this));
+    detailsButton.on(
+        'click',
+        _.bind(function () {
+            var searchResults = this.getAndEmptySearchResults();
+            this.addSearchResult(libId, lib, searchResults);
+        }, this)
+    );
 
     var deleteButton = libDiv.find('.lib-remove');
-    deleteButton.on('click', _.bind(function () {
-        this.markLibrary(libId, versionId, false);
-        libDiv.remove();
-        this.showSelectedLibs();
-        this.onChangeCallback();
-        // We need to refresh the library lists, or the selector will still show up with the old library version
-        this.startSearching();
-    }, this));
+    deleteButton.on(
+        'click',
+        _.bind(function () {
+            this.markLibrary(libId, versionId, false);
+            libDiv.remove();
+            this.showSelectedLibs();
+            this.onChangeCallback();
+            // We need to refresh the library lists, or the selector will still show up with the old library version
+            this.startSearching();
+        }, this)
+    );
 
     return libDiv;
 };
@@ -245,56 +272,65 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
     var versions = result.find('.lib-version-select');
     versions.html('');
     versions.append($('<option value="">-</option>'));
-    _.each(lib.versions, _.bind(function (version, versionId) {
-        var option = $('<option>');
-        if (version.used) {
-            option.attr('selected','selected');
+    _.each(
+        lib.versions,
+        _.bind(function (version, versionId) {
+            var option = $('<option>');
+            if (version.used) {
+                option.attr('selected', 'selected');
 
-            if (this.isAFavorite(libId, versionId)) {
+                if (this.isAFavorite(libId, versionId)) {
+                    faveStar.removeClass('far').addClass('fas');
+                }
+
+                faveButton.show();
+            }
+            option.attr('value', versionId);
+            option.html(version.version);
+            versions.append(option);
+        }, this)
+    );
+
+    faveButton.on(
+        'click',
+        _.bind(function () {
+            var option = versions.find('option:selected');
+            var verId = option.attr('value');
+            if (this.isAFavorite(libId, verId)) {
+                this.removeFromFavorites(libId, verId);
+                faveStar.removeClass('fas').addClass('far');
+            } else {
+                this.addToFavorites(libId, verId);
                 faveStar.removeClass('far').addClass('fas');
             }
+            this.showFavorites();
+        }, this)
+    );
 
-            faveButton.show();
-        }
-        option.attr('value', versionId);
-        option.html(version.version);
-        versions.append(option);
-    }, this));
+    versions.on(
+        'change',
+        _.bind(function () {
+            var option = versions.find('option:selected');
+            var verId = option.attr('value');
 
-    faveButton.on('click', _.bind(function () {
-        var option = versions.find('option:selected');
-        var verId = option.attr('value');
-        if (this.isAFavorite(libId, verId)) {
-            this.removeFromFavorites(libId, verId);
-            faveStar.removeClass('fas').addClass('far');
-        } else {
-            this.addToFavorites(libId, verId);
-            faveStar.removeClass('far').addClass('fas');
-        }
-        this.showFavorites();
-    }, this));
+            this.selectLibAndVersion(libId, verId);
+            this.showSelectedLibs();
 
-    versions.on('change', _.bind(function () {
-        var option = versions.find('option:selected');
-        var verId = option.attr('value');
+            if (this.isAFavorite(libId, verId)) {
+                faveStar.removeClass('far').addClass('fas');
+            } else {
+                faveStar.removeClass('fas').addClass('far');
+            }
 
-        this.selectLibAndVersion(libId, verId);
-        this.showSelectedLibs();
+            if (verId) {
+                faveButton.show();
+            } else {
+                faveButton.hide();
+            }
 
-        if (this.isAFavorite(libId, verId)) {
-            faveStar.removeClass('far').addClass('fas');
-        } else {
-            faveStar.removeClass('fas').addClass('far');
-        }
-
-        if (verId) {
-            faveButton.show();
-        } else {
-            faveButton.hide();
-        }
-
-        this.onChangeCallback();
-    }, this));
+            this.onChangeCallback();
+        }, this)
+    );
 
     return result;
 };
@@ -318,31 +354,36 @@ LibsWidgetExt.prototype.startSearching = function () {
 
     var descriptionSearchResults = [];
 
-    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
-        if (library.versions && library.versions.autodetect) return;
+    _.each(
+        this.availableLibs[this.currentLangId][this.currentCompilerId],
+        _.bind(function (library, libId) {
+            if (library.versions && library.versions.autodetect) return;
 
-        if (library.name) {
-            if (library.name.toLowerCase().includes(lcSearchtext)) {
-                this.addSearchResult(libId, library, searchResults);
-                return;
+            if (library.name) {
+                if (library.name.toLowerCase().includes(lcSearchtext)) {
+                    this.addSearchResult(libId, library, searchResults);
+                    return;
+                }
             }
-        }
 
-        if (library.description) {
-            if (library.description.toLowerCase().includes(lcSearchtext)) {
-
-                descriptionSearchResults.push({
-                    libId: libId,
-                    library: library,
-                    searchResults: searchResults,
-                });
+            if (library.description) {
+                if (library.description.toLowerCase().includes(lcSearchtext)) {
+                    descriptionSearchResults.push({
+                        libId: libId,
+                        library: library,
+                        searchResults: searchResults,
+                    });
+                }
             }
-        }
-    }, this));
+        }, this)
+    );
 
-    _.each(descriptionSearchResults, _.bind(function (res) {
-        this.addSearchResult(res.libId, res.library, res.searchResults);
-    }, this));
+    _.each(
+        descriptionSearchResults,
+        _.bind(function (res) {
+            this.addSearchResult(res.libId, res.library, res.searchResults);
+        }, this)
+    );
 };
 
 LibsWidgetExt.prototype.showSelectedLibs = function () {
@@ -350,13 +391,16 @@ LibsWidgetExt.prototype.showSelectedLibs = function () {
     items.html('');
 
     var selectedLibs = this.listUsedLibs();
-    _.each(selectedLibs, _.bind(function (versionId, libId) {
-        var lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
-        var version = lib.versions[versionId];
+    _.each(
+        selectedLibs,
+        _.bind(function (versionId, libId) {
+            var lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
+            var version = lib.versions[versionId];
 
-        var libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
-        items.append(libDiv);
-    }, this));
+            var libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
+            items.append(libDiv);
+        }, this)
+    );
 };
 
 LibsWidgetExt.prototype.showSelectedLibsAsSearchResults = function () {
@@ -368,25 +412,31 @@ LibsWidgetExt.prototype.showSelectedLibsAsSearchResults = function () {
         return;
     }
 
-    _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
-        if (library.versions && library.versions.autodetect) return;
+    _.each(
+        this.availableLibs[this.currentLangId][this.currentCompilerId],
+        _.bind(function (library, libId) {
+            if (library.versions && library.versions.autodetect) return;
 
-        var card = this.newSearchResult(libId, library);
-        searchResults.append(card);
-    }, this));
+            var card = this.newSearchResult(libId, library);
+            searchResults.append(card);
+        }, this)
+    );
 };
 
 LibsWidgetExt.prototype.initLangDefaultLibs = function () {
     var defaultLibs = options.defaultLibs[this.currentLangId];
     if (!defaultLibs) return;
-    _.each(defaultLibs.split(':'), _.bind(function (libPair) {
-        var pairSplits = libPair.split('.');
-        if (pairSplits.length === 2) {
-            var lib = pairSplits[0];
-            var ver = pairSplits[1];
-            this.markLibrary(lib, ver, true);
-        }
-    }, this));
+    _.each(
+        defaultLibs.split(':'),
+        _.bind(function (libPair) {
+            var pairSplits = libPair.split('.');
+            if (pairSplits.length === 2) {
+                var lib = pairSplits[0];
+                var ver = pairSplits[1];
+                this.markLibrary(lib, ver, true);
+            }
+        }, this)
+    );
 };
 
 LibsWidgetExt.prototype.updateAvailableLibs = function (possibleLibs) {
@@ -396,11 +446,13 @@ LibsWidgetExt.prototype.updateAvailableLibs = function (possibleLibs) {
 
     if (!this.availableLibs[this.currentLangId][this.currentCompilerId]) {
         if (this.currentCompilerId === '_default_') {
-            this.availableLibs[this.currentLangId][this.currentCompilerId] =
-                $.extend(true, {}, options.libs[this.currentLangId]);
+            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
+                true,
+                {},
+                options.libs[this.currentLangId]
+            );
         } else {
-            this.availableLibs[this.currentLangId][this.currentCompilerId] =
-                $.extend(true, {}, possibleLibs);
+            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
         }
     }
 
@@ -421,18 +473,23 @@ LibsWidgetExt.prototype.setNewLangId = function (langId, compilerId, possibleLib
     // Clear the dom Root so it gets rebuilt with the new language libraries
     this.updateAvailableLibs(possibleLibs);
 
-    _.forEach(libsInUse, _.bind(function (version, lib) {
-        this.markLibrary(lib, version, true);
-    }, this));
+    _.forEach(
+        libsInUse,
+        _.bind(function (version, lib) {
+            this.markLibrary(lib, version, true);
+        }, this)
+    );
 
     this.fullRefresh();
     this.onChangeCallback();
 };
 
 LibsWidgetExt.prototype.getVersionOrAlias = function (name, version) {
-    if (this.availableLibs[this.currentLangId] &&
+    if (
+        this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][name]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name]
+    ) {
         if (this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
             return version;
         } else {
@@ -440,15 +497,18 @@ LibsWidgetExt.prototype.getVersionOrAlias = function (name, version) {
                 this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
                 function (ver) {
                     return ver.alias && ver.alias.includes(version);
-                });
+                }
+            );
         }
     }
 };
 
 LibsWidgetExt.prototype.getLibInfoById = function (libId) {
-    if (this.availableLibs[this.currentLangId] &&
+    if (
+        this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][libId]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId][libId]
+    ) {
         return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
     }
 
@@ -458,30 +518,34 @@ LibsWidgetExt.prototype.getLibInfoById = function (libId) {
 LibsWidgetExt.prototype.markLibrary = function (name, version, used) {
     var actualVersion = this.getVersionOrAlias(name, version);
 
-    if (this.availableLibs[this.currentLangId] &&
+    if (
+        this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId][name] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]
+    ) {
         this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion].used = used;
     }
 };
 
 LibsWidgetExt.prototype.selectLibAndVersion = function (libId, versionId) {
-    if (this.availableLibs[this.currentLangId] &&
+    if (
+        this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][libId]) {
-
+        this.availableLibs[this.currentLangId][this.currentCompilerId][libId]
+    ) {
         _.each(
             this.availableLibs[this.currentLangId][this.currentCompilerId][libId].versions,
             function (curver, curverId) {
                 curver.used = curverId === versionId;
-            });
+            }
+        );
     }
 };
 
 LibsWidgetExt.prototype.get = function () {
     return _.map(this.listUsedLibs(), function (item, libId) {
-        return {name: libId, ver: item};
+        return { name: libId, ver: item };
     });
 };
 
@@ -503,7 +567,7 @@ LibsWidgetExt.prototype.getLibsInUse = function () {
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
-                var libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
+                var libVer = Object.assign({ libId: libId, versionId: ver }, library.versions[ver]);
                 libs.push(libVer);
             }
         });

@@ -46,7 +46,9 @@ function CompilerPicker(domRoot, hub, langId, compilerId, onCompilerChange, comp
     if (_.isFunction(compilerIsVisible)) {
         this.compilerIsVisible = compilerIsVisible;
     } else {
-        this.compilerIsVisible = function () { return true; };
+        this.compilerIsVisible = function () {
+            return true;
+        };
     }
 
     this.initialize(langId, compilerId);
@@ -54,8 +56,7 @@ function CompilerPicker(domRoot, hub, langId, compilerId, onCompilerChange, comp
 
 CompilerPicker.prototype.close = function () {
     this.eventHub.unsubscribe();
-    if (this.tomSelect)
-        this.tomSelect.destroy();
+    if (this.tomSelect) this.tomSelect.destroy();
     this.tomSelect = null;
 };
 
@@ -91,60 +92,71 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
         render: {
             option: function (data, escape) {
                 var extraClasses = data.$groups.indexOf(favoriteGroupName) !== -1 ? 'fas fa-star fav' : 'far fa-star';
-                return '<div class="d-flex"><div>' + escape(data.name) + '</div>' +
-                    '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
-                    '<i class="' + extraClasses + '"></i>' +
+                return (
+                    '<div class="d-flex"><div>' +
+                    escape(data.name) +
                     '</div>' +
-                    '</div>';
+                    '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
+                    '<i class="' +
+                    extraClasses +
+                    '"></i>' +
+                    '</div>' +
+                    '</div>'
+                );
             },
         },
     });
 
-    $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', _.bind(function (evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
+    $(this.tomSelect.dropdown_content).on(
+        'click',
+        '.toggle-fav',
+        _.bind(function (evt) {
+            evt.preventDefault();
+            evt.stopPropagation();
 
-        var optionElement = evt.currentTarget.closest('.option');
-        var clickedGroup = optionElement.parentElement.dataset.group;
-        var value = optionElement.dataset.value;
-        var data = this.tomSelect.options[value];
-        var isAddingNewFavorite = data.$groups.indexOf(favoriteGroupName) === -1;
-        var elemTop = optionElement.offsetTop;
+            var optionElement = evt.currentTarget.closest('.option');
+            var clickedGroup = optionElement.parentElement.dataset.group;
+            var value = optionElement.dataset.value;
+            var data = this.tomSelect.options[value];
+            var isAddingNewFavorite = data.$groups.indexOf(favoriteGroupName) === -1;
+            var elemTop = optionElement.offsetTop;
 
-        if (isAddingNewFavorite) {
-            data.$groups.push(favoriteGroupName);
-            this.addToFavorites(data.id);
-        } else {
-            data.$groups.splice(data.group.indexOf(favoriteGroupName), 1);
-            this.removeFromFavorites(data.id);
-        }
+            if (isAddingNewFavorite) {
+                data.$groups.push(favoriteGroupName);
+                this.addToFavorites(data.id);
+            } else {
+                data.$groups.splice(data.group.indexOf(favoriteGroupName), 1);
+                this.removeFromFavorites(data.id);
+            }
 
-        this.tomSelect.updateOption(value, data);
-        this.tomSelect.refreshOptions(false);
+            this.tomSelect.updateOption(value, data);
+            this.tomSelect.refreshOptions(false);
 
-        if (clickedGroup !== favoriteGroupName) {
-            // If the user clicked on an option that wasn't in the top "Favorite" group, then we just added
-            // or removed a bunch of controls way up in the list. Find the new element top and adjust the scroll
-            // so the element that was just clicked is back under the mouse.
-            optionElement = this.tomSelect.getOption(value);
-            var previousSmooth = this.tomSelect.dropdown_content.style.scrollBehavior;
-            this.tomSelect.dropdown_content.style.scrollBehavior = 'auto';
-            this.tomSelect.dropdown_content.scrollTop += (optionElement.offsetTop - elemTop);
-            this.tomSelect.dropdown_content.style.scrollBehavior = previousSmooth;
-        }
-    }, this));
+            if (clickedGroup !== favoriteGroupName) {
+                // If the user clicked on an option that wasn't in the top "Favorite" group, then we just added
+                // or removed a bunch of controls way up in the list. Find the new element top and adjust the scroll
+                // so the element that was just clicked is back under the mouse.
+                optionElement = this.tomSelect.getOption(value);
+                var previousSmooth = this.tomSelect.dropdown_content.style.scrollBehavior;
+                this.tomSelect.dropdown_content.style.scrollBehavior = 'auto';
+                this.tomSelect.dropdown_content.scrollTop += optionElement.offsetTop - elemTop;
+                this.tomSelect.dropdown_content.style.scrollBehavior = previousSmooth;
+            }
+        }, this)
+    );
 };
 
 CompilerPicker.prototype.getOptions = function (langId, compilerId) {
     var favorites = this.getFavorites();
     return _.chain(this.compilerService.getCompilersForLang(langId))
-        .filter(_.bind(function (e) {
-            return (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId;
-        }, this))
+        .filter(
+            _.bind(function (e) {
+                return (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId;
+            }, this)
+        )
         .map(function (e) {
             e.$groups = [e.group];
-            if (favorites[e.id])
-                e.$groups.unshift(favoriteGroupName);
+            if (favorites[e.id]) e.$groups.unshift(favoriteGroupName);
             return e;
         })
         .value();
@@ -152,7 +164,7 @@ CompilerPicker.prototype.getOptions = function (langId, compilerId) {
 
 CompilerPicker.prototype.getGroups = function (langId) {
     var optgroups = this.compilerService.getGroupsInUse(langId);
-    optgroups.unshift({value: favoriteGroupName, label: 'Favorites'});
+    optgroups.unshift({ value: favoriteGroupName, label: 'Favorites' });
     return optgroups;
 };
 

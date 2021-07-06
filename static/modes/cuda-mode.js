@@ -45,12 +45,18 @@ function definition() {
 
     // Keywords for CUDA
     addKeywords([
-        '__host__', '__global__', '__device__', '__shared__', '__noinline__', '__forceinline__', '__restrict__',
+        '__host__',
+        '__global__',
+        '__device__',
+        '__shared__',
+        '__noinline__',
+        '__forceinline__',
+        '__restrict__',
     ]);
 
     return cuda;
 }
 
-monaco.languages.register({id: 'cuda'});
+monaco.languages.register({ id: 'cuda' });
 monaco.languages.setLanguageConfiguration('cuda', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cuda', definition());

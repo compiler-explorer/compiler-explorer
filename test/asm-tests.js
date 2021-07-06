@@ -33,10 +33,12 @@ describe('ASM CL parser', () => {
             directives: true,
         });
 
-        result.asm.should.deep.equal([{
-            source: null,
-            text: '<Compilation failed>',
-        }]);
+        result.asm.should.deep.equal([
+            {
+                source: null,
+                text: '<Compilation failed>',
+            },
+        ]);
     });
 });
 
@@ -46,16 +48,20 @@ describe('ASM regex base class', () => {
         AsmRegex.filterAsmLine(line, {}).should.equal(line);
     });
     it('should use up internal whitespace when asked', () => {
-        AsmRegex.filterAsmLine('     this    is    a line', {trim: true}).should.equal('  this is a line');
-        AsmRegex.filterAsmLine('this    is    a line', {trim: true}).should.equal('this is a line');
+        AsmRegex.filterAsmLine('     this    is    a line', { trim: true }).should.equal('  this is a line');
+        AsmRegex.filterAsmLine('this    is    a line', { trim: true }).should.equal('this is a line');
     });
     it('should keep whitespace in strings', () => {
-        AsmRegex.filterAsmLine('equs     "this    string"', {trim: true}).should.equal('equs "this    string"');
-        AsmRegex.filterAsmLine('     equs     "this    string"', {trim: true}).should.equal('  equs "this    string"');
-        AsmRegex.filterAsmLine('equs     "this    \\"  string  \\""', {trim: true}).should.equal('equs "this    \\"  string  \\""');
+        AsmRegex.filterAsmLine('equs     "this    string"', { trim: true }).should.equal('equs "this    string"');
+        AsmRegex.filterAsmLine('     equs     "this    string"', { trim: true }).should.equal(
+            '  equs "this    string"',
+        );
+        AsmRegex.filterAsmLine('equs     "this    \\"  string  \\""', { trim: true }).should.equal(
+            'equs "this    \\"  string  \\""',
+        );
     });
     it('should not get upset by mismatched strings', () => {
-        AsmRegex.filterAsmLine("a   \"string    'yeah", {trim: true}).should.equal("a \"string 'yeah");
+        AsmRegex.filterAsmLine('a   "string    \'yeah', { trim: true }).should.equal('a "string \'yeah');
     });
 });
 

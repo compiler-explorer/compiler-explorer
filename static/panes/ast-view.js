@@ -41,12 +41,15 @@ function Ast(hub, container, state) {
     this.decorations = {};
     this.prevDecorations = [];
     var root = this.domRoot.find('.monaco-placeholder');
-    this.astEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
-        language: 'plaintext',
-        readOnly: true,
-        glyphMargin: true,
-        lineNumbersMinChars: 3,
-    }));
+    this.astEditor = monaco.editor.create(
+        root[0],
+        monacoConfig.extendConfig({
+            language: 'plaintext',
+            readOnly: true,
+            glyphMargin: true,
+            lineNumbersMinChars: 3,
+        })
+    );
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
@@ -84,9 +87,11 @@ Ast.prototype.initButtons = function (state) {
 Ast.prototype.initCallbacks = function () {
     this.linkedFadeTimeoutId = -1;
     this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
-    this.astEditor.onMouseMove(_.bind(function (e) {
-        this.mouseMoveThrottledFunction(e);
-    }, this));
+    this.astEditor.onMouseMove(
+        _.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
+        }, this)
+    );
 
     this.fontScale.on('change', _.bind(this.updateState, this));
 
@@ -106,11 +111,12 @@ Ast.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
-    this.cursorSelectionThrottledFunction =
-        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-    this.astEditor.onDidChangeCursorSelection(_.bind(function (e) {
-        this.cursorSelectionThrottledFunction(e);
-    }, this));
+    this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.astEditor.onDidChangeCursorSelection(
+        _.bind(function (e) {
+            this.cursorSelectionThrottledFunction(e);
+        }, this)
+    );
 };
 
 // TODO: de-dupe with compiler etc
@@ -128,7 +134,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasAstOutput) {
         this.showAstResults(result.astOutput);
     } else if (compiler.supportsAstView) {
-        this.showAstResults([{text: '<No output>'}]);
+        this.showAstResults([{ text: '<No output>' }]);
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
@@ -154,17 +160,18 @@ Ast.prototype.getDisplayableAst = function (astResult) {
 };
 
 Ast.prototype.showAstResults = function (results) {
-    var fullText = results.map(function (x) {
-        return x.text;
-    }).join('\n');
+    var fullText = results
+        .map(function (x) {
+            return x.text;
+        })
+        .join('\n');
     this.astEditor.setValue(fullText);
     this.astCode = results;
 
     if (!this.awaitingInitialResults) {
         if (this.selection) {
             this.astEditor.setSelection(this.selection);
-            this.astEditor.revealLinesInCenter(this.selection.startLineNumber,
-                this.selection.endLineNumber);
+            this.astEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
         }
         this.awaitingInitialResults = true;
     }
@@ -185,8 +192,13 @@ Ast.prototype.onColours = function (id, colours, scheme) {
     if (id === this._compilerid) {
         var astColours = {};
         _.each(this.astCode, function (x, index) {
-            if (x.source && x.source.from.line && x.source.to.line &&
-                x.source.from.line <= x.source.to.line && x.source.to.line < x.source.from.line + 100) {
+            if (
+                x.source &&
+                x.source.from.line &&
+                x.source.to.line &&
+                x.source.from.line <= x.source.to.line &&
+                x.source.to.line < x.source.from.line + 100
+            ) {
                 var i;
                 for (i = x.source.from.line; i <= x.source.to.line; ++i) {
                     if (colours[i - 1] !== undefined) {
@@ -199,7 +211,6 @@ Ast.prototype.onColours = function (id, colours, scheme) {
         this.colours = colour.applyColours(this.astEditor, astColours, scheme, this.colours);
     }
 };
-
 
 Ast.prototype.onCompilerClose = function (id) {
     if (id === this._compilerid) {
@@ -267,8 +278,15 @@ Ast.prototype.onMouseMove = function (e) {
                 }
             }
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, colBegin, colEnd, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine,
-                colBegin, colEnd, false, this.getPaneName());
+            this.eventHub.emit(
+                'panesLinkLine',
+                this._compilerid,
+                sourceLine,
+                colBegin,
+                colEnd,
+                false,
+                this.getPaneName()
+            );
         }
     }
 };
@@ -281,8 +299,7 @@ Ast.prototype.onDidChangeCursorSelection = function (e) {
 };
 
 Ast.prototype.updateDecorations = function () {
-    this.prevDecorations = this.astEditor.deltaDecorations(
-        this.prevDecorations, _.flatten(_.values(this.decorations)));
+    this.prevDecorations = this.astEditor.deltaDecorations(this.prevDecorations, _.flatten(_.values(this.decorations)));
 };
 
 Ast.prototype.clearLinkedLines = function () {
@@ -296,13 +313,16 @@ Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colE
         var singleNodeLines = [];
         var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.astCode, function (astLine, i) {
-            if (astLine.source
-                && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
+            if (astLine.source && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
                 var line = i + 1;
                 lineNums.push(line);
-                if (signalFromAnotherPane &&
-                    astLine.source.from.line === lineNumber && astLine.source.to.line === lineNumber &&
-                    astLine.source.from.col <= colEnd && colBegin <= astLine.source.to.col) {
+                if (
+                    signalFromAnotherPane &&
+                    astLine.source.from.line === lineNumber &&
+                    astLine.source.to.line === lineNumber &&
+                    astLine.source.from.col <= colEnd &&
+                    colBegin <= astLine.source.to.col
+                ) {
                     singleNodeLines.push(line);
                 }
             }
@@ -332,10 +352,13 @@ Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colE
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }
-        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
-            this.clearLinkedLines();
-            this.linkedFadeTimeoutId = -1;
-        }, this), 5000);
+        this.linkedFadeTimeoutId = setTimeout(
+            _.bind(function () {
+                this.clearLinkedLines();
+                this.linkedFadeTimeoutId = -1;
+            }, this),
+            5000
+        );
         this.updateDecorations();
     }
 };

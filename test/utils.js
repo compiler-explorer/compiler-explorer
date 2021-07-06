@@ -49,8 +49,4 @@ export function resolvePathFromTestRoot(...args) {
     return path.resolve(TEST_ROOT, ...args);
 }
 
-export {
-    fs,
-    chai,
-    path,
-};
+export { fs, chai, path };

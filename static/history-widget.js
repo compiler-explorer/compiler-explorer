@@ -24,8 +24,7 @@
 
 'use strict';
 
-var
-    $ = require('jquery'),
+var $ = require('jquery'),
     _ = require('underscore'),
     monaco = require('monaco-editor'),
     ga = require('analytics'),
@@ -83,13 +82,15 @@ HistoryWidget.prototype.initializeIfNeeded = function () {
         this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
         this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
 
-        this.modal.find('.inline-diff-checkbox').click(_.bind(function (event) {
-            var inline = $(event.target).prop('checked');
-            this.diffEditor.updateOptions({
-                renderSideBySide: !inline,
-            });
-            this.resizeLayout();
-        }, this));
+        this.modal.find('.inline-diff-checkbox').click(
+            _.bind(function (event) {
+                var inline = $(event.target).prop('checked');
+                this.diffEditor.updateOptions({
+                    renderSideBySide: !inline,
+                });
+                this.resizeLayout();
+            }, this)
+        );
     }
 };
 
@@ -101,18 +102,25 @@ HistoryWidget.prototype.populateFromLocalStorage = function () {
     this.currentList = History.sortedList();
     this.populate(
         this.modal.find('.historiccode'),
-        _.map(this.currentList, _.bind(function (data) {
-            var dt = new Date(data.dt);
-            var languages = this.getLanguagesFromHistoryEntry(data).join(', ');
-            return {
-                dt: data.dt,
-                name: dt.toString().replace(/\s\(.*\)/, '').concat(' (' + languages + ')'),
-                load: _.bind(function () {
-                    this.onLoad(data);
-                    this.modal.modal('hide');
-                }, this),
-            };
-        }, this)));
+        _.map(
+            this.currentList,
+            _.bind(function (data) {
+                var dt = new Date(data.dt);
+                var languages = this.getLanguagesFromHistoryEntry(data).join(', ');
+                return {
+                    dt: data.dt,
+                    name: dt
+                        .toString()
+                        .replace(/\s\(.*\)/, '')
+                        .concat(' (' + languages + ')'),
+                    load: _.bind(function () {
+                        this.onLoad(data);
+                        this.modal.modal('hide');
+                    }, this),
+                };
+            }, this)
+        )
+    );
 };
 
 HistoryWidget.prototype.hideRadiosAndSetDiff = function () {
@@ -122,53 +130,55 @@ HistoryWidget.prototype.hideRadiosAndSetDiff = function () {
     var foundbase = false;
     var foundcomp = false;
 
-    items.each(_.bind(function (idx, elem) {
-        var li = $(elem);
-        var dt = li.data('dt');
+    items.each(
+        _.bind(function (idx, elem) {
+            var li = $(elem);
+            var dt = li.data('dt');
 
-        var base = li.find('.base');
-        var comp = li.find('.comp');
+            var base = li.find('.base');
+            var comp = li.find('.comp');
 
-        var baseShouldBeVisible = true;
-        var compShouldBeVisible = true;
+            var baseShouldBeVisible = true;
+            var compShouldBeVisible = true;
 
-        if (comp.prop('checked')) {
-            foundcomp = true;
-            baseShouldBeVisible = false;
+            if (comp.prop('checked')) {
+                foundcomp = true;
+                baseShouldBeVisible = false;
 
-            var itemRight = _.find(this.currentList, function (item) {
-                return (item.dt === dt);
-            });
+                var itemRight = _.find(this.currentList, function (item) {
+                    return item.dt === dt;
+                });
 
-            this.rhs.update(itemRight);
-        } else if (base.prop('checked')) {
-            foundbase = true;
+                this.rhs.update(itemRight);
+            } else if (base.prop('checked')) {
+                foundbase = true;
 
-            var itemLeft = _.find(this.currentList, function (item) {
-                return (item.dt === dt);
-            });
+                var itemLeft = _.find(this.currentList, function (item) {
+                    return item.dt === dt;
+                });
 
-            this.lhs.update(itemLeft);
-        }
+                this.lhs.update(itemLeft);
+            }
 
-        if (foundbase && foundcomp) {
-            compShouldBeVisible = false;
-        } else if (!foundbase && !foundcomp) {
-            baseShouldBeVisible = false;
-        }
+            if (foundbase && foundcomp) {
+                compShouldBeVisible = false;
+            } else if (!foundbase && !foundcomp) {
+                baseShouldBeVisible = false;
+            }
 
-        if (compShouldBeVisible) {
-            comp.css('visibility', '');
-        } else {
-            comp.css('visibility', 'hidden');
-        }
+            if (compShouldBeVisible) {
+                comp.css('visibility', '');
+            } else {
+                comp.css('visibility', 'hidden');
+            }
 
-        if (baseShouldBeVisible) {
-            base.css('visibility', '');
-        } else {
-            base.css('visibility', 'hidden');
-        }
-    }, this));
+            if (baseShouldBeVisible) {
+                base.css('visibility', '');
+            } else {
+                base.css('visibility', 'hidden');
+            }
+        }, this)
+    );
 };
 
 HistoryWidget.prototype.populate = function (root, list) {
@@ -178,30 +188,30 @@ HistoryWidget.prototype.populate = function (root, list) {
     var baseMarked = false;
     var compMarked = false;
 
-    _.each(list, _.bind(function (elem) {
-        var li = template
-            .clone()
-            .removeClass('template')
-            .appendTo(root);
+    _.each(
+        list,
+        _.bind(function (elem) {
+            var li = template.clone().removeClass('template').appendTo(root);
 
-        li.data('dt', elem.dt);
+            li.data('dt', elem.dt);
 
-        var base = li.find('.base');
-        var comp = li.find('.comp');
+            var base = li.find('.base');
+            var comp = li.find('.comp');
 
-        if (!compMarked) {
-            comp.prop('checked', 'checked');
-            compMarked = true;
-        } else if (!baseMarked) {
-            base.prop('checked', 'checked');
-            baseMarked = true;
-        }
+            if (!compMarked) {
+                comp.prop('checked', 'checked');
+                compMarked = true;
+            } else if (!baseMarked) {
+                base.prop('checked', 'checked');
+                baseMarked = true;
+            }
 
-        base.click(_.bind(this.hideRadiosAndSetDiff, this));
-        comp.click(_.bind(this.hideRadiosAndSetDiff, this));
+            base.click(_.bind(this.hideRadiosAndSetDiff, this));
+            comp.click(_.bind(this.hideRadiosAndSetDiff, this));
 
-        li.find('a').text(elem.name).click(elem.load);
-    }, this));
+            li.find('a').text(elem.name).click(elem.load);
+        }, this)
+    );
 
     this.hideRadiosAndSetDiff();
 };
@@ -219,9 +229,12 @@ HistoryWidget.prototype.run = function (onLoad) {
     this.populateFromLocalStorage();
     this.onLoad = onLoad;
 
-    this.modal.on('shown.bs.modal', _.bind(function () {
-        this.resizeLayout();
-    }, this));
+    this.modal.on(
+        'shown.bs.modal',
+        _.bind(function () {
+            this.resizeLayout();
+        }, this)
+    );
 
     this.modal.modal();
 

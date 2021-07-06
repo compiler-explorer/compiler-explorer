@@ -28,10 +28,10 @@ import { fs, path, should } from './utils';
 
 describe('Language definitions tests', () => {
     it('Has id equal to object key', () => {
-        for (const languageKey of Object.keys(languages))  should.equal(languages[languageKey].id, languageKey);
+        for (const languageKey of Object.keys(languages)) should.equal(languages[languageKey].id, languageKey);
     });
     it('Has extensions with leading dots', () => {
-        for (const languageKey of Object.keys(languages))  should.equal(languages[languageKey].extensions[0][0], '.');
+        for (const languageKey of Object.keys(languages)) should.equal(languages[languageKey].extensions[0][0], '.');
     });
     it('Has examples & are initialized', () => {
         for (const languageKey of Object.keys(languages)) {

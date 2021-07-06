@@ -34,7 +34,6 @@ var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 
-
 function GccDump(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
@@ -42,12 +41,15 @@ function GccDump(hub, container, state) {
     this.domRoot.html($('#gccdump').html());
     var root = this.domRoot.find('.monaco-placeholder');
 
-    this.gccDumpEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
-        readOnly: true,
-        glyphMargin: true,
-        lineNumbersMinChars: 3,
-        dropdownParent: 'body',
-    }));
+    this.gccDumpEditor = monaco.editor.create(
+        root[0],
+        monacoConfig.extendConfig({
+            readOnly: true,
+            glyphMargin: true,
+            lineNumbersMinChars: 3,
+            dropdownParent: 'body',
+        })
+    );
 
     this.initButtons(state);
 
@@ -107,43 +109,43 @@ GccDump.prototype.initButtons = function (state) {
     this.topBar = this.domRoot.find('.top-bar');
     this.dumpFiltersButtons = this.domRoot.find('.dump-filters .btn');
 
-    this.dumpTreesButton = this.domRoot.find('[data-bind=\'treeDump\']');
+    this.dumpTreesButton = this.domRoot.find("[data-bind='treeDump']");
     this.dumpTreesTitle = this.dumpTreesButton.prop('title');
 
-    this.dumpRtlButton = this.domRoot.find('[data-bind=\'rtlDump\']');
+    this.dumpRtlButton = this.domRoot.find("[data-bind='rtlDump']");
     this.dumpRtlTitle = this.dumpRtlButton.prop('title');
 
-    this.dumpIpaButton = this.domRoot.find('[data-bind=\'ipaDump\']');
+    this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
     this.dumpIpaTitle = this.dumpIpaButton.prop('title');
 
-    this.optionAddressButton = this.domRoot.find('[data-bind=\'addressOption\']');
+    this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
     this.optionAddressTitle = this.optionAddressButton.prop('title');
 
-    this.optionSlimButton = this.domRoot.find('[data-bind=\'slimOption\']');
+    this.optionSlimButton = this.domRoot.find("[data-bind='slimOption']");
     this.optionSlimTitle = this.optionSlimButton.prop('title');
 
-    this.optionRawButton = this.domRoot.find('[data-bind=\'rawOption\']');
+    this.optionRawButton = this.domRoot.find("[data-bind='rawOption']");
     this.optionRawTitle = this.optionRawButton.prop('title');
 
-    this.optionDetailsButton = this.domRoot.find('[data-bind=\'detailsOption\']');
+    this.optionDetailsButton = this.domRoot.find("[data-bind='detailsOption']");
     this.optionDetailsTitle = this.optionDetailsButton.prop('title');
 
-    this.optionStatsButton = this.domRoot.find('[data-bind=\'statsOption\']');
+    this.optionStatsButton = this.domRoot.find("[data-bind='statsOption']");
     this.optionStatsTitle = this.optionStatsButton.prop('title');
 
-    this.optionBlocksButton = this.domRoot.find('[data-bind=\'blocksOption\']');
+    this.optionBlocksButton = this.domRoot.find("[data-bind='blocksOption']");
     this.optionBlocksTitle = this.optionBlocksButton.prop('title');
 
-    this.optionVopsButton = this.domRoot.find('[data-bind=\'vopsOption\']');
+    this.optionVopsButton = this.domRoot.find("[data-bind='vopsOption']");
     this.optionVopsTitle = this.optionVopsButton.prop('title');
 
-    this.optionLinenoButton = this.domRoot.find('[data-bind=\'linenoOption\']');
+    this.optionLinenoButton = this.domRoot.find("[data-bind='linenoOption']");
     this.optionLinenoTitle = this.optionLinenoButton.prop('title');
 
-    this.optionUidButton = this.domRoot.find('[data-bind=\'uidOption\']');
+    this.optionUidButton = this.domRoot.find("[data-bind='uidOption']");
     this.optionUidTitle = this.optionUidButton.prop('title');
 
-    this.optionAllButton = this.domRoot.find('[data-bind=\'allOption\']');
+    this.optionAllButton = this.domRoot.find("[data-bind='allOption']");
     this.optionAllTitle = this.optionAllButton.prop('title');
 };
 
@@ -165,11 +167,12 @@ GccDump.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
-    this.cursorSelectionThrottledFunction =
-        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-    this.gccDumpEditor.onDidChangeCursorSelection(_.bind(function (e) {
-        this.cursorSelectionThrottledFunction(e);
-    }, this));
+    this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.gccDumpEditor.onDidChangeCursorSelection(
+        _.bind(function (e) {
+            this.cursorSelectionThrottledFunction(e);
+        }, this)
+    );
 };
 
 GccDump.prototype.updateButtons = function () {
@@ -232,17 +235,25 @@ GccDump.prototype.updatePass = function (filters, selectize, gccDumpOutput) {
     // trigger new compilation
     this.inhibitPassSelect = true;
 
-    _.each(selectize.options, function (p) {
-        if (passes.indexOf(p.name) === -1) {
-            selectize.removeOption(p.name);
-        }
-    }, this);
+    _.each(
+        selectize.options,
+        function (p) {
+            if (passes.indexOf(p.name) === -1) {
+                selectize.removeOption(p.name);
+            }
+        },
+        this
+    );
 
-    _.each(passes, function (p) {
-        selectize.addOption({
-            name: p,
-        });
-    }, this);
+    _.each(
+        passes,
+        function (p) {
+            selectize.addOption({
+                name: p,
+            });
+        },
+        this
+    );
 
     if (gccDumpOutput.selectedPass && gccDumpOutput.selectedPass !== '') {
         selectize.addItem(gccDumpOutput.selectedPass, true);
@@ -296,8 +307,14 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
 };
 
 GccDump.prototype.setTitle = function () {
-    this.container.setTitle((this._compilerName || '') +
-        ' GCC Tree/RTL Viewer (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')');
+    this.container.setTitle(
+        (this._compilerName || '') +
+            ' GCC Tree/RTL Viewer (Editor #' +
+            this.state._editorid +
+            ', Compiler #' +
+            this.state._compilerid +
+            ')'
+    );
 };
 
 GccDump.prototype.showGccDumpResults = function (results) {
@@ -306,8 +323,7 @@ GccDump.prototype.showGccDumpResults = function (results) {
     if (!this.awaitingInitialResults) {
         if (this.selection) {
             this.gccDumpEditor.setSelection(this.selection);
-            this.gccDumpEditor.revealLinesInCenter(this.selection.startLineNumber,
-                this.selection.endLineNumber);
+            this.gccDumpEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
         }
         this.awaitingInitialResults = true;
     }

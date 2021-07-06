@@ -28,7 +28,7 @@ import { LDCCompiler } from '../lib/compilers/ldc';
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {
-    d: {id: 'd'},
+    d: { id: 'd' },
 };
 
 describe('D', () => {
@@ -40,7 +40,7 @@ describe('D', () => {
     };
 
     before(() => {
-        ce = makeCompilationEnvironment({languages});
+        ce = makeCompilationEnvironment({ languages });
     });
 
     it('LDC should not allow -run parameter', () => {

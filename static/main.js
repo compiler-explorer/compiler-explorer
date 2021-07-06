@@ -146,16 +146,20 @@ function setupButtons(options) {
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
+                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, { expires: 365 });
             }
         });
     }
 
     if (options.policies.cookies.enabled) {
         var getCookieTitle = function () {
-            return 'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
-                (hasCookieConsented(options) ? 'green' : 'red') + '">' +
-                (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
+            return (
+                'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
+                (hasCookieConsented(options) ? 'green' : 'red') +
+                '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') +
+                '</span></p>'
+            );
         };
         $('#cookies').click(function () {
             var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
@@ -199,8 +203,10 @@ function setupButtons(options) {
             })
             .fail(function (err) {
                 var result = err.responseText || JSON.stringify(err);
-                alertSystem.alert('Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>');
+                alertSystem.alert(
+                    'Compiler Explorer Sponsors',
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                );
             });
     });
 
@@ -284,13 +290,17 @@ function findConfig(defaultConfig, options) {
             }
         }
     } else {
-        config = _.extend(defaultConfig, {
-            settings: {
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                hasHeaders: false,
+        config = _.extend(
+            defaultConfig,
+            {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false,
+                },
             },
-        }, configFromEmbedded(window.location.hash.substr(1)));
+            configFromEmbedded(window.location.hash.substr(1))
+        );
     }
     return config;
 }
@@ -298,9 +308,7 @@ function findConfig(defaultConfig, options) {
 function initializeResetLayoutLink() {
     var currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
-        $('#ui-brokenlink')
-            .attr('href', currentUrl.replace('/z/', '/resetlayout/'))
-            .show();
+        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
     } else {
         $('#ui-brokenlink').hide();
     }
@@ -332,7 +340,7 @@ function initPolicies(options) {
         }
     }
     simpleCooks.onDoConsent = function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
+        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, { expires: 365 });
         analytics.toggle(true);
     };
     simpleCooks.onDontConsent = function () {
@@ -443,14 +451,13 @@ function start() {
     }
 
     var defaultConfig = {
-        settings: {showPopoutIcon: false},
-        content: [{
-            type: 'row',
-            content: [
-                Components.getEditor(1, defaultLangId),
-                Components.getCompiler(1, defaultLangId),
-            ],
-        }],
+        settings: { showPopoutIcon: false },
+        content: [
+            {
+                type: 'row',
+                content: [Components.getEditor(1, defaultLangId), Components.getCompiler(1, defaultLangId)],
+            },
+        ],
     };
 
     $(window).bind('hashchange', function () {
@@ -536,7 +543,11 @@ function start() {
     // Skip some steps if using embedded mode
     if (!options.embedded) {
         // Only fetch MOTD when not embedded.
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds,
+        motd.initialise(
+            options.motdUrl,
+            $('#motd'),
+            subLangId,
+            settings.enableCommunityAds,
             function (data) {
                 var sendMotd = function () {
                     hub.layout.eventHub.emit('motd', data);
@@ -548,7 +559,8 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            });
+            }
+        );
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.gitReleaseCommit;

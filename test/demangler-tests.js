@@ -47,32 +47,29 @@ const catchCppfiltNonexistence = err => {
 describe('Basic demangling', function () {
     it('One line of asm', function () {
         const result = {
-            asm: [{text: 'Hello, World!'}],
+            asm: [{ text: 'Hello, World!' }],
         };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
-            demangler.process(result).then((output) => {
+            demangler.process(result).then(output => {
                 output.asm[0].text.should.equal('Hello, World!');
             }),
         ]);
     });
 
     it('One label and some asm', function () {
-        const result = {};
-        result.asm = [
-            {text: '_Z6squarei:'},
-            {text: '  ret'},
-        ];
+        const result = { asm: [{ text: '_Z6squarei:' }, { text: '  ret' }] };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
-            demangler.process(result)
-                .then((output) => {
+            demangler
+                .process(result)
+                .then(output => {
                     output.asm[0].text.should.equal('square(int):');
                     output.asm[1].text.should.equal('  ret');
                 })
@@ -81,43 +78,43 @@ describe('Basic demangling', function () {
     });
 
     it('One label and use of a label', function () {
-        const result = {};
-        result.asm = [
-            {text: '_Z6squarei:'},
-            {text: '  mov eax, $_Z6squarei'},
-        ];
+        const result = { asm: [{ text: '_Z6squarei:' }, { text: '  mov eax, $_Z6squarei' }] };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
-            demangler.process(result).then((output) => {
-                output.asm[0].text.should.equal('square(int):');
-                output.asm[1].text.should.equal('  mov eax, $square(int)');
-            })
+            demangler
+                .process(result)
+                .then(output => {
+                    output.asm[0].text.should.equal('square(int):');
+                    output.asm[1].text.should.equal('  mov eax, $square(int)');
+                })
                 .catch(catchCppfiltNonexistence),
         ]);
     });
 
     it('Two destructors', function () {
-        const result = {};
-        result.asm = [
-            {text: '_ZN6NormalD0Ev:'},
-            {text: '  callq _ZdlPv'},
-            {text: '_Z7caller1v:'},
-            {text: '  rep ret'},
-            {text: '_Z7caller2P6Normal:'},
-            {text: '  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev'},
-            {text: '  jmp _ZdlPvm'},
-            {text: '_ZN6NormalD2Ev:'},
-            {text: '  rep ret'},
-        ];
+        const result = {
+            asm: [
+                { text: '_ZN6NormalD0Ev:' },
+                { text: '  callq _ZdlPv' },
+                { text: '_Z7caller1v:' },
+                { text: '  rep ret' },
+                { text: '_Z7caller2P6Normal:' },
+                { text: '  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev' },
+                { text: '  jmp _ZdlPvm' },
+                { text: '_ZN6NormalD2Ev:' },
+                { text: '  rep ret' },
+            ],
+        };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
-        return demangler.process(result)
-            .then((output) => {
+        return demangler
+            .process(result)
+            .then(output => {
                 output.asm[0].text.should.equal('Normal::~Normal() [deleting destructor]:');
                 output.asm[1].text.should.equal('  callq operator delete(void*)');
                 output.asm[6].text.should.equal('  jmp operator delete(void*, unsigned long)');
@@ -126,10 +123,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should ignore comments (CL)', function () {
-        const result = {};
-        result.asm = [
-            {text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'},
-        ];
+        const result = { asm: [{ text: '        call     ??3@YAXPEAX_K@Z                ; operator delete' }] };
 
         const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
@@ -137,18 +131,11 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.win32RawSymbols;
-        output.should.deep.equal(
-            [
-                '??3@YAXPEAX_K@Z',
-            ],
-        );
+        output.should.deep.equal(['??3@YAXPEAX_K@Z']);
     });
 
     it('Should ignore comments (CPP)', function () {
-        const result = {};
-        result.asm = [
-            {text: '        call     hello                ; operator delete'},
-        ];
+        const result = { asm: [{ text: '        call     hello                ; operator delete' }] };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -157,18 +144,11 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.othersymbols.listSymbols();
-        output.should.deep.equal(
-            [
-                'hello',
-            ],
-        );
+        output.should.deep.equal(['hello']);
     });
 
     it('Should also support ARM branch instructions', () => {
-        const result = {};
-        result.asm = [
-            {text: '   bl _ZN3FooC1Ev'},
-        ];
+        const result = { asm: [{ text: '   bl _ZN3FooC1Ev' }] };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -177,18 +157,11 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.othersymbols.listSymbols();
-        output.should.deep.equal(
-            [
-                '_ZN3FooC1Ev',
-            ],
-        );
+        output.should.deep.equal(['_ZN3FooC1Ev']);
     });
 
     it('Should NOT handle undecorated labels', () => {
-        const result = {};
-        result.asm = [
-            {text: '$LN3@caller2:'},
-        ];
+        const result = { asm: [{ text: '$LN3@caller2:' }] };
 
         const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
@@ -196,16 +169,11 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.win32RawSymbols;
-        output.should.deep.equal(
-            [],
-        );
+        output.should.deep.equal([]);
     });
 
     it('Should ignore comments after jmps', function () {
-        const result = {};
-        result.asm = [
-            {text: '  jmp _Z1fP6mytype # TAILCALL'},
-        ];
+        const result = { asm: [{ text: '  jmp _Z1fP6mytype # TAILCALL' }] };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -214,18 +182,11 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.othersymbols.listSymbols();
-        output.should.deep.equal(
-            [
-                '_Z1fP6mytype',
-            ],
-        );
+        output.should.deep.equal(['_Z1fP6mytype']);
     });
 
     it('Should still work with normal jmps', function () {
-        const result = {};
-        result.asm = [
-            {text: '  jmp _Z1fP6mytype'},
-        ];
+        const result = { asm: [{ text: '  jmp _Z1fP6mytype' }] };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -234,21 +195,17 @@ describe('Basic demangling', function () {
         demangler.collectLabels();
 
         const output = demangler.othersymbols.listSymbols();
-        output.should.deep.equal(
-            [
-                '_Z1fP6mytype',
-            ],
-        );
+        output.should.deep.equal(['_Z1fP6mytype']);
     });
 });
 
 async function readResultFile(filename) {
     const data = await fs.readFile(filename);
     const asm = utils.splitLines(data.toString()).map(line => {
-        return {text: line};
+        return { text: line };
     });
 
-    return {asm};
+    return { asm };
 }
 
 async function DoDemangleTest(filename) {
@@ -305,12 +262,12 @@ describe('Demangler prefix tree', () => {
         new PrefixTree().replaceAll('Testing 123').should.eq('Testing 123');
     });
     it('should leave unmatching text alone', () => {
-        replacements.replaceAll('Some text with none of the first letter of the ordered letter list')
+        replacements
+            .replaceAll('Some text with none of the first letter of the ordered letter list')
             .should.eq('Some text with none of the first letter of the ordered letter list');
     });
     it('should handle a mixture', () => {
-        replacements.replaceAll('Everyone loves an aardvark')
-            .should.eq('Everyone loves short_an long_ardvshort_ark');
+        replacements.replaceAll('Everyone loves an aardvark').should.eq('Everyone loves short_an long_ardvshort_ark');
     });
     it('should find exact matches', () => {
         replacements.findExact('a').should.eq('short_a');

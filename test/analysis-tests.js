@@ -27,14 +27,14 @@ import { LLVMmcaTool } from '../lib/compilers/llvm-mca';
 import { makeCompilationEnvironment } from './utils';
 
 const languages = {
-    analysis: {id: 'analysis'},
+    analysis: { id: 'analysis' },
 };
 
 describe('LLVM-mca tool definition', () => {
     let ce, a;
 
     before(() => {
-        ce = makeCompilationEnvironment({languages});
+        ce = makeCompilationEnvironment({ languages });
         const info = {
             exe: null,
             remote: true,
@@ -61,7 +61,7 @@ describe('LLVM-mca tool definition', () => {
     });
 
     it('should support "-o output-file" by default', () => {
-        const opts = a.optionsForFilter({commentOnly: false, labels: true}, 'output.txt');
+        const opts = a.optionsForFilter({ commentOnly: false, labels: true }, 'output.txt');
         opts.should.be.deep.equal(['-o', 'output.txt']);
     });
 

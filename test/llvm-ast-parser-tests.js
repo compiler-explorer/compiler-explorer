@@ -31,11 +31,11 @@ import * as utils from '../lib/utils';
 import { fs, should } from './utils';
 
 const languages = {
-    'c++': {id: 'c++'},
+    'c++': { id: 'c++' },
 };
 
 function mockAstOutput(astLines) {
-    return { stdout : astLines.map(l => ( { text : l } ))};
+    return { stdout: astLines.map(l => ({ text: l })) };
 }
 
 describe('llvm-ast', function () {

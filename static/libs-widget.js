@@ -43,9 +43,12 @@ function LibsWidget(langId, compiler, dropdownButton, state, onChangeCallback) {
     this.onChangeCallback = onChangeCallback;
     this.availableLibs = {};
     this.updateAvailableLibs(possibleLibs);
-    _.each(state.libs, _.bind(function (lib) {
-        this.markLibrary(lib.name, lib.ver, true);
-    }, this));
+    _.each(
+        state.libs,
+        _.bind(function (lib) {
+            this.markLibrary(lib.name, lib.ver, true);
+        }, this)
+    );
 }
 
 LibsWidget.prototype.initButtons = function () {
@@ -56,14 +59,17 @@ LibsWidget.prototype.initButtons = function () {
 LibsWidget.prototype.initLangDefaultLibs = function () {
     var defaultLibs = options.defaultLibs[this.currentLangId];
     if (!defaultLibs) return;
-    _.each(defaultLibs.split(':'), _.bind(function (libPair) {
-        var pairSplits = libPair.split('.');
-        if (pairSplits.length === 2) {
-            var lib = pairSplits[0];
-            var ver = pairSplits[1];
-            this.markLibrary(lib, ver, true);
-        }
-    }, this));
+    _.each(
+        defaultLibs.split(':'),
+        _.bind(function (libPair) {
+            var pairSplits = libPair.split('.');
+            if (pairSplits.length === 2) {
+                var lib = pairSplits[0];
+                var ver = pairSplits[1];
+                this.markLibrary(lib, ver, true);
+            }
+        }, this)
+    );
 };
 
 LibsWidget.prototype.updateAvailableLibs = function (possibleLibs) {
@@ -73,11 +79,13 @@ LibsWidget.prototype.updateAvailableLibs = function (possibleLibs) {
 
     if (!this.availableLibs[this.currentLangId][this.currentCompilerId]) {
         if (this.currentCompilerId === '_default_') {
-            this.availableLibs[this.currentLangId][this.currentCompilerId] =
-                $.extend(true, {}, options.libs[this.currentLangId]);
+            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
+                true,
+                {},
+                options.libs[this.currentLangId]
+            );
         } else {
-            this.availableLibs[this.currentLangId][this.currentCompilerId] =
-                $.extend(true, {}, possibleLibs);
+            this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
         }
     }
 
@@ -100,9 +108,12 @@ LibsWidget.prototype.setNewLangId = function (langId, compilerId, possibleLibs) 
     this.domRoot = null;
     this.updateAvailableLibs(possibleLibs);
 
-    _.forEach(libsInUse, _.bind(function (version, lib) {
-        this.markLibrary(lib, version, true);
-    }, this));
+    _.forEach(
+        libsInUse,
+        _.bind(function (version, lib) {
+            this.markLibrary(lib, version, true);
+        }, this)
+    );
 };
 
 LibsWidget.prototype.lazyDropdownLoad = function () {
@@ -117,8 +128,7 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
         var libsKeys = _.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).sort();
         var itemsPerColumn = Math.floor(libsKeys.length / MAX_COLUMNS);
         this.domRoot = $('<div></div>');
-        var libsPanel = $('<div></div>')
-            .addClass('card-columns');
+        var libsPanel = $('<div></div>').addClass('card-columns');
         var getOrCreateNextColumn = function () {
             if (currentColumn === null || currentColumnItemCount >= itemsPerColumn) {
                 currentColumn = $('<div></div>').addClass('card');
@@ -134,43 +144,61 @@ LibsWidget.prototype.lazyDropdownLoad = function () {
         };
         var libsInUse = this.listUsedLibs();
 
-        _.each(libsKeys, _.bind(function (id) {
-            var libEntry = this.availableLibs[this.currentLangId][this.currentCompilerId][id];
-            if (libEntry.versions.autodetect) return;
+        _.each(
+            libsKeys,
+            _.bind(function (id) {
+                var libEntry = this.availableLibs[this.currentLangId][this.currentCompilerId][id];
+                if (libEntry.versions.autodetect) return;
 
-            var newLibCard = this.libsEntry.clone();
-            var label = newLibCard.find('.input-group-prepend label')
-                .text(libEntry.name)
-                .prop('title', libEntry.description || '')
-                .prop('for', id);
-            var select = newLibCard.find('select')
-                .prop('id', id)
-                .append($('<option>', {
-                    value: '-',
-                    text: '-',
-                }));
-            _.each(libEntry.versions, _.bind(function (version, versionId) {
-                select.append($('<option>', {
-                    value: versionId,
-                    text: version.version,
-                    selected: libsInUse[id] && libsInUse[id] === versionId,
-                }));
-            }, this));
-            label.toggleClass('bg-success text-white', select.val() !== '-');
-            select.on('change', _.bind(function () {
-                var newVal = select.val();
-                label.toggleClass('bg-success text-white', newVal !== '-');
-                // Disable every version for this lib
-                _.each(libEntry.versions, _.bind(function (version, verId) {
-                    this.markLibrary(id, verId, false);
-                }, this));
-                if (newVal !== '-') {
-                    this.markLibrary(id, newVal, true);
-                }
-                this.onChangeCallback();
-            }, this));
-            addLibCardToColumn(newLibCard);
-        }, this));
+                var newLibCard = this.libsEntry.clone();
+                var label = newLibCard
+                    .find('.input-group-prepend label')
+                    .text(libEntry.name)
+                    .prop('title', libEntry.description || '')
+                    .prop('for', id);
+                var select = newLibCard
+                    .find('select')
+                    .prop('id', id)
+                    .append(
+                        $('<option>', {
+                            value: '-',
+                            text: '-',
+                        })
+                    );
+                _.each(
+                    libEntry.versions,
+                    _.bind(function (version, versionId) {
+                        select.append(
+                            $('<option>', {
+                                value: versionId,
+                                text: version.version,
+                                selected: libsInUse[id] && libsInUse[id] === versionId,
+                            })
+                        );
+                    }, this)
+                );
+                label.toggleClass('bg-success text-white', select.val() !== '-');
+                select.on(
+                    'change',
+                    _.bind(function () {
+                        var newVal = select.val();
+                        label.toggleClass('bg-success text-white', newVal !== '-');
+                        // Disable every version for this lib
+                        _.each(
+                            libEntry.versions,
+                            _.bind(function (version, verId) {
+                                this.markLibrary(id, verId, false);
+                            }, this)
+                        );
+                        if (newVal !== '-') {
+                            this.markLibrary(id, newVal, true);
+                        }
+                        this.onChangeCallback();
+                    }, this)
+                );
+                addLibCardToColumn(newLibCard);
+            }, this)
+        );
         this.domRoot.append(libsPanel);
         return this.domRoot;
     }
@@ -185,16 +213,19 @@ LibsWidget.prototype.updateLibsDropdown = function () {
         html: true,
         placement: 'bottom',
         trigger: 'click',
-        template: '<div class="popover libs-popover" role="tooltip"><div class="arrow"></div>' +
+        template:
+            '<div class="popover libs-popover" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3>' +
             '<div class="popover-body"></div></div>',
     });
 };
 
 LibsWidget.prototype.getVersionOrAlias = function (name, version) {
-    if (this.availableLibs[this.currentLangId] &&
+    if (
+        this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][name]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name]
+    ) {
         if (this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
             return version;
         } else {
@@ -202,7 +233,8 @@ LibsWidget.prototype.getVersionOrAlias = function (name, version) {
                 this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
                 function (ver) {
                     return ver.alias && ver.alias.includes(version);
-                });
+                }
+            );
         }
     }
 };
@@ -210,17 +242,19 @@ LibsWidget.prototype.getVersionOrAlias = function (name, version) {
 LibsWidget.prototype.markLibrary = function (name, version, used) {
     var actualVersion = this.getVersionOrAlias(name, version);
 
-    if (this.availableLibs[this.currentLangId] &&
+    if (
+        this.availableLibs[this.currentLangId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId] &&
         this.availableLibs[this.currentLangId][this.currentCompilerId][name] &&
-        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]) {
+        this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]
+    ) {
         this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion].used = used;
     }
 };
 
 LibsWidget.prototype.get = function () {
     return _.map(this.listUsedLibs(), function (item, libId) {
-        return {name: libId, ver: item};
+        return { name: libId, ver: item };
     });
 };
 
@@ -242,7 +276,7 @@ LibsWidget.prototype.getLibsInUse = function () {
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
-                var libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
+                var libVer = Object.assign({ libId: libId, versionId: ver }, library.versions[ver]);
                 libs.push(libVer);
             }
         });

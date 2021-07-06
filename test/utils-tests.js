@@ -41,12 +41,10 @@ describe('Splits lines', () => {
         utils.splitLines('A line\nAnother line\n').should.deep.equals(['A line', 'Another line']);
     });
     it('handles multiple lines ending on a non-newline', () => {
-        utils.splitLines('A line\nAnother line\nLast line').should.deep.equals(
-            ['A line', 'Another line', 'Last line']);
+        utils.splitLines('A line\nAnother line\nLast line').should.deep.equals(['A line', 'Another line', 'Last line']);
     });
     it('handles empty lines', () => {
-        utils.splitLines('A line\n\nA line after an empty').should.deep.equals(
-            ['A line', '', 'A line after an empty']);
+        utils.splitLines('A line\n\nA line after an empty').should.deep.equals(['A line', '', 'A line after an empty']);
     });
     it('handles a single empty line', () => {
         utils.splitLines('\n').should.deep.equals(['']);
@@ -81,21 +79,20 @@ describe('Expands tabs', () => {
 
 describe('Parses compiler output', () => {
     it('handles simple cases', () => {
-        utils.parseOutput('Line one\nLine two', 'bob.cpp').should.deep.equals([
-            {text: 'Line one'},
-            {text: 'Line two'},
-        ]);
+        utils
+            .parseOutput('Line one\nLine two', 'bob.cpp')
+            .should.deep.equals([{ text: 'Line one' }, { text: 'Line two' }]);
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
-            {text: 'Line one'},
+            { text: 'Line one' },
             {
-                tag: {column: 0, line: 1, text: 'Line two'},
+                tag: { column: 0, line: 1, text: 'Line two' },
                 text: '<source>:1 Line two',
             },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
-            {text: 'Line one'},
+            { text: 'Line one' },
             {
-                tag: {column: 5, line: 1, text: 'Line two'},
+                tag: { column: 5, line: 1, text: 'Line two' },
                 text: '<source>:1:5: Line two',
             },
         ]);
@@ -103,7 +100,7 @@ describe('Parses compiler output', () => {
     it('handles windows output', () => {
         utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'Oh noes'},
+                tag: { column: 0, line: 1, text: 'Oh noes' },
                 text: '<source>(1) Oh noes',
             },
         ]);
@@ -111,21 +108,22 @@ describe('Parses compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'error in <source>'},
+                tag: { column: 0, line: 1, text: 'error in <source>' },
                 text: '<source>:1 error in <source>',
             },
         ]);
     });
     it('treats <stdin> as if it were the compiler source', () => {
-        utils.parseOutput('<stdin>:120:25: error: variable or field \'transform_data\' declared void', 'bob.cpp')
+        utils
+            .parseOutput("<stdin>:120:25: error: variable or field 'transform_data' declared void", 'bob.cpp')
             .should.deep.equals([
                 {
                     tag: {
                         column: 25,
                         line: 120,
-                        text: 'error: variable or field \'transform_data\' declared void',
+                        text: "error: variable or field 'transform_data' declared void",
                     },
-                    text: '<source>:120:25: error: variable or field \'transform_data\' declared void',
+                    text: "<source>:120:25: error: variable or field 'transform_data' declared void",
                 },
             ]);
     });
@@ -146,60 +144,67 @@ describe('Pascal compiler output', () => {
     });
 
     it('recognize fpc exiting error', () => {
-        utils.parseOutput('output.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas').should.deep.equals([
-            {
-                tag: {
-                    column: 0,
-                    line: 17,
-                    text: 'Fatal: There were 1 errors compiling module, stopping',
+        utils
+            .parseOutput('output.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas')
+            .should.deep.equals([
+                {
+                    tag: {
+                        column: 0,
+                        line: 17,
+                        text: 'Fatal: There were 1 errors compiling module, stopping',
+                    },
+                    text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
-            },
-        ]);
+            ]);
     });
 
     it('removes the temp path', () => {
-        utils.parseOutput('Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping', 'output.pas', '/tmp/path/').should.deep.equals([
-            {
-                text: 'Compiling prog.dpr',
-            },
-            {
-                tag: {
-                    column: 0,
-                    line: 17,
-                    text: 'Fatal: There were 1 errors compiling module, stopping',
+        utils
+            .parseOutput(
+                'Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping',
+                'output.pas',
+                '/tmp/path/',
+            )
+            .should.deep.equals([
+                {
+                    text: 'Compiling prog.dpr',
                 },
-                text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
-            },
-        ]);
+                {
+                    tag: {
+                        column: 0,
+                        line: 17,
+                        text: 'Fatal: There were 1 errors compiling module, stopping',
+                    },
+                    text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
+                },
+            ]);
     });
 });
 
 describe('Rust compiler output', () => {
     it('handles simple cases', () => {
-        utils.parseRustOutput('Line one\nLine two', 'bob.rs').should.deep.equals([
-            {text: 'Line one'},
-            {text: 'Line two'},
-        ]);
+        utils
+            .parseRustOutput('Line one\nLine two', 'bob.rs')
+            .should.deep.equals([{ text: 'Line one' }, { text: 'Line two' }]);
         utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs').should.deep.equals([
-            {text: 'Unrelated'},
+            { text: 'Unrelated' },
             {
-                tag: {column: 0, line: 1, text: 'Line one'},
+                tag: { column: 0, line: 1, text: 'Line one' },
                 text: 'Line one',
             },
             {
-                tag: {column: 0, line: 1, text: ''},
+                tag: { column: 0, line: 1, text: '' },
                 text: ' --> <source>:1',
             },
-            {text: 'Unrelated'},
+            { text: 'Unrelated' },
         ]);
         utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs').should.deep.equals([
             {
-                tag: {column: 5, line: 1, text: 'Line one'},
+                tag: { column: 5, line: 1, text: 'Line one' },
                 text: 'Line one',
             },
             {
-                tag: {column: 5, line: 1, text: ''},
+                tag: { column: 5, line: 1, text: '' },
                 text: ' --> <source>:1:5',
             },
         ]);
@@ -208,69 +213,77 @@ describe('Rust compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'error: Error in <source>'},
+                tag: { column: 0, line: 1, text: 'error: Error in <source>' },
                 text: 'error: Error in <source>',
             },
             {
-                tag: {column: 0, line: 1, text: ''},
+                tag: { column: 0, line: 1, text: '' },
                 text: ' --> <source>:1',
             },
         ]);
     });
 
     it('treats <stdin> as if it were the compiler source', () => {
-        utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')
-            .should.deep.equals([
-                {
-                    tag: {column: 25, line: 120, text: 'error: <source> is sad'},
-                    text: 'error: <source> is sad',
-                },
-                {
-                    tag: {column: 25, line: 120, text: ''},
-                    text: ' --> <source>:120:25',
-                },
-            ]);
+        utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs').should.deep.equals([
+            {
+                tag: { column: 25, line: 120, text: 'error: <source> is sad' },
+                text: 'error: <source> is sad',
+            },
+            {
+                tag: { column: 25, line: 120, text: '' },
+                text: ' --> <source>:120:25',
+            },
+        ]);
     });
 });
 
 describe('Tool output', () => {
     it('removes the relative path', () => {
-        utils.parseOutput('./example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp').should.deep.equals([
-            {
-                tag: {
-                    column: 1,
-                    line: 1,
-                    text: 'Fatal: There were 1 errors compiling module, stopping',
+        utils
+            .parseOutput('./example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp')
+            .should.deep.equals([
+                {
+                    tag: {
+                        column: 1,
+                        line: 1,
+                        text: 'Fatal: There were 1 errors compiling module, stopping',
+                    },
+                    text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
-            },
-        ]);
+            ]);
     });
 
     it('removes fortran relative path', () => {
-        utils.parseOutput('./example.f90:5:22: error: No explicit type declared for \'y\'', './example.f90').should.deep.equals([
-            {
-                tag: {
-                    column: 22,
-                    line: 5,
-                    text: 'error: No explicit type declared for \'y\'',
+        utils
+            .parseOutput("./example.f90:5:22: error: No explicit type declared for 'y'", './example.f90')
+            .should.deep.equals([
+                {
+                    tag: {
+                        column: 22,
+                        line: 5,
+                        text: "error: No explicit type declared for 'y'",
+                    },
+                    text: "<source>:5:22: error: No explicit type declared for 'y'",
                 },
-                text: '<source>:5:22: error: No explicit type declared for \'y\'',
-            },
-        ]);
+            ]);
     });
 
     it('removes the jailed path', () => {
-        utils.parseOutput('/home/ubuntu/example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp').should.deep.equals([
-            {
-                tag: {
-                    column: 1,
-                    line: 1,
-                    text: 'Fatal: There were 1 errors compiling module, stopping',
+        utils
+            .parseOutput(
+                '/home/ubuntu/example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping',
+                './example.cpp',
+            )
+            .should.deep.equals([
+                {
+                    tag: {
+                        column: 1,
+                        line: 1,
+                        text: 'Fatal: There were 1 errors compiling module, stopping',
+                    },
+                    text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
                 },
-                text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
-            },
-        ]);
+            ]);
     });
 });
 
@@ -327,17 +340,25 @@ describe('Logger functionality', () => {
 describe('Hash interface', () => {
     it('correctly hashes strings', () => {
         const version = 'Compiler Explorer Tests Version 0';
-        utils.getHash('cream cheese', version).should.equal('cfff2d1f7a213e314a67cce8399160ae884f794a3ee9d4a01cd37a8c22c67d94');
-        utils.getHash('large eggs', version).should.equal('9144dec50b8df5bc5cc24ba008823cafd6616faf2f268af84daf49ac1d24feb0');
-        utils.getHash('sugar', version).should.equal('afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1');
+        utils
+            .getHash('cream cheese', version)
+            .should.equal('cfff2d1f7a213e314a67cce8399160ae884f794a3ee9d4a01cd37a8c22c67d94');
+        utils
+            .getHash('large eggs', version)
+            .should.equal('9144dec50b8df5bc5cc24ba008823cafd6616faf2f268af84daf49ac1d24feb0');
+        utils
+            .getHash('sugar', version)
+            .should.equal('afa3c89d0f6a61de6805314c9bd7c52d020425a3a3c7bbdfa7c0daec594e5ef1');
     });
     it('correctly hashes objects', () => {
-        utils.getHash({
-            toppings: [
-                {name: 'raspberries', optional: false},
-                {name: 'ground cinnamon', optional: true},
-            ],
-        }).should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
+        utils
+            .getHash({
+                toppings: [
+                    { name: 'raspberries', optional: false },
+                    { name: 'ground cinnamon', optional: true },
+                ],
+            })
+            .should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
     });
 });
 
@@ -347,17 +368,17 @@ describe('GoldenLayout utils', () => {
         const contents = utils.glGetMainContents(state.content);
         contents.should.deep.equal({
             editors: [
-                {source: 'Editor 1', language: 'c++'},
-                {source: 'Editor 2', language: 'c++'},
-                {source: 'Editor 3', language: 'c++'},
-                {source: 'Editor 4', language: 'c++'},
+                { source: 'Editor 1', language: 'c++' },
+                { source: 'Editor 2', language: 'c++' },
+                { source: 'Editor 3', language: 'c++' },
+                { source: 'Editor 4', language: 'c++' },
             ],
             compilers: [
-                {compiler: 'clang_trunk'},
-                {compiler: 'gsnapshot'},
-                {compiler: 'clang_trunk'},
-                {compiler: 'gsnapshot'},
-                {compiler: 'rv32-clang'},
+                { compiler: 'clang_trunk' },
+                { compiler: 'gsnapshot' },
+                { compiler: 'clang_trunk' },
+                { compiler: 'gsnapshot' },
+                { compiler: 'rv32-clang' },
             ],
         });
     });
@@ -390,31 +411,29 @@ describe('squashes horizontal whitespace', () => {
 describe('replaces all substrings', () => {
     it('works with no substitutions', () => {
         const string = 'This is a line with no replacements';
-        utils.replaceAll(string, 'not present', 'won\'t be substituted').should.equal(string);
+        utils.replaceAll(string, 'not present', "won't be substituted").should.equal(string);
     });
     it('handles odd cases', () => {
         utils.replaceAll('', '', '').should.equal('');
         utils.replaceAll('Hello', '', '').should.equal('Hello');
     });
     it('works with single replacement', () => {
-        utils.replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')
+        utils
+            .replaceAll('This is a line with a mistook in it', 'mistook', 'mistake')
             .should.equal('This is a line with a mistake in it');
-        utils.replaceAll('This is a line with a mistook', 'mistook', 'mistake')
+        utils
+            .replaceAll('This is a line with a mistook', 'mistook', 'mistake')
             .should.equal('This is a line with a mistake');
-        utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes')
-            .should.equal('Mistakes were made');
+        utils.replaceAll('Mistooks were made', 'Mistooks', 'Mistakes').should.equal('Mistakes were made');
     });
 
     it('works with multiple replacements', () => {
-        utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake')
-            .should.equal('A mistake is a mistake');
-        utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b')
-            .should.equal('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
+        utils.replaceAll('A mistook is a mistook', 'mistook', 'mistake').should.equal('A mistake is a mistake');
+        utils.replaceAll('aaaaaaaaaaaaaaaaaaaaaaaaaaa', 'a', 'b').should.equal('bbbbbbbbbbbbbbbbbbbbbbbbbbb');
     });
 
     it('works with overlapping replacements', () => {
-        utils.replaceAll('aaaaaaaa', 'a', 'ba')
-            .should.equal('babababababababa');
+        utils.replaceAll('aaaaaaaa', 'a', 'ba').should.equal('babababababababa');
     });
 });
 

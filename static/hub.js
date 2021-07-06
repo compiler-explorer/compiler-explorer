@@ -79,76 +79,92 @@ function Hub(layout, subLangId, defaultLangId) {
     // We can't avoid this self as _ is undefined at this point
     var self = this;
 
-    layout.registerComponent(Components.getEditor().componentName,
-        function (container, state) {
-            return self.codeEditorFactory(container, state);
-        });
-    layout.registerComponent(Components.getCompiler().componentName,
-        function (container, state) {
-            return self.compilerFactory(container, state);
-        });
-    layout.registerComponent(Components.getExecutor().componentName,
-        function (container, state) {
-            return self.executorFactory(container, state);
-        });
-    layout.registerComponent(Components.getOutput().componentName,
-        function (container, state) {
-            return self.outputFactory(container, state);
-        });
-    layout.registerComponent(Components.getToolViewWith().componentName,
-        function (container, state) {
-            return self.toolFactory(container, state);
-        });
-    layout.registerComponent(diff.getComponent().componentName,
-        function (container, state) {
-            return self.diffFactory(container, state);
-        });
-    layout.registerComponent(Components.getOptView().componentName,
-        function (container, state) {
-            return self.optViewFactory(container, state);
-        });
-    layout.registerComponent(Components.getAstView().componentName,
-        function (container, state) {
-            return self.astViewFactory(container, state);
-        });
-    layout.registerComponent(Components.getIrView().componentName,
-        function (container, state) {
-            return self.irViewFactory(container, state);
-        });
-    layout.registerComponent(Components.getGccDumpView().componentName,
-        function (container, state) {
-            return self.gccDumpViewFactory(container, state);
-        });
-    layout.registerComponent(Components.getCfgView().componentName,
-        function (container, state) {
-            return self.cfgViewFactory(container, state);
-        });
-    layout.registerComponent(Components.getConformanceView().componentName,
-        function (container, state) {
-            return self.confomanceFactory(container, state);
-        });
+    layout.registerComponent(Components.getEditor().componentName, function (container, state) {
+        return self.codeEditorFactory(container, state);
+    });
+    layout.registerComponent(Components.getCompiler().componentName, function (container, state) {
+        return self.compilerFactory(container, state);
+    });
+    layout.registerComponent(Components.getExecutor().componentName, function (container, state) {
+        return self.executorFactory(container, state);
+    });
+    layout.registerComponent(Components.getOutput().componentName, function (container, state) {
+        return self.outputFactory(container, state);
+    });
+    layout.registerComponent(Components.getToolViewWith().componentName, function (container, state) {
+        return self.toolFactory(container, state);
+    });
+    layout.registerComponent(diff.getComponent().componentName, function (container, state) {
+        return self.diffFactory(container, state);
+    });
+    layout.registerComponent(Components.getOptView().componentName, function (container, state) {
+        return self.optViewFactory(container, state);
+    });
+    layout.registerComponent(Components.getAstView().componentName, function (container, state) {
+        return self.astViewFactory(container, state);
+    });
+    layout.registerComponent(Components.getIrView().componentName, function (container, state) {
+        return self.irViewFactory(container, state);
+    });
+    layout.registerComponent(Components.getGccDumpView().componentName, function (container, state) {
+        return self.gccDumpViewFactory(container, state);
+    });
+    layout.registerComponent(Components.getCfgView().componentName, function (container, state) {
+        return self.cfgViewFactory(container, state);
+    });
+    layout.registerComponent(Components.getConformanceView().componentName, function (container, state) {
+        return self.confomanceFactory(container, state);
+    });
 
-    layout.eventHub.on('editorOpen', function (id) {
-        this.editorIds.add(id);
-    }, this);
-    layout.eventHub.on('editorClose', function (id) {
-        this.editorIds.remove(id);
-    }, this);
-    layout.eventHub.on('compilerOpen', function (id) {
-        this.compilerIds.add(id);
-    }, this);
-    layout.eventHub.on('compilerClose', function (id) {
-        this.compilerIds.remove(id);
-    }, this);
-    layout.eventHub.on('executorOpen', function (id) {
-        this.executorIds.add(id);
-    }, this);
-    layout.eventHub.on('executorClose', function (id) {
-        this.executorIds.remove(id);
-    }, this);
-    layout.eventHub.on('languageChange', function (editorId, langId) {
-        this.lastOpenedLangId = langId;
-    }, this);
+    layout.eventHub.on(
+        'editorOpen',
+        function (id) {
+            this.editorIds.add(id);
+        },
+        this
+    );
+    layout.eventHub.on(
+        'editorClose',
+        function (id) {
+            this.editorIds.remove(id);
+        },
+        this
+    );
+    layout.eventHub.on(
+        'compilerOpen',
+        function (id) {
+            this.compilerIds.add(id);
+        },
+        this
+    );
+    layout.eventHub.on(
+        'compilerClose',
+        function (id) {
+            this.compilerIds.remove(id);
+        },
+        this
+    );
+    layout.eventHub.on(
+        'executorOpen',
+        function (id) {
+            this.executorIds.add(id);
+        },
+        this
+    );
+    layout.eventHub.on(
+        'executorClose',
+        function (id) {
+            this.executorIds.remove(id);
+        },
+        this
+    );
+    layout.eventHub.on(
+        'languageChange',
+        function (editorId, langId) {
+            this.lastOpenedLangId = langId;
+        },
+        this
+    );
     layout.init();
     this.undefer();
     layout.eventHub.emit('initialised');
@@ -245,18 +261,21 @@ WrappedEventHub.prototype.emit = function () {
 
 WrappedEventHub.prototype.on = function (event, callback, context) {
     this.eventHub.on(event, callback, context);
-    this.subscriptions.push({evt: event, fn: callback, ctx: context});
+    this.subscriptions.push({ evt: event, fn: callback, ctx: context });
 };
 
 WrappedEventHub.prototype.unsubscribe = function () {
-    _.each(this.subscriptions, _.bind(function (obj) {
-        try {
-            this.eventHub.off(obj.evt, obj.fn, obj.ctx);
-        } catch (e) {
-            Sentry.captureMessage('Can not unsubscribe from ' + obj.evt.toString());
-            Sentry.captureException(e);
-        }
-    }, this));
+    _.each(
+        this.subscriptions,
+        _.bind(function (obj) {
+            try {
+                this.eventHub.off(obj.evt, obj.fn, obj.ctx);
+            } catch (e) {
+                Sentry.captureMessage('Can not unsubscribe from ' + obj.evt.toString());
+                Sentry.captureException(e);
+            }
+        }, this)
+    );
     this.subscriptions = [];
 };
 
@@ -278,8 +297,7 @@ WrappedEventHub.prototype.mediateDependentCalls = function (dependent, dependenc
             lastDependentArgs = arguments;
         }
     };
-    return {dependencyProxy: dependencyProxy,
-        dependentProxy: dependentProxy};
+    return { dependencyProxy: dependencyProxy, dependentProxy: dependentProxy };
 };
 
 Hub.prototype.createEventHub = function () {
@@ -300,7 +318,7 @@ Hub.prototype.addAtRoot = function (newElem) {
         if (rootFirstItem.isRow || rootFirstItem.isColumn) {
             rootFirstItem.addChild(newElem);
         } else {
-            var newRow = this.layout.createContentItem({type: 'row'}, this.layout.root);
+            var newRow = this.layout.createContentItem({ type: 'row' }, this.layout.root);
             this.layout.root.replaceChild(rootFirstItem, newRow);
             newRow.addChild(rootFirstItem);
             newRow.addChild(newElem);

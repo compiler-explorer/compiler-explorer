@@ -37,12 +37,9 @@ approvals.mocha();
 function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf-8');
     let parser;
-    if (file.includes('Microsoft'))
-        parser = new VcAsmParser();
-    else if (filename.includes('sass-'))
-        parser = new SassAsmParser();
-    else
-        parser = new AsmParser();
+    if (file.includes('Microsoft')) parser = new VcAsmParser();
+    else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else parser = new AsmParser();
     return parser.process(file, filters);
 }
 
@@ -66,11 +63,7 @@ function testFilter(filename, suffix, filters) {
         const result = processAsm(filename, filters);
         delete result.parsingTime;
         delete result.filteredCount;
-        approvals.verifyAsJSON(
-            casesRoot,
-            testName,
-            result,
-            optionsOverride);
+        approvals.verifyAsJSON(casesRoot, testName, result, optionsOverride);
     });
 }
 
@@ -79,19 +72,18 @@ function testFilter(filename, suffix, filters) {
     That's sad because then we can't have cases be loaded in a before() for every describe child to see.
  */
 describe('Filter test cases', function () {
-
     describe('No filters', function () {
-        for (const x of cases)  testFilter(x, '.none', {});
+        for (const x of cases) testFilter(x, '.none', {});
     });
     describe('Directive filters', function () {
-        for (const x of cases)  testFilter(x, '.directives', {directives: true});
+        for (const x of cases) testFilter(x, '.directives', { directives: true });
     });
     describe('Directives and labels together', function () {
-        for (const x of cases)  testFilter(x, '.directives.labels', {directives: true, labels: true});
+        for (const x of cases) testFilter(x, '.directives.labels', { directives: true, labels: true });
     });
     describe('Directives, labels and comments', function () {
         for (const x of cases) {
-            testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
+            testFilter(x, '.directives.labels.comments', { directives: true, labels: true, commentOnly: true });
         }
     });
     describe('Binary, directives, labels and comments', function () {
@@ -107,15 +99,19 @@ describe('Filter test cases', function () {
         }
     });
     describe('Directives and comments', function () {
-        for (const x of cases)  testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
+        for (const x of cases) testFilter(x, '.directives.comments', { directives: true, commentOnly: true });
     });
     describe('Directives and library code', function () {
-        for (const x of cases)  testFilter(x, '.directives.library', {directives: true, libraryCode: true});
+        for (const x of cases) testFilter(x, '.directives.library', { directives: true, libraryCode: true });
     });
     describe('Directives, labels, comments and library code', function () {
         for (const x of cases) {
-            testFilter(x, '.directives.labels.comments.library',
-                {directives: true, labels: true, commentOnly: true, libraryCode: true});
+            testFilter(x, '.directives.labels.comments.library', {
+                directives: true,
+                labels: true,
+                commentOnly: true,
+                libraryCode: true,
+            });
         }
     });
 });

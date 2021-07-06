@@ -36,7 +36,6 @@ function definition() {
     // Thus the register-regex captures everything that starts with a '%'.
     ptx.registers = /%[a-z0-9_\\.]+/;
 
-
     // Redefine whitespaces, as asm interprets strings with a leading '@' as comments.
     ptx.tokenizer.whitespace = [
         [/[ \t\r\n]+/, 'white'],
@@ -46,10 +45,10 @@ function definition() {
     ];
 
     // Add predicated instructions to the list of root tokens. Search for an opcode next, which is also a root token.
-    ptx.tokenizer.root.push([/@%p[0-9]+/, {token: 'operator', next: '@root'}]);
+    ptx.tokenizer.root.push([/@%p[0-9]+/, { token: 'operator', next: '@root' }]);
 
     return ptx;
 }
 
-monaco.languages.register({id: 'ptx'});
+monaco.languages.register({ id: 'ptx' });
 monaco.languages.setMonarchTokensProvider('ptx', definition());

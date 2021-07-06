@@ -5,12 +5,12 @@
 
 name: Labeler
 on:
-  - pull_request_target
+    - pull_request_target
 
 jobs:
-  label:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/labeler@v3
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+    label:
+        runs-on: ubuntu-20.04
+        steps:
+            - uses: actions/labeler@v3
+              with:
+                  repo-token: '${{ secrets.GITHUB_TOKEN }}'

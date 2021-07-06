@@ -36,10 +36,35 @@ function definition() {
         // defaultToken: 'invalid',
 
         keywords: [
-            'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'goto', 'do',
-            'if', 'private', 'this', 'break', 'protected', 'throw', 'else', 'public',
-            'enum', 'return', 'catch', 'try', 'interface', 'static', 'class',
-            'finally', 'const', 'super', 'while', 'true', 'false',
+            'abstract',
+            'continue',
+            'for',
+            'new',
+            'switch',
+            'assert',
+            'goto',
+            'do',
+            'if',
+            'private',
+            'this',
+            'break',
+            'protected',
+            'throw',
+            'else',
+            'public',
+            'enum',
+            'return',
+            'catch',
+            'try',
+            'interface',
+            'static',
+            'class',
+            'finally',
+            'const',
+            'super',
+            'while',
+            'true',
+            'false',
 
             // Generated using the following:
             // #define DEF_RTL_EXPR(a,b,c,d) b,
@@ -199,15 +224,46 @@ function definition() {
             'debug_parameter_ref',
         ],
 
-        typeKeywords: [
-            'boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float',
-        ],
+        typeKeywords: ['boolean', 'double', 'byte', 'int', 'short', 'char', 'void', 'long', 'float'],
 
         operators: [
-            '=', '>', '<', '!', '~', '?', ':', '==', '<=', '>=', '!=',
-            '&&', '||', '++', '--', '+', '-', '*', '/', '&', '|', '^', '%',
-            '<<', '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=', '^=',
-            '%=', '<<=', '>>=', '>>>=',
+            '=',
+            '>',
+            '<',
+            '!',
+            '~',
+            '?',
+            ':',
+            '==',
+            '<=',
+            '>=',
+            '!=',
+            '&&',
+            '||',
+            '++',
+            '--',
+            '+',
+            '-',
+            '*',
+            '/',
+            '&',
+            '|',
+            '^',
+            '%',
+            '<<',
+            '>>',
+            '>>>',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
+            '&=',
+            '|=',
+            '^=',
+            '%=',
+            '<<=',
+            '>>=',
+            '>>>=',
         ],
 
         // we include these common regular expressions
@@ -220,27 +276,33 @@ function definition() {
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
-                    cases: {
-                        '@typeKeywords': 'keyword',
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-z_$][\w$]*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
-                [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
+                ],
+                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                {include: '@whitespace'},
+                { include: '@whitespace' },
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'operator',
-                        '@default': '',
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 // @ annotations.
                 // As an example, we emit a debugging log message on these tokens.
@@ -256,8 +318,8 @@ function definition() {
                 [/[;,.]/, 'delimiter'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
-                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
+                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
 
                 // characters
                 [/'[^\\']'/, 'string'],
@@ -267,7 +329,7 @@ function definition() {
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'],    // nested comment
+                [/\/\*/, 'comment', '@push'], // nested comment
                 ['\\*/', 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
@@ -276,7 +338,7 @@ function definition() {
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
             ],
 
             whitespace: [
@@ -284,11 +346,10 @@ function definition() {
                 [/\/\*/, 'comment', '@comment'],
                 [/\/\/.*$/, 'comment'],
                 [/^;;.*$/, 'comment'],
-
             ],
         },
     };
 }
 
-monaco.languages.register({id: 'gccdump-rtl-gimple'});
+monaco.languages.register({ id: 'gccdump-rtl-gimple' });
 monaco.languages.setMonarchTokensProvider('gccdump-rtl-gimple', definition());
