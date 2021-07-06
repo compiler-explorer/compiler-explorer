@@ -150,9 +150,9 @@
         "format-fix": "prettier --write --ignore-unknown"
     },
     "lint-staged": {
-        "*.js": [
-            "npm run ci-lint",
-            "npm run format-fix"
+        "*.{js,css}": [
+            "npm run ci-lint --",
+            "npm run format-fix --"
         ]
     },
     "license": "BSD-2-Clause"
