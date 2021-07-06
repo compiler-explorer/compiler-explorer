@@ -42,7 +42,9 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
 
     var onClickEvent = function () {
         // Toggle off the selection of the others
-        $(this).addClass('active').siblings().removeClass('active');
+        $(this)
+            .addClass('active')
+            .siblings().removeClass('active');
         // Send the data
         obj.scale = $(this).data('value');
         obj.apply();
@@ -70,7 +72,7 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
 
 function convertOldScale(oldScale) {
     // New low + ((new max - new low) * (oldScale - old low) / (old max - old low))
-    return Math.floor(8 + (22 * (oldScale - 0.3)) / 2.7);
+    return Math.floor(8 + (22 * (oldScale - 0.3) / 2.7));
 }
 
 function FontScale(domRoot, state, fontSelectorOrEditor) {
@@ -112,7 +114,7 @@ FontScale.prototype.setScale = function (scale) {
 
 FontScale.prototype.setTarget = function (target) {
     this.fontSelectorOrEditor = target;
-    this.isFontOfStr = typeof this.fontSelectorOrEditor === 'string';
+    this.isFontOfStr = typeof (this.fontSelectorOrEditor) === 'string';
 };
 
 module.exports = FontScale;

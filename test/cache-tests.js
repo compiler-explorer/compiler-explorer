@@ -25,14 +25,14 @@
 import AWS from 'aws-sdk-mock';
 import temp from 'temp';
 
-import {createCacheFromConfig} from '../lib/cache/from-config';
-import {InMemoryCache} from '../lib/cache/in-memory';
-import {MultiCache} from '../lib/cache/multi';
-import {NullCache} from '../lib/cache/null';
-import {OnDiskCache} from '../lib/cache/on-disk';
-import {S3Cache} from '../lib/cache/s3';
+import { createCacheFromConfig } from '../lib/cache/from-config';
+import { InMemoryCache } from '../lib/cache/in-memory';
+import { MultiCache } from '../lib/cache/multi';
+import { NullCache } from '../lib/cache/null';
+import { OnDiskCache } from '../lib/cache/on-disk';
+import { S3Cache } from '../lib/cache/s3';
 
-import {fs, path} from './utils';
+import { fs, path } from './utils';
 
 function newTempDir() {
     temp.track(true);
@@ -43,10 +43,8 @@ function basicTests(factory) {
     it('should start empty', () => {
         const cache = factory();
         cache.stats().should.eql({hits: 0, puts: 0, gets: 0});
-        return cache
-            .get('not a key', 'subsystem')
-            .should.eventually.contain({hit: false})
-            .then(x => {
+        return cache.get('not a key', 'subsystem').should.eventually.contain({hit: false})
+            .then((x) => {
                 cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
                 return x;
             });
@@ -54,16 +52,14 @@ function basicTests(factory) {
 
     it('should store and retrieve strings', () => {
         const cache = factory();
-        return cache
-            .put('a key', 'a value', 'bob')
+        return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
                     data: Buffer.from('a value'),
                 });
-            })
-            .then(x => {
+            }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
                 return x;
             });
@@ -73,16 +69,14 @@ function basicTests(factory) {
         const cache = factory();
         const buffer = Buffer.alloc(2 * 1024);
         buffer.fill('@');
-        return cache
-            .put('a key', buffer, 'bob')
+        return cache.put('a key', buffer, 'bob')
             .then(() => {
                 cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
                     data: buffer,
                 });
-            })
-            .then(x => {
+            }).then(x => {
                 cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
                 return x;
             });
@@ -93,15 +87,13 @@ describe('In-memory caches', () => {
     basicTests(() => new InMemoryCache('test', 10));
     it('should give extra stats', () => {
         const cache = new InMemoryCache('test', 1);
-        cache
-            .statString()
-            .should.equal('0 puts; 0 gets, 0 hits, 0 misses (0.00%), LRU has 0 item(s) totalling 0 bytes');
+        cache.statString().should.equal(
+            '0 puts; 0 gets, 0 hits, 0 misses (0.00%), LRU has 0 item(s) totalling 0 bytes');
     });
 
     it('should evict old objects', () => {
         const cache = new InMemoryCache('test', 1);
-        return cache
-            .put('a key', 'a value', 'bob')
+        return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 const promises = [];
                 const oneK = ''.padEnd(1024);
@@ -117,27 +109,24 @@ describe('In-memory caches', () => {
 });
 
 describe('Multi caches', () => {
-    basicTests(
-        () =>
-            new MultiCache(
-                'test',
-                new InMemoryCache('test', 10),
-                new InMemoryCache('test', 20),
-                new InMemoryCache('test', 30),
-            ),
-    );
+    basicTests(() => new MultiCache(
+        'test',
+        new InMemoryCache('test', 10),
+        new InMemoryCache('test', 20),
+        new InMemoryCache('test', 30)));
 
     it('should write through', () => {
         const subCache1 = new InMemoryCache('test', 1);
         const subCache2 = new InMemoryCache('test', 1);
         const cache = new MultiCache('test', subCache1, subCache2);
-        return cache.put('a key', 'a value', 'bob').then(() => {
-            return Promise.all([
-                cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
-                subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
-                subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
-            ]);
-        });
+        return cache.put('a key', 'a value', 'bob')
+            .then(() => {
+                return Promise.all([
+                    cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                    subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                    subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                ]);
+            });
     });
 
     it('services from the first cache hit', async () => {
@@ -164,8 +153,7 @@ describe('On disk caches', () => {
     it('should evict old objects', () => {
         const tempDir = newTempDir();
         const cache = new OnDiskCache('test', tempDir, 1);
-        return cache
-            .put('a key', 'a value', 'bob')
+        return cache.put('a key', 'a value', 'bob')
             .then(() => {
                 const promises = [];
                 const oneHundredK = ''.padEnd(1024 * 100);
@@ -190,8 +178,7 @@ describe('On disk caches', () => {
             cache.get(path.join('path', 'test')).should.eventually.eql({
                 hit: true,
                 data: Buffer.from('this is path/test'),
-            }),
-        ]);
+            })]);
     });
 
     // MRG ideally handle the case of pre-populated stuff overflowing the size
@@ -218,6 +205,7 @@ function setup() {
             S3FS[params.Key] = params.Body;
             callback(null, {});
         });
+
     });
     afterEach(() => {
         AWS.restore();
@@ -272,10 +260,7 @@ describe('Config tests', () => {
     });
     it('should create multi caches', () => {
         const tempDir = newTempDir();
-        const cache = createCacheFromConfig(
-            'multi',
-            `InMemory(123);OnDisk(${tempDir},456);S3(test.bucket,cache,uk-north-1)`,
-        );
+        const cache = createCacheFromConfig('multi', `InMemory(123);OnDisk(${tempDir},456);S3(test.bucket,cache,uk-north-1)`);
         cache.constructor.should.eql(MultiCache);
         cache.upstream.length.should.equal(3);
         cache.upstream[0].constructor.should.eql(InMemoryCache);

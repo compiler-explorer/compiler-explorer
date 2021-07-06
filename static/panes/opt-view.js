@@ -33,6 +33,7 @@ var monacoConfig = require('../monaco-config');
 
 require('../modes/asm-mode');
 
+
 function Opt(hub, container, state) {
     state = state || {};
     this.container = container;
@@ -43,15 +44,12 @@ function Opt(hub, container, state) {
     this._currentDecorations = [];
     var root = this.domRoot.find('.monaco-placeholder');
 
-    this.optEditor = monaco.editor.create(
-        root[0],
-        monacoConfig.extendConfig({
-            value: this.source,
-            language: 'plaintext',
-            readOnly: true,
-            glyphMargin: true,
-        })
-    );
+    this.optEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
+        value: this.source,
+        language: 'plaintext',
+        readOnly: true,
+        glyphMargin: true,
+    }));
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
@@ -98,12 +96,11 @@ Opt.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
-    this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-    this.optEditor.onDidChangeCursorSelection(
-        _.bind(function (e) {
-            this.cursorSelectionThrottledFunction(e);
-        }, this)
-    );
+    this.cursorSelectionThrottledFunction =
+        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.optEditor.onDidChangeCursorSelection(_.bind(function (e) {
+        this.cursorSelectionThrottledFunction(e);
+    }, this));
 };
 
 Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
@@ -120,7 +117,8 @@ Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (!this.awaitingInitialResults) {
         if (this.selection) {
             this.optEditor.setSelection(this.selection);
-            this.optEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
+            this.optEditor.revealLinesInCenter(this.selection.startLineNumber,
+                this.selection.endLineNumber);
         }
         this.awaitingInitialResults = true;
     }
@@ -133,8 +131,7 @@ Opt.prototype.getCurrentEditorLanguage = function () {
 
 Opt.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + ' Opt Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')'
-    );
+        this._compilerName + ' Opt Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -155,31 +152,27 @@ Opt.prototype.showOptResults = function (results) {
         return x.DebugLoc.Line;
     });
 
-    _.mapObject(
-        results,
-        function (value, key) {
-            var linenumber = Number(key);
-            var className = value.reduce(function (acc, x) {
-                if (x.optType === 'Missed' || acc === 'Missed') {
-                    return 'Missed';
-                } else if (x.optType === 'Passed' || acc === 'Passed') {
-                    return 'Passed';
-                }
-                return x.optType;
-            }, '');
-            var contents = _.map(value, this.getDisplayableOpt, this);
-            opt.push({
-                range: new monaco.Range(linenumber, 1, linenumber, Infinity),
-                options: {
-                    isWholeLine: true,
-                    glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
-                    hoverMessage: contents,
-                    glyphMarginHoverMessage: contents,
-                },
-            });
-        },
-        this
-    );
+    _.mapObject(results, function (value, key) {
+        var linenumber = Number(key);
+        var className = value.reduce(function (acc, x) {
+            if (x.optType === 'Missed' || acc === 'Missed') {
+                return 'Missed';
+            } else if (x.optType === 'Passed' || acc === 'Passed') {
+                return 'Passed';
+            }
+            return x.optType;
+        }, '');
+        var contents = _.map(value, this.getDisplayableOpt, this);
+        opt.push({
+            range: new monaco.Range(linenumber, 1, linenumber, Infinity),
+            options: {
+                isWholeLine: true,
+                glyphMarginClassName: 'opt-decoration.' + className.toLowerCase(),
+                hoverMessage: contents,
+                glyphMarginHoverMessage: contents,
+            },
+        });
+    }, this);
 
     this._currentDecorations = this.optEditor.deltaDecorations(this._currentDecorations, opt);
 };

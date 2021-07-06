@@ -24,8 +24,8 @@
 
 import express from 'express';
 
-import {AsmDocsHandler} from '../../lib/handlers/asm-docs-api-arm32';
-import {chai} from '../utils';
+import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api-arm32';
+import { chai } from '../utils';
 
 describe('Assembly documents', () => {
     let app;
@@ -38,8 +38,7 @@ describe('Assembly documents', () => {
 
     // We don't serve a 404 for unknown opcodes as it allows the not-an-opcode to be cached.
     it('should respond with "unknown opcode" for unknown opcodes', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/NOTANOPCODE')
             .then(res => {
                 res.should.have.status(200);
@@ -52,8 +51,7 @@ describe('Assembly documents', () => {
     });
 
     it('should respond to text requests', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/mov')
             .then(res => {
                 res.should.have.status(200);
@@ -66,8 +64,7 @@ describe('Assembly documents', () => {
     });
 
     it('should respond to json requests', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/mov')
             .set('Accept', 'application/json')
             .then(res => {
@@ -83,8 +80,7 @@ describe('Assembly documents', () => {
             });
     });
     it('should respond to json for unknown opcodes', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/NOANOPCODE')
             .set('Accept', 'application/json')
             .then(res => {
@@ -98,8 +94,7 @@ describe('Assembly documents', () => {
     });
 
     it('should handle opcodes with a conditional type suffix that are not conditionals', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/adcs')
             .then(res => {
                 res.should.have.status(200);
@@ -112,8 +107,7 @@ describe('Assembly documents', () => {
     });
 
     it('should handle conditional opcodes', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/beq')
             .then(res => {
                 res.should.have.status(200);
@@ -126,8 +120,7 @@ describe('Assembly documents', () => {
     });
 
     it('should respond with "unknown opcode" for unknown opcodes that can be parsed as conditional', () => {
-        return chai
-            .request(app)
+        return chai.request(app)
             .get('/asm/jne')
             .then(res => {
                 res.should.have.status(200);
@@ -138,4 +131,5 @@ describe('Assembly documents', () => {
                 throw err;
             });
     });
+
 });

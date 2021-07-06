@@ -23,7 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var local = require('./local'),
+var
+    local = require('./local'),
     _ = require('underscore');
 
 var maxHistoryEntries = 30;
@@ -83,7 +84,7 @@ function push(stringifiedConfig) {
             while (completeHistory.length >= maxHistoryEntries) {
                 completeHistory.shift();
             }
-
+    
             completeHistory.push({
                 dt: Date.now(),
                 sources: sources,

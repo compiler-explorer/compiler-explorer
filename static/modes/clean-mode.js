@@ -28,34 +28,24 @@ var monaco = require('monaco-editor');
 function definition() {
     return {
         keywords: [
-            'module',
-            'import',
-            'Start',
-            'where',
-            'otherwise',
-            'definition',
-            'implementation',
-            'from',
-            'class',
-            'instance',
-            'abort',
-            'infix',
-            'infixl',
-            'infixr',
-            'if',
-            'True',
-            'False',
+            'module', 'import', 'Start', 'where', 'otherwise',
+            'definition', 'implementation', 'from', 'class', 'instance', 'abort',
+            'infix', 'infixl', 'infixr', 'if', 'True', 'False',
         ],
 
-        builtintypes: ['Int', 'Real', 'String', 'Char', 'Complex', 'Bool'],
+        builtintypes: [
+            'Int', 'Real', 'String', 'Char', 'Complex', 'Bool',
+        ],
 
-        operators: ['=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\'],
+        operators: [
+            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', ':==', '->', '=:', '=>', '|', '\\\\',
+        ],
 
         numbers: /-?[0-9.]/,
 
         tokenizer: {
             root: [
-                {include: '@whitespace'},
+                { include: '@whitespace' },
 
                 [/->/, 'operators'],
 
@@ -65,16 +55,13 @@ function definition() {
 
                 [/[+\-*/=<>\\]/, 'operators'],
 
-                [
-                    /[a-zA-Z_][a-zA-Z0-9_]*/,
-                    {
-                        cases: {
-                            '@builtintypes': 'type',
-                            '@keywords': 'keyword',
-                            '@default': '',
-                        },
+                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
+                    cases: {
+                        '@builtintypes': 'type',
+                        '@keywords': 'keyword',
+                        '@default': '',
                     },
-                ],
+                }],
 
                 [/[()[\],:]/, 'delimiter'],
 
@@ -98,5 +85,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({id: 'clean'});
+monaco.languages.register({ id: 'clean' });
 monaco.languages.setMonarchTokensProvider('clean', definition());

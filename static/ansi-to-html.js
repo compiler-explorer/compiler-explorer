@@ -234,12 +234,9 @@ function resetStyles(stack) {
 
     stack.length = 0;
 
-    return stackClone
-        .reverse()
-        .map(function (tag) {
-            return '</' + tag + '>';
-        })
-        .join('');
+    return stackClone.reverse().map(function (tag) {
+        return '</' + tag + '>';
+    }).join('');
 }
 
 /**
@@ -294,9 +291,9 @@ function categoryForCode(code) {
         result = 'hide';
     } else if (code === 9) {
         result = 'strike';
-    } else if ((29 < code && code < 38) || code === 39 || (89 < code && code < 98)) {
+    } else if (29 < code && code < 38 || code === 39 || 89 < code && code < 98) {
         result = 'foreground-color';
-    } else if ((39 < code && code < 48) || code === 49 || (99 < code && code < 108)) {
+    } else if (39 < code && code < 48 || code === 49 || 99 < code && code < 108) {
         result = 'background-color';
     }
 
@@ -417,36 +414,28 @@ function tokenize(text, options, callback) {
     }
 
     /* eslint no-control-regex:0 */
-    var tokens = [
-        {
-            pattern: /^\x08+/,
-            sub: remove,
-        },
-        {
-            pattern: /^\x1b\[[012]?K/,
-            sub: remove,
-        },
-        {
-            pattern: /^\x1b\[[34]8;5;(\d+)m/,
-            sub: removeXterm256,
-        },
-        {
-            pattern: /^\n/,
-            sub: newline,
-        },
-        {
-            pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
-            sub: ansiMess,
-        },
-        {
-            pattern: /^\x1b\[?[\d;]{0,3}/,
-            sub: remove,
-        },
-        {
-            pattern: /^([^\x1b\x08\n]+)/,
-            sub: realText,
-        },
-    ];
+    var tokens = [{
+        pattern: /^\x08+/,
+        sub: remove,
+    }, {
+        pattern: /^\x1b\[[012]?K/,
+        sub: remove,
+    }, {
+        pattern: /^\x1b\[[34]8;5;(\d+)m/,
+        sub: removeXterm256,
+    }, {
+        pattern: /^\n/,
+        sub: newline,
+    }, {
+        pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
+        sub: ansiMess,
+    }, {
+        pattern: /^\x1b\[?[\d;]{0,3}/,
+        sub: remove,
+    }, {
+        pattern: /^([^\x1b\x08\n]+)/,
+        sub: realText,
+    }];
 
     function process(handler, i) {
         if (i > ansiHandler && ansiMatch) {

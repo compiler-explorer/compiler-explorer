@@ -46,13 +46,17 @@ var themes = {
 monaco.editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
-    rules: [{token: 'identifier.definition.cppx-blue', foreground: '004400', fontStyle: 'bold'}],
+    rules: [
+        { token: 'identifier.definition.cppx-blue', foreground: '004400', fontStyle: 'bold' },
+    ],
 });
 
 monaco.editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
-    rules: [{token: 'identifier.definition.cppx-blue', foreground: 'bbccbb', fontStyle: 'bold'}],
+    rules: [
+        { token: 'identifier.definition.cppx-blue', foreground: 'bbccbb', fontStyle: 'bold' },
+    ],
 });
 
 function Themer(eventHub, initialSettings) {
@@ -70,7 +74,8 @@ function Themer(eventHub, initialSettings) {
 
     this.onSettingsChange = function (newSettings) {
         var newTheme = themes[newSettings.theme] || themes.default;
-        if (!newTheme.monaco) newTheme.monaco = 'vs';
+        if (!newTheme.monaco)
+            newTheme.monaco = 'vs';
         this.setTheme(newTheme);
 
         // This line is used to set thet codelens font
@@ -82,13 +87,9 @@ function Themer(eventHub, initialSettings) {
 
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
-    this.eventHub.on(
-        'requestTheme',
-        function () {
-            this.eventHub.emit('themeChange', this.currentTheme);
-        },
-        this
-    );
+    this.eventHub.on('requestTheme', function () {
+        this.eventHub.emit('themeChange', this.currentTheme);
+    }, this);
 }
 
 module.exports = {

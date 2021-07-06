@@ -51,12 +51,9 @@ function Output(hub, container, state) {
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.compilerName = '';
     this.fontScale = new FontScale(this.domRoot, state, '.content');
-    this.fontScale.on(
-        'change',
-        _.bind(function () {
-            this.saveState();
-        }, this)
-    );
+    this.fontScale.on('change', _.bind(function () {
+        this.saveState();
+    }, this));
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
@@ -123,19 +120,15 @@ Output.prototype.saveState = function () {
 };
 
 Output.prototype.addOutputLines = function (result) {
-    _.each(
-        (result.stdout || []).concat(result.stderr || []),
-        function (obj) {
-            var lineNumber = obj.tag ? obj.tag.line : obj.line;
-            var columnNumber = obj.tag ? obj.tag.column : -1;
-            if (obj.text === '') {
-                this.add('<br/>');
-            } else {
-                this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
-            }
-        },
-        this
-    );
+    _.each((result.stdout || []).concat(result.stderr || []), function (obj) {
+        var lineNumber = obj.tag ? obj.tag.line : obj.line;
+        var columnNumber = obj.tag ? obj.tag.column : -1;
+        if (obj.text === '') {
+            this.add('<br/>');
+        } else {
+            this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
+        }
+    }, this);
 };
 
 Output.prototype.onCompiling = function (compilerId) {
@@ -161,31 +154,23 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
     if (result.execResult && result.execResult.didExecute) {
         this.add('Program returned: ' + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
-            _.each(
-                result.execResult.stderr,
-                function (obj) {
-                    // Conserve empty lines as they are discarded by ansiToHtml
-                    if (obj.text === '') {
-                        this.programOutput('<br/>');
-                    } else {
-                        this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'red');
-                    }
-                },
-                this
-            );
+            _.each(result.execResult.stderr, function (obj) {
+                // Conserve empty lines as they are discarded by ansiToHtml
+                if (obj.text === '') {
+                    this.programOutput('<br/>');
+                } else {
+                    this.programOutput(this.errorAnsiToHtml.toHtml(obj.text), 'red');
+                }
+            }, this);
 
-            _.each(
-                result.execResult.stdout,
-                function (obj) {
-                    // Conserve empty lines as they are discarded by ansiToHtml
-                    if (obj.text === '') {
-                        this.programOutput('<br/>');
-                    } else {
-                        this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
-                    }
-                },
-                this
-            );
+            _.each(result.execResult.stdout, function (obj) {
+                // Conserve empty lines as they are discarded by ansiToHtml
+                if (obj.text === '') {
+                    this.programOutput('<br/>');
+                } else {
+                    this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
+                }
+            }, this);
         }
     }
     this.setCompileStatus(false);
@@ -193,9 +178,12 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 };
 
 Output.prototype.programOutput = function (msg, color) {
-    var elem = $('<div/>').appendTo(this.contentRoot).html(msg).addClass('program-exec-output');
+    var elem = $('<div/>').appendTo(this.contentRoot)
+        .html(msg)
+        .addClass('program-exec-output');
 
-    if (color) elem.css('color', color);
+    if (color)
+        elem.css('color', color);
 };
 
 Output.prototype.add = function (msg, lineNum, column) {
@@ -204,21 +192,16 @@ Output.prototype.add = function (msg, lineNum, column) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
-                .click(
-                    _.bind(function (e) {
-                        this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, true);
-                        // do not bring user to the top of index.html
-                        // http://stackoverflow.com/questions/3252730
-                        e.preventDefault();
-                        return false;
-                    }, this)
-                )
-                .on(
-                    'mouseover',
-                    _.bind(function () {
-                        this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, false);
-                    }, this)
-                )
+                .click(_.bind(function (e) {
+                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, true);
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                }, this))
+                .on('mouseover', _.bind(function () {
+                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, false);
+                }, this))
         );
     } else {
         elem.html(msg);

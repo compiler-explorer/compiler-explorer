@@ -61,7 +61,7 @@ function loadState(state) {
         /* falls through */
         case 3:
             state = convertOldState(state);
-            break; // no fall through
+            break;  // no fall through
         case 4:
             state = GoldenLayout.unminifyConfig(state);
             break;
@@ -107,7 +107,7 @@ function serialiseState(stateText) {
     ctx.version = 4;
     var uncompressed = risonify(ctx);
     var compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
-    var MinimalSavings = 0.2; // at least this ratio smaller
+    var MinimalSavings = 0.20;  // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;
     } else {

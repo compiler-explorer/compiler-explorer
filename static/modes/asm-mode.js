@@ -81,7 +81,7 @@ function definition() {
                 [/[-+,*/!:&{}()]/, 'operator'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                 // characters
@@ -98,7 +98,7 @@ function definition() {
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'], // nested comment
+                [/\/\*/, 'comment', '@push'],    // nested comment
                 ['\\*/', 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],

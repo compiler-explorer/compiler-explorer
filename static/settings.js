@@ -43,7 +43,8 @@ Setting.prototype.putUi = function (value) {
     this.control.putUi(this.elem, value);
 };
 
-function Checkbox() {}
+function Checkbox() {
+}
 
 Checkbox.prototype.getUi = function (elem) {
     return !!elem.prop('checked');
@@ -78,7 +79,8 @@ Slider.prototype.putUi = function (elem, value) {
     elem.slider('setValue', value);
 };
 
-function Textbox() {}
+function Textbox() {
+}
 
 Textbox.prototype.getUi = function (elem) {
     return elem.val();
@@ -91,7 +93,8 @@ Textbox.prototype.putUi = function (elem, value) {
 function Numeric(elem, params) {
     this.min = params.min;
     this.max = params.max;
-    elem.attr('min', params.min).attr('max', params.max);
+    elem.attr('min', params.min)
+        .attr('max', params.max);
 }
 
 Numeric.prototype.getUi = function (elem) {
@@ -130,7 +133,8 @@ function setupSettings(root, settings, onChange, subLangId) {
     }
 
     function add(elem, key, defaultValue, Type, param) {
-        if (settings[key] === undefined) settings[key] = defaultValue;
+        if (settings[key] === undefined)
+            settings[key] = defaultValue;
         settingsObjs.push(new Setting(elem, key, Type, param));
         elem.change(onUiChange);
     }
@@ -138,11 +142,7 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
     add(root.find('.autoCloseBrackets'), 'autoCloseBrackets', true, Checkbox);
     var colourSchemeSelect = root.find('.colourScheme');
-    add(
-        colourSchemeSelect,
-        'colourScheme',
-        colour.schemes[0].name,
-        Select,
+    add(colourSchemeSelect, 'colourScheme', colour.schemes[0].name, Select,
         _.map(colour.schemes, function (scheme) {
             return {label: scheme.name, desc: scheme.desc};
         })
@@ -172,11 +172,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         defaultThemeId = themes.dark.id;
     }
 
-    add(
-        themeSelect,
-        'theme',
-        defaultThemeId,
-        Select,
+    add(themeSelect, 'theme', defaultThemeId, Select,
         _.map(themes, function (theme) {
             return {label: theme.id, desc: theme.name};
         })
@@ -194,12 +190,9 @@ function setupSettings(root, settings, onChange, subLangId) {
         var isStoredUsable = false;
         colourSchemeSelect.empty();
         _.each(colour.schemes, function (scheme) {
-            if (
-                !scheme.themes ||
-                scheme.themes.length === 0 ||
-                scheme.themes.indexOf(newTheme) !== -1 ||
-                scheme.themes.indexOf('all') !== -1
-            ) {
+            if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 ||
+                scheme.themes.indexOf('all') !== -1) {
+
                 colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
                 if (newThemeStoredScheme === scheme.name) {
                     isStoredUsable = true;
@@ -211,8 +204,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         } else {
             // This should never happen. In case it does, lets use the default one
             colourSchemeSelect.append(
-                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>')
-            );
+                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>'));
             colourSchemeSelect.val(colourSchemeSelect.first().val());
         }
         colourSchemeSelect.trigger('change');
@@ -222,11 +214,7 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     var defaultLanguageSelector = root.find('.defaultLanguage');
     var defLang = settings.defaultLanguage || _.keys(langs)[0] || 'c++';
-    add(
-        defaultLanguageSelector,
-        'defaultLanguage',
-        defLang,
-        Select,
+    add(defaultLanguageSelector, 'defaultLanguage', defLang, Select,
         _.map(langs, function (lang) {
             return {label: lang.id, desc: lang.name};
         })
@@ -241,15 +229,10 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 
     var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit'];
-    add(
-        root.find('.formatBase'),
-        'formatBase',
-        formats[0],
-        Select,
+    add(root.find('.formatBase'), 'formatBase', formats[0], Select,
         _.map(formats, function (format) {
             return {label: format, desc: format};
-        })
-    );
+        }));
     //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
     add(root.find('.wordWrap'), 'wordWrap', false, Checkbox);
 

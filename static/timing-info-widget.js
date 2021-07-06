@@ -31,6 +31,7 @@ var Settings = require('settings');
 // eslint-disable-next-line requirejs/no-js-extension
 var Chart = require('chart.js');
 
+
 function pushTimingInfo(data, step, time) {
     data.labels.push(step);
     data.datasets[0].data.push(time);
@@ -65,15 +66,21 @@ function initializeChartDataFromResult(compileResult, totalTime) {
     var data = {
         steps: 0,
         labels: [],
-        datasets: [
-            {
-                label: 'time in ms',
-                data: [],
-                borderWidth: 1,
-                barThickness: 20,
-                backgroundColor: ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'],
-            },
-        ],
+        datasets: [{
+            label: 'time in ms',
+            data: [],
+            borderWidth: 1,
+            barThickness: 20,
+            backgroundColor: [
+                'red',
+                'orange',
+                'yellow',
+                'green',
+                'blue',
+                'indigo',
+                'violet',
+            ],
+        }],
     };
 
     if (compileResult.retreivedFromCache) {
@@ -87,6 +94,7 @@ function initializeChartDataFromResult(compileResult, totalTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
+
         if (compileResult.packageDownloadAndUnzipTime) {
             pushTimingInfo(data, 'Download binary from cache', compileResult.execTime);
         } else {
@@ -106,6 +114,7 @@ function initializeChartDataFromResult(compileResult, totalTime) {
                 if (compileResult.execResult.execTime) {
                     pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
                 }
+
             } else {
                 if (compileResult.downloads) {
                     concatTimings(data, compileResult.downloads);
@@ -129,11 +138,9 @@ function initializeChartDataFromResult(compileResult, totalTime) {
     if (compileResult.didExecute) {
         if (compileResult.buildResult) {
             if (compileResult.buildResult.packageDownloadAndUnzipTime) {
-                pushTimingInfo(
-                    data,
+                pushTimingInfo(data,
                     'Download binary from cache',
-                    compileResult.buildResult.packageDownloadAndUnzipTime
-                );
+                    compileResult.buildResult.packageDownloadAndUnzipTime);
             }
         } else if (compileResult.execResult && compileResult.execResult.buildResult) {
             addBuildResultToTimings(data, compileResult.execResult.buildResult);
@@ -180,28 +187,24 @@ function displayData(data) {
                 },
             },
             scales: {
-                xAxes: [
-                    {
-                        gridLines: {
-                            color: fontColour,
-                        },
-                        ticks: {
-                            fontColor: fontColour,
-                            beginAtZero: true,
-                        },
+                xAxes: [{
+                    gridLines: {
+                        color: fontColour,
                     },
-                ],
-                yAxes: [
-                    {
-                        gridLines: {
-                            color: fontColour,
-                        },
-                        ticks: {
-                            fontColor: fontColour,
-                            beginAtZero: true,
-                        },
+                    ticks: {
+                        fontColor: fontColour,
+                        beginAtZero: true,
                     },
-                ],
+                }],
+                yAxes: [{
+                    gridLines: {
+                        color: fontColour,
+                    },
+                    ticks: {
+                        fontColor: fontColour,
+                        beginAtZero: true,
+                    },
+                }],
             },
         },
     });

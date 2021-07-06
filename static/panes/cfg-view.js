@@ -39,14 +39,11 @@ function Cfg(hub, container, state) {
     this.domRoot.html($('#cfg').html());
     this.defaultCfgOutput = {nodes: [{id: 0, shape: 'box', label: 'No Output'}], edges: []};
     this.binaryModeSupport = {
-        nodes: [
-            {
-                id: 0,
-                shape: 'box',
-                label: 'Cfg mode cannot be used when the binary filter is set',
-            },
-        ],
-        edges: [],
+        nodes: [{
+            id: 0,
+            shape: 'box',
+            label: 'Cfg mode cannot be used when the binary filter is set',
+        }], edges: [],
     };
     // Note that this might be outdated if no functions were present when creating the link, but that's handled
     // by selectize
@@ -96,11 +93,8 @@ function Cfg(hub, container, state) {
         },
     };
 
-    this.cfgVisualiser = new vis.Network(
-        this.domRoot.find('.graph-placeholder')[0],
-        this.defaultCfgOutput,
-        this.networkOpts
-    );
+    this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
+        this.defaultCfgOutput, this.networkOpts);
 
     this.initButtons(state);
 
@@ -167,16 +161,13 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
         }
 
         this.functionPicker.clearOptions();
-        this.functionPicker.addOption(
-            functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain functions'}
-        );
+        this.functionPicker.addOption(functionNames.length ?
+            this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
         this.functionPicker.refreshOptions(false);
 
         this.functionPicker.clear();
-        this.functionPicker.addItem(
-            functionNames.length ? this.currentFunc : 'The input does not contain any function',
-            true
-        );
+        this.functionPicker.addItem(functionNames.length ?
+            this.currentFunc : 'The input does not contain any function', true);
         this.saveState();
     }
 };
@@ -223,35 +214,26 @@ Cfg.prototype.initCallbacks = function () {
     this.eventHub.emit('requestFilters', this.compilerId);
     this.eventHub.emit('requestCompiler', this.compilerId);
 
-    this.togglePhysicsButton.on(
-        'click',
-        _.bind(function () {
-            this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
-            // change only physics.enabled option to preserve current node locations
-            this.cfgVisualiser.setOptions({
-                physics: {enabled: this.networkOpts.physics.enabled},
-            });
-        }, this)
-    );
+    this.togglePhysicsButton.on('click', _.bind(function () {
+        this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
+        // change only physics.enabled option to preserve current node locations
+        this.cfgVisualiser.setOptions({
+            physics: {enabled: this.networkOpts.physics.enabled},
+        });
+    }, this));
 
-    this.toggleNavigationButton.on(
-        'click',
-        _.bind(function () {
-            this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
-            this.cfgVisualiser.setOptions({
-                interaction: {
-                    navigationButtons: this.networkOpts.interaction.navigationButtons,
-                },
-            });
-        }, this)
-    );
-    this.toggles.on(
-        'change',
-        _.bind(function () {
-            this.updateButtons();
-            this.saveState();
-        }, this)
-    );
+    this.toggleNavigationButton.on('click', _.bind(function () {
+        this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
+        this.cfgVisualiser.setOptions({
+            interaction: {
+                navigationButtons: this.networkOpts.interaction.navigationButtons,
+            },
+        });
+    }, this));
+    this.toggles.on('change', _.bind(function () {
+        this.updateButtons();
+        this.saveState();
+    }, this));
 };
 
 Cfg.prototype.updateButtons = function () {
@@ -272,8 +254,7 @@ Cfg.prototype.resize = function () {
 
 Cfg.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')'
-    );
+        this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
 };
 
 Cfg.prototype.assignLevels = function (data) {
@@ -301,8 +282,7 @@ Cfg.prototype.assignLevels = function (data) {
         }
     });
 
-    var dfs = function (node) {
-        // choose which edges will be back-edges
+    var dfs = function (node) { // choose which edges will be back-edges
         node.state = 1;
         node.edges.forEach(function (targetIndex) {
             var target = nodes[targetIndex];
@@ -343,8 +323,8 @@ Cfg.prototype.assignLevels = function (data) {
                 edge.physics = false;
             } else {
                 edge.physics = true;
-                var diff = nodeB.level - nodeA.level;
-                edge.length = diff * (200 - 5 * Math.min(5, diff));
+                var diff = (nodeB.level - nodeA.level);
+                edge.length = diff * (200 - 5 * (Math.min(5, diff)));
             }
         } else {
             edge.physics = false;

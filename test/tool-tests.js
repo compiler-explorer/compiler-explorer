@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerDropinTool} from '../lib/tooling/compiler-dropin-tool';
+import { CompilerDropinTool } from '../lib/tooling/compiler-dropin-tool';
 
-import {path} from './utils';
+import { path } from './utils';
 
 describe('CompilerDropInTool', () => {
     it('Should support llvm based compilers', () => {
@@ -42,10 +42,12 @@ describe('CompilerDropInTool', () => {
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
-        orderedArgs.should.deep.equal([
-            '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
-            '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
-        ]);
+        orderedArgs.should.deep.equal(
+            [
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-7.2.0',
+            ],
+        );
     });
 
     it('Should support gcc based compilers', () => {
@@ -63,10 +65,12 @@ describe('CompilerDropInTool', () => {
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
-        orderedArgs.should.deep.equal([
-            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
-            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
-        ]);
+        orderedArgs.should.deep.equal(
+            [
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.0'),
+            ],
+        );
     });
 
     it('Should not support riscv gcc compilers', () => {
@@ -102,10 +106,12 @@ describe('CompilerDropInTool', () => {
         const sourcefile = 'example.cpp';
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, [], args, sourcefile);
-        orderedArgs.should.deep.equal([
-            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
-            '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
-        ]);
+        orderedArgs.should.deep.equal(
+            [
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+                '--gcc-toolchain=' + path.resolve('/opt/compiler-explorer/gcc-8.2.0'),
+            ],
+        );
     });
 
     it('Should not support WINE MSVC compilers', () => {
@@ -114,10 +120,12 @@ describe('CompilerDropInTool', () => {
         const compilationInfo = {
             compiler: {
                 exe: '/opt/compiler-explorer/windows/19.14.26423/bin/cl.exe',
-                options:
+                options: 
                     '/I/opt/compiler-explorer/windows/10.0.10240.0/ucrt/ ' +
                     '/I/opt/compiler-explorer/windows/19.14.26423/include/',
-                internalIncludePaths: ['/opt/compiler-explorer/windows/19.14.26423/include'],
+                internalIncludePaths: [
+                    '/opt/compiler-explorer/windows/19.14.26423/include',
+                ],
             },
             options: [],
         };
@@ -136,7 +144,9 @@ describe('CompilerDropInTool', () => {
             compiler: {
                 exe: '/opt/compiler-explorer/clang-concepts-trunk/bin/clang++',
                 options: '-stdlib=libc++',
-                internalIncludePaths: ['/opt/compiler-explorer/clang-concepts-trunk/something/etc/include'],
+                internalIncludePaths: [
+                    '/opt/compiler-explorer/clang-concepts-trunk/something/etc/include',
+                ],
             },
             options: [],
         };
@@ -155,7 +165,9 @@ describe('CompilerDropInTool', () => {
             compiler: {
                 exe: '/opt/compiler-explorer/clang-concepts-trunk/bin/clang++',
                 options: '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
-                internalIncludePaths: ['/opt/compiler-explorer/clang-concepts-trunk/something/etc/include'],
+                internalIncludePaths: [
+                    '/opt/compiler-explorer/clang-concepts-trunk/something/etc/include',
+                ],
             },
             options: [],
         };
@@ -165,11 +177,13 @@ describe('CompilerDropInTool', () => {
         const libOptions = ['-DMYLIBDEF', '-pthread'];
 
         const orderedArgs = tool.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);
-        orderedArgs.should.deep.equal([
-            '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
-            '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
-            '-DMYLIBDEF',
-            '-pthread',
-        ]);
+        orderedArgs.should.deep.equal(
+            [
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
+                '--gcc-toolchain=/opt/compiler-explorer/gcc-8.2.0',
+                '-DMYLIBDEF',
+                '-pthread',
+            ],
+        );
     });
 });
