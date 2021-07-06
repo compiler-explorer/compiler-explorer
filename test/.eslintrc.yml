@@ -1,6 +1,6 @@
 ---
 root: false
 rules:
-    max-len: off
-    max-statements: off
-    node/no-unpublished-import: off
+  max-len: off
+  max-statements: off
+  node/no-unpublished-import: off
