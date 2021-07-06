@@ -1,6 +1,5 @@
-# Type your code here, or load an example.
-def square(num : Int) : Int
-  num * num
-end
+# compile with --prelude=empty
 
-x = square(ARGV.first.to_i)
+fun square(num : Int32) : Int32
+  num &* num
+end
