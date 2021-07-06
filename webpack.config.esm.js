@@ -24,7 +24,7 @@
 
 /* eslint-disable node/no-unpublished-import */
 import path from 'path';
-import {fileURLToPath} from 'url';
+import { fileURLToPath } from 'url';
 
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
@@ -46,7 +46,7 @@ const staticPath = path.join(distPath, 'static');
 const webjackJsHack = '.v4.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala'],
+        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala' ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new CopyWebpackPlugin([
@@ -103,7 +103,7 @@ export default {
         minimizer: [
             new OptimizeCssAssetsPlugin({
                 cssProcessorPluginOptions: {
-                    preset: ['default', {discardComments: {removeAll: true}}],
+                    preset: ['default', { discardComments: { removeAll: true } }],
                 },
             }),
             new TerserPlugin({
