@@ -32,10 +32,10 @@ function definition() {
         defaultToken: '',
 
         brackets: [
-            { token: 'delimiter.curly', open: '{', close: '}' },
-            { token: 'delimiter.parenthesis', open: '(', close: ')' },
-            { token: 'delimiter.square', open: '[', close: ']' },
-            { token: 'delimiter.angle', open: '<', close: '>' },
+            {token: 'delimiter.curly', open: '{', close: '}'},
+            {token: 'delimiter.parenthesis', open: '(', close: ')'},
+            {token: 'delimiter.square', open: '[', close: ']'},
+            {token: 'delimiter.angle', open: '<', close: '>'},
         ],
 
         keywords: [
@@ -208,7 +208,7 @@ function definition() {
                 [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
@@ -287,23 +287,23 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            { open: '[', close: ']' },
-            { open: '{', close: '}' },
-            { open: '(', close: ')' },
-            { open: "'", close: "'", notIn: ['string', 'comment'] },
-            { open: '"', close: '"', notIn: ['string'] },
+            {open: '[', close: ']'},
+            {open: '{', close: '}'},
+            {open: '(', close: ')'},
+            {open: "'", close: "'", notIn: ['string', 'comment']},
+            {open: '"', close: '"', notIn: ['string']},
         ],
 
         surroundingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '"', close: '"' },
-            { open: "'", close: "'" },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
         ],
     };
 }
 
-monaco.languages.register({ id: 'cppx-gold' });
+monaco.languages.register({id: 'cppx-gold'});
 monaco.languages.setMonarchTokensProvider('cppx-gold', definition());
 monaco.languages.setLanguageConfiguration('cppx-gold', configuration());

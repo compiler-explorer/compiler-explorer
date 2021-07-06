@@ -49,24 +49,24 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws';
 import * as normalizer from './lib/clientstate-normalizer';
-import { CompilationEnvironment } from './lib/compilation-env';
-import { CompilationQueue } from './lib/compilation-queue';
-import { CompilerFinder } from './lib/compiler-finder';
+import {CompilationEnvironment} from './lib/compilation-env';
+import {CompilationQueue} from './lib/compilation-queue';
+import {CompilerFinder} from './lib/compiler-finder';
 // import { policy as csp } from './lib/csp';
-import { initialiseWine } from './lib/exec';
-import { ShortLinkResolver } from './lib/google';
-import { CompileHandler } from './lib/handlers/compile';
+import {initialiseWine} from './lib/exec';
+import {ShortLinkResolver} from './lib/google';
+import {CompileHandler} from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
-import { NoScriptHandler } from './lib/handlers/noscript';
-import { RouteAPI } from './lib/handlers/route-api';
-import { SourceHandler } from './lib/handlers/source';
-import { languages as allLanguages } from './lib/languages';
-import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
-import { ClientOptionsHandler } from './lib/options-handler';
+import {NoScriptHandler} from './lib/handlers/noscript';
+import {RouteAPI} from './lib/handlers/route-api';
+import {SourceHandler} from './lib/handlers/source';
+import {languages as allLanguages} from './lib/languages';
+import {logger, logToLoki, logToPapertrail, suppressConsoleLog} from './lib/logger';
+import {ClientOptionsHandler} from './lib/options-handler';
 import * as props from './lib/properties';
-import { sources } from './lib/sources';
-import { loadSponsorsFromString } from './lib/sponsors';
-import { getStorageTypeByKey } from './lib/storage';
+import {sources} from './lib/sources';
+import {loadSponsorsFromString} from './lib/sponsors';
+import {getStorageTypeByKey} from './lib/storage';
 import * as utils from './lib/utils';
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -425,15 +425,15 @@ function setupSentry(sentryDsn, expressApp) {
         environment: sentryEnv || defArgs.env[0],
         beforeSend(event) {
             if (event.request && event.request.data && shouldRedactRequestData(event.request.data)) {
-                event.request.data = JSON.stringify({ redacted: true });
+                event.request.data = JSON.stringify({redacted: true});
             }
             return event;
         },
         integrations: [
             // enable HTTP calls tracing
-            new Sentry.Integrations.Http({ tracing: true }),
+            new Sentry.Integrations.Http({tracing: true}),
             // enable Express.js middleware tracing
-            new Tracing.Integrations.Express({ expressApp }),
+            new Tracing.Integrations.Express({expressApp}),
         ],
         tracesSampler: samplingContext => {
             // always inherit
@@ -574,7 +574,7 @@ async function main() {
         .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
         .use(httpRoot, router)
         .use((req, res, next) => {
-            next({ status: 404, message: `page "${req.path}" could not be found` });
+            next({status: 404, message: `page "${req.path}" could not be found`});
         })
         // sentry error handler must be the first error handling middleware
         .use(Sentry.Handlers.errorHandler)
@@ -584,7 +584,7 @@ async function main() {
                 err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
             const message = err.message || 'Internal Server Error';
             res.status(status);
-            res.render('error', renderConfig({ error: { code: status, message: message } }));
+            res.render('error', renderConfig({error: {code: status, message: message}}));
             if (status >= 500) {
                 logger.error('Internal server error:', err);
             }
@@ -783,13 +783,13 @@ async function main() {
                 ),
             );
         })
-        .use(bodyParser.json({ limit: ceProps('bodyParserLimit', maxUploadSize) }))
+        .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
         .get('/g/:id', oldGoogleUrlHandler)
         // Deprecated old route for this -- TODO remove in late 2021
         .post('/shortener', routeApi.apiHandler.shortener.handle.bind(routeApi.apiHandler.shortener));
 
-    noscriptHandler.InitializeRoutes({ limit: ceProps('bodyParserLimit', maxUploadSize) });
+    noscriptHandler.InitializeRoutes({limit: ceProps('bodyParserLimit', maxUploadSize)});
     routeApi.InitializeRoutes();
 
     if (!defArgs.doCache) {

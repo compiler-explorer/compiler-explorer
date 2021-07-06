@@ -50,7 +50,7 @@ function definition() {
 
         tokenizer: {
             root: [
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 [/->/, 'operators'],
 
@@ -94,5 +94,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'haskell' });
+monaco.languages.register({id: 'haskell'});
 monaco.languages.setMonarchTokensProvider('haskell', definition());

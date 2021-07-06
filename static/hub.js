@@ -261,7 +261,7 @@ WrappedEventHub.prototype.emit = function () {
 
 WrappedEventHub.prototype.on = function (event, callback, context) {
     this.eventHub.on(event, callback, context);
-    this.subscriptions.push({ evt: event, fn: callback, ctx: context });
+    this.subscriptions.push({evt: event, fn: callback, ctx: context});
 };
 
 WrappedEventHub.prototype.unsubscribe = function () {
@@ -297,7 +297,7 @@ WrappedEventHub.prototype.mediateDependentCalls = function (dependent, dependenc
             lastDependentArgs = arguments;
         }
     };
-    return { dependencyProxy: dependencyProxy, dependentProxy: dependentProxy };
+    return {dependencyProxy: dependencyProxy, dependentProxy: dependentProxy};
 };
 
 Hub.prototype.createEventHub = function () {
@@ -318,7 +318,7 @@ Hub.prototype.addAtRoot = function (newElem) {
         if (rootFirstItem.isRow || rootFirstItem.isColumn) {
             rootFirstItem.addChild(newElem);
         } else {
-            var newRow = this.layout.createContentItem({ type: 'row' }, this.layout.root);
+            var newRow = this.layout.createContentItem({type: 'row'}, this.layout.root);
             this.layout.root.replaceChild(rootFirstItem, newRow);
             newRow.addChild(rootFirstItem);
             newRow.addChild(newElem);

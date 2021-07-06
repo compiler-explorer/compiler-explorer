@@ -24,9 +24,9 @@
 
 import express from 'express';
 
-import { ApiHandler } from '../../lib/handlers/api';
-import { StorageNull } from '../../lib/storage';
-import { chai } from '../utils';
+import {ApiHandler} from '../../lib/handlers/api';
+import {StorageNull} from '../../lib/storage';
+import {chai} from '../utils';
 
 const languages = {
     'c++': {
@@ -255,7 +255,7 @@ describe('API handling', () => {
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.should.deep.equals([{ name: 'FormatT', version: 'Release' }]);
+                    res.body.should.deep.equals([{name: 'FormatT', version: 'Release'}]);
                 })
                 .catch(err => {
                     throw err;
@@ -270,7 +270,7 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(422);
                 res.should.be.json;
-                res.body.should.deep.equals({ exit: 2, answer: 'Tool not supported' });
+                res.body.should.deep.equals({exit: 2, answer: 'Tool not supported'});
             });
     });
     /*

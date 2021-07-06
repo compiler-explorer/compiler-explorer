@@ -29,7 +29,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'compiler',
-            componentState: { source: editorId, lang: lang },
+            componentState: {source: editorId, lang: lang},
         };
     },
     getCompilerWith: function (editorId, filters, options, compilerId, langId, libs) {
@@ -50,7 +50,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'executor',
-            componentState: { source: editorId, lang: lang },
+            componentState: {source: editorId, lang: lang},
         };
     },
     getExecutorWith: function (editorId, lang, compilerId, libraries, compilerArgs) {
@@ -70,21 +70,21 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'codeEditor',
-            componentState: { id: id, lang: langId },
+            componentState: {id: id, lang: langId},
         };
     },
     getEditorWith: function (id, source, options) {
         return {
             type: 'component',
             componentName: 'codeEditor',
-            componentState: { id: id, source: source, options: options },
+            componentState: {id: id, source: source, options: options},
         };
     },
     getOutput: function (compiler, editor) {
         return {
             type: 'component',
             componentName: 'output',
-            componentState: { compiler: compiler, editor: editor },
+            componentState: {compiler: compiler, editor: editor},
         };
     },
     getToolViewWith: function (compiler, editor, toolId, args) {

@@ -25,29 +25,29 @@
 import AWS from 'aws-sdk-mock';
 import temp from 'temp';
 
-import { createCacheFromConfig } from '../lib/cache/from-config';
-import { InMemoryCache } from '../lib/cache/in-memory';
-import { MultiCache } from '../lib/cache/multi';
-import { NullCache } from '../lib/cache/null';
-import { OnDiskCache } from '../lib/cache/on-disk';
-import { S3Cache } from '../lib/cache/s3';
+import {createCacheFromConfig} from '../lib/cache/from-config';
+import {InMemoryCache} from '../lib/cache/in-memory';
+import {MultiCache} from '../lib/cache/multi';
+import {NullCache} from '../lib/cache/null';
+import {OnDiskCache} from '../lib/cache/on-disk';
+import {S3Cache} from '../lib/cache/s3';
 
-import { fs, path } from './utils';
+import {fs, path} from './utils';
 
 function newTempDir() {
     temp.track(true);
-    return temp.mkdirSync({ prefix: 'compiler-explorer-cache-tests', dir: process.env.tmpDir });
+    return temp.mkdirSync({prefix: 'compiler-explorer-cache-tests', dir: process.env.tmpDir});
 }
 
 function basicTests(factory) {
     it('should start empty', () => {
         const cache = factory();
-        cache.stats().should.eql({ hits: 0, puts: 0, gets: 0 });
+        cache.stats().should.eql({hits: 0, puts: 0, gets: 0});
         return cache
             .get('not a key', 'subsystem')
-            .should.eventually.contain({ hit: false })
+            .should.eventually.contain({hit: false})
             .then(x => {
-                cache.stats().should.eql({ hits: 0, puts: 0, gets: 1 });
+                cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
                 return x;
             });
     });
@@ -57,14 +57,14 @@ function basicTests(factory) {
         return cache
             .put('a key', 'a value', 'bob')
             .then(() => {
-                cache.stats().should.eql({ hits: 0, puts: 1, gets: 0 });
+                cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
                     data: Buffer.from('a value'),
                 });
             })
             .then(x => {
-                cache.stats().should.eql({ hits: 1, puts: 1, gets: 1 });
+                cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
                 return x;
             });
     });
@@ -76,14 +76,14 @@ function basicTests(factory) {
         return cache
             .put('a key', buffer, 'bob')
             .then(() => {
-                cache.stats().should.eql({ hits: 0, puts: 1, gets: 0 });
+                cache.stats().should.eql({hits: 0, puts: 1, gets: 0});
                 return cache.get('a key').should.eventually.eql({
                     hit: true,
                     data: buffer,
                 });
             })
             .then(x => {
-                cache.stats().should.eql({ hits: 1, puts: 1, gets: 1 });
+                cache.stats().should.eql({hits: 1, puts: 1, gets: 1});
                 return x;
             });
     });
@@ -111,7 +111,7 @@ describe('In-memory caches', () => {
                 return Promise.all(promises);
             })
             .then(() => {
-                return cache.get('a key').should.eventually.contain({ hit: false });
+                return cache.get('a key').should.eventually.contain({hit: false});
             });
     });
 });
@@ -133,9 +133,9 @@ describe('Multi caches', () => {
         const cache = new MultiCache('test', subCache1, subCache2);
         return cache.put('a key', 'a value', 'bob').then(() => {
             return Promise.all([
-                cache.get('a key').should.eventually.eql({ hit: true, data: Buffer.from('a value') }),
-                subCache1.get('a key').should.eventually.eql({ hit: true, data: Buffer.from('a value') }),
-                subCache2.get('a key').should.eventually.eql({ hit: true, data: Buffer.from('a value') }),
+                cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
+                subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('a value')}),
             ]);
         });
     });
@@ -147,15 +147,15 @@ describe('Multi caches', () => {
         subCache1.put('a key', 'cache1');
         subCache2.put('a key', 'cache2');
         const cache = new MultiCache('test', subCache1, subCache2);
-        await cache.get('a key').should.eventually.eql({ hit: true, data: Buffer.from('cache1') });
+        await cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')});
 
         subCache1.hits.should.equal(1);
         subCache1.gets.should.equal(1);
         subCache2.hits.should.equal(0);
         subCache2.gets.should.equal(0);
 
-        await subCache1.get('a key').should.eventually.eql({ hit: true, data: Buffer.from('cache1') });
-        await subCache2.get('a key').should.eventually.eql({ hit: true, data: Buffer.from('cache2') });
+        await subCache1.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')});
+        await subCache2.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache2')});
     });
 });
 
@@ -175,7 +175,7 @@ describe('On disk caches', () => {
                 return Promise.all(promises);
             })
             .then(() => {
-                return cache.get('a key').should.eventually.contain({ hit: false });
+                return cache.get('a key').should.eventually.contain({hit: false});
             });
     });
 
@@ -186,7 +186,7 @@ describe('On disk caches', () => {
         fs.writeFileSync(path.join(tempDir, 'path', 'test'), 'this is path/test');
         const cache = new OnDiskCache('test', tempDir, 1);
         return Promise.all([
-            cache.get('abcdef').should.eventually.eql({ hit: true, data: Buffer.from('this is abcdef') }),
+            cache.get('abcdef').should.eventually.eql({hit: true, data: Buffer.from('this is abcdef')}),
             cache.get(path.join('path', 'test')).should.eventually.eql({
                 hit: true,
                 data: Buffer.from('this is path/test'),
@@ -210,7 +210,7 @@ function setup() {
                 error.code = 'NoSuchKey';
                 callback(error);
             } else {
-                callback(null, { Body: result });
+                callback(null, {Body: result});
             }
         });
         AWS.mock('S3', 'putObject', (params, callback) => {

@@ -637,13 +637,13 @@ Compiler.prototype.sendCompile = function (request) {
     }
     this.eventHub.emit('compiling', this.id, this.compiler);
     // Display the spinner
-    this.handleCompilationStatus({ code: 4 });
+    this.handleCompilationStatus({code: 4});
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     var progress = setTimeout(
         _.bind(function () {
-            this.setAssembly({ asm: fakeAsm('<Compiling...>') }, 0);
+            this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
         }, this),
         500
     );
@@ -778,11 +778,11 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
 };
 
 function errorResult(text) {
-    return { asm: fakeAsm(text), code: -1, stdout: '', stderr: '' };
+    return {asm: fakeAsm(text), code: -1, stdout: '', stderr: ''};
 }
 
 function fakeAsm(text) {
-    return [{ text: text, source: null, fake: true }];
+    return [{text: text, source: null, fake: true}];
 }
 
 Compiler.prototype.onCompileResponse = function (request, result, cached) {
@@ -1527,7 +1527,7 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
     if (unwiseOptions.length > 0) {
-        this.alertSystem.notify(msg, { group: 'unwiseOption', collapseSimilar: true });
+        this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
     }
 };
 
@@ -2035,7 +2035,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
             options: this.options,
         };
         var info = this.infoByLang[this.currentLangId] || {};
-        this.initLangAndCompiler({ lang: newLangId, compiler: info.compiler });
+        this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
         this.updateCompilersSelector(info);
         this.updateCompilerUI();
         this.sendCompiler();

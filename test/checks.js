@@ -24,10 +24,10 @@
 
 import _ from 'underscore';
 
-import { languages } from '../lib/languages';
+import {languages} from '../lib/languages';
 import * as properties from '../lib/properties';
 
-import { fs } from './utils';
+import {fs} from './utils';
 
 describe('Live site checks', () => {
     let ceProps;

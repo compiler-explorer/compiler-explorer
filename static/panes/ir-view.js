@@ -154,7 +154,7 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     if (result.hasIrOutput) {
         this.showIrResults(result.irOutput);
     } else if (compiler.supportsIrView) {
-        this.showIrResults([{ text: '<No output>' }]);
+        this.showIrResults([{text: '<No output>'}]);
     }
 };
 

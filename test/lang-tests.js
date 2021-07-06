@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { languages } from '../lib/languages';
+import {languages} from '../lib/languages';
 
-import { fs, path, should } from './utils';
+import {fs, path, should} from './utils';
 
 describe('Language definitions tests', () => {
     it('Has id equal to object key', () => {

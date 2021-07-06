@@ -22,21 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { FPCCompiler } from '../lib/compilers/pascal';
-import { PascalDemangler } from '../lib/demangler';
+import {FPCCompiler} from '../lib/compilers/pascal';
+import {PascalDemangler} from '../lib/demangler';
 import * as utils from '../lib/utils';
 
-import { fs, makeCompilationEnvironment } from './utils';
+import {fs, makeCompilationEnvironment} from './utils';
 
 const languages = {
-    pascal: { id: 'pascal' },
+    pascal: {id: 'pascal'},
 };
 
 describe('Pascal', () => {
     let compiler;
 
     before(() => {
-        const ce = makeCompilationEnvironment({ languages });
+        const ce = makeCompilationEnvironment({languages});
         const info = {
             exe: null,
             remote: true,

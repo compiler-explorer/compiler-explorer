@@ -25,26 +25,26 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
-import { CompileHandler, SetTestMode } from '../../lib/handlers/compile';
-import { chai, makeCompilationEnvironment } from '../utils';
+import {CompileHandler, SetTestMode} from '../../lib/handlers/compile';
+import {chai, makeCompilationEnvironment} from '../utils';
 
 SetTestMode();
 
 const languages = {
-    a: { id: 'a', name: 'A lang' },
-    b: { id: 'b', name: 'B lang' },
-    d: { id: 'd', name: 'D lang' },
+    a: {id: 'a', name: 'A lang'},
+    b: {id: 'b', name: 'B lang'},
+    d: {id: 'd', name: 'D lang'},
 };
 
 describe('Compiler tests', () => {
     let app, compileHandler;
 
     before(() => {
-        const compilationEnvironment = makeCompilationEnvironment({ languages });
+        const compilationEnvironment = makeCompilationEnvironment({languages});
         compileHandler = new CompileHandler(compilationEnvironment);
 
-        const textParser = bodyParser.text({ type: () => true });
-        const formParser = bodyParser.urlencoded({ extended: false });
+        const textParser = bodyParser.text({type: () => true});
+        const formParser = bodyParser.urlencoded({extended: false});
 
         app = express();
         app.use(bodyParser.json());
@@ -72,9 +72,9 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: {
                             code: 0,
-                            stdout: [{ text: 'Something from stdout' }],
-                            stderr: [{ text: 'Something from stderr' }],
-                            asm: [{ text: 'ASMASMASM' }],
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
                         },
                     },
                 ])
@@ -107,9 +107,9 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: {
                             code: 0,
-                            stdout: [{ text: 'Something from stdout' }],
-                            stderr: [{ text: 'Something from stderr' }],
-                            asm: [{ text: 'ASMASMASM' }],
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
                         },
                     },
                 ])
@@ -142,9 +142,9 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: {
                             code: 0,
-                            stdout: [{ text: 'Something from stdout' }],
-                            stderr: [{ text: 'Something from stderr' }],
-                            asm: [{ text: 'ASMASMASM' }],
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
                         },
                     },
                 ])
@@ -177,9 +177,9 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: {
                             code: 0,
-                            stdout: [{ text: 'Something from stdout' }],
-                            stderr: [{ text: 'Something from stderr' }],
-                            asm: [{ text: 'ASMASMASM' }],
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
                         },
                     },
                 ])
@@ -275,16 +275,16 @@ describe('Compiler tests', () => {
                 {},
                 {
                     code: 0,
-                    stdout: [{ text: 'Something from stdout' }],
-                    stderr: [{ text: 'Something from stderr' }],
-                    asm: [{ text: 'ASMASMASM' }],
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
                 },
             )
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
                     res.body.should.deep.equals({
-                        asm: [{ text: 'ASMASMASM' }],
+                        asm: [{text: 'ASMASMASM'}],
                         code: 0,
                         input: {
                             backendOptions: {},
@@ -292,8 +292,8 @@ describe('Compiler tests', () => {
                             options: [],
                             source: 'I am a program',
                         },
-                        stderr: [{ text: 'Something from stderr' }],
-                        stdout: [{ text: 'Something from stdout' }],
+                        stderr: [{text: 'Something from stderr'}],
+                        stdout: [{text: 'Something from stdout'}],
                     });
                 })
                 .catch(err => {
@@ -304,12 +304,12 @@ describe('Compiler tests', () => {
         it('parses options and filters', () => {
             return makeFakeJson('I am a program', {
                 userArguments: '-O1 -monkey "badger badger"',
-                filters: { a: true, b: true, c: true },
+                filters: {a: true, b: true, c: true},
             }).then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
-                res.body.input.filters.should.deep.equals({ a: true, b: true, c: true });
+                res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
             });
         });
 
@@ -318,7 +318,7 @@ describe('Compiler tests', () => {
                 'I am a program',
                 {
                     userArguments: '-O1 -monkey "badger badger"',
-                    filters: { a: true, b: true, c: true },
+                    filters: {a: true, b: true, c: true},
                 },
                 [
                     {
@@ -331,7 +331,7 @@ describe('Compiler tests', () => {
                 res.should.have.status(200);
                 res.should.be.json;
                 res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
-                res.body.input.filters.should.deep.equals({ a: true, b: true, c: true });
+                res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
                 res.body.input.files.should.deep.equals([
                     {
                         filename: 'myresource.txt',
@@ -346,7 +346,7 @@ describe('Compiler tests', () => {
                 'I am a program',
                 {
                     userArguments: '-O1 -monkey "badger badger"',
-                    filters: { a: true, b: true, c: true },
+                    filters: {a: true, b: true, c: true},
                 },
                 {},
                 [
@@ -405,12 +405,12 @@ describe('Compiler tests', () => {
         }
 
         it('handles filters set directly', () => {
-            return makeFakeQuery('source', { filters: 'a,b,c' })
+            return makeFakeQuery('source', {filters: 'a,b,c'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
                     res.body.input.options.should.deep.equals([]);
-                    res.body.input.filters.should.deep.equals({ a: true, b: true, c: true });
+                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
                 })
                 .catch(err => {
                     throw err;
@@ -418,12 +418,12 @@ describe('Compiler tests', () => {
         });
 
         it('handles filters added', () => {
-            return makeFakeQuery('source', { filters: 'a', addFilters: 'e,f' })
+            return makeFakeQuery('source', {filters: 'a', addFilters: 'e,f'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
                     res.body.input.options.should.deep.equals([]);
-                    res.body.input.filters.should.deep.equals({ a: true, e: true, f: true });
+                    res.body.input.filters.should.deep.equals({a: true, e: true, f: true});
                 })
                 .catch(err => {
                     throw err;
@@ -431,12 +431,12 @@ describe('Compiler tests', () => {
         });
 
         it('handles filters removed', () => {
-            return makeFakeQuery('source', { filters: 'a,b,c', removeFilters: 'b,c,d' })
+            return makeFakeQuery('source', {filters: 'a,b,c', removeFilters: 'b,c,d'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
                     res.body.input.options.should.deep.equals([]);
-                    res.body.input.filters.should.deep.equals({ a: true });
+                    res.body.input.filters.should.deep.equals({a: true});
                 })
                 .catch(err => {
                     throw err;
@@ -444,12 +444,12 @@ describe('Compiler tests', () => {
         });
 
         it('handles filters added and removed', () => {
-            return makeFakeQuery('source', { filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h' })
+            return makeFakeQuery('source', {filters: 'a,b,c', addFilters: 'c,g,h', removeFilters: 'b,c,d,h'})
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
                     res.body.input.options.should.deep.equals([]);
-                    res.body.input.filters.should.deep.equals({ a: true, g: true });
+                    res.body.input.filters.should.deep.equals({a: true, g: true});
                 })
                 .catch(err => {
                     throw err;
@@ -466,21 +466,21 @@ describe('Compiler tests', () => {
                         id: 'a',
                         lang: 'a',
                         exe: 'fake',
-                        fakeResult: { code: 0, stdout: [], stderr: [], asm: [{ text: 'LANG A' }] },
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
                     },
                     {
                         compilerType: 'fake-for-test',
                         id: 'b',
                         lang: 'b',
                         exe: 'fake',
-                        fakeResult: { code: 0, stdout: [], stderr: [], asm: [{ text: 'LANG B' }] },
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
                     },
                     {
                         compilerType: 'fake-for-test',
                         id: 'a',
                         lang: 'b',
                         exe: 'fake',
-                        fakeResult: { code: 0, stdout: [], stderr: [], asm: [{ text: 'LANG B but A' }] },
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
                     },
                 ])
                 .then(() =>
@@ -497,7 +497,7 @@ describe('Compiler tests', () => {
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.asm.should.deep.equals([{ text: 'LANG B' }]);
+                    res.body.asm.should.deep.equals([{text: 'LANG B'}]);
                 })
                 .catch(err => {
                     throw err;
@@ -509,7 +509,7 @@ describe('Compiler tests', () => {
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.asm.should.deep.equals([{ text: 'LANG A' }]);
+                    res.body.asm.should.deep.equals([{text: 'LANG A'}]);
                 })
                 .catch(err => {
                     throw err;
@@ -521,7 +521,7 @@ describe('Compiler tests', () => {
                 .then(res => {
                     res.should.have.status(200);
                     res.should.be.json;
-                    res.body.asm.should.deep.equals([{ text: 'LANG B but A' }]);
+                    res.body.asm.should.deep.equals([{text: 'LANG B but A'}]);
                 })
                 .catch(err => {
                     throw err;

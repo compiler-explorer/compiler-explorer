@@ -116,7 +116,7 @@ function definition() {
 
 var def = definition();
 
-monaco.languages.register({ id: 'cppp' });
+monaco.languages.register({id: 'cppp'});
 monaco.languages.setLanguageConfiguration('cppp', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cppp', def);
 

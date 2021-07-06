@@ -230,7 +230,7 @@ function definition() {
                 [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
@@ -316,25 +316,25 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '`', close: '`', notIn: ['string'] },
-            { open: '"', close: '"', notIn: ['string'] },
-            { open: "'", close: "'", notIn: ['string', 'comment'] },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '`', close: '`', notIn: ['string']},
+            {open: '"', close: '"', notIn: ['string']},
+            {open: "'", close: "'", notIn: ['string', 'comment']},
         ],
 
         surroundingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '`', close: '`' },
-            { open: '"', close: '"' },
-            { open: "'", close: "'" },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '`', close: '`'},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
         ],
     };
 }
 
-monaco.languages.register({ id: 'd' });
+monaco.languages.register({id: 'd'});
 monaco.languages.setMonarchTokensProvider('d', definition());
 monaco.languages.setLanguageConfiguration('d', configuration());

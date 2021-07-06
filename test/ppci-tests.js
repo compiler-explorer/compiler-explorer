@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { PPCICompiler } from '../lib/compilers/ppci';
+import {PPCICompiler} from '../lib/compilers/ppci';
 
-import { makeCompilationEnvironment } from './utils';
+import {makeCompilationEnvironment} from './utils';
 
 const languages = {
-    c: { id: 'c' },
+    c: {id: 'c'},
 };
 
 describe('PPCI', function () {
@@ -39,7 +39,7 @@ describe('PPCI', function () {
     };
 
     before(() => {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('Should be ok with most arguments', () => {

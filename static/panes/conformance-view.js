@@ -197,7 +197,7 @@ Conformance.prototype.addCompilerPicker = function (config) {
     var onCompilerChange = _.bind(function (compilerId) {
         popCompilerButton.toggleClass('d-none', !compilerId);
         // Hide the results icon when a new compiler is selected
-        this.handleStatusIcon(statusIcon, { code: 0 });
+        this.handleStatusIcon(statusIcon, {code: 0});
         var compiler = this.compilerService.findCompiler(this.langId, compilerId);
         if (compiler) this.setCompilationOptionsPopover(prependOptions, compiler.options);
         this.updateLibraries();
@@ -324,7 +324,7 @@ Conformance.prototype.compileChild = function (child) {
 
     if (!picker || !picker.val()) return;
 
-    this.handleStatusIcon(child.find('.status-icon'), { code: 4 });
+    this.handleStatusIcon(child.find('.status-icon'), {code: 4});
 
     this.expandSource().then(
         _.bind(function (expandedSource) {
@@ -334,7 +334,7 @@ Conformance.prototype.compileChild = function (child) {
                 options: {
                     userArguments: child.find('.options').val() || '',
                     filters: {},
-                    compilerOptions: { produceAst: false, produceOptInfo: false },
+                    compilerOptions: {produceAst: false, produceOptInfo: false},
                     libraries: [],
                     skipAsm: true,
                 },

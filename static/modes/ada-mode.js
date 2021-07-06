@@ -172,7 +172,7 @@ function definition() {
                     },
                 ],
                 // Whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 [/[()[\]]/, '@brackets'],
 
@@ -217,5 +217,5 @@ function definition() {
         },
     };
 }
-monaco.languages.register({ id: 'ada' });
+monaco.languages.register({id: 'ada'});
 monaco.languages.setMonarchTokensProvider('ada', definition());

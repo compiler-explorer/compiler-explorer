@@ -26,11 +26,11 @@ import path from 'path';
 
 import approvals from 'approvals';
 
-import { AsmParser } from '../lib/asm-parser';
-import { SassAsmParser } from '../lib/asm-parser-sass';
-import { VcAsmParser } from '../lib/asm-parser-vc';
+import {AsmParser} from '../lib/asm-parser';
+import {SassAsmParser} from '../lib/asm-parser-sass';
+import {VcAsmParser} from '../lib/asm-parser-vc';
 
-import { fs, resolvePathFromTestRoot } from './utils';
+import {fs, resolvePathFromTestRoot} from './utils';
 
 approvals.mocha();
 
@@ -76,14 +76,14 @@ describe('Filter test cases', function () {
         for (const x of cases) testFilter(x, '.none', {});
     });
     describe('Directive filters', function () {
-        for (const x of cases) testFilter(x, '.directives', { directives: true });
+        for (const x of cases) testFilter(x, '.directives', {directives: true});
     });
     describe('Directives and labels together', function () {
-        for (const x of cases) testFilter(x, '.directives.labels', { directives: true, labels: true });
+        for (const x of cases) testFilter(x, '.directives.labels', {directives: true, labels: true});
     });
     describe('Directives, labels and comments', function () {
         for (const x of cases) {
-            testFilter(x, '.directives.labels.comments', { directives: true, labels: true, commentOnly: true });
+            testFilter(x, '.directives.labels.comments', {directives: true, labels: true, commentOnly: true});
         }
     });
     describe('Binary, directives, labels and comments', function () {
@@ -99,10 +99,10 @@ describe('Filter test cases', function () {
         }
     });
     describe('Directives and comments', function () {
-        for (const x of cases) testFilter(x, '.directives.comments', { directives: true, commentOnly: true });
+        for (const x of cases) testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
     });
     describe('Directives and library code', function () {
-        for (const x of cases) testFilter(x, '.directives.library', { directives: true, libraryCode: true });
+        for (const x of cases) testFilter(x, '.directives.library', {directives: true, libraryCode: true});
     });
     describe('Directives, labels, comments and library code', function () {
         for (const x of cases) {

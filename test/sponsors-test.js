@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { loadSponsorsFromString } from '../lib/sponsors';
+import {loadSponsorsFromString} from '../lib/sponsors';
 
 describe('Sponsors', () => {
     it('should load a simple example', () => {
@@ -59,7 +59,7 @@ levels:
     - Just a string
     - name: An object
         `).levels[0].sponsors;
-        folks.should.deep.equalInAnyOrder([{ name: 'An object' }, { name: 'Just a string' }]);
+        folks.should.deep.equalInAnyOrder([{name: 'An object'}, {name: 'Just a string'}]);
     });
 
     it('should sort sponsors by name', () => {
@@ -74,7 +74,7 @@ levels:
     - A
     - B
         `).levels[0].sponsors;
-        peeps.should.deep.equals([{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }]);
+        peeps.should.deep.equals([{name: 'A'}, {name: 'B'}, {name: 'C'}, {name: 'D'}]);
     });
     it('should sort sponsors by priority then name', () => {
         const peeps = loadSponsorsFromString(`
@@ -91,9 +91,9 @@ levels:
       priority: 50
         `).levels[0].sponsors;
         peeps.should.deep.equals([
-            { name: 'D', priority: 100 },
-            { name: 'B', priority: 50 },
-            { name: 'C', priority: 50 },
+            {name: 'D', priority: 100},
+            {name: 'B', priority: 50},
+            {name: 'C', priority: 50},
         ]);
     });
     it('should pick icon over img', () => {
@@ -110,8 +110,8 @@ levels:
       icon: icon
         `).levels[0].sponsors;
         things.should.deep.equalInAnyOrder([
-            { name: 'one', icon: 'image', img: 'image' },
-            { name: 'two', icon: 'icon', img: 'not_an_icon' },
+            {name: 'one', icon: 'image', img: 'image'},
+            {name: 'two', icon: 'icon', img: 'not_an_icon'},
         ]);
     });
 
@@ -140,8 +140,8 @@ levels:
       topIcon: true
         `).icons;
         icons.should.deep.equalInAnyOrder([
-            { name: 'one', icon: 'pick_me', img: 'pick_me', topIcon: true },
-            { name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true },
+            {name: 'one', icon: 'pick_me', img: 'pick_me', topIcon: true},
+            {name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true},
         ]);
     });
 });

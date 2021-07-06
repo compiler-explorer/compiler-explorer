@@ -170,7 +170,7 @@ function definition() {
                 [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
@@ -230,5 +230,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'zig' });
+monaco.languages.register({id: 'zig'});
 monaco.languages.setMonarchTokensProvider('zig', definition());

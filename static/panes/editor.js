@@ -203,7 +203,7 @@ Editor.prototype.updateExtraDecorations = function () {
             if (match !== this.decorations[decoration.name]) {
                 decorationsDirty = true;
                 this.decorations[decoration.name] = match
-                    ? [{ range: match.range, options: decoration.decoration }]
+                    ? [{range: match.range, options: decoration.decoration}]
                     : null;
             }
         }, this)
@@ -820,7 +820,7 @@ Editor.prototype.confirmOverwrite = function (yes) {
     this.alertSystem.ask(
         'Changes were made to the code',
         'Changes were made to the code while it was being processed. Overwrite changes?',
-        { yes: yes, no: null }
+        {yes: yes, no: null}
     );
 };
 
@@ -1142,7 +1142,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 
 Editor.prototype.onSelectLine = function (id, lineNum) {
     if (Number(id) === this.id) {
-        this.editor.setSelection({ line: lineNum - 1, ch: 0 }, { line: lineNum, ch: 0 });
+        this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
     }
 };
 
@@ -1174,15 +1174,15 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
                 }
                 var currentOffset = tokens[0][i].offset;
                 if (column <= currentOffset) {
-                    return { colBegin: lastOffset, colEnd: currentOffset };
+                    return {colBegin: lastOffset, colEnd: currentOffset};
                 } else {
                     lastOffset = currentOffset;
                 }
             }
-            return { colBegin: lastOffset, colEnd: line.length };
+            return {colBegin: lastOffset, colEnd: line.length};
         }
     }
-    return { colBegin: column, colEnd: column + 1 };
+    return {colBegin: column, colEnd: column + 1};
 };
 
 Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {

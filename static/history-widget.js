@@ -80,7 +80,7 @@ HistoryWidget.prototype.initializeIfNeeded = function () {
 
         this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
         this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
-        this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
+        this.diffEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
         this.modal.find('.inline-diff-checkbox').click(
             _.bind(function (event) {

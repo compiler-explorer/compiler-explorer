@@ -28,35 +28,35 @@ import AWS from 'aws-sdk-mock';
 import * as aws from '../lib/aws';
 
 const instanceA = {
-    State: { Name: 'running' },
+    State: {Name: 'running'},
     Id: 'A',
     Tags: [
-        { Key: 'Name', Value: 'Alice' },
-        { Key: 'Moose', Value: 'Bob' },
+        {Key: 'Name', Value: 'Alice'},
+        {Key: 'Moose', Value: 'Bob'},
     ],
 };
 const instanceB = {
-    State: { Name: 'sleeping' },
+    State: {Name: 'sleeping'},
     Id: 'B',
     Tags: [
-        { Key: 'Name', Value: 'Alice' },
-        { Key: 'Moose', Value: 'Bob' },
+        {Key: 'Name', Value: 'Alice'},
+        {Key: 'Moose', Value: 'Bob'},
     ],
 };
 const instanceC = {
-    State: { Name: 'running' },
+    State: {Name: 'running'},
     Id: 'C',
     Tags: [
-        { Key: 'Name', Value: 'Bob' },
-        { Key: 'Moose', Value: 'Bob' },
+        {Key: 'Name', Value: 'Bob'},
+        {Key: 'Moose', Value: 'Bob'},
     ],
 };
 const instanceD = {
-    State: { Name: 'running' },
+    State: {Name: 'running'},
     Id: 'D',
     Tags: [
-        { Key: 'Name', Value: 'Alice' },
-        { Key: 'Moose', Value: 'Bob' },
+        {Key: 'Name', Value: 'Alice'},
+        {Key: 'Moose', Value: 'Bob'},
     ],
 };
 

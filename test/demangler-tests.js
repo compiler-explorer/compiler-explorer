@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CppDemangler, Win32Demangler } from '../lib/demangler';
-import { PrefixTree } from '../lib/demangler/prefix-tree';
+import {CppDemangler, Win32Demangler} from '../lib/demangler';
+import {PrefixTree} from '../lib/demangler/prefix-tree';
 import * as exec from '../lib/exec';
-import { SymbolStore } from '../lib/symbol-store';
+import {SymbolStore} from '../lib/symbol-store';
 import * as utils from '../lib/utils';
 
-import { chai, fs, path, resolvePathFromTestRoot } from './utils';
+import {chai, fs, path, resolvePathFromTestRoot} from './utils';
 
 const cppfiltpath = 'c++filt';
 
@@ -47,7 +47,7 @@ const catchCppfiltNonexistence = err => {
 describe('Basic demangling', function () {
     it('One line of asm', function () {
         const result = {
-            asm: [{ text: 'Hello, World!' }],
+            asm: [{text: 'Hello, World!'}],
         };
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
@@ -61,7 +61,7 @@ describe('Basic demangling', function () {
     });
 
     it('One label and some asm', function () {
-        const result = { asm: [{ text: '_Z6squarei:' }, { text: '  ret' }] };
+        const result = {asm: [{text: '_Z6squarei:'}, {text: '  ret'}]};
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -78,7 +78,7 @@ describe('Basic demangling', function () {
     });
 
     it('One label and use of a label', function () {
-        const result = { asm: [{ text: '_Z6squarei:' }, { text: '  mov eax, $_Z6squarei' }] };
+        const result = {asm: [{text: '_Z6squarei:'}, {text: '  mov eax, $_Z6squarei'}]};
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -97,15 +97,15 @@ describe('Basic demangling', function () {
     it('Two destructors', function () {
         const result = {
             asm: [
-                { text: '_ZN6NormalD0Ev:' },
-                { text: '  callq _ZdlPv' },
-                { text: '_Z7caller1v:' },
-                { text: '  rep ret' },
-                { text: '_Z7caller2P6Normal:' },
-                { text: '  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev' },
-                { text: '  jmp _ZdlPvm' },
-                { text: '_ZN6NormalD2Ev:' },
-                { text: '  rep ret' },
+                {text: '_ZN6NormalD0Ev:'},
+                {text: '  callq _ZdlPv'},
+                {text: '_Z7caller1v:'},
+                {text: '  rep ret'},
+                {text: '_Z7caller2P6Normal:'},
+                {text: '  cmp rax, OFFSET FLAT:_ZN6NormalD0Ev'},
+                {text: '  jmp _ZdlPvm'},
+                {text: '_ZN6NormalD2Ev:'},
+                {text: '  rep ret'},
             ],
         };
 
@@ -123,7 +123,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should ignore comments (CL)', function () {
-        const result = { asm: [{ text: '        call     ??3@YAXPEAX_K@Z                ; operator delete' }] };
+        const result = {asm: [{text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'}]};
 
         const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
@@ -135,7 +135,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should ignore comments (CPP)', function () {
-        const result = { asm: [{ text: '        call     hello                ; operator delete' }] };
+        const result = {asm: [{text: '        call     hello                ; operator delete'}]};
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -148,7 +148,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should also support ARM branch instructions', () => {
-        const result = { asm: [{ text: '   bl _ZN3FooC1Ev' }] };
+        const result = {asm: [{text: '   bl _ZN3FooC1Ev'}]};
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -161,7 +161,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should NOT handle undecorated labels', () => {
-        const result = { asm: [{ text: '$LN3@caller2:' }] };
+        const result = {asm: [{text: '$LN3@caller2:'}]};
 
         const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
@@ -173,7 +173,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should ignore comments after jmps', function () {
-        const result = { asm: [{ text: '  jmp _Z1fP6mytype # TAILCALL' }] };
+        const result = {asm: [{text: '  jmp _Z1fP6mytype # TAILCALL'}]};
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -186,7 +186,7 @@ describe('Basic demangling', function () {
     });
 
     it('Should still work with normal jmps', function () {
-        const result = { asm: [{ text: '  jmp _Z1fP6mytype' }] };
+        const result = {asm: [{text: '  jmp _Z1fP6mytype'}]};
 
         const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
@@ -202,10 +202,10 @@ describe('Basic demangling', function () {
 async function readResultFile(filename) {
     const data = await fs.readFile(filename);
     const asm = utils.splitLines(data.toString()).map(line => {
-        return { text: line };
+        return {text: line};
     });
 
-    return { asm };
+    return {asm};
 }
 
 async function DoDemangleTest(filename) {

@@ -347,5 +347,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'llvm-ir' });
+monaco.languages.register({id: 'llvm-ir'});
 monaco.languages.setMonarchTokensProvider('llvm-ir', definition());

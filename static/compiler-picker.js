@@ -164,7 +164,7 @@ CompilerPicker.prototype.getOptions = function (langId, compilerId) {
 
 CompilerPicker.prototype.getGroups = function (langId) {
     var optgroups = this.compilerService.getGroupsInUse(langId);
-    optgroups.unshift({ value: favoriteGroupName, label: 'Favorites' });
+    optgroups.unshift({value: favoriteGroupName, label: 'Favorites'});
     return optgroups;
 };
 

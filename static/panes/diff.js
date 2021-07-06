@@ -109,7 +109,7 @@ function Diff(hub, container, state) {
 
     this.lhs = new State(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType_ASM);
     this.rhs = new State(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType_ASM);
-    this.outputEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
+    this.outputEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
     this.selectize = {};
 
@@ -121,11 +121,11 @@ function Diff(hub, container, state) {
                 labelField: 'name',
                 searchField: ['name'],
                 options: [
-                    { id: DiffType_ASM, name: 'Assembly' },
-                    { id: DiffType_CompilerStdOut, name: 'Compiler stdout' },
-                    { id: DiffType_CompilerStdErr, name: 'Compiler stderr' },
-                    { id: DiffType_ExecStdOut, name: 'Execution stdout' },
-                    { id: DiffType_ExecStdErr, name: 'Execution stderr' },
+                    {id: DiffType_ASM, name: 'Assembly'},
+                    {id: DiffType_CompilerStdOut, name: 'Compiler stdout'},
+                    {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
+                    {id: DiffType_ExecStdOut, name: 'Execution stdout'},
+                    {id: DiffType_ExecStdErr, name: 'Execution stderr'},
                 ],
                 items: [],
                 render: {
@@ -388,7 +388,7 @@ Diff.prototype.updateState = function () {
 };
 
 Diff.prototype.onThemeChange = function (newTheme) {
-    if (this.outputEditor) this.outputEditor.updateOptions({ theme: newTheme.monaco });
+    if (this.outputEditor) this.outputEditor.updateOptions({theme: newTheme.monaco});
 };
 
 Diff.prototype.onSettingsChange = function (newSettings) {
@@ -407,7 +407,7 @@ module.exports = {
         return {
             type: 'component',
             componentName: 'diff',
-            componentState: { lhs: lhs, rhs: rhs },
+            componentState: {lhs: lhs, rhs: rhs},
         };
     },
 };

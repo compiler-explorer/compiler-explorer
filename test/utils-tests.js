@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { logger } from '../lib/logger';
+import {logger} from '../lib/logger';
 import * as utils from '../lib/utils';
 
-import { fs } from './utils';
+import {fs} from './utils';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -79,20 +79,18 @@ describe('Expands tabs', () => {
 
 describe('Parses compiler output', () => {
     it('handles simple cases', () => {
-        utils
-            .parseOutput('Line one\nLine two', 'bob.cpp')
-            .should.deep.equals([{ text: 'Line one' }, { text: 'Line two' }]);
+        utils.parseOutput('Line one\nLine two', 'bob.cpp').should.deep.equals([{text: 'Line one'}, {text: 'Line two'}]);
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
-            { text: 'Line one' },
+            {text: 'Line one'},
             {
-                tag: { column: 0, line: 1, text: 'Line two' },
+                tag: {column: 0, line: 1, text: 'Line two'},
                 text: '<source>:1 Line two',
             },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
-            { text: 'Line one' },
+            {text: 'Line one'},
             {
-                tag: { column: 5, line: 1, text: 'Line two' },
+                tag: {column: 5, line: 1, text: 'Line two'},
                 text: '<source>:1:5: Line two',
             },
         ]);
@@ -100,7 +98,7 @@ describe('Parses compiler output', () => {
     it('handles windows output', () => {
         utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
             {
-                tag: { column: 0, line: 1, text: 'Oh noes' },
+                tag: {column: 0, line: 1, text: 'Oh noes'},
                 text: '<source>(1) Oh noes',
             },
         ]);
@@ -108,7 +106,7 @@ describe('Parses compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
-                tag: { column: 0, line: 1, text: 'error in <source>' },
+                tag: {column: 0, line: 1, text: 'error in <source>'},
                 text: '<source>:1 error in <source>',
             },
         ]);
@@ -185,26 +183,26 @@ describe('Rust compiler output', () => {
     it('handles simple cases', () => {
         utils
             .parseRustOutput('Line one\nLine two', 'bob.rs')
-            .should.deep.equals([{ text: 'Line one' }, { text: 'Line two' }]);
+            .should.deep.equals([{text: 'Line one'}, {text: 'Line two'}]);
         utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs').should.deep.equals([
-            { text: 'Unrelated' },
+            {text: 'Unrelated'},
             {
-                tag: { column: 0, line: 1, text: 'Line one' },
+                tag: {column: 0, line: 1, text: 'Line one'},
                 text: 'Line one',
             },
             {
-                tag: { column: 0, line: 1, text: '' },
+                tag: {column: 0, line: 1, text: ''},
                 text: ' --> <source>:1',
             },
-            { text: 'Unrelated' },
+            {text: 'Unrelated'},
         ]);
         utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs').should.deep.equals([
             {
-                tag: { column: 5, line: 1, text: 'Line one' },
+                tag: {column: 5, line: 1, text: 'Line one'},
                 text: 'Line one',
             },
             {
-                tag: { column: 5, line: 1, text: '' },
+                tag: {column: 5, line: 1, text: ''},
                 text: ' --> <source>:1:5',
             },
         ]);
@@ -213,11 +211,11 @@ describe('Rust compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs').should.deep.equals([
             {
-                tag: { column: 0, line: 1, text: 'error: Error in <source>' },
+                tag: {column: 0, line: 1, text: 'error: Error in <source>'},
                 text: 'error: Error in <source>',
             },
             {
-                tag: { column: 0, line: 1, text: '' },
+                tag: {column: 0, line: 1, text: ''},
                 text: ' --> <source>:1',
             },
         ]);
@@ -226,11 +224,11 @@ describe('Rust compiler output', () => {
     it('treats <stdin> as if it were the compiler source', () => {
         utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs').should.deep.equals([
             {
-                tag: { column: 25, line: 120, text: 'error: <source> is sad' },
+                tag: {column: 25, line: 120, text: 'error: <source> is sad'},
                 text: 'error: <source> is sad',
             },
             {
-                tag: { column: 25, line: 120, text: '' },
+                tag: {column: 25, line: 120, text: ''},
                 text: ' --> <source>:120:25',
             },
         ]);
@@ -354,8 +352,8 @@ describe('Hash interface', () => {
         utils
             .getHash({
                 toppings: [
-                    { name: 'raspberries', optional: false },
-                    { name: 'ground cinnamon', optional: true },
+                    {name: 'raspberries', optional: false},
+                    {name: 'ground cinnamon', optional: true},
                 ],
             })
             .should.equal('e205d63abd5db363086621fdc62c4c23a51b733bac5855985a8b56642d570491');
@@ -368,17 +366,17 @@ describe('GoldenLayout utils', () => {
         const contents = utils.glGetMainContents(state.content);
         contents.should.deep.equal({
             editors: [
-                { source: 'Editor 1', language: 'c++' },
-                { source: 'Editor 2', language: 'c++' },
-                { source: 'Editor 3', language: 'c++' },
-                { source: 'Editor 4', language: 'c++' },
+                {source: 'Editor 1', language: 'c++'},
+                {source: 'Editor 2', language: 'c++'},
+                {source: 'Editor 3', language: 'c++'},
+                {source: 'Editor 4', language: 'c++'},
             ],
             compilers: [
-                { compiler: 'clang_trunk' },
-                { compiler: 'gsnapshot' },
-                { compiler: 'clang_trunk' },
-                { compiler: 'gsnapshot' },
-                { compiler: 'rv32-clang' },
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'rv32-clang'},
             ],
         });
     });

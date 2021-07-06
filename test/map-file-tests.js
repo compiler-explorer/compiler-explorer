@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { MapFileReaderDelphi } from '../lib/map-file-delphi';
-import { MapFileReaderVS } from '../lib/map-file-vs';
+import {MapFileReaderDelphi} from '../lib/map-file-delphi';
+import {MapFileReaderVS} from '../lib/map-file-vs';
 
 describe('Map setup', function () {
     it('VS-map preferred load address', function () {
@@ -247,8 +247,8 @@ describe('VS-Map address checking', function () {
         const reader = new MapFileReaderVS();
 
         const mainAddresses = [
-            { startAddress: 1, startAddressHex: '00000001', endAddress: 10, endAddressHex: '0000000A' },
-            { startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF' },
+            {startAddress: 1, startAddressHex: '00000001', endAddress: 10, endAddressHex: '0000000A'},
+            {startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF'},
         ];
 
         reader.isWithinAddressSpace(mainAddresses, 3, 5).should.equal(true);
@@ -262,8 +262,8 @@ describe('VS-Map address checking', function () {
         const reader = new MapFileReaderVS();
 
         const mainAddresses = [
-            { startAddress: 1, startAddressHex: '00000001', endAddress: 10, endAddressHex: '0000000A' },
-            { startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF' },
+            {startAddress: 1, startAddressHex: '00000001', endAddress: 10, endAddressHex: '0000000A'},
+            {startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF'},
         ];
 
         reader.isWithinAddressSpace(mainAddresses, 0, 5).should.equal(true);

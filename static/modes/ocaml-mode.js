@@ -104,7 +104,7 @@ function definition() {
                     },
                 ],
 
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 [/@numbers/, 'number'],
 
@@ -126,5 +126,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'ocaml' });
+monaco.languages.register({id: 'ocaml'});
 monaco.languages.setMonarchTokensProvider('ocaml', definition());

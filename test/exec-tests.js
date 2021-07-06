@@ -24,7 +24,7 @@
 
 import * as exec from '../lib/exec';
 
-import { chai } from './utils';
+import {chai} from './utils';
 
 const expect = chai.expect;
 
@@ -49,7 +49,7 @@ if (process.platform !== 'win32') {
         });
         it('limits output', () => {
             return exec
-                .execute('echo', ['A very very very very very long string'], { maxOutput: 10 })
+                .execute('echo', ['A very very very very very long string'], {maxOutput: 10})
                 .then(testExecOutput)
                 .should.eventually.deep.equals({
                     code: 0,
@@ -67,7 +67,7 @@ if (process.platform !== 'win32') {
             });
         });
         it('handles timouts', () => {
-            return exec.execute('sleep', ['5'], { timeoutMs: 10 }).then(testExecOutput).should.eventually.deep.equals({
+            return exec.execute('sleep', ['5'], {timeoutMs: 10}).then(testExecOutput).should.eventually.deep.equals({
                 code: -1,
                 okToCache: false,
                 stderr: '\nKilled - processing time exceeded',
@@ -79,7 +79,7 @@ if (process.platform !== 'win32') {
         });
         it('handles input', () => {
             return exec
-                .execute('cat', [], { input: 'this is stdin' })
+                .execute('cat', [], {input: 'this is stdin'})
                 .then(testExecOutput)
                 .should.eventually.deep.equals({
                     code: 0,
@@ -106,7 +106,7 @@ if (process.platform !== 'win32') {
         });
         it('limits output', () => {
             return exec
-                .execute('powershell', ['-Command', 'echo "A very very very very very long string"'], { maxOutput: 10 })
+                .execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {maxOutput: 10})
                 .then(testExecOutput)
                 .should.eventually.deep.equals({
                     code: 0,
@@ -128,7 +128,7 @@ if (process.platform !== 'win32') {
         });
         it('handles timouts', () => {
             return exec
-                .execute('powershell', ['-Command', '"sleep 5"'], { timeoutMs: 10 })
+                .execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})
                 .then(testExecOutput)
                 .should.eventually.deep.equals({
                     code: 1,
@@ -145,7 +145,7 @@ if (process.platform !== 'win32') {
 
 describe('nsjail unit tests', () => {
     it('should handle simple cases', () => {
-        const { args, options, filenameTransform } = exec.getNsJailOptions('sandbox', '/path/to/compiler', [
+        const {args, options, filenameTransform} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [
             '1',
             '2',
             '3',
@@ -164,15 +164,15 @@ describe('nsjail unit tests', () => {
         expect(filenameTransform).to.be.undefined;
     });
     it('should pass through options', () => {
-        const options = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], { some: 1, thing: 2 }).options;
-        options.should.deep.equals({ some: 1, thing: 2 });
+        const options = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {some: 1, thing: 2}).options;
+        options.should.deep.equals({some: 1, thing: 2});
     });
     it('should remap paths when using customCwd', () => {
-        const { args, options, filenameTransform } = exec.getNsJailOptions(
+        const {args, options, filenameTransform} = exec.getNsJailOptions(
             'sandbox',
             './exec',
             ['/some/custom/cwd/file', '/not/custom/file'],
-            { customCwd: '/some/custom/cwd' },
+            {customCwd: '/some/custom/cwd'},
         );
         args.should.deep.equals([
             '--config',
@@ -193,17 +193,17 @@ describe('nsjail unit tests', () => {
         filenameTransform('/some/custom/cwd/file').should.equal('/app/file');
     });
     it('should handle timeouts', () => {
-        const args = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], { timeoutMs: 1234 }).args;
+        const args = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {timeoutMs: 1234}).args;
         args.should.include('--time_limit=2');
     });
     it('should handle linker paths', () => {
-        const { args, options } = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], { ldPath: '/a/lib/path' });
+        const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {ldPath: '/a/lib/path'});
         options.should.deep.equals({});
         args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path');
     });
     it('should handle envs', () => {
-        const { args, options } = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
-            env: { ENV1: '1', ENV2: '2' },
+        const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
+            env: {ENV1: '1', ENV2: '2'},
         });
         options.should.deep.equals({});
         args.should.include('--env=ENV1=1');

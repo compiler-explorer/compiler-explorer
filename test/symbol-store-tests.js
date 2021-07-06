@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils';
-import { SymbolStore } from '../lib/symbol-store';
+import {SymbolStore} from '../lib/symbol-store';
 
 describe('SymbolStore', function () {
     it('should be empty initially', function () {

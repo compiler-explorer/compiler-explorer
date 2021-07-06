@@ -24,13 +24,13 @@
 
 import temp from 'temp';
 
-import { Packager } from '../lib/packager';
+import {Packager} from '../lib/packager';
 
-import { fs, path } from './utils';
+import {fs, path} from './utils';
 
 function newTempDir() {
     return new Promise((resolve, reject) => {
-        temp.mkdir({ prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir }, (err, dirPath) => {
+        temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
             if (err) reject(`Unable to open temp file: ${err}`);
             else resolve(dirPath);
         });

@@ -24,8 +24,8 @@
 
 import express from 'express';
 
-import { SourceHandler } from '../../lib/handlers/source';
-import { chai } from '../utils';
+import {SourceHandler} from '../../lib/handlers/source';
+import {chai} from '../utils';
 
 describe('Sources', () => {
     const app = express();
@@ -33,8 +33,8 @@ describe('Sources', () => {
         [
             {
                 urlpart: 'moose',
-                list: () => Promise.resolve({ moose: 'pig' }),
-                load: name => Promise.resolve({ file: `File called ${name}` }),
+                list: () => Promise.resolve({moose: 'pig'}),
+                load: name => Promise.resolve({file: `File called ${name}`}),
                 save: null,
             },
         ],
@@ -49,7 +49,7 @@ describe('Sources', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.should.deep.equals({ moose: 'pig' });
+                res.body.should.deep.equals({moose: 'pig'});
                 res.should.have.header('Yibble', 'boing');
             })
             .catch(function (err) {
@@ -63,7 +63,7 @@ describe('Sources', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.should.deep.equals({ file: 'File called Grunkle' });
+                res.body.should.deep.equals({file: 'File called Grunkle'});
                 res.should.have.header('Yibble', 'boing');
             })
             .catch(function (err) {

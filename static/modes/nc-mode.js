@@ -83,7 +83,7 @@ function definition() {
 
 var def = definition();
 
-monaco.languages.register({ id: 'nc' });
+monaco.languages.register({id: 'nc'});
 monaco.languages.setLanguageConfiguration('nc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('nc', def);
 

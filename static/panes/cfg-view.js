@@ -37,7 +37,7 @@ function Cfg(hub, container, state) {
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#cfg').html());
-    this.defaultCfgOutput = { nodes: [{ id: 0, shape: 'box', label: 'No Output' }], edges: [] };
+    this.defaultCfgOutput = {nodes: [{id: 0, shape: 'box', label: 'No Output'}], edges: []};
     this.binaryModeSupport = {
         nodes: [
             {
@@ -61,7 +61,7 @@ function Cfg(hub, container, state) {
         autoResize: true,
         locale: 'en',
         edges: {
-            arrows: { to: { enabled: true } },
+            arrows: {to: {enabled: true}},
             smooth: {
                 enabled: true,
                 type: 'dynamic',
@@ -70,7 +70,7 @@ function Cfg(hub, container, state) {
             physics: true,
         },
         nodes: {
-            font: { face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left' },
+            font: {face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left'},
         },
         layout: {
             hierarchical: {
@@ -90,7 +90,7 @@ function Cfg(hub, container, state) {
             navigationButtons: !!state.options.navigation,
             keyboard: {
                 enabled: true,
-                speed: { x: 10, y: 10, zoom: 0.03 },
+                speed: {x: 10, y: 10, zoom: 0.03},
                 bindToWindow: false,
             },
         },
@@ -134,7 +134,7 @@ function Cfg(hub, container, state) {
     this.initCallbacks();
     this.adaptStructure = function (names) {
         return _.map(names, function (name) {
-            return { name: name };
+            return {name: name};
         });
     };
     this.updateButtons();
@@ -168,7 +168,7 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
 
         this.functionPicker.clearOptions();
         this.functionPicker.addOption(
-            functionNames.length ? this.adaptStructure(functionNames) : { name: 'The input does not contain functions' }
+            functionNames.length ? this.adaptStructure(functionNames) : {name: 'The input does not contain functions'}
         );
         this.functionPicker.refreshOptions(false);
 
@@ -229,7 +229,7 @@ Cfg.prototype.initCallbacks = function () {
             this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
             // change only physics.enabled option to preserve current node locations
             this.cfgVisualiser.setOptions({
-                physics: { enabled: this.networkOpts.physics.enabled },
+                physics: {enabled: this.networkOpts.physics.enabled},
             });
         }, this)
     );

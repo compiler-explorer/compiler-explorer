@@ -289,7 +289,7 @@ function definition() {
                 [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
@@ -319,7 +319,7 @@ function definition() {
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
-                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                 // characters
                 [/'[^\\']'/, 'string'],
@@ -338,7 +338,7 @@ function definition() {
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
             ],
 
             whitespace: [
@@ -351,5 +351,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'gccdump-rtl-gimple' });
+monaco.languages.register({id: 'gccdump-rtl-gimple'});
 monaco.languages.setMonarchTokensProvider('gccdump-rtl-gimple', definition());

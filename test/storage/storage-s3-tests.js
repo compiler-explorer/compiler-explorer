@@ -25,8 +25,8 @@
 import AWS from 'aws-sdk-mock';
 
 import * as properties from '../../lib/properties';
-import { StorageS3 } from '../../lib/storage';
-import { should } from '../utils';
+import {StorageS3} from '../../lib/storage';
+import {should} from '../utils';
 
 // NB!!! Anything using mocked AWS calls needs to be initialised in the `it(...)` block! If you initialise it in the
 // `describe()` top level code then it won't be mocked in time. We only mock and de-mock before/after else we end up
@@ -79,8 +79,8 @@ describe('Find unique subhash tests', () => {
             return {
                 Items: [
                     {
-                        full_hash: { S: 'ZZVZT' },
-                        unique_subhash: { S: 'ZZVZT' },
+                        full_hash: {S: 'ZZVZT'},
+                        unique_subhash: {S: 'ZZVZT'},
                     },
                 ],
             };
@@ -97,8 +97,8 @@ describe('Find unique subhash tests', () => {
             return {
                 Items: [
                     {
-                        full_hash: { S: 'ABCDEFGHIZZ' },
-                        unique_subhash: { S: 'ABCDEFGHI' },
+                        full_hash: {S: 'ABCDEFGHIZZ'},
+                        unique_subhash: {S: 'ABCDEFGHI'},
                     },
                 ],
             };
@@ -115,8 +115,8 @@ describe('Find unique subhash tests', () => {
             return {
                 Items: [
                     {
-                        full_hash: { S: 'ABCDEFGHIJKLMNOPQRSTUV' },
-                        unique_subhash: { S: 'ABCDEFGHI' },
+                        full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
+                        unique_subhash: {S: 'ABCDEFGHI'},
                     },
                 ],
             };
@@ -149,7 +149,7 @@ describe('Stores to s3', () => {
             config: 'yo',
         };
 
-        const ran = { s3: false, dynamo: false };
+        const ran = {s3: false, dynamo: false};
         s3PutObjectHandlers.push(q => {
             q.Bucket.should.equal('bucket');
             q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
@@ -160,19 +160,19 @@ describe('Stores to s3', () => {
         dynamoDbPutItemHandlers.push(q => {
             q.TableName.should.equals('table');
             q.Item.should.deep.equals({
-                prefix: { S: 'ABCDEF' },
-                unique_subhash: { S: 'ABCDEFG' },
-                full_hash: { S: 'ABCDEFGHIJKLMNOP' },
-                stats: { M: { clicks: { N: '0' } } },
-                creation_ip: { S: 'localhost' },
+                prefix: {S: 'ABCDEF'},
+                unique_subhash: {S: 'ABCDEFG'},
+                full_hash: {S: 'ABCDEFGHIJKLMNOP'},
+                stats: {M: {clicks: {N: '0'}}},
+                creation_ip: {S: 'localhost'},
                 // Cheat the date
-                creation_date: { S: q.Item.creation_date.S },
+                creation_date: {S: q.Item.creation_date.S},
             });
             ran.dynamo = true;
             return {};
         });
-        return storage.storeItem(object, { get: () => 'localhost' }).then(() => {
-            ran.should.deep.equal({ s3: true, dynamo: true });
+        return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
+            ran.should.deep.equal({s3: true, dynamo: true});
         });
     });
 });
@@ -190,15 +190,15 @@ describe('Retrieves from s3', () => {
     });
     it('fetches in the happy path', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        const ran = { s3: false, dynamo: false };
+        const ran = {s3: false, dynamo: false};
         dynamoDbGetItemHandlers.push(q => {
             q.TableName.should.equals('table');
             q.Key.should.deep.equals({
-                prefix: { S: 'ABCDEF' },
-                unique_subhash: { S: 'ABCDEF' },
+                prefix: {S: 'ABCDEF'},
+                unique_subhash: {S: 'ABCDEF'},
             });
             ran.dynamo = true;
-            return { Item: { full_hash: { S: 'ABCDEFGHIJKLMNOP' } } };
+            return {Item: {full_hash: {S: 'ABCDEFGHIJKLMNOP'}}};
         });
         s3GetObjectHandlers.push(q => {
             q.Bucket.should.equal('bucket');
@@ -210,8 +210,8 @@ describe('Retrieves from s3', () => {
         });
 
         const result = await storage.expandId('ABCDEF');
-        ran.should.deep.equal({ s3: true, dynamo: true });
-        result.should.deep.equal({ config: 'I am a monkey', specialMetadata: null });
+        ran.should.deep.equal({s3: true, dynamo: true});
+        result.should.deep.equal({config: 'I am a monkey', specialMetadata: null});
     });
     it('should handle failures', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
@@ -235,10 +235,10 @@ describe('Updates counts in s3', async () => {
         let called = false;
         dynamoDbUpdateItemHandlers.push(q => {
             q.should.deep.equals({
-                ExpressionAttributeValues: { ':inc': { N: '1' } },
+                ExpressionAttributeValues: {':inc': {N: '1'}},
                 Key: {
-                    prefix: { S: 'ABCDEF' },
-                    unique_subhash: { S: 'ABCDEF' },
+                    prefix: {S: 'ABCDEF'},
+                    unique_subhash: {S: 'ABCDEF'},
                 },
                 ReturnValues: 'NONE',
                 TableName: 'table',

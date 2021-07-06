@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ClientState } from '../lib/clientstate';
-import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
+import {ClientState} from '../lib/clientstate';
+import {ClientStateNormalizer} from '../lib/clientstate-normalizer';
 
-import { fs } from './utils';
+import {fs} from './utils';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {
@@ -97,7 +97,7 @@ describe('ClientState parsing', () => {
                     id: 1,
                     language: 'c++',
                     source: 'int main() {}',
-                    compilers: [{ id: 'g91', options: '-O3 -std=c++2a' }],
+                    compilers: [{id: 'g91', options: '-O3 -std=c++2a'}],
                 },
             ],
         });
@@ -116,7 +116,7 @@ describe('ClientState parsing', () => {
                     compilers: [],
                     executors: [
                         {
-                            compiler: { id: 'g91', options: '-O3 -std=c++2a' },
+                            compiler: {id: 'g91', options: '-O3 -std=c++2a'},
                         },
                     ],
                 },

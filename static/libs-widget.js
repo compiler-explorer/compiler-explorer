@@ -254,7 +254,7 @@ LibsWidget.prototype.markLibrary = function (name, version, used) {
 
 LibsWidget.prototype.get = function () {
     return _.map(this.listUsedLibs(), function (item, libId) {
-        return { name: libId, ver: item };
+        return {name: libId, ver: item};
     });
 };
 
@@ -276,7 +276,7 @@ LibsWidget.prototype.getLibsInUse = function () {
     _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
         _.each(library.versions, function (version, ver) {
             if (library.versions[ver].used) {
-                var libVer = Object.assign({ libId: libId, versionId: ver }, library.versions[ver]);
+                var libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
                 libs.push(libVer);
             }
         });

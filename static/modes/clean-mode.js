@@ -55,7 +55,7 @@ function definition() {
 
         tokenizer: {
             root: [
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 [/->/, 'operators'],
 
@@ -98,5 +98,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'clean' });
+monaco.languages.register({id: 'clean'});
 monaco.languages.setMonarchTokensProvider('clean', definition());

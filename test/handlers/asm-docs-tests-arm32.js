@@ -24,8 +24,8 @@
 
 import express from 'express';
 
-import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api-arm32';
-import { chai } from '../utils';
+import {AsmDocsHandler} from '../../lib/handlers/asm-docs-api-arm32';
+import {chai} from '../utils';
 
 describe('Assembly documents', () => {
     let app;

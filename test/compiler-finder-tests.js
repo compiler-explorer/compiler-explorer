@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils';
-import { CompilerFinder } from '../lib/compiler-finder';
+import {CompilerFinder} from '../lib/compiler-finder';
 import * as properties from '../lib/properties';
 
 const languages = {

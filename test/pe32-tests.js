@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { PELabelReconstructor } from '../lib/pe32-support';
+import {PELabelReconstructor} from '../lib/pe32-support';
 
 describe('Basic reconstructions', function () {
     it('No lines', function () {

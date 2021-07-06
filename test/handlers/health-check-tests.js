@@ -25,9 +25,9 @@
 import express from 'express';
 import mockfs from 'mock-fs';
 
-import { CompilationQueue } from '../../lib/compilation-queue';
-import { HealthCheckHandler } from '../../lib/handlers/health-check';
-import { chai } from '../utils';
+import {CompilationQueue} from '../../lib/compilation-queue';
+import {HealthCheckHandler} from '../../lib/handlers/health-check';
+import {chai} from '../utils';
 
 describe('Health checks', () => {
     let app;

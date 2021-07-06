@@ -144,7 +144,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         colour.schemes[0].name,
         Select,
         _.map(colour.schemes, function (scheme) {
-            return { label: scheme.name, desc: scheme.desc };
+            return {label: scheme.name, desc: scheme.desc};
         })
     );
     // Handle older settings
@@ -178,7 +178,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         defaultThemeId,
         Select,
         _.map(themes, function (theme) {
-            return { label: theme.id, desc: theme.name };
+            return {label: theme.id, desc: theme.name};
         })
     );
     add(root.find('.showQuickSuggestions'), 'showQuickSuggestions', false, Checkbox);
@@ -228,7 +228,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         defLang,
         Select,
         _.map(langs, function (lang) {
-            return { label: lang.id, desc: lang.name };
+            return {label: lang.id, desc: lang.name};
         })
     );
     if (subLangId) {
@@ -247,7 +247,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         formats[0],
         Select,
         _.map(formats, function (format) {
-            return { label: format, desc: format };
+            return {label: format, desc: format};
         })
     );
     //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
@@ -258,7 +258,7 @@ function setupSettings(root, settings, onChange, subLangId) {
         onChange(settings);
     }
     add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
-    add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, { min: 1, max: 80 });
+    add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);

@@ -24,12 +24,12 @@
 
 import path from 'path';
 
-import { NimCompiler } from '../lib/compilers/nim';
+import {NimCompiler} from '../lib/compilers/nim';
 
-import { makeCompilationEnvironment, should } from './utils';
+import {makeCompilationEnvironment, should} from './utils';
 
 const languages = {
-    nim: { id: 'nim' },
+    nim: {id: 'nim'},
 };
 
 describe('Nim', () => {
@@ -41,7 +41,7 @@ describe('Nim', () => {
     };
 
     before(() => {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('Nim should not allow --run/-r parameter', () => {

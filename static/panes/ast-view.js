@@ -134,7 +134,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasAstOutput) {
         this.showAstResults(result.astOutput);
     } else if (compiler.supportsAstView) {
-        this.showAstResults([{ text: '<No output>' }]);
+        this.showAstResults([{text: '<No output>'}]);
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {

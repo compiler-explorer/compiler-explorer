@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { LlvmIrParser } from '../lib/llvm-ir';
+import {LlvmIrParser} from '../lib/llvm-ir';
 import * as properties from '../lib/properties';
 
-import { chai } from './utils';
+import {chai} from './utils';
 
 const expect = chai.expect;
 
 const languages = {
-    'c++': { id: 'c++' },
+    'c++': {id: 'c++'},
 };
 
 describe('llvm-ir parseMetaNode', function () {
@@ -112,13 +112,13 @@ describe('llvm-ir getSourceLineNumber', function () {
     });
 
     const debugInfo = {
-        '!10': { line: 10 },
-        '!20': { line: 20, scope: '!10' },
-        '!11': { scope: '!10' },
-        '!12': { line: 0, scope: '!10' },
+        '!10': {line: 10},
+        '!20': {line: 20, scope: '!10'},
+        '!11': {scope: '!10'},
+        '!12': {line: 0, scope: '!10'},
         '!14': {},
-        '!15': { scope: '!14' },
-        '!16': { scope: '!42' },
+        '!15': {scope: '!14'},
+        '!16': {scope: '!42'},
     };
 
     it('should return a line number', function () {
@@ -153,13 +153,13 @@ describe('llvm-ir getSourceColumn', function () {
     });
 
     const debugInfo = {
-        '!10': { column: 10 },
-        '!20': { column: 20, scope: '!10' },
-        '!11': { scope: '!10' },
-        '!12': { column: 0, scope: '!10' },
+        '!10': {column: 10},
+        '!20': {column: 20, scope: '!10'},
+        '!11': {scope: '!10'},
+        '!12': {column: 0, scope: '!10'},
         '!14': {},
-        '!15': { scope: '!14' },
-        '!16': { scope: '!42' },
+        '!15': {scope: '!14'},
+        '!16': {scope: '!42'},
     };
 
     it('should return a column number', function () {
@@ -194,12 +194,12 @@ describe('llvm-ir getFileName', function () {
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
     const debugInfo = {
-        '!10': { filename: '/test.cpp' },
-        '!20': { filename: '/example.cpp' },
-        '!11': { file: '!10' },
-        '!21': { file: '!20' },
-        '!12': { scope: '!11' },
-        '!13': { scope: '!12' },
+        '!10': {filename: '/test.cpp'},
+        '!20': {filename: '/example.cpp'},
+        '!11': {file: '!10'},
+        '!21': {file: '!20'},
+        '!12': {scope: '!11'},
+        '!13': {scope: '!12'},
     };
 
     it('should return a filename', function () {

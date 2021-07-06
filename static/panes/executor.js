@@ -161,7 +161,7 @@ Executor.prototype.resize = function () {
 };
 
 function errorResult(message) {
-    return { code: -1, stderr: message };
+    return {code: -1, stderr: message};
 }
 
 Executor.prototype.compile = function (bypassCache) {
@@ -180,7 +180,7 @@ Executor.prototype.compile = function (bypassCache) {
         compilerOptions: {
             executorRequest: true,
         },
-        filters: { execute: true },
+        filters: {execute: true},
         tools: [],
         libraries: [],
     };
@@ -221,7 +221,7 @@ Executor.prototype.sendCompile = function (request) {
     }
     // this.eventHub.emit('compiling', this.id, this.compiler);
     // Display the spinner
-    this.handleCompilationStatus({ code: 4 });
+    this.handleCompilationStatus({code: 4});
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
@@ -345,7 +345,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
         }
     }
 
-    this.handleCompilationStatus({ code: 1, didExecute: result.didExecute });
+    this.handleCompilationStatus({code: 1, didExecute: result.didExecute});
     var timeLabelText = '';
     if (cached) {
         timeLabelText = ' - cached';
@@ -868,7 +868,7 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
             execStdin: this.executionStdin,
         };
         var info = this.infoByLang[this.currentLangId] || {};
-        this.initLangAndCompiler({ lang: newLangId, compiler: info.compiler });
+        this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
         this.updateCompilersSelector(info);
         this.updateCompilerUI();
         this.saveState();

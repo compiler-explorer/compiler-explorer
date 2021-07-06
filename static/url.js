@@ -40,12 +40,12 @@ function convertOldState(state) {
     } else {
         source = sc.source;
     }
-    var options = { compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm };
+    var options = {compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm};
     var filters = _.clone(state.filterAsm);
     delete filters.colouriseAsm;
     content.push(Components.getEditorWith(1, source, options));
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
-    return { version: 4, content: [{ type: 'row', content: content }] };
+    return {version: 4, content: [{type: 'row', content: content}]};
 }
 
 function loadState(state) {
@@ -103,10 +103,10 @@ function deserialiseState(stateText) {
 }
 
 function serialiseState(stateText) {
-    var ctx = GoldenLayout.minifyConfig({ content: stateText.content });
+    var ctx = GoldenLayout.minifyConfig({content: stateText.content});
     ctx.version = 4;
     var uncompressed = risonify(ctx);
-    var compressed = risonify({ z: lzstring.compressToBase64(uncompressed) });
+    var compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     var MinimalSavings = 0.2; // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;

@@ -123,7 +123,7 @@ function definition() {
                         },
                     },
                 ],
-                { include: '@whitespace' },
+                {include: '@whitespace'},
                 [/([:|[[{(]\.|\.[\]})]|[[\]{}()])/, '@brackets'],
                 [
                     /@symbols/,
@@ -179,5 +179,5 @@ function definition() {
     };
 }
 
-monaco.languages.register({ id: 'nim' });
+monaco.languages.register({id: 'nim'});
 monaco.languages.setMonarchTokensProvider('nim', definition());

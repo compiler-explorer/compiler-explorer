@@ -462,7 +462,7 @@ function definition() {
                 [/!.*$/, 'comment'],
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
@@ -524,19 +524,19 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '`', close: '`', notIn: ['string', 'comment'] },
-            { open: "'", close: "'", notIn: ['string', 'comment'] },
-            { open: '"', close: '"', notIn: ['string'] },
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '`', close: '`', notIn: ['string', 'comment']},
+            {open: "'", close: "'", notIn: ['string', 'comment']},
+            {open: '"', close: '"', notIn: ['string']},
         ],
 
         surroundingPairs: [
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '`', close: '`' },
-            { open: "'", close: "'" },
-            { open: '"', close: '"' },
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '`', close: '`'},
+            {open: "'", close: "'"},
+            {open: '"', close: '"'},
         ],
 
         indentationRules: {
@@ -551,7 +551,7 @@ function configuration() {
 
 var def = definition();
 
-monaco.languages.register({ id: 'fortran' });
+monaco.languages.register({id: 'fortran'});
 monaco.languages.setMonarchTokensProvider('fortran', def);
 monaco.languages.setLanguageConfiguration('fortran', configuration());
 

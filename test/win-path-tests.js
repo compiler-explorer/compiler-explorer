@@ -24,13 +24,13 @@
 
 import child_process from 'child_process';
 
-import { WineVcCompiler } from '../lib/compilers/wine-vc';
-import { WslVcCompiler } from '../lib/compilers/wsl-vc';
+import {WineVcCompiler} from '../lib/compilers/wine-vc';
+import {WslVcCompiler} from '../lib/compilers/wsl-vc';
 
-import { makeCompilationEnvironment } from './utils';
+import {makeCompilationEnvironment} from './utils';
 
 const languages = {
-    'c++': { id: 'c++' },
+    'c++': {id: 'c++'},
 };
 
 const info = {
@@ -43,7 +43,7 @@ describe('Paths', () => {
     let env;
 
     before(() => {
-        env = makeCompilationEnvironment({ languages });
+        env = makeCompilationEnvironment({languages});
     });
 
     it('Linux -> Wine path', () => {
@@ -70,7 +70,7 @@ let ce;
 
 function createCompiler(compiler) {
     if (ce === undefined) {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
     }
 
     const info = {
@@ -99,7 +99,7 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
                     inputFilename: 'c:/this-should-be-run-in-mnt-c',
                     okToCache: true,
                     stderr: [],
-                    stdout: [{ text: '/mnt/c' }],
+                    stdout: [{text: '/mnt/c'}],
                 });
         });
     });

@@ -218,7 +218,7 @@ LoadSave.prototype.onSaveToFile = function (fileEditor) {
         var fileLang = this.currentLanguage.name;
         var name = fileLang !== undefined && fileEditor !== undefined ? fileLang + ' Editor #' + fileEditor + ' ' : '';
         saveAs(
-            new Blob([this.editorText], { type: 'text/plain;charset=utf-8' }),
+            new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
             'Compiler Explorer ' + name + 'Code' + this.extension
         );
         return true;
@@ -243,4 +243,4 @@ LoadSave.prototype.doLoad = function (element) {
     this.modal.modal('hide');
 };
 
-module.exports = { LoadSave: LoadSave };
+module.exports = {LoadSave: LoadSave};

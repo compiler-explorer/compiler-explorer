@@ -40,27 +40,27 @@ function definition() {
         tokenizer: {
             root: [
                 // Error document
-                [/^<.*>$/, { token: 'annotation' }],
+                [/^<.*>$/, {token: 'annotation'}],
                 // Label definition
-                [/^[.a-zA-Z0-9_$?@].*:/, { token: 'type.identifier' }],
+                [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier'}],
                 // Label definition (ARM style)
-                [/^\s*[|][^|]*[|]/, { token: 'type.identifier' }],
+                [/^\s*[|][^|]*[|]/, {token: 'type.identifier'}],
                 // Label definition (CL style)
-                [/^\s*[.a-zA-Z0-9_$|]*\s+(PROC|ENDP|DB|DD)/, { token: 'type.identifier' }],
+                [/^\s*[.a-zA-Z0-9_$|]*\s+(PROC|ENDP|DB|DD)/, {token: 'type.identifier'}],
                 // Constant definition
-                [/^[.a-zA-Z0-9_$?@][^=]*=/, { token: 'type.identifier' }],
+                [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier'}],
                 // opcode
-                [/[.a-zA-Z_][.a-zA-Z_0-9]*/, { token: 'keyword', next: '@rest' }],
+                [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
                 // braces and parentheses at the start of the line (e.g. nvcc output)
-                [/[(){}]/, { token: 'operator', next: '@rest' }],
+                [/[(){}]/, {token: 'operator', next: '@rest'}],
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
             ],
 
             rest: [
                 // pop at the beginning of the next line and rematch
-                [/^.*$/, { token: '@rematch', next: '@pop' }],
+                [/^.*$/, {token: '@rematch', next: '@pop'}],
 
                 [/@registers/, 'variable.predefined'],
                 [/@intelOperators/, 'annotation'],
@@ -82,7 +82,7 @@ function definition() {
 
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
-                [/"/, { token: 'string.quote', bracket: '@open', next: '@string' }],
+                [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                 // characters
                 [/'[^\\']'/, 'string'],
@@ -93,7 +93,7 @@ function definition() {
                 [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
 
                 // whitespace
-                { include: '@whitespace' },
+                {include: '@whitespace'},
             ],
 
             comment: [
@@ -107,7 +107,7 @@ function definition() {
                 [/[^\\"]+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/"/, { token: 'string.quote', bracket: '@close', next: '@pop' }],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
             ],
 
             whitespace: [
@@ -121,7 +121,7 @@ function definition() {
 }
 
 var def = definition();
-monaco.languages.register({ id: 'asm' });
+monaco.languages.register({id: 'asm'});
 monaco.languages.setMonarchTokensProvider('asm', def);
 
 module.exports = def;

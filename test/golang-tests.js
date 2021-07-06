@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { GolangCompiler } from '../lib/compilers/golang';
+import {GolangCompiler} from '../lib/compilers/golang';
 import * as utils from '../lib/utils';
 
-import { fs, makeCompilationEnvironment } from './utils';
+import {fs, makeCompilationEnvironment} from './utils';
 
 const languages = {
-    go: { id: 'go' },
+    go: {id: 'go'},
 };
 
 let ce;
@@ -66,7 +66,7 @@ function testGoAsm(basefilename) {
 
 describe('GO asm tests', () => {
     before(() => {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('Handles unknown line number correctly', () => {

@@ -46,13 +46,13 @@ var themes = {
 monaco.editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
-    rules: [{ token: 'identifier.definition.cppx-blue', foreground: '004400', fontStyle: 'bold' }],
+    rules: [{token: 'identifier.definition.cppx-blue', foreground: '004400', fontStyle: 'bold'}],
 });
 
 monaco.editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
-    rules: [{ token: 'identifier.definition.cppx-blue', foreground: 'bbccbb', fontStyle: 'bold' }],
+    rules: [{token: 'identifier.definition.cppx-blue', foreground: 'bbccbb', fontStyle: 'bold'}],
 });
 
 function Themer(eventHub, initialSettings) {

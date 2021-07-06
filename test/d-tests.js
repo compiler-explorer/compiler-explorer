@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { DMDCompiler } from '../lib/compilers/dmd';
-import { LDCCompiler } from '../lib/compilers/ldc';
+import {DMDCompiler} from '../lib/compilers/dmd';
+import {LDCCompiler} from '../lib/compilers/ldc';
 
-import { makeCompilationEnvironment } from './utils';
+import {makeCompilationEnvironment} from './utils';
 
 const languages = {
-    d: { id: 'd' },
+    d: {id: 'd'},
 };
 
 describe('D', () => {
@@ -40,7 +40,7 @@ describe('D', () => {
     };
 
     before(() => {
-        ce = makeCompilationEnvironment({ languages });
+        ce = makeCompilationEnvironment({languages});
     });
 
     it('LDC should not allow -run parameter', () => {

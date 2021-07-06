@@ -146,7 +146,7 @@ function setupButtons(options) {
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, { expires: 365 });
+                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
             }
         });
     }
@@ -340,7 +340,7 @@ function initPolicies(options) {
         }
     }
     simpleCooks.onDoConsent = function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, { expires: 365 });
+        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
         analytics.toggle(true);
     };
     simpleCooks.onDontConsent = function () {
@@ -451,7 +451,7 @@ function start() {
     }
 
     var defaultConfig = {
-        settings: { showPopoutIcon: false },
+        settings: {showPopoutIcon: false},
         content: [
             {
                 type: 'row',

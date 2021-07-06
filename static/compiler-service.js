@@ -118,10 +118,10 @@ CompilerService.prototype.getGroupsInUse = function (langId) {
             return compiler.group;
         })
         .map(function (compiler) {
-            return { value: compiler.group, label: compiler.groupName || compiler.group };
+            return {value: compiler.group, label: compiler.groupName || compiler.group};
         })
         .sort(function (a, b) {
-            return a.label.localeCompare(b.label, undefined /* Ignore language */, { sensitivity: 'base' });
+            return a.label.localeCompare(b.label, undefined /* Ignore language */, {sensitivity: 'base'});
         })
         .value();
 };
@@ -278,7 +278,7 @@ CompilerService.prototype.expand = function (source) {
 };
 
 CompilerService.prototype.getSelectizerOrder = function () {
-    return [{ field: '$order' }, { field: '$score' }, { field: 'name' }];
+    return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
 };
 
 CompilerService.prototype.doesCompilationResultHaveWarnings = function (result) {
@@ -304,7 +304,7 @@ CompilerService.prototype.calculateStatusIcon = function (result) {
     } else if (this.doesCompilationResultHaveWarnings(result)) {
         code = 2;
     }
-    return { code: code, compilerOut: result.code };
+    return {code: code, compilerOut: result.code};
 };
 
 function ariaLabel(status) {

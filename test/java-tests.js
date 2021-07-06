@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { JavaCompiler } from '../lib/compilers/java';
+import {JavaCompiler} from '../lib/compilers/java';
 import * as utils from '../lib/utils';
 
-import { fs, makeCompilationEnvironment } from './utils';
+import {fs, makeCompilationEnvironment} from './utils';
 
 const languages = {
-    java: { id: 'java' },
+    java: {id: 'java'},
 };
 
 const info = {
@@ -42,7 +42,7 @@ describe.skip('Basic compiler setup', function () {
     let env;
 
     before(() => {
-        env = makeCompilationEnvironment({ languages });
+        env = makeCompilationEnvironment({languages});
     });
 
     it('Should not crash on instantiation', function () {
@@ -107,7 +107,7 @@ describe.skip('javap parsing', () => {
     let compiler;
     let env;
     before(() => {
-        const env = makeCompilationEnvironment({ languages });
+        const env = makeCompilationEnvironment({languages});
         compiler = new JavaCompiler(info, env);
     });
 
@@ -147,7 +147,7 @@ describe.skip('javap parsing', () => {
             asm: '<Compilation failed>',
         };
 
-        compiler.processAsm(result).should.deep.equal([{ text: '<Compilation failed>', source: null }]);
+        compiler.processAsm(result).should.deep.equal([{text: '<Compilation failed>', source: null}]);
     });
 
     it('Parses simple class with one method', () => {
