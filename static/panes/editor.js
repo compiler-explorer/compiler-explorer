@@ -53,6 +53,7 @@ require('../modes/zig-mode');
 require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('../modes/nim-mode');
+require('../modes/crystal-mode');
 
 
 var loadSave = new loadSaveLib.LoadSave();
