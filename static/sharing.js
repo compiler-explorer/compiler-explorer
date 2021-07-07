@@ -65,8 +65,12 @@ function filterComponentState(config, keysToRemove) {
 
         if (component.componentState) {
             Object.keys(component.componentState)
-                .filter(function (key) { return keysToRemove.includes(key); })
-                .forEach(function (key) { delete component.componentState[key]; });
+                .filter(function (key) {
+                    return keysToRemove.includes(key);
+                })
+                .forEach(function (key) {
+                    delete component.componentState[key];
+                });
         }
     }
 
@@ -293,7 +297,7 @@ Sharing.prototype.onStateChanged = function () {
 Sharing.prototype.ensureUrlIsNotOutdated = function (config) {
     var stringifiedConfig = JSON.stringify(config);
     if (stringifiedConfig !== this.lastState) {
-        if (window.location.pathname !== window.httpRoot) {
+        if (this.lastState != null && window.location.pathname !== window.httpRoot) {
             window.history.replaceState(null, null, window.httpRoot);
         }
         this.lastState = stringifiedConfig;
