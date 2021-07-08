@@ -55,7 +55,7 @@ function configuration() {
         ],
 
         indentationRules: {
-            increaseIndentPattern: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#\{;]|("|'|\/).*\4|\{\{.*\}\}|\{.*\})*(#.*)?$/,
+            increaseIndentPattern: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#{;]|("|'|\/).*\4|\{\{.*\}\}|\{.*\})*(#.*)?$/,
             decreaseIndentPattern: /^\s*([}\]]([,)]?\s*(#|$)|\.[a-zA-Z_]\w*\b)|(end|rescue|ensure|else|elsif|when)\b)/,
         },
     };
@@ -137,7 +137,7 @@ function definition() {
             '&.',
         ],
 
-        symbols: /[=><!~?:&|+\-*\/\^%\.]+/,
+        symbols: /[=><!~?:&|+\-*/^%.]+/,
         escapes: /\\(?:[abefnrtv\\"'#]|[0-7]{1,3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\{[0-9A-Fa-f]{1,6}\})/,
         numsuffix: /(?:i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64)/,
 
@@ -148,8 +148,8 @@ function definition() {
                 [/[a-z_][a-z0-9_]*[!?=]?/, {
                     cases: {
                         '@keywords': 'keyword',
-                        '@default': 'identifier'
-                    }
+                        '@default': 'identifier',
+                    },
                 }],
 
                 [/[A-Z][A-Za-z0-9_]*/, 'type.identifier'],
@@ -160,16 +160,16 @@ function definition() {
                 [/@symbols/, {
                     cases: {
                         '@operators': 'operator',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
-                [/[{}()\[\]]/, '@brackets'],
+                [/[{}()[\]]/, '@brackets'],
 
                 [/0x[0-9A-Fa-f_]+(@numsuffix)?/, 'number.hex'],
                 [/0o[0-7_]+(@numsuffix)?/, 'number.octal'],
                 [/0b[01_]+(@numsuffix)?/, 'number.binary'],
-                [/(?!00)[0-9][0-9_]*\.[0-9][0-9_]*([eE][\-+]?[0-9][0-9_]*)?(f32|f64)?/, 'number.float'],
+                [/(?!00)[0-9][0-9_]*\.[0-9][0-9_]*([eE][-+]?[0-9][0-9_]*)?(f32|f64)?/, 'number.float'],
                 [/(?!00)[0-9][0-9_]*(@numsuffix)?/, 'number'],
 
                 [/#.*$/, 'comment'],
@@ -184,7 +184,7 @@ function definition() {
                 [/"/, 'string', '@pop'],
                 [/./, 'string'],
             ],
-        }
+        },
     };
 }
 
