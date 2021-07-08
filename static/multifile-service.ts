@@ -1,6 +1,8 @@
 import _ from 'underscore';
+import path from 'path';
 var options = require('./options');
 var languages = options.languages;
+var JSZip = require('jszip');
 
 export class File {
     fileId: number;
@@ -22,13 +24,18 @@ export class MultifileService {
     private files: Array<File>;
     private compilerLanguageId: string;
     private isCMakeProject: boolean;
-    private eventHub: any;
     private hub: any;
     private newFileId: number;
     private alertSystem: any;
+    public cmakeArgsGetFunc: () => string;
+    public customOutputFilenameGetFunc: () => string;
+    private validExtraFilenameExtensions: string[];
+    private defaultLangIdUnknownExt: string;
+    private cmakeLangId: string;
+    private cmakeMainSourceFilename: string;
+    private maxFilesize: number;
 
     constructor(hub, eventHub, alertSystem, state) {
-        this.eventHub = eventHub;
         this.hub = hub;
         this.alertSystem = alertSystem;
 
@@ -36,6 +43,115 @@ export class MultifileService {
         this.compilerLanguageId = state.compilerLanguageId || '';
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
+
+        this.validExtraFilenameExtensions = ['.txt', '.md', '.rst', '.sh', '.cmake', '.in'];
+        this.defaultLangIdUnknownExt = 'c++';
+        this.cmakeLangId = 'cmake';
+        this.cmakeMainSourceFilename = 'CMakeLists.txt';
+        this.maxFilesize = 1024000;
+    }
+
+    private isHiddenFile(filename: string): boolean {
+        return (filename.length > 0 && filename[0] === '.');
+    }
+
+    private isValidFilename(filename: string): boolean {
+        if (this.isHiddenFile(filename)) return false;
+
+        const filenameExt = path.extname(filename);
+        if (this.validExtraFilenameExtensions.includes(filenameExt)) {
+            return true;
+        }
+
+        return _.any(languages, (lang) => {
+            return lang.extensions.includes(filenameExt);
+        });
+    }
+
+    private isCMakeFile(filename: string): boolean {
+        const filenameExt = path.extname(filename);
+        if (filenameExt === '.cmake' || filenameExt === '.in') {
+            return true;
+        }
+
+        return path.basename(filename) === this.cmakeMainSourceFilename;
+    }
+
+    private getLanguageIdFromFilename(filename: string): string {
+        const filenameExt = path.extname(filename);
+
+        const possibleLang = _.filter(languages, (lang) => {
+            return lang.extensions.includes(filenameExt);
+        });
+
+        if (possibleLang.length > 0) {
+            return possibleLang[0].id;
+        }
+
+        if (this.isCMakeFile(filename)) {
+            return this.cmakeLangId;
+        }
+
+        return this.defaultLangIdUnknownExt;
+    }
+
+    public async loadProjectFromFile(f, callback) {
+        this.files = [];
+        this.newFileId = 1;
+
+        const zipFilename = path.basename(f.name, '.zip');
+        const mainSourcefilename = this.getDefaultMainCMakeFilename();
+
+        const zip = await JSZip.loadAsync(f);
+
+        zip.forEach(async (relativePath, zipEntry) => {
+            if (!zipEntry.dir) {
+                let removeFromName = 0;
+                if (relativePath.indexOf(zipFilename) === 0) {
+                    removeFromName = zipFilename.length + 1;
+                }
+
+                const properName = relativePath.substring(removeFromName);
+                if (!this.isValidFilename(properName)) {
+                    return;
+                }
+
+                const content = await zip.file(zipEntry.name).async("string");
+                if (content.length > this.maxFilesize) {
+                    return;
+                }
+
+                const file: File = {
+                    fileId: this.newFileId,
+                    filename: properName,
+                    isIncluded: true,
+                    isOpen: false,
+                    editorId: -1,
+                    isMainSource: properName === mainSourcefilename,
+                    content: content,
+                    langId: this.getLanguageIdFromFilename(properName),
+                };
+
+                this.addFile(file);
+                callback(file);
+            }
+        });
+    }
+
+    public async saveProjectToZipfile(callback: (any) => void) {
+        const zip = new JSZip();
+
+        this.forEachFile((file: File) => {
+            if (file.isIncluded) {
+                zip.file(file.filename, this.getFileContents(file));
+            }
+        })
+
+        zip.generateAsync({type:"blob"}).then((blob) => {
+            callback(blob);
+        }, (err) => {
+            throw err;
+        });
     }
 
     public getState() {
@@ -61,9 +177,6 @@ export class MultifileService {
 
     public setLanguageId(id: string) {
         this.compilerLanguageId = id;
-        // if (!this.isCompatibleWithCMake()) {
-        //     this.isCMakeProject = false;
-        // }
     }
 
     public isACMakeProject(): boolean {
@@ -199,7 +312,12 @@ export class MultifileService {
         return (file && file.editorId > 0) ? file.editorId : null;
     }
 
-    public addFileForEditorId(editorId) {
+    private addFile(file: File) {
+        this.newFileId++;
+        this.files.push(file);
+    }
+
+    public addFileForEditorId(editorId: number) {
         const file: File = {
             fileId: this.newFileId,
             isIncluded: false,
@@ -211,8 +329,7 @@ export class MultifileService {
             langId: '',
         };
 
-        this.newFileId++;
-        this.files.push(file);
+        this.addFile(file);
     }
 
     public removeFileByFileId(fileId: number): File {
@@ -271,7 +388,7 @@ export class MultifileService {
     }
 
     private getDefaultMainCMakeFilename() {
-        return 'CMakeLists.txt';
+        return this.cmakeMainSourceFilename;
     }
 
     private getDefaultMainSourceFilename(langId) {
@@ -292,7 +409,7 @@ export class MultifileService {
             }
 
             if (!suggestedFilename) {
-                if (langId === 'cmake') { 
+                if (langId === this.cmakeLangId) {
                     suggestedFilename = this.getDefaultMainCMakeFilename();
                 } else {
                     suggestedFilename = this.getDefaultMainSourceFilename(langId);
@@ -329,7 +446,7 @@ export class MultifileService {
                             if (editor) {
                                 editor.setCustomPaneName(file.filename);
                             }
-    
+
                             resolve(true);
                         } else {
                             this.alertSystem.alert('Rename file', 'Filename already exists');

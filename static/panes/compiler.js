@@ -621,6 +621,8 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
     } else {
         if (tree.multifileService.getState().isCMakeProject) {
+            request.options.compilerOptions.cmakeArgs = tree.multifileService.cmakeArgsGetFunc();
+            request.options.compilerOptions.customOutputFilename = tree.multifileService.customOutputFilenameGetFunc();
             this.sendCMakeCompile(request);
         } else {
             this.sendCompile(request);

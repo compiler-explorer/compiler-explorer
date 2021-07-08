@@ -79,6 +79,14 @@ function Tree(hub, state, container) {
     this.busyCompilers = {};
     this.asmByCompiler = {};
 
+    this.multifileService.cmakeArgsGetFunc = _.bind(function () {
+        return this.domRoot.find('.cmake-arguments').val();
+    }, this);
+
+    this.multifileService.customOutputFilenameGetFunc = _.bind(function () {
+        return this.domRoot.find('.cmake-customOutputFilename').val();
+    }, this);
+
     this.initButtons(state);
     this.initCallbacks();
     this.onSettingsChange(this.settings);
@@ -143,6 +151,14 @@ Tree.prototype.onToggleCMakeChange = function () {
     this.domRoot.find('.cmake-project').prop('title',
         '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
     this.updateState();
+
+    if (isOn) {
+        this.domRoot.find('.cmake-arguments').parent().removeClass('d-none');
+        this.domRoot.find('.cmake-customOutputFilename').parent().removeClass('d-none');
+    } else {
+        this.domRoot.find('.cmake-arguments').parent().addClass('d-none');
+        this.domRoot.find('.cmake-customOutputFilename').parent().addClass('d-none');
+    }
 };
 
 Tree.prototype.onLanguageChange = function (newLangId) {
@@ -373,10 +389,52 @@ Tree.prototype.getConfigForNewEditor = function (file) {
     return editor;
 };
 
+Tree.prototype.getFormattedDateTime = function () {
+    var d = new Date();
+
+    var datestring = d.getFullYear() +
+        ('0'+(d.getMonth()+1)).slice(-2) +
+        ('0' + d.getDate()).slice(-2);
+    datestring += ('0' + d.getHours()).slice(-2) +
+        ('0' + d.getMinutes()).slice(-2) +
+        ('0' + d.getSeconds()).slice(-2);
+
+    return datestring;
+};
+
+Tree.prototype.triggerSaveAs = function (blob) {
+    var dt = this.getFormattedDateTime();
+    // eslint-disable-next-line no-undef
+    saveAs(blob, 'project-' + dt + '.zip');
+};
+
 Tree.prototype.initButtons = function (state) {
     var addCompilerButton = this.domRoot.find('.add-compiler');
     var addExecutorButton = this.domRoot.find('.add-executor');
     var addEditorButton = this.domRoot.find('.add-editor');
+    var saveProjectButton = this.domRoot.find('.save-project-to-file');
+
+    saveProjectButton.on('click', _.bind(function () {
+        this.multifileService.saveProjectToZipfile(_.bind(this.triggerSaveAs, this));
+    }, this));
+
+    var loadProjectFromFile = this.domRoot.find('.load-project-from-file');
+    loadProjectFromFile.on('change', _.bind(function (e) {
+        var files = e.target.files;
+        if (files.length > 0) {
+            this.multifileService.forEachFile(_.bind(function (file) {
+                this.removeFile(file.fileId);
+            }, this));
+
+            this.multifileService.loadProjectFromFile(files[0], _.bind(function (file) {
+                this.refresh();
+                if (file.filename === 'CMakeLists.txt') {
+                    // todo: find a way to toggle on CMake checkbox...
+                    this.editFile(file.fileId);
+                }
+            }, this));
+        }
+    }, this));
 
     this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
     this.bindClickToOpenPane(addExecutorButton, this.getConfigForNewExecutor);

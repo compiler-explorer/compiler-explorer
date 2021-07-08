@@ -401,6 +401,15 @@
 
   #filelisting
     .top-bar.btn-toolbar.bg-light(role="toolbar")
+      .btn-group.btn-group-sm.menu(role="group" aria-label="Menu")
+        button.dropdown-toggle.btn.btn-sm.btn-light.file-menu(type="button" title="File" aria-label="File" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+          span.fa.fa-save
+          span.hideable &nbsp;Project
+        .dropdown-menu 
+          input.dropdown-item.btn.btn-sm.btn-light.load-project-from-file(type="file" title="Load project from ZIP" aria-label="Load project from ZIP")
+          button.dropdown-item.btn.btn-sm.btn-light.save-project-to-file(type="file" title="Save project" aria-label="Save project")
+            span.dropdown-icon.fa.fa-save
+            | Save
       .btn-group.btn-group-sm.options(role="group" aria-label="Tree settings")
         button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-plus
@@ -421,7 +430,11 @@
           input.d-none(type="checkbox" checked=false)
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Language")
         select.change-language(title="Change the language" placeholder="Language" disabled=embedded && readOnly)
-    .tree
+    .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
+      input.cmake-arguments.form-control(type="text" placeholder="CMake arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .top-bar.btn-toolbar.bg-light.panel-outputfile.d-none(role="toolbar")
+      input.cmake-customOutputFilename.form-control(type="text" placeholder="output.s" size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+    .tree.v-scroll
       ul.list-group
         li.root.list-group-item.far-fa-folder
           .group-header Included files
