@@ -40,12 +40,14 @@ For example:
 libs.kvasir.name=Kvasir::mpl
 libs.kvasir.versions=trunk
 libs.kvasir.url=https://github.com/kvasir-io/Kvasir
+
 libs.boost.name=Boost
-libs.boost.versions=164:165
+libs.boost.versions=175:176
 libs.boost.url=http://www.boost.org/
+
 libs.rangesv3.name=range-v3
 libs.rangesv3.description=Range library for C++11/14/17
-libs.rangesv3.versions=trunk:030
+libs.rangesv3.versions=trunk:0110
 libs.rangesv3.url=https://github.com/ericniebler/range-v3
 ```
 
@@ -53,39 +55,45 @@ Now, for each declared version, CE will look for a `version` key, an human reada
 and `path`, a list consisting of the paths separated by colon `:` (or semicolon `;` on Windows) to add to the inclusion path of the library.
 Optionally, you can provide a `libpath`, a list consisting of paths to add to your linker path.
 
-This would leave us with: (Empty lines added for clarity. Please refrain from using them if you plan to PR us :D)
+This would leave us with:
 
 ```
+libs.boost.name=Boost
+libs.boost.versions=175:176
+libs.boost.url=http://www.boost.org/
+
+libs.boost.versions.175.version=1.75
+libs.boost.versions.175.path=/opt/compiler-explorer/libs/boost_1_75_0
+
+libs.boost.versions.176.version=1.76
+libs.boost.versions.176.path=/opt/compiler-explorer/libs/boost_1_76_0
+
+
 libs.kvasir.name=Kvasir::mpl
 libs.kvasir.versions=trunk
 libs.kvasir.url=https://github.com/kvasir-io/Kvasir
 
 libs.kvasir.versions.trunk.version=trunk
-# Note how there are 2 paths defined for Kvasir in our case (Example usage!)
+# Note how there are 2 paths defined for Kvasir in our case
+# So that both will be added to the include paths (Example usage!)
 libs.kvasir.versions.trunk.path=/opt/compiler-explorer/libs/kvasir/mpl/trunk/src/kvasir:/opt/compiler-explorer/libs/kvasir/mpl/trunk/src
 
 
-libs.boost.name=Boost
-libs.boost.versions=164:165
-libs.boost.url=http://www.boost.org/
-
-libs.boost.versions.164.version=1.64
-libs.boost.versions.165.version=1.65
-
-libs.boost.versions.164.path=/opt/compiler-explorer/libs/boost_1_64_0
-libs.boost.versions.165.path=/opt/compiler-explorer/libs/boost_1_65_0
-
-
 libs.rangesv3.name=range-v3
-libs.rangesv3.versions=trunk:030
+libs.rangesv3.versions=trunk:0110
 libs.rangesv3.url=https://github.com/ericniebler/range-v3
 
 libs.rangesv3.versions.trunk.version=trunk
-libs.rangesv3.versions.030.version=0.3.0
-
 libs.rangesv3.versions.trunk.path=/opt/compiler-explorer/libs/rangesv3/trunk/include
-libs.rangesv3.versions.030.path=/opt/compiler-explorer/libs/rangesv3/0.3.0/include
+
+libs.rangesv3.versions.0110.version=0.11.0
+libs.rangesv3.versions.0110.path=/opt/compiler-explorer/libs/rangesv3/0.11.0/include
 ```
+
+If you're adding a new library and plan to submit a PR for it, please make sure that its identifier appears in alphabetical order
+ in the `libs` property, and put all its releated configuration in that same order when defining it.
+ This helps us keep the config manageable until further automation can be implemented. Thank you!
+
 
 ## Setting default libraries
 
