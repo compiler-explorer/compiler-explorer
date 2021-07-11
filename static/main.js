@@ -384,6 +384,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     if (config.maximisedItemId !== '__glMaximised') return;
 
     var found = false;
+
     function impl(component) {
         if (component.id === '__glMaximised') {
             found = true;
@@ -573,6 +574,15 @@ function start() {
         });
         window.open(sponsor.url);
     };
+
+    if (options.pageloadUrl) {
+        setTimeout(function () {
+            var visibleIcons = $('.ces-icon:visible').map(function (index, value) {
+                return value.dataset.statsid;
+            }).get().join(',');
+            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+        }, 5000);
+    }
 
     sizeRoot();
     new Sharing(layout);
