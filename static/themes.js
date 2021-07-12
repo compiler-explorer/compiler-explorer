@@ -47,7 +47,7 @@ monaco.editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
     rules: [
-        { token: 'identifier.definition.cppx-blue', foreground: '004400', fontStyle: 'bold' },
+        { token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold' },
     ],
 });
 
@@ -55,7 +55,7 @@ monaco.editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-        { token: 'identifier.definition.cppx-blue', foreground: 'bbccbb', fontStyle: 'bold' },
+        { token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold' },
     ],
 });
 
