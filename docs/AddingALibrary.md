@@ -91,7 +91,7 @@ libs.rangesv3.versions.0110.path=/opt/compiler-explorer/libs/rangesv3/0.11.0/inc
 ```
 
 If you're adding a new library and plan to submit a PR for it, please make sure that its identifier appears in alphabetical order
- in the `libs` property, and put all its releated configuration in that same order when defining it.
+ in the `libs` property. You should also put all its related configuration in that same order when defining it.
  This helps us keep the config manageable until further automation can be implemented. Thank you!
 
 
