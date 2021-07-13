@@ -10,7 +10,6 @@ extends:
   - ../.eslint-license-header.yml
   - eslint:recommended
   - plugin:requirejs/recommended
-  - prettier
 env:
   browser: true
   node: true
@@ -29,6 +28,10 @@ rules:
   eqeqeq:
     - error
     - smart
+  indent:
+    - error
+    - 4
+    - SwitchCase: 1
   max-len:
     - error
     - 120
