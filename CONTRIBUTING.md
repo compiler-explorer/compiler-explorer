@@ -60,7 +60,7 @@ In the server code, the `app.js` sets up a basic `express`
  `lib/asm-parser.js`, and similar, files.
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as
- the container. If you look at some of the components like the
+ the container. If you look at some components like the
  `static/compiler.js`, you'll see the general flow.
  Any state stored makes it into the URL, so be careful not to stash
  anything too big in there.

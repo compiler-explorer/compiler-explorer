@@ -52,14 +52,14 @@ info:   Listening on http://localhost:10240/
 info: =======================================
 ```
 
-Now point your favorite web browser at http://localhost:10240
-and you should be done!
+Now point your favorite web browser at http://localhost:10240, and you should be done!
 
 You only have to run `npm install` the first time;
 every time after that, you should just be able to run `npm start`.
 
 ## Debugging using VSCode
-Similar to [WindowsSubsystemForLinux](WindowsSubsystemForLinux.md), the following is a `launch.json` that works for attaching to an instance of CE that was launched with `npm run-script debugger` (launches with the `--inspect` flag). 
+Similar to [WindowsSubsystemForLinux](WindowsSubsystemForLinux.md),
+the following is a `launch.json` that works for attaching to an instance of CE that was launched with `npm run-script debugger` (launches with the `--inspect` flag). 
 
 
 ```json
@@ -82,7 +82,8 @@ Similar to [WindowsSubsystemForLinux](WindowsSubsystemForLinux.md), the followin
 
 Launch CE with `npm run-script debugger` to have node listen on port 9229. 
 
-Because this only attaches to the process, as opposed to launching the process, in order to debug startup code you need to attach while npm is starting up.  The `debugger` script also enables `debug` logging level so debug print statements can be seen during the CE startup and run.
+Because this only attaches to the process, as opposed to launching the process, in order to debug startup code you need to attach while npm is starting up.
+The `debugger` script also enables `debug` logging level so debug print statements can be seen during the CE startup and run.
 
 ### Setting up binary mode and execution
 
@@ -90,7 +91,7 @@ To create executables with Visual C++, it's required to install the Windows SDK.
 
 You can find the Windows 10 SDK [here](https://developer.microsoft.com/en-US/windows/downloads/windows-10-sdk)
 
-When you've installed the SDK, you'll need to setup the library and include paths in Compilers Explorer.
+When you've installed the SDK, you'll need to set up the library and include paths in Compilers Explorer.
 Make sure that in the previously discussed c++.local.properties you have added at least:
  * to includePath
    - Windows Kits/10/include/*version*/ucrt
@@ -113,7 +114,8 @@ you can find it for download [here](https://sourceforge.net/projects/mingw-w64/)
 
 When you use the installer for MingW-64, make sure you select the right architecture during installation.
 
-When you use the zipped version, after unzipping you will need to add the bin folder to your Windows PATHS environment variable. Be aware that this PATH needs to be added before any other folders that might contain an objdump. You cannot just point to the .exe as the objdumper without having the proper PATH set, it will not work.
+When you use the zipped version, after unzipping you will need to add the bin folder to your Windows PATHS environment variable.
+Be aware that this PATH needs to be added before any other folders that might contain an objdump. You cannot just point to the .exe as the objdumper without having the proper PATH set, it will not work.
 
 When you have everything installed, you can add to your properties file the following:
 ```

@@ -27,11 +27,11 @@ libs=kvasir:boost:rangesv3
 
 This says there are three libraries with identifiers `kvasir`, `boost` and `rangesv3`. CE will look for the key named
 `libs.ID.versions`, `libs.ID.name` and the optionals `libs.ID.url` & `libs.ID.description`. The `ID` is the identifier (The one we just set) of the library being looked up.
-The `name` key expects the human readable name of the library (Note that you can use spaces here!)
+The `name` key expects the human-readable name of the library (Note that you can use spaces here!).
 The `versions` key expects another list, akin to the libs key itself. This time, you have to define the available versions
 for each library.
 The `url` key expects an unescaped url, where users can go to learn more about the library (This is usually the project's homepage, or in its
-absence, the GitHub repo)
+absence, the GitHub repo).
 The `description` key should be use as an extremely short description of the library. Usually used to spell the library's full name in cases where the `name` key is an acronym.
 
 For example:
@@ -51,7 +51,7 @@ libs.rangesv3.versions=trunk:0110
 libs.rangesv3.url=https://github.com/ericniebler/range-v3
 ```
 
-Now, for each declared version, CE will look for a `version` key, an human readable string representing the corresponding version,
+Now, for each declared version, CE will look for a `version` key, a human-readable string representing the corresponding version,
 and `path`, a list consisting of the paths separated by colon `:` (or semicolon `;` on Windows) to add to the inclusion path of the library.
 Optionally, you can provide a `libpath`, a list consisting of paths to add to your linker path.
 
@@ -110,7 +110,7 @@ Note that the site won't complain if invalid key/version pairs are set. Repeatin
 It should be pretty straightforward to add a library of your own. Create a `etc/config/c++.local.properties` file and override the
 `libs` list to include your own library, and its configuration.
 
-Once you've done that, running `make` should pick up the configuration and you should be able to use them from the library dropdown
+Once you've done that, running `make` should pick up the configuration, and you should be able to use them from the library dropdown
 on the compiler view (The book icon)
 
 If you're looking to add libraries for another language, obviously create the `etc/config/LANG.local.properties` in
@@ -164,7 +164,7 @@ Remember to also add the library dependencies following the same steps. It's on 
 
 ## Adding compilers with limited library support
 
-If you have libraries that you don't want to be shown with a compiler, you can limit the libraries per compiler. By default all libraries are visible for all compilers.
+If you have libraries that you don't want to be shown with a compiler, you can limit the libraries per compiler. By default, all libraries are visible for all compilers.
 
 For example if you only want all versions of fmt, and version 0.3.0 of Ranges, you can do the following:
 ```

@@ -6,7 +6,7 @@
 # Compiler Explorer
 
 **Compiler Explorer** is an interactive compiler exploration website. Edit C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/) or other language code, and see how that code looks after being compiled in real time.
-  Multiple compilers are supported, many different tools and visualations are available, and the UI layout
+  Multiple compilers are supported, many different tools and visualisations are available, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
@@ -48,7 +48,7 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
  `make` ought to get you up and running with an Explorer running on port 10240
  on your local machine: [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact
  us, as we consider it important you can quickly and easily get running.
- Currently **Compiler Explorer**
+ Currently, **Compiler Explorer**
  [requires the latest LTS](CONTRIBUTING.md#node-version) `node` version
  (_v12_) installed, either on the path or at `NODE_DIR`
  (an environment variable or `make` parameter).
@@ -72,7 +72,7 @@ Some languages need extra tools to demangle them, e.g. `rust`, `d`, or `haskell`
 Configuring compiler explorer is achieved via configuration files in the `etc/config` directory. Values are
  `key=value`. Options in a `{type}.local.properties` file (where `{type}` is `c++` or similar) override anything in the
  `{type}.defaults.properties` file. There is a `.gitignore` file to ignore `*.local.*` files, so these won't be checked
- into git and you won't find yourself fighting with updated versions when you `git pull`. For more information see
+ into git, and you won't find yourself fighting with updated versions when you `git pull`. For more information see
  [Adding a Compiler](docs/AddingACompiler.md).
 
 A [Road map](docs/Roadmap.md) is available which gives a little insight into
@@ -102,7 +102,7 @@ You can find the API documentation [here](docs/API.md).
 ## Contact us
 
 We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
-Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) slack channel
+Compiler Explorer. We also have a presence on the [cpplang](https://cppalliance.org/slack/) Slack channel
 `#compiler_explorer` and we have [a public mailing list](https://groups.google.com/forum/#!forum/compiler-explorer-discussion).
 
 There's a development channel on the discord, and also a

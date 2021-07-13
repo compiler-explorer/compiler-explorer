@@ -4,8 +4,8 @@ This document will show a little insight on how to get the IAR ARM compiler work
 # Prerequisites
 To run the IAR ARM compiler you will need:
 
-- A valid installation of the IAR ARM compiler. [EWARM](https://www.iar.com/iar-embedded-workbench/#!?architecture=Arm) has a free 30 day trial on their website
-- Technically you need a license as well to run the compiler, however you can get by with the 30 day free trial, as you will be able to run the compiler for 30 days for free
+- A valid installation of the IAR ARM compiler. [EWARM](https://www.iar.com/iar-embedded-workbench/#!?architecture=Arm) has a free 30-day trial on their website
+- Technically you need a license as well to run the compiler, however you can get by with the 30-day free trial, as you will be able to run the compiler for 30 days for free
 - MinGW C++ toolchain for `c++filt` and `objdump`
 
 ## IAR ARM Compiler
@@ -26,7 +26,8 @@ We need to install this toolchain through [MSYS2](https://www.msys2.org/), as it
 Refer to the [readme](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsNative.md) on running Native on Windows for general setup of Compiler Explorer and other compilers.
 
 ## Setting up c++.local.properties
-The next step is to create a `c++.local.properties` file under `etc/config` folder. The next step is going to be different for everyone, as you can choose what compiler options you pass to the compiler and so on, but im going to paste my template here and you can just modify, what you need
+The next step is to create a `c++.local.properties` file under `etc/config` folder.
+The next step is going to be different for everyone, as you can choose what compiler options you pass to the compiler and so on, but im going to paste my template here, and you can just modify, what you need
 
 ```
 # Default settings for C++
@@ -54,7 +55,7 @@ needsMulti=false
 stubRe=\bmain\b
 stubText=int main(void){return 0;/*stub provided by Compiler Explorer*/}
 ```
-**Its important to note that the `compiler.iar8.32.4.compilerType` field is set to `ewarm` this will be the custom compiler key later on**
+**It's important to note that the `compiler.iar8.32.4.compilerType` field is set to `ewarm` this will be the custom compiler key later on**
 
 ## Running Compiler Explorer
 
