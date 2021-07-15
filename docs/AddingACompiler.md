@@ -25,7 +25,7 @@ compilers=gcc620:gcc720:&clang
 
 This says there are two compilers with identifiers `gcc620` and `gcc720`, and a group of compilers called `clang`. For the 
 compilers, CE will look for some keys named `compiler.ID.name` and `compiler.ID.exe` (and some others, detailed later). The `ID`
-is the identifier of the compiler being looked up. The `name` value is used as the human readable compiler name shown to users,
+is the identifier of the compiler being looked up. The `name` value is used as the human-readable compiler name shown to users,
 and the `exe` should be the path name of the compiler executable.
 
 For example:
@@ -98,7 +98,7 @@ Linux machine and add a proxy to the MSVC compiler, which is running on a remote
 
 * Setup compiler explorer on your Linux host as usual
 * Follow [this guide](https://github.com/compiler-explorer/compiler-explorer/blob/main/docs/WindowsNative.md)
-to setup another compiler explorer instance on your Windows host
+to set up another compiler explorer instance on your Windows host
 * Add your Windows compiler explorer as a proxy to your Linux compiler explorer. You can simply modify your
 `etc/config/c++.local.properties` on your Linux host
 
@@ -106,7 +106,7 @@ to setup another compiler explorer instance on your Windows host
 compilers=&gcc:&clang:myWindowsHost@10240
 ```
 
-Yes it is the `@` symbol rather than the `:` before the port number. Restart the Linux compiler explorer and you will be able to
+Yes it is the `@` symbol rather than the `:` before the port number. Restart the Linux compiler explorer, and you will be able to
 see the MSVC compiler in the compiler list.
 
 ## Adding a new compiler to the live site

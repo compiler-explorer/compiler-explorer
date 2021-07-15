@@ -208,7 +208,7 @@ if (defArgs.wantedLanguage) {
     languages = filteredLangs;
 }
 
-if (languages.length === 0) {
+if (Object.keys(languages).length === 0) {
     logger.error('Trying to start Compiler Explorer without a language');
 }
 

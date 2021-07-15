@@ -49,10 +49,12 @@ require('../modes/clean-mode');
 require('../modes/cuda-mode');
 require('../modes/fortran-mode');
 require('../modes/openclc-mode');
+require('../modes/cpp-for-opencl-mode');
 require('../modes/zig-mode');
 require('../modes/nc-mode');
 require('../modes/ada-mode');
 require('../modes/nim-mode');
+require('../modes/crystal-mode');
 
 
 var loadSave = new loadSaveLib.LoadSave();

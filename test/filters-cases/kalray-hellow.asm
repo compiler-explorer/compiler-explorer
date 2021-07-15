@@ -26,7 +26,7 @@ toto:
 	make $r0 = .LC0
 	;;
 	lw $r1 = 16[$r10]
-	;;
+        ;;      # (end cycle 3)
 	lw $r2 = 20[$r10]
 	;;
 	lw $r6 = 32[$r10]

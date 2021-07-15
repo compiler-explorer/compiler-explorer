@@ -1,5 +1,5 @@
 If you need to update the x86 asm documentation, just run `etc/scripts/docenizer.py`, which requires:
- - Python 2.7 with BeautifulSoup
+ - Python 3.x with BeautifulSoup
 
 You can use some options in the script:
  - `-o`/`--outputpath` - Final destination of the generated JavaScript file
