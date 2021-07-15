@@ -157,6 +157,10 @@ function Compiler(hub, container, state) {
         eventCategory: 'OpenViewPane',
         eventAction: 'Compiler',
     });
+
+    if (this.sourceTreeId) {
+        this.compile();
+    }
 }
 
 Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
@@ -612,7 +616,8 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         files: tree.getFiles(),
     };
 
-    var cmakeProject = tree.multifileService.getState().isCMakeProject;
+    var treeState = tree.currentState();
+    var cmakeProject = treeState.isCMakeProject;
 
     if (bypassCache) request.bypassCache = true;
     if (!this.compiler) {
@@ -620,9 +625,9 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
     } else if (cmakeProject && request.source === '') {
         this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
     } else {
-        if (tree.multifileService.getState().isCMakeProject) {
-            request.options.compilerOptions.cmakeArgs = tree.multifileService.cmakeArgsGetFunc();
-            request.options.compilerOptions.customOutputFilename = tree.multifileService.customOutputFilenameGetFunc();
+        if (cmakeProject) {
+            request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+            request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
             this.sendCMakeCompile(request);
         } else {
             this.sendCompile(request);
@@ -1831,8 +1836,8 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     });
 };
 
-Compiler.prototype.onRequestCompilation = function (editorId) {
-    if (editorId === this.sourceEditorId) {
+Compiler.prototype.onRequestCompilation = function (editorId, treeId) {
+    if ((editorId === this.sourceEditorId) || (treeId && treeId === this.sourceTreeId)) {
         this.compile();
     }
 };

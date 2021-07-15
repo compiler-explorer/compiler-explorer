@@ -27,8 +27,6 @@ export class MultifileService {
     private hub: any;
     private newFileId: number;
     private alertSystem: any;
-    public cmakeArgsGetFunc: () => string;
-    public customOutputFilenameGetFunc: () => string;
     private validExtraFilenameExtensions: string[];
     private defaultLangIdUnknownExt: string;
     private cmakeLangId: string;

@@ -59,6 +59,9 @@ function Tree(hub, state, container) {
 
     this.langKeys = _.keys(languages);
 
+    this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
+    this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
+
     var usableLanguages = _.filter(languages, function (language) {
         return hub.compilerService.compilersByLang[language.id];
     });
@@ -79,14 +82,7 @@ function Tree(hub, state, container) {
     this.busyCompilers = {};
     this.asmByCompiler = {};
 
-    this.multifileService.cmakeArgsGetFunc = _.bind(function () {
-        return this.domRoot.find('.cmake-arguments').val();
-    }, this);
-
-    this.multifileService.customOutputFilenameGetFunc = _.bind(function () {
-        return this.domRoot.find('.cmake-customOutputFilename').val();
-    }, this);
-
+    this.initInputs(state);
     this.initButtons(state);
     this.initCallbacks();
     this.onSettingsChange(this.settings);
@@ -104,7 +100,6 @@ function Tree(hub, state, container) {
     });
 
     this.updateTitle();
-    this.updateState();
     this.onLanguageChange(this.multifileService.getLanguageId());
 
     ga.proxy('send', {
@@ -117,13 +112,41 @@ function Tree(hub, state, container) {
     this.eventHub.emit('findEditors');
 }
 
-Tree.prototype.updateState = function () {
+Tree.prototype.initInputs = function (state) { 
+    if (state) {
+        if (state.cmakeArgs) {
+            this.cmakeArgsInput.val(state.cmakeArgs);
+        }
+
+        if (state.customOutputFilename) {
+            this.customOutputFilenameInput.val(state.customOutputFilename);
+        }
+    }
+};
+
+Tree.prototype.getCmakeArgs = function () {
+    return this.cmakeArgsInput.val();
+};
+
+Tree.prototype.getCustomOutputFilename = function () {
+    return this.customOutputFilenameInput.val();
+};
+
+Tree.prototype.currentState = function () {
     var state = Object.assign({
         id: this.id,
+        cmakeArgs: this.getCmakeArgs(),
+        customOutputFilename: this.getCustomOutputFilename(),
     }, this.multifileService.getState());
+
+    return state;
+};
+
+Tree.prototype.updateState = function () {
+    var state = this.currentState();
     this.container.setState(state);
 
-    this.updateButtons();
+    this.updateButtons(state);
 };
 
 Tree.prototype.initCallbacks = function () {
@@ -142,6 +165,21 @@ Tree.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
 
     this.toggleCMakeButton.on('change', _.bind(this.onToggleCMakeChange, this));
+
+    this.cmakeArgsInput.on('change', _.bind(this.updateCMakeArgs, this));
+    this.customOutputFilenameInput.on('change', _.bind(this.updateCustomOutputFilename, this));
+};
+
+Tree.prototype.updateCMakeArgs = function () {
+    this.updateState();
+
+    this.debouncedEmitChange();
+};
+
+Tree.prototype.updateCustomOutputFilename = function () {
+    this.updateState();
+
+    this.debouncedEmitChange();
 };
 
 Tree.prototype.onToggleCMakeChange = function () {
@@ -151,14 +189,6 @@ Tree.prototype.onToggleCMakeChange = function () {
     this.domRoot.find('.cmake-project').prop('title',
         '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
     this.updateState();
-
-    if (isOn) {
-        this.domRoot.find('.cmake-arguments').parent().removeClass('d-none');
-        this.domRoot.find('.cmake-customOutputFilename').parent().removeClass('d-none');
-    } else {
-        this.domRoot.find('.cmake-arguments').parent().addClass('d-none');
-        this.domRoot.find('.cmake-customOutputFilename').parent().addClass('d-none');
-    }
 };
 
 Tree.prototype.onLanguageChange = function (newLangId) {
@@ -180,6 +210,12 @@ Tree.prototype.sendCompilerChangesToEditor = function (compilerId) {
             this.eventHub.emit('treeCompilerEditorExcludeChange', this.id, file.editorId, compilerId);
         }
     }, this));
+
+    this.eventHub.emit('resendCompilation', compilerId);
+};
+
+Tree.prototype.sendCompileRequests = function () {
+    this.eventHub.emit('requestCompilation', false, this.id);
 };
 
 Tree.prototype.isEditorPartOfProject = function (editorId) {
@@ -257,7 +293,6 @@ Tree.prototype.removeFile = function (fileId) {
 Tree.prototype.addRowToTreelist = function (file) {
     var item = $(this.rowTemplate.children()[0].cloneNode(true));
     var stagingButton = item.find('.stage-file');
-    var editButton = item.find('.edit-file');
     var renameButton = item.find('.rename-file');
     var deleteButton = item.find('.delete-file');
 
@@ -276,8 +311,8 @@ Tree.prototype.addRowToTreelist = function (file) {
         item.find('.filename').html('Unknown file');
     }
 
-    editButton.on('click', _.bind(function (e) {
-        var fileId = $(e.currentTarget).parent('li').data('fileId');
+    item.on('click', _.bind(function (e) {
+        var fileId = $(e.currentTarget).data('fileId');
         this.editFile(fileId);
     }, this));
 
@@ -290,7 +325,14 @@ Tree.prototype.addRowToTreelist = function (file) {
 
     deleteButton.on('click', _.bind(function (e) {
         var fileId = $(e.currentTarget).parent('li').data('fileId');
-        this.removeFile(fileId);
+        var file = this.multifileService.getFileByFileId(fileId);
+        if (file) {
+            this.alertSystem.ask('Delete file', 'Are you sure you want to delete ' + file.filename, {
+                yes: _.bind(function () {
+                    this.removeFile(fileId);
+                }, this)
+            });
+        }
     }, this));
 
     if (file.isIncluded) {
@@ -336,6 +378,8 @@ Tree.prototype.editFile = function (fileId) {
         var editor = this.hub.getEditorById(file.editorId);
         this.hub.activateTabForContainer(editor.container);
     }
+
+    this.sendChangesToAllEditors();
 };
 
 Tree.prototype.moveToInclude = function (fileId) {
@@ -511,14 +555,23 @@ Tree.prototype.onCompileResponse = function (compilerId, compiler, result) {
     this.numberUsedLines();
 };
 
-Tree.prototype.updateButtons = function () {
-    // this.languageBtn ...
+Tree.prototype.updateButtons = function (state) {
+    if (state.isCMakeProject) {
+        this.cmakeArgsInput.parent().removeClass('d-none');
+        this.customOutputFilenameInput.parent().removeClass('d-none');
+    } else {
+        this.cmakeArgsInput.parent().addClass('d-none');
+        this.customOutputFilenameInput.parent().addClass('d-none');
+    }
 };
 
 Tree.prototype.resize = function () {
 };
 
-Tree.prototype.onSettingsChange = function (/*newSettings*/) {
+Tree.prototype.onSettingsChange = function (newSettings) {
+    this.debouncedEmitChange = _.debounce(_.bind(function () {
+        this.sendCompileRequests();
+    }, this), newSettings.delayAfterChange);
 };
 
 Tree.prototype.getPaneName = function () {

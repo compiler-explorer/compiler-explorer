@@ -1016,14 +1016,17 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId, treeId) {
                 }
             }
         }
-        this.maybeEmitChange(true, compilerId);
-        this.ourCompilers[compilerId] = true;
 
         if (treeId > 0) {
             if (!this.treeCompilers[treeId]) {
                 this.treeCompilers[treeId] = {};
             }
             this.treeCompilers[treeId][compilerId] = true;
+        }
+        this.ourCompilers[compilerId] = true;
+
+        if (!treeId) {
+            this.maybeEmitChange(true, compilerId);
         }
     }
 };
