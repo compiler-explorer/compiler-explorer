@@ -133,13 +133,11 @@ Tree.prototype.getCustomOutputFilename = function () {
 };
 
 Tree.prototype.currentState = function () {
-    var state = Object.assign({
+    return Object.assign({
         id: this.id,
         cmakeArgs: this.getCmakeArgs(),
         customOutputFilename: this.getCustomOutputFilename(),
     }, this.multifileService.getState());
-
-    return state;
 };
 
 Tree.prototype.updateState = function () {
@@ -330,7 +328,7 @@ Tree.prototype.addRowToTreelist = function (file) {
             this.alertSystem.ask('Delete file', 'Are you sure you want to delete ' + file.filename, {
                 yes: _.bind(function () {
                     this.removeFile(fileId);
-                }, this)
+                }, this),
             });
         }
     }, this));
