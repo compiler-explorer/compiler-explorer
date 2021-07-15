@@ -47,7 +47,7 @@ function Flags(hub, container, state) {
     this.settings = JSON.parse(local.get('settings', '{}'));
 
     this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
-        value: state.compilerFlags.replaceAll(' ', '\n'),
+        value: state.compilerFlags ? state.compilerFlags.replaceAll(' ', '\n') : '',
         language: 'plaintext',
         readOnly: false,
         glyphMargin: true,
@@ -143,6 +143,7 @@ Flags.prototype.currentState = function () {
         id: this._compilerid,
         editorid: this._editorid,
         selection: this.selection,
+        compilerFlags: this.getOptions(),
     };
     this.fontScale.addState(state);
     return state;

@@ -96,7 +96,7 @@ function Compiler(hub, container, state) {
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
     this.optViewOpen = false;
-    this.flagsViewOpen = false;
+    this.flagsViewOpen = state.flagsViewOpen || false;
     this.cfgViewOpen = false;
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
@@ -202,6 +202,10 @@ Compiler.prototype.initPanerButtons = function () {
         return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
             this.optionsField.val());
     }, this);
+
+    if (this.flagsViewOpen) {
+        createFlagsView();
+    }
 
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
@@ -928,6 +932,8 @@ Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
                 }
             }, this)
         );
+
+        this.saveState();
     }
 };
 
@@ -1044,6 +1050,7 @@ Compiler.prototype.onFlagsViewOpened = function (id) {
         this.optionsField.val('see detailed flags window');
         this.flagsButton.prop('disabled', this.flagsViewOpen);
         this.compile();
+        this.saveState();
     }
 };
 
@@ -1539,6 +1546,7 @@ Compiler.prototype.currentState = function () {
         libs: this.libsWidget.get(),
         lang: this.currentLangId,
         selection: this.selection,
+        flagsViewOpen: this.flagsViewOpen,
     };
     this.fontScale.addState(state);
     return state;
