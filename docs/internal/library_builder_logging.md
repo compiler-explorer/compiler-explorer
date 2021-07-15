@@ -2,7 +2,7 @@ The library build status is accessible from https://conan.compiler-explorer.com/
 
 # build prerequisites
 
-The buildprocess of libraries (started by https://github.com/compiler-explorer/infra/blob/main/admin-daily-builds.sh)
+The build process of libraries (started by https://github.com/compiler-explorer/infra/blob/main/admin-daily-builds.sh)
 has a couple of safeguards to not build libraries allday everyday, namely:
 
 * The compiler needs to have supportBinary=true on in the current https://github.com/compiler-explorer/compiler-explorer/blob/main/etc/config/c%2B%2B.amazon.properties

@@ -80,7 +80,7 @@ dev: prereqs ## Runs the site as a developer; including live reload support and 
 
 debug: export NODE_ENV=development
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js --debug $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' -n exit --inspect 9229 --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js --debug $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: export NODE_ENV=production

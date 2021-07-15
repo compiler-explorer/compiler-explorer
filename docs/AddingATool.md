@@ -25,7 +25,7 @@ The `type` of the tool represents the stage in which the tool will run:
 * postcompilation - when running a tool on the assembly or a binary
 
 The `exclude` property is to indicate which compilers are proven to be incompatible with the tool.
-You can supply the full id of the compiler or a partial id (for example 'arm' to exclude all arm compilers).
+You can supply the full id of the compiler, or a partial id (for example 'arm' to exclude all arm compilers).
 
 The `class` of the tool says which javascript class is needed to run the tool and process its output. The folder _lib/tooling_ is used for these classes.
 
@@ -100,4 +100,4 @@ The `options` are the arguments the user gave for the compilation.
 
 The `outputFilename` is always filled, but not guaranteed to exist, for example when the compilation has failed.
 
-The `executableFilename` is always filled, but does not guarantee the existance of an executable.
+The `executableFilename` is always filled, but does not guarantee the existence of an executable.
