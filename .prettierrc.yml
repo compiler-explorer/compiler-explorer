@@ -1,0 +1,14 @@
+trailingComma: all
+printWidth: 80
+singleQuote: true
+arrowParens: avoid
+tabWidth: 4
+bracketSpacing: false
+requirePragma: true
+overrides:
+  - files: '*.{yml,json}'
+    options:
+      tabWidth: 2
+  - files: 'static/**/*'
+    options:
+      trailingComma: es5

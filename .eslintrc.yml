@@ -13,6 +13,7 @@ extends:
   - plugin:import/recommended
   - plugin:node/recommended
   - plugin:unicorn/recommended
+  - prettier
 env:
   mocha: true
   node: true
@@ -44,10 +45,6 @@ rules:
         order: asc
         caseInsensitive: true
       newlines-between: always
-  indent:
-    - error
-    - 4
-    - SwitchCase: 1
   max-len:
     - error
     - 120
