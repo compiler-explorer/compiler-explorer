@@ -923,6 +923,7 @@ Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
         this.flagsViewOpen = false;
         this.optionsField.val(compilerFlags);
         this.optionsField.prop('disabled', this.flagsViewOpen);
+        this.optionsField.prop('placeholder', '');
         this.flagsButton.prop('disabled', this.flagsViewOpen);
 
         this.compilerService.requestPopularArguments(this.compiler.id, compilerFlags).then(
@@ -1047,7 +1048,8 @@ Compiler.prototype.onFlagsViewOpened = function (id) {
         this.flagsViewOpen = true;
         this.handlePopularArgumentsResult(false);
         this.optionsField.prop('disabled', this.flagsViewOpen);
-        this.optionsField.val('see detailed flags window');
+        this.optionsField.val('');
+        this.optionsField.prop('placeholder', 'see detailed flags window');
         this.flagsButton.prop('disabled', this.flagsViewOpen);
         this.compile();
         this.saveState();
@@ -1452,8 +1454,7 @@ Compiler.prototype.initCallbacks = function () {
 };
 
 Compiler.prototype.onOptionsChange = function (options) {
-    // Check against our placeholder test to avoid a race condition
-    if (this.options !== options && options !== 'see detailed flags window') {
+    if (this.options !== options) {
         this.options = options;
         this.saveState();
         this.compile();
