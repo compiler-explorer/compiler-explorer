@@ -100,6 +100,8 @@ From oldest to newest contributor, we would like to thank:
 - [Dan Okken](https://github.com/okkenator)
 - [Shivam Gupta](https://github.com/xgupta)
 - [Tamir Bahar](https://github.com/tmr232)
+- [Jason Meisel](https://github.com/jasonmeisel)
+- [Nabeel Omer](https://github.com/nabeelomer)
 - [Daniel Below](https://github.com/DanielBelow)
 - [Oleksandr Muliar](https://github.com/msdinit)
 - [Quinton Miller](https://github.com/HertzDevil)
