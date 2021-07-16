@@ -1124,11 +1124,17 @@ Compiler.prototype.supportsTool = function (toolId) {
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
         var args = '';
+        var monacoStdin = false;
         var langTools = options.tools[this.currentLangId];
-        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
-            args = langTools[toolId].tool.args;
+        if (langTools && langTools[toolId] && langTools[toolId].tool){
+            if (langTools[toolId].tool.args !== undefined) {
+                args = langTools[toolId].tool.args;
+            }
+            if (langTools[toolId].tool.monacoStdin !== undefined) {
+                monacoStdin = langTools[toolId].tool.monacoStdin;
+            }
         }
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin);
     }, this);
 
     this.container.layoutManager

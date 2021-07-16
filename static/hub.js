@@ -31,6 +31,7 @@ var compiler = require('./panes/compiler');
 var executor = require('./panes/executor');
 var output = require('./panes/output');
 var tool = require('./panes/tool');
+var toolInputView = require('./panes/tool-input-view');
 var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
@@ -98,6 +99,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getToolViewWith().componentName,
         function (container, state) {
             return self.toolFactory(container, state);
+        });
+    layout.registerComponent(Components.getToolInputViewWith().componentName,
+        function (container, state) {
+            return self.toolInputViewFactory(container, state);
         });
     layout.registerComponent(diff.getComponent().componentName,
         function (container, state) {
@@ -197,6 +202,10 @@ Hub.prototype.outputFactory = function (container, state) {
 
 Hub.prototype.toolFactory = function (container, state) {
     return new tool.Tool(this, container, state);
+};
+
+Hub.prototype.toolInputViewFactory = function (container, state) {
+    return new toolInputView.ToolInputView(this, container, state);
 };
 
 Hub.prototype.diffFactory = function (container, state) {
