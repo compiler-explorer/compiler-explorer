@@ -1085,7 +1085,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('', '');
+    this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -1525,10 +1525,11 @@ Compiler.prototype.getPaneName = function () {
 Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
+    var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion, compilerNotification);
+    this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1635,15 +1636,36 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     this.fullCompilerName.popover('dispose');
     // `notification` contains HTML from a config file, so is 'safe'.
     // `version` comes from compiler output, so isn't, and is escaped.
+    var bodyContent = $('<div>');
+    var versionContent = $('<div>')
+        .html(_.escape(version.version));
+    bodyContent.append(versionContent);
+    if (version.fullVersion) {
+        var hiddenSection = $('<div>');
+        var hiddenVersionText = $('<div>')
+            .html(_.escape(version.fullVersion))
+            .hide();
+        var clickToExpandContent = $('<a>')
+            .attr('href', 'javascript:;')
+            .text('Toggle full version output')
+            .on('click', _.bind(function () {
+                versionContent.toggle();
+                hiddenVersionText.toggle();
+                this.fullCompilerName.popover('update');
+            }, this));
+        hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
+        bodyContent.append(hiddenSection);
+    }
     this.fullCompilerName.popover({
         html: true,
-        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+        title: notification ?
+            $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
             'Full compiler version',
-        content: _.escape(version) || '',
-        template: '<div class="popover' +
-            (version ? ' compiler-options-popover' : '') +
-            '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+        content: bodyContent,
+        template: '<div class="popover' + (version ? ' compiler-options-popover' : '') + '" role="tooltip">' +
+            '<div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+            '</div>',
     });
 };
 
