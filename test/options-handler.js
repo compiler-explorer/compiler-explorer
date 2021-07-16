@@ -64,6 +64,7 @@ const libProps = {
     'libs.someotherlib.versions.trunk.staticliblink': 'someotherlib',
     'libs.someotherlib.versions.trunk.dependencies': 'c++fs',
     'libs.someotherlib.versions.trunk.alias': 'master',
+    'libs.someotherlib.versions.trunk.hidden': true,
 };
 
 if (process.platform === 'win32') {
@@ -148,13 +149,19 @@ describe('Options handler', () => {
                         options: [
                             '-DHELLO123',
                             '-DETC',
-                            '--some thing with spaces']},
+                            '--some thing with spaces'],
+                        hidden: false,
+                    },
                     onePath: {path: ['/dev/null'], version: 'one path', staticliblink: [], dependencies: [],
                         liblink: ['hello'],
-                        libpath: ['/lib/null'], alias: [], options: []},
+                        libpath: ['/lib/null'], alias: [], options: [],
+                        hidden: false,
+                    },
                     twoPaths: {path: ['/dev/null', '/dev/urandom'], staticliblink: [], dependencies: [],
                         liblink: ['hello1', 'hello2'],
-                        libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: [], options: []},
+                        libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: [], options: [],
+                        hidden: false,
+                    },
                 },
             },
             fs: {
@@ -176,6 +183,7 @@ describe('Options handler', () => {
                         staticliblink: ['c++fs', 'rt'],
                         dependencies: ['pthread'],
                         options: [],
+                        hidden: false,
                     },
                 },
             },
@@ -198,6 +206,7 @@ describe('Options handler', () => {
                         staticliblink: ['someotherlib'],
                         dependencies: ['c++fs'],
                         options: [],
+                        hidden: true,
                     },
                 },
             },
