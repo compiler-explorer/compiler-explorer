@@ -292,14 +292,19 @@ Tool.prototype.saveState = function () {
 
 Tool.prototype.setLanguage = function (languageId) {
     if (languageId) {
-        this.options.enableToggle('wrap', false);
+        // hook up the "wrap lines" button to monaco-editor
+        var self = this;
+        self.outputEditor.updateOptions({wordWrap: self.options.get().wrap ? "on" : "off"});
+        this.options.bindToggle('wrap', function (wrap) {
+            self.outputEditor.updateOptions({wordWrap: wrap ? "on" : "off"});
+        });
+
         monaco.editor.setModelLanguage(this.outputEditor.getModel(), languageId);
         this.outputEditor.setValue('');
         this.fontScale.setTarget(this.outputEditor);
         $(this.plainContentRoot).hide();
         $(this.editorContentRoot).show();
     } else {
-        this.options.enableToggle('wrap', true);
         this.plainContentRoot.empty();
         this.fontScale.setTarget('.content');
         $(this.editorContentRoot).hide();

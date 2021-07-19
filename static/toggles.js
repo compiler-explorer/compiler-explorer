@@ -118,6 +118,21 @@ Togglesv2.prototype.enableToggle = function (key, enable) {
     });
 };
 
+// binds the toggle event of a button to the given function
+Togglesv2.prototype.bindToggle = function (key, onToggle) {
+    this.buttons.each(function () {
+        var widget = $(this);
+        var button = $(widget.find('button'));
+        var bind = button.data('bind');
+        if (bind === key) {
+            var checkbox = widget.find('input:checkbox');
+            checkbox.on('change', function () {
+                onToggle(checkbox.is(':checked'));
+            });
+        }
+    });
+};
+
 Togglesv2.prototype._change = function (update) {
     var before = this.get();
     update();
