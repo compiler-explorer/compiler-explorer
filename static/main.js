@@ -49,6 +49,7 @@ var motd = require('./motd');
 var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var History = require('./history');
 var presentation = require('./presentation');
 
 //css
@@ -585,6 +586,8 @@ function start() {
     }
 
     sizeRoot();
+
+    History.trackHistory(layout);
     new Sharing(layout);
 }
 
