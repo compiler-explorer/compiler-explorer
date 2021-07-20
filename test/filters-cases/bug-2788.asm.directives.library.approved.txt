@@ -1,0 +1,508 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z4revcc:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        @ Function supports interworking."
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        @ args = 0, pretend = 0, frame = 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        @ frame_needed = 0, uses_anonymous_args = 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        @ link register save eliminated."
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 2
+      },
+      "text": "        sub     r3, r0, #65"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 2
+      },
+      "text": "        cmp     r3, #19"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 2
+      },
+      "text": "        ldrls   pc, [pc, r3, asl #2]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 3,
+        "file": null,
+        "line": 2
+      },
+      "text": "        b       .L7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L4:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L6",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L5",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L3",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L8:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 12
+      },
+      "text": "        mov     r0, #84"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": null,
+        "line": 14
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 10
+      },
+      "text": "        mov     r0, #65"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 10
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 8
+      },
+      "text": "        mov     r0, #67"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 8
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L6:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 6
+      },
+      "text": "        mov     r0, #71"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LVL7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": null,
+        "line": 6
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFE0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Letext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L3": 40,
+    ".L5": 45,
+    ".L6": 50,
+    ".L7": 37,
+    ".L8": 34,
+    "_Z4revcc": 2
+  }
+}

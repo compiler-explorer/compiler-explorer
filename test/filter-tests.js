@@ -81,13 +81,13 @@ function testFilter(filename, suffix, filters) {
 describe('Filter test cases', function () {
 
     describe('No filters', function () {
-        for (const x of cases)  testFilter(x, '.none', {});
+        for (const x of cases) testFilter(x, '.none', {});
     });
     describe('Directive filters', function () {
-        for (const x of cases)  testFilter(x, '.directives', {directives: true});
+        for (const x of cases) testFilter(x, '.directives', {directives: true});
     });
     describe('Directives and labels together', function () {
-        for (const x of cases)  testFilter(x, '.directives.labels', {directives: true, labels: true});
+        for (const x of cases) testFilter(x, '.directives.labels', {directives: true, labels: true});
     });
     describe('Directives, labels and comments', function () {
         for (const x of cases) {
@@ -107,10 +107,10 @@ describe('Filter test cases', function () {
         }
     });
     describe('Directives and comments', function () {
-        for (const x of cases)  testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
+        for (const x of cases) testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
     });
     describe('Directives and library code', function () {
-        for (const x of cases)  testFilter(x, '.directives.library', {directives: true, libraryCode: true});
+        for (const x of cases) testFilter(x, '.directives.library', {directives: true, libraryCode: true});
     });
     describe('Directives, labels, comments and library code', function () {
         for (const x of cases) {
