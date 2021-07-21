@@ -56,6 +56,7 @@ var shareServices = {
 };
 
 function filterComponentState(config, keysToRemove) {
+    keysToRemove = keysToRemove || ['selection'];
     function filterComponentStateImpl(component) {
         if (component.content) {
             for (var i = 0; i < component.content.length; i++) {
@@ -283,8 +284,7 @@ Sharing.prototype.onOpenModalPane = function (event) {
 };
 
 Sharing.prototype.onStateChanged = function () {
-    var layoutConfig = this.layout.toConfig();
-    var config = filterComponentState(layoutConfig, ['selection']);
+    var config = filterComponentState(this.layout.toConfig());
     this.ensureUrlIsNotOutdated(config);
     if (options.embedded) {
         var strippedToLast = window.location.pathname;
@@ -372,4 +372,5 @@ Sharing.prototype.isNavigatorClipboardAvailable = function () {
 
 module.exports = {
     Sharing: Sharing,
+    filterComponentState: filterComponentState,
 };
