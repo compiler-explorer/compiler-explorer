@@ -96,6 +96,7 @@ function Compiler(hub, container, state) {
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
     this.optViewOpen = false;
+    this.flagsViewOpen = state.flagsViewOpen || false;
     this.cfgViewOpen = false;
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
@@ -197,6 +198,15 @@ Compiler.prototype.initPanerButtons = function () {
             this.sourceEditorId);
     }, this);
 
+    var createFlagsView = _.bind(function () {
+        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
+            this.optionsField.val());
+    }, this);
+
+    if (this.flagsViewOpen) {
+        createFlagsView();
+    }
+
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
             this.sourceEditorId);
@@ -255,6 +265,19 @@ Compiler.prototype.initPanerButtons = function () {
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createOptView);
     }, this));
+
+    var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
+    this.container.layoutManager
+        .createDragSource(this.flagsButton, createFlagsView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.flagsButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createFlagsView);
+    }, this));
+
+    popularArgumentsMenu.append(this.flagsButton);
 
     this.container.layoutManager
         .createDragSource(this.astButton, createAstView)
@@ -834,6 +857,12 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
+Compiler.prototype.onCompilerFlagsChange = function (compilerId, compilerFlags) {
+    if (compilerId === this.id) {
+        this.onOptionsChange(compilerFlags);
+    }
+};
+
 Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
     if (this.id === compilerId) {
         var toolId = toolSettings.toolId;
@@ -886,6 +915,26 @@ Compiler.prototype.onOptViewClosed = function (id) {
         this.wantOptInfo = false;
         this.optViewOpen = false;
         this.optButton.prop('disabled', this.optViewOpen);
+    }
+};
+
+Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
+    if (this.id === id) {
+        this.flagsViewOpen = false;
+        this.optionsField.val(compilerFlags);
+        this.optionsField.prop('disabled', this.flagsViewOpen);
+        this.optionsField.prop('placeholder', '');
+        this.flagsButton.prop('disabled', this.flagsViewOpen);
+
+        this.compilerService.requestPopularArguments(this.compiler.id, compilerFlags).then(
+            _.bind(function (result) {
+                if (result && result.result) {
+                    this.handlePopularArgumentsResult(result.result);
+                }
+            }, this)
+        );
+
+        this.saveState();
     }
 };
 
@@ -994,6 +1043,19 @@ Compiler.prototype.onOptViewOpened = function (id) {
     }
 };
 
+Compiler.prototype.onFlagsViewOpened = function (id) {
+    if (this.id === id) {
+        this.flagsViewOpen = true;
+        this.handlePopularArgumentsResult(false);
+        this.optionsField.prop('disabled', this.flagsViewOpen);
+        this.optionsField.val('');
+        this.optionsField.prop('placeholder', 'see detailed flags window');
+        this.flagsButton.prop('disabled', this.flagsViewOpen);
+        this.compile();
+        this.saveState();
+    }
+};
+
 Compiler.prototype.onCfgViewOpened = function (id) {
     if (this.id === id) {
         this.cfgButton.prop('disabled', true);
@@ -1044,6 +1106,7 @@ Compiler.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
+    this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
@@ -1220,6 +1283,9 @@ Compiler.prototype.updateButtons = function () {
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
     this.optButton.prop('disabled', this.optViewOpen || !this.compiler.supportsOptOutput);
+    if(this.flagsButton) {
+        this.flagsButton.prop('disabled', this.flagsViewOpen);
+    }
     this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
     this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
     this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
@@ -1231,12 +1297,13 @@ Compiler.prototype.updateButtons = function () {
 };
 
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
-    var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
-    popularArgumentsMenu.html('');
+    var popularArgumentsMenu = $(this.domRoot.find('div.populararguments div.dropdown-menu'));
 
-    if (result) {
-        var addedOption = false;
+    while(popularArgumentsMenu.children().length > 1) {
+        popularArgumentsMenu.children()[1].remove();
+    }
 
+    if (result && !this.flagsViewOpen) {
         _.forEach(result, _.bind(function (arg, key) {
             var argumentButton = $(document.createElement('button'));
             argumentButton.addClass('dropdown-item btn btn-light btn-sm');
@@ -1261,16 +1328,8 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
             }, this));
 
             popularArgumentsMenu.append(argumentButton);
-            addedOption = true;
         }, this));
 
-        if (!addedOption) {
-            $('div.populararguments').hide();
-        } else {
-            $('div.populararguments').show();
-        }
-    } else {
-        $('div.populararguments').hide();
     }
 };
 
@@ -1289,6 +1348,7 @@ Compiler.prototype.initListeners = function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
     }, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
+    this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('colours', this.onColours, this);
     this.eventHub.on('resendCompilation', this.onResendCompilation, this);
@@ -1304,6 +1364,8 @@ Compiler.prototype.initListeners = function () {
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+    this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
+    this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
@@ -1485,6 +1547,7 @@ Compiler.prototype.currentState = function () {
         libs: this.libsWidget.get(),
         lang: this.currentLangId,
         selection: this.selection,
+        flagsViewOpen: this.flagsViewOpen,
     };
     this.fontScale.addState(state);
     return state;

@@ -126,6 +126,25 @@ module.exports = {
             },
         };
     },
+    getFlagsView: function () {
+        return {
+            type: 'component',
+            componentName: 'flags',
+            componentState: {},
+        };
+    },
+    getFlagsViewWith: function (id, compilerName, editorid, compilerFlags) {
+        return {
+            type: 'component',
+            componentName: 'flags',
+            componentState: {
+                id: id,
+                compilerName: compilerName,
+                editorid: editorid,
+                compilerFlags: compilerFlags,
+            },
+        };
+    },
     getAstView: function () {
         return {
             type: 'component',
