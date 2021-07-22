@@ -41,7 +41,6 @@ function ToolInputView(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#tool-input').html());
     this.source = state.source || '';
-    this._currentDecorations = [];
     var root = this.domRoot.find('.monaco-placeholder');
 
     this.settings = JSON.parse(local.get('settings', '{}'));
@@ -57,8 +56,8 @@ function ToolInputView(hub, container, state) {
     this._toolName = state.toolName;
     this._compilerId = state.compilerId;
     this._editorId = state.editorId;
-
-    this.awaitingInitialResults = false;
+    this.selection = state.selection || '';
+    this.shouldSetSelectionInitially = !!this.selection;
 
     this.initButtons(state);
     this.initCallbacks();
@@ -133,6 +132,7 @@ ToolInputView.prototype.currentState = function () {
         toolName: this._toolName,
         editorId: this._editorId,
         compilerId: this._compilerId,
+        selection: this.selection,
     };
     this.fontScale.addState(state);
     return state;
@@ -191,7 +191,10 @@ ToolInputView.prototype.onSettingsChange = function (newSettings) {
 };
 
 ToolInputView.prototype.onDidChangeCursorSelection = function (e) {
-    if (this.awaitingInitialResults) {
+    // On initialization this callback fires with the default selection
+    // overwriting any selection from state. If we are awaiting initial
+    // selection setting then don't update our selection.
+    if (!this.shouldSetSelectionInitially) {
         this.selection = e.selection;
         this.updateState();
     }
@@ -199,7 +202,14 @@ ToolInputView.prototype.onDidChangeCursorSelection = function (e) {
 
 ToolInputView.prototype.onSetToolInput = function (compilerId, editorId, toolId, value) {
     if (this._compilerId === compilerId && this._editorId === editorId && this._toolId === toolId) {
-        return this.editor.getModel().setValue(value);
+        var ret = this.editor.getModel().setValue(value);
+        if (this.shouldSetSelectionInitially && this.selection) {
+            this.editor.setSelection(this.selection);
+            this.editor.revealLinesInCenter(
+                this.selection.startLineNumber, this.selection.endLineNumber);
+            this.shouldSetSelectionInitially = false;
+        }
+        return ret;
     }
 };
 

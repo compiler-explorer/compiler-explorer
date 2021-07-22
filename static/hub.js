@@ -101,7 +101,7 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.toolFactory(container, state);
         });
-    layout.registerComponent(Components.getToolInputViewWith().componentName,
+    layout.registerComponent(Components.getToolInputView().componentName,
         function (container, state) {
             return self.toolInputViewFactory(container, state);
         });

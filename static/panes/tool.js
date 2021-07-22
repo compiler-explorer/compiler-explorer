@@ -61,9 +61,9 @@ function Tool(hub, container, state) {
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.badLangToolbar = this.domRoot.find('.bad-lang');
     this.compilerName = '';
-    this.monacoStdin = false;
-    this.monacoEditorOpen = false;
-    this.monacoEditorHasBeenAutoOpened = state.monacoEditorHasBeenAutoOpened;
+    this.monacoStdin = state.monacoStdin || false;
+    this.monacoEditorOpen = state.monacoEditorOpen || false;
+    this.monacoEditorHasBeenAutoOpened = state.monacoEditorHasBeenAutoOpened || false;
     this.monacoStdinField = '';
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -192,10 +192,6 @@ Tool.prototype.initArgs = function (state) {
         }
     }
 
-    this.monacoStdin = state.monacoStdin || false;
-    this.monacoEditorOpen = state.monacoEditorOpen || false;
-    this.monacoEditorHasBeenAutoOpened = state.monacoEditorHasBeenAutoOpened || false;
-
     if (this.localStdinField) {
         this.localStdinField
             .on('change', optionsChange)
@@ -229,12 +225,16 @@ Tool.prototype.onToolInputChange = function (compilerId, editorId, toolId, input
 
 Tool.prototype.onToolInputViewClosed = function (compilerId, editorId, toolId, input) {
     if (this.compilerId === compilerId && this.editorId === editorId && this.toolId === toolId) {
-        this.monacoStdinField = input;
-        this.monacoEditorOpen = false;
-        this.toggleStdin.removeClass('active');
+        // Duplicate close messages have been seen, with the second having no value.
+        // If we have a current value and the new value is empty, ignore the message.
+        if (this.monacoStdinField && input) {
+            this.monacoStdinField = input;
+            this.monacoEditorOpen = false;
+            this.toggleStdin.removeClass('active');
 
-        this.onOptionsChange();
-        this.eventHub.emit('toolSettingsChange', this.compilerId);
+            this.onOptionsChange();
+            this.eventHub.emit('toolSettingsChange', this.compilerId);
+        }
     }
 };
 
@@ -258,6 +258,7 @@ Tool.prototype.openMonacoEditor = function () {
         this.container.layoutManager.root.contentItems[0];
     insertPoint.addChild(this.createToolInputView);
     this.onOptionsChange();
+    this.eventHub.emit('setToolInput', this.compilerId, this.editorId, this.toolId, this.monacoStdinField);
 };
 
 Tool.prototype.getEffectiveOptions = function () {
