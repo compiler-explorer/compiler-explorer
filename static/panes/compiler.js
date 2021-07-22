@@ -923,7 +923,7 @@ Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
         this.flagsViewOpen = false;
         this.optionsField.val(compilerFlags);
         this.optionsField.prop('disabled', this.flagsViewOpen);
-        this.optionsField.prop('placeholder', '');
+        this.optionsField.prop('placeholder', this.initialOptionsFieldPlacehoder);
         this.flagsButton.prop('disabled', this.flagsViewOpen);
 
         this.compilerService.requestPopularArguments(this.compiler.id, compilerFlags).then(
@@ -1122,6 +1122,7 @@ Compiler.prototype.initButtons = function (state) {
     this.outputErrorCount = this.domRoot.find('span.err-count');
 
     this.optionsField = this.domRoot.find('.options');
+    this.initialOptionsFieldPlacehoder = this.optionsField.prop('placeholder');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.fullTimingInfo = this.domRoot.find('.full-timing-info');
@@ -1283,7 +1284,7 @@ Compiler.prototype.updateButtons = function () {
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
     this.optButton.prop('disabled', this.optViewOpen || !this.compiler.supportsOptOutput);
-    if(this.flagsButton) {
+    if (this.flagsButton) {
         this.flagsButton.prop('disabled', this.flagsViewOpen);
     }
     this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
@@ -1299,7 +1300,7 @@ Compiler.prototype.updateButtons = function () {
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
     var popularArgumentsMenu = $(this.domRoot.find('div.populararguments div.dropdown-menu'));
 
-    while(popularArgumentsMenu.children().length > 1) {
+    while (popularArgumentsMenu.children().length > 1) {
         popularArgumentsMenu.children()[1].remove();
     }
 

@@ -41,7 +41,6 @@ function Flags(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#flags').html());
     this.source = state.source || '';
-    this._currentDecorations = [];
     var root = this.domRoot.find('.monaco-placeholder');
 
     this.settings = JSON.parse(local.get('settings', '{}'));
@@ -59,8 +58,6 @@ function Flags(hub, container, state) {
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
-
-    this.isCompilerSupported = false;
 
     this.initButtons(state);
     this.initCallbacks();
@@ -116,7 +113,7 @@ Flags.prototype.initCallbacks = function () {
 Flags.prototype.setTitle = function () {
     this.container.setTitle(
         this._compilerName + ' Detailed Compiler Flags (Editor #' +
-            this._editorid + ', Compiler #' + this._compilerid + ')');
+        this._editorid + ', Compiler #' + this._compilerid + ')');
 };
 
 Flags.prototype.onCompiler = function (id, compiler) {
