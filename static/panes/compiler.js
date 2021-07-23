@@ -1330,8 +1330,14 @@ Compiler.prototype.updateButtons = function () {
     this.rustMirButton.prop('disabled', this.rustMirViewOpen || !this.compiler.supportsRustMirView);
     this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
-
     this.executorButton.prop('disabled', !this.compiler.supportsExecute);
+
+    this.optButton.toggle(!!this.compiler.supportsOptOutput);
+    this.astButton.toggle(!!this.compiler.supportsAstView);
+    this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
+    this.cfgButton.toggle(!!this.compiler.supportsCfg);
+    this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
 };
