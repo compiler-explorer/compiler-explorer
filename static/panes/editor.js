@@ -674,7 +674,7 @@ Editor.prototype.initEditorActions = function () {
     });
 
     this.editor.addAction({
-        id: 'clang-format',
+        id: 'format',
         label: 'Format text',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9],
         keybindingContext: null,
@@ -816,10 +816,18 @@ Editor.prototype.updateSource = function (newSource) {
 
 Editor.prototype.formatCurrentText = function () {
     var previousSource = this.getSource();
+    var lang = this.currentLanguage;
+
+    if (!Object.prototype.hasOwnProperty.call(lang, 'formatter')) {
+        return this.alertSystem.notify('This language does not support in-editor formatting' , {
+            group: 'formatting',
+            alertClass: 'notification-error',
+        });
+    }
 
     $.ajax({
         type: 'POST',
-        url: window.location.origin + this.httpRoot + 'api/format/clangformat',
+        url: window.location.origin + this.httpRoot + 'api/format/' + lang.formatter,
         dataType: 'json',  // Expected
         contentType: 'application/json',  // Sent
         data: JSON.stringify({
