@@ -85,15 +85,18 @@ def make_file_formateable(path: str):
 
 
 def main():
-    if not os.path.isfile("./paths.json"):
+    # In case you want to save the result to avoid extra API calls
+    use_file = False
+    if not use_file or not os.path.isfile("./paths.json"):
         current_prs = list_open_prs()
         modified_paths = set()
         for PR in current_prs:
             modified_paths.update(list_modified_paths_in_pr(PR))
         current_git_files = list_files_under_vc()
         untouched_paths = list(current_git_files - modified_paths)
-        with open("./paths.json", "w") as f:
-            json.dump(untouched_paths, f)
+        if use_file:
+            with open("./paths.json", "w") as f:
+                json.dump(untouched_paths, f)
     else:
         with open("./paths.json", "r") as f:
             untouched_paths = json.load(f)
