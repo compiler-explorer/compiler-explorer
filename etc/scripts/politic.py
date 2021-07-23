@@ -32,24 +32,40 @@ date_placeholder_regex = re.compile(date_placeholder)
 
 def check_policy_file(police_name):
     policy_path = f"static/policies/{police_name}.html"
-    policy_last_time = subprocess.check_output(['git', 'log', '-1', '--format=%cd', policy_path]).decode('utf-8').rstrip()
+    policy_last_time = (
+        subprocess.check_output(["git", "log", "-1", "--format=%cd", policy_path])
+        .decode("utf-8")
+        .rstrip()
+    )
 
     if len(policy_last_time) == 0:
-        print(f'No need to update {policy_path}')
+        print(f"No need to update {policy_path}")
         return
-    policy_last_commit = subprocess.check_output(['git', 'log', '-1', '--format=%h', policy_path]).decode('utf-8').rstrip()
-    print(f'Setting policy {policy_path} last updated time to {policy_last_time} with commit {policy_last_commit}')
-    f = open(policy_path, 'r')
+    policy_last_commit = (
+        subprocess.check_output(["git", "log", "-1", "--format=%h", policy_path])
+        .decode("utf-8")
+        .rstrip()
+    )
+    print(
+        f"Setting policy {policy_path} last updated time to {policy_last_time} with commit {policy_last_commit}"
+    )
+    f = open(policy_path, "r")
     file_lines = f.readlines()
     f.close()
-    with open(policy_path, 'w') as f:
+    with open(policy_path, "w") as f:
         for line in file_lines:
             if re.match(date_placeholder_regex, line):
-                f.write(re.sub(date_placeholder_regex, f'\\1Last changed on: <time id="changed-date" datetime="{policy_last_time}">{policy_last_time}</time> <i>(<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{policy_last_commit}" target="_blank">diff</a>)</i>\\2', line))
+                f.write(
+                    re.sub(
+                        date_placeholder_regex,
+                        f'\\1Last changed on: <time id="changed-date" datetime="{policy_last_time}">{policy_last_time}</time> <i>(<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{policy_last_commit}" target="_blank">diff</a>)</i>\\2',
+                        line,
+                    )
+                )
             else:
                 f.write(line)
 
 
-if __name__ == '__main__':
-    check_policy_file('privacy')
-    check_policy_file('cookies')
+if __name__ == "__main__":
+    check_policy_file("privacy")
+    check_policy_file("cookies")
