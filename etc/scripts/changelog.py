@@ -33,12 +33,12 @@ html_escape_table = {
     "<": "&lt;",
 }
 
-commit_template = """  <div class="row commit-entry">
+commit_template = '''  <div class="row commit-entry">
     <div class="col-sm-12">
       <a href="{}commit/{}" rel="noreferrer noopener" target="_blank">{}</a>
     </div>
   </div>
-"""
+'''
 
 
 def html_escape(text):
@@ -47,34 +47,23 @@ def html_escape(text):
 
 def format_commit(url, commit):
     # Input format is "<hash> <description>", so split only on the first space and escape the commit message
-    grouped_commit = commit.split(" ", 1)
+    grouped_commit = commit.split(' ', 1)
     print(grouped_commit)
     try:
-        return commit_template.format(
-            url, grouped_commit[0], html_escape(grouped_commit[1])
-        )
+        return commit_template.format(url, grouped_commit[0], html_escape(grouped_commit[1]))
     except Exception as e:
-        print(f"There was an error in changelog.py: {e}")
-        return ""
+        print(f'There was an error in changelog.py: {e}')
+        return ''
 
 
 def get_commits(repo):
-    coms = subprocess.check_output(
-        [
-            "git",
-            "log",
-            "--date=local",
-            '--after="3 months ago"',
-            "--grep=(#[0-9]*)",
-            "--oneline",
-        ]
-    ).decode("utf-8")
-    with open("static/changelog.html", "w") as f:
+    coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=(#[0-9]*)', '--oneline']).decode('utf-8')
+    with open('static/changelog.html', 'w') as f:
         f.write('<div class="commits-list">\n')
         for commit in coms.splitlines():
             f.write(format_commit(repo, commit))
-        f.write("</div>\n")
+        f.write('</div>\n')
 
 
-if __name__ == "__main__":
-    get_commits("https://github.com/compiler-explorer/compiler-explorer/")
+if __name__ == '__main__':
+    get_commits('https://github.com/compiler-explorer/compiler-explorer/')
