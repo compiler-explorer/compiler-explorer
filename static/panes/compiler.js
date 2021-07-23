@@ -637,7 +637,7 @@ Compiler.prototype.sendCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code;
+                message = x.error || x.code || message;
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
