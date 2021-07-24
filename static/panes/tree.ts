@@ -357,16 +357,14 @@ export class Tree {
             stagingButton.removeClass('fa-plus').addClass('fa-minus');
             stagingButton.on('click', async (e) => {
                 const fileId = $(e.currentTarget).parent('li').data('fileId');
-                await this.multifileService.excludeByFileId(fileId);
-                this.refresh();
+                await this.moveToExclude(fileId);
             });
             this.namedItems.append(item);
         } else {
             stagingButton.removeClass('fa-minus').addClass('fa-plus');
             stagingButton.on('click', async (e) => {
                 const fileId = $(e.currentTarget).parent('li').data('fileId');
-                await this.multifileService.includeByFileId(fileId);
-                this.refresh();
+                await this.moveToInclude(fileId);
             });
             this.unnamedItems.append(item);
         }
