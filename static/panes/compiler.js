@@ -167,7 +167,7 @@ Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
     if (this.sourceTreeId) {
         var tree = this.hub.getTreeById(this.sourceTreeId);
         if (tree) {
-            return tree.getEditorIdByFilename(sourcefile.file);
+            return tree.multifileService.getEditorIdByFilename(sourcefile.file);
         }
     } else {
         if (sourcefile !== null && (sourcefile.file === null || sourcefile.mainsource)) {
@@ -606,14 +606,14 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
 Compiler.prototype.compileFromTree = function (options, bypassCache) {
     var tree = this.hub.getTreeById(this.sourceTreeId);
 
-    var mainsource = tree.getMainSource();
+    var mainsource = tree.multifileService.getMainSource();
 
     var request = {
         source: mainsource,
         compiler: this.compiler ? this.compiler.id : '',
         options: options,
         lang: this.currentLangId,
-        files: tree.getFiles(),
+        files: tree.multifileService.getFiles(),
     };
 
     var treeState = tree.currentState();
@@ -951,7 +951,7 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     if (this.sourceTreeId) {
         var tree = this.hub.getTreeById(this.sourceTreeId);
         if (tree) {
-            if (tree.isEditorPartOfProject(editor)) {
+            if (tree.multifileService.isEditorPartOfProject(editor)) {
                 if (this.settings.compileOnChange) {
                     this.compile();
 

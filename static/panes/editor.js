@@ -970,7 +970,7 @@ Editor.prototype.numberUsedLines = function () {
 
                     if (asmLine.source && asmLine.source.line > 0) {
                         var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
-                        if (this.id === tree.getEditorIdByFilename(sourcefilename)) {
+                        if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
                             result[asmLine.source.line - 1] = true;
                         }
                     }

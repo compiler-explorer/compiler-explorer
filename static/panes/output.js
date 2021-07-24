@@ -200,7 +200,7 @@ Output.prototype.programOutput = function (msg, color) {
 Output.prototype.getEditorIdByFilename = function (filename) {
     var tree = this.hub.getTreeById(this.treeId);
     if (tree) {
-        return tree.getEditorIdByFilename(filename);
+        return tree.multifileService.getEditorIdByFilename(filename);
     }
     return false;
 };

@@ -358,7 +358,7 @@ Hub.prototype.hasTree = function () {
 
 Hub.prototype.getTreesWithEditorId = function (editorId) {
     return _.filter(this.trees, function (tree) {
-        return tree.isEditorPartOfProject(editorId);
+        return tree.multifileService.isEditorPartOfProject(editorId);
     });
 };
 

@@ -168,7 +168,7 @@ export class Tree {
         return this.customOutputFilenameInput.val();
     }
 
-    private currentState(): TreeState {
+    public currentState(): TreeState {
         return Object.assign({
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
@@ -250,22 +250,6 @@ export class Tree {
 
     private sendCompileRequests() {
         this.eventHub.emit('requestCompilation', false, this.id);
-    }
-
-    private isEditorPartOfProject(editorId) {
-        return this.multifileService.isEditorPartOfProject(editorId);
-    }
-
-    private getMainSource() {
-        return this.multifileService.getMainSource();
-    }
-
-    private getFiles() {
-        return this.multifileService.getFiles();
-    }
-
-    private getEditorIdByFilename(filename) {
-        return this.multifileService.getEditorIdByFilename(filename);
     }
 
     private sendChangesToAllEditors() {
