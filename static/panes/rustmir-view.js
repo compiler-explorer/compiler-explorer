@@ -116,7 +116,7 @@ RustMir.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
-RustMir.prototype.getCurrentEditorLanguage = function() {
+RustMir.prototype.getCurrentEditorLanguage = function () {
     return this.rustMirEditor.getModel().getModeId();
 };
 
