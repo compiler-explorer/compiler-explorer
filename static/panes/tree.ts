@@ -424,7 +424,7 @@ export class Tree {
     }
 
     private getConfigForNewExecutor() {
-        return Components.getCompilerForTree(this.id, this.currentState().compilerLanguageId);
+        return Components.getExecutorForTree(this.id, this.currentState().compilerLanguageId);
     }
 
     private getConfigForNewEditor(file: MultifileFile) {
