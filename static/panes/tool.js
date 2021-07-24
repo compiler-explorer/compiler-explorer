@@ -85,7 +85,7 @@ function Tool(hub, container, state) {
     }, this));
 
     this.createToolInputView = _.bind(function () {
-        return Components.getToolInputViewWith(this.compilerId, this.editorId, this.toolId, this.toolName);
+        return Components.getToolInputViewWith(this.compilerId, this.toolId, this.toolName);
     }, this);
 
     this.initButtons(state);
@@ -133,7 +133,7 @@ Tool.prototype.initCallbacks = function () {
             } else {
                 this.monacoEditorOpen = false;
                 this.toggleStdin.removeClass('active');
-                this.eventHub.emit('toolInputViewCloseRequest', this.compilerId, this.editorId, this.toolId);
+                this.eventHub.emit('toolInputViewCloseRequest', this.compilerId, this.toolId);
             }
         }
     }, this));
@@ -201,7 +201,7 @@ Tool.prototype.initArgs = function (state) {
             if (!this.monacoStdin) {
                 this.localStdinField.val(state.stdin);
             } else {
-                this.eventHub.emit('setToolInput', this.compilerId, this.editorId, this.toolId, state.stdin);
+                this.eventHub.emit('setToolInput', this.compilerId, this.toolId, state.stdin);
             }
         }
     }
@@ -215,16 +215,16 @@ Tool.prototype.getInputArgs = function () {
     }
 };
 
-Tool.prototype.onToolInputChange = function (compilerId, editorId, toolId, input) {
-    if (this.compilerId === compilerId && this.editorId === editorId && this.toolId === toolId) {
+Tool.prototype.onToolInputChange = function (compilerId, toolId, input) {
+    if (this.compilerId === compilerId && this.toolId === toolId) {
         this.monacoStdinField = input;
         this.onOptionsChange();
         this.eventHub.emit('toolSettingsChange', this.compilerId);
     }
 };
 
-Tool.prototype.onToolInputViewClosed = function (compilerId, editorId, toolId, input) {
-    if (this.compilerId === compilerId && this.editorId === editorId && this.toolId === toolId) {
+Tool.prototype.onToolInputViewClosed = function (compilerId, toolId, input) {
+    if (this.compilerId === compilerId && this.toolId === toolId) {
         // Duplicate close messages have been seen, with the second having no value.
         // If we have a current value and the new value is empty, ignore the message.
         if (this.monacoStdinField && input) {
@@ -258,7 +258,7 @@ Tool.prototype.openMonacoEditor = function () {
         this.container.layoutManager.root.contentItems[0];
     insertPoint.addChild(this.createToolInputView);
     this.onOptionsChange();
-    this.eventHub.emit('setToolInput', this.compilerId, this.editorId, this.toolId, this.monacoStdinField);
+    this.eventHub.emit('setToolInput', this.compilerId, this.toolId, this.monacoStdinField);
 };
 
 Tool.prototype.getEffectiveOptions = function () {
