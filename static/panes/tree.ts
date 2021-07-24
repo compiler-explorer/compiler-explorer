@@ -169,11 +169,12 @@ export class Tree {
     }
 
     public currentState(): TreeState {
-        return Object.assign({
+        return {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
-        }, this.multifileService.getState());
+            ... this.multifileService.getState()
+        }
     };
 
     private updateState() {
