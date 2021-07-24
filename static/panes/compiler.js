@@ -1327,7 +1327,7 @@ Compiler.prototype.updateButtons = function () {
     }
     this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
     this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
-    this.rustMirButton.prop('disabled', /* this.rustMirViewOpen || !this.compiler.supportsRustMirView*/ false);
+    this.rustMirButton.prop('disabled', this.rustMirViewOpen || !this.compiler.supportsRustMirView);
     this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
 
