@@ -1,0 +1,611 @@
+// Copyright (c) 2021, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+const _ = require('underscore');
+const $ = require('jquery');
+const Alert = require('../alert');
+const Components = require('../components');
+const local = require('../local');
+const ga = require('../analytics');
+const mf = require('../multifile-service');
+const lc = require('../line-colouring');
+const TomSelect = require('tom-select');
+const Toggles = require('../toggles');
+const LineColouring = lc.LineColouring;
+const MultifileService = mf.MultifileService;
+const options = require('../options');
+const languages = options.languages;
+const saveAs = require('file-saver').saveAs;
+
+declare global {
+    interface Window { httpRoot: any; }
+}
+
+export class Tree {
+    id: any;
+    container: any;
+    domRoot: any;
+    hub: any;
+    eventHub: any;
+    settings: any;
+    httpRoot: any;
+    alertSystem: any;
+    root: any;
+    rowTemplate: any;
+    namedItems: any;
+    unnamedItems: any;
+    langKeys: any;
+    cmakeArgsInput: any;
+    customOutputFilenameInput: any;
+    multifileService: any;
+    lineColouring: any;
+    ourCompilers: {};
+    busyCompilers: {};
+    asmByCompiler: {};
+    selectize: any;
+    languageBtn: any;
+    toggleCMakeButton: any;
+    debouncedEmitChange: any;
+
+    constructor(hub, state, container) {
+        this.id = state.id || hub.nextTreeId();
+        this.container = container;
+        this.domRoot = container.getElement();
+        this.domRoot.html($('#filelisting').html());
+        this.hub = hub;
+        this.eventHub = hub.createEventHub();
+        this.settings = JSON.parse(local.get('settings', '{}'));
+
+        this.httpRoot = window.httpRoot;
+
+        this.alertSystem = new Alert();
+        this.alertSystem.prefixMessage = 'Tree #' + this.id + ': ';
+
+        this.root = this.domRoot.find('.tree');
+        this.rowTemplate = $('#filelisting-editor-tpl');
+        this.namedItems = this.domRoot.find('.named-editors');
+        this.unnamedItems = this.domRoot.find('.unnamed-editors');
+
+        this.langKeys = _.keys(languages);
+
+        this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
+        this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
+
+        const usableLanguages = _.filter(languages, (language) => {
+            return hub.compilerService.compilersByLang[language.id];
+        });
+
+        if (state) {
+            if (!state.compilerLanguageId) {
+                state.compilerLanguageId = this.settings.defaultLanguage;
+            }
+        } else {
+            state = {
+                compilerLanguageId: this.settings.defaultLanguage,
+            };
+        }
+
+        this.multifileService = new MultifileService(this.hub, this.eventHub, this.alertSystem, state);
+        this.lineColouring = new LineColouring(this.multifileService);
+        this.ourCompilers = {};
+        this.busyCompilers = {};
+        this.asmByCompiler = {};
+
+        this.initInputs(state);
+        this.initButtons(state);
+        this.initCallbacks();
+        this.onSettingsChange(this.settings);
+
+        this.selectize = new TomSelect(this.languageBtn, {
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: _.map(usableLanguages, _.identity),
+            items: [this.multifileService.getLanguageId()],
+            dropdownParent: 'body',
+            plugins: ['input_autogrow'],
+            onChange: _.bind(this.onLanguageChange, this),
+        });
+
+        this.updateTitle();
+        this.onLanguageChange(this.multifileService.getLanguageId());
+
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenViewPane',
+            eventAction: 'Tree',
+        });
+
+        this.refresh();
+        this.eventHub.emit('findEditors');
+    }
+
+    initInputs(state) {
+        if (state) {
+            if (state.cmakeArgs) {
+                this.cmakeArgsInput.val(state.cmakeArgs);
+            }
+
+            if (state.customOutputFilename) {
+                this.customOutputFilenameInput.val(state.customOutputFilename);
+            }
+        }
+    }
+
+    getCmakeArgs() {
+        return this.cmakeArgsInput.val();
+    }
+
+    getCustomOutputFilename() {
+        return this.customOutputFilenameInput.val();
+    }
+
+    currentState() {
+        return Object.assign({
+            id: this.id,
+            cmakeArgs: this.getCmakeArgs(),
+            customOutputFilename: this.getCustomOutputFilename(),
+        }, this.multifileService.getState());
+    };
+
+    updateState() {
+        const state = this.currentState();
+        this.container.setState(state);
+
+        this.updateButtons(state);
+    }
+
+    initCallbacks() {
+        this.container.on('resize', this.resize, this);
+        this.container.on('shown', this.resize, this);
+        this.container.on('open', () => {
+            this.eventHub.emit('treeOpen', this.id);
+        });
+        this.container.on('destroy', this.close, this);
+
+        this.eventHub.on('editorOpen', this.onEditorOpen, this);
+        this.eventHub.on('editorClose', this.onEditorClose, this);
+        this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
+        this.eventHub.on('compilerClose', this.onCompilerClose, this);
+
+        this.eventHub.on('compileResult', this.onCompileResponse, this);
+
+        this.toggleCMakeButton.on('change', _.bind(this.onToggleCMakeChange, this));
+
+        this.cmakeArgsInput.on('change', _.bind(this.updateCMakeArgs, this));
+        this.customOutputFilenameInput.on('change', _.bind(this.updateCustomOutputFilename, this));
+    }
+
+    updateCMakeArgs() {
+        this.updateState();
+
+        this.debouncedEmitChange();
+    }
+
+    updateCustomOutputFilename() {
+        this.updateState();
+
+        this.debouncedEmitChange();
+    }
+
+    onToggleCMakeChange() {
+        const isOn = this.toggleCMakeButton.state.isCMakeProject;
+        this.multifileService.setAsCMakeProject(isOn);
+
+        this.domRoot.find('.cmake-project').prop('title',
+            '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
+        this.updateState();
+    }
+
+    onLanguageChange(newLangId) {
+        if (languages[newLangId]) {
+            this.multifileService.setLanguageId(newLangId);
+            this.eventHub.emit('languageChange', false, newLangId, this.id);
+        }
+
+        this.toggleCMakeButton.enableToggle('isCMakeProject', this.multifileService.isCompatibleWithCMake());
+
+        this.refresh();
+    }
+
+    sendCompilerChangesToEditor(compilerId) {
+        this.multifileService.forEachOpenFile((file) => {
+            if (file.isIncluded) {
+                this.eventHub.emit('treeCompilerEditorIncludeChange', this.id, file.editorId, compilerId);
+            } else {
+                this.eventHub.emit('treeCompilerEditorExcludeChange', this.id, file.editorId, compilerId);
+            }
+        });
+
+        this.eventHub.emit('resendCompilation', compilerId);
+    }
+
+    sendCompileRequests() {
+        this.eventHub.emit('requestCompilation', false, this.id);
+    }
+
+    isEditorPartOfProject(editorId) {
+        return this.multifileService.isEditorPartOfProject(editorId);
+    }
+
+    getMainSource() {
+        return this.multifileService.getMainSource();
+    }
+
+    getFiles() {
+        return this.multifileService.getFiles();
+    }
+
+    getEditorIdByFilename(filename) {
+        return this.multifileService.getEditorIdByFilename(filename);
+    }
+
+    sendChangesToAllEditors() {
+        _.each(this.ourCompilers, (unused, compilerId) => {
+            this.sendCompilerChangesToEditor(Number(compilerId));
+        });
+    }
+
+    onCompilerOpen(compilerId, unused, treeId) {
+        if (treeId === this.id) {
+            this.ourCompilers[compilerId] = true;
+            this.sendCompilerChangesToEditor(Number(compilerId));
+        }
+    }
+
+    onCompilerClose(compilerId, unused, treeId) {
+        if (treeId === this.id) {
+            delete this.ourCompilers[compilerId];
+        }
+    }
+
+    onEditorOpen(editorId) {
+        const file = this.multifileService.getFileByEditorId(editorId);
+        if (file) return;
+
+        this.multifileService.addFileForEditorId(editorId);
+        this.refresh();
+        this.sendChangesToAllEditors();
+    }
+
+    onEditorClose(editorId) {
+        const file = this.multifileService.getFileByEditorId(editorId);
+
+        if (file) {
+            file.isOpen = false;
+            const editor = this.hub.getEditorById(editorId);
+            file.langId = editor.currentLanguage.id;
+            file.content = editor.getSource();
+            file.editorId = -1;
+        }
+
+        this.refresh();
+    }
+
+    removeFile(fileId) {
+        const file = this.multifileService.removeFileByFileId(fileId);
+        if (file) {
+            if (file.isOpen) {
+                const editor = this.hub.getEditorById(file.editorId);
+                if (editor) {
+                    editor.container.close();
+                }
+            }
+        }
+
+        this.refresh();
+    }
+
+    addRowToTreelist(file) {
+        const item = $(this.rowTemplate.children()[0].cloneNode(true));
+        const stagingButton = item.find('.stage-file');
+        const renameButton = item.find('.rename-file');
+        const deleteButton = item.find('.delete-file');
+
+        item.data('fileId', file.fileId);
+        if (file.filename) {
+            item.find('.filename').html(file.filename);
+        } else if (file.editorId > 0) {
+            const editor = this.hub.getEditorById(file.editorId);
+            if (editor) {
+                item.find('.filename').html(editor.getPaneName());
+            } else {
+                // wait for editor to appear first
+                return;
+            }
+        } else {
+            item.find('.filename').html('Unknown file');
+        }
+
+        item.on('click', (e) => {
+            const fileId = $(e.currentTarget).data('fileId');
+            this.editFile(fileId);
+        });
+
+        renameButton.on('click', async (e) => {
+            const fileId = $(e.currentTarget).parent('li').data('fileId');
+            await this.multifileService.renameFile(fileId);
+            this.refresh();
+        });
+
+        deleteButton.on('click', (e) => {
+            const fileId = $(e.currentTarget).parent('li').data('fileId');
+            const file = this.multifileService.getFileByFileId(fileId);
+            if (file) {
+                this.alertSystem.ask('Delete file', 'Are you sure you want to delete ' + file.filename, {
+                    yes: () => {
+                        this.removeFile(fileId);
+                    },
+                });
+            }
+        });
+
+        if (file.isIncluded) {
+            stagingButton.removeClass('fa-plus').addClass('fa-minus');
+            stagingButton.on('click', async (e) => {
+                const fileId = $(e.currentTarget).parent('li').data('fileId');
+                await this.multifileService.excludeByFileId(fileId);
+                this.refresh();
+            });
+            this.namedItems.append(item);
+        } else {
+            stagingButton.removeClass('fa-minus').addClass('fa-plus');
+            stagingButton.on('click', async (e) => {
+                const fileId = $(e.currentTarget).parent('li').data('fileId');
+                await this.multifileService.includeByFileId(fileId);
+                this.refresh();
+            });
+            this.unnamedItems.append(item);
+        }
+    }
+
+    refresh() {
+        this.updateState();
+
+        this.namedItems.html('');
+        this.unnamedItems.html('');
+
+        this.multifileService.forEachFile((file) => this.addRowToTreelist(file));
+    }
+
+    editFile(fileId) {
+        const file = this.multifileService.getFileByFileId(fileId);
+        if (!file.isOpen) {
+            const dragConfig = this.getConfigForNewEditor(file);
+            file.isOpen = true;
+
+            this.hub.addInEditorStackIfPossible(dragConfig);
+        } else {
+            const editor = this.hub.getEditorById(file.editorId);
+            this.hub.activateTabForContainer(editor.container);
+        }
+
+        this.sendChangesToAllEditors();
+    }
+
+    async moveToInclude(fileId) {
+        await this.multifileService.includeByFileId(fileId);
+
+        this.refresh();
+        this.sendChangesToAllEditors();
+    }
+
+    async moveToExclude(fileId) {
+        await this.multifileService.excludeByFileId(fileId);
+        this.refresh();
+        this.sendChangesToAllEditors();
+    }
+
+    bindClickToOpenPane(dragSource, dragConfig) {
+        dragSource.on('click', () => {
+            this.hub.addInEditorStackIfPossible(_.bind(dragConfig, this));
+        });
+    }
+
+    getConfigForNewCompiler() {
+        return Components.getCompilerForTree(this.id, this.currentState().compilerLanguageId);
+    }
+
+    getConfigForNewExecutor() {
+        return Components.getCompilerForTree(this.id, this.currentState().compilerLanguageId);
+    }
+
+    getConfigForNewEditor(file) {
+        let editor;
+        const editorId = this.hub.nextEditorId();
+
+        if (file) {
+            file.editorId = editorId;
+            editor = Components.getEditor(
+                editorId,
+                file.langId);
+
+            editor.componentState.source = file.content;
+            if (file.filename) {
+                editor.componentState.customPaneName = file.filename;
+            }
+        } else {
+            editor = Components.getEditor(
+                editorId,
+                this.multifileService.getLanguageId());
+        }
+
+        return editor;
+    }
+
+    getFormattedDateTime() {
+        const d = new Date();
+
+        let datestring = d.getFullYear() +
+            ('0' + (d.getMonth() + 1)).slice(-2) +
+            ('0' + d.getDate()).slice(-2);
+        datestring += ('0' + d.getHours()).slice(-2) +
+            ('0' + d.getMinutes()).slice(-2) +
+            ('0' + d.getSeconds()).slice(-2);
+
+        return datestring;
+    }
+
+    triggerSaveAs(blob) {
+        const dt = this.getFormattedDateTime();
+        saveAs(blob, `project-${dt}.zip`);
+    }
+
+    initButtons(state) {
+        const addCompilerButton = this.domRoot.find('.add-compiler');
+        const addExecutorButton = this.domRoot.find('.add-executor');
+        const addEditorButton = this.domRoot.find('.add-editor');
+        const saveProjectButton = this.domRoot.find('.save-project-to-file');
+
+        saveProjectButton.on('click', () => {
+            this.multifileService.saveProjectToZipfile(_.bind(this.triggerSaveAs, this));
+        });
+
+        const loadProjectFromFile = this.domRoot.find('.load-project-from-file');
+        loadProjectFromFile.on('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                this.multifileService.forEachFile((file) => {
+                    this.removeFile(file.fileId);
+                });
+
+                this.multifileService.loadProjectFromFile(files[0], (file) => {
+                    this.refresh();
+                    if (file.filename === 'CMakeLists.txt') {
+                        // todo: find a way to toggle on CMake checkbox...
+                        this.editFile(file.fileId);
+                    }
+                });
+            }
+        });
+
+        this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
+        this.bindClickToOpenPane(addExecutorButton, this.getConfigForNewExecutor);
+        this.bindClickToOpenPane(addEditorButton, this.getConfigForNewEditor);
+
+        this.languageBtn = this.domRoot.find('.change-language');
+
+        if (this.langKeys.length <= 1) {
+            this.languageBtn.prop('disabled', true);
+        }
+
+        this.toggleCMakeButton = new Toggles(this.domRoot.find('.options'), state);
+    }
+
+    numberUsedLines() {
+        if (_.any(this.busyCompilers)) return;
+
+        if (!this.settings.colouriseAsm) {
+            this.updateColoursNone();
+            return;
+        }
+
+        this.lineColouring.clear();
+
+        _.each(this.asmByCompiler, (asm, compilerId) => {
+            if (asm) this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
+        });
+
+        this.lineColouring.calculate();
+
+        this.updateColours();
+    }
+
+    updateColours() {
+        _.each(this.ourCompilers, (unused, compilerId) => {
+            const id = parseInt(compilerId);
+            this.eventHub.emit('coloursForCompiler', id,
+                this.lineColouring.getColoursForCompiler(id), this.settings.colourScheme);
+        });
+
+        this.multifileService.forEachOpenFile((file) => {
+            this.eventHub.emit('coloursForEditor', file.editorId,
+                this.lineColouring.getColoursForEditor(file.editorId), this.settings.colourScheme);
+        });
+    }
+
+    updateColoursNone() {
+        _.each(this.ourCompilers, (unused, compilerId) => {
+            this.eventHub.emit('coloursForCompiler', parseInt(compilerId), {}, this.settings.colourScheme);
+        });
+
+        this.multifileService.forEachOpenFile((file) => {
+            this.eventHub.emit('coloursForEditor', file.editorId, {}, this.settings.colourScheme);
+        });
+    }
+
+    onCompileResponse(compilerId, compiler, result) {
+        if (!this.ourCompilers[compilerId]) return;
+
+        this.busyCompilers[compilerId] = false;
+
+        // todo: parse errors and warnings and relate them to lines in the code
+        // note: requires info about the filename, do we currently have that?
+
+        // eslint-disable-next-line max-len
+        // {"text":"/tmp/compiler-explorer-compiler2021428-7126-95g4xc.zfo8p/example.cpp:4:21: error: expected ‘;’ before ‘}’ token"}
+
+        if (result.result && result.result.asm) {
+            this.asmByCompiler[compilerId] = result.result.asm;
+        } else {
+            this.asmByCompiler[compilerId] = result.asm;
+        }
+
+        this.numberUsedLines();
+    }
+
+    updateButtons(state) {
+        if (state.isCMakeProject) {
+            this.cmakeArgsInput.parent().removeClass('d-none');
+            this.customOutputFilenameInput.parent().removeClass('d-none');
+        } else {
+            this.cmakeArgsInput.parent().addClass('d-none');
+            this.customOutputFilenameInput.parent().addClass('d-none');
+        }
+    }
+
+    resize() {
+    }
+
+    onSettingsChange(newSettings) {
+        this.debouncedEmitChange = _.debounce(() => {
+            this.sendCompileRequests();
+        }, newSettings.delayAfterChange);
+    }
+
+    getPaneName() {
+        return 'Tree #' + this.id;
+    }
+
+    updateTitle() {
+        this.container.setTitle(this.getPaneName());
+    }
+
+    close() {
+        this.eventHub.unsubscribe();
+        this.eventHub.emit('treeClose', this.id);
+        this.hub.removeTree(this.id);
+    }
+}
