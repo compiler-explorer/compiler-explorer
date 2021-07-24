@@ -482,11 +482,11 @@ export class Tree {
         loadProjectFromFile.on('change', (e) => {
             const files = e.target.files;
             if (files.length > 0) {
-                this.multifileService.forEachFile((file) => {
+                this.multifileService.forEachFile((file: MultifileFile) => {
                     this.removeFile(file.fileId);
                 });
 
-                this.multifileService.loadProjectFromFile(files[0], (file) => {
+                this.multifileService.loadProjectFromFile(files[0], (file: MultifileFile) => {
                     this.refresh();
                     if (file.filename === 'CMakeLists.txt') {
                         // todo: find a way to toggle on CMake checkbox...
@@ -519,7 +519,7 @@ export class Tree {
 
         this.lineColouring.clear();
 
-        _.each(this.asmByCompiler, (asm, compilerId) => {
+        _.each(this.asmByCompiler, (asm: any, compilerId: string) => {
             if (asm) this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
         });
 
