@@ -153,14 +153,13 @@ module.exports = {
             componentState: {},
         };
     },
-    getFlagsViewWith: function (id, compilerName, editorid, compilerFlags) {
+    getFlagsViewWith: function (id, compilerName, compilerFlags) {
         return {
             type: 'component',
             componentName: 'flags',
             componentState: {
                 id: id,
                 compilerName: compilerName,
-                editorid: editorid,
                 compilerFlags: compilerFlags,
             },
         };

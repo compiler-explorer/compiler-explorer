@@ -199,8 +199,7 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
 
     var createFlagsView = _.bind(function () {
-        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.optionsField.val());
+        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.optionsField.val());
     }, this);
 
     if (this.flagsViewOpen) {
