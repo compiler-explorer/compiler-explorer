@@ -26,7 +26,7 @@ import { BaseFormatter } from '../lib/base-formatter';
 
 describe('Basic formatter functionality', () => {
     it('should be one-true-style if the styles are empty', () => {
-        const fmt = new BaseFormatter(null, {
+        const fmt = new BaseFormatter({
             name: 'foo-format',
             exe: null,
             styles: [],
@@ -39,7 +39,7 @@ describe('Basic formatter functionality', () => {
     });
 
     it('should return an array of args for formatters with styles', () => {
-        const fmt = new BaseFormatter(null, {
+        const fmt = new BaseFormatter({
             name: 'foo-format',
             exe: null,
             styles: ['foostyle'],
