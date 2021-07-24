@@ -269,4 +269,24 @@ module.exports = {
             },
         };
     },
+    getRustMirView: function () {
+        return {
+            type: 'component',
+            componentName: 'rustmir',
+            componentState: {},
+        };
+    },
+    getRustMirViewWith: function (id, source, rustMirOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rustmir',
+            componentState: {
+                id: id,
+                source: source,
+                rustMirOutput: rustMirOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
 };
