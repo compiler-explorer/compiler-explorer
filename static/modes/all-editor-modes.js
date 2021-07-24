@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt & Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,22 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCompiler } from '../base-compiler';
-
-import { ClangParser } from './argument-parsers';
-
-export class SwiftCompiler extends BaseCompiler {
-    static get key() { return 'swift'; }
-
-    getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    getArgumentParser() {
-        return ClangParser;
-    }
-
-    isCfgCompiler(/*compilerVersion*/) {
-        return true;
-    }
-}
+require('../modes/cppp-mode');
+require('../modes/cppx-gold-mode');
+require('../modes/cppx-blue-mode');
+require('../modes/d-mode');
+require('../modes/ispc-mode');
+require('../modes/llvm-ir-mode');
+require('../modes/haskell-mode');
+require('../modes/ocaml-mode');
+require('../modes/clean-mode');
+require('../modes/cuda-mode');
+require('../modes/fortran-mode');
+require('../modes/openclc-mode');
+require('../modes/cpp-for-opencl-mode');
+require('../modes/zig-mode');
+require('../modes/nc-mode');
+require('../modes/ada-mode');
+require('../modes/nim-mode');
+require('../modes/crystal-mode');

@@ -55,6 +55,10 @@
             button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
               span.sr-only Popular arguments
             div.dropdown-menu.dropdown-menu-right
+              button.dropdown-item.btn.btn-light.btn-sm
+                .argmenuitem
+                  span.argtitle Detailed Compiler Flags
+                  span.argdescription Open a new window to edit verbose compiler flags
       include font-size
       .btn-group.btn-group-sm.filters(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
@@ -228,6 +232,11 @@
     .monaco-placeholder
 
   #opt
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
+  #flags
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder

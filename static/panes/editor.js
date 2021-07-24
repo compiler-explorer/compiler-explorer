@@ -37,24 +37,7 @@ var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings');
-require('../modes/cppp-mode');
-require('../modes/cppx-gold-mode');
-require('../modes/cppx-blue-mode');
-require('../modes/d-mode');
-require('../modes/ispc-mode');
-require('../modes/llvm-ir-mode');
-require('../modes/haskell-mode');
-require('../modes/ocaml-mode');
-require('../modes/clean-mode');
-require('../modes/cuda-mode');
-require('../modes/fortran-mode');
-require('../modes/openclc-mode');
-require('../modes/cpp-for-opencl-mode');
-require('../modes/zig-mode');
-require('../modes/nc-mode');
-require('../modes/ada-mode');
-require('../modes/nim-mode');
-require('../modes/crystal-mode');
+require('../modes/all-editor-modes');
 
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -1055,32 +1038,34 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
 //              ^a   ^column  ^b
 Editor.prototype.getTokenSpan = function (lineNum, column) {
     var model = this.editor.getModel();
-    var line = model.getLineContent(lineNum);
-    if (0 < column && column < line.length) {
-        var tokens = monaco.editor.tokenize(line, model.getModeId());
-        if (tokens.length > 0) {
-            var lastOffset = 0;
-            var lastWasString = false;
-            for (var i = 0; i < tokens[0].length; ++i) {
-                // Treat all the contiguous string tokens as one,
-                // For example "hello \" world" is treated as one token
-                // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
-                if (tokens[0][i].type.startsWith('string')) {
-                    if (lastWasString) {
-                        continue;
+    if (lineNum <= model.getLineCount()) {
+        var line = model.getLineContent(lineNum);
+        if (0 < column && column < line.length) {
+            var tokens = monaco.editor.tokenize(line, model.getModeId());
+            if (tokens.length > 0) {
+                var lastOffset = 0;
+                var lastWasString = false;
+                for (var i = 0; i < tokens[0].length; ++i) {
+                    // Treat all the contiguous string tokens as one,
+                    // For example "hello \" world" is treated as one token
+                    // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
+                    if (tokens[0][i].type.startsWith('string')) {
+                        if (lastWasString) {
+                            continue;
+                        }
+                        lastWasString = true;
+                    } else {
+                        lastWasString = false;
                     }
-                    lastWasString = true;
-                } else {
-                    lastWasString = false;
+                    var currentOffset = tokens[0][i].offset;
+                    if (column <= currentOffset) {
+                        return {colBegin: lastOffset, colEnd: currentOffset};
+                    } else {
+                        lastOffset = currentOffset;
+                    }
                 }
-                var currentOffset = tokens[0][i].offset;
-                if (column <= currentOffset) {
-                    return {colBegin: lastOffset, colEnd: currentOffset};
-                } else {
-                    lastOffset = currentOffset;
-                }
+                return {colBegin: lastOffset, colEnd: line.length};
             }
-            return {colBegin: lastOffset, colEnd: line.length};
         }
     }
     return {colBegin: column, colEnd: column + 1};

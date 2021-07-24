@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { JavaCompiler } from '../lib/compilers/java';
+import { JavaCompiler } from '../lib/compilers';
 import * as utils from '../lib/utils';
 
 import { fs, makeCompilationEnvironment } from './utils';
@@ -37,8 +37,7 @@ const info = {
     lang: languages.java.id,
 };
 
-// Temporarily disabled: see #1438
-describe.skip('Basic compiler setup', function () {
+describe('Basic compiler setup', function () {
     let env;
 
     before(() => {
@@ -60,7 +59,7 @@ describe.skip('Basic compiler setup', function () {
         }
     });
 
-    describe.skip('Forbidden compiler arguments', function () {
+    describe('Forbidden compiler arguments', function () {
         it('JavaCompiler should not allow -d parameter', () => {
             const compiler = new JavaCompiler(info, env);
             compiler.filterUserOptions(['hello', '-d', '--something', '--something-else']).should.deep.equal(
@@ -115,11 +114,11 @@ describe.skip('Basic compiler setup', function () {
     });
 });
 
-describe.skip('javap parsing', () => {
+describe('javap parsing', () => {
     let compiler;
     let env;
     before(() => {
-        const env = makeCompilationEnvironment({languages});
+        env = makeCompilationEnvironment({languages});
         compiler = new JavaCompiler(info, env);
     });
 
