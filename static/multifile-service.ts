@@ -40,7 +40,7 @@ export class MultifileService {
     private cmakeMainSourceFilename: string;
     private maxFilesize: number;
 
-    constructor(hub, eventHub, alertSystem, state) {
+    constructor(hub, alertSystem, state: MultifileServiceState) {
         this.hub = hub;
         this.alertSystem = alertSystem;
 
