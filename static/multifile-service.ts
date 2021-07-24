@@ -4,7 +4,7 @@ var options = require('./options');
 var languages = options.languages;
 var JSZip = require('jszip');
 
-export class File {
+export class MultifileFile {
     fileId: number;
     isIncluded: boolean;
     isOpen: boolean;
@@ -20,8 +20,15 @@ export class FiledataPair {
     contents: string;
 }
 
+export class MultifileServiceState {
+    isCMakeProject: boolean;
+    compilerLanguageId: string;
+    files: MultifileFile[];
+    newFileId: number;
+}
+
 export class MultifileService {
-    private files: Array<File>;
+    private files: Array<MultifileFile>;
     private compilerLanguageId: string;
     private isCMakeProject: boolean;
     private hub: any;
@@ -119,7 +126,7 @@ export class MultifileService {
                     return;
                 }
 
-                const file: File = {
+                const file: MultifileFile = {
                     fileId: this.newFileId,
                     filename: properName,
                     isIncluded: true,
@@ -139,7 +146,7 @@ export class MultifileService {
     public async saveProjectToZipfile(callback: (any) => void) {
         const zip = new JSZip();
 
-        this.forEachFile((file: File) => {
+        this.forEachFile((file: MultifileFile) => {
             if (file.isIncluded) {
                 zip.file(file.filename, this.getFileContents(file));
             }
@@ -152,7 +159,7 @@ export class MultifileService {
         });
     }
 
-    public getState() {
+    public getState(): MultifileServiceState {
         return {
             isCMakeProject: this.isCMakeProject,
             compilerLanguageId: this.compilerLanguageId,
@@ -189,7 +196,7 @@ export class MultifileService {
         }
     }
 
-    private checkFileEditor(file: File) {
+    private checkFileEditor(file: MultifileFile) {
         if (file && file.editorId > 0) {
             const editor = this.hub.getEditorById(file.editorId);
             if (!editor) {
@@ -199,7 +206,7 @@ export class MultifileService {
         }
     }
 
-    public getFileContents(file: File) {
+    public getFileContents(file: MultifileFile) {
         this.checkFileEditor(file);
 
         if (file.isOpen) {
@@ -211,7 +218,7 @@ export class MultifileService {
     }
 
     public isEditorPartOfProject(editorId: Number) {
-        var found = _.find(this.files, (file: File) => {
+        var found = _.find(this.files, (file: MultifileFile) => {
             return (file.isIncluded) && file.isOpen && (editorId === file.editorId);
         });
 
@@ -219,7 +226,7 @@ export class MultifileService {
     }
 
     public getFileByFileId(fileId: Number) {
-        const file = _.find(this.files, (file: File) => {
+        const file = _.find(this.files, (file: MultifileFile) => {
             return file.fileId === fileId;
         });
 
@@ -237,22 +244,22 @@ export class MultifileService {
         mainfile.isMainSource = true;
     }
 
-    private isValidFile(file: File): boolean {
+    private isValidFile(file: MultifileFile): boolean {
         return (file.editorId > 0) || !!file.filename;
     }
 
     private filterOutNonsense() {
-        this.files = _.filter(this.files, (file: File) => this.isValidFile(file));
+        this.files = _.filter(this.files, (file: MultifileFile) => this.isValidFile(file));
     }
 
     public getFiles(): Array<FiledataPair> {
         this.filterOutNonsense();
 
-        var filtered = _.filter(this.files, (file: File) => {
+        var filtered = _.filter(this.files, (file: MultifileFile) => {
             return !file.isMainSource && file.isIncluded;
         });
 
-        return _.map(filtered, (file: File) => {
+        return _.map(filtered, (file: MultifileFile) => {
             return {
                 filename: file.filename,
                 contents: this.getFileContents(file),
@@ -260,7 +267,7 @@ export class MultifileService {
         });
     }
 
-    private isMainSourceFile(file: File): boolean {
+    private isMainSourceFile(file: MultifileFile): boolean {
         if (this.isCMakeProject) {
             if (file.filename === this.getDefaultMainCMakeFilename()) {
                 this.setAsMainSource(file.fileId);
@@ -275,7 +282,7 @@ export class MultifileService {
     }
 
     public getMainSource(): string {
-        var mainFile = _.find(this.files, (file: File) => {
+        var mainFile = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -286,14 +293,14 @@ export class MultifileService {
         }
     }
 
-    public getFileByEditorId(editorId: number): File {
-        return _.find(this.files, (file: File) => {
+    public getFileByEditorId(editorId: number): MultifileFile {
+        return _.find(this.files, (file: MultifileFile) => {
             return file.editorId === editorId;
         });
     }
 
     public getEditorIdByFilename(filename: string): number {
-        const file: File = _.find(this.files, (file: File) => {
+        const file: MultifileFile = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && (file.filename === filename);
         });
 
@@ -301,7 +308,7 @@ export class MultifileService {
     }
 
     public getMainSourceEditorId(): number {
-        const file: File = _.find(this.files, (file: File) => {
+        const file: MultifileFile = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -310,13 +317,13 @@ export class MultifileService {
         return (file && file.editorId > 0) ? file.editorId : null;
     }
 
-    private addFile(file: File) {
+    private addFile(file: MultifileFile) {
         this.newFileId++;
         this.files.push(file);
     }
 
     public addFileForEditorId(editorId: number) {
-        const file: File = {
+        const file: MultifileFile = {
             fileId: this.newFileId,
             isIncluded: false,
             isOpen: true,
@@ -330,21 +337,21 @@ export class MultifileService {
         this.addFile(file);
     }
 
-    public removeFileByFileId(fileId: number): File {
-        const file: File = this.getFileByFileId(fileId);
+    public removeFileByFileId(fileId: number): MultifileFile {
+        const file: MultifileFile = this.getFileByFileId(fileId);
 
-        this.files = this.files.filter((obj: File) => obj.fileId !== fileId);
+        this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== fileId);
 
         return file;
     }
 
     public async excludeByFileId(fileId: number): Promise<void> {
-        const file: File = this.getFileByFileId(fileId);
+        const file: MultifileFile = this.getFileByFileId(fileId);
         file.isIncluded = false;
     }
 
     public async includeByFileId(fileId: number): Promise<void> {
-        const file: File = this.getFileByFileId(fileId);
+        const file: MultifileFile = this.getFileByFileId(fileId);
         file.isIncluded = true;
 
         if (file.filename === '') {
@@ -362,7 +369,7 @@ export class MultifileService {
     }
 
     public async includeByEditorId(editorId: number): Promise<void> {
-        const file: File = this.getFileByEditorId(editorId);
+        const file: MultifileFile = this.getFileByEditorId(editorId);
 
         return this.includeByFileId(file.fileId);
     }
@@ -395,7 +402,7 @@ export class MultifileService {
         return 'example' + ext0;
     }
 
-    private getSuggestedFilename(file: File, editor: any): string {
+    private getSuggestedFilename(file: MultifileFile, editor: any): string {
         let suggestedFilename = file.filename;
         if (file.filename === '') {
             let langId: string = file.langId;
@@ -418,8 +425,8 @@ export class MultifileService {
         return suggestedFilename;
     }
 
-    private fileExists(filename: string, excludeFile: File): boolean {
-        return !!_.find(this.files, (file: File) => {
+    private fileExists(filename: string, excludeFile: MultifileFile): boolean {
+        return !!_.find(this.files, (file: MultifileFile) => {
             return (file !== excludeFile) && (file.filename === filename);
         });
     }

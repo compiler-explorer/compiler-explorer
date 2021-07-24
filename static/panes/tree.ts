@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { MultifileFile, MultifileService, MultifileServiceState } from "../multifile-service";
+import { saveAs } from "file-saver";
+import { LineColouring } from "../line-colouring";
+
 const _ = require('underscore');
 const $ = require('jquery');
 const Alert = require('../alert');
 const Components = require('../components');
 const local = require('../local');
 const ga = require('../analytics');
-const mf = require('../multifile-service');
-const lc = require('../line-colouring');
 const TomSelect = require('tom-select');
 const Toggles = require('../toggles');
-const LineColouring = lc.LineColouring;
-const MultifileService = mf.MultifileService;
 const options = require('../options');
 const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
@@ -42,8 +42,14 @@ declare global {
     interface Window { httpRoot: any; }
 }
 
+export class TreeState extends MultifileServiceState {
+    id: number
+    cmakeArgs: string;
+    customOutputFilename: string;
+}
+
 export class Tree {
-    private id: any;
+    private id: number;
     private container: any;
     private domRoot: any;
     private hub: any;
@@ -55,18 +61,18 @@ export class Tree {
     private rowTemplate: any;
     private namedItems: any;
     private unnamedItems: any;
-    private langKeys: any;
+    private langKeys: string[];
     private cmakeArgsInput: any;
     private customOutputFilenameInput: any;
-    public multifileService: any;
-    private lineColouring: any;
+    public multifileService: MultifileService;
+    private lineColouring: LineColouring;
     private ourCompilers: {};
     private busyCompilers: {};
     private asmByCompiler: {};
     private selectize: any;
     private languageBtn: any;
     private toggleCMakeButton: any;
-    private debouncedEmitChange: any;
+    private debouncedEmitChange: () => void;
 
     constructor(hub, state, container) {
         this.id = state.id || hub.nextTreeId();
@@ -162,7 +168,7 @@ export class Tree {
         return this.customOutputFilenameInput.val();
     }
 
-    private currentState() {
+    private currentState(): TreeState {
         return Object.assign({
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
@@ -318,7 +324,7 @@ export class Tree {
         this.refresh();
     }
 
-    private addRowToTreelist(file) {
+    private addRowToTreelist(file: MultifileFile) {
         const item = $(this.rowTemplate.children()[0].cloneNode(true));
         const stagingButton = item.find('.stage-file');
         const renameButton = item.find('.rename-file');
