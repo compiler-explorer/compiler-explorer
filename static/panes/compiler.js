@@ -101,6 +101,7 @@ function Compiler(hub, container, state) {
     this.pendingRequestSentAt = 0;
     this.nextRequest = null;
     this.optViewOpen = false;
+    this.flagsViewOpen = state.flagsViewOpen || false;
     this.cfgViewOpen = false;
     this.wantOptInfo = state.wantOptInfo;
     this.decorations = {};
@@ -221,6 +222,15 @@ Compiler.prototype.initPanerButtons = function () {
             this.sourceEditorId);
     }, this);
 
+    var createFlagsView = _.bind(function () {
+        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
+            this.optionsField.val());
+    }, this);
+
+    if (this.flagsViewOpen) {
+        createFlagsView();
+    }
+
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
             this.sourceEditorId);
@@ -229,6 +239,11 @@ Compiler.prototype.initPanerButtons = function () {
     var createIrView = _.bind(function () {
         return Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
             this.sourceEditorId);
+    }, this);
+
+    var createRustMirView = _.bind(function () {
+        return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
+            this.getCompilerName(), this.sourceEditorId);
     }, this);
 
     var createGccDumpView = _.bind(function () {
@@ -282,6 +297,19 @@ Compiler.prototype.initPanerButtons = function () {
         insertPoint.addChild(createOptView);
     }, this));
 
+    var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
+    this.container.layoutManager
+        .createDragSource(this.flagsButton, createFlagsView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.flagsButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createFlagsView);
+    }, this));
+
+    popularArgumentsMenu.append(this.flagsButton);
+
     this.container.layoutManager
         .createDragSource(this.astButton, createAstView)
         ._dragListener.on('dragStart', togglePannerAdder);
@@ -300,6 +328,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createIrView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.rustMirButton, createRustMirView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.rustMirButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createRustMirView);
     }, this));
 
     this.container.layoutManager
@@ -583,6 +621,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
             produceIr: this.irViewOpen,
+            produceRustMir: this.rustMirViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
@@ -682,7 +721,7 @@ Compiler.prototype.sendCMakeCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code;
+                message = x.error || x.code || message;
             }
             onCompilerResponse(request,
                 errorResult('<Compilation failed: ' + message + '>'), false);
@@ -970,6 +1009,12 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
     }
 };
 
+Compiler.prototype.onCompilerFlagsChange = function (compilerId, compilerFlags) {
+    if (compilerId === this.id) {
+        this.onOptionsChange(compilerFlags);
+    }
+};
+
 Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
     if (this.id === compilerId) {
         var toolId = toolSettings.toolId;
@@ -1025,6 +1070,26 @@ Compiler.prototype.onOptViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
+    if (this.id === id) {
+        this.flagsViewOpen = false;
+        this.optionsField.val(compilerFlags);
+        this.optionsField.prop('disabled', this.flagsViewOpen);
+        this.optionsField.prop('placeholder', this.initialOptionsFieldPlacehoder);
+        this.flagsButton.prop('disabled', this.flagsViewOpen);
+
+        this.compilerService.requestPopularArguments(this.compiler.id, compilerFlags).then(
+            _.bind(function (result) {
+                if (result && result.result) {
+                    this.handlePopularArgumentsResult(result.result);
+                }
+            }, this)
+        );
+
+        this.saveState();
+    }
+};
+
 Compiler.prototype.onAstViewOpened = function (id) {
     if (this.id === id) {
         this.astButton.prop('disabled', true);
@@ -1058,6 +1123,21 @@ Compiler.prototype.onIrViewClosed = function (id) {
     if (this.id === id) {
         this.irButton.prop('disabled', false);
         this.irViewOpen = false;
+    }
+};
+
+Compiler.prototype.onRustMirViewOpened = function (id) {
+    if (this.id === id) {
+        this.rustMirButton.prop('disabled', true);
+        this.rustMirViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onRustMirViewClosed = function (id) {
+    if (this.id === id) {
+        this.rustMirButton.prop('disabled', false);
+        this.rustMirViewOpen = false;
     }
 };
 
@@ -1130,6 +1210,19 @@ Compiler.prototype.onOptViewOpened = function (id) {
     }
 };
 
+Compiler.prototype.onFlagsViewOpened = function (id) {
+    if (this.id === id) {
+        this.flagsViewOpen = true;
+        this.handlePopularArgumentsResult(false);
+        this.optionsField.prop('disabled', this.flagsViewOpen);
+        this.optionsField.val('');
+        this.optionsField.prop('placeholder', 'see detailed flags window');
+        this.flagsButton.prop('disabled', this.flagsViewOpen);
+        this.compile();
+        this.saveState();
+    }
+};
+
 Compiler.prototype.onCfgViewOpened = function (id) {
     if (this.id === id) {
         this.cfgButton.prop('disabled', true);
@@ -1180,8 +1273,10 @@ Compiler.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
+    this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
+    this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
@@ -1195,6 +1290,7 @@ Compiler.prototype.initButtons = function (state) {
     this.outputErrorCount = this.domRoot.find('span.err-count');
 
     this.optionsField = this.domRoot.find('.options');
+    this.initialOptionsFieldPlacehoder = this.optionsField.prop('placeholder');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.fullTimingInfo = this.domRoot.find('.full-timing-info');
@@ -1221,7 +1317,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('', '');
+    this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -1272,11 +1368,17 @@ Compiler.prototype.supportsTool = function (toolId) {
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
         var args = '';
+        var monacoStdin = false;
         var langTools = options.tools[this.currentLangId];
-        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
-            args = langTools[toolId].tool.args;
+        if (langTools && langTools[toolId] && langTools[toolId].tool){
+            if (langTools[toolId].tool.args !== undefined) {
+                args = langTools[toolId].tool.args;
+            }
+            if (langTools[toolId].tool.monacoStdin !== undefined) {
+                monacoStdin = langTools[toolId].tool.monacoStdin;
+            }
         }
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, this.sourceTreeId);
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin, this.sourceTreeId);
     }, this);
 
     this.container.layoutManager
@@ -1370,8 +1472,12 @@ Compiler.prototype.updateButtons = function () {
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
     this.optButton.prop('disabled', this.optViewOpen || !this.compiler.supportsOptOutput);
+    if (this.flagsButton) {
+        this.flagsButton.prop('disabled', this.flagsViewOpen);
+    }
     this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
     this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
+    this.rustMirButton.prop('disabled', /* this.rustMirViewOpen || !this.compiler.supportsRustMirView*/ false);
     this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
 
@@ -1381,12 +1487,13 @@ Compiler.prototype.updateButtons = function () {
 };
 
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
-    var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
-    popularArgumentsMenu.html('');
+    var popularArgumentsMenu = $(this.domRoot.find('div.populararguments div.dropdown-menu'));
 
-    if (result) {
-        var addedOption = false;
+    while (popularArgumentsMenu.children().length > 1) {
+        popularArgumentsMenu.children()[1].remove();
+    }
 
+    if (result && !this.flagsViewOpen) {
         _.forEach(result, _.bind(function (arg, key) {
             var argumentButton = $(document.createElement('button'));
             argumentButton.addClass('dropdown-item btn btn-light btn-sm');
@@ -1411,16 +1518,8 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
             }, this));
 
             popularArgumentsMenu.append(argumentButton);
-            addedOption = true;
         }, this));
 
-        if (!addedOption) {
-            $('div.populararguments').hide();
-        } else {
-            $('div.populararguments').show();
-        }
-    } else {
-        $('div.populararguments').hide();
     }
 };
 
@@ -1439,6 +1538,7 @@ Compiler.prototype.initListeners = function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
+    this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('treeClose', this.onTreeClose, this);
     this.eventHub.on('colours', this.onColours, this);
@@ -1456,10 +1556,14 @@ Compiler.prototype.initListeners = function () {
 
     this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
+    this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
+    this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+    this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
+    this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
     this.eventHub.on('outputClosed', this.onOutputClosed, this);
 
@@ -1653,6 +1757,7 @@ Compiler.prototype.currentState = function () {
         libs: this.libsWidget.get(),
         lang: this.currentLangId,
         selection: this.selection,
+        flagsViewOpen: this.flagsViewOpen,
     };
     this.fontScale.addState(state);
     return state;
@@ -1711,10 +1816,11 @@ Compiler.prototype.getPaneName = function () {
 Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
+    var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion, compilerNotification);
+    this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
 
 Compiler.prototype.resendResult = function () {
@@ -1824,15 +1930,36 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     this.fullCompilerName.popover('dispose');
     // `notification` contains HTML from a config file, so is 'safe'.
     // `version` comes from compiler output, so isn't, and is escaped.
+    var bodyContent = $('<div>');
+    var versionContent = $('<div>')
+        .html(_.escape(version.version));
+    bodyContent.append(versionContent);
+    if (version.fullVersion) {
+        var hiddenSection = $('<div>');
+        var hiddenVersionText = $('<div>')
+            .html(_.escape(version.fullVersion))
+            .hide();
+        var clickToExpandContent = $('<a>')
+            .attr('href', 'javascript:;')
+            .text('Toggle full version output')
+            .on('click', _.bind(function () {
+                versionContent.toggle();
+                hiddenVersionText.toggle();
+                this.fullCompilerName.popover('update');
+            }, this));
+        hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
+        bodyContent.append(hiddenSection);
+    }
     this.fullCompilerName.popover({
         html: true,
-        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+        title: notification ?
+            $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
             'Full compiler version',
-        content: _.escape(version) || '',
-        template: '<div class="popover' +
-            (version ? ' compiler-options-popover' : '') +
-            '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+        content: bodyContent,
+        template: '<div class="popover' + (version ? ' compiler-options-popover' : '') + '" role="tooltip">' +
+            '<div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+            '</div>',
     });
 };
 

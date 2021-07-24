@@ -56,6 +56,7 @@ var shareServices = {
 };
 
 function filterComponentState(config, keysToRemove) {
+    keysToRemove = keysToRemove || ['selection'];
     function filterComponentStateImpl(component) {
         if (component.content) {
             for (var i = 0; i < component.content.length; i++) {
@@ -65,8 +66,12 @@ function filterComponentState(config, keysToRemove) {
 
         if (component.componentState) {
             Object.keys(component.componentState)
-                .filter(function (key) { return keysToRemove.includes(key); })
-                .forEach(function (key) { delete component.componentState[key]; });
+                .filter(function (key) {
+                    return keysToRemove.includes(key);
+                })
+                .forEach(function (key) {
+                    delete component.componentState[key];
+                });
         }
     }
 
@@ -279,8 +284,7 @@ Sharing.prototype.onOpenModalPane = function (event) {
 };
 
 Sharing.prototype.onStateChanged = function () {
-    var layoutConfig = this.layout.toConfig();
-    var config = filterComponentState(layoutConfig, ['selection']);
+    var config = filterComponentState(this.layout.toConfig());
     this.ensureUrlIsNotOutdated(config);
     if (options.embedded) {
         var strippedToLast = window.location.pathname;
@@ -293,7 +297,7 @@ Sharing.prototype.onStateChanged = function () {
 Sharing.prototype.ensureUrlIsNotOutdated = function (config) {
     var stringifiedConfig = JSON.stringify(config);
     if (stringifiedConfig !== this.lastState) {
-        if (window.location.pathname !== window.httpRoot) {
+        if (this.lastState != null && window.location.pathname !== window.httpRoot) {
             window.history.replaceState(null, null, window.httpRoot);
         }
         this.lastState = stringifiedConfig;
@@ -368,4 +372,5 @@ Sharing.prototype.isNavigatorClipboardAvailable = function () {
 
 module.exports = {
     Sharing: Sharing,
+    filterComponentState: filterComponentState,
 };

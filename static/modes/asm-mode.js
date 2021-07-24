@@ -43,6 +43,8 @@ function definition() {
                 [/^<.*>$/, {token: 'annotation'}],
                 // Label definition
                 [/^[.a-zA-Z0-9_$?@].*:/, {token: 'type.identifier'}],
+                // Label definition (quoted)
+                [/^"([^"\\]|\\.)*":/, {token: 'type.identifier'}],
                 // Label definition (ARM style)
                 [/^\s*[|][^|]*[|]/, {token: 'type.identifier'}],
                 // Label definition (CL style)

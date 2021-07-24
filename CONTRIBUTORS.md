@@ -102,3 +102,4 @@ From oldest to newest contributor, we would like to thank:
 - [Tamir Bahar](https://github.com/tmr232)
 - [Daniel Below](https://github.com/DanielBelow)
 - [Oleksandr Muliar](https://github.com/msdinit)
+- [Quinton Miller](https://github.com/HertzDevil)

@@ -49,6 +49,7 @@ var motd = require('./motd');
 var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var History = require('./history');
 var presentation = require('./presentation');
 
 //css
@@ -384,6 +385,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     if (config.maximisedItemId !== '__glMaximised') return;
 
     var found = false;
+
     function impl(component) {
         if (component.id === '__glMaximised') {
             found = true;
@@ -586,7 +588,18 @@ function start() {
         window.open(sponsor.url);
     };
 
+    if (options.pageloadUrl) {
+        setTimeout(function () {
+            var visibleIcons = $('.ces-icon:visible').map(function (index, value) {
+                return value.dataset.statsid;
+            }).get().join(',');
+            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+        }, 5000);
+    }
+
     sizeRoot();
+
+    History.trackHistory(layout);
     new Sharing(layout);
 }
 
