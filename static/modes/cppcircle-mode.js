@@ -26,25 +26,13 @@
 var $ = require('jquery');
 var monaco = require('monaco-editor');
 var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+var cppp = require('./cppp-mode');
 
 // We need to create a new definition for circle so we can
 // add @meta keywords and remove invalid ones
 
 function definition() {
-    var cppcircle = $.extend(true, {}, cpp.language); // deep copy
-
-    function removeKeyword(keyword) {
-        var index = cppcircle.keywords.indexOf(keyword);
-        if (index > -1) {
-            cppcircle.keywords.splice(index, 1);
-        }
-    }
-
-    function removeKeywords(keywords) {
-        for (var i = 0; i < keywords.length; ++i) {
-            removeKeyword(keywords[i]);
-        }
-    }
+    var cppcircle = $.extend(true, {}, cppp); // deep copy
 
     function addKeywords(keywords) {
         // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as
@@ -53,12 +41,6 @@ function definition() {
             cppcircle.keywords.push(keywords[i]);
         }
     }
-
-    // We remove everything that's not an identifier, underscore reserved name and not an official C++ keyword...
-    // Regarding #617, final is a identifier with special meaning, not a fully qualified keyword
-    removeKeywords(['abstract', 'amp', 'array', 'cpu', 'delegate', 'each', 'event', 'finally', 'gcnew',
-        'generic', 'in', 'initonly', 'interface', 'interior_ptr', 'internal', 'literal', 'partial', 'pascal',
-        'pin_ptr', 'property', 'ref', 'restrict', 'safe_cast', 'sealed', 'title_static', 'where']);
 
     addKeywords(['@array', '@attribute', '@base_count', '@base_offset', '@base_offsets', '@base_type',
         '@base_type_string', '@base_type_strings', '@base_types', '@base_value', '@base_values', '@codegen',
@@ -77,10 +59,6 @@ function definition() {
     return cppcircle;
 }
 
-var def = definition();
-
 monaco.languages.register({ id: 'cppcircle' });
 monaco.languages.setLanguageConfiguration('cppcircle', cpp.conf);
-monaco.languages.setMonarchTokensProvider('cppcircle', def);
-
-module.exports = def;
+monaco.languages.setMonarchTokensProvider('cppcircle', definition());
