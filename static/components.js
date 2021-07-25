@@ -129,13 +129,12 @@ module.exports = {
             componentState: {},
         };
     },
-    getToolInputViewWith: function (compilerId, editorId, toolId, toolName) {
+    getToolInputViewWith: function (compilerId, toolId, toolName) {
         return {
             type: 'component',
             componentName: 'toolInputView',
             componentState: {
                 compilerId: compilerId,
-                editorId: editorId,
                 toolId: toolId,
                 toolName: toolName,
             },
