@@ -56,6 +56,11 @@ function definition() {
         '@pack_type', '@parse_expression', '@puts', '@range', '@sfinae', '@statements', '@static_type', '@string',
         '@tattribute', '@type_enum', '@type_id', '@type_name', '@type_string']);
 
+    // Hack to put `@...` keywords in place
+    cppcircle.tokenizer.root.unshift(
+        [/@\w+/, {cases: {'@keywords': {token: 'keyword.$0'}}}]
+    );
+
     return cppcircle;
 }
 
