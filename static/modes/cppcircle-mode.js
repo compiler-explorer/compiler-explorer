@@ -28,8 +28,7 @@ var monaco = require('monaco-editor');
 var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 var cppp = require('./cppp-mode');
 
-// We need to create a new definition for circle so we can
-// add @meta keywords and remove invalid ones
+// circle is c++ with a few extra '@'-prefixed keywords.
 
 function definition() {
     var cppcircle = $.extend(true, {}, cppp); // deep copy
