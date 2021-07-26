@@ -1321,17 +1321,25 @@ Compiler.prototype.updateButtons = function () {
     this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
-    this.optButton.prop('disabled', this.optViewOpen || !this.compiler.supportsOptOutput);
     if (this.flagsButton) {
         this.flagsButton.prop('disabled', this.flagsViewOpen);
     }
-    this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
-    this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
-    this.rustMirButton.prop('disabled', this.rustMirViewOpen || !this.compiler.supportsRustMirView);
-    this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
-    this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
+    this.optButton.prop('disabled', this.optViewOpen);
+    this.astButton.prop('disabled', this.astViewOpen);
+    this.irButton.prop('disabled', this.irViewOpen);
+    this.rustMirButton.prop('disabled', this.rustMirViewOpen);
+    this.cfgButton.prop('disabled', this.cfgViewOpen);
+    this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
+    // The executorButton does not need to be changed here, because you can create however
+    // many executors as you want.
 
-    this.executorButton.prop('disabled', !this.compiler.supportsExecute);
+    this.optButton.toggle(!!this.compiler.supportsOptOutput);
+    this.astButton.toggle(!!this.compiler.supportsAstView);
+    this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
+    this.cfgButton.toggle(!!this.compiler.supportsCfg);
+    this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
+    this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
 };
