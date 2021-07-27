@@ -31,12 +31,14 @@ var compiler = require('./panes/compiler');
 var executor = require('./panes/executor');
 var output = require('./panes/output');
 var tool = require('./panes/tool');
+var toolInputView = require('./panes/tool-input-view');
 var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
 var flagsView = require('./panes/flags-view');
 var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
+var rustMirView = require('./panes/rustmir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -100,6 +102,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.toolFactory(container, state);
         });
+    layout.registerComponent(Components.getToolInputView().componentName,
+        function (container, state) {
+            return self.toolInputViewFactory(container, state);
+        });
     layout.registerComponent(diff.getComponent().componentName,
         function (container, state) {
             return self.diffFactory(container, state);
@@ -119,6 +125,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getIrView().componentName,
         function (container, state) {
             return self.irViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getRustMirView().componentName,
+        function (container, state) {
+            return self.rustMirViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -204,6 +214,10 @@ Hub.prototype.toolFactory = function (container, state) {
     return new tool.Tool(this, container, state);
 };
 
+Hub.prototype.toolInputViewFactory = function (container, state) {
+    return new toolInputView.ToolInputView(this, container, state);
+};
+
 Hub.prototype.diffFactory = function (container, state) {
     return new diff.Diff(this, container, state);
 };
@@ -222,6 +236,10 @@ Hub.prototype.astViewFactory = function (container, state) {
 
 Hub.prototype.irViewFactory = function (container, state) {
     return new irView.Ir(this, container, state);
+};
+
+Hub.prototype.rustMirViewFactory = function (container, state) {
+    return new rustMirView.RustMir(this, container, state);
 };
 
 Hub.prototype.gccDumpViewFactory = function (container, state) {

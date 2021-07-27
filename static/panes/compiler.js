@@ -217,6 +217,11 @@ Compiler.prototype.initPanerButtons = function () {
             this.sourceEditorId);
     }, this);
 
+    var createRustMirView = _.bind(function () {
+        return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
+            this.getCompilerName(), this.sourceEditorId);
+    }, this);
+
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
             this.lastResult.gccDumpOutput);
@@ -297,6 +302,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createIrView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.rustMirButton, createRustMirView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.rustMirButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createRustMirView);
     }, this));
 
     this.container.layoutManager
@@ -579,6 +594,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
             produceIr: this.irViewOpen,
+            produceRustMir: this.rustMirViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
@@ -974,6 +990,21 @@ Compiler.prototype.onIrViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onRustMirViewOpened = function (id) {
+    if (this.id === id) {
+        this.rustMirButton.prop('disabled', true);
+        this.rustMirViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onRustMirViewClosed = function (id) {
+    if (this.id === id) {
+        this.rustMirButton.prop('disabled', false);
+        this.rustMirViewOpen = false;
+    }
+};
+
 Compiler.prototype.onGccDumpUIInit = function (id) {
     if (this.id === id) {
         this.compile();
@@ -1109,6 +1140,7 @@ Compiler.prototype.initButtons = function (state) {
     this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
+    this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
@@ -1188,11 +1220,17 @@ Compiler.prototype.supportsTool = function (toolId) {
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
     var createToolView = _.bind(function () {
         var args = '';
+        var monacoStdin = false;
         var langTools = options.tools[this.currentLangId];
-        if (langTools && langTools[toolId] && langTools[toolId].tool && langTools[toolId].tool.args !== undefined) {
-            args = langTools[toolId].tool.args;
+        if (langTools && langTools[toolId] && langTools[toolId].tool){
+            if (langTools[toolId].tool.args !== undefined) {
+                args = langTools[toolId].tool.args;
+            }
+            if (langTools[toolId].tool.monacoStdin !== undefined) {
+                monacoStdin = langTools[toolId].tool.monacoStdin;
+            }
         }
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args);
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin);
     }, this);
 
     this.container.layoutManager
@@ -1283,16 +1321,25 @@ Compiler.prototype.updateButtons = function () {
     this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1);
     formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
-    this.optButton.prop('disabled', this.optViewOpen || !this.compiler.supportsOptOutput);
     if (this.flagsButton) {
         this.flagsButton.prop('disabled', this.flagsViewOpen);
     }
-    this.astButton.prop('disabled', this.astViewOpen || !this.compiler.supportsAstView);
-    this.irButton.prop('disabled', this.irViewOpen || !this.compiler.supportsIrView);
-    this.cfgButton.prop('disabled', this.cfgViewOpen || !this.compiler.supportsCfg);
-    this.gccDumpButton.prop('disabled', this.gccDumpViewOpen || !this.compiler.supportsGccDump);
+    this.optButton.prop('disabled', this.optViewOpen);
+    this.astButton.prop('disabled', this.astViewOpen);
+    this.irButton.prop('disabled', this.irViewOpen);
+    this.rustMirButton.prop('disabled', this.rustMirViewOpen);
+    this.cfgButton.prop('disabled', this.cfgViewOpen);
+    this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
+    // The executorButton does not need to be changed here, because you can create however
+    // many executors as you want.
 
-    this.executorButton.prop('disabled', !this.compiler.supportsExecute);
+    this.optButton.toggle(!!this.compiler.supportsOptOutput);
+    this.astButton.toggle(!!this.compiler.supportsAstView);
+    this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
+    this.cfgButton.toggle(!!this.compiler.supportsCfg);
+    this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
+    this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
 };
@@ -1371,6 +1418,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+    this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
+    this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
     this.eventHub.on('outputClosed', this.onOutputClosed, this);
 

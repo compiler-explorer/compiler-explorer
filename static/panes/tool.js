@@ -30,6 +30,7 @@ var FontScale = require('../fontscale');
 var AnsiToHtml = require('../ansi-to-html');
 var Toggles = require('../toggles');
 var ga = require('../analytics');
+var Components = require('../components');
 var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options');
@@ -45,6 +46,7 @@ function makeAnsiToHtml(color) {
 }
 
 function Tool(hub, container, state) {
+    this.hub = hub;
     this.container = container;
     this.compilerId = state.compiler;
     this.editorId = state.editor;
@@ -59,11 +61,15 @@ function Tool(hub, container, state) {
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
     this.badLangToolbar = this.domRoot.find('.bad-lang');
     this.compilerName = '';
+    this.monacoStdin = state.monacoStdin || false;
+    this.monacoEditorOpen = state.monacoEditorOpen || false;
+    this.monacoEditorHasBeenAutoOpened = state.monacoEditorHasBeenAutoOpened || false;
+    this.monacoStdinField = '';
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
     this.optionsField = this.domRoot.find('input.options');
-    this.stdinField = this.domRoot.find('textarea.tool-stdin');
+    this.localStdinField = this.domRoot.find('textarea.tool-stdin');
 
     this.outputEditor = monaco.editor.create(this.editorContentRoot[0], monacoConfig.extendConfig({
         readOnly: true,
@@ -77,6 +83,10 @@ function Tool(hub, container, state) {
     this.fontScale.on('change', _.bind(function () {
         this.saveState();
     }, this));
+
+    this.createToolInputView = _.bind(function () {
+        return Components.getToolInputViewWith(this.compilerId, this.editorId, this.toolId, this.toolName);
+    }, this);
 
     this.initButtons(state);
     this.options = new Toggles(this.domRoot.find('.options'), state);
@@ -107,17 +117,29 @@ Tool.prototype.initCallbacks = function () {
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+    this.eventHub.on('toolInputChange', this.onToolInputChange, this);
+    this.eventHub.on('toolInputViewClosed', this.onToolInputViewClosed, this);
 
     this.toggleArgs.on('click', _.bind(function () {
         this.togglePanel(this.toggleArgs, this.panelArgs);
     }, this));
 
     this.toggleStdin.on('click', _.bind(function () {
-        this.togglePanel(this.toggleStdin, this.panelStdin);
+        if (!this.monacoStdin) {
+            this.togglePanel(this.toggleStdin, this.panelStdin);
+        } else {
+            if (!this.monacoEditorOpen) {
+                this.openMonacoEditor();
+            } else {
+                this.monacoEditorOpen = false;
+                this.toggleStdin.removeClass('active');
+                this.eventHub.emit('toolInputViewCloseRequest', this.compilerId, this.editorId, this.toolId);
+            }
+        }
     }, this));
 
     if (MutationObserver !== undefined) {
-        new MutationObserver(_.bind(this.resize, this)).observe(this.stdinField[0], {
+        new MutationObserver(_.bind(this.resize, this)).observe(this.localStdinField[0], {
             attributes: true, attributeFilter: ['style'],
         });
     }
@@ -170,13 +192,17 @@ Tool.prototype.initArgs = function (state) {
         }
     }
 
-    if (this.stdinField) {
-        this.stdinField
+    if (this.localStdinField) {
+        this.localStdinField
             .on('change', optionsChange)
             .on('keyup', optionsChange);
 
         if (state.stdin) {
-            this.stdinField.val(state.stdin);
+            if (!this.monacoStdin) {
+                this.localStdinField.val(state.stdin);
+            } else {
+                this.eventHub.emit('setToolInput', this.compilerId, this.editorId, this.toolId, state.stdin);
+            }
         }
     }
 };
@@ -189,12 +215,50 @@ Tool.prototype.getInputArgs = function () {
     }
 };
 
-Tool.prototype.getInputStdin = function () {
-    if (this.stdinField) {
-        return this.stdinField.val();
-    } else {
-        return '';
+Tool.prototype.onToolInputChange = function (compilerId, editorId, toolId, input) {
+    if (this.compilerId === compilerId && this.editorId === editorId && this.toolId === toolId) {
+        this.monacoStdinField = input;
+        this.onOptionsChange();
+        this.eventHub.emit('toolSettingsChange', this.compilerId);
     }
+};
+
+Tool.prototype.onToolInputViewClosed = function (compilerId, editorId, toolId, input) {
+    if (this.compilerId === compilerId && this.editorId === editorId && this.toolId === toolId) {
+        // Duplicate close messages have been seen, with the second having no value.
+        // If we have a current value and the new value is empty, ignore the message.
+        if (this.monacoStdinField && input) {
+            this.monacoStdinField = input;
+            this.monacoEditorOpen = false;
+            this.toggleStdin.removeClass('active');
+
+            this.onOptionsChange();
+            this.eventHub.emit('toolSettingsChange', this.compilerId);
+        }
+    }
+};
+
+Tool.prototype.getInputStdin = function () {
+    if (!this.monacoStdin) {
+        if (this.localStdinField) {
+            return this.localStdinField.val();
+        } else {
+            return '';
+        }
+    } else {
+        return this.monacoStdinField;
+    }
+};
+
+Tool.prototype.openMonacoEditor = function () {
+    this.monacoEditorHasBeenAutoOpened = true; // just in case we get here in an unexpected way
+    this.monacoEditorOpen = true;
+    this.toggleStdin.addClass('active');
+    var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+        this.container.layoutManager.root.contentItems[0];
+    insertPoint.addChild(this.createToolInputView);
+    this.onOptionsChange();
+    this.eventHub.emit('setToolInput', this.compilerId, this.editorId, this.toolId, this.monacoStdinField);
 };
 
 Tool.prototype.getEffectiveOptions = function () {
@@ -245,7 +309,13 @@ Tool.prototype.initToggleButtons = function (state) {
     }
 
     if (state.stdinPanelShown === true) {
-        this.showPanel(this.toggleStdin, this.panelStdin);
+        if (!this.monacoStdin) {
+            this.showPanel(this.toggleStdin, this.panelStdin);
+        } else {
+            if (!this.monacoEditorOpen) {
+                this.openMonacoEditor();
+            }
+        }
     }
 };
 
@@ -279,7 +349,11 @@ Tool.prototype.currentState = function () {
         toolId: this.toolId,
         args: this.getInputArgs(),
         stdin: this.getInputStdin(),
-        stdinPanelShown: !this.panelStdin.hasClass('d-none'),
+        stdinPanelShown: (this.monacoStdin && this.monacoEditorOpen) ||
+         (this.panelStdin && !this.panelStdin.hasClass('d-none')),
+        monacoStdin: this.monacoStdin,
+        monacoEditorOpen: this.monacoEditorOpen,
+        monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
         argsPanelShow: !this.panelArgs.hasClass('d-none'),
     };
     this.fontScale.addState(state);
@@ -335,15 +409,18 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
         if (toolInfo) {
             this.toggleStdin.prop('disabled', false);
 
-            if (toolInfo.tool.stdinHint) {
-                this.stdinField.prop('placeholder', toolInfo.tool.stdinHint);
+            if (this.monacoStdin && !this.monacoEditorOpen && !this.monacoEditorHasBeenAutoOpened) {
+                this.monacoEditorHasBeenAutoOpened = true;
+                this.openMonacoEditor();
+            } else if (!this.monacoStdin && toolInfo.tool.stdinHint) {
+                this.localStdinField.prop('placeholder', toolInfo.tool.stdinHint);
                 if (toolInfo.tool.stdinHint === 'disabled') {
                     this.toggleStdin.prop('disabled', true);
                 } else {
                     this.showPanel(this.toggleStdin, this.panelStdin);
                 }
             } else {
-                this.stdinField.prop('placeholder', 'Tool stdin...');
+                this.localStdinField.prop('placeholder', 'Tool stdin...');
             }
         }
 

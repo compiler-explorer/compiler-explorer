@@ -87,7 +87,7 @@ module.exports = {
             componentState: {compiler: compiler, editor: editor},
         };
     },
-    getToolViewWith: function (compiler, editor, toolId, args) {
+    getToolViewWith: function (compiler, editor, toolId, args, monacoStdin) {
         return {
             type: 'component',
             componentName: 'tool',
@@ -96,6 +96,26 @@ module.exports = {
                 editor: editor,
                 toolId: toolId,
                 args: args,
+                monacoStdin: monacoStdin,
+            },
+        };
+    },
+    getToolInputView: function () {
+        return {
+            type: 'component',
+            componentName: 'toolInputView',
+            componentState: {},
+        };
+    },
+    getToolInputViewWith: function (compilerId, editorId, toolId, toolName) {
+        return {
+            type: 'component',
+            componentName: 'toolInputView',
+            componentState: {
+                compilerId: compilerId,
+                editorId: editorId,
+                toolId: toolId,
+                toolName: toolName,
             },
         };
     },
@@ -244,6 +264,26 @@ module.exports = {
                 id: id,
                 source: source,
                 irOutput: irOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getRustMirView: function () {
+        return {
+            type: 'component',
+            componentName: 'rustmir',
+            componentState: {},
+        };
+    },
+    getRustMirViewWith: function (id, source, rustMirOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rustmir',
+            componentState: {
+                id: id,
+                source: source,
+                rustMirOutput: rustMirOutput,
                 compilerName: compilerName,
                 editorid: editorid,
             },

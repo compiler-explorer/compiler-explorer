@@ -93,9 +93,12 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-ast(title="Show AST output")
             span.dropdown-icon.fas.fa-leaf
             | AST output
-          button.dropdown-item.btn.btn-sm.btn-light.view-ir(title="Show IR output")
+          button.dropdown-item.btn.btn-sm.btn-light.view-ir(title="Show LLVM IR output")
             span.dropdown-icon.fas.fa-align-center
-            | IR output
+            | LLVM IR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-rustmir(title="Show Rust MIR output")
+            span.dropdown-icon.fas.fa-water
+            | Rust MIR output
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
@@ -188,6 +191,11 @@
           input.d-none(type="checkbox" checked=false)
     pre.content
 
+  #tool-input
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
   #tool-output
     .top-bar.bad-lang.bg-warning(role="toolbar" style="display: none")
       p The current language or compiler does not support this tool
@@ -247,6 +255,11 @@
     .monaco-placeholder
 
   #ir
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
+  #rustmir
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
