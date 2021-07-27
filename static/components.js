@@ -107,13 +107,12 @@ module.exports = {
             componentState: {},
         };
     },
-    getToolInputViewWith: function (compilerId, editorId, toolId, toolName) {
+    getToolInputViewWith: function (compilerId, toolId, toolName) {
         return {
             type: 'component',
             componentName: 'toolInputView',
             componentState: {
                 compilerId: compilerId,
-                editorId: editorId,
                 toolId: toolId,
                 toolName: toolName,
             },
@@ -153,14 +152,13 @@ module.exports = {
             componentState: {},
         };
     },
-    getFlagsViewWith: function (id, compilerName, editorid, compilerFlags) {
+    getFlagsViewWith: function (id, compilerName, compilerFlags) {
         return {
             type: 'component',
             componentName: 'flags',
             componentState: {
                 id: id,
                 compilerName: compilerName,
-                editorid: editorid,
                 compilerFlags: compilerFlags,
             },
         };

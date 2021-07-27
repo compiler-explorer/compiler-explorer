@@ -199,8 +199,7 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
 
     var createFlagsView = _.bind(function () {
-        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.optionsField.val());
+        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.optionsField.val());
     }, this);
 
     if (this.flagsViewOpen) {
@@ -1555,10 +1554,16 @@ Compiler.prototype.updateCompilerUI = function () {
 
 Compiler.prototype.onCompilerChange = function (value) {
     this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
+
+    this.deferCompiles = true;
+    this.needsCompile = true;
+
     this.updateLibraries();
     this.saveState();
-    this.compile();
     this.updateCompilerUI();
+
+    this.undefer();
+
     this.sendCompiler();
 };
 

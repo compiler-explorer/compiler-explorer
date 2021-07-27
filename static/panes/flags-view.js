@@ -54,7 +54,6 @@ function Flags(hub, container, state) {
 
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
-    this._editorid = state.editorid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -112,8 +111,7 @@ Flags.prototype.initCallbacks = function () {
 
 Flags.prototype.setTitle = function () {
     this.container.setTitle(
-        this._compilerName + ' Detailed Compiler Flags (Editor #' +
-        this._editorid + ', Compiler #' + this._compilerid + ')');
+        this._compilerName + ' Detailed Compiler Flags (Compiler #' + this._compilerid + ')');
 };
 
 Flags.prototype.onCompiler = function (id, compiler) {
@@ -138,7 +136,6 @@ Flags.prototype.updateState = function () {
 Flags.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
-        editorid: this._editorid,
         selection: this.selection,
         compilerFlags: this.getOptions(),
     };
