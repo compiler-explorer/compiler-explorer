@@ -40,7 +40,7 @@ function definition() {
             ],
 
             opcode: [
-                [/[a-z_]\w*\s+$/, { token: 'keyword', next: '@root' }],
+                [/[a-z_]\w*\s*$/, { token: 'keyword', next: '@root' }],
                 [/([a-z_]\w*)(\s+)/, ['keyword', { token: '', next: '@arguments' }]],
             ],
 
