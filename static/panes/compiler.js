@@ -44,6 +44,7 @@ var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
 
 require('../modes/asm-mode');
+require('../modes/asmruby-mode');
 require('../modes/ptx-mode');
 
 var OpcodeCache = new LruCache({
