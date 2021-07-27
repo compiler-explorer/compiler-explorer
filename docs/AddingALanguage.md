@@ -29,7 +29,7 @@ If you want to add a new language to the site, you should follow this steps:
     }
     ```
     - The value returned by `key` above corresponds to the `compilerType` value
-      in `etc/config/{lenguage-key}.defaults.properties` (Explained below). This is usually `{language-key}`, but you
+      in `etc/config/{language-key}.defaults.properties` (Explained below). This is usually `{language-key}`, but you
       can use whatever fits best
     - Override the `OptionsForFilter` method from the base class
     - Comment out the line saying `fs.remove(result.dirPath);` in base-compiler.js, so the latest CE compile attempt
