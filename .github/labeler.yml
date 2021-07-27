@@ -22,11 +22,19 @@ lang-c++:
     - lib/compilers/ewarm.js
     - lib/compilers/awavr.js
     - etc/config/c++.*.properties
+lang-c++-opencl:
+    - etc/config/cpp_for_opencl.*.properties
+lang-circle:
+    - lib/compilers/circle.js
+    - etc/config/circle.*.properties
 lang-clean:
     - lib/compilers/clean.js
     - etc/config/clean.*.properties
 lang-cppx:
     - etc/config/cppx?(_blue|_gold).*.properties
+lang-crystal:
+    - lib/compilers/crystal.js
+    - etc/config/crystal.*.properties
 lang-cuda:
     - lib/compilers/nvcc.js
     - etc/config/cuda.*.properties
@@ -49,12 +57,17 @@ lang-ispc:
 lang-java:
     - lib/compilers/java.js
     - etc/config/java.*.properties
+lang-kotlin:
+    - lib/compilers/kotlin.js
+    - etc/config/kotlin.*.properties
 lang-nim:
     - lib/compilers/nim.js
     - etc/config/nim.*.properties
 lang-ocaml:
     - lib/compilers/ocaml.js
     - etc/config/ocaml.*.properties
+lang-opencl-c:
+    - etc/config/openclc.*.properties
 lang-pascal:
     - lib/compilers/pascal.js
     - etc/config/pascal.*.properties
@@ -64,6 +77,9 @@ lang-python:
 lang-rust:
     - lib/compilers/rust.js
     - etc/config/rust.*.properties
+lang-scala:
+    - lib/compilers/scala.js
+    - etc/config/scala.*.properties
 lang-swift:
     - lib/compilers/swift.js
     - etc/config/swift.*.properties
