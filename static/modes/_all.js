@@ -22,22 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-require('../modes/cppp-mode');
-require('../modes/cppx-gold-mode');
-require('../modes/cppx-blue-mode');
+require('../modes/ada-mode');
+require('../modes/clean-mode');
+require('../modes/cpp-for-opencl-mode');
 require('../modes/cppcircle-mode');
+require('../modes/cppp-mode');
+require('../modes/cppx-blue-mode');
+require('../modes/cppx-gold-mode');
+require('../modes/crystal-mode');
+require('../modes/cuda-mode');
 require('../modes/d-mode');
+require('../modes/fortran-mode');
+require('../modes/haskell-mode');
 require('../modes/ispc-mode');
 require('../modes/llvm-ir-mode');
-require('../modes/haskell-mode');
-require('../modes/ocaml-mode');
-require('../modes/clean-mode');
-require('../modes/cuda-mode');
-require('../modes/fortran-mode');
-require('../modes/openclc-mode');
-require('../modes/cpp-for-opencl-mode');
-require('../modes/zig-mode');
 require('../modes/nc-mode');
-require('../modes/ada-mode');
 require('../modes/nim-mode');
-require('../modes/crystal-mode');
+require('../modes/ocaml-mode');
+require('../modes/openclc-mode');
+require('../modes/zig-mode');
