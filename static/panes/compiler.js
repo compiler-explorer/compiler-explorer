@@ -726,16 +726,16 @@ Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
 Compiler.prototype.sendCMakeCompile = function (request) {
     var onCompilerResponse = _.bind(this.onCompileResponse, this);
 
-    if (this.pendingRequestSentAt) {
+    if (this.pendingCMakeRequestSentAt) {
         // If we have a request pending, then just store this request to do once the
         // previous request completes.
-        this.nextRequest = request;
+        this.nextCMakeRequest = request;
         return;
     }
     this.eventHub.emit('compiling', this.id, this.compiler);
     // Display the spinner
     this.handleCompilationStatus({code: 4});
-    this.pendingRequestSentAt = Date.now();
+    this.pendingCMakeRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     var progress = setTimeout(_.bind(function () {
@@ -991,10 +991,15 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
 
+    var next;
     if (this.nextRequest) {
-        var next = this.nextRequest;
+        next = this.nextRequest;
         this.nextRequest = null;
         this.sendCompile(next);
+    } else if (this.nextCMakeRequest) {
+        next = this.nextCMakeRequest;
+        this.nextCMakeRequest = null;
+        this.sendCMakeCompile(next);
     }
 };
 
