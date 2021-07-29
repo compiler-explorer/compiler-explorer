@@ -497,11 +497,14 @@ Compiler.prototype.initEditorActions = function () {
         }, this),
     });
 
+    this.isAsmKeywordCtxKey = this.outputEditor.createContextKey('isAsmKeyword', true);
+
     this.outputEditor.addAction({
         id: 'viewasmdoc',
         label: 'View assembly documentation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
         keybindingContext: null,
+        precondition: 'isAsmKeyword',
         contextMenuGroupId: 'help',
         contextMenuOrder: 1.5,
         run: _.bind(this.onAsmToolTip, this),
@@ -1909,10 +1912,10 @@ Compiler.prototype.onMouseUp = function (e) {
 
 Compiler.prototype.onMouseMove = function (e) {
     if (e === null || e.target === null || e.target.position === null) return;
-    if (this.settings.hoverShowSource === true && this.assembly) {
-        this.clearLinkedLines();
+    if (this.assembly) {
         var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
-        if (hoverAsm) {
+        if (this.settings.hoverShowSource === true && hoverAsm) {
+            this.clearLinkedLines();
             // We check that we actually have something to show at this point!
             var sourceLine = -1;
             var sourceColBegin = -1;
@@ -1960,36 +1963,39 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
 
-        if (this.getEffectiveFilters().intel) {
-            var lineTokens = _.bind(function (model, line) {
-                //Force line's state to be accurate
-                if (line > model.getLineCount()) return [];
-                var flavour = model.getModeId();
-                var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
-                return tokens.length > 0 ? tokens[0] : [];
-            }, this);
-
-            if (this.settings.hoverShowAsmDoc === true &&
-                _.some(lineTokens(this.outputEditor.getModel(), currentWord.range.startLineNumber), function (t) {
-                    return t.offset + 1 === currentWord.startColumn && t.type === 'keyword.asm';
-                })) {
-                getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
-                    if (!response) return;
-                    this.decorations.asmToolTip = {
-                        range: currentWord.range,
-                        options: {
-                            isWholeLine: false,
-                            hoverMessage: [{
-                                value: response.tooltip + '\n\nMore information available in the context menu.',
-                                isTrusted: true,
-                            }],
-                        },
-                    };
-                    this.updateDecorations();
-                }, this));
-            }
+        var isCurrentWordAsmKeyword = this.isWordAsmKeyword(currentWord);
+        this.isAsmKeywordCtxKey.set(isCurrentWordAsmKeyword);
+        if (isCurrentWordAsmKeyword && this.settings.hoverShowSource === true) {
+            getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
+                if (!response) return;
+                this.decorations.asmToolTip = {
+                    range: currentWord.range,
+                    options: {
+                        isWholeLine: false,
+                        hoverMessage: [{
+                            value: response.tooltip + '\n\nMore information available in the context menu.',
+                            isTrusted: true,
+                        }],
+                    },
+                };
+                this.updateDecorations();
+            }, this));
         }
     }
+};
+
+Compiler.prototype.getLineTokens = function (line) {
+    var model = this.outputEditor.getModel();
+    if (!model || line > model.getLineCount()) return [];
+    var flavour = model.getModeId();
+    var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
+    return tokens.length > 0 ? tokens[0] : [];
+};
+
+Compiler.prototype.isWordAsmKeyword = function (word) {
+    return _.some(this.getLineTokens(word.range.startLineNumber), function (t) {
+        return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
+    });
 };
 
 Compiler.prototype.onAsmToolTip = function (ed) {
