@@ -602,5 +602,6 @@ export class Tree {
         this.eventHub.unsubscribe();
         this.eventHub.emit('treeClose', this.id);
         this.hub.removeTree(this.id);
+        $('#add-tree').prop('disabled', false);
     }
 }
