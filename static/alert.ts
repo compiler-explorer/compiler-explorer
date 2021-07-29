@@ -27,7 +27,7 @@ import $ from 'jquery';
 import { AlertAskOptions, AlertNotifyOptions } from "./alert.interfaces";
 
 export class Alert {
-    yesHandler: () => void | null = null;
+    yesHandler: (answer?: string | string[] | number) => void | null = null;
     noHandler: () => void | null = null;
     prefixMessage: string = '';
 
@@ -37,6 +37,15 @@ export class Alert {
             this.yesHandler?.();
         });
         yesNoModal.find('button.no').on('click', () => {
+            this.noHandler?.();
+        });
+
+        const enterSomething = $('#enter-something');
+        enterSomething.find('button.yes').on('click', () => {
+            const answer = enterSomething.find('.question-answer');
+            this.yesHandler?.(answer.val());
+        });
+        enterSomething.find('button.no').on('click', () => {
             this.noHandler?.();
         });
     }
@@ -111,5 +120,38 @@ export class Alert {
         }
         // Append the newly created element to the container
         container.append(newElement);
+    }
+
+    /**
+     * Asks the user a two choice question, where the title, content and buttons are customizable
+     */
+    enterSomething(title: string, question: string, defaultValue: string, handlers: AlertAskOptions) {
+        const modal = $('#enter-something');
+        this.yesHandler = handlers?.yes ?? (() => undefined);
+        this.noHandler = handlers?.no ?? (() => undefined);
+
+        const yesButton = modal.find('.modal-footer .yes');
+        const noButton = modal.find('.modal-footer .no');
+        const answerEdit = modal.find('.modal-footer .question-answer');
+        answerEdit.val(defaultValue);
+        answerEdit.on('keyup', (e) => {
+            if (e.keyCode === 13 || e.which === 13) {
+                yesButton.trigger('click');
+            }
+        });
+
+        if (handlers.yesHtml) yesButton.html(handlers.yesHtml);
+        if (handlers.yesClass) yesButton.addClass(handlers.yesClass);
+        if (handlers.noHtml) noButton.html(handlers.noHtml);
+        if (handlers.noClass) noButton.addClass(handlers.noClass);
+        if (handlers.onClose) {
+            modal.off('hidden.bs.modal');
+            modal.on('hidden.bs.modal', handlers.onClose);
+        }
+
+        modal.on('shown.bs.modal', () => {
+            answerEdit.trigger('focus');
+        });
+        modal.modal();
     }
 }
