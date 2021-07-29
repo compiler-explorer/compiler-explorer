@@ -10,7 +10,7 @@ Compiler configuration is done through the `etc/config/c++.*.properties` files
 
 The various named configuration files are used in different contexts: for example `etc/config/c++.local.properties` take priority over
 `etc/config/c++.defaults.properties`. The `local` version is ignored by git, so you can make your own personalised changes there.
-The live site uses the `etc/config/c++.amazon.properties`.
+The live site uses the `etc/config/c++.amazon.properties` file.
 
 Within the file, configuration is a set of key and value pairs, separated by an `=`. Whitespace is _not_ trimmed.
 Lines starting with `#` are considered comments and not parsed.
