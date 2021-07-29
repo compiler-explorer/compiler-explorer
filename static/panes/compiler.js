@@ -2063,11 +2063,17 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
             options: this.options,
         };
         var info = this.infoByLang[this.currentLangId] || {};
+        this.deferCompiles = true;
         this.initLangAndCompiler({lang: newLangId, compiler: info.compiler});
         this.updateCompilersSelector(info);
-        this.updateCompilerUI();
-        this.sendCompiler();
         this.saveState();
+        this.updateCompilerUI();
+
+        // this is a workaround to delay compilation further until the Editor sends a compile request
+        this.needsCompile = false;
+
+        this.undefer();
+        this.sendCompiler();
     }
 };
 
