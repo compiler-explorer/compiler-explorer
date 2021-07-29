@@ -73,6 +73,8 @@ function Editor(hub, state, container) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
+    this.revealJumpStack = [];
+
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
 
@@ -639,6 +641,20 @@ Editor.prototype.initEditorActions = function () {
         }, this),
     });
 
+    this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
+
+    this.editor.addAction({
+        id: 'returnfromreveal',
+        label: 'Return from reveal jump',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.4,
+        precondition: 'hasRevealJumpStackElements',
+        run: _.bind(function () {
+            this.popAndRevealJump();
+        }, this),
+    });
+
     this.editor.addAction({
         id: 'toggleCompileOnChange',
         label: 'Toggle compile on change',
@@ -1071,9 +1087,24 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
     return {colBegin: column, colEnd: column + 1};
 };
 
+Editor.prototype.pushRevealJump = function () {
+    this.revealJumpStack.push(this.editor.saveViewState());
+    this.revealJumpStackHasElementsCtxKey.set(true);
+};
+
+Editor.prototype.popAndRevealJump = function () {
+    if (this.revealJumpStack.length > 0) {
+        this.editor.restoreViewState(this.revealJumpStack.pop());
+        this.revealJumpStackHasElementsCtxKey.set(this.revealJumpStack.length > 0);
+    }
+};
+
 Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {
     if (Number(editorId) === this.id) {
-        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) {
+            this.pushRevealJump();
+            this.editor.revealLineInCenter(lineNum);
+        }
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {
@@ -1108,7 +1139,10 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
 
 Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
     if (Number(id) === this.id) {
-        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) {
+            this.pushRevealJump();
+            this.editor.revealLineInCenter(lineNum);
+        }
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {

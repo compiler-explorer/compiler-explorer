@@ -111,6 +111,8 @@ function Compiler(hub, container, state) {
     this.linkedFadeTimeoutId = -1;
     this.toolsMenu = null;
 
+    this.revealJumpStack = [];
+
     this.initButtons(state);
 
     var monacoDisassembly = 'asm';
@@ -413,8 +415,9 @@ Compiler.prototype.jumpToLabel = function (position) {
     }
 
     // Highlight the new range.
-    var endLineContent =
-        this.outputEditor.getModel().getLineContent(labelDefLineNum);
+    var endLineContent = this.outputEditor.getModel().getLineContent(labelDefLineNum);
+
+    this.pushRevealJump();
 
     this.outputEditor.setSelection(new monaco.Selection(
         labelDefLineNum, 0,
@@ -422,6 +425,18 @@ Compiler.prototype.jumpToLabel = function (position) {
 
     // Jump to the given line.
     this.outputEditor.revealLineInCenter(labelDefLineNum);
+};
+
+Compiler.prototype.pushRevealJump = function () {
+    this.revealJumpStack.push(this.outputEditor.saveViewState());
+    this.revealJumpStackHasElementsCtxKey.set(true);
+};
+
+Compiler.prototype.popAndRevealJump = function () {
+    if (this.revealJumpStack.length > 0) {
+        this.outputEditor.restoreViewState(this.revealJumpStack.pop());
+        this.revealJumpStackHasElementsCtxKey.set(this.revealJumpStack.length > 0);
+    }
 };
 
 Compiler.prototype.initEditorActions = function () {
@@ -450,6 +465,20 @@ Compiler.prototype.initEditorActions = function () {
         }
         realMethod.apply(contextmenu, arguments);
     }, this);
+
+    this.revealJumpStackHasElementsCtxKey = this.outputEditor.createContextKey('hasRevealJumpStackElements', false);
+
+    this.outputEditor.addAction({
+        id: 'returnfromreveal',
+        label: 'Return from reveal jump',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.4,
+        precondition: 'hasRevealJumpStackElements',
+        run: _.bind(function () {
+            this.popAndRevealJump();
+        }, this),
+    });
 
     this.outputEditor.addAction({
         id: 'viewsource',
@@ -1689,7 +1718,12 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
                 }
             }
         });
-        if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
+
+        if (revealLine && lineNums[0]) {
+            this.pushRevealJump();
+            this.outputEditor.revealLineInCenter(lineNums[0]);
+        }
+
         var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
         var linkedLinesDecoration = _.map(lineNums, function (line) {
             return {
@@ -1724,7 +1758,10 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
 
 Compiler.prototype.onCompilerSetDecorations = function (id, lineNums, revealLine) {
     if (Number(id) === this.id) {
-        if (revealLine && lineNums[0]) this.outputEditor.revealLineInCenter(lineNums[0]);
+        if (revealLine && lineNums[0]) {
+            this.pushRevealJump();
+            this.outputEditor.revealLineInCenter(lineNums[0]);
+        }
         this.decorations.linkedCode = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
