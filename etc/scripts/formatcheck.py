@@ -5,6 +5,7 @@ import json
 import subprocess
 import os.path
 
+
 from typing import Set
 
 OWNER_REPO = ""
@@ -51,8 +52,11 @@ def paginated_get(entity: str, query: dict = None) -> [dict]:
     return result
 
 
-def list_open_prs() -> [dict]:
-    return paginated_get(f"repos/{OWNER_REPO}/pulls", {"state": "open"})
+def list_open_prs(stale_label: str = None) -> [dict]:
+    prs = paginated_get(f"repos/{OWNER_REPO}/pulls", {"state": "open"})
+    if stale_label is not None:
+        return [pr for pr in prs if any(label["name"] == stale_label for label in pr["labels"])]
+    return prs
 
 
 def list_pr_files(pr: dict) -> [dict]:
@@ -74,21 +78,24 @@ def list_files_under_vc() -> Set[str]:
 
 
 def make_file_formateable(path: str):
-    with open(path, "r+") as f:
-        content = ["/**\n", " * @prettier\n", " */\n"]
-        file_contents = f.readlines()
-        if file_contents[0:3] != content:
-            content.extend(file_contents)
-            f.seek(0)
-            f.writelines(content)
-            f.truncate()
+    try:
+        with open(path, "r+") as f:
+            content = ["/**\n", " * @prettier\n", " */\n"]
+            file_contents = f.readlines()
+            if file_contents[0:3] != content:
+                content.extend(file_contents)
+                f.seek(0)
+                f.writelines(content)
+                f.truncate()
+    except:
+        print(f"Error making {path} formatable")
 
 
 def main():
     # In case you want to save the result to avoid extra API calls
     use_file = False
     if not use_file or not os.path.isfile("./paths.json"):
-        current_prs = list_open_prs()
+        current_prs = list_open_prs(stale_label="likely-stale")
         modified_paths = set()
         for PR in current_prs:
             modified_paths.update(list_modified_paths_in_pr(PR))
