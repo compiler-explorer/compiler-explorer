@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { ClientState } from '../lib/clientstate';
-import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
+import { ClientStateNormalizer, ClientStateGoldenifier } from '../lib/clientstate-normalizer';
 
 import { fs } from './utils';
 
@@ -125,5 +125,16 @@ describe('ClientState parsing', () => {
         const jsonStr = fs.readFileSync('test/state/bug-2231.json');
         const state = new ClientState(JSON.parse(jsonStr));
         state.sessions[0].compilers.length.should.equal(1);
+    });
+
+    it('Tree support', () => {
+        const jsonStr = fs.readFileSync('test/state/tree.json');
+        const state = new ClientState(JSON.parse(jsonStr));
+        state.trees.length.should.equal(1);
+
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+
+        fs.writeFileSync('test/state/tree.normalized.json', JSON.stringify(gl.golden));
     });
 });

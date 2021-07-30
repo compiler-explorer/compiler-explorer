@@ -1,0 +1,122 @@
+{
+    "sessions": [
+        {
+            "id": 1,
+            "language": "c++",
+            "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": []
+        },
+        {
+            "id": 2,
+            "language": "c++",
+            "source": "#pragma once\n\nint square(int num);\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": []
+        },
+        {
+            "id": 4,
+            "language": "c++",
+            "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": []
+        },
+        {
+            "id": 3,
+            "language": "cmake",
+            "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": []
+        },
+        {
+            "id": false,
+            "language": "",
+            "source": "",
+            "conformanceview": false,
+            "compilers": [
+                {
+                    "id": "g103",
+                    "options": "-g -O3 -flto",
+                    "filters": {
+                        "binary": true,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ],
+            "executors": []
+        }
+    ],
+    "trees": [
+        {
+            "id": 1,
+            "isCMakeProject": true,
+            "compilerLanguageId": "c++",
+            "files": [
+                {
+                    "fileId": 1,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "example.cpp",
+                    "content": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+                    "editorId": 1,
+                    "langId": "c++"
+                },
+                {
+                    "fileId": 2,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "square.h",
+                    "content": "#pragma once\n\nint square(int num);\n",
+                    "editorId": 2,
+                    "langId": "c++"
+                },
+                {
+                    "fileId": 3,
+                    "isIncluded": true,
+                    "isOpen": false,
+                    "isMainSource": true,
+                    "filename": "CMakeLists.txt",
+                    "content": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
+                    "editorId": -1,
+                    "langId": "cmake"
+                },
+                {
+                    "fileId": 4,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "square.cpp",
+                    "content": "",
+                    "editorId": 4,
+                    "langId": ""
+                },
+                {
+                    "fileId": 6,
+                    "isIncluded": false,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "",
+                    "content": "",
+                    "editorId": 3,
+                    "langId": ""
+                }
+            ],
+            "newFileId": 7
+        }
+    ]
+}
