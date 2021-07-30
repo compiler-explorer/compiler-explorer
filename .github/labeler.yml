@@ -74,6 +74,9 @@ lang-pascal:
 lang-python:
     - lib/compilers/python.js
     - etc/config/python.*.properties
+lang-ruby:
+    - lib/compilers/ruby.js
+    - etc/config/ruby.*.properties
 lang-rust:
     - lib/compilers/rust.js
     - etc/config/rust.*.properties
