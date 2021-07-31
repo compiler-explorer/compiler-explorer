@@ -55,7 +55,7 @@ def paginated_get(entity: str, query: dict = None) -> [dict]:
 def list_open_prs(stale_label: str = None) -> [dict]:
     prs = paginated_get(f"repos/{OWNER_REPO}/pulls", {"state": "open"})
     if stale_label is not None:
-        return [pr for pr in prs if any(label["name"] == stale_label for label in pr["labels"])]
+        return [pr for pr in prs if not any(label["name"] == stale_label for label in pr["labels"])]
     return prs
 
 
