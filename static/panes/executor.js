@@ -78,7 +78,9 @@ function Executor(hub, container, state) {
     this.lastResult = {};
     this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
+    this.pendingCMakeRequestSentAt = 0;
     this.nextRequest = null;
+    this.nextCMakeRequest = null;
 
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
@@ -277,18 +279,18 @@ Executor.prototype.compileFromTree = function (options, bypassCache) {
 };
 
 Executor.prototype.sendCMakeCompile = function (request) {
-    var onCompilerResponse = _.bind(this.onCompileResponse, this);
+    var onCompilerResponse = _.bind(this.onCMakeResponse, this);
 
-    if (this.pendingRequestSentAt) {
+    if (this.pendingCMakeRequestSentAt) {
         // If we have a request pending, then just store this request to do once the
         // previous request completes.
-        this.nextRequest = request;
+        this.nextCMakeRequest = request;
         return;
     }
     // this.eventHub.emit('compiling', this.id, this.compiler);
     // Display the spinner
     this.handleCompilationStatus({code: 4});
-    this.pendingRequestSentAt = Date.now();
+    this.pendingCMakeRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
     this.compilerService.submitCMake(request)
@@ -416,14 +418,36 @@ Executor.prototype.getBuildStderrFromResult = function (result) {
     return arr;
 };
 
-Executor.prototype.onCompileResponse = function (request, result, cached) {
-    // Save which source produced this change. It should probably be saved earlier though
+Executor.prototype.onCMakeResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
-    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    var timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
     this.lastTimeTaken = timeTaken;
-    var wasRealReply = this.pendingRequestSentAt > 0;
-    this.pendingRequestSentAt = 0;
+    var wasRealReply = this.pendingCMakeRequestSentAt > 0;
+    this.pendingCMakeRequestSentAt = 0;
+
+    this.handleCompileRequestAndResponse(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCMakeRequest();
+};
+
+Executor.prototype.doNextCompileRequest = function () {
+    if (this.nextRequest) {
+        var next = this.nextRequest;
+        this.nextRequest = null;
+        this.sendCompile(next);
+    }
+};
+
+Executor.prototype.doNextCMakeRequest = function () {
+    if (this.nextCMakeRequest) {
+        var next = this.nextCMakeRequest;
+        this.nextCMakeRequest = null;
+        this.sendCMakeCompile(next);
+    }
+};
+
+Executor.prototype.handleCompileRequestAndResponse = function (request, result, cached, wasRealReply, timeTaken) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'Compile',
@@ -482,12 +506,20 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
+};
 
-    if (this.nextRequest) {
-        var next = this.nextRequest;
-        this.nextRequest = null;
-        this.sendCompile(next);
-    }
+Executor.prototype.onCompileResponse = function (request, result, cached) {
+    // Save which source produced this change. It should probably be saved earlier though
+    result.source = this.source;
+    this.lastResult = result;
+    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
+    var wasRealReply = this.pendingRequestSentAt > 0;
+    this.pendingRequestSentAt = 0;
+
+    this.handleCompileRequestAndResponse(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCompileRequest();
 };
 
 Executor.prototype.resendResult = function () {
@@ -505,6 +537,19 @@ Executor.prototype.onResendExecutionResult = function (id) {
 };
 
 Executor.prototype.onEditorChange = function (editor, source, langId, compilerId) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            if (tree.multifileService.isEditorPartOfProject(editor)) {
+                if (this.settings.compileOnChange) {
+                    this.compile();
+
+                    return;
+                }
+            }
+        }
+    }
+
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
         (compilerId === undefined)) {
         this.source = source;
@@ -757,8 +802,8 @@ Executor.prototype.onExecStdinChange = function (newStdin) {
     this.compile();
 };
 
-Executor.prototype.onRequestCompilation = function (editorId) {
-    if (editorId === this.sourceEditorId) {
+Executor.prototype.onRequestCompilation = function (editorId, treeId) {
+    if ((editorId === this.sourceEditorId) || (treeId && treeId === this.sourceTreeId)) {
         this.compile();
     }
 };

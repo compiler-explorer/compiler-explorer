@@ -99,7 +99,9 @@ function Compiler(hub, container, state) {
     this.lastResult = {};
     this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
+    this.pendingCMakeRequestSentAt = 0;
     this.nextRequest = null;
+    this.nextCMakeRequest = null;
     this.optViewOpen = false;
     this.flagsViewOpen = state.flagsViewOpen || false;
     this.cfgViewOpen = false;
@@ -724,7 +726,7 @@ Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
 };
 
 Compiler.prototype.sendCMakeCompile = function (request) {
-    var onCompilerResponse = _.bind(this.onCompileResponse, this);
+    var onCompilerResponse = _.bind(this.onCMakeResponse, this);
 
     if (this.pendingCMakeRequestSentAt) {
         // If we have a request pending, then just store this request to do once the
@@ -910,22 +912,36 @@ function fakeAsm(text) {
     return [{text: text, source: null, fake: true}];
 }
 
-Compiler.prototype.onCompileResponse = function (request, result, cached) {
-    // Delete trailing empty lines
-    if ($.isArray(result.asm)) {
-        var indexToDiscard = _.findLastIndex(result.asm, function (line) {
-            return !_.isEmpty(line.text);
-        });
-        result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
+Compiler.prototype.doNextCompileRequest = function () {
+    if (this.nextRequest) {
+        var next = this.nextRequest;
+        this.nextRequest = null;
+        this.sendCompile(next);
     }
-    // Save which source produced this change. It should probably be saved earlier though
+};
+
+Compiler.prototype.doNextCMakeRequest = function () {
+    if (this.nextCMakeRequest) {
+        var next = this.nextCMakeRequest;
+        this.nextCMakeRequest = null;
+        this.sendCMakeCompile(next);
+    }
+};
+
+Compiler.prototype.onCMakeResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
-    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    var timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
     this.lastTimeTaken = timeTaken;
-    var wasRealReply = this.pendingRequestSentAt > 0 || this.pendingCMakeRequestSentAt > 0;
-    this.pendingRequestSentAt = 0;
+    var wasRealReply = this.pendingCMakeRequestSentAt > 0;
     this.pendingCMakeRequestSentAt = 0;
+
+    this.handleCompileRequestAndResult(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCMakeRequest();
+};
+
+Compiler.prototype.handleCompileRequestAndResult = function (request, result, cached, wasRealReply, timeTaken) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'Compile',
@@ -939,6 +955,14 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         timingVar: request.compiler,
         timingValue: timeTaken,
     });
+
+    // Delete trailing empty lines
+    if ($.isArray(result.asm)) {
+        var indexToDiscard = _.findLastIndex(result.asm, function (line) {
+            return !_.isEmpty(line.text);
+        });
+        result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
+    }
 
     this.labelDefinitions = result.labelDefinitions || {};
     if (result.asm) {
@@ -991,17 +1015,20 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     }
 
     this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
+};
 
-    var next;
-    if (this.nextRequest) {
-        next = this.nextRequest;
-        this.nextRequest = null;
-        this.sendCompile(next);
-    } else if (this.nextCMakeRequest) {
-        next = this.nextCMakeRequest;
-        this.nextCMakeRequest = null;
-        this.sendCMakeCompile(next);
-    }
+Compiler.prototype.onCompileResponse = function (request, result, cached) {
+    // Save which source produced this change. It should probably be saved earlier though
+    result.source = this.source;
+    this.lastResult = result;
+    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
+    var wasRealReply = this.pendingRequestSentAt > 0;
+    this.pendingRequestSentAt = 0;
+
+    this.handleCompileRequestAndResult(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCompileRequest();
 };
 
 Compiler.prototype.postCompilationResult = function (request, result) {

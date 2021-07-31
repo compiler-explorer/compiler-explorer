@@ -646,6 +646,12 @@ Editor.prototype.tryPanesLinkLine = function (thisLineNumber, column, reveal) {
 
 Editor.prototype.requestCompilation = function () {
     this.eventHub.emit('requestCompilation', this.id);
+
+    _.each(this.hub.trees, _.bind(function (tree) {
+        if (tree.multifileService.isEditorPartOfProject(this.id)) {
+            this.eventHub.emit('requestCompilation', this.id, tree.id);
+        }
+    }, this));
 };
 
 Editor.prototype.initEditorActions = function () {
