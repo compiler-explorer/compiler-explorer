@@ -107,10 +107,12 @@
                             "componentState": {
                                 "id": 1,
                                 "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
-                                "lang": "c++"
+                                "lang": "c++",
+                                "customPaneName": "example.cpp"
                             },
                             "isClosable": true,
-                            "reorderEnabled": true
+                            "reorderEnabled": true,
+                            "title": "example.cpp"
                         },
                         {
                             "type": "component",
@@ -118,10 +120,12 @@
                             "componentState": {
                                 "id": 2,
                                 "source": "#pragma once\n\nint square(int num);\n",
-                                "lang": "c++"
+                                "lang": "c++",
+                                "customPaneName": "square.h"
                             },
                             "isClosable": true,
-                            "reorderEnabled": true
+                            "reorderEnabled": true,
+                            "title": "square.h"
                         },
                         {
                             "type": "component",
@@ -129,10 +133,12 @@
                             "componentState": {
                                 "id": 4,
                                 "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
-                                "lang": "c++"
+                                "lang": "c++",
+                                "customPaneName": "square.cpp"
                             },
                             "isClosable": true,
-                            "reorderEnabled": true
+                            "reorderEnabled": true,
+                            "title": "square.cpp"
                         },
                         {
                             "type": "component",
@@ -140,10 +146,12 @@
                             "componentState": {
                                 "id": 3,
                                 "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
-                                "lang": "cmake"
+                                "lang": "cmake",
+                                "customPaneName": "CMakeLists.txt"
                             },
                             "isClosable": true,
-                            "reorderEnabled": true
+                            "reorderEnabled": true,
+                            "title": "CMakeLists.txt"
                         }
                     ]
                 }

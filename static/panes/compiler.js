@@ -923,8 +923,9 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     this.lastResult = result;
     var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
     this.lastTimeTaken = timeTaken;
-    var wasRealReply = this.pendingRequestSentAt > 0;
+    var wasRealReply = this.pendingRequestSentAt > 0 || this.pendingCMakeRequestSentAt > 0;
     this.pendingRequestSentAt = 0;
+    this.pendingCMakeRequestSentAt = 0;
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'Compile',
