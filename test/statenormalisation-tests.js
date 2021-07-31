@@ -135,6 +135,16 @@ describe('ClientState parsing', () => {
         const gl = new ClientStateGoldenifier();
         gl.fromClientState(state);
 
-        fs.writeFileSync('test/state/tree.normalized.json', JSON.stringify(gl.golden));
+        fs.writeFileSync('test/state/tree.goldenified.json', JSON.stringify(gl.golden));
+    });
+
+    it('GL Tree support', () => {
+        const jsonStr = fs.readFileSync('test/state/tree-gl.json');
+        const gl = JSON.parse(jsonStr);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(gl);
+
+        fs.writeFileSync('test/state/tree.normalized.json', JSON.stringify(normalizer.normalized));
     });
 });

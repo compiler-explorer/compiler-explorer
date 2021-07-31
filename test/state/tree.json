@@ -6,7 +6,8 @@
             "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
             "conformanceview": false,
             "compilers": [],
-            "executors": []
+            "executors": [],
+            "filename": "example.cpp"
         },
         {
             "id": 2,
@@ -14,7 +15,8 @@
             "source": "#pragma once\n\nint square(int num);\n",
             "conformanceview": false,
             "compilers": [],
-            "executors": []
+            "executors": [],
+            "filename": "square.h"
         },
         {
             "id": 4,
@@ -22,7 +24,8 @@
             "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
             "conformanceview": false,
             "compilers": [],
-            "executors": []
+            "executors": [],
+            "filename": "square.cpp"
         },
         {
             "id": 3,
@@ -30,38 +33,15 @@
             "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
             "conformanceview": false,
             "compilers": [],
-            "executors": []
-        },
-        {
-            "id": false,
-            "language": "",
-            "source": "",
-            "conformanceview": false,
-            "compilers": [
-                {
-                    "id": "g103",
-                    "options": "-g -O3 -flto",
-                    "filters": {
-                        "binary": true,
-                        "commentOnly": true,
-                        "demangle": true,
-                        "directives": true,
-                        "execute": false,
-                        "intel": true,
-                        "labels": true,
-                        "trim": false
-                    },
-                    "libs": [],
-                    "specialoutputs": [],
-                    "tools": []
-                }
-            ],
-            "executors": []
+            "executors": [],
+            "filename": "CMakeLists.txt"
         }
     ],
     "trees": [
         {
             "id": 1,
+            "cmakeArgs": "",
+            "customOutputFilename": "",
             "isCMakeProject": true,
             "compilerLanguageId": "c++",
             "files": [
@@ -71,7 +51,7 @@
                     "isOpen": true,
                     "isMainSource": false,
                     "filename": "example.cpp",
-                    "content": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+                    "content": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
                     "editorId": 1,
                     "langId": "c++"
                 },
@@ -101,22 +81,32 @@
                     "isOpen": true,
                     "isMainSource": false,
                     "filename": "square.cpp",
-                    "content": "",
+                    "content": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
                     "editorId": 4,
-                    "langId": ""
-                },
-                {
-                    "fileId": 6,
-                    "isIncluded": false,
-                    "isOpen": true,
-                    "isMainSource": false,
-                    "filename": "",
-                    "content": "",
-                    "editorId": 3,
                     "langId": ""
                 }
             ],
-            "newFileId": 7
+            "newFileId": 7,
+            "compilers": [
+                {
+                    "id": "g103",
+                    "options": "-g -O3 -flto",
+                    "filters": {
+                        "binary": true,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ],
+            "executors": []
         }
     ]
 }

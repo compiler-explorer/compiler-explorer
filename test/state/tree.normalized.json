@@ -1,173 +1,112 @@
 {
-    "settings": {
-        "hasHeaders": true,
-        "constrainDragToContainer": false,
-        "reorderEnabled": true,
-        "selectionEnabled": false,
-        "popoutWholeStack": false,
-        "blockedPopoutsThrowError": true,
-        "closePopoutsOnUnload": true,
-        "showPopoutIcon": false,
-        "showMaximiseIcon": true,
-        "showCloseIcon": true,
-        "responsiveMode": "onload",
-        "tabOverlapAllowance": 0,
-        "reorderOnTabMenuClick": true,
-        "tabControlOffset": 10
-    },
-    "dimensions": {
-        "borderWidth": 5,
-        "borderGrabWidth": 15,
-        "minItemHeight": 10,
-        "minItemWidth": 10,
-        "headerHeight": 20,
-        "dragProxyWidth": 300,
-        "dragProxyHeight": 200
-    },
-    "labels": {
-        "close": "close",
-        "maximise": "maximise",
-        "minimise": "minimise",
-        "popout": "open in new window",
-        "popin": "pop in",
-        "tabDropdown": "additional tabs"
-    },
-    "content": [
+    "sessions": [
         {
-            "type": "row",
-            "content": [
+            "id": 1,
+            "language": "c++",
+            "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "example.cpp"
+        },
+        {
+            "id": 2,
+            "language": "c++",
+            "source": "#pragma once\n\nint square(int num);\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "square.h"
+        },
+        {
+            "id": 4,
+            "language": "c++",
+            "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "square.cpp"
+        },
+        {
+            "id": 3,
+            "language": "cmake",
+            "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
+            "conformanceview": false,
+            "compilers": [],
+            "executors": [],
+            "filename": "CMakeLists.txt"
+        }
+    ],
+    "trees": [
+        {
+            "id": 1,
+            "cmakeArgs": "",
+            "customOutputFilename": "",
+            "isCMakeProject": true,
+            "compilerLanguageId": "c++",
+            "files": [
                 {
-                    "type": "stack",
-                    "width": 25,
-                    "content": [
-                        {
-                            "type": "component",
-                            "componentName": "filelisting",
-                            "componentState": {
-                                "id": 1,
-                                "isCMakeProject": true,
-                                "compilerLanguageId": "c++",
-                                "files": [
-                                    {
-                                        "fileId": 1,
-                                        "isIncluded": true,
-                                        "isOpen": true,
-                                        "isMainSource": false,
-                                        "filename": "example.cpp",
-                                        "content": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
-                                        "editorId": 1,
-                                        "langId": "c++"
-                                    },
-                                    {
-                                        "fileId": 2,
-                                        "isIncluded": true,
-                                        "isOpen": true,
-                                        "isMainSource": false,
-                                        "filename": "square.h",
-                                        "content": "#pragma once\n\nint square(int num);\n",
-                                        "editorId": 2,
-                                        "langId": "c++"
-                                    },
-                                    {
-                                        "fileId": 3,
-                                        "isIncluded": true,
-                                        "isOpen": false,
-                                        "isMainSource": true,
-                                        "filename": "CMakeLists.txt",
-                                        "content": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
-                                        "editorId": -1,
-                                        "langId": "cmake"
-                                    },
-                                    {
-                                        "fileId": 4,
-                                        "isIncluded": true,
-                                        "isOpen": true,
-                                        "isMainSource": false,
-                                        "filename": "square.cpp",
-                                        "content": "",
-                                        "editorId": 4,
-                                        "langId": ""
-                                    },
-                                    {
-                                        "fileId": 6,
-                                        "isIncluded": false,
-                                        "isOpen": true,
-                                        "isMainSource": false,
-                                        "filename": "",
-                                        "content": "",
-                                        "editorId": 3,
-                                        "langId": ""
-                                    }
-                                ],
-                                "newFileId": 7
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true
-                        }
-                    ]
+                    "fileId": 1,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "example.cpp",
+                    "content": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
+                    "editorId": 1,
+                    "langId": "c++"
                 },
                 {
-                    "type": "stack",
-                    "width": 40,
-                    "content": [
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": 1,
-                                "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
-                                "lang": "c++"
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true
-                        },
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": 2,
-                                "source": "#pragma once\n\nint square(int num);\n",
-                                "lang": "c++"
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true
-                        },
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": 4,
-                                "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
-                                "lang": "c++"
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true
-                        },
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": 3,
-                                "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
-                                "lang": "cmake"
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true
-                        },
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": false,
-                                "source": "",
-                                "lang": ""
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true
-                        }
-                    ]
+                    "fileId": 2,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "square.h",
+                    "content": "#pragma once\n\nint square(int num);\n",
+                    "editorId": 2,
+                    "langId": "c++"
+                },
+                {
+                    "fileId": 3,
+                    "isIncluded": true,
+                    "isOpen": false,
+                    "isMainSource": true,
+                    "filename": "CMakeLists.txt",
+                    "content": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
+                    "editorId": -1,
+                    "langId": "cmake"
+                },
+                {
+                    "fileId": 4,
+                    "isIncluded": true,
+                    "isOpen": true,
+                    "isMainSource": false,
+                    "filename": "square.cpp",
+                    "content": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
+                    "editorId": 4,
+                    "langId": ""
                 }
-            ]
+            ],
+            "newFileId": 7,
+            "compilers": [
+                {
+                    "id": "g103",
+                    "options": "-g -O3 -flto",
+                    "filters": {
+                        "binary": true,
+                        "commentOnly": true,
+                        "demangle": true,
+                        "directives": true,
+                        "execute": false,
+                        "intel": true,
+                        "labels": true,
+                        "trim": false
+                    },
+                    "libs": [],
+                    "specialoutputs": [],
+                    "tools": []
+                }
+            ],
+            "executors": []
         }
     ]
 }
