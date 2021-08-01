@@ -60,6 +60,7 @@ function GccDump(hub, container, state) {
         options: [],
         items: [],
         plugins: ['input_autogrow'],
+        maxOptions: 500,
     });
 
     // this is used to save internal state.
