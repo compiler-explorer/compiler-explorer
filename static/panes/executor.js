@@ -338,27 +338,27 @@ Executor.prototype.sendCompile = function (request) {
         });
 };
 
-Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column) {
+Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum/*, column*/) {
     var elem = $('<div/>').appendTo(container);
     if (lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .click(_.bind(function (e) {
-                    var editorId = this.getEditorIdBySourcefile(source);
-                    if (editorId) {
-                        this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
-                    }
+                    // var editorId = this.getEditorIdBySourcefile(source);
+                    // if (editorId) {
+                    //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
+                    // }
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
                     e.preventDefault();
                     return false;
                 }, this))
                 .on('mouseover', _.bind(function () {
-                    var editorId = this.getEditorIdBySourcefile(source);
-                    if (editorId) {
-                        this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
-                    }
+                    // var editorId = this.getEditorIdBySourcefile(source);
+                    // if (editorId) {
+                    //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
+                    // }
                 }, this))
         );
     } else {

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { ClientState } from '../lib/clientstate';
-import { ClientStateNormalizer, ClientStateGoldenifier } from '../lib/clientstate-normalizer';
+import { ClientStateGoldenifier, ClientStateNormalizer } from '../lib/clientstate-normalizer';
 
 import { fs } from './utils';
 
