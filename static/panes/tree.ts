@@ -28,7 +28,7 @@ import { LineColouring } from "../line-colouring";
 
 const _ = require('underscore');
 const $ = require('jquery');
-const Alert = require('../alert');
+const Alert = require('../alert').Alert;
 const Components = require('../components');
 const local = require('../local');
 const ga = require('../analytics');
