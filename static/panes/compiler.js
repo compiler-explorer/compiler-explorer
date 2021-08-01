@@ -34,7 +34,7 @@ var Components = require('../components');
 var LruCache = require('lru-cache');
 var options = require('../options');
 var monaco = require('monaco-editor');
-var Alert = require('../alert');
+var Alert = require('../alert').Alert;
 var bigInt = require('big-integer');
 var Libraries = require('../libs-widget-ext');
 var codeLensHandler = require('../codelens-handler');
@@ -44,6 +44,7 @@ var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
 
 require('../modes/asm-mode');
+require('../modes/asmruby-mode');
 require('../modes/ptx-mode');
 
 var OpcodeCache = new LruCache({
