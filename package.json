@@ -21,7 +21,6 @@
     "@sentry/browser": "^6.4.1",
     "@sentry/node": "^6.4.1",
     "@sentry/tracing": "^6.4.1",
-    "@types/underscore": "^1.11.2",
     "aws-sdk": "^2.917.0",
     "big-integer": "^1.6.48",
     "body-parser": "^1.18.2",
@@ -82,6 +81,9 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
+    "@types/bootstrap": "^5.0.17",
+    "@types/jquery": "^3.5.6",
+    "@types/underscore": "^1.11.2",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
     "approvals": "^4.0.0-beta.1",
