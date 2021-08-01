@@ -129,10 +129,12 @@ export class Alert {
         const modal = $('#enter-something');
         this.yesHandler = handlers?.yes ?? (() => undefined);
         this.noHandler = handlers?.no ?? (() => undefined);
+        modal.find('.modal-title').html(title);
+        modal.find('.modal-body .question').html(question);
 
         const yesButton = modal.find('.modal-footer .yes');
         const noButton = modal.find('.modal-footer .no');
-        const answerEdit = modal.find('.modal-footer .question-answer');
+        const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
         answerEdit.on('keyup', (e) => {
             if (e.keyCode === 13 || e.which === 13) {
