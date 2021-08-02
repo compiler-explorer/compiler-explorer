@@ -155,6 +155,46 @@
                             "title": "CMakeLists.txt"
                         }
                     ]
+                },
+                {
+                    "type": "stack",
+                    "width": 40,
+                    "content": [
+                        {
+                            "componentName": "compiler",
+                            "componentState": {
+                                "compiler": "g103",
+                                "filters": {
+                                    "binary": true,
+                                    "commentOnly": true,
+                                    "demangle": true,
+                                    "directives": true,
+                                    "execute": false,
+                                    "intel": true,
+                                    "labels": true,
+                                    "trim": false
+                                },
+                                "lang": "c++",
+                                "libs": [],
+                                "options": "-g -O3 -flto",
+                                "tree": 1
+                            },
+                            "isClosable": true,
+                            "reorderEnabled": true,
+                            "type": "component"
+                        },
+                        {
+                              "componentName": "output",
+                              "componentState": {
+                                "compiler": 1,
+                                "fontScale": 14,
+                                "wrap": false
+                              },
+                              "isClosable": true,
+                              "reorderEnabled": true,
+                              "type": "component"
+                        }
+                    ]
                 }
             ]
         }

@@ -102,7 +102,9 @@
                         "trim": false
                     },
                     "libs": [],
-                    "specialoutputs": [],
+                    "specialoutputs": [
+                        "compilerOutput"
+                    ],
                     "tools": []
                 }
             ],

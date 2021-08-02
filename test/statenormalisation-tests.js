@@ -159,8 +159,10 @@ describe('Trees', () => {
         const gl = new ClientStateGoldenifier();
         gl.fromClientState(state);
 
+        const golden = JSON.parse(JSON.stringify(gl.golden));
+
         const resultdata = JSON.parse(fs.readFileSync('test/state/tree.goldenified.json'));
-        gl.golden.should.deep.equal(resultdata);
+        golden.should.deep.equal(resultdata);
     });
 
     it('GL to ClientState', () => {
