@@ -48,6 +48,7 @@
                                 "cmakeArgs": "",
                                 "customOutputFilename": "",
                                 "isCMakeProject": true,
+                                "newFileId": 7,
                                 "compilerLanguageId": "c++",
                                 "files": [
                                     {

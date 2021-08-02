@@ -89,6 +89,7 @@
             "newFileId": 7,
             "compilers": [
                 {
+                    "_internalid": 1,
                     "id": "g103",
                     "options": "-g -O3 -flto",
                     "filters": {
