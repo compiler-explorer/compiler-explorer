@@ -32,6 +32,8 @@ var colour = require('../colour');
 var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
 
+var TomSelect = require('tom-select');
+
 function DeviceAsm(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
@@ -63,16 +65,17 @@ function DeviceAsm(hub, container, state) {
     this.lastColours = [];
     this.lastColourScheme = {};
 
-    var selectize = this.domRoot.find('.change-device').selectize({
+    var changeDeviceEl = this.domRoot[0].querySelector('.change-device');
+    this.selectize = new TomSelect(changeDeviceEl, {
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
         options: [],
         items: [],
+        dropdownParent: 'body',
+        plugins: ['input_autogrow'],
     });
-
-    this.selectize = selectize[0].selectize;
 
     this.initButtons(state);
     this.initCallbacks();

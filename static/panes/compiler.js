@@ -1293,7 +1293,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         var args = '';
         var monacoStdin = false;
         var langTools = options.tools[this.currentLangId];
-        if (langTools && langTools[toolId] && langTools[toolId].tool){
+        if (langTools && langTools[toolId] && langTools[toolId].tool) {
             if (langTools[toolId].tool.args !== undefined) {
                 args = langTools[toolId].tool.args;
             }
@@ -1398,8 +1398,8 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.prop('disabled', this.optViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
+    this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
-    this.deviceButton.prop('disabled', this.deviceViewOpen || !this.compiler.supportsDeviceAsmView);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
     // The executorButton does not need to be changed here, because you can create however
@@ -1408,6 +1408,7 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
