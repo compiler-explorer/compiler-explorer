@@ -62,6 +62,7 @@ export class Alert {
             modal.off('hidden.bs.modal');
             modal.on('hidden.bs.modal', onClose);
         }
+        return modal;
     }
 
     /**
@@ -82,6 +83,7 @@ export class Alert {
             modal.on('hidden.bs.modal', handlers.onClose);
         }
         modal.modal();
+        return modal;
     }
 
     /**
@@ -155,5 +157,6 @@ export class Alert {
             answerEdit.trigger('focus');
         });
         modal.modal();
+        return modal;
     }
 }
