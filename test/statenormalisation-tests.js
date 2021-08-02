@@ -87,6 +87,16 @@ describe('Normalizing clientstate', () => {
 
         normalizer.normalized.should.deep.equal(resultdata);
     });
+
+    it('Allow output without editor id', () => {
+        const normalizer = new ClientStateNormalizer();
+        const data =  JSON.parse(fs.readFileSync('test/state/output-editor-id.json'));
+        normalizer.fromGoldenLayout(data);
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/output-editor-id.normalized.json'));
+
+        normalizer.normalized.should.deep.equal(resultdata);
+    });
 });
 
 describe('ClientState parsing', () => {

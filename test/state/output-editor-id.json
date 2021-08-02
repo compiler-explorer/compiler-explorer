@@ -1,0 +1,156 @@
+{
+    "settings": {
+        "hasHeaders": true,
+        "constrainDragToContainer": false,
+        "reorderEnabled": true,
+        "selectionEnabled": false,
+        "popoutWholeStack": false,
+        "blockedPopoutsThrowError": true,
+        "closePopoutsOnUnload": true,
+        "showPopoutIcon": true,
+        "showMaximiseIcon": true,
+        "showCloseIcon": true,
+        "responsiveMode": "onload",
+        "tabOverlapAllowance": 0,
+        "reorderOnTabMenuClick": true,
+        "tabControlOffset": 10,
+        "theme": "dark"
+    },
+    "dimensions": {
+        "borderWidth": 5,
+        "borderGrabWidth": 15,
+        "minItemHeight": 10,
+        "minItemWidth": 10,
+        "headerHeight": 20,
+        "dragProxyWidth": 300,
+        "dragProxyHeight": 200
+    },
+    "labels": {
+        "close": "close",
+        "maximise": "maximise",
+        "minimise": "minimise",
+        "popout": "open in new window",
+        "popin": "pop in",
+        "tabDropdown": "additional tabs"
+    },
+    "content": [
+        {
+            "type": "row",
+            "isClosable": true,
+            "reorderEnabled": true,
+            "title": "",
+            "content": [
+                {
+                    "type": "stack",
+                    "width": 50,
+                    "isClosable": true,
+                    "reorderEnabled": true,
+                    "title": "",
+                    "activeItemIndex": 0,
+                    "content": [
+                        {
+                            "type": "component",
+                            "componentName": "codeEditor",
+                            "componentState": {
+                                "id": 1,
+                                "source": "#include <iostream>\n \nint main() {\n  std::cout << \"Hello CE!\";\n}",
+                                "lang": "c++",
+                                "fontScale": 25,
+                                "fontUsePx": true
+                            },
+                            "isClosable": true,
+                            "reorderEnabled": true,
+                            "title": "C++ source #1"
+                        }
+                    ]
+                },
+                {
+                    "type": "column",
+                    "isClosable": true,
+                    "reorderEnabled": true,
+                    "title": "",
+                    "width": 50,
+                    "content": [
+                        {
+                            "type": "stack",
+                            "height": 50,
+                            "isClosable": true,
+                            "reorderEnabled": true,
+                            "title": "",
+                            "activeItemIndex": 0,
+                            "content": [
+                                {
+                                    "type": "component",
+                                    "componentName": "compiler",
+                                    "componentState": {
+                                        "id": 1,
+                                        "compiler": "g83",
+                                        "source": 1,
+                                        "options": "-O2 -march=haswell -Wall -Wextra -pedantic -Wno-unused-variable -Wno-unused-parameter",
+                                        "filters": {
+                                            "commentOnly": true,
+                                            "directives": true,
+                                            "intel": true,
+                                            "labels": true,
+                                            "trim": true,
+                                            "execute": true,
+                                            "binary": false,
+                                            "demangle": true,
+                                            "libraryCode": true
+                                        },
+                                        "libs": [],
+                                        "lang": "c++",
+                                        "selection": {
+                                            "startLineNumber": 1,
+                                            "startColumn": 1,
+                                            "endLineNumber": 1,
+                                            "endColumn": 1,
+                                            "selectionStartLineNumber": 1,
+                                            "selectionStartColumn": 1,
+                                            "positionLineNumber": 1,
+                                            "positionColumn": 1
+                                        },
+                                        "flagsViewOpen": false,
+                                        "fontScale": 30,
+                                        "fontUsePx": true
+                                    },
+                                    "isClosable": true,
+                                    "reorderEnabled": true,
+                                    "title": "x86-64 gcc 8.3 (Editor #1, Compiler #1) C++"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "stack",
+                            "height": 50,
+                            "isClosable": true,
+                            "reorderEnabled": true,
+                            "title": "",
+                            "activeItemIndex": 0,
+                            "content": [
+                                {
+                                    "type": "component",
+                                    "componentName": "output",
+                                    "componentState": {
+                                        "compiler": 1,
+                                        "wrap": false,
+                                        "fontScale": 14,
+                                        "fontUsePx": true
+                                    },
+                                    "isClosable": true,
+                                    "reorderEnabled": true,
+                                    "title": "Output of x86-64 gcc 8.3 (Compiler #1)"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "isClosable": true,
+    "reorderEnabled": true,
+    "title": "",
+    "openPopouts": [],
+    "maximisedItemId": null
+}
