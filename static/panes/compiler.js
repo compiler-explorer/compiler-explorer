@@ -88,6 +88,7 @@ function Compiler(hub, container, state) {
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
     this.needsCompile = false;
+    this.deviceViewOpen = false;
     this.options = state.options || options.compileOptions[this.currentLangId];
     this.source = '';
     this.assembly = [];
@@ -219,6 +220,11 @@ Compiler.prototype.initPanerButtons = function () {
             this.sourceEditorId);
     }, this);
 
+    var createDeviceView = _.bind(function () {
+        return Components.getDeviceViewWith(this.id, this.source, this.lastResult.devices, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
     var createRustMirView = _.bind(function () {
         return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
             this.getCompilerName(), this.sourceEditorId);
@@ -304,6 +310,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createIrView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.deviceButton, createDeviceView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.deviceButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createDeviceView);
     }, this));
 
     this.container.layoutManager
@@ -626,6 +642,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
             produceIr: this.irViewOpen,
+            produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
         },
         filters: this.getEffectiveFilters(),
@@ -1022,6 +1039,27 @@ Compiler.prototype.onIrViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onDeviceViewOpened = function (id) {
+    if (this.id === id) {
+        this.deviceButton.prop('disabled', true);
+        this.deviceViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onDeviceViewClosed = function (id) {
+    if (this.id === id) {
+        this.deviceButton.prop('disabled', false);
+        this.deviceViewOpen = false;
+    }
+};
+
+Compiler.prototype.onDeviceSettingsChanged = function (id) {
+    if (this.id === id) {
+        this.compile();
+    }
+};
+
 Compiler.prototype.onRustMirViewOpened = function (id) {
     if (this.id === id) {
         this.rustMirButton.prop('disabled', true);
@@ -1172,6 +1210,7 @@ Compiler.prototype.initButtons = function (state) {
     this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
+    this.deviceButton = this.domRoot.find('.btn.view-device');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
@@ -1360,6 +1399,7 @@ Compiler.prototype.updateButtons = function () {
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
+    this.deviceButton.prop('disabled', this.deviceViewOpen || !this.compiler.supportsDeviceAsmView);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
     // The executorButton does not need to be changed here, because you can create however
@@ -1450,6 +1490,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+    this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
+    this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
     this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
@@ -1460,6 +1502,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
     this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
     this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
+
+    this.eventHub.on('deviceSettingsChanged', this.onDeviceSettingsChanged, this);
 
     this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
     this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
