@@ -1054,12 +1054,6 @@ Compiler.prototype.onDeviceViewClosed = function (id) {
     }
 };
 
-Compiler.prototype.onDeviceSettingsChanged = function (id) {
-    if (this.id === id) {
-        this.compile();
-    }
-};
-
 Compiler.prototype.onRustMirViewOpened = function (id) {
     if (this.id === id) {
         this.rustMirButton.prop('disabled', true);
@@ -1503,8 +1497,6 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
     this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
     this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
-
-    this.eventHub.on('deviceSettingsChanged', this.onDeviceSettingsChanged, this);
 
     this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
     this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);

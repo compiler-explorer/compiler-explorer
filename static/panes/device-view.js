@@ -51,12 +51,14 @@ function DeviceAsm(hub, container, state) {
         lineNumbersMinChars: 3,
     }));
 
-    this._compilerid = state.id;
+    this._compilerId = state.id;
     this._compilerName = state.compilerName;
-    this._editorid = state.editorid;
+    this._editorId = state.editor;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
+    this.selectedDevice = state.device || '';
+    this.devices = null;
 
     this.settings = {};
 
@@ -106,7 +108,7 @@ DeviceAsm.prototype.initEditorActions = function () {
             var source = this.deviceCode[desiredLine].source;
             if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, true);
+                this.eventHub.emit('editorLinkLine', this._editorId, source.line, -1, true);
             }
         }, this),
     });
@@ -142,7 +144,7 @@ DeviceAsm.prototype.initCallbacks = function () {
     this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.emit('deviceViewOpened', this._compilerid);
+    this.eventHub.emit('deviceViewOpened', this._compilerId);
     this.eventHub.emit('requestSettings');
 
     this.container.on('resize', this.resize, this);
@@ -159,30 +161,25 @@ DeviceAsm.prototype.resize = function () {
 };
 
 DeviceAsm.prototype.onCompileResponse = function (id, compiler, result) {
-    if (this._compilerid !== id) return;
-    var devices = result.devices;
+    if (this._compilerId !== id) return;
+    this.devices = result.devices;
     var deviceNames = [];
-    if (!devices) {
+    if (!this.devices) {
         this.showDeviceAsmResults([{text: '<No output>'}]);
-    } else if (typeof devices == 'string') {
-        this.showDeviceAsmResults([{text: 'Device extraction error:\n' + devices}]);
     } else {
-        deviceNames = Object.keys(devices);
+        deviceNames = Object.keys(this.devices);
     }
 
     this.makeDeviceSelector(deviceNames);
-    var selectedDevice = this.selectize.getValue();
-    if (selectedDevice)
-        this.showDeviceAsmResults(devices[selectedDevice].asm);
+    this.updateDeviceAsm();
 
     // Why call this explicitly instead of just listening to the "colours" event?
     // Because the recolouring happens before this editors value is set using "showDeviceAsmResults".
-    this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
+    this.onColours(this._compilerId, this.lastColours, this.lastColourScheme);
 };
 
 DeviceAsm.prototype.makeDeviceSelector = function (deviceNames) {
     var selectize = this.selectize;
-    var selected = this.selectize.getValue();
 
     _.each(selectize.options, function (p) {
         if (deviceNames.indexOf(p.name) === -1) {
@@ -191,27 +188,37 @@ DeviceAsm.prototype.makeDeviceSelector = function (deviceNames) {
     }, this);
 
     _.each(deviceNames, function (p) {
-        selectize.addOption({
-            name: p,
-        });
+        selectize.addOption({name: p});
     }, this);
 
-    if (!selected && deviceNames.length > 0) {
-        selected = deviceNames[0];
-        selectize.setValue(selected, true);
-    } else if (selected && deviceNames.indexOf(selected) === -1) {
+    if (!this.selectedDevice && deviceNames.length > 0) {
+        this.selectedDevice = deviceNames[0];
+        selectize.setValue(this.selectedDevice, true);
+    } else if (this.selectedDevice && deviceNames.indexOf(this.selectedDevice) === -1) {
         selectize.clear(true);
         this.showDeviceAsmResults(
-            [{text: '<Device ' + selected + ' not found>'}]);
+            [{text: '<Device ' + this.selectedDevice + ' not found>'}]);
+    } else {
+        selectize.setValue(this.selectedDevice, true);
+        this.updateDeviceAsm();
     }
 };
 
 DeviceAsm.prototype.onDeviceSelect = function () {
-    this.eventHub.emit('deviceSettingsChanged', this._compilerid);
+    this.selectedDevice = this.selectize.getValue();
+    this.updateState();
+    this.updateDeviceAsm();
+};
+
+DeviceAsm.prototype.updateDeviceAsm = function () {
+    if (this.selectedDevice && this.devices[this.selectedDevice])
+        this.showDeviceAsmResults(this.devices[this.selectedDevice].asm);
+    else
+        this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
 };
 
 DeviceAsm.prototype.getPaneName = function () {
-    return this._compilerName + ' Device Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return this._compilerName + ' Device Viewer (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
 };
 
 DeviceAsm.prototype.setTitle = function () {
@@ -234,10 +241,10 @@ DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
     }
 };
 
-DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorid) {
-    if (id === this._compilerid) {
+DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorId) {
+    if (id === this._compilerId) {
         this._compilerName = compiler ? compiler.name : '';
-        this._editorid = editorid;
+        this._editorId = editorId;
         this.setTitle();
         if (compiler && !compiler.supportsDeviceAsmView) {
             this.deviceEditor.setValue('<Device output is not supported for this compiler>');
@@ -249,7 +256,7 @@ DeviceAsm.prototype.onColours = function (id, colours, scheme) {
     this.lastColours = colours;
     this.lastColourScheme = scheme;
 
-    if (id === this._compilerid) {
+    if (id === this._compilerId) {
         var irColours = {};
         _.each(this.deviceCode, function (x, index) {
             if (x.source && x.source.file === null && x.source.line > 0 && colours[x.source.line - 1] !== undefined) {
@@ -261,7 +268,7 @@ DeviceAsm.prototype.onColours = function (id, colours, scheme) {
 };
 
 DeviceAsm.prototype.onCompilerClose = function (id) {
-    if (id === this._compilerid) {
+    if (id === this._compilerId) {
         // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
         // the hierarchy. We can't modify while it's being iterated over.
         _.defer(function (self) {
@@ -276,16 +283,17 @@ DeviceAsm.prototype.updateState = function () {
 
 DeviceAsm.prototype.currentState = function () {
     var state = {
-        id: this._compilerid,
-        editorid: this._editorid,
+        id: this._compilerId,
+        editor: this._editorId,
         selection: this.selection,
+        device: this.selectedDevice,
     };
     this.fontScale.addState(state);
     return state;
 };
 
 DeviceAsm.prototype.onCompilerClose = function (id) {
-    if (id === this._compilerid) {
+    if (id === this._compilerId) {
         // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
         // the hierarchy. We can't modify while it's being iterated over.
         this.close();
@@ -315,8 +323,8 @@ DeviceAsm.prototype.onMouseMove = function (e) {
         if (hoverCode) {
             // We check that we actually have something to show at this point!
             var sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+            this.eventHub.emit('editorLinkLine', this._editorId, sourceLine, -1, false);
+            this.eventHub.emit('panesLinkLine', this._compilerId, sourceLine, false, this.getPaneName());
         }
     }
 };
@@ -340,7 +348,7 @@ DeviceAsm.prototype.clearLinkedLines = function () {
 };
 
 DeviceAsm.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
-    if (Number(compilerId) === this._compilerid) {
+    if (Number(compilerId) === this._compilerId) {
         var lineNums = [];
         _.each(this.deviceCode, function (irLine, i) {
             if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
@@ -373,7 +381,7 @@ DeviceAsm.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLi
 
 DeviceAsm.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit('deviceViewClosed', this._compilerid);
+    this.eventHub.emit('deviceViewClosed', this._compilerId);
     this.deviceEditor.dispose();
 };
 
