@@ -727,9 +727,37 @@ Editor.prototype.searchOnCppreference = function (ed) {
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
-
-    var url = 'https://en.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
+    var preferredLanguage = this.getPreferredLanguageTag();
+    // This list comes from the footer of the page
+    var cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
+    // If navigator.languages is supported, we could be a bit more clever and look for a match there too
+    var langTag = 'en';
+    if (cpprefLangs.indexOf(preferredLanguage) !== -1) {
+        langTag = preferredLanguage;
+    }
+    var url = 'https://' +
+        langTag +
+        '.cppreference.com/mwiki/index.php?search=' +
+        encodeURIComponent(word.word);
     window.open(url, '_blank', 'noopener');
+};
+
+Editor.prototype.getPreferredLanguageTag = function () {
+    var result = 'en';
+    var lang = 'en';
+    if (navigator) {
+        if (navigator.languages && navigator.languages.length) {
+            lang = navigator.languages[0];
+        } else if (navigator.language) {
+            lang = navigator.language;
+        }
+    }
+    // navigator.language[s] is supposed to return strings, but hey, you never know
+    if (lang !== result && _.isString(lang)) {
+        var primaryLanguageSubtagIdx = lang.indexOf('-');
+        result = lang.substr(0, primaryLanguageSubtagIdx).toLowerCase();
+    }
+    return result;
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
