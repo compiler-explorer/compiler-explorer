@@ -442,6 +442,8 @@ Compiler.prototype.popAndRevealJump = function () {
 
 Compiler.prototype.initEditorActions = function () {
     this.isLabelCtxKey = this.outputEditor.createContextKey('isLabel', true);
+    this.revealJumpStackHasElementsCtxKey = this.outputEditor.createContextKey('hasRevealJumpStackElements', false);
+    this.isAsmKeywordCtxKey = this.outputEditor.createContextKey('isAsmKeyword', true);
 
     this.outputEditor.addAction({
         id: 'jumptolabel',
@@ -464,10 +466,18 @@ Compiler.prototype.initEditorActions = function () {
             var label = this.getLabelAtPosition(e.target.position);
             this.isLabelCtxKey.set(label);
         }
+
+        if (this.isAsmKeywordCtxKey && e.target.position) {
+            var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
+            currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(currentWord.startColumn, 1),
+                e.target.position.lineNumber, currentWord.endColumn);
+            if (currentWord && currentWord.word) {
+                this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+            }
+        }
         realMethod.apply(contextmenu, arguments);
     }, this);
 
-    this.revealJumpStackHasElementsCtxKey = this.outputEditor.createContextKey('hasRevealJumpStackElements', false);
 
     this.outputEditor.addAction({
         id: 'returnfromreveal',
@@ -497,8 +507,6 @@ Compiler.prototype.initEditorActions = function () {
             }
         }, this),
     });
-
-    this.isAsmKeywordCtxKey = this.outputEditor.createContextKey('isAsmKeyword', true);
 
     this.outputEditor.addAction({
         id: 'viewasmdoc',
@@ -1913,9 +1921,10 @@ Compiler.prototype.onMouseUp = function (e) {
 
 Compiler.prototype.onMouseMove = function (e) {
     if (e === null || e.target === null || e.target.position === null) return;
+    var hoverShowSource = this.settings.hoverShowSource === true;
     if (this.assembly) {
         var hoverAsm = this.assembly[e.target.position.lineNumber - 1];
-        if (this.settings.hoverShowSource === true && hoverAsm) {
+        if (hoverShowSource && hoverAsm) {
             this.clearLinkedLines();
             // We check that we actually have something to show at this point!
             var sourceLine = -1;
@@ -1964,9 +1973,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
 
-        var isCurrentWordAsmKeyword = this.isWordAsmKeyword(currentWord);
-        this.isAsmKeywordCtxKey.set(isCurrentWordAsmKeyword);
-        if (isCurrentWordAsmKeyword && this.settings.hoverShowSource === true) {
+        if (hoverShowSource && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
                 if (!response) return;
                 this.decorations.asmToolTip = {
