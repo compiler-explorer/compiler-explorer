@@ -35,7 +35,7 @@ var TomSelect = require('tom-select');
 function Cfg(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#cfg').html());
     this.defaultCfgOutput = {nodes: [{id: 0, shape: 'box', label: 'No Output'}], edges: []};
     this.binaryModeSupport = {
@@ -202,14 +202,14 @@ Cfg.prototype.initCallbacks = function () {
     this.cfgVisualiser.on('dragEnd', _.bind(this.saveState, this));
     this.cfgVisualiser.on('zoom', _.bind(this.saveState, this));
 
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('filtersChange', this.onFiltersChange, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('compileResult', this.onCompileResult, this);
+    this.hub.eventOn('compiler', this.onCompiler, this);
+    this.hub.eventOn('filtersChange', this.onFiltersChange, this);
 
-    this.container.on('destroy', this.close, this);
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
+    this.container.on('destroy', _.bind(this.close, this));
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
     this.eventHub.emit('cfgViewOpened', this.compilerId);
     this.eventHub.emit('requestFilters', this.compilerId);
     this.eventHub.emit('requestCompiler', this.compilerId);

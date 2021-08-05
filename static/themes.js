@@ -24,6 +24,7 @@
 
 'use strict';
 var $ = require('jquery');
+var _ = require('underscore');
 var monaco = require('monaco-editor');
 
 var themes = {
@@ -85,11 +86,11 @@ function Themer(eventHub, initialSettings) {
     };
     this.onSettingsChange(initialSettings);
 
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.eventHub.on('settingsChange', _.bind(this.onSettingsChange, this));
 
-    this.eventHub.on('requestTheme', function () {
+    this.eventHub.on('requestTheme', _.bind(function () {
         this.eventHub.emit('themeChange', this.currentTheme);
-    }, this);
+    }, this));
 }
 
 module.exports = {

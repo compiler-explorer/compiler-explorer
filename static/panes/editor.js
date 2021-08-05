@@ -46,7 +46,7 @@ var languages = options.languages;
 function Editor(hub, state, container) {
     this.id = state.id || hub.nextEditorId();
     this.container = container;
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#codeEditor').html());
     this.hub = hub;
     this.eventHub = hub.createEventHub();
@@ -245,12 +245,12 @@ Editor.prototype.initLanguage = function (state) {
 Editor.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
     this.container.on('open', _.bind(function () {
         this.eventHub.emit('editorOpen', this.id, this);
     }, this));
-    this.container.on('destroy', this.close, this);
+    this.container.on('destroy', _.bind(this.close, this));
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.
         this.maybeEmitChange();
@@ -258,24 +258,24 @@ Editor.prototype.initCallbacks = function () {
         this.requestCompilation();
     }, this);
 
-    this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
-    this.eventHub.on('treeCompilerEditorExcludeChange', this.onTreeCompilerEditorExcludeChange, this);
-    this.eventHub.on('coloursForEditor', this.onColoursForEditor, this);
-    this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
-    this.eventHub.on('executorOpen', this.onExecutorOpen, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('compiling', this.onCompiling, this);
-    this.eventHub.on('compileResult', this.onCompileResponse, this);
-    this.eventHub.on('selectLine', this.onSelectLine, this);
-    this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
-    this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
-    this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
-    this.eventHub.on('resize', this.resize, this);
-    this.eventHub.on('newSource', this.onNewSource, this);
-    this.eventHub.on('motd', this.onMotd, this);
-    this.eventHub.on('findEditors', this.sendEditor, this);
+    this.hub.eventOn('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
+    this.hub.eventOn('treeCompilerEditorExcludeChange', this.onTreeCompilerEditorExcludeChange, this);
+    this.hub.eventOn('coloursForEditor', this.onColoursForEditor, this);
+    this.hub.eventOn('compilerOpen', this.onCompilerOpen, this);
+    this.hub.eventOn('executorOpen', this.onExecutorOpen, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('compiling', this.onCompiling, this);
+    this.hub.eventOn('compileResult', this.onCompileResponse, this);
+    this.hub.eventOn('selectLine', this.onSelectLine, this);
+    this.hub.eventOn('editorSetDecoration', this.onEditorSetDecoration, this);
+    this.hub.eventOn('editorLinkLine', this.onEditorLinkLine, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('conformanceViewOpen', this.onConformanceViewOpen, this);
+    this.hub.eventOn('conformanceViewClose', this.onConformanceViewClose, this);
+    this.hub.eventOn('resize', this.resize, this);
+    this.hub.eventOn('newSource', this.onNewSource, this);
+    this.hub.eventOn('motd', this.onMotd, this);
+    this.hub.eventOn('findEditors', this.sendEditor, this);
     this.eventHub.emit('requestMotd');
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
@@ -305,7 +305,7 @@ Editor.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
-    this.eventHub.on('initialised', this.maybeEmitChange, this);
+    this.hub.eventOn('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
         if (e.target === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
@@ -412,25 +412,25 @@ Editor.prototype.initButtons = function (state) {
     // between all compilers created this way. That leads to some nasty-to-find state
     // bugs e.g. https://github.com/compiler-explorer/compiler-explorer/issues/225
     var getCompilerConfig = _.bind(function () {
-        return Components.getCompiler(this.id, this.currentLanguage.id);
+        return Components.toDragSourceConfig(Components.getCompiler(this.id, this.currentLanguage.id));
     }, this);
 
     var getExecutorConfig = _.bind(function () {
-        return Components.getExecutor(this.id, this.currentLanguage.id);
+        return Components.toDragSourceConfig(Components.getExecutor(this.id, this.currentLanguage.id));
     }, this);
 
     var getConformanceConfig = _.bind(function () {
-        return Components.getConformanceView(this.id, this.getSource(), this.currentLanguage.id);
+        return Components.toDragSourceConfig(Components.getConformanceView(this.id, this.getSource(), this.currentLanguage.id));
     }, this);
 
     var getEditorConfig = _.bind(function () {
-        return Components.getEditor();
+        return Components.toDragSourceConfig(Components.getEditor());
     }, this);
 
     var addDragListener = _.bind(function (dragSource, dragConfig) {
         this.container.layoutManager
-            .createDragSource(dragSource, dragConfig)
-            ._dragListener.on('dragStart', togglePaneAdder);
+            .newDragSource(dragSource[0], dragConfig);
+            //._dragListener.on('dragStart', togglePaneAdder);
     }, this);
 
     addDragListener(addCompilerButton, getCompilerConfig);
@@ -442,7 +442,8 @@ Editor.prototype.initButtons = function (state) {
         dragSource.click(_.bind(function () {
             var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(dragConfig);
+            var config = dragConfig();
+            insertPoint.newComponent(config.type, config.state);
         }, this));
     }, this);
 

@@ -39,7 +39,7 @@ function CompilerPicker(domRoot, hub, langId, compilerId, onCompilerChange, comp
     this.domNode = domRoot.find('.compiler-picker')[0];
     this.compilerService = hub.compilerService;
     this.onCompilerChange = onCompilerChange;
-    this.eventHub.on('compilerFavoriteChange', this.onCompilerFavoriteChange, this);
+    hub.eventOn('compilerFavoriteChange', this.onCompilerFavoriteChange, this);
     this.tomSelect = null;
     this.lastLangId = null;
     this.lastCompilerId = null;

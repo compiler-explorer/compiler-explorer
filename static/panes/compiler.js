@@ -78,7 +78,7 @@ function Compiler(hub, container, state) {
     this.hub = hub;
     this.eventHub = hub.createEventHub();
     this.compilerService = hub.compilerService;
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#compiler').html());
     this.id = state.id || hub.nextCompilerId();
     this.sourceTreeId = state.tree ? state.tree : false;
@@ -202,33 +202,34 @@ Compiler.prototype.close = function () {
 
 Compiler.prototype.initPanerButtons = function () {
     var outputConfig = _.bind(function () {
-        return Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId);
+        return Components.toDragSourceConfig(Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId));
     }, this);
 
-    this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
-    this.outputBtn.click(_.bind(function () {
+    this.container.layoutManager.newDragSource(this.outputBtn[0], outputConfig);
+    this.outputBtn.on('click', _.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(outputConfig);
+        var config = dragConfig();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     var cloneComponent = _.bind(function () {
         var currentState = this.currentState();
         // Delete the saved id to force a new one
         delete currentState.id;
-        return {
+        return Components.toDragSourceConfig({
             type: 'component',
             componentName: 'compiler',
             componentState: currentState,
-        };
+        });
     }, this);
     var createOptView = _.bind(function () {
-        return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId);
+        return Components.toDragSourceConfig(Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
+            this.sourceEditorId));
     }, this);
 
     var createFlagsView = _.bind(function () {
-        return Components.getFlagsViewWith(this.id, this.getCompilerName(), this.optionsField.val());
+        return Components.toDragSourceConfig(Components.getFlagsViewWith(this.id, this.getCompilerName(), this.optionsField.val()));
     }, this);
 
     if (this.flagsViewOpen) {
@@ -236,27 +237,27 @@ Compiler.prototype.initPanerButtons = function () {
     }
 
     var createAstView = _.bind(function () {
-        return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
-            this.sourceEditorId);
+        return Components.toDragSourceConfig(Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
+            this.sourceEditorId));
     }, this);
 
     var createIrView = _.bind(function () {
-        return Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
-            this.sourceEditorId);
+        return Components.toDragSourceConfig(Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
+            this.sourceEditorId));
     }, this);
 
     var createRustMirView = _.bind(function () {
-        return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
-            this.getCompilerName(), this.sourceEditorId);
+        return Components.toDragSourceConfig(Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
+            this.getCompilerName(), this.sourceEditorId));
     }, this);
 
     var createGccDumpView = _.bind(function () {
-        return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.lastResult.gccDumpOutput);
+        return Components.toDragSourceConfig(Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
+            this.lastResult.gccDumpOutput));
     }, this);
 
     var createCfgView = _.bind(function () {
-        return Components.getCfgViewWith(this.id, this.sourceEditorId);
+        return Components.toDragSourceConfig(Components.getCfgViewWith(this.id, this.sourceEditorId));
     }, this);
 
     var createExecutor = _.bind(function () {
@@ -273,7 +274,7 @@ Compiler.prototype.initPanerButtons = function () {
             });
         });
         // todo: pass on treeId
-        return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options);
+        return Components.toDragSourceConfig(Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options));
     }, this);
 
     var panerDropdown = this.domRoot.find('.pane-dropdown');
@@ -282,96 +283,105 @@ Compiler.prototype.initPanerButtons = function () {
     };
 
     this.container.layoutManager
-        .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.domRoot.find('.btn.add-compiler')[0], cloneComponent);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
-    this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
+    this.domRoot.find('.btn.add-compiler').on('click', _.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(cloneComponent);
+        var config = cloneComponent();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.optButton, createOptView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.optButton[0], createOptView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.optButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createOptView);
+        var config = createOptView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
     this.container.layoutManager
-        .createDragSource(this.flagsButton, createFlagsView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.flagsButton[0], createFlagsView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.flagsButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createFlagsView);
+        var config = createFlagsView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     popularArgumentsMenu.append(this.flagsButton);
 
     this.container.layoutManager
-        .createDragSource(this.astButton, createAstView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.astButton[0], createAstView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.astButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createAstView);
+        var config = createAstView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.irButton, createIrView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.irButton[0], createIrView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.irButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createIrView);
+        var config = createIrView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.rustMirButton, createRustMirView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.rustMirButton[0], createRustMirView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.rustMirButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createRustMirView);
+        var config = createRustMirView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.gccDumpButton, createGccDumpView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.gccDumpButton[0], createGccDumpView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.gccDumpButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createGccDumpView);
+        var config = createGccDumpView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.cfgButton, createCfgView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.cfgButton[0], createCfgView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.cfgButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createCfgView);
+        var config = createCfgView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.executorButton, createExecutor)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(this.executorButton[0], createExecutor);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     this.executorButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createExecutor);
+        var config = createExecutor();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.initToolButtons(togglePannerAdder);
@@ -620,7 +630,7 @@ Compiler.prototype.getActiveTools = function (newToolSettings) {
     }
 
     if (this.container.layoutManager.isInitialised) {
-        var config = this.container.layoutManager.toConfig();
+        var config = this.container.layoutManager.saveLayout();
         return this.findTools(config, tools);
     } else {
         return tools;
@@ -1443,18 +1453,19 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
                 monacoStdin = langTools[toolId].tool.monacoStdin;
             }
         }
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin, this.sourceTreeId);
+        return Components.toDragSourceConfig(Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin, this.sourceTreeId));
     }, this);
 
     this.container.layoutManager
-        .createDragSource(button, createToolView)
-        ._dragListener.on('dragStart', togglePannerAdder);
+        .newDragSource(button[0], createToolView);
+        //._dragListener.on('dragStart', togglePannerAdder);
 
     button.click(_.bind(function () {
         button.prop('disabled', true);
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createToolView);
+        var config = createToolView();
+        insertPoint.newComponent(config.type, config.state);
     }, this));
 };
 
@@ -1604,62 +1615,62 @@ Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
 
-    this.container.on('destroy', this.close, this);
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('open', function () {
+    this.container.on('destroy', _.bind(this.close, this));
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
+    this.container.on('open', _.bind(function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
-    }, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
-    this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
-    this.eventHub.on('editorClose', this.onEditorClose, this);
-    this.eventHub.on('treeClose', this.onTreeClose, this);
-    this.eventHub.on('colours', this.onColours, this);
-    this.eventHub.on('coloursForCompiler', this.onColoursForCompiler, this);
-    this.eventHub.on('resendCompilation', this.onResendCompilation, this);
-    this.eventHub.on('findCompilers', this.sendCompiler, this);
-    this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
-    this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
+    }, this));
+    this.hub.eventOn('editorChange', this.onEditorChange, this);
+    this.hub.eventOn('compilerFlagsChange', this.onCompilerFlagsChange, this);
+    this.hub.eventOn('editorClose', this.onEditorClose, this);
+    this.hub.eventOn('treeClose', this.onTreeClose, this);
+    this.hub.eventOn('colours', this.onColours, this);
+    this.hub.eventOn('coloursForCompiler', this.onColoursForCompiler, this);
+    this.hub.eventOn('resendCompilation', this.onResendCompilation, this);
+    this.hub.eventOn('findCompilers', this.sendCompiler, this);
+    this.hub.eventOn('compilerSetDecorations', this.onCompilerSetDecorations, this);
+    this.hub.eventOn('panesLinkLine', this.onPanesLinkLine, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('requestCompilation', this.onRequestCompilation, this);
 
-    this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
-    this.eventHub.on('toolOpened', this.onToolOpened, this);
-    this.eventHub.on('toolClosed', this.onToolClosed, this);
+    this.hub.eventOn('toolSettingsChange', this.onToolSettingsChange, this);
+    this.hub.eventOn('toolOpened', this.onToolOpened, this);
+    this.hub.eventOn('toolClosed', this.onToolClosed, this);
 
-    this.eventHub.on('optViewOpened', this.onOptViewOpened, this);
-    this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
-    this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
-    this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
-    this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
-    this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
-    this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
-    this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
-    this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
-    this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
-    this.eventHub.on('outputOpened', this.onOutputOpened, this);
-    this.eventHub.on('outputClosed', this.onOutputClosed, this);
+    this.hub.eventOn('optViewOpened', this.onOptViewOpened, this);
+    this.hub.eventOn('optViewClosed', this.onOptViewClosed, this);
+    this.hub.eventOn('flagsViewOpened', this.onFlagsViewOpened, this);
+    this.hub.eventOn('flagsViewClosed', this.onFlagsViewClosed, this);
+    this.hub.eventOn('astViewOpened', this.onAstViewOpened, this);
+    this.hub.eventOn('astViewClosed', this.onAstViewClosed, this);
+    this.hub.eventOn('irViewOpened', this.onIrViewOpened, this);
+    this.hub.eventOn('irViewClosed', this.onIrViewClosed, this);
+    this.hub.eventOn('rustMirViewOpened', this.onRustMirViewOpened, this);
+    this.hub.eventOn('rustMirViewClosed', this.onRustMirViewClosed, this);
+    this.hub.eventOn('outputOpened', this.onOutputOpened, this);
+    this.hub.eventOn('outputClosed', this.onOutputClosed, this);
 
-    this.eventHub.on('gccDumpPassSelected', this.onGccDumpPassSelected, this);
-    this.eventHub.on('gccDumpFiltersChanged', this.onGccDumpFiltersChanged, this);
-    this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
-    this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
-    this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
+    this.hub.eventOn('gccDumpPassSelected', this.onGccDumpPassSelected, this);
+    this.hub.eventOn('gccDumpFiltersChanged', this.onGccDumpFiltersChanged, this);
+    this.hub.eventOn('gccDumpViewOpened', this.onGccDumpViewOpened, this);
+    this.hub.eventOn('gccDumpViewClosed', this.onGccDumpViewClosed, this);
+    this.hub.eventOn('gccDumpUIInit', this.onGccDumpUIInit, this);
 
-    this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
-    this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
-    this.eventHub.on('resize', this.resize, this);
-    this.eventHub.on('requestFilters', function (id) {
+    this.hub.eventOn('cfgViewOpened', this.onCfgViewOpened, this);
+    this.hub.eventOn('cfgViewClosed', this.onCfgViewClosed, this);
+    this.hub.eventOn('resize', this.resize, this);
+    this.hub.eventOn('requestFilters', function (id) {
         if (id === this.id) {
             this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
         }
     }, this);
-    this.eventHub.on('requestCompiler', function (id) {
+    this.hub.eventOn('requestCompiler', function (id) {
         if (id === this.id) {
             this.sendCompiler();
         }
     }, this);
-    this.eventHub.on('languageChange', this.onLanguageChange, this);
+    this.hub.eventOn('languageChange', this.onLanguageChange, this);
 
     this.fullTimingInfo
         .off('click')
@@ -1717,7 +1728,7 @@ Compiler.prototype.initCallbacks = function () {
         }
     }, this));
 
-    this.eventHub.on('initialised', this.undefer, this);
+    this.hub.eventOn('initialised', this.undefer, this);
 };
 
 Compiler.prototype.onOptionsChange = function (options) {

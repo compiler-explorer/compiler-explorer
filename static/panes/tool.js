@@ -55,7 +55,7 @@ function Tool(hub, container, state) {
     this.toolName = 'Tool';
     this.compilerService = hub.compilerService;
     this.eventHub = hub.createEventHub();
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#tool-output').html());
     this.editorContentRoot = this.domRoot.find('.monaco-placeholder');
     this.plainContentRoot = this.domRoot.find('pre.content');
@@ -86,7 +86,7 @@ function Tool(hub, container, state) {
     }, this));
 
     this.createToolInputView = _.bind(function () {
-        return Components.getToolInputViewWith(this.compilerId, this.toolId, this.toolName);
+        return Components.toDragSourceConfig(Components.getToolInputViewWith(this.compilerId, this.toolId, this.toolName));
     }, this);
 
     this.initButtons(state);
@@ -110,16 +110,16 @@ function Tool(hub, container, state) {
 }
 
 Tool.prototype.initCallbacks = function () {
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('destroy', this.close, this);
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
+    this.container.on('destroy', _.bind(this.close, this));
 
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('languageChange', this.onLanguageChange, this);
-    this.eventHub.on('toolInputChange', this.onToolInputChange, this);
-    this.eventHub.on('toolInputViewClosed', this.onToolInputViewClosed, this);
+    this.hub.eventOn('compileResult', this.onCompileResult, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('languageChange', this.onLanguageChange, this);
+    this.hub.eventOn('toolInputChange', this.onToolInputChange, this);
+    this.hub.eventOn('toolInputViewClosed', this.onToolInputViewClosed, this);
 
     this.toggleArgs.on('click', _.bind(function () {
         this.togglePanel(this.toggleArgs, this.panelArgs);
@@ -257,7 +257,8 @@ Tool.prototype.openMonacoEditor = function () {
     this.toggleStdin.addClass('active');
     var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
         this.container.layoutManager.root.contentItems[0];
-    insertPoint.addChild(this.createToolInputView);
+    var config = this.createToolInputView();
+    insertPoint.newComponent(config.type, config.state);
     this.onOptionsChange();
     this.eventHub.emit('setToolInput', this.compilerId, this.toolId, this.monacoStdinField);
 };

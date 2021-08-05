@@ -56,7 +56,7 @@ function Executor(hub, container, state) {
     this.hub = hub;
     this.eventHub = hub.createEventHub();
     this.compilerService = hub.compilerService;
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#executor').html());
     this.contentRoot = this.domRoot.find('.content');
     this.sourceTreeId = state.tree ? state.tree : false;
@@ -667,20 +667,20 @@ Executor.prototype.initListeners = function () {
     this.fontScale.on('change', _.bind(this.onFontScale, this));
     this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
-    this.container.on('destroy', this.close, this);
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('open', function () {
+    this.container.on('destroy', _.bind(this.close, this));
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
+    this.container.on('open',  _.bind(function () {
         this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
-    }, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
-    this.eventHub.on('editorClose', this.onEditorClose, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
-    this.eventHub.on('resendExecution', this.onResendExecutionResult, this);
-    this.eventHub.on('resize', this.resize, this);
-    this.eventHub.on('findExecutors', this.sendExecutor, this);
-    this.eventHub.on('languageChange', this.onLanguageChange, this);
+    }, this));
+    this.hub.eventOn('editorChange', this.onEditorChange, this);
+    this.hub.eventOn('editorClose', this.onEditorClose, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('requestCompilation', this.onRequestCompilation, this);
+    this.hub.eventOn('resendExecution', this.onResendExecutionResult, this);
+    this.hub.eventOn('resize', this.resize, this);
+    this.hub.eventOn('findExecutors', this.sendExecutor, this);
+    this.hub.eventOn('languageChange', this.onLanguageChange, this);
 
     this.fullTimingInfo
         .off('click')
@@ -775,7 +775,7 @@ Executor.prototype.initCallbacks = function () {
         }
     }, this));
 
-    this.eventHub.on('initialised', this.undefer, this);
+    this.hub.eventOn('initialised', this.undefer, this);
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {

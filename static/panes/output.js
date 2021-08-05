@@ -47,7 +47,7 @@ function Output(hub, container, state) {
     this.treeId = state.tree;
     this.hub = hub;
     this.eventHub = hub.createEventHub();
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#compiler-output').html());
     this.contentRoot = this.domRoot.find('.content');
     this.optionsToolbar = this.domRoot.find('.options-toolbar');
@@ -75,13 +75,13 @@ Output.prototype.initCallbacks = function (state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('destroy', this.close, this);
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
+    this.container.on('destroy', _.bind(this.close, this));
 
-    this.eventHub.on('compiling', this.onCompiling, this);
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('compiling', this.onCompiling, this);
+    this.hub.eventOn('compileResult', this.onCompileResult, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
     this.eventHub.emit('outputOpened', this.compilerId);
 };
 

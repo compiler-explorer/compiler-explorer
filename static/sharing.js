@@ -237,7 +237,7 @@ Sharing.prototype.onOpenModalPane = function (event) {
 
     function updatePermaLink() {
         socialSharingElements.empty();
-        var config = this.layout.toConfig();
+        var config = this.layout.saveLayout();
         getLinks(config, currentBind, _.bind(function (error, newUrl, extra, updateState) {
             if (error || !newUrl) {
                 permalink.prop('disabled', true);
@@ -328,7 +328,7 @@ Sharing.prototype.displayTooltip = function (message) {
 };
 
 Sharing.prototype.copyLinkTypeToClipboard = function (type) {
-    var config = this.layout.toConfig();
+    var config = this.layout.saveLayout();
     getLinks(config, type, _.bind(function (error, newUrl, extra, updateState) {
         if (error || !newUrl) {
             this.displayTooltip('Oops, something went wrong');

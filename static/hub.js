@@ -86,102 +86,108 @@ function Hub(layout, subLangId, defaultLangId) {
     // We can't avoid this self as _ is undefined at this point
     var self = this;
 
-    layout.registerComponent(Components.getEditor().componentName,
+    layout.registerComponentConstructor(Components.getEditor().componentName,
         function (container, state) {
             return self.codeEditorFactory(container, state);
         });
-    layout.registerComponent(Components.getCompiler().componentName,
+    layout.registerComponentConstructor(Components.getCompiler().componentName,
         function (container, state) {
             return self.compilerFactory(container, state);
         });
-    layout.registerComponent(Components.getTree().componentName,
+    layout.registerComponentConstructor(Components.getTree().componentName,
         function (container, state) {
             return self.treeFactory(container, state);
         });
-    layout.registerComponent(Components.getExecutor().componentName,
+    layout.registerComponentConstructor(Components.getExecutor().componentName,
         function (container, state) {
             return self.executorFactory(container, state);
         });
-    layout.registerComponent(Components.getOutput().componentName,
+    layout.registerComponentConstructor(Components.getOutput().componentName,
         function (container, state) {
             return self.outputFactory(container, state);
         });
-    layout.registerComponent(Components.getToolViewWith().componentName,
+    layout.registerComponentConstructor(Components.getToolViewWith().componentName,
         function (container, state) {
             return self.toolFactory(container, state);
         });
-    layout.registerComponent(Components.getToolInputView().componentName,
+    layout.registerComponentConstructor(Components.getToolInputView().componentName,
         function (container, state) {
             return self.toolInputViewFactory(container, state);
         });
-    layout.registerComponent(diff.getComponent().componentName,
+    layout.registerComponentConstructor(diff.getComponent().componentName,
         function (container, state) {
             return self.diffFactory(container, state);
         });
-    layout.registerComponent(Components.getOptView().componentName,
+    layout.registerComponentConstructor(Components.getOptView().componentName,
         function (container, state) {
             return self.optViewFactory(container, state);
         });
-    layout.registerComponent(Components.getFlagsView().componentName,
+    layout.registerComponentConstructor(Components.getFlagsView().componentName,
         function (container, state) {
             return self.flagsViewFactory(container, state);
         });
-    layout.registerComponent(Components.getAstView().componentName,
+    layout.registerComponentConstructor(Components.getAstView().componentName,
         function (container, state) {
             return self.astViewFactory(container, state);
         });
-    layout.registerComponent(Components.getIrView().componentName,
+    layout.registerComponentConstructor(Components.getIrView().componentName,
         function (container, state) {
             return self.irViewFactory(container, state);
         });
-    layout.registerComponent(Components.getRustMirView().componentName,
+    layout.registerComponentConstructor(Components.getRustMirView().componentName,
         function (container, state) {
             return self.rustMirViewFactory(container, state);
         });
-    layout.registerComponent(Components.getGccDumpView().componentName,
+    layout.registerComponentConstructor(Components.getGccDumpView().componentName,
         function (container, state) {
             return self.gccDumpViewFactory(container, state);
         });
-    layout.registerComponent(Components.getCfgView().componentName,
+    layout.registerComponentConstructor(Components.getCfgView().componentName,
         function (container, state) {
             return self.cfgViewFactory(container, state);
         });
-    layout.registerComponent(Components.getConformanceView().componentName,
+    layout.registerComponentConstructor(Components.getConformanceView().componentName,
         function (container, state) {
             return self.confomanceFactory(container, state);
         });
 
-    layout.eventHub.on('editorOpen', function (id) {
+        this.eventOn('editorOpen', function (id) {
         this.editorIds.add(id);
     }, this);
-    layout.eventHub.on('editorClose', function (id) {
+    this.eventOn('editorClose', function (id) {
         this.editorIds.remove(id);
     }, this);
-    layout.eventHub.on('compilerOpen', function (id) {
+    this.eventOn('compilerOpen', function (id) {
         this.compilerIds.add(id);
     }, this);
-    layout.eventHub.on('compilerClose', function (id) {
+    this.eventOn('compilerClose', function (id) {
         this.compilerIds.remove(id);
     }, this);
-    layout.eventHub.on('treeOpen', function (id) {
+    this.eventOn('treeOpen', function (id) {
         this.treeIds.add(id);
     }, this);
-    layout.eventHub.on('treeClose', function (id) {
+    this.eventOn('treeClose', function (id) {
         this.treeIds.remove(id);
     }, this);
-    layout.eventHub.on('executorOpen', function (id) {
+    this.eventOn('executorOpen', function (id) {
         this.executorIds.add(id);
     }, this);
-    layout.eventHub.on('executorClose', function (id) {
+    this.eventOn('executorClose', function (id) {
         this.executorIds.remove(id);
     }, this);
-    layout.eventHub.on('languageChange', function (editorId, langId) {
+    this.eventOn('languageChange', function (editorId, langId) {
         this.lastOpenedLangId = langId;
     }, this);
-    layout.init();
     this.undefer();
-    layout.eventHub.emit('initialised');
 }
+
+Hub.prototype.eventOn = function (name, func, context) {
+    if (context) {
+        this.layout.eventHub.on(name, _.bind(func, context));
+    } else {
+        this.layout.eventHub.on(name, func);
+    }
+};
 
 Hub.prototype.undefer = function () {
     this.deferred = false;
@@ -212,7 +218,9 @@ Hub.prototype.codeEditorFactory = function (container, state) {
     // Ensure editors are closable: some older versions had 'isClosable' false.
     // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
     // has used it yet.
-    container.parent.config.isClosable = true;
+    if (!container.parent.isClosable) {
+        // todo: find some way to make it closable?
+    }
     var editorObj = new editor.Editor(this, state, container);
     this.editors.push(editorObj);
 };
@@ -321,7 +329,7 @@ WrappedEventHub.prototype.emit = function () {
 };
 
 WrappedEventHub.prototype.on = function (event, callback, context) {
-    this.eventHub.on(event, callback, context);
+    this.hub.eventOn(event, callback, context);
     this.subscriptions.push({evt: event, fn: callback, ctx: context});
 };
 
@@ -414,7 +422,7 @@ Hub.prototype.findEditorInChildren = function (elem) {
 };
 
 Hub.prototype.findEditorParentRowOrColumn = function () {
-    return this.findEditorInChildren(this.layout.root);
+    return this.findEditorInChildren(this.layout.rootItem);
 };
 
 Hub.prototype.addInEditorStackIfPossible = function (newElem) {
@@ -427,18 +435,18 @@ Hub.prototype.addInEditorStackIfPossible = function (newElem) {
 };
 
 Hub.prototype.addAtRoot = function (newElem) {
-    var rootFirstItem = this.layout.root.contentItems[0];
+    var rootFirstItem = this.layout.rootItem.contentItems[0];
     if (rootFirstItem) {
         if (rootFirstItem.isRow || rootFirstItem.isColumn) {
             rootFirstItem.addChild(newElem);
         } else {
-            var newRow = this.layout.createContentItem({type: 'row'}, this.layout.root);
-            this.layout.root.replaceChild(rootFirstItem, newRow);
+            var newRow = this.layout.createContentItem({type: 'row'}, this.layout.rootItem);
+            this.layout.rootItem.replaceChild(rootFirstItem, newRow);
             newRow.addChild(rootFirstItem);
             newRow.addChild(newElem);
         }
     } else {
-        this.layout.root.addChild({
+        this.layout.rootItem.addChild({
             type: 'row',
             content: [newElem],
         });
@@ -447,7 +455,7 @@ Hub.prototype.addAtRoot = function (newElem) {
 
 Hub.prototype.activateTabForContainer = function (container) {
     if (container && container.tab)
-        container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
+        container.tab.header.parent.setActiveComponentItem(container.tab.contentItem);
 };
 
 module.exports = Hub;

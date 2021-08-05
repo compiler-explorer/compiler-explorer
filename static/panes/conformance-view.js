@@ -38,7 +38,7 @@ function Conformance(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
     this.compilerService = hub.compilerService;
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#conformance').html());
     this.editorId = state.editorid;
     this.maxCompilations = options.cvCompilerCountMax || 6;
@@ -103,22 +103,22 @@ Conformance.prototype.initButtons = function () {
 };
 
 Conformance.prototype.initCallbacks = function () {
-    this.container.on('destroy', function () {
+    this.container.on('destroy', _.bind(function () {
         this.eventHub.unsubscribe();
         this.eventHub.emit('conformanceViewClose', this.editorId);
-    }, this);
+    }, this));
 
-    this.container.on('destroy', this.close, this);
-    this.container.on('open', function () {
+    this.container.on('destroy', _.bind(this.close, this));
+    this.container.on('open', _.bind(function () {
         this.eventHub.emit('conformanceViewOpen', this.editorId);
-    }, this);
+    }, this));
 
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.eventHub.on('resize', this.resize, this);
-    this.eventHub.on('editorChange', this.onEditorChange, this);
-    this.eventHub.on('editorClose', this.onEditorClose, this);
-    this.eventHub.on('languageChange', this.onLanguageChange, this);
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
+    this.hub.eventOn('resize', this.resize, this);
+    this.hub.eventOn('editorChange', this.onEditorChange, this);
+    this.hub.eventOn('editorClose', this.onEditorClose, this);
+    this.hub.eventOn('languageChange', this.onLanguageChange, this);
 
     this.addCompilerButton.on('click', _.bind(function () {
         this.addCompilerPicker();
@@ -186,17 +186,18 @@ Conformance.prototype.addCompilerPicker = function (config) {
     this.compilerPickers.push(compilerPicker);
 
     var getCompilerConfig = _.bind(function () {
-        return Components.getCompilerWith(
-            this.editorId, undefined, optionsField.val(), compilerPickerNode.value, this.langId, this.lastState.libs);
+        return Components.toDragSourceConfig(Components.getCompilerWith(
+            this.editorId, undefined, optionsField.val(), compilerPickerNode.value, this.langId, this.lastState.libs));
     }, this);
 
     this.container.layoutManager
-        .createDragSource(popCompilerButton, getCompilerConfig);
+        .newDragSource(popCompilerButton[0], getCompilerConfig);
 
     popCompilerButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(getCompilerConfig);
+            var config = getCompilerConfig();
+            insertPoint.newComponent(config.type, config.state);
     }, this));
 
     this.handleToolbarUI();

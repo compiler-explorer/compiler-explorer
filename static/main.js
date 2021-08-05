@@ -35,7 +35,7 @@ require('bootstrap-slider');
 var Sharing = require('./sharing').Sharing;
 var _ = require('underscore');
 var $ = require('jquery');
-var GoldenLayout = require('golden-layout');
+var GoldenLayout = require('golden-layout').GoldenLayout;
 var Components = require('./components');
 var url = require('./url');
 var clipboard = require('clipboard');
@@ -54,7 +54,7 @@ var presentation = require('./presentation');
 
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
-require('golden-layout/src/css/goldenlayout-base.css');
+require('golden-layout/dist/css/goldenlayout-base.css');
 require('tom-select/dist/css/tom-select.bootstrap4.css');
 require('bootstrap-slider/dist/css/bootstrap-slider.css');
 require('./colours.scss');
@@ -477,8 +477,10 @@ function start() {
     var layout;
     var hub;
     try {
-        layout = new GoldenLayout(config, root);
+        layout = new GoldenLayout(root);
         hub = new Hub(layout, subLangId, defaultLangId);
+        layout.loadLayout(config);
+        layout.eventHub.emit('initialised');
     } catch (e) {
         Sentry.captureException(e);
 
@@ -486,8 +488,10 @@ function start() {
             document.location = document.URL.replace('/z/', '/resetlayout/');
         }
 
-        layout = new GoldenLayout(defaultConfig, root);
+        layout = new GoldenLayout(root);
         hub = new Hub(layout, subLangId, defaultLangId);
+        layout.loadLayout(config);
+        layout.eventHub.emit('initialised');
     }
 
     if (hub.hasTree()) {
@@ -496,8 +500,7 @@ function start() {
 
     function sizeRoot() {
         var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
-        root.height(height);
-        layout.updateSize();
+        layout.setSize($(window).width(), height);
     }
 
     $(window)
@@ -520,7 +523,7 @@ function start() {
     }
 
     function setupAdd(thing, func) {
-        layout.createDragSource(thing, func);
+        layout.newDragSource(thing, func);
         thing.click(function () {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());
@@ -530,15 +533,15 @@ function start() {
         });
     }
 
-    setupAdd($('#add-editor'), function () {
-        return Components.getEditor();
+    setupAdd($('#add-editor')[0], function () {
+        return Components.toDragSourceConfig(Components.getEditor());
     });
-    setupAdd($('#add-diff'), function () {
-        return Components.getDiff();
+    setupAdd($('#add-diff')[0], function () {
+        return Components.toDragSourceConfig(Components.getDiff());
     });
-    setupAdd($('#add-tree'), function () {
+    setupAdd($('#add-tree')[0], function () {
         $('#add-tree').prop('disabled', true);
-        return Components.getTree();
+        return Components.toDragSourceConfig(Components.getTree());
     });
 
     if (hashPart) {
@@ -599,7 +602,7 @@ function start() {
 
     sizeRoot();
 
-    History.trackHistory(layout);
+    //History.trackHistory(layout);
     new Sharing(layout);
 }
 

@@ -99,7 +99,7 @@ function getItemDisplayTitle(item) {
 function Diff(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#diff').html());
     this.compilers = {};
     var root = this.domRoot.find('.monaco-placeholder');
@@ -261,20 +261,20 @@ Diff.prototype.initButtons = function (state) {
 Diff.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
-    this.eventHub.on('compileResult', this.onCompileResult, this);
-    this.eventHub.on('executeResult', this.onExecuteResult, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('executor', this.onExecutor, this);
-    this.eventHub.on('executorClose', this.onExecutorClose, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('themeChange', this.onThemeChange, this);
-    this.container.on('destroy', function () {
+    this.hub.eventOn('compileResult', this.onCompileResult, this);
+    this.hub.eventOn('executeResult', this.onExecuteResult, this);
+    this.hub.eventOn('compiler', this.onCompiler, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('executor', this.onExecutor, this);
+    this.hub.eventOn('executorClose', this.onExecutorClose, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('themeChange', this.onThemeChange, this);
+    this.container.on('destroy',  _.bind(function () {
         this.eventHub.unsubscribe();
         this.outputEditor.dispose();
-    }, this);
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
+    }, this));
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
 
     this.requestResendResult(this.lhs.id);
     this.requestResendResult(this.rhs.id);

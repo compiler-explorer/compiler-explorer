@@ -77,7 +77,7 @@ export class Tree {
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
         this.container = container;
-        this.domRoot = container.getElement();
+        this.domRoot = $(container.element);
         this.domRoot.html($('#filelisting').html());
         this.hub = hub;
         this.eventHub = hub.createEventHub();
@@ -191,19 +191,19 @@ export class Tree {
     }
 
     private initCallbacks() {
-        this.container.on('resize', this.resize, this);
-        this.container.on('shown', this.resize, this);
+        this.container.on('resize', _.bind(this.resize, this));
+        this.container.on('shown', _.bind(this.resize, this));
         this.container.on('open', () => {
             this.eventHub.emit('treeOpen', this.id);
         });
-        this.container.on('destroy', this.close, this);
+        this.container.on('destroy', _.bind(this.close, this));
 
-        this.eventHub.on('editorOpen', this.onEditorOpen, this);
-        this.eventHub.on('editorClose', this.onEditorClose, this);
-        this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
+        this.hub.eventOn('editorOpen', this.onEditorOpen, this);
+        this.hub.eventOn('editorClose', this.onEditorClose, this);
+        this.hub.eventOn('compilerOpen', this.onCompilerOpen, this);
+        this.hub.eventOn('compilerClose', this.onCompilerClose, this);
 
-        this.eventHub.on('compileResult', this.onCompileResponse, this);
+        this.hub.eventOn('compileResult', this.onCompileResponse, this);
 
         this.toggleCMakeButton.on('change', _.bind(this.onToggleCMakeChange, this));
 

@@ -35,7 +35,7 @@ var monacoConfig = require('../monaco-config');
 function Ast(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#ast').html());
 
     this.decorations = {};
@@ -90,21 +90,21 @@ Ast.prototype.initCallbacks = function () {
 
     this.fontScale.on('change', _.bind(this.updateState, this));
 
-    this.container.on('destroy', this.close, this);
+    this.container.on('destroy', _.bind(this.close, this));
 
     var onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours, this.onCompileResult);
 
-    this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
-    this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
-    this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('compileResult', onColoursOnCompile.dependencyProxy, this);
+    this.hub.eventOn('compiler', this.onCompiler, this);
+    this.hub.eventOn('colours', onColoursOnCompile.dependentProxy, this);
+    this.hub.eventOn('panesLinkLine', this.onPanesLinkLine, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
     this.eventHub.emit('astViewOpened', this._compilerid);
     this.eventHub.emit('requestSettings');
 
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);

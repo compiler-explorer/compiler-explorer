@@ -45,9 +45,9 @@ function CompilerService(eventHub) {
         this.compilersByLang[compiler.lang][compiler.id] = compiler;
     }, this);
     // settingsChange is triggered on page load
-    eventHub.on('settingsChange', function (newSettings) {
+    eventHub.on('settingsChange', _.bind(function (newSettings) {
         this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug;
-    }, this);
+    }, this));
 }
 
 CompilerService.prototype.getDefaultCompilerForLang = function (langId) {

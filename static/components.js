@@ -309,4 +309,10 @@ module.exports = {
             },
         };
     },
+    toDragSourceConfig: function (config) {
+        return {
+            type: config.componentName,
+            state: config.componentState,
+        };
+    },
 };

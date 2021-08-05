@@ -76,7 +76,7 @@ function getSimilarSourcesIndex(completeHistory, sourcesToCompareTo) {
 
 function push(stringifiedConfig) {
     var config = JSON.parse(stringifiedConfig);
-    var sources = extractEditorSources(config.content);
+    var sources = extractEditorSources(config.root.content);
     if (sources.length > 0) {
         var completeHistory = list();
         var duplicateIdx = getSimilarSourcesIndex(completeHistory, getArrayWithJustTheCode(sources));
@@ -105,7 +105,7 @@ function trackHistory(layout) {
     var lastState = null;
     var debouncedPush = _.debounce(push, 500);
     layout.on('stateChanged', function () {
-        var stringifiedConfig = JSON.stringify(filterComponentState(layout.toConfig()));
+        var stringifiedConfig = JSON.stringify(filterComponentState(layout.saveLayout()));
         if (stringifiedConfig !== lastState) {
             lastState = stringifiedConfig;
             debouncedPush(stringifiedConfig);

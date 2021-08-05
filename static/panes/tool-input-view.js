@@ -38,7 +38,7 @@ function ToolInputView(hub, container, state) {
     state = state || {};
     this.container = container;
     this.eventHub = hub.createEventHub();
-    this.domRoot = container.getElement();
+    this.domRoot = $(container.element);
     this.domRoot.html($('#tool-input').html());
     this.source = state.source || '';
     var root = this.domRoot.find('.monaco-placeholder');
@@ -80,21 +80,21 @@ ToolInputView.prototype.initButtons = function (state) {
 ToolInputView.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
 
-    this.eventHub.on('compilerClose', this.onCompilerClose, this);
-    this.eventHub.on('toolClosed', this.onToolClose, this);
-    this.eventHub.on('toolInputViewCloseRequest', this.onToolInputViewCloseRequest, this);
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-    this.eventHub.on('setToolInput', this.onSetToolInput, this);
+    this.hub.eventOn('compilerClose', this.onCompilerClose, this);
+    this.hub.eventOn('toolClosed', this.onToolClose, this);
+    this.hub.eventOn('toolInputViewCloseRequest', this.onToolInputViewCloseRequest, this);
+    this.hub.eventOn('settingsChange', this.onSettingsChange, this);
+    this.hub.eventOn('setToolInput', this.onSetToolInput, this);
 
-    this.container.on('resize', this.resize, this);
-    this.container.on('shown', this.resize, this);
-    this.container.on('destroy', this.close, this);
+    this.container.on('resize', _.bind(this.resize, this));
+    this.container.on('shown', _.bind(this.resize, this));
+    this.container.on('destroy', _.bind(this.close, this));
 
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.
         this.maybeEmitChange();
     }, this);
-    this.eventHub.on('initialised', this.maybeEmitChange, this);
+    this.hub.eventOn('initialised', this.maybeEmitChange, this);
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
         this.debouncedEmitChange();
