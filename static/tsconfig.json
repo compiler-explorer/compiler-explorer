@@ -1,0 +1,12 @@
+{
+	"compilerOptions": {
+		"target": "es5",
+		"outDir": ".",
+		"sourceMap": true,
+		"rootDir": ".",
+        "esModuleInterop": true
+	},
+	"files": [
+		"alert.ts"
+	]
+}

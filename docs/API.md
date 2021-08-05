@@ -31,8 +31,7 @@ Due to the amount of compilers and information available through this api call,
 If you require different fields, you can specify them by adding `?fields=field1,field2,field3`
  to your query.
 
-To see all the available fields, you can use `?fields=all`. It is not recommended
- to use this by default.
+To see all the available fields, you can use `?fields=all`. It is not recommended using this by default.
 
 ### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
@@ -50,7 +49,7 @@ Returns a list of libraries and library versions available for the provided lang
 
 You can use the given include paths to supply in the userArguments for compilation. *(deprecated)*
 
-You will need the library id's and the version id's to supply to **compile** if you want to include libraries during compilation.
+You will need the library id's, and the version id's to supply to **compile** if you want to include libraries during compilation.
 
 ###  `GET /api/shortlinkinfo/<linkid>` - return information about a given link
 
@@ -261,7 +260,7 @@ This call opens the website in a state that was previously saved using the built
 
 This call returns plain/text for the code that was previously saved using the built-in shortener.
 
-If there were multiple editors during the saved session, you can retreive them by setting <sourceid> to 1, 2, 3, etcetera, otherwise <sourceid> can be set to 1.
+If there were multiple editors during the saved session, you can retrieve them by setting <sourceid> to 1, 2, 3, etcetera, otherwise <sourceid> can be set to 1.
 
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state

@@ -68,6 +68,7 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
+        placeholder: '🔍 Select a compiler...',
         optgroupField: '$groups',
         optgroups: this.getGroups(langId),
         lockOptgroupOrder: true,

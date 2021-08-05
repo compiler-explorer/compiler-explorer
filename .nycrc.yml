@@ -3,7 +3,8 @@ include:
   - app.js
   - lib/**/*.js
 exclude:
-  - lib/handlers/asm-docs.js
+  - lib/handlers/asm-docs-amd64.js
+  - lib/handlers/asm-docs-arm32.js
   - lib/compilers/fake-for-test.js
 report-dir: ./out/coverage
 reporter:

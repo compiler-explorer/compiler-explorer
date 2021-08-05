@@ -361,13 +361,13 @@ pre.content.wrap * {
 
 .change-language {
     line-height: 14px;
-    min-width: 100px !important;
+    min-width: 150px !important;
 }
 
 .change-language .ts-input {
+    border-bottom: none;
     border-right: none;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    border-radius: 0;
 }
 
 .short-compiler-name {

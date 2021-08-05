@@ -54,7 +54,7 @@ that has been relaxed slightly to allow up to three company sponsor logos visibl
   basic features, and of course will update the Privacy Policy. I won't be selling anything to do with user info etc,
   either: Logging in will be purely used to make _your_ life easier and allow you to manage things like shared settings
   and configuration, listing short URLs you've created (and potentially being able to remove them); and _maybe_ being
-  able to make user-named short URLs (e.g. "godbolt.org/u/mattgodbolt/ctad-example"). This goal is a personal pet
+  able to make user-named short URLs (e.g., "godbolt.org/u/mattgodbolt/ctad-example"). This goal is a personal pet
   project of [Matt's](http://github.com/mattgodbolt/).
 * **Multi-file support**. Multiple file compilation units to open the door to seeing LTO and maybe modules. This may
   include being able to use a `CMake` file to build things.

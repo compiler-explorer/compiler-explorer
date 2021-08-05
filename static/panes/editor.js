@@ -31,27 +31,13 @@ var FontScale = require('../fontscale');
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var options = require('../options');
-var Alert = require('../alert');
-var local = require('../local');
+var Alert = require('../alert').Alert;
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
-require('../modes/cppp-mode');
-require('../modes/cppx-gold-mode');
-require('../modes/cppx-blue-mode');
-require('../modes/d-mode');
-require('../modes/ispc-mode');
-require('../modes/llvm-ir-mode');
-require('../modes/haskell-mode');
-require('../modes/ocaml-mode');
-require('../modes/clean-mode');
-require('../modes/cuda-mode');
-require('../modes/fortran-mode');
-require('../modes/zig-mode');
-require('../modes/nc-mode');
-require('../modes/ada-mode');
-require('../modes/nim-mode');
+var Settings = require('../settings');
+require('../modes/_all');
 
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -65,7 +51,7 @@ function Editor(hub, state, container) {
     this.hub = hub;
     this.eventHub = hub.createEventHub();
     // Should probably be its own function somewhere
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.ourCompilers = {};
     this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
@@ -86,6 +72,8 @@ function Editor(hub, state, container) {
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
+
+    this.revealJumpStack = [];
 
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
@@ -130,8 +118,7 @@ function Editor(hub, state, container) {
         return hub.compilerService.compilersByLang[language.id];
     });
 
-    var self = this;
-    this.selectize = new TomSelect(this.languageBtn,{
+    this.selectize = new TomSelect(this.languageBtn, {
         sortField: 'name',
         valueField: 'id',
         labelField: 'name',
@@ -139,10 +126,8 @@ function Editor(hub, state, container) {
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-        plugins:['input_autogrow'],
-        onChange:function (value){
-            self.onLanguageChange(value);
-        },
+        plugins: ['input_autogrow'],
+        onChange: _.bind(this.onLanguageChange, this),
     });
 
 
@@ -656,6 +641,20 @@ Editor.prototype.initEditorActions = function () {
         }, this),
     });
 
+    this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
+
+    this.editor.addAction({
+        id: 'returnfromreveal',
+        label: 'Return from reveal jump',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.4,
+        precondition: 'hasRevealJumpStackElements',
+        run: _.bind(function () {
+            this.popAndRevealJump();
+        }, this),
+    });
+
     this.editor.addAction({
         id: 'toggleCompileOnChange',
         label: 'Toggle compile on change',
@@ -728,9 +727,37 @@ Editor.prototype.searchOnCppreference = function (ed) {
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
-
-    var url = 'https://en.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
+    var preferredLanguage = this.getPreferredLanguageTag();
+    // This list comes from the footer of the page
+    var cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
+    // If navigator.languages is supported, we could be a bit more clever and look for a match there too
+    var langTag = 'en';
+    if (cpprefLangs.indexOf(preferredLanguage) !== -1) {
+        langTag = preferredLanguage;
+    }
+    var url = 'https://' +
+        langTag +
+        '.cppreference.com/mwiki/index.php?search=' +
+        encodeURIComponent(word.word);
     window.open(url, '_blank', 'noopener');
+};
+
+Editor.prototype.getPreferredLanguageTag = function () {
+    var result = 'en';
+    var lang = 'en';
+    if (navigator) {
+        if (navigator.languages && navigator.languages.length) {
+            lang = navigator.languages[0];
+        } else if (navigator.language) {
+            lang = navigator.language;
+        }
+    }
+    // navigator.language[s] is supposed to return strings, but hey, you never know
+    if (lang !== result && _.isString(lang)) {
+        var primaryLanguageSubtagIdx = lang.indexOf('-');
+        result = lang.substr(0, primaryLanguageSubtagIdx).toLowerCase();
+    }
+    return result;
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
@@ -1055,40 +1082,57 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
 //              ^a   ^column  ^b
 Editor.prototype.getTokenSpan = function (lineNum, column) {
     var model = this.editor.getModel();
-    var line = model.getLineContent(lineNum);
-    if (0 < column && column < line.length) {
-        var tokens = monaco.editor.tokenize(line, model.getModeId());
-        if (tokens.length > 0) {
-            var lastOffset = 0;
-            var lastWasString = false;
-            for (var i = 0; i < tokens[0].length; ++i) {
-                // Treat all the contiguous string tokens as one,
-                // For example "hello \" world" is treated as one token
-                // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
-                if (tokens[0][i].type.startsWith('string')) {
-                    if (lastWasString) {
-                        continue;
+    if (lineNum <= model.getLineCount()) {
+        var line = model.getLineContent(lineNum);
+        if (0 < column && column < line.length) {
+            var tokens = monaco.editor.tokenize(line, model.getModeId());
+            if (tokens.length > 0) {
+                var lastOffset = 0;
+                var lastWasString = false;
+                for (var i = 0; i < tokens[0].length; ++i) {
+                    // Treat all the contiguous string tokens as one,
+                    // For example "hello \" world" is treated as one token
+                    // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
+                    if (tokens[0][i].type.startsWith('string')) {
+                        if (lastWasString) {
+                            continue;
+                        }
+                        lastWasString = true;
+                    } else {
+                        lastWasString = false;
                     }
-                    lastWasString = true;
-                } else {
-                    lastWasString = false;
+                    var currentOffset = tokens[0][i].offset;
+                    if (column <= currentOffset) {
+                        return {colBegin: lastOffset, colEnd: currentOffset};
+                    } else {
+                        lastOffset = currentOffset;
+                    }
                 }
-                var currentOffset = tokens[0][i].offset;
-                if (column <= currentOffset) {
-                    return { colBegin : lastOffset, colEnd : currentOffset };
-                } else {
-                    lastOffset = currentOffset;
-                }
+                return {colBegin: lastOffset, colEnd: line.length};
             }
-            return { colBegin : lastOffset, colEnd : line.length };
         }
     }
-    return { colBegin : column, colEnd : column + 1 };
+    return {colBegin: column, colEnd: column + 1};
+};
+
+Editor.prototype.pushRevealJump = function () {
+    this.revealJumpStack.push(this.editor.saveViewState());
+    this.revealJumpStackHasElementsCtxKey.set(true);
+};
+
+Editor.prototype.popAndRevealJump = function () {
+    if (this.revealJumpStack.length > 0) {
+        this.editor.restoreViewState(this.revealJumpStack.pop());
+        this.revealJumpStackHasElementsCtxKey.set(this.revealJumpStack.length > 0);
+    }
 };
 
 Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {
     if (Number(editorId) === this.id) {
-        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) {
+            this.pushRevealJump();
+            this.editor.revealLineInCenter(lineNum);
+        }
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {
@@ -1123,7 +1167,10 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
 
 Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
     if (Number(id) === this.id) {
-        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) {
+            this.pushRevealJump();
+            this.editor.revealLineInCenter(lineNum);
+        }
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {

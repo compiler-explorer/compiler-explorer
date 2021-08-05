@@ -244,7 +244,10 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
 
     var versions = result.find('.lib-version-select');
     versions.html('');
-    versions.append($('<option value="">-</option>'));
+    var noVersionSelectedOption = $('<option value="">-</option>');
+    versions.append(noVersionSelectedOption);
+    var hasVisibleVersions = false;
+
     _.each(lib.versions, _.bind(function (version, versionId) {
         var option = $('<option>');
         if (version.used) {
@@ -258,8 +261,16 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
         }
         option.attr('value', versionId);
         option.html(version.version);
-        versions.append(option);
+        if (version.used || !version.hidden) {
+            hasVisibleVersions = true;
+            versions.append(option);
+        }
     }, this));
+
+    if (!hasVisibleVersions) {
+        noVersionSelectedOption.text('No visible versions');
+        versions.prop('disabled', true);
+    }
 
     faveButton.on('click', _.bind(function () {
         var option = versions.find('option:selected');

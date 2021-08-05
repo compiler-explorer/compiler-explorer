@@ -28,6 +28,7 @@ var _ = require('underscore');
 var colour = require('./colour');
 var themes = require('./themes').themes;
 var options = require('./options');
+var local = require('./local');
 
 function Setting(elem, name, Control, param) {
     this.elem = elem;
@@ -259,4 +260,11 @@ function setupSettings(root, settings, onChange, subLangId) {
     return setSettings;
 }
 
-module.exports = setupSettings;
+function getStoredSettings() {
+    return JSON.parse(local.get('settings', '{}'));
+}
+
+module.exports = {
+    init: setupSettings,
+    getStoredSettings: getStoredSettings,
+};

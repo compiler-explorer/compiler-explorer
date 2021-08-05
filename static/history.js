@@ -25,7 +25,8 @@
 'use strict';
 var
     local = require('./local'),
-    _ = require('underscore');
+    _ = require('underscore'),
+    filterComponentState = require('./sharing').filterComponentState;
 
 var maxHistoryEntries = 30;
 
@@ -84,7 +85,7 @@ function push(stringifiedConfig) {
             while (completeHistory.length >= maxHistoryEntries) {
                 completeHistory.shift();
             }
-    
+
             completeHistory.push({
                 dt: Date.now(),
                 sources: sources,
@@ -97,6 +98,19 @@ function push(stringifiedConfig) {
 
         local.set('history', JSON.stringify(completeHistory));
     }
+}
+
+
+function trackHistory(layout) {
+    var lastState = null;
+    var debouncedPush = _.debounce(push, 500);
+    layout.on('stateChanged', function () {
+        var stringifiedConfig = JSON.stringify(filterComponentState(layout.toConfig()));
+        if (stringifiedConfig !== lastState) {
+            lastState = stringifiedConfig;
+            debouncedPush(stringifiedConfig);
+        }
+    });
 }
 
 function sortedList() {
@@ -126,8 +140,8 @@ function sources(language) {
 }
 
 module.exports = {
-    push: _.debounce(push, 500),
     list: list,
     sortedList: sortedList,
     sources: sources,
+    trackHistory: trackHistory,
 };

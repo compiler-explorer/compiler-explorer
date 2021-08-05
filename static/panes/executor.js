@@ -29,17 +29,15 @@ var ga = require('../analytics');
 var Toggles = require('../toggles');
 var FontScale = require('../fontscale');
 var options = require('../options');
-var Alert = require('../alert');
-var local = require('../local');
+var Alert = require('../alert').Alert;
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
-var timingInfoWidget = require('../timing-info-widget');
+var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
+var Settings = require('../settings');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
-
-var timingInfo = new timingInfoWidget.TimingInfo();
 
 var languages = options.languages;
 
@@ -63,7 +61,7 @@ function Executor(hub, container, state) {
     this.contentRoot = this.domRoot.find('.content');
     this.sourceEditorId = state.source || 1;
     this.id = state.id || hub.nextExecutorId();
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.initLangAndCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
@@ -347,7 +345,7 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     this.compileTimeLabel.text(timeLabelText);
 
     this.setCompilationOptionsPopover(result.buildResult &&
-        result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
+    result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
 
@@ -421,7 +419,7 @@ Executor.prototype.initButtons = function (state) {
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('', '');
+    this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -508,8 +506,7 @@ Executor.prototype.initListeners = function () {
     this.fullTimingInfo
         .off('click')
         .click(_.bind(function () {
-            timingInfo.run(_.bind(function () {
-            }, this), this.lastResult, this.lastTimeTaken);
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
         }, this));
 };
 
@@ -663,8 +660,8 @@ Executor.prototype.onCompilerChange = function (value) {
 
 Executor.prototype.onToggleWrapChange = function () {
     var state = this.currentState();
-    this.contentRoot.toggleClass('wrap',state.wrap);
-    this.wrapButton.prop('title', '['+(state.wrap ? 'ON' : 'OFF')+'] '+ this.wrapTitle);
+    this.contentRoot.toggleClass('wrap', state.wrap);
+    this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
     this.saveState();
 };
 
@@ -726,10 +723,11 @@ Executor.prototype.getPaneName = function () {
 Executor.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
+    var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion, compilerNotification);
+    this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
 
 Executor.prototype.setCompilationOptionsPopover = function (content) {
@@ -747,15 +745,36 @@ Executor.prototype.setCompilerVersionPopover = function (version, notification) 
     this.fullCompilerName.popover('dispose');
     // `notification` contains HTML from a config file, so is 'safe'.
     // `version` comes from compiler output, so isn't, and is escaped.
+    var bodyContent = $('<div>');
+    var versionContent = $('<div>')
+        .html(_.escape(version.version));
+    bodyContent.append(versionContent);
+    if (version.fullVersion) {
+        var hiddenSection = $('<div>');
+        var hiddenVersionText = $('<div>')
+            .html(_.escape(version.fullVersion))
+            .hide();
+        var clickToExpandContent = $('<a>')
+            .attr('href', 'javascript:;')
+            .text('Toggle full version output')
+            .on('click', _.bind(function () {
+                versionContent.toggle();
+                hiddenVersionText.toggle();
+                this.fullCompilerName.popover('update');
+            }, this));
+        hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
+        bodyContent.append(hiddenSection);
+    }
     this.fullCompilerName.popover({
         html: true,
-        title: notification ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
+        title: notification ?
+            $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
             'Full compiler version',
-        content: _.escape(version) || '',
-        template: '<div class="popover' +
-            (version ? ' compiler-options-popover' : '') +
-            '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+        content: bodyContent,
+        template: '<div class="popover' + (version ? ' compiler-options-popover' : '') + '" role="tooltip">' +
+            '<div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+            '</div>',
     });
 };
 
@@ -836,7 +855,7 @@ Executor.prototype.getCurrentLangCompilers = function () {
         allCompilers,
         _.bind(function (compiler) {
             return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
-                   (this.compiler && compiler.id === this.compiler.id);
+                (this.compiler && compiler.id === this.compiler.id);
         }, this));
 };
 

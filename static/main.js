@@ -41,14 +41,15 @@ var url = require('./url');
 var clipboard = require('clipboard');
 var Hub = require('./hub');
 var Sentry = require('@sentry/browser');
-var settings = require('./settings');
+var Settings = require('./settings');
 var local = require('./local');
-var Alert = require('./alert');
+var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var History = require('./history');
 var presentation = require('./presentation');
 
 //css
@@ -112,7 +113,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         setSettings(_.extend(currentSettings, newSettings));
     });
@@ -384,6 +385,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     if (config.maximisedItemId !== '__glMaximised') return;
 
     var found = false;
+
     function impl(component) {
         if (component.id === '__glMaximised') {
             found = true;
@@ -574,7 +576,18 @@ function start() {
         window.open(sponsor.url);
     };
 
+    if (options.pageloadUrl) {
+        setTimeout(function () {
+            var visibleIcons = $('.ces-icon:visible').map(function (index, value) {
+                return value.dataset.statsid;
+            }).get().join(',');
+            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+        }, 5000);
+    }
+
     sizeRoot();
+
+    History.trackHistory(layout);
     new Sharing(layout);
 }
 
