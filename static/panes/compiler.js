@@ -262,7 +262,7 @@ Compiler.prototype.initPanerButtons = function () {
     var createExecutor = _.bind(function () {
         var currentState = this.currentState();
         var editorId = currentState.source;
-        //        var treeId = currentState.sourceTreeId;
+        var treeId = currentState.tree;
         var langId = currentState.lang;
         var compilerId = currentState.compiler;
         var libs = [];
@@ -272,8 +272,7 @@ Compiler.prototype.initPanerButtons = function () {
                 ver: item.versionId,
             });
         });
-        // todo: pass on treeId
-        return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options);
+        return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options, treeId);
     }, this);
 
     var panerDropdown = this.domRoot.find('.pane-dropdown');
