@@ -271,14 +271,18 @@ export class MultifileService {
         if (this.isCMakeProject) {
             if (file.filename === this.getDefaultMainCMakeFilename()) {
                 this.setAsMainSource(file.fileId);
+            } else {
+                return false;
             }
-        } else if (!file.isMainSource) {
+        } else {
             if (file.filename === this.getDefaultMainSourceFilename(this.compilerLanguageId)) {
                 this.setAsMainSource(file.fileId);
+            } else {
+                return false;
             }
         }
 
-        return file.isMainSource
+        return file.isMainSource;
     }
 
     public getMainSource(): string {
