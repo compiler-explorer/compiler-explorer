@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as sinon from 'sinon';
-
 import * as exec from '../lib/exec';
 
 import { chai } from './utils';
@@ -163,7 +161,7 @@ describe('nsjail unit tests', () => {
         );
         args.should.deep.equals([
             '--config',
-            'etc/nsjail/sandbox.cfg',
+            exec.getNsJailCfgFilePath('sandbox'),
             '--env=HOME=/app',
             '--',
             '/path/to/compiler',
@@ -190,7 +188,7 @@ describe('nsjail unit tests', () => {
         );
         args.should.deep.equals([
             '--config',
-            'etc/nsjail/custom-config.cfg',
+            exec.getNsJailCfgFilePath('custom-config'),
             '--env=HOME=/app',
             '--',
             '/path/to/compiler',
@@ -209,7 +207,7 @@ describe('nsjail unit tests', () => {
         );
         args.should.deep.equals([
             '--config',
-            'etc/nsjail/sandbox.cfg',
+            exec.getNsJailCfgFilePath('sandbox'),
             '--cwd',
             '/app',
             '--bindmount',
