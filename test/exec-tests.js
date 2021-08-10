@@ -155,13 +155,6 @@ if (process.platform !== 'win32') { // POSIX
 }
 
 describe('nsjail unit tests', () => {
-    before(() => {
-        sinon
-            .stub(exec, 'getNsJailCfgFilePath')
-            .withArgs('sandbox').returns('etc/nsjail/sandbox.cfg'); // Testing only uses sandbox mode
-        exec.getNsJailCfgFilePath.callThrough();
-    });
-
     it('should handle simple cases', () => {
         const {args, options, filenameTransform} = exec.getNsJailOptions(
             'sandbox',
