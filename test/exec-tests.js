@@ -188,7 +188,7 @@ describe('nsjail unit tests', () => {
         );
         args.should.deep.equals([
             '--config',
-            exec.getNsJailCfgFilePath('custom-config'),
+            'etc/nsjail/custom-config.cfg',
             '--env=HOME=/app',
             '--',
             '/path/to/compiler',
