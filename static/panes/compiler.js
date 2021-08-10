@@ -1809,8 +1809,11 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     bodyContent.append(versionContent);
     if (version.fullVersion) {
         var hiddenSection = $('<div>');
+        var lines = _.map(version.fullVersion.split('\n'), function (line) {
+            return _.escape(line);
+        }).join('<br/>');
         var hiddenVersionText = $('<div>')
-            .html(_.escape(version.fullVersion))
+            .html(lines)
             .hide();
         var clickToExpandContent = $('<a>')
             .attr('href', 'javascript:;')
