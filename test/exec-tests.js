@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as sinon from 'sinon';
+
 import * as exec from '../lib/exec';
 
 import { chai } from './utils';
@@ -153,6 +155,13 @@ if (process.platform !== 'win32') { // POSIX
 }
 
 describe('nsjail unit tests', () => {
+    before(() => {
+        sinon
+            .stub(exec, 'getNsJailCfgFilePath')
+            .withArgs('sandbox').returns('etc/nsjail/sandbox.cfg'); // Testing only uses sandbox mode
+        exec.getNsJailCfgFilePath.callThrough();
+    });
+
     it('should handle simple cases', () => {
         const {args, options, filenameTransform} = exec.getNsJailOptions(
             'sandbox',
@@ -179,6 +188,24 @@ describe('nsjail unit tests', () => {
             {some: 1, thing: 2},
         ).options;
         options.should.deep.equals({some: 1, thing: 2});
+    });
+    it('should pass through unknown configs', () => {
+        const {args, options, filenameTransform} = exec.getNsJailOptions(
+            'custom-config',
+            '/path/to/compiler',
+            ['1', '2', '3'],
+        );
+        args.should.deep.equals([
+            '--config',
+            'etc/nsjail/custom-config.cfg',
+            '--env=HOME=/app',
+            '--',
+            '/path/to/compiler',
+            '1',
+            '2',
+            '3']);
+        options.should.deep.equals({});
+        expect(filenameTransform).to.be.undefined;
     });
     it('should remap paths when using customCwd', () => {
         const {args, options, filenameTransform} = exec.getNsJailOptions(
