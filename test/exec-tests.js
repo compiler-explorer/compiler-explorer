@@ -265,20 +265,20 @@ describe('Execution tests', () => {
             const {args, options} = exec.getSandboxNsjailOptions(
                 '/tmp/hellow/output.s',
                 [],
-                {}
+                {},
             );
 
             options.should.deep.equals({});
             args.should.deep.equals([
-                "--config",
-                "etc/nsjail/sandbox.cfg",
-                "--cwd",
-                "/app",
-                "--bindmount",
-                "/tmp/hellow:/app",
-                "--env=HOME=/app",
-                "--",
-                "./output.s"
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
             ]);
         });
 
@@ -287,21 +287,21 @@ describe('Execution tests', () => {
                 '/tmp/hellow/output.s',
                 [],
                 {
-                    customCwd: '/tmp/hellow'
-                }
+                    customCwd: '/tmp/hellow',
+                },
             );
 
             options.should.deep.equals({});
             args.should.deep.equals([
-                "--config",
-                "etc/nsjail/sandbox.cfg",
-                "--cwd",
-                "/app",
-                "--bindmount",
-                "/tmp/hellow:/app",
-                "--env=HOME=/app",
-                "--",
-                "./output.s"
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
             ]);
         });
 
@@ -310,21 +310,21 @@ describe('Execution tests', () => {
                 '/tmp/hellow/subdir/output.s',
                 [],
                 {
-                    customCwd: '/tmp/hellow'
-                }
+                    customCwd: '/tmp/hellow',
+                },
             );
 
             options.should.deep.equals({});
             args.should.deep.equals([
-                "--config",
-                "etc/nsjail/sandbox.cfg",
-                "--cwd",
-                "/app",
-                "--bindmount",
-                "/tmp/hellow:/app",
-                "--env=HOME=/app",
-                "--",
-                "subdir/output.s"
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                'subdir/output.s',
             ]);
         });
 
@@ -335,24 +335,24 @@ describe('Execution tests', () => {
                 ['..'],
                 {
                     customCwd: '/tmp/hellow/build',
-                    appHome: '/tmp/hellow'
-                }
+                    appHome: '/tmp/hellow',
+                },
             );
 
             options.should.deep.equals({
-                appHome: '/tmp/hellow'
+                appHome: '/tmp/hellow',
             });
             args.should.deep.equals([
-                "--config",
-                "etc/nsjail/execute.cfg",
-                "--cwd",
-                "/app/build",
-                "--bindmount",
-                "/tmp/hellow:/app",
-                "--env=HOME=/app",
-                "--",
-                "/opt/compiler-explorer/cmake/bin/cmake",
-                ".."
+                '--config',
+                'etc/nsjail/execute.cfg',
+                '--cwd',
+                '/app/build',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                '/opt/compiler-explorer/cmake/bin/cmake',
+                '..',
             ]);
         });
     });

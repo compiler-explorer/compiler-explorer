@@ -1740,7 +1740,7 @@ Compiler.prototype.onOptionsChange = function (options) {
 Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(optionsArray, _.filter(this.compiler.unwiseOptions, function (opt) {
-        return opt !== "";
+        return opt !== '';
     }));
 
     var options = unwiseOptions.length === 1 ? 'Option ' : 'Options ';

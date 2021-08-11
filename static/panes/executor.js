@@ -907,7 +907,7 @@ Executor.prototype.getLinkHint = function () {
 Executor.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return 'Executor ' + compName + ' (' + this.getLinkHint() + ')';
+    return 'Executor ' + compName + ' (' + langName + ',' + this.getLinkHint() + ')';
 };
 
 Executor.prototype.updateCompilerName = function () {
