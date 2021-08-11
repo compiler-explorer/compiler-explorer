@@ -192,4 +192,19 @@ describe('Trees', () => {
 
         normalized.should.deep.equal(resultdata);
     });
+
+    it('ClientState to Mobile GL', () => {
+        const jsonStr = fs.readFileSync('test/state/tree-mobile.json');
+        const state = new ClientState(JSON.parse(jsonStr));
+        state.trees.length.should.equal(1);
+
+        const gl = new ClientStateGoldenifier();
+        const slides = gl.generatePresentationModeMobileViewerSlides(state);
+
+        const golden = JSON.parse(JSON.stringify(slides));
+        //fs.writeFileSync('test/state/tree-mobile.goldenified.json', JSON.stringify(golden));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/tree-mobile.goldenified.json'));
+        golden.should.deep.equal(resultdata);
+    });
 });
