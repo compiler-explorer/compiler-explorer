@@ -121,10 +121,13 @@ export class MultifileService {
                     return;
                 }
 
-                const content = await zip.file(zipEntry.name).async("string");
+                let content = await zip.file(zipEntry.name).async("string");
                 if (content.length > this.maxFilesize) {
                     return;
                 }
+
+                // remove utf8-bom characters
+                content = content.replace(/^(\ufeff)/, '');
 
                 const file: MultifileFile = {
                     fileId: this.newFileId,
