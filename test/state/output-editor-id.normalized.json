@@ -15,7 +15,7 @@
                         "commentOnly": true,
                         "demangle": true,
                         "directives": true,
-                        "execute": false,
+                        "execute": true,
                         "intel": true,
                         "labels": true,
                         "trim": true
