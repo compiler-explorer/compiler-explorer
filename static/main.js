@@ -256,6 +256,16 @@ function configFromEmbedded(embeddedUrl) {
     }
 }
 
+function fixBugsInConfig(config) {
+    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
+        config.activeItemIndex = config.content.length - 1;
+    }
+
+    _.each(config.content, function (item) {
+        fixBugsInConfig(item);
+    });
+}
+
 function findConfig(defaultConfig, options) {
     var config;
     if (!options.embedded) {
@@ -293,6 +303,9 @@ function findConfig(defaultConfig, options) {
             },
         }, configFromEmbedded(window.location.hash.substr(1)));
     }
+
+    fixBugsInConfig(config);
+
     return config;
 }
 
