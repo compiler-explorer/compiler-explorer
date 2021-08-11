@@ -129,9 +129,12 @@ Opt.prototype.getCurrentEditorLanguage = function () {
     return this.optEditor.getModel().getModeId();
 };
 
+Opt.prototype.getPaneName = function () {
+    return 'Opt Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+};
+
 Opt.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Opt Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {

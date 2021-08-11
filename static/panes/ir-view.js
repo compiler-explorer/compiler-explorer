@@ -153,7 +153,7 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
 };
 
 Ir.prototype.getPaneName = function () {
-    return this._compilerName + ' IR Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return 'IR Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
 };
 
 Ir.prototype.setTitle = function () {

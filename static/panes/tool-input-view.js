@@ -108,9 +108,12 @@ ToolInputView.prototype.initCallbacks = function () {
     }, this));
 };
 
+ToolInputView.prototype.getPaneName =  function () {
+    return 'Tool Input ' + this._toolName + ' (Compiler #' + this._compilerId + ')';
+};
+
 ToolInputView.prototype.setTitle = function () {
-    var name = this._toolName + ' Input #' + this._compilerId;
-    this.container.setTitle(name);
+    this.container.setTitle(this.getPaneName());
 };
 
 ToolInputView.prototype.resize = function () {

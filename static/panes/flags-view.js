@@ -113,9 +113,12 @@ Flags.prototype.initCallbacks = function () {
     }, this));
 };
 
+Flags.prototype.getPaneName = function () {
+    return 'Detailed Compiler Flags ' + this._compilerName + ' (Compiler #' + this._compilerid + ')';
+};
+
 Flags.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Detailed Compiler Flags (Compiler #' + this._compilerid + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 Flags.prototype.onCompiler = function (id, compiler) {

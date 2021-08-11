@@ -252,9 +252,13 @@ Cfg.prototype.resize = function () {
     }
 };
 
+Cfg.prototype.getPaneName = function () {
+    return 'Graph Viewer ' + this._compilerName +
+        ' (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')';
+};
+
 Cfg.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 Cfg.prototype.assignLevels = function (data) {

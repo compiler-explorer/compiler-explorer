@@ -116,13 +116,9 @@ RustMir.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
-RustMir.prototype.getCurrentEditorLanguage = function () {
-    return this.rustMirEditor.getModel().getModeId();
-};
-
 RustMir.prototype.getPaneName = function () {
-    return this._compilerName + ' Rust MIR Viewer (Editor #' + this._editorid + ', Compiler # '
-        + this._compilerid + ')';
+    return 'Rust MIR Viewer ' + this._compilerName +
+        ' (Editor #' + this._editorid + ', Compiler # ' + this._compilerid + ')';
 };
 
 RustMir.prototype.setTitle = function () {

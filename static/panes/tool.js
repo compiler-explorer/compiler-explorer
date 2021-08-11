@@ -499,10 +499,14 @@ Tool.prototype.setNormalContent = function () {
     }
 };
 
-Tool.prototype.updateCompilerName = function () {
+Tool.prototype.getPaneName = function () {
     var name = this.toolName + ' #' + this.compilerId;
     if (this.compilerName) name += ' with ' + this.compilerName;
-    this.container.setTitle(name);
+    return name;
+};
+
+Tool.prototype.updateCompilerName = function () {
+    this.container.setTitle(this.getPaneName());
 };
 
 Tool.prototype.onCompilerClose = function (id) {

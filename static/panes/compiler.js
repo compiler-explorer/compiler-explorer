@@ -1678,7 +1678,7 @@ Compiler.prototype.getLanguageName = function () {
 Compiler.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return compName + ' (Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ') ' + langName;
+    return compName + ' (' + langName +', Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')';
 };
 
 Compiler.prototype.updateCompilerName = function () {

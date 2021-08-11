@@ -717,7 +717,7 @@ Executor.prototype.getLanguageName = function () {
 Executor.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return compName + ' Executor (Editor #' + this.sourceEditorId + ') ' + langName;
+    return 'Executor ' + compName + ' (' + langName + ', Editor #' + this.sourceEditorId + ')';
 };
 
 Executor.prototype.updateCompilerName = function () {
