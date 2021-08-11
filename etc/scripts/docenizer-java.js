@@ -75,8 +75,8 @@ const extract = (node, $) => {
             description: description.html(),
             tooltip: operation,
             stack: [stackBefore?.html(), stackAfter?.html()],
-            format
-        })
+            format,
+        });
     }
     return result;
 };
