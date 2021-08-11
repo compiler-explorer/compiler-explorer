@@ -288,6 +288,10 @@ div.argmenuitem span.argdescription {
     color: #e3cf7a;
 }
 
+.lm_header .lm_tab:last-child {
+    border-bottom: 1px solid #ccc !important;
+}
+
 .lm_content .tree {
     background-color: #fff;
     height: 100%;

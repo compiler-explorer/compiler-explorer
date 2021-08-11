@@ -71,7 +71,7 @@ function testFilter(filename, suffix, filters) {
             testName,
             result,
             optionsOverride);
-    });
+    }).timeout(5000); // Bump the timeout a bit so that we don't fail for slow cases
 }
 
 /*

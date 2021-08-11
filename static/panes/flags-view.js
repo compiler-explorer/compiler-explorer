@@ -45,8 +45,12 @@ function Flags(hub, container, state) {
 
     this.settings = JSON.parse(local.get('settings', '{}'));
 
+    var value = '';
+    if (state.compilerFlags) {
+        value = state.compilerFlags.replace(/ /g, '\n');
+    }
     this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
-        value: state.compilerFlags ? state.compilerFlags.replaceAll(' ', '\n') : '',
+        value: value,
         language: 'plaintext',
         readOnly: false,
         glyphMargin: true,
@@ -109,9 +113,12 @@ Flags.prototype.initCallbacks = function () {
     }, this));
 };
 
+Flags.prototype.getPaneName = function () {
+    return 'Detailed Compiler Flags ' + this._compilerName + ' (Compiler #' + this._compilerid + ')';
+};
+
 Flags.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Detailed Compiler Flags (Compiler #' + this._compilerid + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 Flags.prototype.onCompiler = function (id, compiler) {
@@ -184,7 +191,7 @@ Flags.prototype.onDidChangeCursorSelection = function (e) {
 
 Flags.prototype.getOptions = function () {
     var lines = this.editor.getModel().getValue();
-    return lines.replaceAll('\n', ' ');
+    return lines.replace(/\n/g, ' ');
 };
 
 Flags.prototype.maybeEmitChange = function (force) {

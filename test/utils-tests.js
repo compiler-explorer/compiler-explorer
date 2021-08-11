@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { logger } from '../lib/logger';
 import * as utils from '../lib/utils';
 
@@ -452,5 +454,17 @@ describe('encodes in our version of base32', () => {
         doTest('foo', '8rrx8');
 
         doTest('foobar', '8rrx8b7Pc5');
+    });
+});
+
+describe('fileExists', () => {
+    it('Returns true for files that exists', async () => {
+        (await utils.fileExists(fileURLToPath(import.meta.url))).should.be.true;
+    });
+    it('Returns false for files that don\'t exist', async () => {
+        (await utils.fileExists('./ABC-FileThatDoesNotExist.extension')).should.be.false;
+    });
+    it('Returns false for directories that exist', async () => {
+        (await utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).should.be.false;
     });
 });

@@ -1,19 +1,16 @@
 [![Build Status](https://github.com/compiler-explorer/compiler-explorer/workflows/Compiler%20Explorer/badge.svg)](https://github.com/compiler-explorer/compiler-explorer/actions?query=workflow%3A%22Compiler+Explorer%22)
 [![codecov](https://codecov.io/gh/compiler-explorer/compiler-explorer/branch/main/graph/badge.svg)](https://codecov.io/gh/compiler-explorer/compiler-explorer)
 
-![Compiler Explorer](docs/logo.svg)
+![Compiler Explorer](views/resources/site-logo.svg)
 
 # Compiler Explorer
 
-**Compiler Explorer** is an interactive compiler exploration website. Edit C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/) or other language code, and see how that code looks after being compiled in real time.
-  Multiple compilers are supported, many different tools and visualisations are available, and the UI layout
+**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
+ or in any of the other [31 supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
+ Multiple compilers are supported for each language, many different tools and visualisations are available, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
 Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](#running-a-local-instance).
-
-You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
- [GitHub](https://github.com/sponsors/mattgodbolt/), [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url), or by
- buying cool gear on the [Compiler Explorer store](https://shop.spreadshirt.com/compiler-explorer/).
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which
  aims to foster an open and welcoming environment.
@@ -21,7 +18,11 @@ You can financially support [this project on Patreon](https://patreon.com/mattgo
 **Compiler Explorer** was started in 2012 to show how C++ constructs translated to assembly code. It started out as a
  `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
-Since then, it has become a public website serving around [2,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+Since then, it has become a public website serving around [2,250,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+
+You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
+[GitHub](https://github.com/sponsors/mattgodbolt/), [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url), or by
+buying cool gear on the [Compiler Explorer store](https://shop.spreadshirt.com/compiler-explorer/).
 
 ## Using Compiler Explorer
 
@@ -35,10 +36,13 @@ There is now a FAQ section [in the repository wiki](https://github.com/compiler-
 
 There are a number of videos that showcase some features of Compiler Explorer:
 
-* [presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
-* [older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
+* [Presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
+* [Older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
  into the more obscure features.
-* [playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
+* [Playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
+
+A [Road map](docs/Roadmap.md) is available which gives a little insight into
+the future plans for **Compiler Explorer**.
 
 ## Developing
 
@@ -74,8 +78,9 @@ Configuring compiler explorer is achieved via configuration files in the `etc/co
  into git, and you won't find yourself fighting with updated versions when you `git pull`. For more information see
  [Adding a Compiler](docs/AddingACompiler.md).
 
-A [Road map](docs/Roadmap.md) is available which gives a little insight into
- the future plans for **Compiler Explorer**.
+Check [CONTRIBUTING.md](./CONTRIBUTING.md) for detailed information about how you can contribute to **Compiler Explorer**,
+ and the [docs](./docs) folder for specific details regarding various things you might want to do,
+ such as how to add new compilers or languages to the site.
 
 ### Running a local instance
 

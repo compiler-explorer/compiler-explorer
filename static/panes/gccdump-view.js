@@ -296,9 +296,13 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
     this.saveState();
 };
 
+GccDump.prototype.getPaneName = function () {
+    return 'GCC Tree/RTL Viewer ' + (this._compilerName || '') +
+        ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
+};
+
 GccDump.prototype.setTitle = function () {
-    this.container.setTitle((this._compilerName || '') +
-        ' GCC Tree/RTL Viewer (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 GccDump.prototype.showGccDumpResults = function (results) {

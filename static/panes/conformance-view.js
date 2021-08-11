@@ -126,10 +126,16 @@ Conformance.prototype.initCallbacks = function () {
     }, this));
 };
 
+Conformance.prototype.getPaneName = function () {
+    return 'Conformance Viewer (Editor #' + this.editorId + ')';
+};
+
 Conformance.prototype.setTitle = function (compilerCount) {
-    this.container.setTitle('Conformance viewer (Editor #' + this.editorId + ') ' + (
-        compilerCount !== 0 ? (compilerCount + '/' + this.maxCompilations) : ''
-    ));
+    var compilerText = '';
+    if (compilerCount !== 0) {
+        compilerText = ' ' + compilerCount + '/' + this.maxCompilations;
+    }
+    this.container.setTitle(this.getPaneName() + compilerText);
 };
 
 Conformance.prototype.addCompilerPicker = function (config) {

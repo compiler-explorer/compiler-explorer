@@ -58,7 +58,7 @@ function makeFontSizeDropdown(elem, obj, buttonDropdown) {
             .addClass('dropdown-item btn btn-sm btn-light')
             .text(i)
             .appendTo(elem)
-            .click(onClickEvent);
+            .on('click', onClickEvent);
 
         if (obj.scale === i) {
             item.addClass('active');
@@ -81,7 +81,9 @@ function FontScale(domRoot, state, fontSelectorOrEditor) {
     // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
     this.scale = state.fontScale || options.defaultFontScale;
     // The check seems pointless, but it ensures a false in case it's undefined
-    this.usePxUnits = state.fontUsePx === true;
+    // FontScale assumes it's an old state if it does not see a fontUsePx in the state, so at first it will use pt.
+    // So the second condition is there to make new objects actually use px
+    this.usePxUnits = state.fontUsePx === true || !state.fontScale;
     if (this.scale < 8) {
         this.scale = convertOldScale(this.scale);
     }
