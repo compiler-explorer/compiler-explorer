@@ -186,9 +186,25 @@ function Hub(layout, subLangId, defaultLangId) {
 Hub.prototype.undefer = function () {
     this.deferred = false;
     var eventHub = this.layout.eventHub;
+    var compilerEmissions = [];
+    var nonCompilerEmissions = []; 
+
     _.each(this.deferredEmissions, function (args) {
+        if (args[0] === 'compiler') {
+            compilerEmissions.push(args);
+        } else {
+            nonCompilerEmissions.push(args);
+        }
+    });
+
+    _.each(this.nonCompilerEmissions, function (args) {
         eventHub.emit.apply(eventHub, args);
     });
+
+    _.each(this.compilerEmissions, function (args) {
+        eventHub.emit.apply(eventHub, args);
+    });
+
     this.deferredEmissions = [];
 };
 
