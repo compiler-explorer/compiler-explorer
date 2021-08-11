@@ -1,6 +1,5 @@
 all: true
 include:
-  - app.js
   - lib/**/*.js
 exclude:
   - lib/handlers/asm-docs-amd64.js
