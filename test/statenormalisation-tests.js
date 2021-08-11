@@ -178,4 +178,18 @@ describe('Trees', () => {
 
         normalized.should.deep.equal(resultdata);
     });
+
+    it('GL to ClientState with correct output pane', () => {
+        const jsonStr = fs.readFileSync('test/state/tree-gl-outputpane.json');
+        const gl = JSON.parse(jsonStr);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(gl);
+
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/tree-gl-outputpane.normalized.json'));
+
+        normalized.should.deep.equal(resultdata);
+    });
 });
