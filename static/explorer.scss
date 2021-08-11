@@ -799,7 +799,7 @@ html[data-theme=dark] {
     padding: 0px 0px 0px 5px;
 }
 .filelisting-editor-file span {
-    font-family: Consolas, "Liberation Mono", Courier, monospace;
+    font-family: inherit;
     float: left;
     margin-top: 6px;
 }
