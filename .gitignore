@@ -9,7 +9,7 @@
 /asm-docs*
 
 # user local customizations
-/etc/config/*.local.properties
+/etc/**/*.local.*
 /lib/storage/data
 
 # IDE project files
