@@ -197,11 +197,11 @@ Hub.prototype.undefer = function () {
         }
     });
 
-    _.each(this.nonCompilerEmissions, function (args) {
+    _.each(nonCompilerEmissions, function (args) {
         eventHub.emit.apply(eventHub, args);
     });
 
-    _.each(this.compilerEmissions, function (args) {
+    _.each(compilerEmissions, function (args) {
         eventHub.emit.apply(eventHub, args);
     });
 
