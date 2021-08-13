@@ -79,6 +79,7 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
         plugins: ['dropdown_input'],
         maxOptions: 1000,
         onChange: _.bind(function (val) {
+            console.log(this.id, val);
             if (val) {
                 ga.proxy('send', {
                     hitType: 'event',
