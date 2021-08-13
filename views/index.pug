@@ -77,10 +77,6 @@ block prepend content
               // This is not an oversight, there is in fact a .float-right missing here that's there in the other 2
               button.btn.btn-sm.copy-link-btn.clip-icon(data-toggle="none")
                 span.dropdown-icon.fa.fa-clipboard
-        li.nav-item.dropdown
-          a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
-          div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
-            include menu-other.pug
         if policies.cookies.enabled || policies.privacy.enabled
           li.nav-item.dropdown
             a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
@@ -89,6 +85,10 @@ block prepend content
                 span.fa.fa-bell
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
               include menu-policies.pug
+        li.nav-item.dropdown
+          a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
+          div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
+            include menu-other.pug
 
 block append footer
   include popups.pug
