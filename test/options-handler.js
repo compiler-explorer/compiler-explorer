@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import { fileURLToPath } from 'url';
 
 import { BaseCompiler } from '../lib/base-compiler';
 import { ClientOptionsHandler } from '../lib/options-handler';
@@ -67,12 +68,12 @@ const optionsProps = {
     'libs.someotherlib.versions.trunk.hidden': true,
     tools: 'faketool:someothertool',
     'tools.faketool.name': 'Fake Tool',
-    'tools.faketool.exe': '/dev/null',
+    'tools.faketool.exe': fileURLToPath(import.meta.url),
     'tools.faketool.type': 'independent',
     'tools.faketool.class': 'compiler-dropin-tool',
     'tools.faketool.stdinHint': 'disabled',
     'tools.someothertool.name': 'Some Other Tool',
-    'tools.someothertool.exe': '/dev/null',
+    'tools.someothertool.exe': fileURLToPath(import.meta.url),
     'tools.someothertool.type': 'independent',
     'tools.someothertool.class': 'compiler-dropin-tool',
     'tools.someothertool.stdinHint': 'disabled',
