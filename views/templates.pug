@@ -368,13 +368,18 @@
       .col
         .input-group.mb-auto
           .input-group-prepend(title="Show all compilation options")
-            a.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+            button.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
               span.btn.btn-sm.btn-light.status-icon
-          input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+          input.conformance-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
       .col-1
-        span.fas.fa-receipt.d-none.compiler-out(style="cursor: help;" title="This compiler has generated some output. Open its associated pane to read it.")
-        button.fas.fa-times.close(aria-label="Close" title="Close")
-        button.fas.fa-share.close.extract-compiler(aria-label="Pop compiler" title="Show compiler")
+        table
+          tr
+            td
+              span.fas.fa-receipt.d-none.compiler-out(style="cursor: help;" title="This compiler has generated some output. Open its associated pane to read it.")
+            td
+              button.fas.fa-times.close(aria-label="Close" title="Close")
+            td
+              button.fas.fa-share.close.extract-compiler(aria-label="Pop compiler" title="Show compiler")
 
   #libs-dropdown
     .no-libs
