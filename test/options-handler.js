@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import { fileURLToPath } from 'url';
+
+import _ from 'underscore';
 
 import { BaseCompiler } from '../lib/base-compiler';
 import { ClientOptionsHandler } from '../lib/options-handler';
@@ -36,6 +37,10 @@ const languages = {
         id: 'fake',
     },
 };
+
+// For tooling, we need to at least be able to stat a valid file.
+// This is the one we know exists
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
 
 const optionsProps = {
     libs: 'fakelib:fs:someotherlib',
@@ -68,14 +73,14 @@ const optionsProps = {
     'libs.someotherlib.versions.trunk.hidden': true,
     tools: 'faketool:someothertool',
     'tools.faketool.name': 'Fake Tool',
-    'tools.faketool.exe': fileURLToPath(import.meta.url),
+    'tools.faketool.exe': CURRENT_FILE_PATH,
     'tools.faketool.type': 'independent',
-    'tools.faketool.class': 'compiler-dropin-tool',
+    'tools.faketool.class': 'testing-tool',
     'tools.faketool.stdinHint': 'disabled',
     'tools.someothertool.name': 'Some Other Tool',
-    'tools.someothertool.exe': fileURLToPath(import.meta.url),
+    'tools.someothertool.exe': CURRENT_FILE_PATH,
     'tools.someothertool.type': 'independent',
-    'tools.someothertool.class': 'compiler-dropin-tool',
+    'tools.someothertool.class': 'testing-tool',
     'tools.someothertool.stdinHint': 'disabled',
 };
 
@@ -439,12 +444,12 @@ describe('Options handler', () => {
         tools.should.deep.equal({
             fake: {
                 faketool: {
-                    addOptionsToToolArgs: false,
+                    addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
                         exclude: [],
-                        exe: '/dev/null',
+                        exe: CURRENT_FILE_PATH,
                         id: 'faketool',
                         includeKey: undefined,
                         languageId: undefined,
@@ -456,12 +461,12 @@ describe('Options handler', () => {
                     },
                 },
                 someothertool: {
-                    addOptionsToToolArgs: false,
+                    addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
                         exclude: [],
-                        exe: '/dev/null',
+                        exe: CURRENT_FILE_PATH,
                         id: 'someothertool',
                         includeKey: undefined,
                         languageId: undefined,
