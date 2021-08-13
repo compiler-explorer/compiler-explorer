@@ -47,7 +47,6 @@ function Conformance(hub, container, state) {
     this.sourceNeedsExpanding = true;
     this.expandedSource = null;
     this.compilerPickers = [];
-    this.currentLibs = [];
 
     this.status = {
         allowCompile: false,
@@ -85,16 +84,13 @@ function Conformance(hub, container, state) {
 }
 
 Conformance.prototype.onLibsChanged = function () {
-    var newLibs = this.libsWidget.get();
-    if (newLibs !== this.currentLibs) {
-        this.currentLibs = newLibs;
-        this.saveState();
-        this.compileAll();
-    }
+    this.saveState();
+    this.compileAll();
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, null, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    this.libsWidget = new Libraries.Widget(this.langId, null,
+        this.libsButton, state, _.bind(this.onLibsChanged, this));
 };
 
 Conformance.prototype.initButtons = function () {
@@ -159,7 +155,7 @@ Conformance.prototype.addCompilerPicker = function (config) {
         this.compileChild(newEntry);
     }, this), 800);
 
-    var optionsField = newEntry.find('.conformance-options')
+    var optionsField = newEntry.find('.options')
         .val(config.options)
         .on('change', onOptionsChange)
         .on('keyup', onOptionsChange);
@@ -178,32 +174,30 @@ Conformance.prototype.addCompilerPicker = function (config) {
 
     var onCompilerChange = _.bind(function (compilerId) {
         popCompilerButton.toggleClass('d-none', !compilerId);
-        this.saveState();
         // Hide the results icon when a new compiler is selected
         this.handleStatusIcon(statusIcon, {code: 0});
         var compiler = this.compilerService.findCompiler(this.langId, compilerId);
         if (compiler) this.setCompilationOptionsPopover(prependOptions, compiler.options);
         this.updateLibraries();
-        this.compileChild(newEntry);
     }, this);
 
-    var compilerPickerNode = newEntry[0].querySelector('select.compiler-picker');
-    compilerPicker = new CompilerPicker($(newEntry[0]),
-        this.hub, this.langId, config.compilerId, _.bind(onCompilerChange, this));
-
-    this.compilerPickers.push({
-        picker: compilerPicker,
-        options: optionsField,
-        statusIcon: statusIcon,
-        prependOptions: prependOptions,
-    });
+    var compilerPickerNode = newEntry[0].querySelector('.compiler-picker');
+    compilerPicker = new CompilerPicker(
+        $(newEntry[0]), this.hub, this.langId, config.compilerId,
+        _.bind(function (value) {
+            onCompilerChange(value);
+            this.compileChild(newEntry);
+        }, this)
+    );
+    this.compilerPickers.push(compilerPicker);
 
     var getCompilerConfig = _.bind(function () {
         return Components.getCompilerWith(
             this.editorId, undefined, optionsField.val(), compilerPickerNode.value, this.langId, this.lastState.libs);
     }, this);
 
-    this.container.layoutManager.createDragSource(popCompilerButton, getCompilerConfig);
+    this.container.layoutManager
+        .createDragSource(popCompilerButton, getCompilerConfig);
 
     popCompilerButton.click(_.bind(function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
@@ -212,6 +206,7 @@ Conformance.prototype.addCompilerPicker = function (config) {
     }, this));
 
     this.handleToolbarUI();
+    this.saveState();
 };
 
 Conformance.prototype.setCompilationOptionsPopover = function (element, content) {
@@ -226,13 +221,7 @@ Conformance.prototype.setCompilationOptionsPopover = function (element, content)
 };
 
 Conformance.prototype.removeCompilerPicker = function (picker, element) {
-    if (picker) {
-        picker.close();
-
-        this.compilerPickers = _.reject(this.compilerPickers, function (picker) {
-            return picker.picker.id === picker.id;
-        });
-    }
+    if (picker) picker.close();
     if (element) element.remove();
     this.updateLibraries();
     this.handleToolbarUI();
@@ -278,6 +267,7 @@ Conformance.prototype.handleCompileOutIcon = function (element, result) {
     if (hasOutput) {
         this.compilerService.handleOutputButtonTitle(element, result);
     }
+
 };
 
 Conformance.prototype.onCompileResponse = function (child, result) {
@@ -291,11 +281,12 @@ Conformance.prototype.onCompileResponse = function (child, result) {
     this.handleCompileOutIcon(child.find('.compiler-out'), result);
 
     this.handleStatusIcon(child.find('.status-icon'), this.compilerService.calculateStatusIcon(result));
+    this.saveState();
 };
 
-Conformance.prototype.compileChild = function (compiler) {
+Conformance.prototype.compileChild = function (child) {
     // Hide previous status icons
-    var picker = child.find('select.compiler-picker');
+    var picker = child.find('.compiler-picker');
 
     if (!picker || !picker.val()) return;
 
@@ -306,7 +297,7 @@ Conformance.prototype.compileChild = function (compiler) {
             source: expandedSource,
             compiler: picker.val(),
             options: {
-                userArguments: child.find('.conformance-options').val() || '',
+                userArguments: child.find('.options').val() || '',
                 filters: {},
                 compilerOptions: {produceAst: false, produceOptInfo: false},
                 libraries: [],
@@ -315,10 +306,10 @@ Conformance.prototype.compileChild = function (compiler) {
             lang: this.langId,
         };
 
-        _.each(this.currentLibs, function (item) {
+        _.each(this.libsWidget.getLibsInUse(), function (item) {
             request.options.libraries.push({
-                id: item.name,
-                version: item.ver,
+                id: item.libId,
+                version: item.versionId,
             });
         });
 
@@ -339,8 +330,8 @@ Conformance.prototype.compileChild = function (compiler) {
 };
 
 Conformance.prototype.compileAll = function () {
-    _.each(this.compilerPickers, _.bind(function (compiler) {
-        this.compileChild(compiler);
+    _.each(this.selectorList.children(), _.bind(function (child) {
+        this.compileChild($(child));
     }, this));
 };
 
@@ -358,18 +349,18 @@ Conformance.prototype.handleStatusIcon = function (statusIcon, status) {
 };
 
 Conformance.prototype.currentState = function () {
-    console.log(this.compilerPickers);
-    var compilers = _.map(this.compilerPickers, function (compiler) {
+    var compilers = _.map(this.selectorList.children(), function (child) {
+        child = $(child);
         return {
-            compilerId: compiler.picker.tomSelect.getValue() || '',
-            options: compiler.options.val() || '',
+            compilerId: child.find('.compiler-picker').val() || '',
+            options: child.find('.options').val() || '',
         };
     });
     return {
         editorid: this.editorId,
         langId: this.langId,
         compilers: compilers,
-        libs: this.currentLibs,
+        libs: this.libsWidget.get(),
     };
 };
 
@@ -431,7 +422,7 @@ Conformance.prototype.updateLibraries = function () {
     var compilerIds = _.uniq(
         _.filter(
             _.map(this.selectorList.children(), function (child) {
-                return $(child).find('select.compiler-picker').val();
+                return $(child).find('.compiler-picker').val();
             })
             , function (compilerId) {
                 return compilerId !== '';
@@ -451,7 +442,7 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
         this.langId = newLangId;
         this.selectorList.children().remove();
         _.each(this.compilerPickers, function (picker) {
-            picker.picker.close();
+            picker.close();
         });
         this.compilerPickers = [];
         var langState = this.stateByLang[newLangId];
@@ -465,7 +456,7 @@ Conformance.prototype.onLanguageChange = function (editorId, newLangId) {
 Conformance.prototype.close = function () {
     this.eventHub.unsubscribe();
     _.each(this.compilerPickers, function (picker) {
-        picker.picker.close();
+        picker.close();
     });
     this.eventHub.emit('conformanceViewClose', this.editorId);
 };

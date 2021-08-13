@@ -310,6 +310,9 @@ function initializeResetLayoutLink() {
 }
 
 function initPolicies(options) {
+    // Ensure old cookies are removed, to avoid user confusion
+    jsCookie.remove('fs_uid', {sameSite: 'strict'});
+    jsCookie.remove('cookieconsent_status', {sameSite: 'strict'});
     if (options.policies.privacy.enabled) {
         if (jsCookie.get(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
