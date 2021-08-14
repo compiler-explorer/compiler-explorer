@@ -3,4 +3,5 @@ docs/*  linguist-documentation
 *.asm linguist-generated
 lib/handlers/asm-docs-amd64.js linguist-generated
 lib/handlers/asm-docs-arm32.js linguist-generated
+lib/handlers/asm-docs-java.js linguist-generated
 test/*-cases/* linguist-generated
