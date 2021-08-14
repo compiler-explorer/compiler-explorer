@@ -287,4 +287,24 @@ module.exports = {
             },
         };
     },
+    getDeviceView: function () {
+        return {
+            type: 'component',
+            componentName: 'device',
+            componentState: {},
+        };
+    },
+    getDeviceViewWith: function (id, source, deviceOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'device',
+            componentState: {
+                id: id,
+                source: source,
+                deviceOutput: deviceOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
 };
