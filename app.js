@@ -487,6 +487,7 @@ async function main() {
         storageHandler,
         ceProps,
         opts,
+        defArgs,
         renderConfig,
         renderGoldenLayout,
         staticHeaders,
