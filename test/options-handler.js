@@ -442,40 +442,40 @@ describe('Options handler', () => {
             delete tool.env;
         });
         if (process.platform !== 'win32') {
-          tools.should.deep.equal({
-              fake: {
-                  faketool: {
-                      addOptionsToToolArgs: true,
-                      tool: {
-                          args: undefined,
-                          compilerLanguage: 'fake',
-                          exclude: [],
-                          exe: CURRENT_FILE_PATH,
-                          id: 'faketool',
-                          includeKey: undefined,
-                          languageId: undefined,
-                          monacoStdin: undefined,
-                          name: 'Fake Tool',
-                          options: [],
-                          stdinHint: 'disabled',
-                          type: 'independent',
-                      },
-                  },
-                  someothertool: {
-                      addOptionsToToolArgs: true,
-                      tool: {
-                          args: undefined,
-                          compilerLanguage: 'fake',
-                          exclude: [],
-                          exe: CURRENT_FILE_PATH,
-                          id: 'someothertool',
-                          includeKey: undefined,
-                          languageId: undefined,
-                          monacoStdin: undefined,
-                          name: 'Some Other Tool',
-                          options: [],
-                          stdinHint: 'disabled',
-                          type: 'independent',
+            tools.should.deep.equal({
+                fake: {
+                    faketool: {
+                        addOptionsToToolArgs: true,
+                        tool: {
+                            args: undefined,
+                            compilerLanguage: 'fake',
+                            exclude: [],
+                            exe: CURRENT_FILE_PATH,
+                            id: 'faketool',
+                            includeKey: undefined,
+                            languageId: undefined,
+                            monacoStdin: undefined,
+                            name: 'Fake Tool',
+                            options: [],
+                            stdinHint: 'disabled',
+                            type: 'independent',
+                        },
+                    },
+                    someothertool: {
+                        addOptionsToToolArgs: true,
+                        tool: {
+                            args: undefined,
+                            compilerLanguage: 'fake',
+                            exclude: [],
+                            exe: CURRENT_FILE_PATH,
+                            id: 'someothertool',
+                            includeKey: undefined,
+                            languageId: undefined,
+                            monacoStdin: undefined,
+                            name: 'Some Other Tool',
+                            options: [],
+                            stdinHint: 'disabled',
+                            type: 'independent',
                         },
                     },
                 },
