@@ -315,17 +315,19 @@ describe('Execution tests', () => {
             );
 
             options.should.deep.equals({});
-            args.should.deep.equals([
-                '--config',
-                'etc/nsjail/sandbox.cfg',
-                '--cwd',
-                '/app',
-                '--bindmount',
-                '/tmp/hellow:/app',
-                '--env=HOME=/app',
-                '--',
-                'subdir/output.s',
-            ]);
+            if (process.platform !== 'win32') {
+                args.should.deep.equals([
+                    '--config',
+                    'etc/nsjail/sandbox.cfg',
+                    '--cwd',
+                    '/app',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=HOME=/app',
+                    '--',
+                    'subdir/output.s',
+                ]);
+            }
         });
 
         it('CMake outside tree building', () => {
@@ -342,18 +344,20 @@ describe('Execution tests', () => {
             options.should.deep.equals({
                 appHome: '/tmp/hellow',
             });
-            args.should.deep.equals([
-                '--config',
-                'etc/nsjail/execute.cfg',
-                '--cwd',
-                '/app/build',
-                '--bindmount',
-                '/tmp/hellow:/app',
-                '--env=HOME=/app',
-                '--',
-                '/opt/compiler-explorer/cmake/bin/cmake',
-                '..',
-            ]);
+            if (process.platform !== 'win32') {
+                args.should.deep.equals([
+                    '--config',
+                    'etc/nsjail/execute.cfg',
+                    '--cwd',
+                    '/app/build',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=HOME=/app',
+                    '--',
+                    '/opt/compiler-explorer/cmake/bin/cmake',
+                    '..',
+                ]);
+            }
         });
     });
 });
