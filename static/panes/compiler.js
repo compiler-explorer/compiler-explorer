@@ -485,10 +485,12 @@ Compiler.prototype.initEditorActions = function () {
 
         if (this.isAsmKeywordCtxKey && e.target.position) {
             var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
-            currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(currentWord.startColumn, 1),
-                e.target.position.lineNumber, currentWord.endColumn);
-            if (currentWord && currentWord.word) {
-                this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+            if (currentWord) {
+                currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(currentWord.startColumn, 1),
+                    e.target.position.lineNumber, currentWord.endColumn);
+                if (currentWord.word) {
+                    this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+                }
             }
         }
         realMethod.apply(contextmenu, arguments);
