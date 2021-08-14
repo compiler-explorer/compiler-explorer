@@ -74,6 +74,7 @@ export class Tree {
     private toggleCMakeButton: any;
     private debouncedEmitChange: () => void;
     private hideable: any;
+    private topBar: any;
 
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
@@ -94,6 +95,7 @@ export class Tree {
         this.namedItems = this.domRoot.find('.named-editors');
         this.unnamedItems = this.domRoot.find('.unnamed-editors');
         this.hideable = this.domRoot.find('.hideable');
+        this.topBar = this.domRoot.find('.top-bar.mainbar');
 
         this.langKeys = _.keys(languages);
 
@@ -584,16 +586,14 @@ export class Tree {
     }
 
     private updateHideables() {
-        var topBar = this.domRoot.find('.top-bar');
+        var topBar = this.topBar;
         if (!topBar.hasClass('d-none')) {
             this.hideable.show();
             var topBarHeightMax = topBar.outerHeight(true);
             this.hideable.hide();
             var topBarHeightMin = topBar.outerHeight(true);
-            var topBarHeight = topBarHeightMin;
             if (topBarHeightMin === topBarHeightMax) {
                 this.hideable.show();
-                topBarHeight = topBarHeightMax;
             }
         }
     }
