@@ -600,6 +600,12 @@ export class Tree {
 
     private resize() {
         this.updateHideables();
+
+        const mainbarHeight = this.topBar.outerHeight(true);
+        const argsHeight = this.domRoot.find('.panel-args').outerHeight(true);
+        const outputfileHeight = this.domRoot.find('.panel-outputfile').outerHeight(true);
+
+        this.root.height(this.domRoot.innerHeight() - mainbarHeight - argsHeight - outputfileHeight);
     }
 
     private onSettingsChange(newSettings) {
