@@ -306,6 +306,7 @@ function findConfig(defaultConfig, options) {
         }, configFromEmbedded(window.location.hash.substr(1)));
     }
 
+    removeOrphanedMaximisedItemFromConfig(config);
     fixBugsInConfig(config);
 
     return config;
@@ -486,7 +487,6 @@ function start() {
     }
 
     var config = findConfig(defaultConfig, options);
-    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $('#root');
 
