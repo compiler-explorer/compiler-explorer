@@ -79,7 +79,7 @@ export class Tree {
         this.id = state.id || hub.nextTreeId();
         this.container = container;
         this.domRoot = container.getElement();
-        this.domRoot.html($('#filelisting').html());
+        this.domRoot.html($('#tree').html());
         this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.settings = JSON.parse(local.get('settings', '{}'));
@@ -90,7 +90,7 @@ export class Tree {
         this.alertSystem.prefixMessage = 'Tree #' + this.id + ': ';
 
         this.root = this.domRoot.find('.tree');
-        this.rowTemplate = $('#filelisting-editor-tpl');
+        this.rowTemplate = $('#tree-editor-tpl');
         this.namedItems = this.domRoot.find('.named-editors');
         this.unnamedItems = this.domRoot.find('.unnamed-editors');
         this.hideable = this.domRoot.find('.hideable');

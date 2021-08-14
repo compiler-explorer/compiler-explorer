@@ -50,7 +50,7 @@
                     "content": [
                         {
                             "type": "component",
-                            "componentName": "filelisting",
+                            "componentName": "tree",
                             "componentState": {
                                 "id": 1,
                                 "cmakeArgs": "",

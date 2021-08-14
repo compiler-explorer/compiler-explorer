@@ -98,7 +98,7 @@ module.exports = {
     getTree: function (id) {
         return {
             type: 'component',
-            componentName: 'filelisting',
+            componentName: 'tree',
             componentState: {id: id},
         };
     },
