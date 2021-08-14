@@ -142,7 +142,7 @@
                                     "positionLineNumber": 6,
                                     "positionColumn": 1
                                 },
-                                "customPaneName": "example.cpp",
+                                "filename": "example.cpp",
                                 "fontScale": 14,
                                 "fontUsePx": true
                             },
@@ -157,7 +157,7 @@
                                 "id": 2,
                                 "source": "#pragma once\n\nint square(int num);\n",
                                 "lang": "c++",
-                                "customPaneName": "square.h",
+                                "filename": "square.h",
                                 "fontScale": 14,
                                 "fontUsePx": true
                             },
@@ -182,7 +182,7 @@
                                     "positionLineNumber": 6,
                                     "positionColumn": 1
                                 },
-                                "customPaneName": "square.cpp",
+                                "filename": "square.cpp",
                                 "fontScale": 14,
                                 "fontUsePx": true
                             },
@@ -197,7 +197,7 @@
                                 "id": 3,
                                 "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
                                 "lang": "cmake",
-                                "customPaneName": "CMakeLists.txt",
+                                "filename": "CMakeLists.txt",
                                 "fontScale": 14,
                                 "fontUsePx": true
                             },

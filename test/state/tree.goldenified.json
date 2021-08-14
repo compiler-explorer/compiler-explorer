@@ -109,7 +109,7 @@
                                 "id": 1,
                                 "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
                                 "lang": "c++",
-                                "customPaneName": "example.cpp"
+                                "filename": "example.cpp"
                             },
                             "isClosable": true,
                             "reorderEnabled": true,
@@ -122,7 +122,7 @@
                                 "id": 2,
                                 "source": "#pragma once\n\nint square(int num);\n",
                                 "lang": "c++",
-                                "customPaneName": "square.h"
+                                "filename": "square.h"
                             },
                             "isClosable": true,
                             "reorderEnabled": true,
@@ -135,7 +135,7 @@
                                 "id": 4,
                                 "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
                                 "lang": "c++",
-                                "customPaneName": "square.cpp"
+                                "filename": "square.cpp"
                             },
                             "isClosable": true,
                             "reorderEnabled": true,
@@ -148,7 +148,7 @@
                                 "id": 3,
                                 "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
                                 "lang": "cmake",
-                                "customPaneName": "CMakeLists.txt"
+                                "filename": "CMakeLists.txt"
                             },
                             "isClosable": true,
                             "reorderEnabled": true,

@@ -204,7 +204,7 @@
                                 "id": 1,
                                 "source": "project(hello)\n\nadd_executable(hellow\n    example.cpp)\n\ntarget_link_libraries(hellow\n    fmtd)\n",
                                 "lang": "cmake",
-                                "customPaneName": "CMakeLists.txt",
+                                "filename": "CMakeLists.txt",
                                 "fontScale": 14,
                                 "fontUsePx": true
                             },
@@ -219,7 +219,7 @@
                                 "id": 2,
                                 "source": "#include \"fmt/core.h\"\n\nint main() {\n    fmt::print(\"H€llo, world!\\n\");\n    return 0;\n}",
                                 "lang": "c++",
-                                "customPaneName": "example.cpp",
+                                "filename": "example.cpp",
                                 "fontScale": 14,
                                 "fontUsePx": true
                             },

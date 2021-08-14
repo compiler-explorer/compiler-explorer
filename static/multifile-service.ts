@@ -415,8 +415,8 @@ export class MultifileService {
             let langId: string = file.langId;
             if (editor) {
                 langId = editor.currentLanguage.id;
-                if (editor.customPaneName) {
-                    suggestedFilename = editor.customPaneName;
+                if (editor.filename) {
+                    suggestedFilename = editor.filename;
                 }
             }
 
@@ -456,7 +456,7 @@ export class MultifileService {
                             file.filename = value;
 
                             if (editor) {
-                                editor.setCustomPaneName(file.filename);
+                                editor.setFilename(file.filename);
                             }
 
                             resolve(true);

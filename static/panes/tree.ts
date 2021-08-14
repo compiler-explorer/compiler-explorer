@@ -443,7 +443,7 @@ export class Tree {
 
             editor.componentState.source = file.content;
             if (file.filename) {
-                editor.componentState.customPaneName = file.filename;
+                editor.componentState.filename = file.filename;
             }
         } else {
             editor = Components.getEditor(

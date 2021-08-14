@@ -72,7 +72,7 @@ function Editor(hub, state, container) {
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
 
-    this.customPaneName = state.customPaneName || false;
+    this.filename = state.filename || false;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -120,7 +120,7 @@ function Editor(hub, state, container) {
     }
 
     var usableLanguages = _.filter(languages, function (language) {
-        return hub.compilerService.compilersByLang[language.id] || language.id === 'cmake';
+        return hub.compilerService.compilersByLang[language.id];
     });
 
     this.selectize = new TomSelect(this.languageBtn, {
@@ -203,7 +203,7 @@ Editor.prototype.updateState = function () {
         source: this.getSource(),
         lang: this.currentLanguage.id,
         selection: this.selection,
-        customPaneName: this.customPaneName,
+        filename: this.filename,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -628,6 +628,9 @@ Editor.prototype.updateOpenInQuickBench = function () {
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
+    if (newLang === 'cmake') {
+        this.selectize.addOption(languages.cmake);
+    }
     this.selectize.setValue(newLang);
 };
 
@@ -1329,7 +1332,7 @@ Editor.prototype.initLoadSaver = function () {
         .click(_.bind(function () {
             loadSave.run(_.bind(function (text, filename) {
                 this.setSource(text);
-                this.setCustomPaneName(filename);
+                this.setFilename(filename);
                 this.updateState();
                 this.maybeEmitChange(true);
                 this.requestCompilation();
@@ -1366,21 +1369,22 @@ Editor.prototype.onLanguageChange = function (newLangId) {
 };
 
 Editor.prototype.getPaneName = function () {
-    if (this.customPaneName) {
-        return this.customPaneName;
+    if (this.filename) {
+        return this.filename;
     } else {
         return this.currentLanguage.name + ' source #' + this.id;
     }
 };
 
-Editor.prototype.setCustomPaneName = function (name) {
-    this.customPaneName = name;
+Editor.prototype.setFilename = function (name) {
+    this.filename = name;
     this.updateTitle();
+    this.updateState();
 };
 
 Editor.prototype.updateTitle = function () {
     var name = this.getPaneName();
-    if (name === 'CMakeLists.txt') {
+    if (name.endsWith('CMakeLists.txt')) {
         this.changeLanguage('cmake');
     }
     this.container.setTitle(name);
