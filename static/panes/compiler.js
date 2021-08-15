@@ -478,18 +478,21 @@ Compiler.prototype.initEditorActions = function () {
     var contextmenu = this.outputEditor.getContribution('editor.contrib.contextmenu');
     var realMethod = contextmenu._onContextMenu;
     contextmenu._onContextMenu = _.bind(function (e) {
-        if (this.isLabelCtxKey && e.target.position) {
-            var label = this.getLabelAtPosition(e.target.position);
-            this.isLabelCtxKey.set(label);
-        }
+        if (e && e.target && e.target.position) {
+            if (this.isLabelCtxKey) {
+                var label = this.getLabelAtPosition(e.target.position);
+                this.isLabelCtxKey.set(label !== null);
+            }
 
-        if (this.isAsmKeywordCtxKey && e.target.position) {
-            var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
-            if (currentWord) {
-                currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(currentWord.startColumn, 1),
-                    e.target.position.lineNumber, currentWord.endColumn);
-                if (currentWord.word) {
-                    this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+            if (this.isAsmKeywordCtxKey) {
+                var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
+                if (currentWord) {
+                    currentWord.range = new monaco.Range(e.target.position.lineNumber,
+                        Math.max(currentWord.startColumn, 1),
+                        e.target.position.lineNumber, currentWord.endColumn);
+                    if (currentWord.word) {
+                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+                    }
                 }
             }
         }
