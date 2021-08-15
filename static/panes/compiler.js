@@ -93,6 +93,7 @@ function Compiler(hub, container, state) {
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
     this.needsCompile = false;
+    this.deviceViewOpen = false;
     this.options = state.options || options.compileOptions[this.currentLangId];
     this.source = '';
     this.assembly = [];
@@ -245,6 +246,11 @@ Compiler.prototype.initPanerButtons = function () {
             this.sourceEditorId);
     }, this);
 
+    var createDeviceView = _.bind(function () {
+        return Components.getDeviceViewWith(this.id, this.source, this.lastResult.devices, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
     var createRustMirView = _.bind(function () {
         return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
             this.getCompilerName(), this.sourceEditorId);
@@ -331,6 +337,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createIrView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.deviceButton, createDeviceView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.deviceButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createDeviceView);
     }, this));
 
     this.container.layoutManager
@@ -489,17 +505,22 @@ Compiler.prototype.initEditorActions = function () {
     var contextmenu = this.outputEditor.getContribution('editor.contrib.contextmenu');
     var realMethod = contextmenu._onContextMenu;
     contextmenu._onContextMenu = _.bind(function (e) {
-        if (this.isLabelCtxKey && e.target.position) {
-            var label = this.getLabelAtPosition(e.target.position);
-            this.isLabelCtxKey.set(label);
-        }
+        if (e && e.target && e.target.position) {
+            if (this.isLabelCtxKey) {
+                var label = this.getLabelAtPosition(e.target.position);
+                this.isLabelCtxKey.set(label !== null);
+            }
 
-        if (this.isAsmKeywordCtxKey && e.target.position) {
-            var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
-            currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(currentWord.startColumn, 1),
-                e.target.position.lineNumber, currentWord.endColumn);
-            if (currentWord && currentWord.word) {
-                this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+            if (this.isAsmKeywordCtxKey) {
+                var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
+                if (currentWord) {
+                    currentWord.range = new monaco.Range(e.target.position.lineNumber,
+                        Math.max(currentWord.startColumn, 1),
+                        e.target.position.lineNumber, currentWord.endColumn);
+                    if (currentWord.word) {
+                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+                    }
+                }
             }
         }
         realMethod.apply(contextmenu, arguments);
@@ -662,6 +683,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
             produceIr: this.irViewOpen,
+            produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
         },
         filters: this.getEffectiveFilters(),
@@ -1198,6 +1220,21 @@ Compiler.prototype.onIrViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onDeviceViewOpened = function (id) {
+    if (this.id === id) {
+        this.deviceButton.prop('disabled', true);
+        this.deviceViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onDeviceViewClosed = function (id) {
+    if (this.id === id) {
+        this.deviceButton.prop('disabled', false);
+        this.deviceViewOpen = false;
+    }
+};
+
 Compiler.prototype.onRustMirViewOpened = function (id) {
     if (this.id === id) {
         this.rustMirButton.prop('disabled', true);
@@ -1348,6 +1385,7 @@ Compiler.prototype.initButtons = function (state) {
     this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
+    this.deviceButton = this.domRoot.find('.btn.view-device');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
@@ -1442,7 +1480,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         var args = '';
         var monacoStdin = false;
         var langTools = options.tools[this.currentLangId];
-        if (langTools && langTools[toolId] && langTools[toolId].tool){
+        if (langTools && langTools[toolId] && langTools[toolId].tool) {
             if (langTools[toolId].tool.args !== undefined) {
                 args = langTools[toolId].tool.args;
             }
@@ -1549,6 +1587,7 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.prop('disabled', this.optViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
+    this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
@@ -1558,6 +1597,7 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
@@ -1642,6 +1682,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+    this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
+    this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
     this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);

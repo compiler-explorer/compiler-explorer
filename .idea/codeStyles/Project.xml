@@ -8,6 +8,9 @@
       <option name="SPACES_WITHIN_IMPORTS" value="true" />
       <option name="IMPORT_SORT_MODULE_NAME" value="true" />
     </JSCodeStyleSettings>
+    <JetCodeStyleSettings>
+      <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
+    </JetCodeStyleSettings>
     <MarkdownNavigatorCodeStyleSettings>
       <option name="RIGHT_MARGIN" value="72" />
     </MarkdownNavigatorCodeStyleSettings>
@@ -20,6 +23,9 @@
     <codeStyleSettings language="JavaScript">
       <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
       <option name="ALIGN_MULTILINE_FOR" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="kotlin">
+      <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
     </codeStyleSettings>
   </code_scheme>
 </component>
