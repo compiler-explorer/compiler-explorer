@@ -107,13 +107,12 @@ module.exports = {
             componentState: {},
         };
     },
-    getToolInputViewWith: function (compilerId, editorId, toolId, toolName) {
+    getToolInputViewWith: function (compilerId, toolId, toolName) {
         return {
             type: 'component',
             componentName: 'toolInputView',
             componentState: {
                 compilerId: compilerId,
-                editorId: editorId,
                 toolId: toolId,
                 toolName: toolName,
             },
@@ -153,14 +152,13 @@ module.exports = {
             componentState: {},
         };
     },
-    getFlagsViewWith: function (id, compilerName, editorid, compilerFlags) {
+    getFlagsViewWith: function (id, compilerName, compilerFlags) {
         return {
             type: 'component',
             componentName: 'flags',
             componentState: {
                 id: id,
                 compilerName: compilerName,
-                editorid: editorid,
                 compilerFlags: compilerFlags,
             },
         };
@@ -284,6 +282,26 @@ module.exports = {
                 id: id,
                 source: source,
                 rustMirOutput: rustMirOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getDeviceView: function () {
+        return {
+            type: 'component',
+            componentName: 'device',
+            componentState: {},
+        };
+    },
+    getDeviceViewWith: function (id, source, deviceOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'device',
+            componentState: {
+                id: id,
+                source: source,
+                deviceOutput: deviceOutput,
                 compilerName: compilerName,
                 editorid: editorid,
             },

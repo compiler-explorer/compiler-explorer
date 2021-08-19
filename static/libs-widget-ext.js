@@ -87,11 +87,23 @@ LibsWidgetExt.prototype.fullRefresh = function () {
 
 LibsWidgetExt.prototype.updateButton = function () {
     var selectedLibs = this.get();
+    var text = ' Libraries';
     if (selectedLibs.length > 0) {
-        this.dropdownButton.addClass('btn-success').removeClass('btn-light');
+        this.dropdownButton
+            .addClass('btn-success')
+            .removeClass('btn-light')
+            .prop('title', 'Current libraries:\n' + _.map(selectedLibs, function (lib) {
+                return '- ' + lib.name;
+            }).join('\n'));
+        text = text + ' (' + selectedLibs.length + ')';
     } else {
-        this.dropdownButton.removeClass('btn-success').addClass('btn-light');
+        this.dropdownButton
+            .removeClass('btn-success')
+            .addClass('btn-light')
+            .prop('title', 'Include libs');
     }
+
+    this.dropdownButton.find('.dp-text').text(text);
 };
 
 LibsWidgetExt.prototype.getFavorites = function () {

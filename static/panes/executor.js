@@ -29,7 +29,7 @@ var ga = require('../analytics');
 var Toggles = require('../toggles');
 var FontScale = require('../fontscale');
 var options = require('../options');
-var Alert = require('../alert');
+var Alert = require('../alert').Alert;
 var Libraries = require('../libs-widget-ext');
 var AnsiToHtml = require('../ansi-to-html');
 var TimingWidget = require('../timing-info-widget');
@@ -717,7 +717,7 @@ Executor.prototype.getLanguageName = function () {
 Executor.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return compName + ' Executor (Editor #' + this.sourceEditorId + ') ' + langName;
+    return 'Executor ' + compName + ' (' + langName + ', Editor #' + this.sourceEditorId + ')';
 };
 
 Executor.prototype.updateCompilerName = function () {

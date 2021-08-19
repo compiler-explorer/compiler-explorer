@@ -55,7 +55,6 @@ function ToolInputView(hub, container, state) {
     this._toolId = state.toolId;
     this._toolName = state.toolName;
     this._compilerId = state.compilerId;
-    this._editorId = state.editorId;
     this.selection = state.selection || '';
     this.shouldSetSelectionInitially = !!this.selection;
 
@@ -109,9 +108,12 @@ ToolInputView.prototype.initCallbacks = function () {
     }, this));
 };
 
+ToolInputView.prototype.getPaneName =  function () {
+    return 'Tool Input ' + this._toolName + ' (Compiler #' + this._compilerId + ')';
+};
+
 ToolInputView.prototype.setTitle = function () {
-    var name = this._toolName + ' Input #' + this._compilerId;
-    this.container.setTitle(name);
+    this.container.setTitle(this.getPaneName());
 };
 
 ToolInputView.prototype.resize = function () {
@@ -130,7 +132,6 @@ ToolInputView.prototype.currentState = function () {
     var state = {
         toolId: this._toolId,
         toolName: this._toolName,
-        editorId: this._editorId,
         compilerId: this._compilerId,
         selection: this.selection,
     };
@@ -140,7 +141,7 @@ ToolInputView.prototype.currentState = function () {
 
 ToolInputView.prototype.close = function () {
     this.eventHub.unsubscribe();
-    this.eventHub.emit('toolInputViewClosed', this._compilerId, this._editorId, this._toolId, this.getInput());
+    this.eventHub.emit('toolInputViewClosed', this._compilerId, this._toolId, this.getInput());
     this.editor.dispose();
 };
 
@@ -155,8 +156,8 @@ ToolInputView.prototype.onToolClose = function (compilerId, toolSettings) {
     }
 };
 
-ToolInputView.prototype.onToolInputViewCloseRequest = function (compilerId, editorId, toolId) {
-    if (this._compilerId === compilerId && this._editorId === editorId && this._toolId === toolId) {
+ToolInputView.prototype.onToolInputViewCloseRequest = function (compilerId, toolId) {
+    if (this._compilerId === compilerId && this._toolId === toolId) {
         this.close();
         _.defer(function (self) {
             self.container.close();
@@ -200,8 +201,8 @@ ToolInputView.prototype.onDidChangeCursorSelection = function (e) {
     }
 };
 
-ToolInputView.prototype.onSetToolInput = function (compilerId, editorId, toolId, value) {
-    if (this._compilerId === compilerId && this._editorId === editorId && this._toolId === toolId) {
+ToolInputView.prototype.onSetToolInput = function (compilerId, toolId, value) {
+    if (this._compilerId === compilerId && this._toolId === toolId) {
         var ret = this.editor.getModel().setValue(value);
         if (this.shouldSetSelectionInitially && this.selection) {
             this.editor.setSelection(this.selection);
@@ -225,7 +226,7 @@ ToolInputView.prototype.maybeEmitChange = function (force) {
     if (!force && input === this.lastChangeEmitted) return;
 
     this.lastChangeEmitted = input;
-    this.eventHub.emit('toolInputChange', this._compilerId, this._editorId, this._toolId, this.lastChangeEmitted);
+    this.eventHub.emit('toolInputChange', this._compilerId, this._toolId, this.lastChangeEmitted);
 };
 
 module.exports = {

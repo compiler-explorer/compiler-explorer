@@ -340,10 +340,15 @@ Diff.prototype.onExecutorClose = function (id) {
 };
 
 Diff.prototype.updateCompilerNames = function () {
-    var name = 'Diff';
-    if (this.lhs.compiler && this.rhs.compiler)
+    this.container.setTitle(this.getPaneName());
+};
+
+Diff.prototype.getPaneName = function () {
+    var name = 'Diff Viewer';
+    if (this.lhs.compiler && this.rhs.compiler) {
         name += ' ' + this.lhs.compiler.name + ' vs ' + this.rhs.compiler.name;
-    this.container.setTitle(name);
+    }
+    return name;
 };
 
 Diff.prototype.updateCompilersFor = function (selectize, id) {

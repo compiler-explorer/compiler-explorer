@@ -31,13 +31,13 @@ var FontScale = require('../fontscale');
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var options = require('../options');
-var Alert = require('../alert');
+var Alert = require('../alert').Alert;
 var ga = require('../analytics');
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings');
-require('../modes/all-editor-modes');
+require('../modes/_all');
 
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -72,6 +72,8 @@ function Editor(hub, state, container) {
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
+
+    this.revealJumpStack = [];
 
     this.langKeys = _.keys(languages);
     this.initLanguage(state);
@@ -639,6 +641,20 @@ Editor.prototype.initEditorActions = function () {
         }, this),
     });
 
+    this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
+
+    this.editor.addAction({
+        id: 'returnfromreveal',
+        label: 'Return from reveal jump',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.4,
+        precondition: 'hasRevealJumpStackElements',
+        run: _.bind(function () {
+            this.popAndRevealJump();
+        }, this),
+    });
+
     this.editor.addAction({
         id: 'toggleCompileOnChange',
         label: 'Toggle compile on change',
@@ -711,9 +727,37 @@ Editor.prototype.searchOnCppreference = function (ed) {
     var pos = ed.getPosition();
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
-
-    var url = 'https://en.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
+    var preferredLanguage = this.getPreferredLanguageTag();
+    // This list comes from the footer of the page
+    var cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
+    // If navigator.languages is supported, we could be a bit more clever and look for a match there too
+    var langTag = 'en';
+    if (cpprefLangs.indexOf(preferredLanguage) !== -1) {
+        langTag = preferredLanguage;
+    }
+    var url = 'https://' +
+        langTag +
+        '.cppreference.com/mwiki/index.php?search=' +
+        encodeURIComponent(word.word);
     window.open(url, '_blank', 'noopener');
+};
+
+Editor.prototype.getPreferredLanguageTag = function () {
+    var result = 'en';
+    var lang = 'en';
+    if (navigator) {
+        if (navigator.languages && navigator.languages.length) {
+            lang = navigator.languages[0];
+        } else if (navigator.language) {
+            lang = navigator.language;
+        }
+    }
+    // navigator.language[s] is supposed to return strings, but hey, you never know
+    if (lang !== result && _.isString(lang)) {
+        var primaryLanguageSubtagIdx = lang.indexOf('-');
+        result = lang.substr(0, primaryLanguageSubtagIdx).toLowerCase();
+    }
+    return result;
 };
 
 Editor.prototype.doesMatchEditor = function (otherSource) {
@@ -1071,9 +1115,24 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
     return {colBegin: column, colEnd: column + 1};
 };
 
+Editor.prototype.pushRevealJump = function () {
+    this.revealJumpStack.push(this.editor.saveViewState());
+    this.revealJumpStackHasElementsCtxKey.set(true);
+};
+
+Editor.prototype.popAndRevealJump = function () {
+    if (this.revealJumpStack.length > 0) {
+        this.editor.restoreViewState(this.revealJumpStack.pop());
+        this.revealJumpStackHasElementsCtxKey.set(this.revealJumpStack.length > 0);
+    }
+};
+
 Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, columnEnd, reveal) {
     if (Number(editorId) === this.id) {
-        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) {
+            this.pushRevealJump();
+            this.editor.revealLineInCenter(lineNum);
+        }
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {
@@ -1108,7 +1167,10 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
 
 Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
     if (Number(id) === this.id) {
-        if (reveal && lineNum) this.editor.revealLineInCenter(lineNum);
+        if (reveal && lineNum) {
+            this.pushRevealJump();
+            this.editor.revealLineInCenter(lineNum);
+        }
         this.decorations.linkedCode = lineNum === -1 || !lineNum ? [] : [{
             range: new monaco.Range(lineNum, 1, lineNum, 1),
             options: {

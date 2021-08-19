@@ -208,11 +208,15 @@ Output.prototype.add = function (msg, lineNum, column) {
     }
 };
 
-Output.prototype.updateCompilerName = function () {
+Output.prototype.getPaneName = function () {
     var name = 'Output';
     if (this.compilerName) name += ' of ' + this.compilerName;
     name += ' (Compiler #' + this.compilerId + ')';
-    this.container.setTitle(name);
+    return name;
+};
+
+Output.prototype.updateCompilerName = function () {
+    this.container.setTitle(this.getPaneName());
 };
 
 Output.prototype.onCompilerClose = function (id) {
