@@ -94,7 +94,7 @@ versionFlag | String | The flag to pass to the compiler to make it emit its vers
 versionRe | RegExp | A regular expression used to capture the version from the version output|
 compilerType | String | The name of the class handling this compiler|
 interpreted | Boolean | Whether this is an interpreted language, and so the "compiler" is really an interpreter|
-executionWrapper | Boolean | When executing the compiler's output, run under this script (e.g. could run under `qemu` or `mpi_run` or similar)|
+executionWrapper | Path | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)|
 
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.js` which handles running and handling
 output for this compiler type.
