@@ -137,6 +137,47 @@ Libraries can be marked to have their directories available when including
  their header files. The can be listed by supplying the library ids and versions in an array.
  The id's to supply can be found with the `/api/libraries/<language-id>`
 
+### `GET /api/formats` - return available code formatters
+
+Returns a list of code formatters. The API returns an array of formatter objects
+ which have the following object structure:
+
+```JSON
+{
+    "exe": "/opt/compiler-explorer/rustfmt-1.4.36/rustfmt",
+    "version": "rustfmt 1.4.36-nightly (7de6968 2021-02-07)",
+    "name": "rustfmt",
+    "styles": [],
+    "type": "rustfmt"
+}
+```
+
+The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`
+
+### `POST /api/format/<formatter>` - perform a formatter run
+
+Formats a piece of code according to the given base style using the provided formatter
+
+Formatters available can be found with `GET /api/formats`
+
+```JSON
+{
+    "source": "int main(     ) {}",
+    "base": "Google"
+}
+```
+
+The returned JSON body has the following object structure:
+
+```JSON
+{
+    "answer": "int main() {}",
+    "exit": 0
+}
+```
+
+In cases of internal code formatter failure an additional field named `throw`
+ is also provided and set to true.
 
 # Non-REST API's
 
