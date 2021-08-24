@@ -1,6 +1,6 @@
 # Adding a new formatter
 
-* Add a `etc/config/local.compiler-explorer.properties` file
+* Add a `etc/config/compiler-explorer.local.properties` file
   - Add a new formatter under the `formatters` key
   - The new formatter can have the following keys: name, exe, styles, type,
      version (argument to get version info), versionRe (regex to filter out the right version info)
