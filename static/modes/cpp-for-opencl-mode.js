@@ -47,6 +47,7 @@ function definition() {
     // Keywords for C++ for OpenCL
     addKeywords([
         '__global', 'global', '__local', 'local', '__constant', 'constant', '__private', 'private',
+        '__generic', 'generic',
         '__kernel', 'kernel',
         'uniform', 'pipe',
         '__read_only', 'read_only', '__write_only', 'write_only', '__read_write', 'read_write',
