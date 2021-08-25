@@ -229,11 +229,9 @@ Conformance.prototype.setCompilationOptionsPopover = function (element, content)
 };
 
 Conformance.prototype.removeCompilerPicker = function (compilerEntry) {
-    console.log(this.compilerPickers);
     this.compilerPickers = _.reject(this.compilerPickers, function (entry) {
         return compilerEntry.picker.id === entry.picker.id;
     });
-    console.log(this.compilerPickers);
     compilerEntry.picker.tomSelect.close();
     compilerEntry.parent.remove();
 
