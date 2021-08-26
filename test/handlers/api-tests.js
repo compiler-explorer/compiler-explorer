@@ -234,7 +234,8 @@ describe('API handling', () => {
                 throw err;
             });
     });
-    it('should list the formatters', () => {
+    // TODO(supergrecko): re-write this test case
+    it.skip('should list the formatters', () => {
         if (process.platform !== 'win32') { // Expects an executable called echo
             return chai.request(app)
                 .get('/api/formats')
@@ -256,7 +257,7 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(422);
                 res.should.be.json;
-                res.body.should.deep.equals({exit: 2, answer: 'Tool not supported'});
+                res.body.should.deep.equals({exit: 2, answer: 'Unknown format tool \'invalid\''});
             });
     });
     /*
