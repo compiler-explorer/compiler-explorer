@@ -4,7 +4,7 @@
 		"outDir": ".",
 		"sourceMap": true,
 		"rootDir": ".",
-        "esModuleInterop": true
+		"esModuleInterop": true
 	},
 	"files": [
 		"global.ts",
@@ -12,6 +12,7 @@
         "line-colouring.ts",
 		"panes/tree.ts",
 		"alert.ts",
-		"url.ts"
+		"url.ts",
+		"formatter-registry.ts"
 	]
 }

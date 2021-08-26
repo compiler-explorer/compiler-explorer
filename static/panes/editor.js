@@ -37,6 +37,7 @@ var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings');
+require('../formatter-registry');
 require('../modes/_all');
 
 var loadSave = new loadSaveLib.LoadSave();
