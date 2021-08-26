@@ -81,7 +81,12 @@ function Compiler(hub, container, state) {
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler').html());
     this.id = state.id || hub.nextCompilerId();
-    this.sourceEditorId = state.source || 1;
+    this.sourceTreeId = state.tree ? state.tree : false;
+    if (this.sourceTreeId) {
+        this.sourceEditorId = false;
+    } else {
+        this.sourceEditorId = state.source || 1;
+    }
     this.settings = Settings.getStoredSettings();
     this.originalCompilerId = state.compiler;
     this.initLangAndCompiler(state);
@@ -96,7 +101,9 @@ function Compiler(hub, container, state) {
     this.lastResult = {};
     this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
+    this.pendingCMakeRequestSentAt = 0;
     this.nextRequest = null;
+    this.nextCMakeRequest = null;
     this.optViewOpen = false;
     this.flagsViewOpen = state.flagsViewOpen || false;
     this.cfgViewOpen = false;
@@ -157,7 +164,26 @@ function Compiler(hub, container, state) {
         eventCategory: 'OpenViewPane',
         eventAction: 'Compiler',
     });
+
+    if (this.sourceTreeId) {
+        this.compile();
+    }
 }
+
+Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            return tree.multifileService.getEditorIdByFilename(sourcefile.file);
+        }
+    } else {
+        if (sourcefile !== null && (sourcefile.file === null || sourcefile.mainsource)) {
+            return this.sourceEditorId;
+        }
+    }
+
+    return false;
+};
 
 Compiler.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
@@ -177,7 +203,7 @@ Compiler.prototype.close = function () {
 
 Compiler.prototype.initPanerButtons = function () {
     var outputConfig = _.bind(function () {
-        return Components.getOutput(this.id, this.sourceEditorId);
+        return Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
@@ -242,6 +268,7 @@ Compiler.prototype.initPanerButtons = function () {
     var createExecutor = _.bind(function () {
         var currentState = this.currentState();
         var editorId = currentState.source;
+        var treeId = currentState.tree;
         var langId = currentState.lang;
         var compilerId = currentState.compiler;
         var libs = [];
@@ -251,7 +278,7 @@ Compiler.prototype.initPanerButtons = function () {
                 ver: item.versionId,
             });
         });
-        return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options);
+        return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options, treeId);
     }, this);
 
     var panerDropdown = this.domRoot.find('.pane-dropdown');
@@ -522,9 +549,12 @@ Compiler.prototype.initEditorActions = function () {
         run: _.bind(function (ed) {
             var desiredLine = ed.getPosition().lineNumber - 1;
             var source = this.assembly[desiredLine].source;
-            if (source !== null && source.file === null) {
-                // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this.sourceEditorId, source.line, -1, -1, true);
+            if (source && source.line > 0) {
+                var editorId = this.getEditorIdBySourcefile(source);
+                if (editorId) {
+                    // a null file means it was the user's source
+                    this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+                }
             }
         }, this),
     });
@@ -589,9 +619,7 @@ Compiler.prototype.getEffectiveFilters = function () {
 
 Compiler.prototype.findTools = function (content, tools) {
     if (content.componentName === 'tool') {
-        if (
-            (content.componentState.editor === this.sourceEditorId) &&
-            (content.componentState.compiler === this.id)) {
+        if (content.componentState.compiler === this.id) {
             tools.push({
                 id: content.componentState.toolId,
                 args: content.componentState.args,
@@ -670,12 +698,53 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         });
     });
 
+    if (this.sourceTreeId) {
+        this.compileFromTree(options, bypassCache);
+    } else {
+        this.compileFromEditorSource(options, bypassCache);
+    }
+};
+
+Compiler.prototype.compileFromTree = function (options, bypassCache) {
+    var tree = this.hub.getTreeById(this.sourceTreeId);
+
+    var mainsource = tree.multifileService.getMainSource();
+
+    var request = {
+        source: mainsource,
+        compiler: this.compiler ? this.compiler.id : '',
+        options: options,
+        lang: this.currentLangId,
+        files: tree.multifileService.getFiles(),
+    };
+
+    var treeState = tree.currentState();
+    var cmakeProject = treeState.isCMakeProject;
+
+    if (bypassCache) request.bypassCache = true;
+    if (!this.compiler) {
+        this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+    } else if (cmakeProject && request.source === '') {
+        this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
+    } else {
+        if (cmakeProject) {
+            request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+            request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+            this.sendCMakeCompile(request);
+        } else {
+            this.sendCompile(request);
+        }
+    }
+};
+
+Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
         var request = {
             source: expanded || '',
             compiler: this.compiler ? this.compiler.id : '',
             options: options,
             lang: this.currentLangId,
+            files: [],
         };
         if (bypassCache) request.bypassCache = true;
         if (!this.compiler) {
@@ -684,6 +753,42 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             this.sendCompile(request);
         }
     }, this));
+};
+
+Compiler.prototype.sendCMakeCompile = function (request) {
+    var onCompilerResponse = _.bind(this.onCMakeResponse, this);
+
+    if (this.pendingCMakeRequestSentAt) {
+        // If we have a request pending, then just store this request to do once the
+        // previous request completes.
+        this.nextCMakeRequest = request;
+        return;
+    }
+    this.eventHub.emit('compiling', this.id, this.compiler);
+    // Display the spinner
+    this.handleCompilationStatus({code: 4});
+    this.pendingCMakeRequestSentAt = Date.now();
+    // After a short delay, give the user some indication that we're working on their
+    // compilation.
+    var progress = setTimeout(_.bind(function () {
+        this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
+    }, this), 500);
+    this.compilerService.submitCMake(request)
+        .then(function (x) {
+            clearTimeout(progress);
+            onCompilerResponse(request, x.result, x.localCacheHit);
+        })
+        .catch(function (x) {
+            clearTimeout(progress);
+            var message = 'Unknown error';
+            if (_.isString(x)) {
+                message = x;
+            } else if (x) {
+                message = x.error || x.code || message;
+            }
+            onCompilerResponse(request,
+                errorResult('<Compilation failed: ' + message + '>'), false);
+        });
 };
 
 Compiler.prototype.sendCompile = function (request) {
@@ -709,13 +814,14 @@ Compiler.prototype.sendCompile = function (request) {
             clearTimeout(progress);
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
-        .catch(function (x) {
+        .catch(function (e) {
             clearTimeout(progress);
             var message = 'Unknown error';
-            if (_.isString(x)) {
-                message = x;
-            } else if (x) {
-                message = x.error || x.code || message;
+            if (_.isString(e)) {
+                message = e;
+            } else if (e) {
+                message = e.error || e.code || e.message;
+                if (e.stack) console.log(e);
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
@@ -836,21 +942,36 @@ function fakeAsm(text) {
     return [{text: text, source: null, fake: true}];
 }
 
-Compiler.prototype.onCompileResponse = function (request, result, cached) {
-    // Delete trailing empty lines
-    if ($.isArray(result.asm)) {
-        var indexToDiscard = _.findLastIndex(result.asm, function (line) {
-            return !_.isEmpty(line.text);
-        });
-        result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
+Compiler.prototype.doNextCompileRequest = function () {
+    if (this.nextRequest) {
+        var next = this.nextRequest;
+        this.nextRequest = null;
+        this.sendCompile(next);
     }
-    // Save which source produced this change. It should probably be saved earlier though
+};
+
+Compiler.prototype.doNextCMakeRequest = function () {
+    if (this.nextCMakeRequest) {
+        var next = this.nextCMakeRequest;
+        this.nextCMakeRequest = null;
+        this.sendCMakeCompile(next);
+    }
+};
+
+Compiler.prototype.onCMakeResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
-    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    var timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
     this.lastTimeTaken = timeTaken;
-    var wasRealReply = this.pendingRequestSentAt > 0;
-    this.pendingRequestSentAt = 0;
+    var wasRealReply = this.pendingCMakeRequestSentAt > 0;
+    this.pendingCMakeRequestSentAt = 0;
+
+    this.handleCompileRequestAndResult(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCMakeRequest();
+};
+
+Compiler.prototype.handleCompileRequestAndResult = function (request, result, cached, wasRealReply, timeTaken) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'Compile',
@@ -865,11 +986,32 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
         timingValue: timeTaken,
     });
 
+    // Delete trailing empty lines
+    if ($.isArray(result.asm)) {
+        var indexToDiscard = _.findLastIndex(result.asm, function (line) {
+            return !_.isEmpty(line.text);
+        });
+        result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
+    }
+
     this.labelDefinitions = result.labelDefinitions || {};
-    this.setAssembly(result, result.filteredCount || 0);
+    if (result.asm) {
+        this.setAssembly(result, result.filteredCount || 0);
+    } else if (result.result && result.result.asm) {
+        this.setAssembly(result.result, result.result.filteredCount || 0);
+    }
 
     var stdout = result.stdout || [];
     var stderr = result.stderr || [];
+    var failed = result.code ? result.code !== 0 : false;
+
+    if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            stdout = stdout.concat(step.stdout || []);
+            stderr = stderr.concat(step.stderr || []);
+            failed = failed | (step.code !== 0);
+        });
+    }
 
     this.handleCompilationStatus(this.compilerService.calculateStatusIcon(result));
     this.outputTextCount.text(stdout.length);
@@ -896,14 +1038,27 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 
     this.compileInfoLabel.text(infoLabelText);
 
-    this.postCompilationResult(request, result);
-    this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
-
-    if (this.nextRequest) {
-        var next = this.nextRequest;
-        this.nextRequest = null;
-        this.sendCompile(next);
+    if (result.result) {
+        this.postCompilationResult(request, result.result);
+    } else {
+        this.postCompilationResult(request, result);
     }
+
+    this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId]);
+};
+
+Compiler.prototype.onCompileResponse = function (request, result, cached) {
+    // Save which source produced this change. It should probably be saved earlier though
+    result.source = this.source;
+    this.lastResult = result;
+    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
+    var wasRealReply = this.pendingRequestSentAt > 0;
+    this.pendingRequestSentAt = 0;
+
+    this.handleCompileRequestAndResult(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCompileRequest();
 };
 
 Compiler.prototype.postCompilationResult = function (request, result) {
@@ -926,6 +1081,19 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            if (tree.multifileService.isEditorPartOfProject(editor)) {
+                if (this.settings.compileOnChange) {
+                    this.compile();
+
+                    return;
+                }
+            }
+        }
+    }
+
     if (editor === this.sourceEditorId && langId === this.currentLangId &&
         (compilerId === undefined || compilerId === this.id)) {
         this.source = source;
@@ -1284,15 +1452,27 @@ Compiler.prototype.initLibraries = function (state) {
 };
 
 Compiler.prototype.updateLibraries = function () {
-    if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
+    if (this.libsWidget) {
+        this.libsWidget.setNewLangId(this.currentLangId,
+            this.compiler ? this.compiler.id : false,
+            this.compiler ? this.compiler.libs : {});
+    }
+};
+
+Compiler.prototype.isSupportedTool = function (tool) {
+    if (this.sourceTreeId) {
+        return tool.tool.type === 'postcompilation';
+    } else {
+        return true;
+    }
 };
 
 Compiler.prototype.supportsTool = function (toolId) {
     if (!this.compiler) return;
 
-    return _.find(this.compiler.tools, function (tool) {
-        return (tool.tool.id === toolId);
-    });
+    return _.find(this.compiler.tools, _.bind(function (tool) {
+        return (tool.tool.id === toolId && this.isSupportedTool(tool));
+    }, this));
 };
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
@@ -1308,7 +1488,7 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
                 monacoStdin = langTools[toolId].tool.monacoStdin;
             }
         }
-        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin);
+        return Components.getToolViewWith(this.id, this.sourceEditorId, toolId, args, monacoStdin, this.sourceTreeId);
     }, this);
 
     this.container.layoutManager
@@ -1344,9 +1524,11 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     if (_.isEmpty(this.compiler.tools)) {
         addTool('none', 'No tools available');
     } else {
-        _.each(this.compiler.tools, function (tool) {
-            addTool(tool.tool.id, tool.tool.name);
-        });
+        _.each(this.compiler.tools, _.bind(function (tool) {
+            if (this.isSupportedTool(tool)) {
+                addTool(tool.tool.id, tool.tool.name);
+            }
+        }, this));
     }
 };
 
@@ -1473,12 +1655,14 @@ Compiler.prototype.initListeners = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('open', function () {
-        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId);
+        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
+    this.eventHub.on('treeClose', this.onTreeClose, this);
     this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('coloursForCompiler', this.onColoursForCompiler, this);
     this.eventHub.on('resendCompilation', this.onResendCompilation, this);
     this.eventHub.on('findCompilers', this.sendCompiler, this);
     this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
@@ -1597,7 +1781,9 @@ Compiler.prototype.onOptionsChange = function (options) {
 
 Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     // Check if any options are in the unwiseOptions array and remember them
-    var unwiseOptions = _.intersection(optionsArray, this.compiler.unwiseOptions);
+    var unwiseOptions = _.intersection(optionsArray, _.filter(this.compiler.unwiseOptions, function (opt) {
+        return opt !== '';
+    }));
 
     var options = unwiseOptions.length === 1 ? 'Option ' : 'Options ';
     var names = unwiseOptions.join(', ');
@@ -1651,13 +1837,22 @@ Compiler.prototype.onCompilerChange = function (value) {
 };
 
 Compiler.prototype.sendCompiler = function () {
-    this.eventHub.emit('compiler', this.id, this.compiler, this.options, this.sourceEditorId);
+    this.eventHub.emit('compiler', this.id, this.compiler, this.options, this.sourceEditorId, this.sourceTreeId);
 };
 
 Compiler.prototype.onEditorClose = function (editor) {
     if (editor === this.sourceEditorId) {
         // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
         // the hierarchy. We can't modify while it's being iterated over.
+        this.close();
+        _.defer(function (self) {
+            self.container.close();
+        }, this);
+    }
+};
+
+Compiler.prototype.onTreeClose = function (tree) {
+    if (tree === this.sourceTreeId) {
         this.close();
         _.defer(function (self) {
             self.container.close();
@@ -1678,6 +1873,7 @@ Compiler.prototype.currentState = function () {
         id: this.id,
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
+        tree: this.sourceTreeId,
         options: this.options,
         // NB must *not* be effective filters
         filters: this.filters.get(),
@@ -1696,21 +1892,33 @@ Compiler.prototype.saveState = function () {
 };
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {
-    if (editor === this.sourceEditorId) {
-        var asmColours = {};
-        _.each(this.assembly, function (x, index) {
-            if (x.source && x.source.file === null && x.source.line > 0) {
-                asmColours[index] = colours[x.source.line - 1];
+    var asmColours = {};
+    _.each(this.assembly, _.bind(function (x, index) {
+        if (x.source && x.source.line > 0) {
+            var editorId = this.getEditorIdBySourcefile(x.source);
+            if (editorId === editor) {
+                if (!asmColours[editorId]) {
+                    asmColours[editorId] = {};
+                }
+                asmColours[editorId][index] = colours[x.source.line - 1];
             }
-        });
-        this.colours = colour.applyColours(this.outputEditor, asmColours, scheme, this.colours);
+        }
+    }, this));
+
+    _.each(asmColours, _.bind(function (col) {
+        this.colours = colour.applyColours(this.outputEditor, col, scheme, this.colours);
+    }, this));
+};
+
+Compiler.prototype.onColoursForCompiler = function (compilerId, colours, scheme) {
+    if (this.id === compilerId) {
+        this.colours = colour.applyColours(this.outputEditor, colours, scheme, this.colours);
     }
 };
 
 Compiler.prototype.getCompilerName = function () {
     return this.compiler ? this.compiler.name : 'No compiler set';
 };
-
 
 Compiler.prototype.getLanguageName = function () {
     var lang = options.languages[this.currentLangId];
@@ -1720,7 +1928,13 @@ Compiler.prototype.getLanguageName = function () {
 Compiler.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return compName + ' (' + langName +', Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')';
+    if (this.sourceEditorId) {
+        return compName + ' (' + langName +', Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')';
+    } else if (this.sourceTreeId) {
+        return compName + ' (' + langName +', Tree #' + this.sourceTreeId + ', Compiler #' + this.id + ')';
+    } else {
+        return '';
+    }
 };
 
 Compiler.prototype.updateCompilerName = function () {
@@ -1757,21 +1971,24 @@ Compiler.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
+Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender, editorId) {
     if (Number(compilerId) === this.id) {
         var lineNums = [];
         var directlyLinkedLineNums = [];
         var signalFromAnotherPane = sender !== this.getPaneName();
-        _.each(this.assembly, function (asmLine, i) {
-            if (asmLine.source && asmLine.source.file === null && asmLine.source.line === lineNumber) {
-                var line = i + 1;
-                lineNums.push(line);
-                var currentCol = asmLine.source.column;
-                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
-                    directlyLinkedLineNums.push(line);
+        _.each(this.assembly, _.bind(function (asmLine, i) {
+            if (asmLine.source && asmLine.source.line === lineNumber) {
+                var fileEditorId = this.getEditorIdBySourcefile(asmLine.source);
+                if (fileEditorId && (editorId === fileEditorId)) {
+                    var line = i + 1;
+                    lineNums.push(line);
+                    var currentCol = asmLine.source.column;
+                    if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                        directlyLinkedLineNums.push(line);
+                    }
                 }
             }
-        });
+        }, this));
 
         if (revealLine && lineNums[0]) {
             this.pushRevealJump();
@@ -1881,8 +2098,8 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     });
 };
 
-Compiler.prototype.onRequestCompilation = function (editorId) {
-    if (editorId === this.sourceEditorId) {
+Compiler.prototype.onRequestCompilation = function (editorId, treeId) {
+    if ((editorId === this.sourceEditorId) || (treeId && treeId === this.sourceTreeId)) {
         this.compile();
     }
 };
@@ -1975,17 +2192,22 @@ Compiler.prototype.onMouseMove = function (e) {
             var sourceLine = -1;
             var sourceColBegin = -1;
             var sourceColEnd = -1;
-            if (hoverAsm.source && !hoverAsm.source.file) {
+            if (hoverAsm.source) {
                 sourceLine = hoverAsm.source.line;
                 if (hoverAsm.source.column) {
                     sourceColBegin = hoverAsm.source.column;
                     sourceColEnd = sourceColBegin;
                 }
+
+                var editorId = this.getEditorIdBySourcefile(hoverAsm.source);
+                if (editorId) {
+                    this.eventHub.emit('editorLinkLine', editorId, sourceLine, sourceColBegin, sourceColEnd, false);
+    
+                    this.eventHub.emit('panesLinkLine', this.id,
+                        sourceLine, sourceColBegin, sourceColEnd,
+                        false, this.getPaneName(), editorId);
+                }
             }
-            this.eventHub.emit('editorLinkLine', this.sourceEditorId, sourceLine, sourceColBegin, sourceColEnd, false);
-            this.eventHub.emit('panesLinkLine', this.id,
-                sourceLine, sourceColBegin, sourceColEnd,
-                false, this.getPaneName());
         }
     }
     var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
@@ -2106,8 +2328,9 @@ Compiler.prototype.handleCompilationStatus = function (status) {
     this.compilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
 };
 
-Compiler.prototype.onLanguageChange = function (editorId, newLangId) {
-    if (this.sourceEditorId === editorId) {
+Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {
+    if ((this.sourceEditorId && this.sourceEditorId === editorId) ||
+        (this.sourceTreeId && this.sourceTreeId === treeId)) {
         var oldLangId = this.currentLangId;
         this.currentLangId = newLangId;
         // Store the current selected stuff to come back to it later in the same session (Not state stored!)

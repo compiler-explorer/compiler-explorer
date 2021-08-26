@@ -252,4 +252,112 @@ describe('Execution tests', () => {
             args.should.include('--env=ENV2=2');
         });
     });
+
+    describe('Subdirectory execution', () => {
+        before(() => {
+            props.initialize(path.resolve('./test/test-properties/execution'), ['test']);
+        });
+        after(() => {
+            props.reset();
+        });
+
+        it('Normal situation without customCwd', () => {
+            const {args, options} = exec.getSandboxNsjailOptions(
+                '/tmp/hellow/output.s',
+                [],
+                {},
+            );
+
+            options.should.deep.equals({});
+            args.should.deep.equals([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
+
+        it('Normal situation', () => {
+            const {args, options} = exec.getSandboxNsjailOptions(
+                '/tmp/hellow/output.s',
+                [],
+                {
+                    customCwd: '/tmp/hellow',
+                },
+            );
+
+            options.should.deep.equals({});
+            args.should.deep.equals([
+                '--config',
+                'etc/nsjail/sandbox.cfg',
+                '--cwd',
+                '/app',
+                '--bindmount',
+                '/tmp/hellow:/app',
+                '--env=HOME=/app',
+                '--',
+                './output.s',
+            ]);
+        });
+
+        it('Subdirectory', () => {
+            const {args, options} = exec.getSandboxNsjailOptions(
+                '/tmp/hellow/subdir/output.s',
+                [],
+                {
+                    customCwd: '/tmp/hellow',
+                },
+            );
+
+            options.should.deep.equals({});
+            if (process.platform !== 'win32') {
+                args.should.deep.equals([
+                    '--config',
+                    'etc/nsjail/sandbox.cfg',
+                    '--cwd',
+                    '/app',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=HOME=/app',
+                    '--',
+                    'subdir/output.s',
+                ]);
+            }
+        });
+
+        it('CMake outside tree building', () => {
+            const {args, options} = exec.getNsJailOptions(
+                'execute',
+                '/opt/compiler-explorer/cmake/bin/cmake',
+                ['..'],
+                {
+                    customCwd: '/tmp/hellow/build',
+                    appHome: '/tmp/hellow',
+                },
+            );
+
+            options.should.deep.equals({
+                appHome: '/tmp/hellow',
+            });
+            if (process.platform !== 'win32') {
+                args.should.deep.equals([
+                    '--config',
+                    'etc/nsjail/execute.cfg',
+                    '--cwd',
+                    '/app/build',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=HOME=/app',
+                    '--',
+                    '/opt/compiler-explorer/cmake/bin/cmake',
+                    '..',
+                ]);
+            }
+        });
+    });
 });

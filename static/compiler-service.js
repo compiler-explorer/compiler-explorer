@@ -206,6 +206,43 @@ CompilerService.prototype.submit = function (request) {
     }, this));
 };
 
+CompilerService.prototype.submitCMake = function (request) {
+    request.allowStoreCodeDebug = this.allowStoreCodeDebug;
+    var jsonRequest = JSON.stringify(request);
+    if (options.doCache) {
+        var cachedResult = this.cache.get(jsonRequest);
+        if (cachedResult) {
+            return Promise.resolve({
+                request: request,
+                result: cachedResult,
+                localCacheHit: true,
+            });
+        }
+    }
+    return new Promise(_.bind(function (resolve, reject) {
+        var bindHandler = _.partial(handleRequestError, request, reject);
+        var compilerId = encodeURIComponent(request.compiler);
+        $.ajax({
+            type: 'POST',
+            url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/cmake',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: jsonRequest,
+            success: _.bind(function (result) {
+                if (result && result.okToCache && options.doCache) {
+                    this.cache.set(jsonRequest, result);
+                }
+                resolve({
+                    request: request,
+                    result: result,
+                    localCacheHit: false,
+                });
+            }, this),
+            error: bindHandler,
+        });
+    }, this));
+};
+
 CompilerService.prototype.requestPopularArguments = function (compilerId, options) {
     return new Promise(_.bind(function (resolve, reject) {
         var bindHandler = _.partial(handleRequestError, compilerId, reject);

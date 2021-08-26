@@ -901,7 +901,8 @@
       ],
       "source": {
         "file": null,
-        "line": 1
+        "line": 1,
+        "mainsource": true
       },
       "text": " push   rbp"
     },
@@ -915,7 +916,8 @@
       ],
       "source": {
         "file": null,
-        "line": 1
+        "line": 1,
+        "mainsource": true
       },
       "text": " mov    rbp,rsp"
     },
@@ -931,7 +933,8 @@
       ],
       "source": {
         "file": null,
-        "line": 2
+        "line": 2,
+        "mainsource": true
       },
       "text": " mov    eax,0x2"
     },
@@ -943,7 +946,8 @@
       ],
       "source": {
         "file": null,
-        "line": 3
+        "line": 3,
+        "mainsource": true
       },
       "text": " pop    rbp"
     },
@@ -955,7 +959,8 @@
       ],
       "source": {
         "file": null,
-        "line": 3
+        "line": 3,
+        "mainsource": true
       },
       "text": " ret"
     },
@@ -972,7 +977,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " push   rbp"
     },
@@ -986,7 +992,8 @@
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " mov    rbp,rsp"
     },
@@ -1004,7 +1011,8 @@
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " mov    DWORD PTR [rbp-0x4],0x2"
     },
@@ -1022,7 +1030,8 @@
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " mov    DWORD PTR [rbp-0x8],0x3"
     },
@@ -1037,7 +1046,8 @@
       ],
       "source": {
         "file": null,
-        "line": 7
+        "line": 7,
+        "mainsource": true
       },
       "text": " add    DWORD PTR [rbp-0x8],0x1"
     },
@@ -1051,7 +1061,8 @@
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " shl    DWORD PTR [rbp-0x4],1"
     },
@@ -1063,7 +1074,8 @@
       ],
       "source": {
         "file": null,
-        "line": 9
+        "line": 9,
+        "mainsource": true
       },
       "text": " nop"
     },
@@ -1075,7 +1087,8 @@
       ],
       "source": {
         "file": null,
-        "line": 9
+        "line": 9,
+        "mainsource": true
       },
       "text": " pop    rbp"
     },
@@ -1087,7 +1100,8 @@
       ],
       "source": {
         "file": null,
-        "line": 9
+        "line": 9,
+        "mainsource": true
       },
       "text": " ret"
     },
@@ -1104,7 +1118,8 @@
       ],
       "source": {
         "file": null,
-        "line": 11
+        "line": 11,
+        "mainsource": true
       },
       "text": " push   rbp"
     },
@@ -1118,7 +1133,8 @@
       ],
       "source": {
         "file": null,
-        "line": 11
+        "line": 11,
+        "mainsource": true
       },
       "text": " mov    rbp,rsp"
     },
@@ -1142,7 +1158,8 @@
       ],
       "source": {
         "file": null,
-        "line": 12
+        "line": 12,
+        "mainsource": true
       },
       "text": " call   401102 <fun🤔()>"
     },
@@ -1154,7 +1171,8 @@
       ],
       "source": {
         "file": null,
-        "line": 12
+        "line": 12,
+        "mainsource": true
       },
       "text": " nop"
     },
@@ -1166,7 +1184,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    rbp"
     },
@@ -1178,7 +1197,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " ret"
     },
@@ -1199,7 +1219,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " nop    WORD PTR cs:[rax+rax*1+0x0]"
     },
@@ -1211,7 +1232,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " nop"
     },
@@ -1231,7 +1253,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " endbr64"
     },
@@ -1244,7 +1267,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " push   r15"
     },
@@ -1262,7 +1286,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " lea    r15,[rip+0x2cb3]        # 403e00 <__frame_dummy_init_array_entry>"
     },
@@ -1275,7 +1300,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " push   r14"
     },
@@ -1289,7 +1315,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " mov    r14,rdx"
     },
@@ -1302,7 +1329,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " push   r13"
     },
@@ -1316,7 +1344,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " mov    r13,rsi"
     },
@@ -1329,7 +1358,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " push   r12"
     },
@@ -1343,7 +1373,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " mov    r12d,edi"
     },
@@ -1355,7 +1386,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " push   rbp"
     },
@@ -1373,7 +1405,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " lea    rbp,[rip+0x2ca4]        # 403e08 <__do_global_dtors_aux_fini_array_entry>"
     },
@@ -1385,7 +1418,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " push   rbx"
     },
@@ -1399,7 +1433,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " sub    rbp,r15"
     },
@@ -1414,7 +1449,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " sub    rsp,0x8"
     },
@@ -1438,7 +1474,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " call   401000 <_init>"
     },
@@ -1453,7 +1490,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " sar    rbp,0x3"
     },
@@ -1474,7 +1512,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " je     401196 <__libc_csu_init+0x56>"
     },
@@ -1487,7 +1526,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " xor    ebx,ebx"
     },
@@ -1505,7 +1545,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " nop    DWORD PTR [rax+0x0]"
     },
@@ -1519,7 +1560,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " mov    rdx,r14"
     },
@@ -1533,7 +1575,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " mov    rsi,r13"
     },
@@ -1547,7 +1590,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " mov    edi,r12d"
     },
@@ -1562,7 +1606,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " call   QWORD PTR [r15+rbx*8]"
     },
@@ -1577,7 +1622,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " add    rbx,0x1"
     },
@@ -1591,7 +1637,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " cmp    rbp,rbx"
     },
@@ -1612,7 +1659,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " jne    401180 <__libc_csu_init+0x40>"
     },
@@ -1627,7 +1675,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " add    rsp,0x8"
     },
@@ -1639,7 +1688,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    rbx"
     },
@@ -1651,7 +1701,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    rbp"
     },
@@ -1664,7 +1715,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    r12"
     },
@@ -1677,7 +1729,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    r13"
     },
@@ -1690,7 +1743,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    r14"
     },
@@ -1703,7 +1757,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " pop    r15"
     },
@@ -1715,7 +1770,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " ret"
     },
@@ -1737,7 +1793,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " data16 nop WORD PTR cs:[rax+rax*1+0x0]"
     },
@@ -1757,7 +1814,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " endbr64"
     },
@@ -1769,7 +1827,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " ret"
     },
@@ -1789,7 +1848,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " endbr64"
     },
@@ -1804,7 +1864,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " sub    rsp,0x8"
     },
@@ -1819,7 +1880,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " add    rsp,0x8"
     },
@@ -1831,7 +1893,8 @@
       ],
       "source": {
         "file": null,
-        "line": 13
+        "line": 13,
+        "mainsource": true
       },
       "text": " ret"
     }

@@ -127,7 +127,7 @@
               .checkbox
                 input.useVim(type="checkbox")
                 label Vim editor mode
-              .checkbox
+              .checkbox.the-save-option-to-auto-share
                 input.enableCtrlS(type="checkbox")
                 label
                   | Make
@@ -135,6 +135,14 @@
                   | +
                   kbd S
                   | &nbsp;save to local file instead of creating a share link
+              .checkbox.the-save-option-to-tree-save
+                input.enableCtrlStree(type="checkbox")
+                label
+                  | Make
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;include and save the file to a Tree if that's added to the UI
         .card
           .card-header
             .card-title

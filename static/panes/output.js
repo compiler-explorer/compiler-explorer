@@ -44,6 +44,8 @@ function Output(hub, container, state) {
     this.container = container;
     this.compilerId = state.compiler;
     this.editorId = state.editor;
+    this.treeId = state.tree;
+    this.hub = hub;
     this.eventHub = hub.createEventHub();
     this.domRoot = container.getElement();
     this.domRoot.html($('#compiler-output').html());
@@ -109,6 +111,7 @@ Output.prototype.currentState = function () {
     var state = {
         compiler: this.compilerId,
         editor: this.editorId,
+        tree: this.treeId,
         wrap: options.wrap,
     };
     this.fontScale.addState(state);
@@ -126,7 +129,7 @@ Output.prototype.addOutputLines = function (result) {
         if (obj.text === '') {
             this.add('<br/>');
         } else {
-            this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber);
+            this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber, obj.tag ? obj.tag.file : false);
         }
     }, this);
 };
@@ -143,15 +146,23 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
 
     this.contentRoot.empty();
 
-    this.addOutputLines(result);
-    if (!result.execResult) {
-        this.add('Compiler returned: ' + result.code);
+    if (result.buildsteps) {
+        _.each(result.buildsteps, _.bind(function (step) {
+            this.add('Step ' + step.step + ' returned: ' + step.code);
+            this.addOutputLines(step);
+        }, this));
     } else {
-        this.add('ASM generation compiler returned: ' + result.code);
-        this.addOutputLines(result.execResult.buildResult);
-        this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+        this.addOutputLines(result);
+        if (!result.execResult) {
+            this.add('Compiler returned: ' + result.code);
+        } else {
+            this.add('ASM generation compiler returned: ' + result.code);
+            this.addOutputLines(result.execResult.buildResult);
+            this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+        }
     }
-    if (result.execResult && result.execResult.didExecute) {
+
+    if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
         this.add('Program returned: ' + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
             _.each(result.execResult.stderr, function (obj) {
@@ -186,21 +197,40 @@ Output.prototype.programOutput = function (msg, color) {
         elem.css('color', color);
 };
 
-Output.prototype.add = function (msg, lineNum, column) {
+Output.prototype.getEditorIdByFilename = function (filename) {
+    var tree = this.hub.getTreeById(this.treeId);
+    if (tree) {
+        return tree.multifileService.getEditorIdByFilename(filename);
+    }
+    return false;
+};
+
+Output.prototype.emitEditorLinkLine = function (lineNum, column, filename, goto) {
+    if (this.editorId) {
+        this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, goto);
+    } else if (filename) {
+        var editorId = this.getEditorIdByFilename(filename);
+        if (editorId) {
+            this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, goto);
+        }
+    }
+};
+
+Output.prototype.add = function (msg, lineNum, column, filename) {
     var elem = $('<div/>').appendTo(this.contentRoot);
     if (lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
-                .click(_.bind(function (e) {
-                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, true);
+                .on('click', _.bind(function (e) {
+                    this.emitEditorLinkLine(lineNum, column, filename, true);
                     // do not bring user to the top of index.html
                     // http://stackoverflow.com/questions/3252730
                     e.preventDefault();
                     return false;
                 }, this))
                 .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorLinkLine', this.editorId, lineNum, column, column + 1, false);
+                    this.emitEditorLinkLine(lineNum, column, filename, false);
                 }, this))
         );
     } else {

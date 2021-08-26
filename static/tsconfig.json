@@ -7,6 +7,9 @@
         "esModuleInterop": true
 	},
 	"files": [
+		"multifile-service.ts",
+        "line-colouring.ts",
+		"panes/tree.ts",
 		"alert.ts"
 	]
 }

@@ -491,3 +491,17 @@ a {
 .conformance-wrapper .compiler-list .form-row {
     border-bottom: 1px solid #3e3e3e;
 }
+
+.tree ul, .tree li {
+    background-color: #222222 !important;
+    color: white;
+}
+
+.tree li.tree-editor-file {
+    background-color: #303030 !important;
+    color: white;
+}
+
+.tree li.tree-editor-file:hover {
+    background-color: #333 !important;
+}

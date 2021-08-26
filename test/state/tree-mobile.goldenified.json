@@ -1,0 +1,154 @@
+[
+    {
+        "settings": {
+            "hasHeaders": true,
+            "constrainDragToContainer": false,
+            "reorderEnabled": true,
+            "selectionEnabled": false,
+            "popoutWholeStack": false,
+            "blockedPopoutsThrowError": true,
+            "closePopoutsOnUnload": true,
+            "showPopoutIcon": false,
+            "showMaximiseIcon": true,
+            "showCloseIcon": false,
+            "responsiveMode": "onload",
+            "tabOverlapAllowance": 0,
+            "reorderOnTabMenuClick": true,
+            "tabControlOffset": 10
+        },
+        "dimensions": {
+            "borderWidth": 5,
+            "borderGrabWidth": 15,
+            "minItemHeight": 10,
+            "minItemWidth": 10,
+            "headerHeight": 20,
+            "dragProxyWidth": 300,
+            "dragProxyHeight": 200
+        },
+        "labels": {
+            "close": "close",
+            "maximise": "maximise",
+            "minimise": "minimise",
+            "popout": "open in new window",
+            "popin": "pop in",
+            "tabDropdown": "additional tabs"
+        },
+        "content": [
+            {
+                "type": "column",
+                "content": [
+                    {
+                        "type": "column",
+                        "width": 100,
+                        "content": [
+                            {
+                                "type": "row",
+                                "height": 50,
+                                "content": [
+                                    {
+                                        "type": "component",
+                                        "componentName": "tree",
+                                        "componentState": {
+                                            "id": 1,
+                                            "cmakeArgs": "",
+                                            "customOutputFilename": "hellow",
+                                            "isCMakeProject": true,
+                                            "compilerLanguageId": "c++",
+                                            "files": [
+                                                {
+                                                    "fileId": 1,
+                                                    "isIncluded": true,
+                                                    "isOpen": false,
+                                                    "isMainSource": true,
+                                                    "filename": "CMakeLists.txt",
+                                                    "content": "project(hello)\n\nadd_executable(hellow\n    example.cpp)\n\ntarget_link_libraries(hellow\n    fmtd)\n",
+                                                    "editorId": -1,
+                                                    "langId": "cmake"
+                                                },
+                                                {
+                                                    "fileId": 2,
+                                                    "isIncluded": true,
+                                                    "isOpen": false,
+                                                    "isMainSource": false,
+                                                    "filename": "example.cpp",
+                                                    "content": "#include \"fmt/core.h\"\n\nint main() {\n    fmt::print(\"H€llo, world!\\n\");\n    return 0;\n}",
+                                                    "editorId": -1,
+                                                    "langId": "c++"
+                                                },
+                                                {
+                                                    "fileId": 3,
+                                                    "isIncluded": true,
+                                                    "isOpen": false,
+                                                    "isMainSource": false,
+                                                    "filename": "subdir/hello.txt",
+                                                    "content": "Hello, World!!!!\n",
+                                                    "editorId": -1,
+                                                    "langId": "cmake"
+                                                }
+                                            ],
+                                            "newFileId": 4
+                                        },
+                                        "isClosable": true,
+                                        "reorderEnabled": true
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "row",
+                                "height": 50,
+                                "content": [
+                                    {
+                                        "type": "stack",
+                                        "width": 100,
+                                        "content": [
+                                            {
+                                                "type": "component",
+                                                "componentName": "compiler",
+                                                "componentState": {
+                                                    "id": 1,
+                                                    "compiler": "g103",
+                                                    "tree": 1,
+                                                    "options": "-g -O3 -flto",
+                                                    "filters": {
+                                                        "binary": false,
+                                                        "commentOnly": true,
+                                                        "demangle": true,
+                                                        "directives": true,
+                                                        "execute": false,
+                                                        "intel": true,
+                                                        "labels": true,
+                                                        "trim": false
+                                                    },
+                                                    "libs": [
+                                                        {
+                                                            "name": "fmt",
+                                                            "ver": "700"
+                                                        }
+                                                    ],
+                                                    "lang": "c++"
+                                                },
+                                                "isClosable": true,
+                                                "reorderEnabled": true
+                                            },
+                                            {
+                                                "type": "component",
+                                                "componentName": "output",
+                                                "componentState": {
+                                                    "compiler": 1,
+                                                    "wrap": false,
+                                                    "fontScale": 14
+                                                },
+                                                "isClosable": true,
+                                                "reorderEnabled": true
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -94,58 +94,25 @@ function initializeChartDataFromResult(compileResult, totalTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
+        addBuildResultToTimings(data, compileResult);
 
-        if (compileResult.packageDownloadAndUnzipTime) {
-            pushTimingInfo(data, 'Download binary from cache', compileResult.execTime);
-        } else {
-            if (compileResult.execResult) {
-                if (compileResult.execResult.buildResult) {
-                    addBuildResultToTimings(data, compileResult.execResult.buildResult);
-                }
+        if (!compileResult.packageDownloadAndUnzipTime) {
+            if (compileResult.objdumpTime) {
+                pushTimingInfo(data, 'Disassembly', compileResult.objdumpTime);
+            }
 
-                if (compileResult.objdumpTime) {
-                    pushTimingInfo(data, 'Disassembly', compileResult.objdumpTime);
-                }
-
-                if (compileResult.parsingTime) {
-                    pushTimingInfo(data, 'ASM parsing', compileResult.parsingTime);
-                }
-
-                if (compileResult.execResult.execTime) {
-                    pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
-                }
-
-            } else {
-                if (compileResult.downloads) {
-                    concatTimings(data, compileResult.downloads);
-                }
-
-                if (!compileResult.didExecute && compileResult.execTime) {
-                    pushTimingInfo(data, 'Compilation', compileResult.execTime);
-                }
-
-                if (compileResult.objdumpTime) {
-                    pushTimingInfo(data, 'Disassembly', compileResult.objdumpTime);
-                }
-
-                if (compileResult.parsingTime) {
-                    pushTimingInfo(data, 'ASM parsing', compileResult.parsingTime);
-                }
+            if (compileResult.parsingTime) {
+                pushTimingInfo(data, 'ASM parsing', compileResult.parsingTime);
             }
         }
     }
 
     if (compileResult.didExecute) {
-        if (compileResult.buildResult) {
-            if (compileResult.buildResult.packageDownloadAndUnzipTime) {
-                pushTimingInfo(data,
-                    'Download binary from cache',
-                    compileResult.buildResult.packageDownloadAndUnzipTime);
-            }
-        } else if (compileResult.execResult && compileResult.execResult.buildResult) {
-            addBuildResultToTimings(data, compileResult.execResult.buildResult);
+        if (compileResult.execResult.execTime) {
+            pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
+        } else {
+            pushTimingInfo(data, 'Execution', compileResult.execTime);
         }
-        pushTimingInfo(data, 'Execution', compileResult.execTime);
     }
 
     var stepsTotal = data.steps;

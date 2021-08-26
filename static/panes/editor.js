@@ -39,10 +39,10 @@ var TomSelect = require('tom-select');
 var Settings = require('../settings');
 require('../modes/_all');
 
-
 var loadSave = new loadSaveLib.LoadSave();
 var languages = options.languages;
 
+// eslint-disable-next-line max-statements
 function Editor(hub, state, container) {
     this.id = state.id || hub.nextEditorId();
     this.container = container;
@@ -57,8 +57,10 @@ function Editor(hub, state, container) {
     this.httpRoot = window.httpRoot;
     this.widgetsByCompiler = {};
     this.asmByCompiler = {};
+    this.defaultFileByCompiler = {};
     this.busyCompilers = {};
     this.colours = [];
+    this.treeCompilers = {};
 
     this.decorations = {};
     this.prevDecorations = [];
@@ -69,6 +71,8 @@ function Editor(hub, state, container) {
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
     this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
+
+    this.filename = state.filename || false;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -82,7 +86,8 @@ function Editor(hub, state, container) {
     var legacyReadOnly = state.options && !!state.options.readOnly;
     this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         language: this.currentLanguage.monaco,
-        readOnly: !!options.readOnly || legacyReadOnly || window.compilerExplorerOptions.mobileViewer,
+        readOnly: !!options.readOnly || legacyReadOnly ||
+            (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
         glyphMargin: !options.embedded,
     }, this.settings));
     this.editor.getModel().setEOL(monaco.editor.EndOfLineSequence.LF);
@@ -198,6 +203,7 @@ Editor.prototype.updateState = function () {
         source: this.getSource(),
         lang: this.currentLanguage.id,
         selection: this.selection,
+        filename: this.filename,
     };
     this.fontScale.addState(state);
     this.container.setState(state);
@@ -242,7 +248,7 @@ Editor.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('open', _.bind(function () {
-        this.eventHub.emit('editorOpen', this.id);
+        this.eventHub.emit('editorOpen', this.id, this);
     }, this));
     this.container.on('destroy', this.close, this);
     this.container.layoutManager.on('initialised', function () {
@@ -252,6 +258,9 @@ Editor.prototype.initCallbacks = function () {
         this.requestCompilation();
     }, this);
 
+    this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
+    this.eventHub.on('treeCompilerEditorExcludeChange', this.onTreeCompilerEditorExcludeChange, this);
+    this.eventHub.on('coloursForEditor', this.onColoursForEditor, this);
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('executorOpen', this.onExecutorOpen, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -266,6 +275,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('newSource', this.onNewSource, this);
     this.eventHub.on('motd', this.onMotd, this);
+    this.eventHub.on('findEditors', this.sendEditor, this);
     this.eventHub.emit('requestMotd');
 
     this.editor.getModel().onDidChangeContent(_.bind(function () {
@@ -306,6 +316,10 @@ Editor.prototype.initCallbacks = function () {
             }
         }
     }, this));
+};
+
+Editor.prototype.sendEditor = function () {
+    this.eventHub.emit('editorOpen', this.id, this);
 };
 
 Editor.prototype.onMouseMove = function (e) {
@@ -441,7 +455,15 @@ Editor.prototype.initButtons = function (state) {
     $(this.domRoot).keydown(_.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
-            if (this.settings.enableCtrlS) {
+            if (this.settings.enableCtrlStree && this.hub.hasTree()) {
+                var trees = this.hub.trees;
+                // todo: change when multiple trees are used
+                if (trees && trees.length > 0) {
+                    trees[0].multifileService.includeByEditorId(this.id).then(_.bind(function () {
+                        trees[0].refresh();
+                    }, this));
+                }
+            } else if (this.settings.enableCtrlS) {
                 loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
@@ -606,6 +628,9 @@ Editor.prototype.updateOpenInQuickBench = function () {
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
+    if (newLang === 'cmake') {
+        this.selectize.addOption(languages.cmake);
+    }
     this.selectize.setValue(newLang);
 };
 
@@ -618,12 +643,18 @@ Editor.prototype.tryPanesLinkLine = function (thisLineNumber, column, reveal) {
     var selectedToken = this.getTokenSpan(thisLineNumber, column);
     _.each(this.asmByCompiler, _.bind(function (asms, compilerId) {
         this.eventHub.emit('panesLinkLine', compilerId, thisLineNumber,
-            selectedToken.colBegin, selectedToken.colEnd, reveal);
+            selectedToken.colBegin, selectedToken.colEnd, reveal, undefined, this.id);
     }, this));
 };
 
 Editor.prototype.requestCompilation = function () {
     this.eventHub.emit('requestCompilation', this.id);
+
+    _.each(this.hub.trees, _.bind(function (tree) {
+        if (tree.multifileService.isEditorPartOfProject(this.id)) {
+            this.eventHub.emit('requestCompilation', this.id, tree.id);
+        }
+    }, this));
 };
 
 Editor.prototype.initEditorActions = function () {
@@ -959,24 +990,54 @@ Editor.prototype.onSettingsChange = function (newSettings) {
 };
 
 Editor.prototype.numberUsedLines = function () {
+    if (_.any(this.busyCompilers)) return;
+
+    if (!this.settings.colouriseAsm) {
+        this.updateColours([]);
+        return;
+    }
+
+    if (this.hub.hasTree()) {
+        return;
+    }
+
     var result = {};
     // First, note all lines used.
-    _.each(this.asmByCompiler, function (asm) {
-        _.each(asm, function (asmLine) {
-            // If the line has a source indicator, and the source indicator is null (i.e. the
-            // user's input file), then tag it as used.
-            if (asmLine.source && asmLine.source.file === null && asmLine.source.line > 0)
-                result[asmLine.source.line - 1] = true;
-        });
-    });
+    _.each(this.asmByCompiler, _.bind(function (asm, compilerId) {
+        _.each(asm, _.bind(function (asmLine) {
+            var foundInTrees = false;
+
+            _.each(this.treeCompilers, _.bind(function (compilerIds, treeId) {
+                if (compilerIds[compilerId]) {
+                    var tree = this.hub.getTreeById(Number(treeId));
+                    var defaultFile = this.defaultFileByCompiler[compilerId];
+                    foundInTrees = true;
+
+                    if (asmLine.source && asmLine.source.line > 0) {
+                        var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
+                        if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
+                            result[asmLine.source.line - 1] = true;
+                        }
+                    }
+                }
+            }, this));
+
+            if (!foundInTrees) {
+                if (asmLine.source &&
+                    (asmLine.source.file === null || asmLine.source.mainsource) &&
+                    asmLine.source.line > 0) {
+                    result[asmLine.source.line - 1] = true;
+                }
+            }
+        }, this));
+    }, this));
     // Now assign an ordinal to each used line.
     var ordinal = 0;
     _.each(result, function (v, k) {
         result[k] = ordinal++;
     });
 
-    if (_.any(this.busyCompilers)) return;
-    this.updateColours(this.settings.colouriseAsm ? result : []);
+    this.updateColours(result);
 };
 
 Editor.prototype.updateColours = function (colours) {
@@ -984,7 +1045,7 @@ Editor.prototype.updateColours = function (colours) {
     this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
 };
 
-Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
+Editor.prototype.onCompilerOpen = function (compilerId, editorId, treeId) {
     if (editorId === this.id) {
         // On any compiler open, rebroadcast our state in case they need to know it.
         if (this.waitingForLanguage) {
@@ -1000,8 +1061,36 @@ Editor.prototype.onCompilerOpen = function (compilerId, editorId) {
                 }
             }
         }
-        this.maybeEmitChange(true, compilerId);
+
+        if (treeId > 0) {
+            if (!this.treeCompilers[treeId]) {
+                this.treeCompilers[treeId] = {};
+            }
+            this.treeCompilers[treeId][compilerId] = true;
+        }
         this.ourCompilers[compilerId] = true;
+
+        if (!treeId) {
+            this.maybeEmitChange(true, compilerId);
+        }
+    }
+};
+
+Editor.prototype.onTreeCompilerEditorIncludeChange = function (treeId, editorId, compilerId) {
+    if (this.id === editorId) {
+        this.onCompilerOpen(compilerId, editorId, treeId);
+    }
+};
+
+Editor.prototype.onTreeCompilerEditorExcludeChange = function (treeId, editorId, compilerId) {
+    if (this.id === editorId) {
+        this.onCompilerClose(compilerId);
+    }
+};
+
+Editor.prototype.onColoursForEditor = function (editorId, colours, scheme) {
+    if (this.id === editorId) {
+        this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
     }
 };
 
@@ -1012,13 +1101,18 @@ Editor.prototype.onExecutorOpen = function (executorId, editorId) {
     }
 };
 
-Editor.prototype.onCompilerClose = function (compilerId) {
+Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
+    if (this.treeCompilers[treeId]) {
+        delete this.treeCompilers[treeId][compilerId];
+    }
+
     if (this.ourCompilers[compilerId]) {
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
+        delete this.defaultFileByCompiler[compilerId];
         this.numberUsedLines();
     }
 };
@@ -1036,10 +1130,25 @@ Editor.prototype.onCompiling = function (compilerId) {
 
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
+
     this.busyCompilers[compilerId] = false;
     var output = (result.stdout || []).concat(result.stderr || []);
     var widgets = _.compact(_.map(output, function (obj) {
         if (!obj.tag) return;
+
+        var trees = this.hub.trees;
+        if (trees && trees.length > 0) {
+            if (obj.tag.file) {
+                if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
+                    return;
+                }
+            } else {
+                if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
+                    return;
+                }
+            }
+        }
+
         var severity = 3; // error
         if (obj.tag.text.match(/^warning/)) severity = 2;
         if (obj.tag.text.match(/^note/)) severity = 1;
@@ -1072,7 +1181,19 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         };
     }, this);
     this.updateDecorations();
-    this.asmByCompiler[compilerId] = result.asm;
+
+    if (result.result && result.result.asm) {
+        this.asmByCompiler[compilerId] = result.result.asm;
+    } else {
+        this.asmByCompiler[compilerId] = result.asm;
+    }
+
+    if (result.inputFilename) {
+        this.defaultFileByCompiler[compilerId] = result.inputFilename;
+    } else {
+        this.defaultFileByCompiler[compilerId] = 'example' + this.currentLanguage.extensions[0];
+    }
+
     this.numberUsedLines();
 };
 
@@ -1217,8 +1338,9 @@ Editor.prototype.initLoadSaver = function () {
     this.loadSaveButton
         .off('click')
         .click(_.bind(function () {
-            loadSave.run(_.bind(function (text) {
+            loadSave.run(_.bind(function (text, filename) {
                 this.setSource(text);
+                this.setFilename(filename);
                 this.updateState();
                 this.maybeEmitChange(true);
                 this.requestCompilation();
@@ -1231,7 +1353,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
         if (newLangId !== this.currentLanguage.id) {
             var oldLangId = this.currentLanguage.id;
             this.currentLanguage = languages[newLangId];
-            if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange) {
+            if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && (newLangId !== 'cmake')) {
                 this.editorSourceByLang[oldLangId] = this.getSource();
                 this.updateEditorCode();
             }
@@ -1255,11 +1377,25 @@ Editor.prototype.onLanguageChange = function (newLangId) {
 };
 
 Editor.prototype.getPaneName = function () {
-    return this.currentLanguage.name + ' source #' + this.id;
+    if (this.filename) {
+        return this.filename;
+    } else {
+        return this.currentLanguage.name + ' source #' + this.id;
+    }
+};
+
+Editor.prototype.setFilename = function (name) {
+    this.filename = name;
+    this.updateTitle();
+    this.updateState();
 };
 
 Editor.prototype.updateTitle = function () {
-    this.container.setTitle(this.getPaneName());
+    var name = this.getPaneName();
+    if (name.endsWith('CMakeLists.txt')) {
+        this.changeLanguage('cmake');
+    }
+    this.container.setTitle(name);
 };
 
 // Called every time we change language, so we get the relevant code
@@ -1271,6 +1407,7 @@ Editor.prototype.close = function () {
     this.eventHub.unsubscribe();
     this.eventHub.emit('editorClose', this.id);
     this.editor.dispose();
+    this.hub.removeEditor(this.id);
 };
 
 module.exports = {

@@ -320,6 +320,7 @@ Conformance.prototype.compileChild = function (compilerEntry) {
                 skipAsm: true,
             },
             lang: this.langId,
+            files: [],
         };
 
         _.each(this.currentLibs, function (item) {

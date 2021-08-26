@@ -258,6 +258,16 @@ function configFromEmbedded(embeddedUrl) {
     }
 }
 
+function fixBugsInConfig(config) {
+    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
+        config.activeItemIndex = config.content.length - 1;
+    }
+
+    _.each(config.content, function (item) {
+        fixBugsInConfig(item);
+    });
+}
+
 function findConfig(defaultConfig, options) {
     var config;
     if (!options.embedded) {
@@ -295,6 +305,10 @@ function findConfig(defaultConfig, options) {
             },
         }, configFromEmbedded(window.location.hash.substr(1)));
     }
+
+    removeOrphanedMaximisedItemFromConfig(config);
+    fixBugsInConfig(config);
+
     return config;
 }
 
@@ -473,7 +487,6 @@ function start() {
     }
 
     var config = findConfig(defaultConfig, options);
-    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $('#root');
 
@@ -491,6 +504,10 @@ function start() {
 
         layout = new GoldenLayout(defaultConfig, root);
         hub = new Hub(layout, subLangId, defaultLangId);
+    }
+
+    if (hub.hasTree()) {
+        $('#add-tree').prop('disabled', true);
     }
 
     function sizeRoot() {
@@ -521,7 +538,11 @@ function start() {
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
         thing.click(function () {
-            hub.addAtRoot(func());
+            if (hub.hasTree()) {
+                hub.addInEditorStackIfPossible(func());
+            } else {
+                hub.addAtRoot(func());
+            }
         });
     }
 
@@ -530,6 +551,10 @@ function start() {
     });
     setupAdd($('#add-diff'), function () {
         return Components.getDiff();
+    });
+    setupAdd($('#add-tree'), function () {
+        $('#add-tree').prop('disabled', true);
+        return Components.getTree();
     });
 
     if (hashPart) {
