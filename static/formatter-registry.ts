@@ -25,6 +25,7 @@
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import { Promise } from "es6-promise";
+
 import { Alert } from "./alert";
 
 declare global {
@@ -33,7 +34,11 @@ declare global {
     }
 }
 
-const getDocumentFormatter = (language: string, formatter: string, formatBase: string): monaco.languages.DocumentFormattingEditProvider => ({
+const getDocumentFormatter = (
+    language: string,
+    formatter: string,
+    formatBase: string
+): monaco.languages.DocumentFormattingEditProvider => ({
     provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
@@ -41,7 +46,7 @@ const getDocumentFormatter = (language: string, formatter: string, formatBase: s
     ): Promise<monaco.languages.TextEdit[]> {
         const alertSystem = new Alert();
         return new Promise((resolve, reject) => {
-           const source = model.getValue();
+            const source = model.getValue();
             $.ajax({
                 type: 'POST',
                 url: `${window.location.origin}${window.httpRoot}api/format/${formatter}`,
@@ -75,7 +80,7 @@ const getDocumentFormatter = (language: string, formatter: string, formatBase: s
                         }
                     }
                     error = error || 'Unknown error';
-                    alertSystem.notify('We ran into some issues while formatting your code: ' + error, {
+                    alertSystem.notify(`We ran into some issues while formatting your code: ${error}`, {
                         group: 'formatting',
                         alertClass: 'notification-error',
                     });
