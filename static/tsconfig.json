@@ -9,10 +9,11 @@
 	"files": [
 		"global.ts",
 		"multifile-service.ts",
-        "line-colouring.ts",
+		"line-colouring.ts",
 		"panes/tree.ts",
 		"alert.ts",
-		"url.ts",
 		"formatter-registry.ts"
+		"sharing.ts",
+		"url.ts"
 	]
 }
