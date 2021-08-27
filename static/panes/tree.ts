@@ -38,10 +38,6 @@ const options = require('../options');
 const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
 
-declare global {
-    interface Window { httpRoot: any; }
-}
-
 export class TreeState extends MultifileServiceState {
     id: number
     cmakeArgs: string;
