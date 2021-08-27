@@ -87,3 +87,5 @@ const getDocumentFormatter = (
 });
 
 monaco.languages.registerDocumentFormattingEditProvider('cppp', getDocumentFormatter('cppp', 'clangformat', 'Google'));
+monaco.languages.registerDocumentFormattingEditProvider('nc', getDocumentFormatter('nc', 'clangformat', 'Google'));
+monaco.languages.registerDocumentFormattingEditProvider('rust', getDocumentFormatter('rust', 'rustfmt', 'None'));
