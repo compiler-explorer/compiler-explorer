@@ -45,14 +45,14 @@ export class TreeState extends MultifileServiceState {
 }
 
 export class Tree {
-    private id: number;
+    private readonly id: number;
     private container: any;
     private domRoot: any;
-    private hub: any;
+    private readonly hub: any;
     private eventHub: any;
-    private settings: any;
+    private readonly settings: any;
     private httpRoot: any;
-    private alertSystem: any;
+    private readonly alertSystem: any;
     private root: any;
     private rowTemplate: any;
     private namedItems: any;
@@ -62,15 +62,15 @@ export class Tree {
     private customOutputFilenameInput: any;
     public multifileService: MultifileService;
     private lineColouring: LineColouring;
-    private ourCompilers: {};
-    private busyCompilers: {};
-    private asmByCompiler: {};
+    private readonly ourCompilers: {};
+    private readonly busyCompilers: {};
+    private readonly asmByCompiler: {};
     private selectize: any;
     private languageBtn: any;
     private toggleCMakeButton: any;
     private debouncedEmitChange: () => void;
     private hideable: any;
-    private topBar: any;
+    private readonly topBar: any;
 
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
@@ -450,7 +450,7 @@ export class Tree {
         return editor;
     }
 
-    private getFormattedDateTime() {
+    private static getFormattedDateTime() {
         const d = new Date();
 
         let datestring = d.getFullYear() +
@@ -463,8 +463,8 @@ export class Tree {
         return datestring;
     }
 
-    private triggerSaveAs(blob) {
-        const dt = this.getFormattedDateTime();
+    private static triggerSaveAs(blob) {
+        const dt = Tree.getFormattedDateTime();
         saveAs(blob, `project-${dt}.zip`);
     }
 
@@ -475,7 +475,7 @@ export class Tree {
         const saveProjectButton = this.domRoot.find('.save-project-to-file');
 
         saveProjectButton.on('click', () => {
-            this.multifileService.saveProjectToZipfile(_.bind(this.triggerSaveAs, this));
+            this.multifileService.saveProjectToZipfile(_.bind(Tree.triggerSaveAs, this));
         });
 
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file');
