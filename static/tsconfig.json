@@ -12,6 +12,8 @@
         "line-colouring.ts",
 		"panes/tree.ts",
 		"alert.ts",
+		"sharing.ts",
+		"undoer.ts",
 		"url.ts"
 	]
 }
