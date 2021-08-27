@@ -108,7 +108,7 @@ function initializeChartDataFromResult(compileResult, totalTime) {
     }
 
     if (compileResult.didExecute) {
-        if (compileResult.execResult.execTime) {
+        if (compileResult.execResult && compileResult.execResult.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         } else {
             pushTimingInfo(data, 'Execution', compileResult.execTime);
