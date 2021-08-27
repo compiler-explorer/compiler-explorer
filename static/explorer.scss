@@ -801,3 +801,25 @@ html[data-theme=dark] {
 .status-icon {
     border: none;
 }
+
+.tree-editor-file {
+    cursor: pointer;
+    line-height: 14px;
+    padding: 0px 0px 0px 5px;
+}
+.tree-editor-file span {
+    font-family: inherit;
+    float: left;
+    margin-top: 6px;
+}
+.tree-editor-file button {
+    float: right;
+    padding: 4px 10px 4px 0px;
+}
+.mainbar .cmake-project {
+    margin-top: 2px;
+}
+
+.v-scroll {
+    overflow-y: scroll;
+}

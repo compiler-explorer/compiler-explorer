@@ -242,7 +242,9 @@ function setupSettings(root, settings, onChange, subLangId) {
     }
     add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
     add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
+    // note: this is the ctrl+s "Save option"
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
+    add(root.find('.enableCtrlStree'), 'enableCtrlStree', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
     add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);

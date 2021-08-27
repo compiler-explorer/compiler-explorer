@@ -6,6 +6,7 @@
             "source": "// Type your code here, or load an example.\nint square(int num) {\n    auto x = 344 + 5 + 1;\n    return num * num + 234 + x;\n}\n\nint main() {\n    return square(23);\n}\n",
             "compilers": [
                 {
+                    "_internalid": 1,
                     "filters": {
                         "binary": false,
                         "commentOnly": true,
@@ -58,5 +59,6 @@
                 }
             ]
         }
-    ]
+    ],
+    "trees": []
 }
