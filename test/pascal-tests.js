@@ -25,6 +25,8 @@
 import { FPCCompiler } from '../lib/compilers/pascal';
 import { PascalDemangler } from '../lib/demangler';
 import * as utils from '../lib/utils';
+import { PascalUtils } from '../lib/compilers/pascal-utils';
+import path from 'path';
 
 import { fs, makeCompilationEnvironment } from './utils';
 
@@ -48,9 +50,9 @@ describe('Pascal', () => {
 
     it('Basic compiler setup', () => {
         if (process.platform === 'win32') {
-            compiler.getOutputFilename('/tmp/', 'output.pas').should.equal('\\tmp\\output.s');
+            compiler.getOutputFilename('/tmp/', 'example.pas').should.equal('\\tmp\\example.s');
         } else {
-            compiler.getOutputFilename('/tmp/', 'output.pas').should.equal('/tmp/output.s');
+            compiler.getOutputFilename('/tmp/', 'example.pas').should.equal('/tmp/example.s');
         }
     });
 
@@ -313,7 +315,7 @@ describe('Pascal', () => {
 
                     resolve(Promise.all([
                         asmLines.should.include('# [output.pas]'),
-                        asmLines.should.include('  .file 1 "<stdin>"'),
+                        asmLines.should.include('  .file 1 "output.pas"'),
                         asmLines.should.include('# [13] Square := num * num + 14;'),
                         asmLines.should.include('  .loc 1 13 0'),
                         asmLines.should.include('.Le0:'),
@@ -353,6 +355,85 @@ describe('Pascal', () => {
                 }],
                 stderr: [],
             });
+        });
+    });
+
+    describe('Pascal filetype detection', () => {
+        const pasUtils = new PascalUtils();
+        const progSource = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+        const unitSource = fs.readFileSync('test/pascal/example.pas').toString('utf8');
+
+        it('Should detect simple program', () => {
+            pasUtils.isProgram(progSource).should.equal(true);
+            pasUtils.isProgram(unitSource).should.equal(false);
+        });
+
+        it('Should detect simple unit', () => {
+            pasUtils.isUnit(progSource).should.equal(false);
+            pasUtils.isUnit(unitSource).should.equal(true);
+        });
+    });
+
+    describe('Multifile writing behaviour', function () {
+        let compiler;
+
+        before(() => {
+            const ce = makeCompilationEnvironment({languages});
+            const info = {
+                exe: null,
+                remote: true,
+                lang: languages.pascal.id,
+            };
+    
+            compiler = new FPCCompiler(info, ce);
+        });
+    
+        it('Original behaviour (just a unit file)', async function() {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [];
+            const source = fs.readFileSync('test/pascal/example.pas').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'example.pas')),
+                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
+            ]);
+        });
+
+        it('Writing program instead of a unit', async function() {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [];
+            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
+                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(false),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
+            ]);
+        });
+
+        it('Writing program with a unit', async function() {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [{
+                filename: 'example.pas',
+                contents: '{ hello\n   world }'
+            }];
+            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
+                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
+            ]);
         });
     });
 });
