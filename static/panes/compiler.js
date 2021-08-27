@@ -707,6 +707,11 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
 
 Compiler.prototype.compileFromTree = function (options, bypassCache) {
     var tree = this.hub.getTreeById(this.sourceTreeId);
+    if (!tree) {
+        this.sourceTreeId = false;
+        this.compileFromEditorSource(options, bypassCache);
+        return;
+    }
 
     var mainsource = tree.multifileService.getMainSource();
 
