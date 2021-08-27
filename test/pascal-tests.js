@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
 import { FPCCompiler } from '../lib/compilers/pascal';
+import { PascalUtils } from '../lib/compilers/pascal-utils';
 import { PascalDemangler } from '../lib/demangler';
 import * as utils from '../lib/utils';
-import { PascalUtils } from '../lib/compilers/pascal-utils';
-import path from 'path';
 
 import { fs, makeCompilationEnvironment } from './utils';
 
@@ -388,7 +389,7 @@ describe('Pascal', () => {
             compiler = new FPCCompiler(info, ce);
         });
     
-        it('Original behaviour (just a unit file)', async function() {
+        it('Original behaviour (just a unit file)', async function () {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -403,7 +404,7 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Writing program instead of a unit', async function() {
+        it('Writing program instead of a unit', async function () {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [];
@@ -418,12 +419,12 @@ describe('Pascal', () => {
             ]);
         });
 
-        it('Writing program with a unit', async function() {
+        it('Writing program with a unit', async function () {
             const dirPath = await compiler.newTempDir();
             const filters = {};
             const files = [{
                 filename: 'example.pas',
-                contents: '{ hello\n   world }'
+                contents: '{ hello\n   world }',
             }];
             const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
 
