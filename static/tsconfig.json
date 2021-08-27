@@ -13,7 +13,6 @@
 		"panes/tree.ts",
 		"alert.ts",
 		"sharing.ts",
-		"undoer.ts",
 		"url.ts"
 	]
 }
