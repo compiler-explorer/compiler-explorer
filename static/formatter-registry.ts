@@ -28,12 +28,6 @@ import { Promise } from "es6-promise";
 
 import { Alert } from "./alert";
 
-declare global {
-    interface Window {
-        httpRoot: string;
-    }
-}
-
 const getDocumentFormatter = (
     language: string,
     formatter: string,
