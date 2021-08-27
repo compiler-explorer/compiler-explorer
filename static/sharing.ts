@@ -26,6 +26,7 @@ import $ from 'jquery';
 import Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore'
+import ClipboardJS from 'clipboard';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
@@ -67,6 +68,8 @@ export class Sharing {
     private shareFull: JQuery;
     private shareEmbed: JQuery;
 
+    private clippyButton: ClipboardJS;
+
     constructor(layout: any) {
         this.layout = layout;
         this.lastState = null;
@@ -76,6 +79,8 @@ export class Sharing {
         this.shareFull = $('#shareFull');
         this.shareEmbed = $('#shareEmbed');
 
+        this.clippyButton = null;
+
         this.initButtons();
         this.initCallbacks();
     }
@@ -84,7 +89,8 @@ export class Sharing {
         this.layout.eventHub.on('displaySharingPopover', () => this.shareShort.trigger('click'));
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
-        $('#sharelinkdialog').on('show.bs.modal', this.onOpenModalPane.bind(this));
+        $('#sharelinkdialog').on('show.bs.modal', this.onOpenModalPane.bind(this))
+            .on('hidden.bs.modal', this.onCloseModalPane.bind(this));
     }
 
     private onStateChanged(): void {
@@ -151,6 +157,15 @@ export class Sharing {
             });
         }
 
+        this.clippyButton = new ClipboardJS(modal.find('button.clippy').get(0));
+        this.clippyButton.on('success', (e) => {
+            this.displayTooltip(permalink, 'Link copied to clipboard');
+            e.clearSelection();
+        });
+        this.clippyButton.on('error', (e) => {
+            this.displayTooltip(permalink, 'Error copying to clipboard');
+        });
+
         if (currentBind === LinkType.Embed) {
             embedsettings.show();
             embedsettings.find('input')
@@ -168,6 +183,13 @@ export class Sharing {
             eventCategory: 'OpenModalPane',
             eventAction: 'Sharing',
         });
+    }
+
+    private onCloseModalPane(): void {
+        if (this.clippyButton) {
+            this.clippyButton.destroy();
+            this.clippyButton = null;
+        }
     }
 
     private initButtons(): void {
@@ -199,7 +221,7 @@ export class Sharing {
         const config = this.layout.toConfig();
         Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
             if (error || !newUrl) {
-                this.displayTooltip('Oops, something went wrong');
+                this.displayTooltip(this.share, 'Oops, something went wrong');
                 Sentry.captureException(error);
             } else {
                 if (updateState) {
@@ -210,16 +232,16 @@ export class Sharing {
         });
     }
 
-    private displayTooltip(message: string): void {
-        this.share.tooltip('dispose');
-        this.share.tooltip({
+    private displayTooltip(where: JQuery, message: string): void {
+        where.tooltip('dispose');
+        where.tooltip({
             placement: 'bottom',
             trigger: 'manual',
             title: message,
         });
-        this.share.tooltip('show');
+        where.tooltip('show');
         // Manual triggering of tooltips does not hide them automatically. This timeout ensures they do
-        setTimeout(() => this.share.tooltip('hide'), 1500);
+        setTimeout(() => where.tooltip('hide'), 1500);
     }
 
     private doLinkCopyToClipboard(link: string): any {
@@ -227,8 +249,8 @@ export class Sharing {
         // Right now, only the newer navigator.clipboard is available, but more can be added
         if (Sharing.isNavigatorClipboardAvailable()) {
             navigator.clipboard.writeText(link)
-                .then(() => this.displayTooltip('Link copied to clipboard'))
-                .catch(() => this.displayTooltip('Error copying link to clipboard'));
+                .then(() => this.displayTooltip(this.share, 'Link copied to clipboard'))
+                .catch(() => this.displayTooltip(this.share, 'Error copying link to clipboard'));
         }
     }
 
