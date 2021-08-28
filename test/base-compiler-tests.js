@@ -85,9 +85,9 @@ describe('Basic compiler invariants', function () {
         badSource.should.equal('<stdin>:1:1: no absolute or relative includes please');
     });
     it('should skip version check if forced to', () => {
-        const newConfig = {...info, explicitVersion: "123"};
+        const newConfig = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig, ce);
-        forcedVersionCompiler.getVersion().stdout.should.deep.equal(["123"]);
+        forcedVersionCompiler.getVersion().stdout.should.deep.equal(['123']);
     });
 });
 
