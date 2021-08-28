@@ -12,7 +12,7 @@
 		"line-colouring.ts",
 		"panes/tree.ts",
 		"alert.ts",
-		"formatter-registry.ts"
+		"formatter-registry.ts",
 		"sharing.ts",
 		"url.ts"
 	]
