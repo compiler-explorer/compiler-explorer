@@ -136,7 +136,7 @@ export class MultifileService {
         zip.forEach(async (relativePath, zipEntry) => {
             if (!zipEntry.dir) {
                 let removeFromName = 0;
-                if (relativePath.indexOf(zipFilename) === 0) {
+                if (relativePath.indexOf(zipFilename + '/') === 0) {
                     removeFromName = zipFilename.length + 1;
                 }
 
