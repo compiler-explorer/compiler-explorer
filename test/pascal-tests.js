@@ -26,6 +26,7 @@ import path from 'path';
 
 import { FPCCompiler } from '../lib/compilers/pascal';
 import { PascalUtils } from '../lib/compilers/pascal-utils';
+import { PascalWinCompiler } from '../lib/compilers/pascal-win';
 import { PascalDemangler } from '../lib/demangler';
 import * as utils from '../lib/utils';
 
@@ -387,6 +388,69 @@ describe('Pascal', () => {
             };
     
             compiler = new FPCCompiler(info, ce);
+        });
+    
+        it('Original behaviour (just a unit file)', async function () {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [];
+            const source = fs.readFileSync('test/pascal/example.pas').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'example.pas')),
+                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
+            ]);
+        });
+
+        it('Writing program instead of a unit', async function () {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [];
+            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
+                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(false),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
+            ]);
+        });
+
+        it('Writing program with a unit', async function () {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [{
+                filename: 'example.pas',
+                contents: '{ hello\n   world }',
+            }];
+            const source = fs.readFileSync('test/pascal/prog.dpr').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'prog.dpr')),
+                utils.fileExists(path.join(dirPath, 'example.pas')).should.eventually.equal(true),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(true),
+            ]);
+        });
+    });
+
+    describe('Multifile writing behaviour Pascal-WIN', function () {
+        let compiler;
+
+        before(() => {
+            const ce = makeCompilationEnvironment({languages});
+            const info = {
+                exe: null,
+                remote: true,
+                lang: languages.pascal.id,
+            };
+    
+            compiler = new PascalWinCompiler(info, ce);
         });
     
         it('Original behaviour (just a unit file)', async function () {
