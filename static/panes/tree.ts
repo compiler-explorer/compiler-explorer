@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { MultifileFile, MultifileService, MultifileServiceState } from "../multifile-service";
-import { saveAs } from "file-saver";
-import { LineColouring } from "../line-colouring";
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
+import {LineColouring} from '../line-colouring';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -39,7 +38,7 @@ const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
 
 export class TreeState extends MultifileServiceState {
-    id: number
+    id: number;
     cmakeArgs: string;
     customOutputFilename: string;
 }
@@ -179,8 +178,8 @@ export class Tree {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
-            ... this.multifileService.getState()
-        }
+            ...this.multifileService.getState(),
+        };
     };
 
     private updateState() {
@@ -317,7 +316,8 @@ export class Tree {
 
     private addRowToTreelist(file: MultifileFile) {
         const item = $(this.rowTemplate.children()[0].cloneNode(true));
-        const stagingButton = item.find('.stage-file');
+        const stageButton = item.find('.stage-file');
+        const unstageButton = item.find('.unstage-file');
         const renameButton = item.find('.rename-file');
         const deleteButton = item.find('.delete-file');
 
@@ -359,21 +359,17 @@ export class Tree {
             }
         });
 
-        if (file.isIncluded) {
-            stagingButton.removeClass('fa-plus').addClass('fa-minus');
-            stagingButton.on('click', async (e) => {
-                const fileId = $(e.currentTarget).parent('li').data('fileId');
-                await this.moveToExclude(fileId);
-            });
-            this.namedItems.append(item);
-        } else {
-            stagingButton.removeClass('fa-minus').addClass('fa-plus');
-            stagingButton.on('click', async (e) => {
-                const fileId = $(e.currentTarget).parent('li').data('fileId');
-                await this.moveToInclude(fileId);
-            });
-            this.unnamedItems.append(item);
-        }
+        stageButton.on('click', async (e) => {
+            const fileId = $(e.currentTarget).parent('li').data('fileId');
+            await this.moveToInclude(fileId);
+        });
+        unstageButton.on('click', async (e) => {
+            const fileId = $(e.currentTarget).parent('li').data('fileId');
+            await this.moveToExclude(fileId);
+        });
+        stageButton.toggle(!file.isIncluded);
+        unstageButton.toggle(file.isIncluded);
+        (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
     }
 
     private refresh() {
