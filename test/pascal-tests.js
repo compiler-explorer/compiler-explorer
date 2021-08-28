@@ -328,20 +328,20 @@ describe('Pascal', () => {
         });
     });
 
-    describe('Pascal objdump filtering', function () {
-        it('Should filter out most of the runtime', function () {
-            return new Promise(function (resolve) {
-                fs.readFile('test/pascal/objdump-example.s', function (err, buffer) {
-                    const output = FPCCompiler.preProcessBinaryAsm(buffer.toString());
-                    resolve(Promise.all([
-                        utils.splitLines(output).length.should.be.below(500),
-                        output.should.not.include('fpc_zeromem():'),
-                        output.should.include('SQUARE():'),
-                    ]));
-                });
-            });
-        });
-    });
+    // describe('Pascal objdump filtering', function () {
+    //     it('Should filter out most of the runtime', function () {
+    //         return new Promise(function (resolve) {
+    //             fs.readFile('test/pascal/objdump-example.s', function (err, buffer) {
+    //                 const output = FPCCompiler.preProcessBinaryAsm(buffer.toString());
+    //                 resolve(Promise.all([
+    //                     utils.splitLines(output).length.should.be.below(500),
+    //                     output.should.not.include('fpc_zeromem():'),
+    //                     output.should.include('SQUARE():'),
+    //                 ]));
+    //             });
+    //         });
+    //     });
+    // });
 
     describe('Pascal parseOutput', () => {
         it('should return parsed output', () => {
