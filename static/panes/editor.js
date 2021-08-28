@@ -37,6 +37,7 @@ var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings');
+require('../formatter-registry');
 require('../modes/_all');
 
 var loadSave = new loadSaveLib.LoadSave();
@@ -705,16 +706,6 @@ Editor.prototype.initEditorActions = function () {
     });
 
     this.editor.addAction({
-        id: 'format',
-        label: 'Format text',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9],
-        keybindingContext: null,
-        contextMenuGroupId: 'help',
-        contextMenuOrder: 1.5,
-        run: _.bind(this.formatCurrentText, this),
-    });
-
-    this.editor.addAction({
         id: 'toggleColourisation',
         label: 'Toggle colourisation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.F1],
@@ -752,6 +743,10 @@ Editor.prototype.initEditorActions = function () {
         precondition: 'isCpp',
         run: _.bind(this.searchOnCppreference, this),
     });
+
+    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, _.bind(function () {
+        this.editor.getAction('editor.action.formatDocument').run();
+    }, this));
 };
 
 Editor.prototype.searchOnCppreference = function (ed) {
