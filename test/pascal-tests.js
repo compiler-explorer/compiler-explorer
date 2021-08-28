@@ -52,9 +52,9 @@ describe('Pascal', () => {
 
     it('Basic compiler setup', () => {
         if (process.platform === 'win32') {
-            compiler.getOutputFilename('/tmp/', 'example.pas').should.equal('\\tmp\\example.s');
+            compiler.getOutputFilename('/tmp/', 'output.pas').should.equal('\\tmp\\output.s');
         } else {
-            compiler.getOutputFilename('/tmp/', 'example.pas').should.equal('/tmp/example.s');
+            compiler.getOutputFilename('/tmp/', 'output.pas').should.equal('/tmp/output.s');
         }
     });
 
@@ -390,6 +390,21 @@ describe('Pascal', () => {
             compiler = new FPCCompiler(info, ce);
         });
     
+        it('Original behaviour (old unitname)', async function () {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [];
+            const source = fs.readFileSync('examples/pascal/default.pas').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'output.pas')),
+                utils.fileExists(path.join(dirPath, 'output.pas')).should.eventually.equal(true),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
+            ]);
+        });
+
         it('Original behaviour (just a unit file)', async function () {
             const dirPath = await compiler.newTempDir();
             const filters = {};
@@ -453,6 +468,21 @@ describe('Pascal', () => {
             compiler = new PascalWinCompiler(info, ce);
         });
     
+        it('Original behaviour (old unitname)', async function () {
+            const dirPath = await compiler.newTempDir();
+            const filters = {};
+            const files = [];
+            const source = fs.readFileSync('examples/pascal/default.pas').toString('utf8');
+
+            const writeSummary = await compiler.writeAllFiles(dirPath, source, files, filters);
+
+            return Promise.all([
+                writeSummary.inputFilename.should.equal(path.join(dirPath, 'output.pas')),
+                utils.fileExists(path.join(dirPath, 'output.pas')).should.eventually.equal(true),
+                utils.fileExists(path.join(dirPath, 'prog.dpr')).should.eventually.equal(false), // note: will be written somewhere else
+            ]);
+        });
+
         it('Original behaviour (just a unit file)', async function () {
             const dirPath = await compiler.newTempDir();
             const filters = {};
