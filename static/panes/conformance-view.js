@@ -95,6 +95,8 @@ Conformance.prototype.onLibsChanged = function () {
 
 Conformance.prototype.initLibraries = function (state) {
     this.libsWidget = new Libraries.Widget(this.langId, null, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    // No callback is done on initialization, so make sure we store the current libs
+    this.currentLibs = this.libsWidget.get();
 };
 
 Conformance.prototype.initButtons = function () {

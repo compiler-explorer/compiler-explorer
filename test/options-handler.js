@@ -244,6 +244,32 @@ describe('Options handler', () => {
             },
         });
     });
+    it('should understand most kinds of semvers', () => {
+        optionsHandler._asSafeVer('0').should.equal('0.0.0');
+        optionsHandler._asSafeVer('1').should.equal('1.0.0');
+
+        optionsHandler._asSafeVer('1.0').should.equal('1.0.0');
+        optionsHandler._asSafeVer('1.1').should.equal('1.1.0');
+
+        optionsHandler._asSafeVer('1.1.0').should.equal('1.1.0');
+        optionsHandler._asSafeVer('1.1.1').should.equal('1.1.1');
+
+        const MAGIC_TRUNK_VERSION = '9999999.99999.999';
+        optionsHandler._asSafeVer('trunk').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('(trunk)').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('(123.456.789 test)').should.equal(MAGIC_TRUNK_VERSION);
+
+        optionsHandler._asSafeVer('0..0').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('0.0.').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('0.').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('.0.0').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('.0..').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('0..').should.equal(MAGIC_TRUNK_VERSION);
+
+        optionsHandler._asSafeVer('123 TEXT').should.equal('123.0.0');
+        optionsHandler._asSafeVer('123.456 TEXT').should.equal('123.456.0');
+        optionsHandler._asSafeVer('123.456.789 TEXT').should.equal('123.456.789');
+    });
     it('should order compilers as expected', () => {
         const compilers = [
             makeFakeCompilerInfo('a1', languages.fake.id, 'a', '0.0.1', true),
@@ -268,6 +294,10 @@ describe('Options handler', () => {
             makeFakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
             makeFakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
             makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true),
+
+            makeFakeCompilerInfo('g1', languages.fake.id, 'g', '5 a', true),
+            makeFakeCompilerInfo('g2', languages.fake.id, 'g', '5.1 b d', true),
+            makeFakeCompilerInfo('g3', languages.fake.id, 'g', '5.2 ce fg', true),
         ];
         const expectedOrder = {
             a: {
@@ -298,6 +328,11 @@ describe('Options handler', () => {
                 f1: -0,
                 f2: -1,
                 f3: -2,
+            },
+            g: {
+                g1: -0,
+                g2: -1,
+                g3: -2,
             },
         };
         optionsHandler.setCompilers(compilers);

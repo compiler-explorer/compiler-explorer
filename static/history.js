@@ -26,7 +26,7 @@
 var
     local = require('./local'),
     _ = require('underscore'),
-    filterComponentState = require('./sharing').filterComponentState;
+    filterComponentState = require('./sharing').Sharing.filterComponentState;
 
 var maxHistoryEntries = 30;
 

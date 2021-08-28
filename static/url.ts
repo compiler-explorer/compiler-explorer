@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,33 +22,34 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var GoldenLayout = require('golden-layout');
-var rison = require('rison');
-var $ = require('jquery');
-var Components = require('components');
-var lzstring = require('lz-string');
-var _ = require('underscore');
+import _ from 'underscore';
+import GoldenLayout from 'golden-layout';
 
-function convertOldState(state) {
-    var sc = state.compilers[0];
+const lzstring = require('lz-string');
+const rison = require('rison');
+const Components = require('./components');
+
+
+export function convertOldState(state: any): any {
+    const sc = state.compilers[0];
     if (!sc) throw new Error('Unable to determine compiler from old state');
-    var content = [];
-    var source;
+    const content = [];
+    let source;
     if (sc.sourcez) {
         source = lzstring.decompressFromBase64(sc.sourcez);
     } else {
         source = sc.source;
     }
-    var options = {compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm};
-    var filters = _.clone(state.filterAsm);
+    const options = {compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm};
+    const filters = _.clone(state.filterAsm);
     delete filters.colouriseAsm;
     content.push(Components.getEditorWith(1, source, options));
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
     return {version: 4, content: [{type: 'row', content: content}]};
 }
 
-function loadState(state) {
+
+export function loadState(state: any): any {
     if (!state || state.version === undefined) return false;
     switch (state.version) {
         case 1:
@@ -71,17 +72,17 @@ function loadState(state) {
     return state;
 }
 
-function risonify(obj) {
+export function risonify(obj: object): string {
     return rison.quote(rison.encode_object(obj));
 }
 
-function unrisonify(text) {
+export function unrisonify(text: string): any {
     return rison.decode_object(decodeURIComponent(text.replace(/\+/g, '%20')));
 }
 
-function deserialiseState(stateText) {
-    var state;
-    var exception;
+export function deserialiseState(stateText: string): any {
+    let state;
+    let exception;
     try {
         state = unrisonify(stateText);
         if (state && state.z) {
@@ -93,7 +94,7 @@ function deserialiseState(stateText) {
 
     if (!state) {
         try {
-            state = $.parseJSON(decodeURIComponent(stateText));
+            state = JSON.parse(decodeURIComponent(stateText));
         } catch (ex) {
             if (!exception) exception = ex;
         }
@@ -102,22 +103,15 @@ function deserialiseState(stateText) {
     return loadState(state);
 }
 
-function serialiseState(stateText) {
-    var ctx = GoldenLayout.minifyConfig({content: stateText.content});
+export function serialiseState(stateText: any): string {
+    const ctx = GoldenLayout.minifyConfig({content: stateText.content});
     ctx.version = 4;
-    var uncompressed = risonify(ctx);
-    var compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
-    var MinimalSavings = 0.20;  // at least this ratio smaller
+    const uncompressed = risonify(ctx);
+    const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
+    const MinimalSavings = 0.20;  // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;
     } else {
         return uncompressed;
     }
 }
-
-module.exports = {
-    deserialiseState: deserialiseState,
-    serialiseState: serialiseState,
-    unrisonify: unrisonify,
-    risonify: risonify,
-};

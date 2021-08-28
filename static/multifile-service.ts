@@ -1,3 +1,27 @@
+// Copyright (c) 2021, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import _ from 'underscore';
 import path from 'path';
 var options = require('./options');
@@ -35,10 +59,10 @@ export class MultifileService {
     private newFileId: number;
     private alertSystem: any;
     private validExtraFilenameExtensions: string[];
-    private defaultLangIdUnknownExt: string;
-    private cmakeLangId: string;
-    private cmakeMainSourceFilename: string;
-    private maxFilesize: number;
+    private readonly defaultLangIdUnknownExt: string;
+    private readonly cmakeLangId: string;
+    private readonly cmakeMainSourceFilename: string;
+    private readonly maxFilesize: number;
 
     constructor(hub, alertSystem, state: MultifileServiceState) {
         this.hub = hub;
@@ -56,12 +80,12 @@ export class MultifileService {
         this.maxFilesize = 1024000;
     }
 
-    private isHiddenFile(filename: string): boolean {
+    private static isHiddenFile(filename: string): boolean {
         return (filename.length > 0 && filename[0] === '.');
     }
 
     private isValidFilename(filename: string): boolean {
-        if (this.isHiddenFile(filename)) return false;
+        if (MultifileService.isHiddenFile(filename)) return false;
 
         const filenameExt = path.extname(filename);
         if (this.validExtraFilenameExtensions.includes(filenameExt)) {
@@ -176,11 +200,7 @@ export class MultifileService {
     }
 
     public isCompatibleWithCMake(): boolean {
-        if (this.compilerLanguageId !== 'c++' && this.compilerLanguageId !== 'c') {
-            return false;
-        } else {
-            return true;
-        }
+        return this.compilerLanguageId === 'c++' || this.compilerLanguageId === 'c';
     }
 
     public setLanguageId(id: string) {
@@ -192,11 +212,7 @@ export class MultifileService {
     }
 
     public setAsCMakeProject(yes: boolean) {
-        if (yes) {
-            this.isCMakeProject = true;
-        } else {
-            this.isCMakeProject = false;
-        }
+        this.isCMakeProject = yes;
     }
 
     private checkFileEditor(file: MultifileFile) {
@@ -247,12 +263,12 @@ export class MultifileService {
         mainfile.isMainSource = true;
     }
 
-    private isValidFile(file: MultifileFile): boolean {
+    private static isValidFile(file: MultifileFile): boolean {
         return (file.editorId > 0) || !!file.filename;
     }
 
     private filterOutNonsense() {
-        this.files = _.filter(this.files, (file: MultifileFile) => this.isValidFile(file));
+        this.files = _.filter(this.files, (file: MultifileFile) => MultifileService.isValidFile(file));
     }
 
     public getFiles(): Array<FiledataPair> {
@@ -278,7 +294,7 @@ export class MultifileService {
                 return false;
             }
         } else {
-            if (file.filename === this.getDefaultMainSourceFilename(this.compilerLanguageId)) {
+            if (file.filename === MultifileService.getDefaultMainSourceFilename(this.compilerLanguageId)) {
                 this.setAsMainSource(file.fileId);
             } else {
                 return false;
@@ -403,7 +419,7 @@ export class MultifileService {
         return this.cmakeMainSourceFilename;
     }
 
-    private getDefaultMainSourceFilename(langId) {
+    private static getDefaultMainSourceFilename(langId) {
         const lang = languages[langId];
         const ext0 = lang.extensions[0];
         return 'example' + ext0;
@@ -424,7 +440,7 @@ export class MultifileService {
                 if (langId === this.cmakeLangId) {
                     suggestedFilename = this.getDefaultMainCMakeFilename();
                 } else {
-                    suggestedFilename = this.getDefaultMainSourceFilename(langId);
+                    suggestedFilename = MultifileService.getDefaultMainSourceFilename(langId);
                 }
             }
         }

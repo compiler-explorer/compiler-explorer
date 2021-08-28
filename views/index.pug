@@ -8,34 +8,34 @@ block prepend content
     .collapse.navbar-collapse#navbarContent
       ul.navbar-nav.navbar-left.mr-auto
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle#addDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add...
+          button.btn.btn-light.nav-link.dropdown-toggle#addDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Add...
           div.dropdown-menu(aria-labelledby="moreDropdown")
-            a.dropdown-item#add-editor(href="javascript:;" title="Click or drag to desired destination")
+            button.dropdown-item.btn#add-editor(title="Click or drag to desired destination")
               span.dropdown-icon.fa.fa-code
               | Source Editor
-            a.dropdown-item#add-diff(href="javascript:;" title="Click or drag to desired destination")
+            button.dropdown-item.btn#add-diff(title="Click or drag to desired destination")
               span.dropdown-icon.fas.fa-exchange-alt
               | Diff View
-            button.dropdown-item.btn.btn-sm.btn-light#add-tree(href="javascript:;" title="Click or drag to desired destination")
+            button.dropdown-item.btn#add-tree(title="Click or drag to desired destination")
               span.dropdown-icon.fa.fa-list-alt
               | Tree (IDE Mode)
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle#moreDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
+          button.btn.btn-light.nav-link.dropdown-toggle#moreDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
           div.dropdown-menu(aria-labelledby="moreDropdown")
-            a.dropdown-item#setting(href="javascript:;" data-target="#settings" data-toggle="modal")
+            button.dropdown-item.btn#setting(data-target="#settings" data-toggle="modal")
               span.dropdown-icon.fas.fa-sliders-h
               | Settings
             div.dropdown-divider
-            a.dropdown-item#ui-brokenlink(href="javascript:;")
+            button.dropdown-item.btn#ui-brokenlink
               span.dropdown-icon.fas.fa-undo-alt
               | Reset UI layout
-            a.dropdown-item#ui-reset(href="javascript:;")
+            button.dropdown-item.btn#ui-reset
               span.dropdown-icon.fas.fa-trash-alt
               | Reset code and UI layout
-            a.dropdown-item#ui-duplicate(href="javascript:;")
+            button.dropdown-item.btn#ui-duplicate
               span.dropdown-icon.fas.fa-external-link-alt
               | Open new tab
-            a.dropdown-item#ui-history(href="javascript:;")
+            button.dropdown-item.btn#ui-history
               span.dropdown-icon.fas.fa-exchange-alt
               | History
         li.nav-item.ui-presentation-control.d-none
@@ -61,35 +61,35 @@ block prepend content
             span#ces-banner-text Sponsors
             include sponsor-icons.pug
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle#share(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
+          button.btn.btn-light.nav-link.dropdown-toggle#share(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Share
           div.dropdown-menu.dropdown-menu-right
             if storageSolution !== "null"
-              a#shareShort.dropdown-item(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
-                span.dropdown-icon.fas.fa-cloud
+              a.dropdown-item#shareShort(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Short")
+                span.dropdown-icon.fas.fa-cloud.d-inline
                 | Short Link
                 button.btn.btn-sm.copy-link-btn.clip-icon.float-right(data-toggle="none")
                   span.dropdown-icon.fa.fa-clipboard
-            a#shareFull.dropdown-item(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
-              span.dropdown-icon.fas.fa-store-slash
+            a.dropdown-item#shareFull(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Full")
+              span.dropdown-icon.fas.fa-store-slash.d-inline
               | Full Link
               button.btn.btn-sm.copy-link-btn.clip-icon.float-right(data-toggle="none")
                 span.dropdown-icon.fa.fa-clipboard
-            a#shareEmbed.dropdown-item(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
-              span.dropdown-icon.fas.fa-window-restore
+            a.dropdown-item#shareEmbed(href="javascript:;" data-target="#sharelinkdialog" data-toggle="modal" data-bind="Embed")
+              span.dropdown-icon.fas.fa-window-restore.d-inline
               | Embed in iframe
               // This is not an oversight, there is in fact a .float-right missing here that's there in the other 2
               button.btn.btn-sm.copy-link-btn.clip-icon(data-toggle="none")
                 span.dropdown-icon.fa.fa-clipboard
         if policies.cookies.enabled || policies.privacy.enabled
           li.nav-item.dropdown
-            a.nav-link.dropdown-toggle#policiesDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
-              | &nbsp;Policies
+            button.btn.btn-light.nav-link.dropdown-toggle#policiesDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+              | Policies
               span#policyBellNotification.d-none.badge.badge-pill.badge-primary
                 span.fa.fa-bell
             div.dropdown-menu.dropdown-menu-right(aria-labelledby="policiesDropdown")
               include menu-policies.pug
         li.nav-item.dropdown
-          a.nav-link.dropdown-toggle#otherDropdown(href="javascript:;" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
+          button.btn.btn-light.nav-link.dropdown-toggle#otherDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") Other
           div.dropdown-menu.dropdown-menu-right(aria-labelledby="otherDropdown")
             include menu-other.pug
 
