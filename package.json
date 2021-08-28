@@ -41,6 +41,8 @@
     "golden-layout": "^1.5.9",
     "html-loader": "^0.5.5",
     "http-proxy": "^1.18.1",
+    "husky": "^7.0.0",
+    "husky-init": "^7.0.0",
     "jquery": "^3.6.0",
     "js-cookie": "^2.2.1",
     "jszip": "^3.6.0",
@@ -98,6 +100,7 @@
     "css-loader": "^3.6.0",
     "deep-equal-in-any-order": "^1.1.4",
     "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-formatter-github": "^1.0.11",
     "eslint-plugin-import": "^2.23.3",
     "eslint-plugin-jsdoc": "^35.0.0",
@@ -107,6 +110,7 @@
     "eslint-plugin-sonarjs": "^0.7.0",
     "eslint-plugin-unicorn": "^32.0.1",
     "file-loader": "^5.1.0",
+    "lint-staged": "^11.0.0",
     "mini-css-extract-plugin": "^0.9.0",
     "mocha": "^8.4.0",
     "mock-fs": "^5.0.0",
@@ -114,6 +118,8 @@
     "nock": "^12.0.3",
     "nyc": "^15.1.0",
     "optimize-css-assets-webpack-plugin": "^5.0.6",
+    "prettier": "2.3.2",
+    "pretty-quick": "^3.1.1",
     "sass": "^1.34.0",
     "sass-loader": "^10.2.0",
     "sinon": "^11.1.1",
@@ -148,7 +154,16 @@
     "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm app.js",
     "codecov": "codecov --disable=gcov",
     "sentry": "npx -p @sentry/cli sentry-cli",
-    "update-browserslist": "npx browserslist@latest -- --update-db"
+    "update-browserslist": "npx browserslist@latest -- --update-db",
+    "prepare": "husky install",
+    "format": "prettier --ignore-unknown",
+    "format-fix": "prettier --write --ignore-unknown"
+  },
+  "lint-staged": {
+    "*.{js,scss}": [
+      "npm run ci-lint --",
+      "npm run format-fix --"
+    ]
   },
   "license": "BSD-2-Clause"
 }

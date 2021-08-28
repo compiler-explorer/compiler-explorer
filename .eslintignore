@@ -1,3 +1,4 @@
+# If you change this file, please also modify .prettierignore
 # Uninteresting folders (node_modules and dotfiles/dotfolders ignored by default)
 docs
 etc
