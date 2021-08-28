@@ -294,6 +294,10 @@ describe('Options handler', () => {
             makeFakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
             makeFakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
             makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true),
+
+            makeFakeCompilerInfo('g1', languages.fake.id, 'g', '5 a', true),
+            makeFakeCompilerInfo('g2', languages.fake.id, 'g', '5.1 b d', true),
+            makeFakeCompilerInfo('g3', languages.fake.id, 'g', '5.2 ce fg', true),
         ];
         const expectedOrder = {
             a: {
@@ -324,6 +328,11 @@ describe('Options handler', () => {
                 f1: -0,
                 f2: -1,
                 f3: -2,
+            },
+            g: {
+                g1: -0,
+                g2: -1,
+                g3: -2,
             },
         };
         optionsHandler.setCompilers(compilers);
