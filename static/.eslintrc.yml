@@ -7,7 +7,7 @@ plugins:
   - sonarjs
   - unicorn
 extends:
-  - ../.eslint-license-header.yml
+  #  - ../.eslint-license-header.yml Disabled for now until we fully incorporate prettier
   - eslint:recommended
   - plugin:requirejs/recommended
 env:
