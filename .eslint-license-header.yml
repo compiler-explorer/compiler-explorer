@@ -3,7 +3,7 @@ plugins:
 - eslint-plugin-header
 rules:
   header/header:
-  - error
+  - off
   - line
   - - pattern: "^ Copyright \\(c\\) \\d{4}, .*$"
       template: " Copyright (c) 2021, Compiler Explorer Authors"
