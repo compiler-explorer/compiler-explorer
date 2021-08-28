@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { fileURLToPath } from 'url';
+
 import _ from 'underscore';
 
 import { BaseCompiler } from '../lib/base-compiler';
@@ -36,7 +38,11 @@ const languages = {
     },
 };
 
-const libProps = {
+// For tooling, we need to at least be able to stat a valid file.
+// This is the one we know exists
+const CURRENT_FILE_PATH = fileURLToPath(import.meta.url);
+
+const optionsProps = {
     libs: 'fakelib:fs:someotherlib',
     'libs.fakelib.name': 'fake lib',
     'libs.fakelib.description': 'Its is a real, fake lib!',
@@ -54,7 +60,7 @@ const libProps = {
     'libs.fakelib.versions.noPaths.version': 'no paths',
     'libs.fakelib.versions.noPaths.path': '',
     'libs.fakelib.versions.noPaths.lookupversion': 'no-paths123',
-    'libs.fakelib.versions.noPaths.options' : '-DHELLO123 -DETC "--some thing with spaces"',
+    'libs.fakelib.versions.noPaths.options': '-DHELLO123 -DETC "--some thing with spaces"',
     'libs.fs.versions': 'std',
     'libs.fs.versions.std.version': 'std',
     'libs.fs.versions.std.staticliblink': 'c++fs:rt',
@@ -64,13 +70,25 @@ const libProps = {
     'libs.someotherlib.versions.trunk.staticliblink': 'someotherlib',
     'libs.someotherlib.versions.trunk.dependencies': 'c++fs',
     'libs.someotherlib.versions.trunk.alias': 'master',
+    'libs.someotherlib.versions.trunk.hidden': true,
+    tools: 'faketool:someothertool',
+    'tools.faketool.name': 'Fake Tool',
+    'tools.faketool.exe': CURRENT_FILE_PATH,
+    'tools.faketool.type': 'independent',
+    'tools.faketool.class': 'testing-tool',
+    'tools.faketool.stdinHint': 'disabled',
+    'tools.someothertool.name': 'Some Other Tool',
+    'tools.someothertool.exe': CURRENT_FILE_PATH,
+    'tools.someothertool.type': 'independent',
+    'tools.someothertool.class': 'testing-tool',
+    'tools.someothertool.stdinHint': 'disabled',
 };
 
 if (process.platform === 'win32') {
-    libProps['libs.fakelib.versions.twoPaths.path'] =
-        libProps['libs.fakelib.versions.twoPaths.path'].replace(':', ';');
-    libProps['libs.fakelib.versions.twoPaths.libpath'] =
-        libProps['libs.fakelib.versions.twoPaths.libpath'].replace(':', ';');
+    optionsProps['libs.fakelib.versions.twoPaths.path'] =
+        optionsProps['libs.fakelib.versions.twoPaths.path'].replace(':', ';');
+    optionsProps['libs.fakelib.versions.twoPaths.libpath'] =
+        optionsProps['libs.fakelib.versions.twoPaths.libpath'].replace(':', ';');
 }
 
 const moreLibProps = {
@@ -114,94 +132,143 @@ const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
 };
 
 describe('Options handler', () => {
+    let fakeOptionProps;
     let compilerProps;
     let optionsHandler;
+    let fakeMoreCompilerProps;
     let moreCompilerProps;
     let moreOptionsHandler;
 
     before(() => {
-        compilerProps = new properties.CompilerProps(languages, properties.fakeProps(libProps));
+        fakeOptionProps = properties.fakeProps(optionsProps);
+        compilerProps = new properties.CompilerProps(languages, fakeOptionProps);
         optionsHandler = new ClientOptionsHandler([], compilerProps, {env: ['dev']});
 
-        moreCompilerProps = new properties.CompilerProps(languages, properties.fakeProps(moreLibProps));
+        fakeMoreCompilerProps = properties.fakeProps(moreLibProps);
+        moreCompilerProps = new properties.CompilerProps(languages, fakeMoreCompilerProps);
         moreOptionsHandler = new ClientOptionsHandler([], moreCompilerProps, {env: ['dev']});
     });
 
     it('should always return an array of paths', () => {
-        const libs = optionsHandler.parseLibraries({fake: libProps.libs});
+        const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
         _.each(libs[languages.fake.id]['fakelib'].versions, version => {
             Array.isArray(version.path).should.equal(true);
         });
-        libs.should.deep.equal({fake: {
-            fakelib: {
-                description: 'Its is a real, fake lib!',
-                name: 'fake lib',
-                url: 'https://godbolt.org',
-                dependencies: [],
-                liblink: [],
-                staticliblink: [],
-                examples: ['abc', 'def'],
-                options: [],
-                versions: {
-                    noPaths: {path: [], version: 'no paths', liblink: [], libpath: [], staticliblink: [], dependencies: [], alias: [],
-                        lookupversion: 'no-paths123',
-                        options: [
-                            '-DHELLO123',
-                            '-DETC',
-                            '--some thing with spaces']},
-                    onePath: {path: ['/dev/null'], version: 'one path', staticliblink: [], dependencies: [],
-                        liblink: ['hello'],
-                        libpath: ['/lib/null'], alias: [], options: []},
-                    twoPaths: {path: ['/dev/null', '/dev/urandom'], staticliblink: [], dependencies: [],
-                        liblink: ['hello1', 'hello2'],
-                        libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: [], options: []},
+        libs.should.deep.equal({
+            fake: {
+                fakelib: {
+                    description: 'Its is a real, fake lib!',
+                    name: 'fake lib',
+                    url: 'https://godbolt.org',
+                    dependencies: [],
+                    liblink: [],
+                    staticliblink: [],
+                    examples: ['abc', 'def'],
+                    options: [],
+                    versions: {
+                        noPaths: {
+                            path: [],
+                            version: 'no paths',
+                            liblink: [],
+                            libpath: [],
+                            staticliblink: [],
+                            dependencies: [],
+                            alias: [],
+                            lookupversion: 'no-paths123',
+                            options: [
+                                '-DHELLO123',
+                                '-DETC',
+                                '--some thing with spaces'],
+                            hidden: false,
+                        },
+                        onePath: {
+                            path: ['/dev/null'], version: 'one path', staticliblink: [], dependencies: [],
+                            liblink: ['hello'],
+                            libpath: ['/lib/null'], alias: [], options: [],
+                            hidden: false,
+                        },
+                        twoPaths: {
+                            path: ['/dev/null', '/dev/urandom'], staticliblink: [], dependencies: [],
+                            liblink: ['hello1', 'hello2'],
+                            libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: [], options: [],
+                            hidden: false,
+                        },
+                    },
                 },
-            },
-            fs: {
-                description: undefined,
-                name: undefined,
-                url: undefined,
-                dependencies: [],
-                liblink: [],
-                staticliblink: [],
-                examples: [],
-                options: [],
-                versions: {
-                    std: {
-                        libpath: [],
-                        path: [],
-                        version: 'std',
-                        alias: [],
-                        liblink: [],
-                        staticliblink: ['c++fs', 'rt'],
-                        dependencies: ['pthread'],
-                        options: [],
+                fs: {
+                    description: undefined,
+                    name: undefined,
+                    url: undefined,
+                    dependencies: [],
+                    liblink: [],
+                    staticliblink: [],
+                    examples: [],
+                    options: [],
+                    versions: {
+                        std: {
+                            libpath: [],
+                            path: [],
+                            version: 'std',
+                            alias: [],
+                            liblink: [],
+                            staticliblink: ['c++fs', 'rt'],
+                            dependencies: ['pthread'],
+                            options: [],
+                            hidden: false,
+                        },
+                    },
+                },
+                someotherlib: {
+                    description: undefined,
+                    name: undefined,
+                    url: undefined,
+                    dependencies: [],
+                    liblink: [],
+                    staticliblink: [],
+                    examples: [],
+                    options: [],
+                    versions: {
+                        trunk: {
+                            libpath: [],
+                            path: [],
+                            version: 'trunk',
+                            alias: ['master'],
+                            liblink: [],
+                            staticliblink: ['someotherlib'],
+                            dependencies: ['c++fs'],
+                            options: [],
+                            hidden: true,
+                        },
                     },
                 },
             },
-            someotherlib: {
-                description: undefined,
-                name: undefined,
-                url: undefined,
-                dependencies: [],
-                liblink: [],
-                staticliblink: [],
-                examples: [],
-                options: [],
-                versions: {
-                    trunk: {
-                        libpath: [],
-                        path: [],
-                        version: 'trunk',
-                        alias: ['master'],
-                        liblink: [],
-                        staticliblink: ['someotherlib'],
-                        dependencies: ['c++fs'],
-                        options: [],
-                    },
-                },
-            },
-        }});
+        });
+    });
+    it('should understand most kinds of semvers', () => {
+        optionsHandler._asSafeVer('0').should.equal('0.0.0');
+        optionsHandler._asSafeVer('1').should.equal('1.0.0');
+
+        optionsHandler._asSafeVer('1.0').should.equal('1.0.0');
+        optionsHandler._asSafeVer('1.1').should.equal('1.1.0');
+
+        optionsHandler._asSafeVer('1.1.0').should.equal('1.1.0');
+        optionsHandler._asSafeVer('1.1.1').should.equal('1.1.1');
+
+        const MAGIC_TRUNK_VERSION = '9999999.99999.999';
+        optionsHandler._asSafeVer('trunk').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('(trunk)').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('(123.456.789 test)').should.equal(MAGIC_TRUNK_VERSION);
+
+        optionsHandler._asSafeVer('0..0').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('0.0.').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('0.').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('.0.0').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('.0..').should.equal(MAGIC_TRUNK_VERSION);
+        optionsHandler._asSafeVer('0..').should.equal(MAGIC_TRUNK_VERSION);
+
+        optionsHandler._asSafeVer('123 TEXT').should.equal('123.0.0');
+        optionsHandler._asSafeVer('123.456 TEXT').should.equal('123.456.0');
+        optionsHandler._asSafeVer('123.456.789 TEXT').should.equal('123.456.789');
     });
     it('should order compilers as expected', () => {
         const compilers = [
@@ -227,6 +294,10 @@ describe('Options handler', () => {
             makeFakeCompilerInfo('f1', languages.fake.id, 'f', '5', true),
             makeFakeCompilerInfo('f2', languages.fake.id, 'f', '5.1', true),
             makeFakeCompilerInfo('f3', languages.fake.id, 'f', '5.2', true),
+
+            makeFakeCompilerInfo('g1', languages.fake.id, 'g', '5 a', true),
+            makeFakeCompilerInfo('g2', languages.fake.id, 'g', '5.1 b d', true),
+            makeFakeCompilerInfo('g3', languages.fake.id, 'g', '5.2 ce fg', true),
         ];
         const expectedOrder = {
             a: {
@@ -258,6 +329,11 @@ describe('Options handler', () => {
                 f2: -1,
                 f3: -2,
             },
+            g: {
+                g1: -0,
+                g2: -1,
+                g3: -2,
+            },
         };
         optionsHandler.setCompilers(compilers);
         _.each(optionsHandler.get().compilers, compiler => {
@@ -266,11 +342,13 @@ describe('Options handler', () => {
         optionsHandler.setCompilers([]);
     });
     it('should get static libraries', () => {
-        const libs = optionsHandler.parseLibraries({fake: libProps.libs});
+        const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -282,11 +360,13 @@ describe('Options handler', () => {
         sharedlinks.should.deep.equal([]);
     });
     it('should sort static libraries', () => {
-        const libs = optionsHandler.parseLibraries({fake: libProps.libs});
+        const libs = optionsHandler.parseLibraries({fake: optionsProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -303,8 +383,10 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -317,8 +399,10 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -333,8 +417,10 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -349,8 +435,10 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -371,8 +459,10 @@ describe('Options handler', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
-            ceProps: () => {},
-            compilerProps: () => {},
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
         };
         compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -380,5 +470,49 @@ describe('Options handler', () => {
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
+    });
+    it('should be able to parse basic tools', () => {
+        const tools = optionsHandler.parseTools({fake: optionsProps.tools});
+        _.each(tools.fake, tool => {
+            delete tool.env;
+        });
+        tools.should.deep.equal({
+            fake: {
+                faketool: {
+                    addOptionsToToolArgs: true,
+                    tool: {
+                        args: undefined,
+                        compilerLanguage: 'fake',
+                        exclude: [],
+                        exe: CURRENT_FILE_PATH,
+                        id: 'faketool',
+                        includeKey: undefined,
+                        languageId: undefined,
+                        monacoStdin: undefined,
+                        name: 'Fake Tool',
+                        options: [],
+                        stdinHint: 'disabled',
+                        type: 'independent',
+                    },
+                },
+                someothertool: {
+                    addOptionsToToolArgs: true,
+                    tool: {
+                        args: undefined,
+                        compilerLanguage: 'fake',
+                        exclude: [],
+                        exe: CURRENT_FILE_PATH,
+                        id: 'someothertool',
+                        includeKey: undefined,
+                        languageId: undefined,
+                        monacoStdin: undefined,
+                        name: 'Some Other Tool',
+                        options: [],
+                        stdinHint: 'disabled',
+                        type: 'independent',
+                    },
+                },
+            },
+        });
     });
 });

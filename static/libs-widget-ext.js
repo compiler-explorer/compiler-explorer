@@ -87,11 +87,23 @@ LibsWidgetExt.prototype.fullRefresh = function () {
 
 LibsWidgetExt.prototype.updateButton = function () {
     var selectedLibs = this.get();
+    var text = ' Libraries';
     if (selectedLibs.length > 0) {
-        this.dropdownButton.addClass('btn-success').removeClass('btn-light');
+        this.dropdownButton
+            .addClass('btn-success')
+            .removeClass('btn-light')
+            .prop('title', 'Current libraries:\n' + _.map(selectedLibs, function (lib) {
+                return '- ' + lib.name;
+            }).join('\n'));
+        text = text + ' (' + selectedLibs.length + ')';
     } else {
-        this.dropdownButton.removeClass('btn-success').addClass('btn-light');
+        this.dropdownButton
+            .removeClass('btn-success')
+            .addClass('btn-light')
+            .prop('title', 'Include libs');
     }
+
+    this.dropdownButton.find('.dp-text').text(text);
 };
 
 LibsWidgetExt.prototype.getFavorites = function () {
@@ -244,7 +256,10 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
 
     var versions = result.find('.lib-version-select');
     versions.html('');
-    versions.append($('<option value="">-</option>'));
+    var noVersionSelectedOption = $('<option value="">-</option>');
+    versions.append(noVersionSelectedOption);
+    var hasVisibleVersions = false;
+
     _.each(lib.versions, _.bind(function (version, versionId) {
         var option = $('<option>');
         if (version.used) {
@@ -258,8 +273,16 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
         }
         option.attr('value', versionId);
         option.html(version.version);
-        versions.append(option);
+        if (version.used || !version.hidden) {
+            hasVisibleVersions = true;
+            versions.append(option);
+        }
     }, this));
+
+    if (!hasVisibleVersions) {
+        noVersionSelectedOption.text('No visible versions');
+        versions.prop('disabled', true);
+    }
 
     faveButton.on('click', _.bind(function () {
         var option = versions.find('option:selected');

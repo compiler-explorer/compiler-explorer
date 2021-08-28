@@ -43,12 +43,13 @@ var Hub = require('./hub');
 var Sentry = require('@sentry/browser');
 var Settings = require('./settings');
 var local = require('./local');
-var Alert = require('./alert');
+var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
 var SimpleCook = require('./simplecook');
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var History = require('./history');
 var presentation = require('./presentation');
 
 //css
@@ -146,7 +147,9 @@ function setupButtons(options) {
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
+                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
+                    expires: 365, sameSite: 'strict',
+                });
             }
         });
     }
@@ -255,6 +258,16 @@ function configFromEmbedded(embeddedUrl) {
     }
 }
 
+function fixBugsInConfig(config) {
+    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
+        config.activeItemIndex = config.content.length - 1;
+    }
+
+    _.each(config.content, function (item) {
+        fixBugsInConfig(item);
+    });
+}
+
 function findConfig(defaultConfig, options) {
     var config;
     if (!options.embedded) {
@@ -292,6 +305,10 @@ function findConfig(defaultConfig, options) {
             },
         }, configFromEmbedded(window.location.hash.substr(1)));
     }
+
+    removeOrphanedMaximisedItemFromConfig(config);
+    fixBugsInConfig(config);
+
     return config;
 }
 
@@ -307,9 +324,6 @@ function initializeResetLayoutLink() {
 }
 
 function initPolicies(options) {
-    // Ensure old cookies are removed, to avoid user confusion
-    jsCookie.remove('fs_uid');
-    jsCookie.remove('cookieconsent_status');
     if (options.policies.privacy.enabled) {
         if (jsCookie.get(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
@@ -332,12 +346,16 @@ function initPolicies(options) {
         }
     }
     simpleCooks.onDoConsent = function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
+        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
+            expires: 365, sameSite: 'strict',
+        });
         analytics.toggle(true);
     };
     simpleCooks.onDontConsent = function () {
         analytics.toggle(false);
-        jsCookie.set(options.policies.cookies.key, '');
+        jsCookie.set(options.policies.cookies.key, '', {
+            sameSite: 'strict',
+        });
     };
     simpleCooks.onHide = function () {
         var spolicyBellNotification = $('#policyBellNotification');
@@ -469,7 +487,6 @@ function start() {
     }
 
     var config = findConfig(defaultConfig, options);
-    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $('#root');
 
@@ -487,6 +504,10 @@ function start() {
 
         layout = new GoldenLayout(defaultConfig, root);
         hub = new Hub(layout, subLangId, defaultLangId);
+    }
+
+    if (hub.hasTree()) {
+        $('#add-tree').prop('disabled', true);
     }
 
     function sizeRoot() {
@@ -517,7 +538,11 @@ function start() {
     function setupAdd(thing, func) {
         layout.createDragSource(thing, func);
         thing.click(function () {
-            hub.addAtRoot(func());
+            if (hub.hasTree()) {
+                hub.addInEditorStackIfPossible(func());
+            } else {
+                hub.addAtRoot(func());
+            }
         });
     }
 
@@ -526,6 +551,10 @@ function start() {
     });
     setupAdd($('#add-diff'), function () {
         return Components.getDiff();
+    });
+    setupAdd($('#add-tree'), function () {
+        $('#add-tree').prop('disabled', true);
+        return Components.getTree();
     });
 
     if (hashPart) {
@@ -585,6 +614,8 @@ function start() {
     }
 
     sizeRoot();
+
+    History.trackHistory(layout);
     new Sharing(layout);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Rubén Rincón
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

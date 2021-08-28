@@ -28,14 +28,19 @@ var _ = require('underscore');
 var Sentry = require('@sentry/browser');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
+var tree = require('./panes/tree');
 var executor = require('./panes/executor');
 var output = require('./panes/output');
 var tool = require('./panes/tool');
+var toolInputView = require('./panes/tool-input-view');
 var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
+var flagsView = require('./panes/flags-view');
 var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
+var deviceView = require('./panes/device-view');
+var rustMirView = require('./panes/rustmir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -68,6 +73,9 @@ function Hub(layout, subLangId, defaultLangId) {
     this.editorIds = new Ids();
     this.compilerIds = new Ids();
     this.executorIds = new Ids();
+    this.treeIds = new Ids();
+    this.trees = [];
+    this.editors = [];
     this.compilerService = new CompilerService(layout.eventHub);
     this.deferred = true;
     this.deferredEmissions = [];
@@ -87,6 +95,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.compilerFactory(container, state);
         });
+    layout.registerComponent(Components.getTree().componentName,
+        function (container, state) {
+            return self.treeFactory(container, state);
+        });
     layout.registerComponent(Components.getExecutor().componentName,
         function (container, state) {
             return self.executorFactory(container, state);
@@ -99,6 +111,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.toolFactory(container, state);
         });
+    layout.registerComponent(Components.getToolInputView().componentName,
+        function (container, state) {
+            return self.toolInputViewFactory(container, state);
+        });
     layout.registerComponent(diff.getComponent().componentName,
         function (container, state) {
             return self.diffFactory(container, state);
@@ -107,6 +123,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.optViewFactory(container, state);
         });
+    layout.registerComponent(Components.getFlagsView().componentName,
+        function (container, state) {
+            return self.flagsViewFactory(container, state);
+        });
     layout.registerComponent(Components.getAstView().componentName,
         function (container, state) {
             return self.astViewFactory(container, state);
@@ -114,6 +134,14 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getIrView().componentName,
         function (container, state) {
             return self.irViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getDeviceView().componentName,
+        function (container, state) {
+            return self.deviceViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getRustMirView().componentName,
+        function (container, state) {
+            return self.rustMirViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -140,6 +168,12 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.eventHub.on('compilerClose', function (id) {
         this.compilerIds.remove(id);
     }, this);
+    layout.eventHub.on('treeOpen', function (id) {
+        this.treeIds.add(id);
+    }, this);
+    layout.eventHub.on('treeClose', function (id) {
+        this.treeIds.remove(id);
+    }, this);
     layout.eventHub.on('executorOpen', function (id) {
         this.executorIds.add(id);
     }, this);
@@ -157,10 +191,30 @@ function Hub(layout, subLangId, defaultLangId) {
 Hub.prototype.undefer = function () {
     this.deferred = false;
     var eventHub = this.layout.eventHub;
+    var compilerEmissions = [];
+    var nonCompilerEmissions = []; 
+
     _.each(this.deferredEmissions, function (args) {
+        if (args[0] === 'compiler') {
+            compilerEmissions.push(args);
+        } else {
+            nonCompilerEmissions.push(args);
+        }
+    });
+
+    _.each(nonCompilerEmissions, function (args) {
         eventHub.emit.apply(eventHub, args);
     });
+
+    _.each(compilerEmissions, function (args) {
+        eventHub.emit.apply(eventHub, args);
+    });
+
     this.deferredEmissions = [];
+};
+
+Hub.prototype.nextTreeId = function () {
+    return this.treeIds.next();
 };
 
 Hub.prototype.nextEditorId = function () {
@@ -180,7 +234,39 @@ Hub.prototype.codeEditorFactory = function (container, state) {
     // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
     // has used it yet.
     container.parent.config.isClosable = true;
-    return new editor.Editor(this, state, container);
+    var editorObj = new editor.Editor(this, state, container);
+    this.editors.push(editorObj);
+};
+
+Hub.prototype.treeFactory = function (container, state) {
+    var treeObj = new tree.Tree(this, state, container);
+    this.trees.push(treeObj);
+
+    return treeObj;
+};
+
+Hub.prototype.getTreeById = function (treeId) {
+    return _.find(this.trees, function (treeObj) {
+        return treeObj.id === treeId;
+    });
+};
+
+Hub.prototype.removeTree = function (treeId) {
+    this.trees = _.filter(this.trees, function (treeObj) {
+        return treeObj.id !== treeId;
+    });
+};
+
+Hub.prototype.getEditorById = function (editorId) {
+    return _.find(this.editors, function (editorObj) {
+        return editorObj.id === editorId;
+    });
+};
+
+Hub.prototype.removeEditor = function (editorId) {
+    this.editors = _.filter(this.editors, function (editorObj) {
+        return editorObj.id !== editorId;
+    });
 };
 
 Hub.prototype.compilerFactory = function (container, state) {
@@ -199,6 +285,10 @@ Hub.prototype.toolFactory = function (container, state) {
     return new tool.Tool(this, container, state);
 };
 
+Hub.prototype.toolInputViewFactory = function (container, state) {
+    return new toolInputView.ToolInputView(this, container, state);
+};
+
 Hub.prototype.diffFactory = function (container, state) {
     return new diff.Diff(this, container, state);
 };
@@ -207,12 +297,24 @@ Hub.prototype.optViewFactory = function (container, state) {
     return new optView.Opt(this, container, state);
 };
 
+Hub.prototype.flagsViewFactory = function (container, state) {
+    return new flagsView.Flags(this, container, state);
+};
+
 Hub.prototype.astViewFactory = function (container, state) {
     return new astView.Ast(this, container, state);
 };
 
 Hub.prototype.irViewFactory = function (container, state) {
     return new irView.Ir(this, container, state);
+};
+
+Hub.prototype.deviceViewFactory = function (container, state) {
+    return new deviceView.DeviceAsm(this, container, state);
+};
+
+Hub.prototype.rustMirViewFactory = function (container, state) {
+    return new rustMirView.RustMir(this, container, state);
 };
 
 Hub.prototype.gccDumpViewFactory = function (container, state) {
@@ -294,6 +396,61 @@ Hub.prototype.findParentRowOrColumn = function (elem) {
     return elem;
 };
 
+Hub.prototype.findParentRowOrColumnOrStack = function (elem) {
+    while (elem) {
+        if (elem.isRow || elem.isColumn || elem.isStack) return elem;
+        elem = elem.parent;
+    }
+    return elem;
+};
+
+Hub.prototype.hasTree = function () {
+    return (this.trees.length > 0);
+};
+
+Hub.prototype.getTreesWithEditorId = function (editorId) {
+    return _.filter(this.trees, function (tree) {
+        return tree.multifileService.isEditorPartOfProject(editorId);
+    });
+};
+
+Hub.prototype.getTrees = function () {
+    return this.trees;
+};
+
+Hub.prototype.findEditorInChildren = function (elem) {
+    var count = elem.contentItems.length;
+    var idx = 0;
+    while (idx < count) {
+        var child = elem.contentItems[idx];
+
+        if (child.componentName === 'codeEditor') {
+            return this.findParentRowOrColumnOrStack(child);
+        } else {
+            if (child.isRow || child.isColumn || child.isStack) {
+                var editorFound = this.findEditorInChildren(child);
+                if (editorFound) return editorFound;
+            }
+        }
+        idx++;
+    }
+
+    return false;
+};
+
+Hub.prototype.findEditorParentRowOrColumn = function () {
+    return this.findEditorInChildren(this.layout.root);
+};
+
+Hub.prototype.addInEditorStackIfPossible = function (newElem) {
+    var insertPoint = this.findEditorParentRowOrColumn();
+    if (insertPoint) {
+        insertPoint.addChild(newElem);
+    } else {
+        this.addAtRoot(newElem);
+    }
+};
+
 Hub.prototype.addAtRoot = function (newElem) {
     var rootFirstItem = this.layout.root.contentItems[0];
     if (rootFirstItem) {
@@ -311,6 +468,11 @@ Hub.prototype.addAtRoot = function (newElem) {
             content: [newElem],
         });
     }
+};
+
+Hub.prototype.activateTabForContainer = function (container) {
+    if (container && container.tab)
+        container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
 };
 
 module.exports = Hub;

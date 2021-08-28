@@ -95,6 +95,11 @@ body {
     width: 99%;
 }
 
+.change-device {
+    min-width: 20em;
+    width: 99%;
+}
+
 li.tweet {
     padding: 3px 20px;
 }
@@ -361,7 +366,7 @@ pre.content.wrap * {
 
 .change-language {
     line-height: 14px;
-    min-width: 100px !important;
+    min-width: 150px !important;
 }
 
 .change-language .ts-input {
@@ -468,6 +473,7 @@ input.vim-check {
 
 .compiler-options-popover {
     font-family: monospace;
+    max-width: 460px;
 }
 
 .navbar-nav a.nav-link {
@@ -790,4 +796,30 @@ html[data-theme=dark] {
 
 .conformance-wrapper .compiler-list .form-row {
     padding-top: 3px;
+}
+
+.status-icon {
+    border: none;
+}
+
+.tree-editor-file {
+    cursor: pointer;
+    line-height: 14px;
+    padding: 0px 0px 0px 5px;
+}
+.tree-editor-file span {
+    font-family: inherit;
+    float: left;
+    margin-top: 6px;
+}
+.tree-editor-file button {
+    float: right;
+    padding: 4px 10px 4px 0px;
+}
+.mainbar .cmake-project {
+    margin-top: 2px;
+}
+
+.v-scroll {
+    overflow-y: scroll;
 }

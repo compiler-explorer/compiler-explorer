@@ -9,18 +9,12 @@
       "address": 8,
       "labels": [],
       "opcodes": [
-        "e4",
-        "5d",
-        "00",
-        "10",
-        "01",
-        "40",
-        "00",
-        "28"
+        "2800400110005de4"
       ],
       "source": {
         "file": null,
-        "line": 4
+        "line": 4,
+        "mainsource": true
       },
       "text": " MOV R1, c[0x0][0x44]"
     },
@@ -28,18 +22,12 @@
       "address": 16,
       "labels": [],
       "opcodes": [
-        "04",
-        "1c",
-        "00",
-        "94",
-        "00",
-        "00",
-        "00",
-        "2c"
+        "2c00000094001c04"
       ],
       "source": {
         "file": null,
-        "line": 4
+        "line": 4,
+        "mainsource": true
       },
       "text": " S2R R0, SR_CTAID.X"
     },
@@ -47,18 +35,12 @@
       "address": 24,
       "labels": [],
       "opcodes": [
-        "23",
-        "dc",
-        "01",
-        "20",
-        "05",
-        "40",
-        "0e",
-        "1b"
+        "1b0e40052001dc23"
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " ISETP.GE.AND P0, PT, R0, c[0x0][0x148], PT"
     },
@@ -66,18 +48,12 @@
       "address": 32,
       "labels": [],
       "opcodes": [
-        "e7",
-        "21",
-        "00",
-        "00",
-        "01",
-        "00",
-        "00",
-        "40"
+        "40000001000021e7"
       ],
       "source": {
         "file": null,
-        "line": 5
+        "line": 5,
+        "mainsource": true
       },
       "text": " @!P0 BRA `(.L_1)"
     },
@@ -85,18 +61,12 @@
       "address": 40,
       "labels": [],
       "opcodes": [
-        "e4",
-        "1d",
-        "00",
-        "20",
-        "05",
-        "40",
-        "00",
-        "28"
+        "2800400520001de4"
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " MOV R0, c[0x0][0x148]"
     },
@@ -104,18 +74,12 @@
       "address": 48,
       "labels": [],
       "opcodes": [
-        "e2",
-        "dd",
-        "00",
-        "10",
-        "00",
-        "00",
-        "00",
-        "18"
+        "180000001000dde2"
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " MOV32I R3, 0x4"
     },
@@ -123,18 +87,12 @@
       "address": 56,
       "labels": [],
       "opcodes": [
-        "02",
-        "1c",
-        "00",
-        "fc",
-        "ff",
-        "ff",
-        "ff",
-        "0b"
+        "0bfffffffc001c02"
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " IADD32I R0, R0, -0x1"
     },
@@ -142,18 +100,12 @@
       "address": 72,
       "labels": [],
       "opcodes": [
-        "43",
-        "9c",
-        "00",
-        "00",
-        "05",
-        "40",
-        "01",
-        "40"
+        "4001400500009c43"
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " ISCADD R2.CC, R0, c[0x0][0x140], 0x2"
     },
@@ -161,18 +113,12 @@
       "address": 80,
       "labels": [],
       "opcodes": [
-        "e3",
-        "dc",
-        "00",
-        "10",
-        "05",
-        "80",
-        "86",
-        "20"
+        "208680051000dce3"
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " IMAD.HI.X R3, R0, R3, c[0x0][0x144]"
     },
@@ -180,18 +126,12 @@
       "address": 88,
       "labels": [],
       "opcodes": [
-        "85",
-        "dc",
-        "2f",
-        "00",
-        "00",
-        "00",
-        "00",
-        "94"
+        "94000000002fdc85"
       ],
       "source": {
         "file": null,
-        "line": 8
+        "line": 8,
+        "mainsource": true
       },
       "text": " ST.E [R2], RZ"
     },
@@ -199,18 +139,12 @@
       "address": 96,
       "labels": [],
       "opcodes": [
-        "e7",
-        "1d",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00",
-        "80"
+        "8000000000001de7"
       ],
       "source": {
         "file": null,
-        "line": 10
+        "line": 10,
+        "mainsource": true
       },
       "text": " EXIT"
     },
@@ -223,18 +157,12 @@
       "address": 104,
       "labels": [],
       "opcodes": [
-        "43",
-        "9c",
-        "00",
-        "00",
-        "05",
-        "40",
-        "01",
-        "40"
+        "4001400500009c43"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " ISCADD R2.CC, R0, c[0x0][0x140], 0x2"
     },
@@ -242,18 +170,12 @@
       "address": 112,
       "labels": [],
       "opcodes": [
-        "e2",
-        "dd",
-        "00",
-        "10",
-        "00",
-        "00",
-        "00",
-        "18"
+        "180000001000dde2"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " MOV32I R3, 0x4"
     },
@@ -261,18 +183,12 @@
       "address": 120,
       "labels": [],
       "opcodes": [
-        "e3",
-        "dc",
-        "00",
-        "10",
-        "05",
-        "80",
-        "86",
-        "20"
+        "208680051000dce3"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " IMAD.HI.X R3, R0, R3, c[0x0][0x144]"
     },
@@ -280,18 +196,12 @@
       "address": 136,
       "labels": [],
       "opcodes": [
-        "85",
-        "1c",
-        "20",
-        "00",
-        "00",
-        "00",
-        "00",
-        "84"
+        "8400000000201c85"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " LD.E R0, [R2]"
     },
@@ -299,18 +209,12 @@
       "address": 144,
       "labels": [],
       "opcodes": [
-        "a3",
-        "1c",
-        "00",
-        "20",
-        "05",
-        "80",
-        "00",
-        "20"
+        "2000800520001ca3"
       ],
       "source": {
         "file": null,
-        "line": 1
+        "line": 1,
+        "mainsource": true
       },
       "text": " IMAD R0, R0, R0, c[0x0][0x148]"
     },
@@ -318,18 +222,12 @@
       "address": 152,
       "labels": [],
       "opcodes": [
-        "02",
-        "1c",
-        "01",
-        "04",
-        "00",
-        "00",
-        "00",
-        "08"
+        "0800000004011c02"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " IADD32I R4, R0, 0x1"
     },
@@ -337,18 +235,12 @@
       "address": 160,
       "labels": [],
       "opcodes": [
-        "85",
-        "1c",
-        "21",
-        "00",
-        "00",
-        "00",
-        "00",
-        "94"
+        "9400000000211c85"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " ST.E [R2], R4"
     },
@@ -356,18 +248,12 @@
       "address": 168,
       "labels": [],
       "opcodes": [
-        "e7",
-        "1d",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00",
-        "80"
+        "8000000000001de7"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " EXIT"
     },
@@ -380,18 +266,12 @@
       "address": 176,
       "labels": [],
       "opcodes": [
-        "e7",
-        "1d",
-        "00",
-        "e0",
-        "ff",
-        "ff",
-        "03",
-        "40"
+        "4003ffffe0001de7"
       ],
       "source": {
         "file": null,
-        "line": 6
+        "line": 6,
+        "mainsource": true
       },
       "text": " BRA `(.L_2)"
     },

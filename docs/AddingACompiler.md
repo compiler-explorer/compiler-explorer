@@ -5,7 +5,9 @@ then how to submit PRs to get it into the main CE site.
 
 ## Configuration
 
-Compiler configuration is done through the `etc/config/c++.*.properties` files (for C++, other languages follow the obvious pattern).
+Compiler configuration is done through the `etc/config/c++.*.properties` files 
+(for C++, other languages follow the obvious pattern, replace as needed for your case).
+
 The various named configuration files are used in different contexts: for example `etc/config/c++.local.properties` take priority over
 `etc/config/c++.defaults.properties`. The `local` version is ignored by git, so you can make your own personalised changes there.
 The live site uses the `etc/config/c++.amazon.properties` file.
@@ -52,6 +54,30 @@ compiler.clang5.name=Clang 5
 compiler.clang5.exe=/usr/bin/clang5
 ```
 
+Note about configuration files hierachy:
+
+As mentioned previously, the live site uses `etc/config/c++.amazon.properties` to load its configuration from,
+but for properties not defined in the `amazon` file, the values present in `etc/config/c++.defaults.properties` will be used.
+
+By design, this does not however work for groups (Nor any other nested property). 
+That is, if in `etc/config/c++.defaults.properties` you define the `intelAsm` property as:
+```
+versionFlag=--version
+compilers=&clang
+group.clang.intelAsm=-mllvm -x86-asm-syntax=intel
+group.clang.groupName=Clang
+...
+```
+
+but `etc/config/c++.amazon.properties` only has:
+```
+compilers=&clang
+group.clang.groupName=Clang
+...
+```
+once the site runs on the Amazon environment, the `&clang` group **will not** have the `intelAsm` property set,
+but `versionFlag` will.
+
 ### Configuration keys
 
 Key Name | Type | Description|
@@ -68,7 +94,7 @@ versionFlag | String | The flag to pass to the compiler to make it emit its vers
 versionRe | RegExp | A regular expression used to capture the version from the version output|
 compilerType | String | The name of the class handling this compiler|
 interpreted | Boolean | Whether this is an interpreted language, and so the "compiler" is really an interpreter|
-executionWrapper | Boolean | When executing the compiler's output, run under this script (e.g. could run under `qemu` or `mpi_run` or similar)|
+executionWrapper | Path | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)|
 
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.js` which handles running and handling
 output for this compiler type.

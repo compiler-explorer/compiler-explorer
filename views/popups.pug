@@ -65,6 +65,21 @@
         button.btn.btn-link.no(type="button" data-dismiss="modal") No
         button.btn.btn-link.yes(type="button" data-dismiss="modal") Yes
 
+#enter-something.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Enter something here
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .question
+        input.question-answer
+      .modal-footer
+        button.btn.btn-light.no(type="button" data-dismiss="modal") Cancel
+        button.btn.btn-light.yes(type="button" data-dismiss="modal") Ok
+
 #settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg(role="document")
     .modal-content
@@ -112,7 +127,7 @@
               .checkbox
                 input.useVim(type="checkbox")
                 label Vim editor mode
-              .checkbox
+              .checkbox.the-save-option-to-auto-share
                 input.enableCtrlS(type="checkbox")
                 label
                   | Make
@@ -120,6 +135,14 @@
                   | +
                   kbd S
                   | &nbsp;save to local file instead of creating a share link
+              .checkbox.the-save-option-to-tree-save
+                input.enableCtrlStree(type="checkbox")
+                label
+                  | Make
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;include and save the file to a Tree if that's added to the UI
         .card
           .card-header
             .card-title

@@ -142,7 +142,8 @@ Ast.prototype.getCurrentEditorLanguage = function () {
 };
 
 Ast.prototype.getPaneName = function () {
-    return this._compilerName + ' Ast Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return 'Ast Viewer ' + this._compilerName +
+        ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
 };
 
 Ast.prototype.setTitle = function () {

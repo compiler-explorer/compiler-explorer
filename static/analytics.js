@@ -57,7 +57,10 @@ function GAProxy() {
                     m.parentNode.insertBefore(a, m);
                 })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
                 window.ga('set', 'anonymizeIp', true);
-                window.ga('create', options.googleAnalyticsAccount, 'auto');
+                window.ga('create', options.googleAnalyticsAccount, {
+                    cookieDomain: 'auto',
+                    cookieFlags: 'SameSite=None; Secure',
+                });
                 window.ga('send', 'pageview');
             }
             this.proxy = function () {

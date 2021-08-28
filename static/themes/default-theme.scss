@@ -287,3 +287,20 @@ div.argmenuitem span.argdescription {
 .fas.fav {
     color: #e3cf7a;
 }
+
+.lm_header .lm_tab:last-child {
+    border-bottom: 1px solid #ccc !important;
+}
+
+.lm_content .tree {
+    background-color: #fff;
+    height: 100%;
+}
+
+.lm_content .tree span.filename {
+    padding-left: 10px;
+}
+
+.tree li.tree-editor-file:hover {
+    background-color: #dae5e0 !important;
+}

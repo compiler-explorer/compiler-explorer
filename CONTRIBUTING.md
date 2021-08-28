@@ -20,7 +20,7 @@ If there is something you would like to do yourself, it might help to make an is
 
 
 ## Node version
-**Compiler Explorer** targets the latest [Node.js](https://nodejs.org/) LTS,
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 12.18,
  so it's better if you do so as well when testing your changes locally.
 
 Nonetheless, it _should_ run in everything post-Node.js 12.18. [Contact us] if
@@ -85,6 +85,8 @@ Note that a current issue makes every project media asset to be locally
 * Stick to **ES5** (no `let` or arrow operators) in the client-side code.
  Sadly there are still enough users out there on old browsers,
  but feel free to use all the cool stuff on the server side code.
+ In lieu of ES6 features, [Underscore.js](https://underscorejs.org/) is available
+ as a way to bridge the feature gap.
 * Be aware that **Compiler Explorer** runs on a cluster on the live site.
  No local state is kept between invocations, and the user's next request will 
  likely hit a different node in the cluster, so don't rely on

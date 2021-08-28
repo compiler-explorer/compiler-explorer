@@ -46,7 +46,7 @@ const staticPath = path.join(distPath, 'static');
 const webjackJsHack = '.v4.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala' ],
+        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala', 'ruby' ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new CopyWebpackPlugin([
@@ -84,6 +84,7 @@ export default {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
         },
         modules: ['./static', './node_modules'],
+        extensions: [ '.tsx', '.ts', '.js' ],
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -151,6 +152,14 @@ export default {
             {
                 test: /\.(html)$/,
                 loader: 'html-loader',
+            },
+            {
+                test: /\.tsx?$/,
+                loader: 'ts-loader',
+            },
+            {
+                test: /\.js$/,
+                loader: 'source-map-loader',
             },
         ],
     },
