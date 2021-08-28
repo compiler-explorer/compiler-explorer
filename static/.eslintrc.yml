@@ -7,7 +7,7 @@ plugins:
   - sonarjs
   - unicorn
 extends:
-  #  - ../.eslint-license-header.yml Disabled for now until we fully incorporate prettier
+  - ../.eslint-license-header.yml
   - eslint:recommended
   - plugin:requirejs/recommended
 env:
@@ -69,7 +69,7 @@ rules:
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn
-  jsdoc/check-tag-names: warn
+  jsdoc/check-tag-names: off
   jsdoc/check-types: warn
   jsdoc/empty-tags: warn
   jsdoc/newline-after-description: warn
