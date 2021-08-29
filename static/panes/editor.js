@@ -1123,11 +1123,27 @@ Editor.prototype.onCompiling = function (compilerId) {
     this.busyCompilers[compilerId] = true;
 };
 
+Editor.prototype.getAllOutputAndErrors = function (result) {
+    var all = (result.stdout || []);
+    if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            all = all.concat(step.stdout);
+        });
+
+        _.each(result.buildsteps, function (step) {
+            all = all.concat(step.stderr);
+        });
+    }
+    all = all.concat(result.stderr || []);
+
+    return all;
+};
+
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
-    var output = (result.stdout || []).concat(result.stderr || []);
+    var output = this.getAllOutputAndErrors(result);
     var widgets = _.compact(_.map(output, function (obj) {
         if (!obj.tag) return;
 
