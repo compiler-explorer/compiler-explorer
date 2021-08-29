@@ -1,0 +1,64 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_main:                                  ## @main"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 2,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "_main": 1
+  }
+}

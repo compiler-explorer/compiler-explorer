@@ -118,6 +118,12 @@ describe('Filter test cases', function () {
                 {directives: true, labels: true, commentOnly: true, libraryCode: true});
         }
     });
+    describe('Directives, labels, comments and library code with dontMaskFilenames', function () {
+        for (const x of cases) {
+            testFilter(x, '.directives.labels.comments.library.dontMaskFilenames',
+                {directives: true, labels: true, commentOnly: true, libraryCode: true, dontMaskFilenames: true});
+        }
+    });
 });
 
 describe('AsmParser tests', () => {
