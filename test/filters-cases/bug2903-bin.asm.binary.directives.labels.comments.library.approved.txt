@@ -1,6 +1,11 @@
 {
   "asm": [
     {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
       "address": 4198432,
       "labels": [],
       "opcodes": [
@@ -143,7 +148,7 @@
     }
   ],
   "labelDefinitions": {
-    "_Z6squarei": 4,
+    "_Z6squarei": 5,
     "main": 1
   }
 }
