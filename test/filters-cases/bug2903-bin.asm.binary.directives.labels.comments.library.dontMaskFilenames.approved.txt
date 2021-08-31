@@ -1,0 +1,1967 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "address": 4198432,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "64",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    edi,0x64"
+    },
+    {
+      "address": 4198437,
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "f6",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " jmp    401120 <_Z6squarei>"
+    },
+    {
+      "address": 4198442,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop    WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_start:"
+    },
+    {
+      "address": 4198448,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198452,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "ed"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " xor    ebp,ebp"
+    },
+    {
+      "address": 4198454,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "d1"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    r9,rdx"
+    },
+    {
+      "address": 4198457,
+      "labels": [],
+      "opcodes": [
+        "5e"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " pop    rsi"
+    },
+    {
+      "address": 4198458,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e2"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    rdx,rsp"
+    },
+    {
+      "address": 4198461,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "e4",
+        "f0"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " and    rsp,0xfffffffffffffff0"
+    },
+    {
+      "address": 4198465,
+      "labels": [],
+      "opcodes": [
+        "50"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " push   rax"
+    },
+    {
+      "address": 4198466,
+      "labels": [],
+      "opcodes": [
+        "54"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " push   rsp"
+    },
+    {
+      "address": 4198467,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "c7",
+        "c0",
+        "a0",
+        "11",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    r8,0x4011a0"
+    },
+    {
+      "address": 4198474,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c7",
+        "c1",
+        "30",
+        "11",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    rcx,0x401130"
+    },
+    {
+      "address": 4198481,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c7",
+        "c7",
+        "20",
+        "10",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    rdi,0x401020"
+    },
+    {
+      "address": 4198488,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "15",
+        "92",
+        "2f",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " call   QWORD PTR [rip+0x2f92]        # 403ff0 <__libc_start_main@GLIBC_2.2.5>"
+    },
+    {
+      "address": 4198494,
+      "labels": [],
+      "opcodes": [
+        "f4"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " hlt    "
+    },
+    {
+      "address": 4198495,
+      "labels": [],
+      "opcodes": [
+        "90"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_dl_relocate_static_pie:"
+    },
+    {
+      "address": 4198496,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198500,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198501,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198508,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "address": 4198511,
+      "labels": [],
+      "opcodes": [
+        "90"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "deregister_tm_clones:"
+    },
+    {
+      "address": 4198512,
+      "labels": [],
+      "opcodes": [
+        "b8",
+        "28",
+        "40",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    eax,0x404028"
+    },
+    {
+      "address": 4198517,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "3d",
+        "28",
+        "40",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " cmp    rax,0x404028"
+    },
+    {
+      "address": 4198523,
+      "labels": [
+        {
+          "name": "deregister_tm_clones",
+          "range": {
+            "endCol": 37,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "13"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " je     401090 <deregister_tm_clones+0x20>"
+    },
+    {
+      "address": 4198525,
+      "labels": [],
+      "opcodes": [
+        "b8",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    eax,0x0"
+    },
+    {
+      "address": 4198530,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "c0"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " test   rax,rax"
+    },
+    {
+      "address": 4198533,
+      "labels": [
+        {
+          "name": "deregister_tm_clones",
+          "range": {
+            "endCol": 37,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "09"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " je     401090 <deregister_tm_clones+0x20>"
+    },
+    {
+      "address": 4198535,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "28",
+        "40",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    edi,0x404028"
+    },
+    {
+      "address": 4198540,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "e0"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " jmp    rax"
+    },
+    {
+      "address": 4198542,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "90"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " xchg   ax,ax"
+    },
+    {
+      "address": 4198544,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198545,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " data16 cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198552,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "address": 4198556,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "register_tm_clones:"
+    },
+    {
+      "address": 4198560,
+      "labels": [],
+      "opcodes": [
+        "be",
+        "28",
+        "40",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    esi,0x404028"
+    },
+    {
+      "address": 4198565,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "81",
+        "ee",
+        "28",
+        "40",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " sub    rsi,0x404028"
+    },
+    {
+      "address": 4198572,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "f0"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    rax,rsi"
+    },
+    {
+      "address": 4198575,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "ee",
+        "3f"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " shr    rsi,0x3f"
+    },
+    {
+      "address": 4198579,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "f8",
+        "03"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " sar    rax,0x3"
+    },
+    {
+      "address": 4198583,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "01",
+        "c6"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " add    rsi,rax"
+    },
+    {
+      "address": 4198586,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "d1",
+        "fe"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " sar    rsi,1"
+    },
+    {
+      "address": 4198589,
+      "labels": [
+        {
+          "name": "register_tm_clones",
+          "range": {
+            "endCol": 35,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "11"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " je     4010d0 <register_tm_clones+0x30>"
+    },
+    {
+      "address": 4198591,
+      "labels": [],
+      "opcodes": [
+        "b8",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    eax,0x0"
+    },
+    {
+      "address": 4198596,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "c0"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " test   rax,rax"
+    },
+    {
+      "address": 4198599,
+      "labels": [
+        {
+          "name": "register_tm_clones",
+          "range": {
+            "endCol": 35,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "07"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " je     4010d0 <register_tm_clones+0x30>"
+    },
+    {
+      "address": 4198601,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "28",
+        "40",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    edi,0x404028"
+    },
+    {
+      "address": 4198606,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "e0"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " jmp    rax"
+    },
+    {
+      "address": 4198608,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198609,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " data16 cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198616,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "address": 4198620,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__do_global_dtors_aux:"
+    },
+    {
+      "address": 4198624,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198628,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "3d",
+        "3d",
+        "2f",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " cmp    BYTE PTR [rip+0x2f3d],0x0        # 404028 <completed.0>"
+    },
+    {
+      "address": 4198635,
+      "labels": [
+        {
+          "name": "__do_global_dtors_aux",
+          "range": {
+            "endCol": 38,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "13"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " jne    401100 <__do_global_dtors_aux+0x20>"
+    },
+    {
+      "address": 4198637,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " push   rbp"
+    },
+    {
+      "address": 4198638,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "e5"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    rbp,rsp"
+    },
+    {
+      "address": 4198641,
+      "labels": [
+        {
+          "name": "deregister_tm_clones",
+          "range": {
+            "endCol": 37,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "7a",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " call   401070 <deregister_tm_clones>"
+    },
+    {
+      "address": 4198646,
+      "labels": [],
+      "opcodes": [
+        "c6",
+        "05",
+        "2b",
+        "2f",
+        "00",
+        "00",
+        "01"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    BYTE PTR [rip+0x2f2b],0x1        # 404028 <completed.0>"
+    },
+    {
+      "address": 4198653,
+      "labels": [],
+      "opcodes": [
+        "5d"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " pop    rbp"
+    },
+    {
+      "address": 4198654,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198655,
+      "labels": [],
+      "opcodes": [
+        "90"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop"
+    },
+    {
+      "address": 4198656,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198657,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " data16 cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198664,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "address": 4198668,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "40",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "frame_dummy:"
+    },
+    {
+      "address": 4198672,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198676,
+      "labels": [
+        {
+          "name": "register_tm_clones",
+          "range": {
+            "endCol": 35,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "8a"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " jmp    4010a0 <register_tm_clones>"
+    },
+    {
+      "address": 4198678,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198685,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "main.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:"
+    },
+    {
+      "address": 4198688,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "f8"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": " mov    eax,edi"
+    },
+    {
+      "address": 4198690,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "af",
+        "c7"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": " imul   eax,edi"
+    },
+    {
+      "address": 4198693,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198694,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198701,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__libc_csu_init:"
+    },
+    {
+      "address": 4198704,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198708,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "57"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " push   r15"
+    },
+    {
+      "address": 4198710,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8d",
+        "3d",
+        "c3",
+        "2c",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " lea    r15,[rip+0x2cc3]        # 403e00 <__frame_dummy_init_array_entry>"
+    },
+    {
+      "address": 4198717,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "56"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " push   r14"
+    },
+    {
+      "address": 4198719,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "d6"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " mov    r14,rdx"
+    },
+    {
+      "address": 4198722,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "55"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " push   r13"
+    },
+    {
+      "address": 4198724,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "f5"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " mov    r13,rsi"
+    },
+    {
+      "address": 4198727,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "54"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " push   r12"
+    },
+    {
+      "address": 4198729,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "89",
+        "fc"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " mov    r12d,edi"
+    },
+    {
+      "address": 4198732,
+      "labels": [],
+      "opcodes": [
+        "55"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " push   rbp"
+    },
+    {
+      "address": 4198733,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "2d",
+        "b4",
+        "2c",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " lea    rbp,[rip+0x2cb4]        # 403e08 <__do_global_dtors_aux_fini_array_entry>"
+    },
+    {
+      "address": 4198740,
+      "labels": [],
+      "opcodes": [
+        "53"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " push   rbx"
+    },
+    {
+      "address": 4198741,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "29",
+        "fd"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " sub    rbp,r15"
+    },
+    {
+      "address": 4198744,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "ec",
+        "08"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " sub    rsp,0x8"
+    },
+    {
+      "address": 4198748,
+      "labels": [
+        {
+          "name": "_init",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "9f",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " call   401000 <_init>"
+    },
+    {
+      "address": 4198753,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "fd",
+        "03"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " sar    rbp,0x3"
+    },
+    {
+      "address": 4198757,
+      "labels": [
+        {
+          "name": "__libc_csu_init",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "1f"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " je     401186 <__libc_csu_init+0x56>"
+    },
+    {
+      "address": 4198759,
+      "labels": [],
+      "opcodes": [
+        "31",
+        "db"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " xor    ebx,ebx"
+    },
+    {
+      "address": 4198761,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "80",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " nop    DWORD PTR [rax+0x0]"
+    },
+    {
+      "address": 4198768,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "f2"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " mov    rdx,r14"
+    },
+    {
+      "address": 4198771,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "ee"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " mov    rsi,r13"
+    },
+    {
+      "address": 4198774,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "89",
+        "e7"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " mov    edi,r12d"
+    },
+    {
+      "address": 4198777,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "ff",
+        "14",
+        "df"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " call   QWORD PTR [r15+rbx*8]"
+    },
+    {
+      "address": 4198781,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "c3",
+        "01"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " add    rbx,0x1"
+    },
+    {
+      "address": 4198785,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "39",
+        "dd"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " cmp    rbp,rbx"
+    },
+    {
+      "address": 4198788,
+      "labels": [
+        {
+          "name": "__libc_csu_init",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "ea"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " jne    401170 <__libc_csu_init+0x40>"
+    },
+    {
+      "address": 4198790,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "c4",
+        "08"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " add    rsp,0x8"
+    },
+    {
+      "address": 4198794,
+      "labels": [],
+      "opcodes": [
+        "5b"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " pop    rbx"
+    },
+    {
+      "address": 4198795,
+      "labels": [],
+      "opcodes": [
+        "5d"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " pop    rbp"
+    },
+    {
+      "address": 4198796,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5c"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " pop    r12"
+    },
+    {
+      "address": 4198798,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5d"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " pop    r13"
+    },
+    {
+      "address": 4198800,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5e"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " pop    r14"
+    },
+    {
+      "address": 4198802,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "5f"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " pop    r15"
+    },
+    {
+      "address": 4198804,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198805,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " data16 cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198812,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__libc_csu_fini:"
+    },
+    {
+      "address": 4198816,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198820,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_fini:"
+    },
+    {
+      "address": 4198824,
+      "labels": [],
+      "opcodes": [
+        "f3",
+        "0f",
+        "1e",
+        "fa"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " endbr64 "
+    },
+    {
+      "address": 4198828,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "ec",
+        "08"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " sub    rsp,0x8"
+    },
+    {
+      "address": 4198832,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "83",
+        "c4",
+        "08"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " add    rsp,0x8"
+    },
+    {
+      "address": 4198836,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " ret    "
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 78,
+    "__do_global_dtors_aux": 58,
+    "__libc_csu_fini": 121,
+    "__libc_csu_init": 84,
+    "_dl_relocate_static_pie": 20,
+    "_fini": 124,
+    "_init": 1,
+    "_start": 5,
+    "deregister_tm_clones": 26,
+    "frame_dummy": 73,
+    "main": 1,
+    "register_tm_clones": 40
+  }
+}
