@@ -494,7 +494,7 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
     if (result.buildResult) {
         buildResultCode = result.buildResult.code;
     } else if (result.buildsteps) {
-        _.each(result.buildsteps, function(step) {
+        _.each(result.buildsteps, function (step) {
             buildResultCode = step.code;
         });
     }
