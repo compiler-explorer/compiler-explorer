@@ -137,7 +137,7 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: _.bind(this.onLanguageChange, this),
+            onChange: this.onLanguageChange.bind(this),
         });
 
         this.updateTitle();
@@ -204,10 +204,10 @@ export class Tree {
 
         this.eventHub.on('compileResult', this.onCompileResponse, this);
 
-        this.toggleCMakeButton.on('change', _.bind(this.onToggleCMakeChange, this));
+        this.toggleCMakeButton.on('change', this.onToggleCMakeChange.bind(this));
 
-        this.cmakeArgsInput.on('change', _.bind(this.updateCMakeArgs, this));
-        this.customOutputFilenameInput.on('change', _.bind(this.updateCustomOutputFilename, this));
+        this.cmakeArgsInput.on('change', this.updateCMakeArgs.bind(this));
+        this.customOutputFilenameInput.on('change', this.updateCustomOutputFilename.bind(this));
     }
 
     private updateCMakeArgs() {
@@ -410,8 +410,14 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
+        this.container.layoutManager
+            .createDragSource(dragSource, dragConfig.bind(this))
+            ._dragListener.on('dragStart', () => {
+                this.domRoot.find('.add-pane').dropdown('toggle');
+            });
+
         dragSource.on('click', () => {
-            this.hub.addInEditorStackIfPossible(_.bind(dragConfig, this));
+            this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
         });
     }
 
@@ -471,7 +477,7 @@ export class Tree {
         const saveProjectButton = this.domRoot.find('.save-project-to-file');
 
         saveProjectButton.on('click', () => {
-            this.multifileService.saveProjectToZipfile(_.bind(Tree.triggerSaveAs, this));
+            this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file');

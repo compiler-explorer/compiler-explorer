@@ -535,8 +535,14 @@ function start() {
         setupButtons(options);
     }
 
+    var addDropdown = $('#addDropdown');
+
     function setupAdd(thing, func) {
-        layout.createDragSource(thing, func);
+        layout.createDragSource(thing, func)
+            ._dragListener.on('dragStart', function () {
+                addDropdown.dropdown('toggle');
+            });
+
         thing.click(function () {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());

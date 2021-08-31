@@ -397,9 +397,6 @@ Editor.prototype.initButtons = function (state) {
     this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
     var addEditorButton = this.domRoot.find('.btn.add-editor');
     var toggleVimButton = this.domRoot.find('#vim-flag');
-    var togglePaneAdder = function () {
-        paneAdderDropdown.dropdown('toggle');
-    };
     this.vimFlag = this.domRoot.find('#vim-flag');
     toggleVimButton.on('click', _.bind(function () {
         if (this.editor.vimInUse) {
@@ -428,32 +425,27 @@ Editor.prototype.initButtons = function (state) {
         return Components.getEditor();
     }, this);
 
-    var addDragListener = _.bind(function (dragSource, dragConfig) {
+    var addPaneOpener = _.bind(function (dragSource, dragConfig) {
         this.container.layoutManager
             .createDragSource(dragSource, dragConfig)
-            ._dragListener.on('dragStart', togglePaneAdder);
-    }, this);
+            ._dragListener.on('dragStart', function () {
+                paneAdderDropdown.dropdown('toggle');
+            });
 
-    addDragListener(addCompilerButton, getCompilerConfig);
-    addDragListener(addExecutorButton, getExecutorConfig);
-    addDragListener(this.conformanceViewerButton, getConformanceConfig);
-    addDragListener(addEditorButton, getEditorConfig);
-
-    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
-        dragSource.click(_.bind(function () {
+        dragSource.on('click', _.bind(function () {
             var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(dragConfig);
         }, this));
     }, this);
 
-    bindClickEvent(addCompilerButton, getCompilerConfig);
-    bindClickEvent(addExecutorButton, getExecutorConfig);
-    bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
-    bindClickEvent(addEditorButton, getEditorConfig);
+    addPaneOpener(addCompilerButton, getCompilerConfig);
+    addPaneOpener(addExecutorButton, getExecutorConfig);
+    addPaneOpener(this.conformanceViewerButton, getConformanceConfig);
+    addPaneOpener(addEditorButton, getEditorConfig);
 
     this.initLoadSaver();
-    $(this.domRoot).keydown(_.bind(function (event) {
+    $(this.domRoot).on('keydown', _.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
             if (this.settings.enableCtrlStree && this.hub.hasTree()) {
