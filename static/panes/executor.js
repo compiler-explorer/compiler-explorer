@@ -488,9 +488,20 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
     var compileStderr = this.getBuildStderrFromResult(result);
     var execStdout = this.getExecutionStdoutfromResult(result);
     var execStderr = this.getExecutionStderrfromResult(result);
+
+    var buildResultCode = 0;
+
+    if (result.buildResult) {
+        buildResultCode = result.buildResult.code;
+    } else if (result.buildsteps) {
+        _.each(result.buildsteps, function(step) {
+            buildResultCode = step.code;
+        });
+    }
+
     if (!result.didExecute) {
         this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
-        this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + result.buildResult.code));
+        this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
     }
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
