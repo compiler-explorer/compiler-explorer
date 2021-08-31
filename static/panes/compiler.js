@@ -724,7 +724,7 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
     };
 
     var treeState = tree.currentState();
-    var cmakeProject = treeState.isCMakeProject;
+    var cmakeProject = tree.multifileService.isACMakeProject();
 
     if (bypassCache) request.bypassCache = true;
     if (!this.compiler) {
