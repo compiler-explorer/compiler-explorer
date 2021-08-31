@@ -423,6 +423,22 @@ Executor.prototype.getBuildStderrFromResult = function (result) {
     return arr;
 };
 
+Executor.prototype.getExecutionStdoutfromResult = function (result) {
+    if (result.execResult) {
+        return result.execResult.stdout;
+    }
+
+    return result.stdout || [];
+};
+
+Executor.prototype.getExecutionStderrfromResult = function (result) {
+    if (result.execResult) {
+        return result.execResult.stderr;
+    }
+
+    return result.stderr || [];
+};
+
 Executor.prototype.onCMakeResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
@@ -470,8 +486,8 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
     this.clearPreviousOutput();
     var compileStdout = this.getBuildStdoutFromResult(result);
     var compileStderr = this.getBuildStderrFromResult(result);
-    var execStdout = result.stdout || result.execResult.stdout || [];
-    var execStderr = result.stderr || result.execResult.stderr || [];
+    var execStdout = this.getExecutionStdoutfromResult(result);
+    var execStderr = this.getExecutionStderrfromResult(result);
     if (!result.didExecute) {
         this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
         this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + result.buildResult.code));
