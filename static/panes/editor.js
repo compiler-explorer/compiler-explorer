@@ -997,13 +997,15 @@ Editor.prototype.numberUsedLines = function () {
             _.each(this.treeCompilers, _.bind(function (compilerIds, treeId) {
                 if (compilerIds[compilerId]) {
                     var tree = this.hub.getTreeById(Number(treeId));
-                    var defaultFile = this.defaultFileByCompiler[compilerId];
-                    foundInTrees = true;
+                    if (tree) {
+                        var defaultFile = this.defaultFileByCompiler[compilerId];
+                        foundInTrees = true;
 
-                    if (asmLine.source && asmLine.source.line > 0) {
-                        var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
-                        if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
-                            result[asmLine.source.line - 1] = true;
+                        if (asmLine.source && asmLine.source.line > 0) {
+                            var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
+                            if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
+                                result[asmLine.source.line - 1] = true;
+                            }
                         }
                     }
                 }
