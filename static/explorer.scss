@@ -114,16 +114,13 @@ li.tweet {
     min-width: 10em;
 }
 
-.diff-picker .compiler {
-    font-weight: bold;
-}
-
 .diff-picker .options {
     padding-left: 0.5em;
     font-size: small;
 }
 
 .diff-picker .meta {
+    font-style: italic;
     text-align: right;
     list-style: none;
     margin: 0;
@@ -331,7 +328,7 @@ pre.content.wrap * {
 
 .font-size-list {
     min-width: 43px !important;
-    max-height: 40% !important;
+    max-height: 70% !important;
     overflow-y: scroll;
     width: auto;
 }
@@ -347,7 +344,7 @@ pre.content.wrap * {
 
 .compiler-list {
     display: block;
-    overflow: auto;
+    height: auto;
 }
 
 .cfg-toolbar table {
@@ -785,9 +782,9 @@ html[data-theme=dark] {
     text-transform: uppercase;
 }
 
-.options {
-    border-top-left-radius: .2rem !important;
-    border-bottom-left-radius: .2rem !important;
+.options, .compilation-options, .conformance-options {
+    //border-top-left-radius: .2rem !important;
+    //border-bottom-left-radius: .2rem !important;
 }
 
 .copy-link-btn {
@@ -800,12 +797,13 @@ html[data-theme=dark] {
 
 .status-icon {
     border: none;
+    background-color: transparent;
 }
 
 .tree-editor-file {
     cursor: pointer;
     line-height: 14px;
-    padding: 0px 0px 0px 5px;
+    padding: 0 0 0 5px;
 }
 .tree-editor-file span {
     font-family: inherit;
@@ -814,7 +812,7 @@ html[data-theme=dark] {
 }
 .tree-editor-file button {
     float: right;
-    padding: 4px 10px 4px 0px;
+    padding: 4px 10px 4px 0;
 }
 .mainbar .cmake-project {
     margin-top: 2px;
@@ -822,4 +820,30 @@ html[data-theme=dark] {
 
 .v-scroll {
     overflow-y: scroll;
+}
+
+.prepend-options {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.popular-arguments-btn {
+    border-top-right-radius: 0;
+}
+
+.panel-compilation {
+    border-top: none !important;
+    border-bottom: none !important;
+}
+
+.compiler-out {
+    cursor: help;
+}
+
+.compiler-selector-icon {
+    padding: 0 4px 0 4px !important;
+}
+
+.load-project-from-file {
+    width: 400px;
 }

@@ -68,19 +68,29 @@ export class Alert {
     /**
      * Asks the user a two choice question, where the title, content and buttons are customizable
      */
-    ask(title: string, question: string, handlers: AlertAskOptions) {
+    ask(title: string, question: string, askOptions: AlertAskOptions) {
         const modal = $('#yes-no');
-        this.yesHandler = handlers?.yes ?? (() => undefined);
-        this.noHandler = handlers?.no ?? (() => undefined);
+        this.yesHandler = askOptions?.yes ?? (() => undefined);
+        this.noHandler = askOptions?.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
-        modal.find('.modal-body').html(question);
-        if (handlers.yesHtml) modal.find('.modal-footer .yes').html(handlers.yesHtml);
-        if (handlers.yesClass) modal.find('.modal-footer .yes').addClass(handlers.yesClass);
-        if (handlers.noHtml) modal.find('.modal-footer .no').html(handlers.noHtml);
-        if (handlers.noClass) modal.find('.modal-footer .no').addClass(handlers.noClass);
-        if (handlers.onClose) {
+        modal.find('.modal-body')
+            .css("min-height", "inherit")
+            .html(question);
+        if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
+        if (askOptions.yesClass) {
+            modal.find('.modal-footer .yes')
+                .removeClass('btn-link')
+                .addClass(askOptions.yesClass);
+        }
+        if (askOptions.noHtml) modal.find('.modal-footer .no').html(askOptions.noHtml);
+        if (askOptions.noClass) {
+            modal.find('.modal-footer .no')
+                .removeClass('btn-link')
+                .addClass(askOptions.noClass);
+        }
+        if (askOptions.onClose) {
             modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', handlers.onClose);
+            modal.on('hidden.bs.modal', askOptions.onClose);
         }
         modal.modal();
         return modal;
@@ -127,10 +137,10 @@ export class Alert {
     /**
      * Asks the user a two choice question, where the title, content and buttons are customizable
      */
-    enterSomething(title: string, question: string, defaultValue: string, handlers: AlertAskOptions) {
+    enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertAskOptions) {
         const modal = $('#enter-something');
-        this.yesHandler = handlers?.yes ?? (() => undefined);
-        this.noHandler = handlers?.no ?? (() => undefined);
+        this.yesHandler = askOptions?.yes ?? (() => undefined);
+        this.noHandler = askOptions?.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body .question').html(question);
 
@@ -144,13 +154,17 @@ export class Alert {
             }
         });
 
-        if (handlers.yesHtml) yesButton.html(handlers.yesHtml);
-        if (handlers.yesClass) yesButton.addClass(handlers.yesClass);
-        if (handlers.noHtml) noButton.html(handlers.noHtml);
-        if (handlers.noClass) noButton.addClass(handlers.noClass);
-        if (handlers.onClose) {
+        if (askOptions.yesHtml) yesButton.html(askOptions.yesHtml);
+        if (askOptions.yesClass) {
+            yesButton.removeClass('btn-light').addClass(askOptions.yesClass);
+        }
+        if (askOptions.noHtml) noButton.html(askOptions.noHtml);
+        if (askOptions.noClass) {
+            noButton.removeClass('btn-light').addClass(askOptions.noClass);
+        }
+        if (askOptions.onClose) {
             modal.off('hidden.bs.modal');
-            modal.on('hidden.bs.modal', handlers.onClose);
+            modal.on('hidden.bs.modal', askOptions.onClose);
         }
 
         modal.on('shown.bs.modal', () => {

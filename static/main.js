@@ -139,7 +139,7 @@ function setupButtons(options) {
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
-        $('#privacy').click(function (event, data) {
+        $('#privacy').on('click', function (event, data) {
             var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
@@ -160,7 +160,7 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'green' : 'red') + '">' +
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
-        $('#cookies').click(function () {
+        $('#cookies').on('click', function () {
             var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
@@ -175,22 +175,22 @@ function setupButtons(options) {
         });
     }
 
-    $('#ui-reset').click(function () {
+    $('#ui-reset').on('click', function () {
         local.remove('gl');
         hasUIBeenReset = true;
         window.history.replaceState(null, null, window.httpRoot);
         window.location.reload();
     });
 
-    $('#ui-duplicate').click(function () {
+    $('#ui-duplicate').on('click', function () {
         window.open('/', '_blank');
     });
 
-    $('#changes').click(function () {
+    $('#changes').on('click', function () {
         alertSystem.alert('Changelog', $(require('./changelog.html')));
     });
 
-    $('#ces').click(function () {
+    $('#ces').on('click', function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
@@ -207,7 +207,7 @@ function setupButtons(options) {
             });
     });
 
-    $('#ui-history').click(function () {
+    $('#ui-history').on('click', function () {
         historyWidget.run(function (data) {
             local.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
