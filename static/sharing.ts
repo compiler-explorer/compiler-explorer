@@ -206,6 +206,10 @@ export class Sharing {
             shareFullCopyToClipBtn.hide();
             shareEmbedCopyToClipBtn.hide();
         }
+
+        if (options.sharingEnabled) {
+            Sharing.updateShares($('#socialshare'), window.location.protocol + '//' + window.location.hostname);
+        }
     }
 
     private onClipButtonPressed(event: ClickEvent, type: LinkType): void {
