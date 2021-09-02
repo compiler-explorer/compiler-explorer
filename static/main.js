@@ -30,7 +30,6 @@ var analytics = require('./analytics');
 // eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');
 require('bootstrap');
-require('bootstrap-slider');
 
 var Sharing = require('./sharing').Sharing;
 var _ = require('underscore');
@@ -56,7 +55,6 @@ var presentation = require('./presentation');
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('tom-select/dist/css/tom-select.bootstrap4.css');
-require('bootstrap-slider/dist/css/bootstrap-slider.css');
 require('./colours.scss');
 require('./explorer.scss');
 

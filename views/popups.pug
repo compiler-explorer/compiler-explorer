@@ -102,7 +102,7 @@
             .form-group(role="group")
               label
                 | Default language
-                small
+                small(style="margin-left: 3px")
                   span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
               select.defaultLanguage
               .checkbox
@@ -185,7 +185,7 @@
                 label Use spaces for indentation
               div
                 label Tab width
-                input.tabWidth(type="numeric")
+                input.tabWidth(type="number")
               div
                 label Format based on
                 select.formatBase
@@ -205,9 +205,9 @@
                 div
                   label Delay before compiling
                   .slider-input
-                    b 0.25s&nbsp;
-                    .slider.slider-horizontal.delay
-                    b &nbsp;3s
+                    b 0.25s
+                    input.delay(type="range")
+                    b 3s
               .checkbox
                 input.colourise(type="checkbox")
                 label Colourise lines to show how the source maps to the output

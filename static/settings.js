@@ -68,15 +68,18 @@ Select.prototype.putUi = function (elem, value) {
 };
 
 function Slider(elem, sliderSettings) {
-    elem.slider(sliderSettings);
+    elem
+        .prop('max', sliderSettings.max || 100)
+        .prop('min', sliderSettings.min || 1)
+        .prop('step', sliderSettings.step || 1);
 }
 
 Slider.prototype.getUi = function (elem) {
-    return elem.slider('getValue');
+    return parseInt(elem.val());
 };
 
 Slider.prototype.putUi = function (elem, value) {
-    elem.slider('setValue', value);
+    elem.val(value);
 };
 
 function Textbox() {

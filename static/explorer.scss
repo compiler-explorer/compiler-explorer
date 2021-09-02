@@ -407,7 +407,7 @@ label#vim-label {
     margin-left: 3px;
 }
 
-#settings select, #settings input:not([type=checkbox]), #settings .slider-input {
+#settings select, #settings input:not([type=checkbox]):not([type=range]) {
     display: block;
 }
 
@@ -848,4 +848,14 @@ html[data-theme=dark] {
 
 .load-project-from-file {
     width: 400px;
+}
+
+.delay {
+    display: inline;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.hideable {
+    margin-left: 4px;
 }
