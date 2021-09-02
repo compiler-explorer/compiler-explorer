@@ -344,7 +344,9 @@ pre.content.wrap * {
 
 .compiler-list {
     display: block;
-    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
 }
 
 .cfg-toolbar table {
