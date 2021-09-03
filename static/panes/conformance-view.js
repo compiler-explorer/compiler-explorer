@@ -32,6 +32,7 @@ var ga = require('../analytics');
 var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
 var CompilerPicker = require('../compiler-picker');
+var utils = require('../utils');
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -100,6 +101,7 @@ Conformance.prototype.initLibraries = function (state) {
 };
 
 Conformance.prototype.initButtons = function () {
+    this.conformanceContentRoot = this.domRoot.find('.conformance-wrapper');
     this.selectorList = this.domRoot.find('.compiler-list');
     this.addCompilerButton = this.domRoot.find('.add-compiler');
     this.selectorTemplate = $('#compiler-selector').find('.form-row');
@@ -388,12 +390,10 @@ Conformance.prototype.saveState = function () {
 };
 
 Conformance.prototype.resize = function () {
-    this.updateHideables();
-    this.selectorList.css('height', this.domRoot.height() - this.topBar.outerHeight(true));
-};
-
-Conformance.prototype.updateHideables = function () {
-    this.hideable.toggle(this.domRoot.width() > this.addCompilerButton.width());
+    // The pane becomes unusable long before this hides the icons
+    // Added either way just in case we ever add more icons to this pane
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
+    this.conformanceContentRoot.outerHeight(this.domRoot.height() - topBarHeight);
 };
 
 Conformance.prototype.getOverlappingLibraries = function (compilerIds) {

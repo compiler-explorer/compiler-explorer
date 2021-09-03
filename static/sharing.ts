@@ -134,6 +134,7 @@ export class Sharing {
             socialSharingElements.empty();
             const config = this.layout.toConfig();
             Sharing.getLinks(config, currentBind, (error: any, newUrl: string, extra: string, updateState: boolean) => {
+                permalink.off('click');
                 if (error || !newUrl) {
                     permalink.prop('disabled', true);
                     permalink.val(error || 'Error providing URL');
@@ -143,13 +144,15 @@ export class Sharing {
                         Sharing.storeCurrentConfig(config, extra);
                     }
                     permalink.val(newUrl);
+                    permalink.on('click', () => {
+                        permalink.trigger('focus').trigger('select');
+                    })
                     if (options.sharingEnabled) {
                         Sharing.updateShares(socialSharingElements, newUrl);
                         // Disable the links for every share item which does not support embed html as links
                         if (currentBind === LinkType.Embed) {
                             socialSharingElements.children('.share-no-embeddable')
-                                .addClass('share-disabled')
-                                .prop('title', 'Embed links are not supported in this service')
+                                .hide()
                                 .on('click', false);
                         }
                     }
@@ -372,14 +375,14 @@ export class Sharing {
             const newElement = baseTemplate.children('a.share-item').clone();
             if (service.logoClass) {
                 newElement.prepend($('<span>')
-                    .addClass('dropdown-icon')
+                    .addClass('dropdown-icon mr-1')
                     .addClass(service.logoClass)
                     .prop('title', serviceName)
                 );
             }
             if (service.text) {
                 newElement.children('span.share-item-text')
-                    .text(' ' + service.text);
+                    .text(service.text);
             }
             newElement
                 .prop('href', service.getLink('Compiler Explorer', url))

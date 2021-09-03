@@ -1,6 +1,6 @@
 #load-save.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog.modal-lg
-    .modal-content
+  .modal-dialog.modal-lg(style="max-width: unset")
+    .modal-content(style="max-width: unset")
       .modal-header
         h5.modal-title Load and save editor text
         button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
@@ -89,12 +89,12 @@
         button.close(type="button" data-dismiss="modal" aria-label="Close")
           span(aria-hidden="true") &times;
       .modal-body
-        .card.mb-1
+        .card
           .card-header
             | These settings control how Compiler Explorer acts for you. They are not
             | preserved as part of shared URLs, and are persisted locally using browser
             | local storage.
-        .card
+        .card.mt-2
           .card-header
             .card-title
               h4 Site behaviour
@@ -102,7 +102,7 @@
             .form-group(role="group")
               label
                 | Default language
-                small
+                small(style="margin-left: 3px")
                   span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
               select.defaultLanguage
               .checkbox
@@ -118,7 +118,7 @@
               .checkbox
                 input.enableCommunityAds(type="checkbox")
                 label Show community events
-        .card
+        .card.mt-1
           .card-header
             .card-title
               h4 Keybindings
@@ -143,7 +143,7 @@
                   | +
                   kbd S
                   | &nbsp;include and save the file to a Tree if that's added to the UI
-        .card
+        .card.mt-1
           .card-header
             .card-title
               h4 Editor
@@ -185,14 +185,14 @@
                 label Use spaces for indentation
               div
                 label Tab width
-                input.tabWidth(type="numeric")
+                input.tabWidth(type="number")
               div
                 label Format based on
                 select.formatBase
               .checkbox
                 input.wordWrap(type="checkbox")
                 label Enable Word Wrapping
-        .card
+        .card.mt-1
           .card-header
             .card-title
               h4 Compilation
@@ -205,9 +205,9 @@
                 div
                   label Delay before compiling
                   .slider-input
-                    b 0.25s&nbsp;
-                    .slider.slider-horizontal.delay
-                    b &nbsp;3s
+                    b 0.25s
+                    input.delay(type="range")
+                    b 3s
               .checkbox
                 input.colourise(type="checkbox")
                 label Colourise lines to show how the source maps to the output
@@ -246,22 +246,20 @@
         .card
           .card-body
             .container
-              .input-group-append
-                input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
-                button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
-                  span.fa.fa-clipboard
+              .input-group
+                input.form-control.permalink(type="text" placeholder="Loading" readonly size="1024")
+                .input-group-append
+                  button.btn.btn-outline-secondary.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
+                    span.fa.fa-clipboard
               #embedsettings.form-group(role="group")
                 .checkbox
-                  label
-                    input.readOnly(type="checkbox")
-                    | Read Only
+                  input.readOnly(type="checkbox")
+                  label.ml-1 Read Only
                 .checkbox
-                  label
-                    input.hideEditorToolbars(type="checkbox")
-                    | Hide Editor Toolbars
-              .spacer &nbsp;
+                  input.hideEditorToolbars(type="checkbox")
+                  label.ml-1 Hide Editor Toolbars
               if sharingEnabled
-                .socialsharing
+                .socialsharing.mt-2
 
 #history.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg

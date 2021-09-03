@@ -34,6 +34,7 @@ var Components = require('../components');
 var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options');
+var utils = require('../utils');
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
@@ -267,6 +268,7 @@ Tool.prototype.getEffectiveOptions = function () {
 };
 
 Tool.prototype.resize = function () {
+    utils.updateAndCalcTopBarHeight(this.domRoot, this.optionsToolbar, this.hideable);
     var barsHeight = this.optionsToolbar.outerHeight() + 2;
     if (!this.panelArgs.hasClass('d-none')) {
         barsHeight += this.panelArgs.outerHeight();
@@ -297,6 +299,8 @@ Tool.prototype.initButtons = function (state) {
 
     this.panelArgs = this.domRoot.find('.panel-args');
     this.panelStdin = this.domRoot.find('.panel-stdin');
+
+    this.hideable = this.domRoot.find('.hideable');
 
     this.initToggleButtons(state);
 };

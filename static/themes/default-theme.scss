@@ -19,6 +19,10 @@
     background-size: 9px !important;
 }
 
+.lm_content {
+    border-color: #dddddd;
+}
+
 .lm_maximised .lm_controls .lm_maximise {
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M1.0096 8.0019v-.99809h6.9807v1.9962H1.0096z'/%3E%3C/svg%3E") !important;
     background-size: 9px !important;
@@ -304,3 +308,11 @@ div.argmenuitem span.argdescription {
 .tree li.tree-editor-file:hover {
     background-color: #dae5e0 !important;
 }
+
+.compiler-out {
+    color: #797979 !important;
+}
+
+.ts-dropdown .optgroup-header {
+    background-color: #f6f6f6;
+ }

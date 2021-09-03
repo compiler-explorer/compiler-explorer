@@ -24,6 +24,7 @@
 
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
+import * as utils from '../utils';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -351,10 +352,14 @@ export class Tree {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
-                this.alertSystem.ask('Delete file', 'Are you sure you want to delete ' + file.filename, {
+                this.alertSystem.ask('Delete file', `Are you sure you want to delete ${file.filename ? file.filename : 'this file'}?` , {
                     yes: () => {
                         this.removeFile(fileId);
                     },
+                    yesClass: 'btn-danger',
+                    yesHtml: 'Delete',
+                    noClass: 'btn-primary',
+                    noHtml: 'Cancel'
                 });
             }
         });
@@ -583,21 +588,8 @@ export class Tree {
         }
     }
 
-    private updateHideables() {
-        var topBar = this.topBar;
-        if (!topBar.hasClass('d-none')) {
-            this.hideable.show();
-            var topBarHeightMax = topBar.outerHeight(true);
-            this.hideable.hide();
-            var topBarHeightMin = topBar.outerHeight(true);
-            if (topBarHeightMin === topBarHeightMax) {
-                this.hideable.show();
-            }
-        }
-    }
-
     private resize() {
-        this.updateHideables();
+        utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
         const mainbarHeight = this.topBar.outerHeight(true);
         const argsHeight = this.domRoot.find('.panel-args').outerHeight(true);
