@@ -106,18 +106,21 @@
                   span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
               select.defaultLanguage
               .checkbox
-                input.allowStoreCodeDebug(type="checkbox")
-                label Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
+                label
+                  input.allowStoreCodeDebug(type="checkbox")
+                  | Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
               div
                 label
                   | Theme
                 select.theme
               .checkbox
-                input.newEditorLastLang(type="checkbox")
-                label Use last selected language when opening new Editors
+                label
+                  input.newEditorLastLang(type="checkbox")
+                  | Use last selected language when opening new Editors
               .checkbox
-                input.enableCommunityAds(type="checkbox")
-                label Show community events
+                label
+                  input.enableCommunityAds(type="checkbox")
+                  | Show community events
         .card.mt-1
           .card-header
             .card-title
@@ -125,19 +128,20 @@
           .card-body
             .form-group(role="group")
               .checkbox
-                input.useVim(type="checkbox")
-                label Vim editor mode
-              .checkbox.the-save-option-to-auto-share
-                input.enableCtrlS(type="checkbox")
                 label
+                  input.useVim(type="checkbox")
+                  | Vim editor mode
+              .checkbox.the-save-option-to-auto-share
+                label
+                  input.enableCtrlS(type="checkbox")
                   | Make
                   kbd Ctrl
                   | +
                   kbd S
                   | &nbsp;save to local file instead of creating a share link
               .checkbox.the-save-option-to-tree-save
-                input.enableCtrlStree(type="checkbox")
                 label
+                  input.enableCtrlStree(type="checkbox")
                   | Make
                   kbd Ctrl
                   | +
@@ -154,35 +158,45 @@
                   | Desired Font Family in editors
                 input.editorsFFont(type="text" style="width:100%")
               .checkbox
-                input.editorsFLigatures(type="checkbox")
-                label Enable font ligatures
+                label
+                  input.editorsFLigatures(type="checkbox")
+                  | Enable font ligatures
               .checkbox
-                input.autoCloseBrackets(type="checkbox")
-                label Automatically insert matching brackets and parentheses
+                label
+                  input.autoCloseBrackets(type="checkbox")
+                  | Automatically insert matching brackets and parentheses
               .checkbox
-                input.autoIndent(type="checkbox")
-                label Automatically indent code (reload page after changing)
+                label
+                  input.autoIndent(type="checkbox")
+                  | Automatically indent code (reload page after changing)
               .checkbox
-                input.hoverShowSource(type="checkbox")
-                label Highlight linked code lines on hover
+                label
+                  input.hoverShowSource(type="checkbox")
+                  | Highlight linked code lines on hover
               .checkbox
-                input.hoverShowAsmDoc(type="checkbox")
-                label Show asm description on hover
+                label
+                  input.hoverShowAsmDoc(type="checkbox")
+                  | Show asm description on hover
               .checkbox
-                input.showQuickSuggestions(type="checkbox")
-                label Show quick suggestions
+                label
+                  input.showQuickSuggestions(type="checkbox")
+                  | Show quick suggestions
               .checkbox
-                input.useCustomContextMenu(type="checkbox")
-                label Use custom context menu
+                label
+                  input.useCustomContextMenu(type="checkbox")
+                  | Use custom context menu
               .checkbox
-                input.showMinimap(type="checkbox")
-                label Show editor minimap
+                label
+                  input.showMinimap(type="checkbox")
+                  | Show editor minimap
               .checkbox
-                input.keepSourcesOnLangChange(type="checkbox")
-                label Keep editor source on language change
+                label
+                  input.keepSourcesOnLangChange(type="checkbox")
+                  | Keep editor source on language change
               .checkbox
-                input.useSpaces(type="checkbox")
-                label Use spaces for indentation
+                label
+                  input.useSpaces(type="checkbox")
+                  | Use spaces for indentation
               div
                 label Tab width
                 input.tabWidth(type="number")
@@ -190,8 +204,9 @@
                 label Format based on
                 select.formatBase
               .checkbox
-                input.wordWrap(type="checkbox")
-                label Enable Word Wrapping
+                label
+                  input.wordWrap(type="checkbox")
+                  | Enable Word Wrapping
         .card.mt-1
           .card-header
             .card-title
@@ -200,8 +215,9 @@
             .form-group(role="group")
               div
                 .checkbox
-                  input.compileOnChange(type="checkbox")
-                  label Compile automatically when source changes
+                  label
+                    input.compileOnChange(type="checkbox")
+                    | Compile automatically when source changes
                 div
                   label Delay before compiling
                   .slider-input
@@ -209,8 +225,9 @@
                     input.delay(type="range")
                     b 3s
               .checkbox
-                input.colourise(type="checkbox")
-                label Colourise lines to show how the source maps to the output
+                label
+                  input.colourise(type="checkbox")
+                  | Colourise lines to show how the source maps to the output
               label
                 | Colour scheme&nbsp;
                 select.colourScheme
@@ -253,11 +270,13 @@
                     span.fa.fa-clipboard
               #embedsettings.form-group(role="group")
                 .checkbox
-                  input.readOnly(type="checkbox")
-                  label.ml-1 Read Only
+                  label
+                    input.readOnly(type="checkbox")
+                    | Read Only
                 .checkbox
-                  input.hideEditorToolbars(type="checkbox")
-                  label.ml-1 Hide Editor Toolbars
+                  label
+                    input.hideEditorToolbars(type="checkbox")
+                    | Hide Editor Toolbars
               if sharingEnabled
                 .socialsharing.mt-2
 

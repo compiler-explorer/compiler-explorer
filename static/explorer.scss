@@ -405,8 +405,12 @@ label#vim-label {
     top: 3px;
 }
 
-#settings label {
-    margin-left: 3px;
+#settings input, #embedsettings input {
+    margin-right: 3px;
+}
+
+.checkbox label {
+    user-select: none;
 }
 
 #settings select, #settings input:not([type=checkbox]):not([type=range]) {
@@ -851,4 +855,8 @@ html[data-theme=dark] {
 
 .hideable {
     margin-left: 4px;
+}
+
+.checkbox label {
+    cursor: pointer;
 }
