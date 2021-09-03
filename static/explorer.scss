@@ -331,6 +331,8 @@ pre.content.wrap * {
     max-height: 70% !important;
     overflow-y: scroll;
     width: auto;
+    // For my fellow Firefox users
+    scrollbar-width: thin;
 }
 
 .font-option {
