@@ -196,7 +196,7 @@ export class Sharing {
             this.clippyButton = null;
         }
     }
-//  this.displayTooltip(this.share, 'Error copying link to clipboard'))
+
     private initButtons(): void {
         const shareShortCopyToClipBtn = this.shareShort.find('.clip-icon');
         const shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
