@@ -132,10 +132,12 @@
                 span.err-count
                   | 0
                 | )
-        span.short-compiler-name
-        button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
-        span.compile-info(title="Compilation info")
-        button.btn.btn-sm.btn-light.fas.fa-chart-bar.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+        span.short-compiler-name.mr-1
+        button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+          span.fas.fa-info
+        span.compile-info.mr-1(title="Compilation info")
+        button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+          span.fas.fa-chart-bar
 
   #executor
     .top-bar.btn-toolbar.bg-light(role="toolbar")

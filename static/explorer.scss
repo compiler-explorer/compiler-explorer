@@ -335,6 +335,11 @@ pre.content.wrap * {
     scrollbar-width: thin;
 }
 
+.font-size-list button {
+    margin-left: 0 !important;
+    border-radius: 0;
+}
+
 .font-option {
     text-align: center;
 }
@@ -395,10 +400,6 @@ pre.content.wrap * {
 
 .save-btn {
     margin-left: 5px;
-}
-
-button.dropdown-item.btn.btn-light.btn-sm {
-    margin-left: 0 !important;
 }
 
 label#vim-label {
