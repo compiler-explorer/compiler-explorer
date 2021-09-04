@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,11 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var _ = require('underscore');
+import _ from 'underscore';
+import * as monaco from 'monaco-editor';
 
-var config = {
-    value: '',
+const DEFAULT_MONACO_CONFIG: monaco.editor.IEditorConstructionOptions = {
     fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
     scrollBeyondLastLine: true,
     quickSuggestions: false,
@@ -39,19 +38,17 @@ var config = {
     emptySelectionClipboard: true,
 };
 
-function extendConfig(options, settings) {
-    var settingsObject = {};
+export function extendConfig(
+    overrides: monaco.editor.IEditorConstructionOptions,
+    settings?: any /* SiteSettings #2917 */
+): monaco.editor.IEditorConstructionOptions {
     if (settings !== undefined) {
-        settingsObject = {
+        return _.extend({}, DEFAULT_MONACO_CONFIG, {
             fontFamily: settings.editorsFFont,
             autoIndent: settings.autoIndent ? 'advanced' : 'none',
             vimInUse: settings.useVim,
             fontLigatures: settings.editorsFLigatures,
-        };
+        }, overrides);
     }
-    return _.extend({}, config, settingsObject, options);
+    return _.extend({}, DEFAULT_MONACO_CONFIG, overrides);
 }
-
-module.exports = {
-    extendConfig: extendConfig,
-};

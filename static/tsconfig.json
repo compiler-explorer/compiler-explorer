@@ -15,6 +15,7 @@
 		"formatter-registry.ts",
 		"sharing.ts",
 		"url.ts",
-		"utils.ts"
+		"utils.ts",
+		"monaco-config.ts"
 	]
 }
