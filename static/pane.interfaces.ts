@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { Container } from 'golden-layout'
-import monaco, {ISelection} from 'monaco-editor';
+import * as monaco from 'monaco-editor';
 
 import { FontScale } from './fontscale'
 
@@ -40,8 +40,8 @@ export interface PaneState {
 }
 
 // TODO(supergrecko): get the full type
-export interface OpaqueState {
-    selection: ISelection;
+export interface BasePaneState {
+    selection: monaco.Selection;
     id: number;
     compilerName: string;
     editorid: number;
@@ -50,7 +50,7 @@ export interface OpaqueState {
 export interface BasicPane {
     container: Container;
     eventHub: unknown; /* typeof hub.createEventHub() */
-    selection: monaco.ISelection;
+    selection: monaco.Selection;
     domRoot: JQuery;
     compilerInfo: PaneCompilerState;
     fontScale: typeof FontScale;
@@ -58,7 +58,7 @@ export interface BasicPane {
     settings: any; /* CE site settings */
 
     // new(hub: unknown, state: OpaqueState, container: Container);
-    initButtons(state: OpaqueState);
+    initButtons(state: BasePaneState);
     initCallbacks();
 
     setTitle();
@@ -66,7 +66,7 @@ export interface BasicPane {
     resize();
     close();
 
-    onCompiler(id: number, compiler: unknown /* actual compiler */, options: unknown, editorId: number);
+    onCompiler(id: number, compiler: any /* actual compiler */, options: any, editorId: number);
     onCompileResult(id: number, compiler: unknown /* actual compiler */, result: unknown);
     onCompilerClose(id: number);
     onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent);

@@ -17,6 +17,7 @@
 		"url.ts",
 		"utils.ts",
 		"pane.ts",
-		"pane.interfaces.ts"
+		"pane.interfaces.ts",
+		"panes/rustmir-view.ts"
 	]
 }

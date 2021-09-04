@@ -24,22 +24,22 @@
 
 import _ from 'underscore';
 import { Container } from 'golden-layout';
-import monaco from 'monaco-editor';
+import * as monaco from 'monaco-editor';
 
 import { FontScale } from './fontscale'
-import {BasicPane, OpaqueState, PaneCompilerState} from './pane.interfaces';
+import {BasicPane, BasePaneState, PaneCompilerState} from './pane.interfaces';
 import { SiteSettings } from './settings.interrfaces';
 
-export abstract class Pane<E extends monaco.editor.ICodeEditor = monaco.editor.IStandaloneCodeEditor> implements BasicPane {
+export abstract class Pane<E extends monaco.editor.ICodeEditor> implements BasicPane {
     compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
     topBar: JQuery;
     eventHub: any /* typeof hub.createEventHub() */;
-    selection: monaco.ISelection;
+    selection: monaco.Selection;
     editor: E;
     fontScale: typeof FontScale
-    isAwaitingInitialResults: boolean = true;
+    isAwaitingInitialResults: boolean = false;
     settings: SiteSettings | {} = {};
 
     /**
@@ -49,7 +49,7 @@ export abstract class Pane<E extends monaco.editor.ICodeEditor = monaco.editor.I
      * @param container
      * @protected
      */
-    protected constructor(hub: any /* Hub */, state: OpaqueState, container: Container) {
+    protected constructor(hub: any /* Hub */, container: Container, state: BasePaneState) {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
@@ -109,12 +109,12 @@ export abstract class Pane<E extends monaco.editor.ICodeEditor = monaco.editor.I
      */
     abstract emitOpeningAnalyticsEvent(): void
 
-    abstract initButtons(state: unknown /* typeof state */);
-    abstract initCallbacks();
+    initButtons(state: BasePaneState /* typeof state */): void {}
+    initCallbacks(): void {}
     abstract getPaneName(): string;
-    abstract onCompiler(id: unknown, compiler: unknown, options: unknown, editorId: unknown);
-    abstract onCompileResult(id: unknown, compiler: unknown, result: unknown);
-    abstract close();
+    abstract onCompiler(id: number, compiler: any, options: any, editorId: number): void;
+    abstract onCompileResult(id: unknown, compiler: unknown, result: unknown): void;
+    abstract close(): void;
 
     initStandardCallbacks() {
         this.fontScale.on('change', () => this.updateState());
