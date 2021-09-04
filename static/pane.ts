@@ -27,10 +27,16 @@ import { Container } from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
 import { FontScale } from './fontscale'
-import {BasicPane, BasePaneState, PaneCompilerState} from './pane.interfaces';
-import { SiteSettings } from './settings.interrfaces';
+import { BasePaneState, PaneCompilerState } from './pane.interfaces';
+import { SiteSettings } from './settings.interfaces';
 
-export abstract class Pane<E extends monaco.editor.ICodeEditor> implements BasicPane {
+/**
+ * Basic container for a tool pane in Compiler Explorer
+ *
+ * Type parameter E indicates which monaco editor kind this pane hosts. Common
+ * values are monaco.editor.IDiffEditor and monaco.ICodeEditor
+ */
+export abstract class Pane<E extends monaco.editor.IEditor> {
     compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
@@ -43,11 +49,10 @@ export abstract class Pane<E extends monaco.editor.ICodeEditor> implements Basic
     settings: SiteSettings | {} = {};
 
     /**
+     * Base constructor for any pane. Performs common initialization tasks such
+     * as registering standard event listeners and lifecycle handlers.
      *
-     * @param hub
-     * @param state
-     * @param container
-     * @protected
+     * Overridable for implementors
      */
     protected constructor(hub: any /* Hub */, container: Container, state: BasePaneState) {
         this.container = container;
@@ -109,14 +114,19 @@ export abstract class Pane<E extends monaco.editor.ICodeEditor> implements Basic
      */
     abstract emitOpeningAnalyticsEvent(): void
 
+    /** Optionally overridable code for initializing pane buttons */
     initButtons(state: BasePaneState /* typeof state */): void {}
+
+    /** Optionally overridable code for initializing event callbacks */
     initCallbacks(): void {}
+
     abstract getPaneName(): string;
     abstract onCompiler(id: number, compiler: any, options: any, editorId: number): void;
     abstract onCompileResult(id: unknown, compiler: unknown, result: unknown): void;
     abstract close(): void;
 
-    initStandardCallbacks() {
+    /** Initialize standard lifecycle hooks */
+    protected initStandardCallbacks(): void {
         this.fontScale.on('change', () => this.updateState());
         this.container.on('destroy', () => this.close());
         this.container.on('resize', () => this.resize());
@@ -132,32 +142,24 @@ export abstract class Pane<E extends monaco.editor.ICodeEditor> implements Basic
         this.eventHub.on('resize', () => this.resize());
     }
 
-    setTitle() {
+    protected setTitle() {
         this.container.setTitle(this.getPaneName());
     }
 
-    resize() {
-        const topBarHeight = this.topBar.outerHeight(true);
-        this.editor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight,
-        });
-    }
-
-    onCompilerClose(id: unknown) {
+    protected onCompilerClose(id: unknown) {
         if (this.compilerInfo.compilerId === id) {
             _.defer(() => this.container.close())
         }
     }
 
-    onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent) {
+    protected onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent) {
         if (this.isAwaitingInitialResults) {
             this.selection = event.selection
             this.updateState();
         }
     }
 
-    onSettingsChange(settings: SiteSettings) {
+    protected onSettingsChange(settings: SiteSettings) {
         this.settings = settings;
         this.editor.updateOptions({
             contextmenu: settings.useCustomContextMenu,
@@ -181,5 +183,13 @@ export abstract class Pane<E extends monaco.editor.ICodeEditor> implements Basic
 
     updateState() {
         this.container.setState(this.getCurrentState());
+    }
+
+    resize() {
+        const topBarHeight = this.topBar.outerHeight(true);
+        this.editor.layout({
+            width: this.domRoot.width(),
+            height: this.domRoot.height() - topBarHeight,
+        });
     }
 }

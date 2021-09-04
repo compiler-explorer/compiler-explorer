@@ -23,14 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {Pane} from '../pane';
-import ga from '../analytics';
 import * as monaco from 'monaco-editor';
-import {Container} from 'golden-layout';
-import {BasePaneState} from '../pane.interfaces';
-import {extendConfig} from '../monaco-config';
+import { Container } from 'golden-layout';
 
-export interface RustMirState extends BasePaneState {2
+import ga from '../analytics';
+import { extendConfig } from '../monaco-config';
+import { Pane } from '../pane';
+import { BasePaneState } from '../pane.interfaces';
+
+export interface RustMirState extends BasePaneState {
     rustMirOutput: any;
 }
 
