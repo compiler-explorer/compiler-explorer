@@ -58,10 +58,10 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
-        this.initializeDomRoot();
+        this.initializeDOMRoot();
 
         const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
-        this.initializeEditor(editorRoot);
+        this.createEditor(editorRoot);
 
         this.selection = state.selection
         this.compilerInfo = {
@@ -72,9 +72,9 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
 
-        this.initButtons(state);
-        this.initStandardCallbacks();
-        this.initCallbacks();
+        this.registerButtons(state);
+        this.registerStandardCallbacks();
+        this.registerCallbacks();
         this.setTitle();
     }
 
@@ -86,7 +86,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
      * this.domRoot.html($('#rustmir').html());
      * ```
      */
-    abstract initializeDomRoot(): void;
+    abstract initializeDOMRoot(): void;
 
     /**
      * Initialize the monaco editor instance. Typical implementation for looks
@@ -98,7 +98,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
      * }));
      * ```
      */
-    abstract initializeEditor(editorRoot: HTMLElement): void;
+    abstract createEditor(editorRoot: HTMLElement): void;
 
     /**
      * Emit analytics event for opening the pane tab. Typical implementation
@@ -112,13 +112,13 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
      * });
      * ```
      */
-    abstract emitOpeningAnalyticsEvent(): void
+    abstract registerOpeningAnalyticsEvent(): void
 
     /** Optionally overridable code for initializing pane buttons */
-    initButtons(state: BasePaneState /* typeof state */): void {}
+    registerButtons(state: BasePaneState /* typeof state */): void {}
 
     /** Optionally overridable code for initializing event callbacks */
-    initCallbacks(): void {}
+    registerCallbacks(): void {}
 
     abstract getPaneName(): string;
     abstract onCompiler(id: number, compiler: any, options: any, editorId: number): void;
@@ -126,7 +126,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
     abstract close(): void;
 
     /** Initialize standard lifecycle hooks */
-    protected initStandardCallbacks(): void {
+    protected registerStandardCallbacks(): void {
         this.fontScale.on('change', () => this.updateState());
         this.container.on('destroy', () => this.close());
         this.container.on('resize', () => this.resize());

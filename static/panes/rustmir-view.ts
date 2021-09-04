@@ -43,11 +43,11 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
         }
     }
 
-    initializeDomRoot(): void {
+    override initializeDOMRoot(): void {
         this.domRoot.html($('#rustmir').html());
     }
 
-    initializeEditor(editorRoot: HTMLElement): void {
+    override createEditor(editorRoot: HTMLElement): void {
         this.editor = monaco.editor.create(editorRoot, extendConfig({
             language: 'rust',
             readOnly: true,
@@ -56,7 +56,7 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
         }))
     }
 
-    emitOpeningAnalyticsEvent(): void {
+    override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -64,20 +64,20 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
         });
     }
 
-    getPaneName(): string {
+    override getPaneName(): string {
         return `Rust MIR Viewer ${this.compilerInfo.compilerName}` +
             `(Editor #${this.compilerInfo.editorId}, ` +
             `Compiler #${this.compilerInfo.compilerId})`;
     }
 
-    initCallbacks(): void {
+    override registerCallbacks(): void {
         const throttleFunction = _.throttle((event) => this.onDidChangeCursorSelection(event), 500);
         this.editor.onDidChangeCursorSelection((event) => throttleFunction(event));
         this.eventHub.emit('rustMirViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
     }
 
-    onCompileResult(id: unknown, compiler: unknown, result: any): void {
+    override onCompileResult(id: unknown, compiler: unknown, result: any): void {
         if (this.compilerInfo.compilerId !== id) return;
         if (result.hasRustMirOutput) {
             this.showRustMirResults(result.rustMirOutput);
@@ -86,7 +86,7 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
         }
     }
 
-    onCompiler(id: number, compiler: any, options: any, editorId: number): void {
+    override onCompiler(id: number, compiler: any, options: any, editorId: number): void {
         if (this.compilerInfo.compilerId === id) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
@@ -113,7 +113,7 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
         }
     }
 
-    close(): void {
+    override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('rustMirViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
