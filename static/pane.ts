@@ -22,30 +22,164 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import _ from 'underscore';
 import { Container } from 'golden-layout';
+import monaco from 'monaco-editor';
 
-import { BasicPane } from './pane.interfaces';
+import { FontScale } from './fontscale'
+import {BasicPane, OpaqueState, PaneCompilerState} from './pane.interfaces';
+import { SiteSettings } from './settings.interrfaces';
 
-export abstract class Pane implements BasicPane {
+export abstract class Pane<E extends monaco.editor.ICodeEditor = monaco.editor.IStandaloneCodeEditor> implements BasicPane {
+    compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
-    eventHub: unknown;
-    state: unknown;
+    topBar: JQuery;
+    eventHub: any /* typeof hub.createEventHub() */;
+    selection: monaco.ISelection;
+    editor: E;
+    fontScale: typeof FontScale
+    isAwaitingInitialResults: boolean = true;
+    settings: SiteSettings | {} = {};
+
+    /**
+     *
+     * @param hub
+     * @param state
+     * @param container
+     * @protected
+     */
+    protected constructor(hub: any /* Hub */, state: OpaqueState, container: Container) {
+        this.container = container;
+        this.eventHub = hub.createEventHub();
+        this.domRoot = container.getElement();
+        this.initializeDomRoot();
+
+        const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
+        this.initializeEditor(editorRoot);
+
+        this.selection = state.selection
+        this.compilerInfo = {
+            compilerId: state.id,
+            compilerName: state.compilerName,
+            editorId: state.editorid,
+        }
+        this.fontScale = new FontScale(this.domRoot, state, this.editor);
+        this.topBar = this.domRoot.find('.top-bar');
+
+        this.initButtons(state);
+        this.initStandardCallbacks();
+        this.initCallbacks();
+        this.setTitle();
+    }
+
+    /**
+     * Initialize the DOM root node with the pane's default content. Typical
+     * implementation looks like this:
+     *
+     * ```ts
+     * this.domRoot.html($('#rustmir').html());
+     * ```
+     */
+    abstract initializeDomRoot(): void;
+
+    /**
+     * Initialize the monaco editor instance. Typical implementation for looks
+     * like this:
+     *
+     * ```ts
+     * this.editor = monaco.editor.create(editorRoot, extendConfig({
+     *     // goodies
+     * }));
+     * ```
+     */
+    abstract initializeEditor(editorRoot: HTMLElement): void;
+
+    /**
+     * Emit analytics event for opening the pane tab. Typical implementation
+     * looks like this:
+     *
+     * ```ts
+     * ga.proxy('send', {
+     *   hitType: 'event',
+     *   eventCategory: 'OpenViewPane',
+     *   eventAction: 'RustMir',
+     * });
+     * ```
+     */
+    abstract emitOpeningAnalyticsEvent(): void
 
     abstract initButtons(state: unknown /* typeof state */);
     abstract initCallbacks();
-
-    abstract setTitle();
-    abstract getPaneName();
-    abstract resize();
-    abstract close();
-
+    abstract getPaneName(): string;
     abstract onCompiler(id: unknown, compiler: unknown, options: unknown, editorId: unknown);
     abstract onCompileResult(id: unknown, compiler: unknown, result: unknown);
-    abstract onCompilerClose(id: unknown);
-    abstract onDidChangeCursorSelection(event: Event);
-    abstract onSettingsChange(settings: unknown);
+    abstract close();
 
-    abstract getCurrentState();
-    abstract updateState();
+    initStandardCallbacks() {
+        this.fontScale.on('change', () => this.updateState());
+        this.container.on('destroy', () => this.close());
+        this.container.on('resize', () => this.resize());
+        this.eventHub.on('compileResult', (id, compiler, result) => {
+            this.onCompileResult(id, compiler, result);
+        });
+        this.eventHub.on('compiler', (id, compiler, options, editorId) => {
+            this.onCompiler(id, compiler, options, editorId);
+        });
+        this.eventHub.on('compilerClose', (id) => this.onCompilerClose(id));
+        this.eventHub.on('settingsChange', (settings) => this.onSettingsChange(settings));
+        this.eventHub.on('shown', () => this.resize());
+        this.eventHub.on('resize', () => this.resize());
+    }
+
+    setTitle() {
+        this.container.setTitle(this.getPaneName());
+    }
+
+    resize() {
+        const topBarHeight = this.topBar.outerHeight(true);
+        this.editor.layout({
+            width: this.domRoot.width(),
+            height: this.domRoot.height() - topBarHeight,
+        });
+    }
+
+    onCompilerClose(id: unknown) {
+        if (this.compilerInfo.compilerId === id) {
+            _.defer(() => this.container.close())
+        }
+    }
+
+    onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent) {
+        if (this.isAwaitingInitialResults) {
+            this.selection = event.selection
+            this.updateState();
+        }
+    }
+
+    onSettingsChange(settings: SiteSettings) {
+        this.settings = settings;
+        this.editor.updateOptions({
+            contextmenu: settings.useCustomContextMenu,
+            minimap: {
+                enabled: settings.showMinimap,
+            },
+            fontFamily: settings.editorFFont,
+            fontLigatures: settings.editorsFLigatures,
+        })
+    }
+
+    getCurrentState() {
+        const state = {
+            id: this.compilerInfo.compilerId,
+            editorId: this.compilerInfo.editorId,
+            selection: this.selection,
+        };
+        this.fontScale.addState(state);
+        return state;
+    }
+
+    updateState() {
+        this.container.setState(this.getCurrentState());
+    }
 }

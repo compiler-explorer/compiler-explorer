@@ -23,32 +23,53 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { Container } from 'golden-layout'
+import monaco, {ISelection} from 'monaco-editor';
+
+import { FontScale } from './fontscale'
 
 export interface PaneCompilerState {
-    compilerId: unknown;
+    compilerId: number;
     compilerName: string;
-    editorId: unknown
+    editorId: number;
+}
+
+export interface PaneState {
+    id: number;
+    editorId: number;
+    selection: monaco.Selection;
+}
+
+// TODO(supergrecko): get the full type
+export interface OpaqueState {
+    selection: ISelection;
+    id: number;
+    compilerName: string;
+    editorid: number;
 }
 
 export interface BasicPane {
     container: Container;
     eventHub: unknown; /* typeof hub.createEventHub() */
-    state: unknown; /* typeof state.selection */
+    selection: monaco.ISelection;
     domRoot: JQuery;
+    compilerInfo: PaneCompilerState;
+    fontScale: typeof FontScale;
+    isAwaitingInitialResults: boolean;
+    settings: any; /* CE site settings */
 
-    // new(hub: unknown, state: unknown, container: Container);
-    initButtons(state: unknown /* typeof state */);
+    // new(hub: unknown, state: OpaqueState, container: Container);
+    initButtons(state: OpaqueState);
     initCallbacks();
 
     setTitle();
-    getPaneName();
+    getPaneName(): string;
     resize();
     close();
 
-    onCompiler(id: unknown, compiler: unknown, options: unknown, editorId: unknown);
-    onCompileResult(id: unknown, compiler: unknown, result: unknown);
-    onCompilerClose(id: unknown);
-    onDidChangeCursorSelection(event: Event);
+    onCompiler(id: number, compiler: unknown /* actual compiler */, options: unknown, editorId: number);
+    onCompileResult(id: number, compiler: unknown /* actual compiler */, result: unknown);
+    onCompilerClose(id: number);
+    onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent);
     onSettingsChange(settings: unknown);
 
     getCurrentState();

@@ -119,4 +119,6 @@ FontScale.prototype.setTarget = function (target) {
     this.isFontOfStr = typeof (this.fontSelectorOrEditor) === 'string';
 };
 
+// TODO(supergrecko): replace default export with named export
+FontScale.FontScale = FontScale;
 module.exports = FontScale;
