@@ -22,9 +22,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+type ColourScheme =
+    | 'rainbow'
+    | 'rainbow2'
+    | 'earth'
+    | 'green-blue'
+    | 'gray-shade'
+    | 'rainbow-dark';
+
+type FormatBase =
+    | 'Google'
+    | 'LLVM'
+    | 'Mozilla'
+    | 'Chromium'
+    | 'WebKit';
+
 export interface SiteSettings {
-    useCustomContextMenu: boolean;
-    showMinimap: boolean;
-    editorFFont: string;
+    autoCloseBrackets: boolean;
+    autoIndent: boolean;
+    allowStoreCodeDebug: boolean;
+    colouriseAsm: boolean;
+    colourScheme: ColourScheme;
+    compileOnChange: boolean;
+    // TODO(supergrecko): make this more precise
+    defaultLanguage: string;
+    delayAfterChange: number;
+    enableCommunityAds: boolean
+    enableCtrlS: boolean;
+    enableCtrlStree: boolean;
+    editorsFFont: string
     editorsFLigatures: boolean;
+    formatBase: FormatBase;
+    hoverShowAsmDoc: boolean;
+    hoverShowSource: boolean;
+    keepSourcesOnLangChange: boolean;
+    newEditorLastLang: boolean;
+    showMinimap: boolean;
+    showQuickSuggestions: boolean;
+    tabWidth: number;
+    theme: 'default' | 'dark';
+    useCustomContextMenu: boolean;
+    useSpaces: boolean;
+    useVim: boolean;
+    wordWrap: boolean;
 }

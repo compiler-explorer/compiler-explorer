@@ -166,7 +166,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
             minimap: {
                 enabled: settings.showMinimap,
             },
-            fontFamily: settings.editorFFont,
+            fontFamily: settings.editorsFFont,
             fontLigatures: settings.editorsFLigatures,
         })
     }
