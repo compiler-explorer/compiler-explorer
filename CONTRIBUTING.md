@@ -85,7 +85,7 @@ Note that a current issue makes every project media asset to be locally
  you must stick to **ES5** (so no `let` or arrow operators) js code.
  Sadly there are still enough users out there on old browsers.
  Note that this restriction does not apply to the server side code,
- in which you can use all the cool you want.
+ in which you can use all the cool features you want.
  In lieu of ES6 features, [Underscore.js](https://underscorejs.org/) is available
  as a way to bridge the feature gap. The library is available both 
  in the client and server code.
