@@ -322,7 +322,7 @@ textarea.form-control {
     color: orange !important;
 }
 
-.optgroup-header {
+.ts-dropdown .optgroup-header {
     background-color: #555 !important;
     color: #EEE !important;
     text-shadow: none !important;
@@ -386,7 +386,6 @@ textarea.form-control {
 
 kbd {
     border-color: #818181 !important;
-    background-color: #979797 !important;
 }
 
 .prepend-options {
@@ -508,4 +507,8 @@ a {
 
 .tree li.tree-editor-file:hover {
     background-color: #333 !important;
+}
+
+.popular-arguments-btn {
+    border-color: #474747 !important;
 }

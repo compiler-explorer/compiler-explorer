@@ -42,6 +42,7 @@ var monacoConfig = require('../monaco-config');
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
+var utils = require('../utils');
 
 require('../modes/asm-mode');
 require('../modes/asmruby-mode');
@@ -399,23 +400,8 @@ Compiler.prototype.undefer = function () {
     }
 };
 
-Compiler.prototype.updateAndCalcTopBarHeight = function () {
-    // If we save vertical space by hiding stuff that's OK to hide
-    // when thin, then hide that stuff.
-    this.hideable.show();
-    var topBarHeightMax = this.topBar.outerHeight(true);
-    this.hideable.hide();
-    var topBarHeightMin = this.topBar.outerHeight(true);
-    var topBarHeight = topBarHeightMin;
-    if (topBarHeightMin === topBarHeightMax) {
-        this.hideable.show();
-    }
-
-    return topBarHeight;
-};
-
 Compiler.prototype.resize = function () {
-    var topBarHeight = this.updateAndCalcTopBarHeight();
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputEditor.layout({
         width: this.domRoot.width(),

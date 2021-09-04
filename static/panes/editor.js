@@ -37,6 +37,7 @@ var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings');
+var utils = require('../utils');
 require('../formatter-registry');
 require('../modes/_all');
 
@@ -890,45 +891,19 @@ Editor.prototype.formatCurrentText = function () {
 };
 
 Editor.prototype.resize = function () {
-    var topBarHeight = this.updateAndCalcTopBarHeight();
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
     this.editor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight,
     });
+
     // Only update the options if needed
     if (this.settings.wordWrap) {
         this.editor.updateOptions({
             wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
         });
     }
-};
-
-Editor.prototype.updateAndCalcTopBarHeight = function () {
-    var width = this.domRoot.width();
-    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass('d-none')) {
-        return this.cachedTopBarHeight;
-    }
-
-    var topBarHeight = 0;
-    var topBarHeightMax = 0;
-    var topBarHeightMin = 0;
-
-    if (!this.topBar.hasClass('d-none')) {
-        this.hideable.show();
-        topBarHeightMax = this.topBar.outerHeight(true);
-        this.hideable.hide();
-        topBarHeightMin = this.topBar.outerHeight(true);
-        topBarHeight = topBarHeightMin;
-        if (topBarHeightMin === topBarHeightMax) {
-            this.hideable.show();
-            topBarHeight = topBarHeightMax;
-        }
-    }
-
-    this.cachedTopBarHeight = topBarHeight;
-    this.cachedTopBarHeightAtWidth = width;
-    return topBarHeight;
 };
 
 Editor.prototype.onSettingsChange = function (newSettings) {

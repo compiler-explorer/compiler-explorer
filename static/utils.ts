@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Eugen Bulavin
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,37 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCompiler } from '../base-compiler';
+export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
+    let topBarHeight = 0;
+    let topBarHeightMax = 0;
+    let topBarHeightMin = 0;
 
-import { PascalParser } from './argument-parsers';
-
-export class OCamlCompiler extends BaseCompiler {
-    static get key() { return 'ocaml'; }
-
-    constructor(compilerInfo, env) {
-        super(compilerInfo, env);
-        // override output base because ocaml's -S -o has different semantics.
-        // namely, it outputs a full binary exe to the supposed asm dump.
-        // with this override and optionsForFilter override, that pecularity..
-        // ..is bypassed entirely.
-        this.outputFilebase = 'example';
-    }
-
-    getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    optionsForFilter(filters, outputFileName) {
-        const options = ['-g'];
-        if (filters.binary) {
-            options.unshift('-o', outputFileName);
-        } else {
-            options.unshift('-S', '-c');
+    if (!topBar.hasClass('d-none')) {
+        hideable.show();
+        topBarHeightMax = topBar.outerHeight(true);
+        hideable.hide();
+        topBarHeightMin = topBar.outerHeight(true);
+        topBarHeight = topBarHeightMin;
+        if (topBarHeightMin === topBarHeightMax) {
+            hideable.show();
         }
-        return options;
     }
 
-    getArgumentParser() {
-        return PascalParser;
-    }
+    return topBarHeight;
 }

@@ -6,10 +6,10 @@
       .btn-group.btn-group-sm(role="group" aria-label="Editor settings")
         button.btn.btn-sm.btn-light.load-save(title="Load or save text" aria-label="Load or save text")
           span.fa.fa-save
-          span.hideable &nbsp;Save/Load
+          span.hideable Save/Load
         button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-plus
-          span.hideable &nbsp;Add new...
+          span.hideable Add new...
         .dropdown-menu
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
             span.dropdown-icon.fa.fa-cogs
@@ -25,16 +25,16 @@
             | Source editor
         button#vim-flag.btn.btn-sm.btn-light(title="Toggle Vim Keybindings")
           span.fab.fa-vimeo-v
-          span.hideable &nbsp; Vim
+          span.hideable Vim
       .btn-group.btn-group-sm(role="group" aria-label="External Sites")
         a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" aria-label="Open in Cppinsights")
           svg(height="16" width="16")
             include resources/cppinsights.svg
-          span.hideable &nbsp;CppInsights
+          span.hideable CppInsights
         a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
           svg(height="16" width="16")
             include resources/quickbench.svg
-          span.hideable &nbsp;Quick-bench
+          span.hideable Quick-bench
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
     div#v-status
@@ -52,7 +52,7 @@
                   span.status-icon
           input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
           .input-group-append.populararguments(title="Popular arguments")
-            button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+            button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
               span.sr-only Popular arguments
             div.dropdown-menu.dropdown-menu-right
               button.dropdown-item.btn.btn-light.btn-sm
@@ -63,23 +63,23 @@
       .btn-group.btn-group-sm.filters(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
           span.fas.fa-cog
-          span.hideable &nbsp;Output...
+          span.hideable Output...
         .dropdown-menu
           include options-output.pug
       .btn-group.btn-group-sm.filters(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
           span.fas.fa-filter
-          span.hideable &nbsp;Filter...
+          span.hideable Filter...
         .dropdown-menu
           include options-filters.pug
       .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
         button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
-          span.dp-text.hideable &nbsp;Libraries
+          span.dp-text.hideable Libraries
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
           span.fas.fa-plus
-          span.hideable &nbsp;Add new...
+          span.hideable Add new...
         .dropdown-menu.dropdown-menu-right
           button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Clone this compiler window (click or drag)")
             span.dropdown-icon.far.fa-clone
@@ -111,7 +111,7 @@
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-screwdriver
-          span.hideable &nbsp;Add tool...
+          span.hideable Add tool...
         .dropdown-menu.dropdown-menu-right.toolsmenu
     .monaco-placeholder
     .bottom-bar.bg-light
@@ -132,10 +132,12 @@
                 span.err-count
                   | 0
                 | )
-        span.short-compiler-name
-        button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
-        span.compile-info(title="Compilation info")
-        button.btn.btn-sm.btn-light.fas.fa-chart-bar.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+        span.short-compiler-name.mr-1
+        button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+          span.fas.fa-info
+        span.compile-info.mr-1(title="Compilation info")
+        button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+          span.fas.fa-chart-bar
 
   #executor
     .top-bar.btn-toolbar.bg-light(role="toolbar")
@@ -147,29 +149,40 @@
           input.d-none(type="checkbox" checked=false)
         button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
-          span.dp-text.hideable &nbsp;Libraries
+          span.dp-text.hideable Libraries
       button.btn.btn-sm.btn-light.toggle-compilation.active
         span.fas.fa-cogs
-        span.hideable &nbsp;Compilation
+        span.hideable Compilation
       button.btn.btn-sm.btn-light.toggle-args
         span.fas.fa-terminal
-        span.hideable &nbsp;Arguments
+        span.hideable Arguments
       button.btn.btn-sm.btn-light.toggle-stdin
         span.fas.fa-sign-in-alt
-        span.hideable &nbsp;Stdin
+        span.hideable Stdin
       button.btn.btn-sm.btn-light.toggle-compilerout.active
         span.fas.fa-sign-out-alt
-        span.hideable &nbsp;Compiler output
+        span.hideable Compiler output
       button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
         span.fas.fa-redo
     .top-bar.btn-toolbar.bg-light.panel-compilation(role="toolbar")
       .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
-        select.compiler-picker
-        .input-group.mb-auto
-          .input-group-prepend(title="Show all compilation options")
-            button.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
-              span.btn.btn-sm.btn-light.status-icon
+        .input-group
+          .input-group-prepend
+            .input-group
+              select.compiler-picker
+              .input-group-append
+                button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+                  span.btn.btn-sm.btn-light.status-icon
           input.compilation-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+          // TODO: Maybe enable this in the future?
+          //.input-group-append.populararguments(title="Popular arguments")
+            button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+              span.sr-only Popular arguments
+            div.dropdown-menu.dropdown-menu-right
+              button.dropdown-item.btn.btn-light.btn-sm
+                .argmenuitem
+                  span.argtitle Detailed Compiler Flags
+                  span.argdescription Open a new window to edit verbose compiler flags
     .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
       input.execution-arguments.form-control(type="text" placeholder="Execution arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
     .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
@@ -212,10 +225,10 @@
             input.d-none(type="checkbox" checked=false)
         button.btn.btn-sm.btn-light.toggle-args
           span.fas.fa-terminal
-          span.hideable &nbsp;Arguments
+          span.hideable Arguments
         button.btn.btn-sm.btn-light.toggle-stdin
           span.fas.fa-sign-in-alt
-          span.hideable &nbsp;Stdin
+          span.hideable Stdin
     .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
       input.options.form-control(type="text" placeholder="Tool arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
     .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
@@ -282,7 +295,7 @@
       .btn-group.btn-group-sm.dump-filters
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump passes" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Available dump passes")
           span.fas.fa-compass
-          span.hideable &nbsp;Passes
+          span.hideable Passes
         .dropdown-menu
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light.active(type="button" title="Show Tree passes" data-bind="treeDump" aria-pressed="true")
@@ -299,7 +312,7 @@
       .btn-group.btn-group-sm.dump-filters
         button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Dump pass options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Control the details of the dump")
           span.fas.fa-microchip
-          span.hideable &nbsp;Options
+          span.hideable Options
         .dropdown-menu
           .button-checkbox
             button.dropdown-item.btn.btn-sm.btn-light(type="button" title="Print raw representation of the tree" data-bind="rawOption" aria-pressed="false")
@@ -364,32 +377,32 @@
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.add-compiler(title="Add compiler")
           span.fas.fa-plus
-          span.hideable &nbsp;Add compiler
+          span.hideable Add compiler
         button.btn.btn-sm.btn-light.show-libs.dropdown-toggle(title="Include libs" aria-label="Toggle libraries dropdown" aria-pressed="false" aria-haspopup="true")
           span.fas.fa-book
-          span.dp-text.hideable &nbsp;Libraries
+          span.dp-text.hideable Libraries
     .conformance-wrapper
       table.compiler-list
 
   #compiler-selector
     .form-row
-      .col-auto
-        select.compiler-picker
-      .col
-        .input-group.mb-auto
-          .input-group-prepend(title="Show all compilation options")
-            button.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
-              span.btn.btn-sm.btn-light.status-icon
-          input.conformance-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
-      .col-1
-        span.fas.fa-receipt.d-none.compiler-out(style="cursor: help;" title="This compiler has generated some output. Open its associated pane to read it.")
-        button.fas.fa-times.close(aria-label="Close" title="Close")
-        button.fas.fa-share.close.extract-compiler(aria-label="Pop compiler" title="Show compiler")
+      .input-group
+        .input-group-prepend
+          .input-group
+            select.compiler-picker
+            .input-group-append
+              button.btn.btn-sm.btn-light.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+                span.btn.btn-sm.btn-light.status-icon
+        input.conformance-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+        .input-group-append
+          button.btn.btn-sm.fas.fa-receipt.d-none.compiler-out.compiler-selector-icon(disabled=true style="cursor: help;" title="This compiler has generated some output. Open its associated pane to read it.")
+          button.btn.btn-sm.fas.fa-times.close.compiler-selector-icon(aria-label="Close" title="Close")
+          button.btn.btn-sm.fas.fa-share.close.extract-compiler.compiler-selector-icon(aria-label="Pop compiler" title="Show compiler")
 
   #libs-dropdown
     .no-libs
       p No libs configured for this language yet.
-      a(target="_blank" rel="noopener noreferrer" href="https://github.com/compiler-explorer/compiler-explorer/issues/new")
+      a(target="_blank" rel="noopener noreferrer" href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=request%2Cnew-libs&template=library_request.md&title=%5BLIB+REQUEST%5D+INSERT+LIB+NAME+HERE")
         | You can suggest us one at any time&nbsp;
         sup.fas.fa-external-link-alt.opens-new-window(title="Opens in a new window")
 
@@ -410,8 +423,8 @@
         span.fas.fa-trash
 
   #lib-favorite-tpl
-    div
-      button.btn.btn-md.lib-name-and-version &nbsp;
+    div.mb-1
+      button.btn.btn-md.btn-outline-primary.lib-name-and-version
 
   #lib-search-result-tpl
     .card
@@ -436,8 +449,8 @@
       .btn-group.btn-group-sm.menu(role="group" aria-label="Menu")
         button.dropdown-toggle.btn.btn-sm.btn-light.file-menu(type="button" title="File" aria-label="File" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-save
-          span.hideable &nbsp;Project
-        .dropdown-menu 
+          span.hideable Project
+        .dropdown-menu
           input.dropdown-item.btn.btn-sm.btn-light.load-project-from-file(type="file" title="Load project from ZIP" aria-label="Load project from ZIP")
           button.dropdown-item.btn.btn-sm.btn-light.save-project-to-file(type="file" title="Save project" aria-label="Save project")
             span.dropdown-icon.fa.fa-save
@@ -445,7 +458,7 @@
       .btn-group.btn-group-sm.options(role="group" aria-label="Tree settings")
         button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
           span.fa.fa-plus
-          span.hideable &nbsp;Add new...
+          span.hideable Add new...
         .dropdown-menu
           button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
             span.dropdown-icon.fa.fa-code

@@ -35,6 +35,7 @@ var AnsiToHtml = require('../ansi-to-html');
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
+var utils = require('../utils');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -156,18 +157,10 @@ Executor.prototype.undefer = function () {
     if (this.needsCompile) this.compile();
 };
 
-Executor.prototype.updateAndCalcTopBarHeight = function () {
-    // If we save vertical space by hiding stuff that's OK to hide
-    // when thin, then hide that stuff.
-    this.hideable.show();
-    var topBarHeightMax = this.topBar.outerHeight(true);
-    this.hideable.hide();
-    var topBarHeightMin = this.topBar.outerHeight(true);
-    var topBarHeight = topBarHeightMin;
-    if (topBarHeightMin === topBarHeightMax) {
-        this.hideable.show();
-    }
+Executor.prototype.resize = function () {
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, $(this.topBar[0]), this.hideable);
 
+    // We have some more elements that modify the topBarHeight
     if (!this.panelCompilation.hasClass('d-none')) {
         topBarHeight += this.panelCompilation.outerHeight(true);
     }
@@ -178,11 +171,6 @@ Executor.prototype.updateAndCalcTopBarHeight = function () {
         topBarHeight += this.panelStdin.outerHeight(true);
     }
 
-    return topBarHeight;
-};
-
-Executor.prototype.resize = function () {
-    var topBarHeight = this.updateAndCalcTopBarHeight();
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
 
@@ -939,7 +927,7 @@ Executor.prototype.getLinkHint = function () {
 Executor.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return 'Executor ' + compName + ' (' + langName + ',' + this.getLinkHint() + ')';
+    return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
 };
 
 Executor.prototype.updateCompilerName = function () {

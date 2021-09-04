@@ -280,7 +280,7 @@ LibsWidgetExt.prototype.newSearchResult = function (libId, lib) {
     }, this));
 
     if (!hasVisibleVersions) {
-        noVersionSelectedOption.text('No visible versions');
+        noVersionSelectedOption.text('No available versions');
         versions.prop('disabled', true);
     }
 

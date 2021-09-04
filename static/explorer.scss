@@ -114,16 +114,13 @@ li.tweet {
     min-width: 10em;
 }
 
-.diff-picker .compiler {
-    font-weight: bold;
-}
-
 .diff-picker .options {
     padding-left: 0.5em;
     font-size: small;
 }
 
 .diff-picker .meta {
+    font-style: italic;
     text-align: right;
     list-style: none;
     margin: 0;
@@ -331,9 +328,16 @@ pre.content.wrap * {
 
 .font-size-list {
     min-width: 43px !important;
-    max-height: 40% !important;
+    max-height: 70% !important;
     overflow-y: scroll;
     width: auto;
+    // For my fellow Firefox users
+    scrollbar-width: thin;
+}
+
+.font-size-list button {
+    margin-left: 0 !important;
+    border-radius: 0;
 }
 
 .font-option {
@@ -347,7 +351,9 @@ pre.content.wrap * {
 
 .compiler-list {
     display: block;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
 }
 
 .cfg-toolbar table {
@@ -396,19 +402,19 @@ pre.content.wrap * {
     margin-left: 5px;
 }
 
-button.dropdown-item.btn.btn-light.btn-sm {
-    margin-left: 0 !important;
-}
-
 label#vim-label {
     top: 3px;
 }
 
-#settings label {
-    margin-left: 3px;
+#settings input, #embedsettings input {
+    margin-right: 3px;
 }
 
-#settings select, #settings input:not([type=checkbox]), #settings .slider-input {
+.checkbox label {
+    user-select: none;
+}
+
+#settings select, #settings input:not([type=checkbox]):not([type=range]) {
     display: block;
 }
 
@@ -781,11 +787,6 @@ html[data-theme=dark] {
     text-transform: uppercase;
 }
 
-.options {
-    border-top-left-radius: .2rem !important;
-    border-bottom-left-radius: .2rem !important;
-}
-
 .copy-link-btn {
     padding-top: 0;
 }
@@ -796,12 +797,13 @@ html[data-theme=dark] {
 
 .status-icon {
     border: none;
+    background-color: transparent;
 }
 
 .tree-editor-file {
     cursor: pointer;
     line-height: 14px;
-    padding: 0px 0px 0px 5px;
+    padding: 0 0 0 5px;
 }
 .tree-editor-file span {
     font-family: inherit;
@@ -810,7 +812,7 @@ html[data-theme=dark] {
 }
 .tree-editor-file button {
     float: right;
-    padding: 4px 10px 4px 0px;
+    padding: 4px 10px 4px 0;
 }
 .mainbar .cmake-project {
     margin-top: 2px;
@@ -818,4 +820,44 @@ html[data-theme=dark] {
 
 .v-scroll {
     overflow-y: scroll;
+}
+
+.prepend-options {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.popular-arguments-btn {
+    border-top-right-radius: 0;
+}
+
+.panel-compilation {
+    border-top: none !important;
+    border-bottom: none !important;
+}
+
+.compiler-out {
+    cursor: help;
+}
+
+.compiler-selector-icon {
+    padding: 0 4px 0 4px !important;
+}
+
+.load-project-from-file {
+    width: 400px;
+}
+
+.delay {
+    display: inline;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.hideable {
+    margin-left: 4px;
+}
+
+.checkbox label {
+    cursor: pointer;
 }

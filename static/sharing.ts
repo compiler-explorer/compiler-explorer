@@ -86,7 +86,9 @@ export class Sharing {
     }
 
     private initCallbacks(): void {
-        this.layout.eventHub.on('displaySharingPopover', () => this.shareShort.trigger('click'));
+        this.layout.eventHub.on('displaySharingPopover', () => {
+            this.openShareModalForType(LinkType.Short)
+        });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
         $('#sharelinkdialog').on('show.bs.modal', this.onOpenModalPane.bind(this))
@@ -134,6 +136,7 @@ export class Sharing {
             socialSharingElements.empty();
             const config = this.layout.toConfig();
             Sharing.getLinks(config, currentBind, (error: any, newUrl: string, extra: string, updateState: boolean) => {
+                permalink.off('click');
                 if (error || !newUrl) {
                     permalink.prop('disabled', true);
                     permalink.val(error || 'Error providing URL');
@@ -143,13 +146,15 @@ export class Sharing {
                         Sharing.storeCurrentConfig(config, extra);
                     }
                     permalink.val(newUrl);
+                    permalink.on('click', () => {
+                        permalink.trigger('focus').trigger('select');
+                    })
                     if (options.sharingEnabled) {
                         Sharing.updateShares(socialSharingElements, newUrl);
                         // Disable the links for every share item which does not support embed html as links
                         if (currentBind === LinkType.Embed) {
                             socialSharingElements.children('.share-no-embeddable')
-                                .addClass('share-disabled')
-                                .prop('title', 'Embed links are not supported in this service')
+                                .hide()
                                 .on('click', false);
                         }
                     }
@@ -197,15 +202,9 @@ export class Sharing {
         const shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
         const shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
 
-        if (Sharing.areClipboardOperationSupported()) {
-            shareShortCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Short));
-            shareFullCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Full));
-            shareEmbedCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Embed));
-        } else {
-            shareShortCopyToClipBtn.hide();
-            shareFullCopyToClipBtn.hide();
-            shareEmbedCopyToClipBtn.hide();
-        }
+        shareShortCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Short));
+        shareFullCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Full));
+        shareEmbedCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Embed));
 
         if (options.sharingEnabled) {
             Sharing.updateShares($('#socialshare'), window.location.protocol + '//' + window.location.hostname);
@@ -215,10 +214,12 @@ export class Sharing {
     private onClipButtonPressed(event: ClickEvent, type: LinkType): void {
         // Dont let the modal show up.
         // We need this because the button is a child of the dropdown-item with a data-toggle=modal
-        event.stopPropagation();
-        this.copyLinkTypeToClipboard(type);
-        // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
-        this.share.dropdown('hide');
+        if (Sharing.isNavigatorClipboardAvailable()) {
+            event.stopPropagation();
+            this.copyLinkTypeToClipboard(type);
+            // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
+            this.share.dropdown('hide');
+        }
     }
 
     private copyLinkTypeToClipboard(type: LinkType): void {
@@ -231,7 +232,7 @@ export class Sharing {
                 if (updateState) {
                     Sharing.storeCurrentConfig(config, extra);
                 }
-                this.doLinkCopyToClipboard(newUrl);
+                this.doLinkCopyToClipboard(type, newUrl);
             }
         });
     }
@@ -248,13 +249,27 @@ export class Sharing {
         setTimeout(() => where.tooltip('hide'), 1500);
     }
 
-    private doLinkCopyToClipboard(link: string): any {
-        // TODO: Add more ways for users to be able to copy the link text
-        // Right now, only the newer navigator.clipboard is available, but more can be added
+    private openShareModalForType(type: LinkType): void {
+        switch (type) {
+            case LinkType.Short:
+                this.shareShort.trigger('click');
+                break;
+            case LinkType.Full:
+                this.shareFull.trigger('click');
+                break;
+            case LinkType.Embed:
+                this.shareEmbed.trigger('click');
+                break;
+        }
+    }
+
+    private doLinkCopyToClipboard(type: LinkType, link: string): void {
         if (Sharing.isNavigatorClipboardAvailable()) {
             navigator.clipboard.writeText(link)
                 .then(() => this.displayTooltip(this.share, 'Link copied to clipboard'))
-                .catch(() => this.displayTooltip(this.share, 'Error copying link to clipboard'));
+                .catch(() => this.openShareModalForType(type));
+        } else {
+            this.openShareModalForType(type);
         }
     }
 
@@ -334,14 +349,6 @@ export class Sharing {
         window.history.pushState(null, null, extra);
     }
 
-    /***
-     * True if there's at least one way to copy a link to the user's clipboard.
-     * Currently, only navigator.clipboard is supported
-     */
-    public static areClipboardOperationSupported(): boolean {
-        return Sharing.isNavigatorClipboardAvailable();
-    };
-
     private static isNavigatorClipboardAvailable(): boolean {
         return navigator.clipboard != null;
     };
@@ -372,14 +379,14 @@ export class Sharing {
             const newElement = baseTemplate.children('a.share-item').clone();
             if (service.logoClass) {
                 newElement.prepend($('<span>')
-                    .addClass('dropdown-icon')
+                    .addClass('dropdown-icon mr-1')
                     .addClass(service.logoClass)
                     .prop('title', serviceName)
                 );
             }
             if (service.text) {
                 newElement.children('span.share-item-text')
-                    .text(' ' + service.text);
+                    .text(service.text);
             }
             newElement
                 .prop('href', service.getLink('Compiler Explorer', url))
