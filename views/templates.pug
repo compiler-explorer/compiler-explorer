@@ -35,6 +35,8 @@
           svg(height="16" width="16")
             include resources/quickbench.svg
           span.hideable Quick-bench
+      .btn-group.btn-group-sm.mx-auto
+        button.btn.btn-sm.btn-outline-info.currentCursorPosition(disabled=true) (0, 0)
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
     div#v-status

@@ -307,6 +307,8 @@ Editor.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
+    this.editor.onDidChangeCursorPosition(_.bind(this.onDidChangeCursorPosition,this));
+
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
@@ -335,6 +337,12 @@ Editor.prototype.onDidChangeCursorSelection = function (e) {
     if (this.awaitingInitialResults) {
         this.selection = e.selection;
         this.updateState();
+    }
+};
+
+Editor.prototype.onDidChangeCursorPosition = function (e) {
+    if (e.position) {
+        this.currentCursorPositionLabel.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
     }
 };
 
@@ -477,6 +485,8 @@ Editor.prototype.initButtons = function (state) {
     this.quickBenchButton.on('mousedown', _.bind(function () {
         this.updateOpenInQuickBench();
     }, this));
+
+    this.currentCursorPositionLabel = this.domRoot.find('.currentCursorPosition');
 };
 
 Editor.prototype.updateButtons = function () {

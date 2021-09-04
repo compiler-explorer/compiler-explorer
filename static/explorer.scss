@@ -861,3 +861,9 @@ html[data-theme=dark] {
 .checkbox label {
     cursor: pointer;
 }
+
+.currentCursorPosition {
+    font-size: small;
+    border: none;
+    user-select: text;
+}
