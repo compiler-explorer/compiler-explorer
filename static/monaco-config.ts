@@ -25,7 +25,7 @@
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 
-const DEFAULT_MONACO_CONFIG: monaco.editor.IEditorConstructionOptions = {
+const DEFAULT_MONACO_CONFIG = {
     fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
     scrollBeyondLastLine: true,
     quickSuggestions: false,
@@ -38,10 +38,32 @@ const DEFAULT_MONACO_CONFIG: monaco.editor.IEditorConstructionOptions = {
     emptySelectionClipboard: true,
 };
 
-export function extendConfig(
-    overrides: monaco.editor.IEditorConstructionOptions,
-    settings?: any /* SiteSettings #2917 */
-): monaco.editor.IEditorConstructionOptions {
+type EditorKinds =
+    | monaco.editor.IStandaloneDiffEditor
+    | monaco.editor.IStandaloneCodeEditor;
+
+/** Pick consturction options based on editor kind */
+type EditorConstructionType<E extends EditorKinds> =
+    E extends monaco.editor.IStandaloneDiffEditor
+        ? monaco.editor.IDiffEditorConstructionOptions
+        : monaco.editor.IStandaloneEditorConstructionOptions;
+
+/**
+ * Extend the default monaco editor construction options.
+ *
+ * Type parameter E indicates which editor kind you're constructing a config
+ * for. Valid options are EditorKinds, aka monaco.editor.IStandaloneDiffEditor
+ * or monaco.editor.IStandaloneCodeEditor
+ *
+ * TODO(supergrecko): underscore.extend yields any, can we improve the type
+ *  check on this?
+ */
+export function extendConfig<
+    E extends EditorKinds = monaco.editor.IStandaloneCodeEditor,
+    T = EditorConstructionType<E>>(
+    overrides: T,
+    settings?: any, /* SiteSettings #2917 */
+): T {
     if (settings !== undefined) {
         return _.extend({}, DEFAULT_MONACO_CONFIG, {
             fontFamily: settings.editorsFFont,
