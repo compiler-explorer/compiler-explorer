@@ -1004,7 +1004,7 @@ function ariaLabel(status) {
 
 function color(status) {
     // Compiling...
-    if (status.code === 4) return 'black';
+    if (status.code === 4) return '#888888';
     if (status.didExecute) return '#12BB12';
     return '#FF1212';
 }
@@ -1021,7 +1021,7 @@ Executor.prototype.handleCompilationStatus = function (status) {
             .toggle(status.code !== 0)
             .prop('aria-label', ariaLabel(status))
             .prop('data-status', status.code)
-            .toggleClass('fa-spinner', status.code === 4)
+            .toggleClass('fa-spinner fa-spin', status.code === 4)
             .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
             .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
     }
