@@ -189,6 +189,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
     resize() {
         const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot,
             this.topBar, this.hideable);
+        if (!this.editor) return;
         this.editor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight,
