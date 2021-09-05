@@ -26,9 +26,10 @@ import _ from 'underscore';
 import { Container } from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import { FontScale } from './fontscale'
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
-import { SiteSettings } from './settings.interfaces';
+
+import { FontScale } from '../fontscale'
+import { SiteSettings } from '../settings.interfaces';
 
 /**
  * Basic container for a tool pane in Compiler Explorer
@@ -76,6 +77,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.setTitle();
+        this.registerOpeningAnalyticsEvent();
     }
 
     /**

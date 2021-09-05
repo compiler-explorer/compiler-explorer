@@ -13,11 +13,11 @@
 		"panes/tree.ts",
 		"alert.ts",
 		"formatter-registry.ts",
+		"panes/pane.ts",
+		"panes/pane.interfaces.ts",
+		"panes/rustmir-view.ts",
 		"sharing.ts",
 		"url.ts",
 		"utils.ts",
-		"pane.ts",
-		"pane.interfaces.ts",
-		"panes/rustmir-view.ts"
 	]
 }

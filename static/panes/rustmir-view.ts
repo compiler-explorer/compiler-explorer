@@ -26,10 +26,11 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
+import { Pane } from './pane';
+import { BasePaneState } from './pane.interfaces';
+
 import ga from '../analytics';
 import { extendConfig } from '../monaco-config';
-import { Pane } from '../pane';
-import { BasePaneState } from '../pane.interfaces';
 
 export interface RustMirState extends BasePaneState {
     rustMirOutput: any;
