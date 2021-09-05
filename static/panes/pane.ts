@@ -132,15 +132,15 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
-        this.fontScale.on('change', this.updateState, this);
-        this.container.on('destroy', this.close, this);
-        this.container.on('resize', this.resize, this);
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compiler', this.onCompiler, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.on('shown', this.resize, this);
-        this.eventHub.on('resize', this.resize, this);
+        this.fontScale.on('change', this.updateState.bind(this));
+        this.container.on('destroy', this.close.bind(this));
+        this.container.on('resize', this.resize.bind(this));
+        this.eventHub.on('compileResult', this.onCompileResult.bind(this));
+        this.eventHub.on('compiler', this.onCompiler.bind(this));
+        this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
+        this.eventHub.on('settingsChange', this.onSettingsChange.bind(this));
+        this.eventHub.on('shown', this.resize.bind(this));
+        this.eventHub.on('resize', this.resize.bind(this));
     }
 
     protected setTitle() {
