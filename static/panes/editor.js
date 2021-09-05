@@ -307,6 +307,8 @@ Editor.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
+    this.editor.onDidFocusEditorText(_.bind(this.onDidFocusEditorText, this));
+    this.editor.onDidBlurEditorText(_.bind(this.onDidBlurEditorText, this));
     this.editor.onDidChangeCursorPosition(_.bind(this.onDidChangeCursorPosition,this));
 
     this.eventHub.on('initialised', this.maybeEmitChange, this);
@@ -342,8 +344,16 @@ Editor.prototype.onDidChangeCursorSelection = function (e) {
 
 Editor.prototype.onDidChangeCursorPosition = function (e) {
     if (e.position) {
-        this.currentCursorPositionLabel.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
+        this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
     }
+};
+
+Editor.prototype.onDidFocusEditorText = function () {
+    this.currentCursorPosition.show();
+};
+
+Editor.prototype.onDidBlurEditorText = function () {
+    this.currentCursorPosition.hide();
 };
 
 Editor.prototype.onEscapeKey = function () {
@@ -486,7 +496,8 @@ Editor.prototype.initButtons = function (state) {
         this.updateOpenInQuickBench();
     }, this));
 
-    this.currentCursorPositionLabel = this.domRoot.find('.currentCursorPosition');
+    this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
+    this.currentCursorPosition.hide();
 };
 
 Editor.prototype.updateButtons = function () {
