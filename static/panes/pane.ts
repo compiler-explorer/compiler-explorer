@@ -28,8 +28,9 @@ import * as monaco from 'monaco-editor';
 
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
 
-import { FontScale } from '../fontscale'
+import { FontScale } from '../fontscale';
 import { SiteSettings } from '../settings.interfaces';
+import * as utils from '../utils';
 
 /**
  * Basic container for a tool pane in Compiler Explorer
@@ -42,10 +43,11 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
     container: Container;
     domRoot: JQuery;
     topBar: JQuery;
+    hideable: JQuery;
     eventHub: any /* typeof hub.createEventHub() */;
     selection: monaco.Selection;
     editor: E;
-    fontScale: typeof FontScale
+    fontScale: typeof FontScale;
     isAwaitingInitialResults: boolean = false;
     settings: SiteSettings | {} = {};
 
@@ -59,17 +61,18 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
+        this.hideable = this.domRoot.find('.hideable');
         this.initializeDOMRoot();
 
         const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
         this.createEditor(editorRoot);
 
-        this.selection = state.selection
+        this.selection = state.selection;
         this.compilerInfo = {
             compilerId: state.id,
             compilerName: state.compilerName,
             editorId: state.editorid,
-        }
+        };
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
 
@@ -129,7 +132,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
-        this.fontScale.on('change', this.updateState, this)
+        this.fontScale.on('change', this.updateState, this);
         this.container.on('destroy', this.close, this);
         this.container.on('resize', this.resize, this);
         this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -146,13 +149,13 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
 
     protected onCompilerClose(id: unknown) {
         if (this.compilerInfo.compilerId === id) {
-            _.defer(() => this.container.close())
+            _.defer(() => this.container.close());
         }
     }
 
     protected onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent) {
         if (this.isAwaitingInitialResults) {
-            this.selection = event.selection
+            this.selection = event.selection;
             this.updateState();
         }
     }
@@ -166,7 +169,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
             },
             fontFamily: settings.editorsFFont,
             fontLigatures: settings.editorsFLigatures,
-        })
+        });
     }
 
     getCurrentState() {
@@ -184,7 +187,8 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
     }
 
     resize() {
-        const topBarHeight = this.topBar.outerHeight(true);
+        const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot,
+            this.topBar, this.hideable);
         this.editor.layout({
             width: this.domRoot.width(),
             height: this.domRoot.height() - topBarHeight,
