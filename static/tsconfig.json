@@ -18,6 +18,6 @@
 		"panes/rustmir-view.ts",
 		"sharing.ts",
 		"url.ts",
-		"utils.ts",
+		"utils.ts"
 	]
 }
