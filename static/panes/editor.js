@@ -353,6 +353,7 @@ Editor.prototype.onDidFocusEditorText = function () {
 };
 
 Editor.prototype.onDidBlurEditorText = function () {
+    this.currentCursorPosition.text('');
     this.currentCursorPosition.hide();
 };
 
