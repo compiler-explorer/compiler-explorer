@@ -7,14 +7,15 @@
 		"esModuleInterop": true
 	},
 	"files": [
-		"global.ts",
-		"multifile-service.ts",
-		"line-colouring.ts",
-		"panes/tree.ts",
 		"alert.ts",
 		"formatter-registry.ts",
+		"global.ts",
+		"line-colouring.ts",
+		"monaco-config.ts",
+		"multifile-service.ts",
+		"panes/tree.ts",
 		"sharing.ts",
 		"url.ts",
-		"utils.ts"
+		"utils.ts",
 	]
 }
