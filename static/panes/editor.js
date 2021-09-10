@@ -307,6 +307,10 @@ Editor.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
+    this.editor.onDidFocusEditorText(_.bind(this.onDidFocusEditorText, this));
+    this.editor.onDidBlurEditorText(_.bind(this.onDidBlurEditorText, this));
+    this.editor.onDidChangeCursorPosition(_.bind(this.onDidChangeCursorPosition,this));
+
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
@@ -336,6 +340,21 @@ Editor.prototype.onDidChangeCursorSelection = function (e) {
         this.selection = e.selection;
         this.updateState();
     }
+};
+
+Editor.prototype.onDidChangeCursorPosition = function (e) {
+    if (e.position) {
+        this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
+    }
+};
+
+Editor.prototype.onDidFocusEditorText = function () {
+    this.currentCursorPosition.show();
+};
+
+Editor.prototype.onDidBlurEditorText = function () {
+    this.currentCursorPosition.text('');
+    this.currentCursorPosition.hide();
 };
 
 Editor.prototype.onEscapeKey = function () {
@@ -477,6 +496,9 @@ Editor.prototype.initButtons = function (state) {
     this.quickBenchButton.on('mousedown', _.bind(function () {
         this.updateOpenInQuickBench();
     }, this));
+
+    this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
+    this.currentCursorPosition.hide();
 };
 
 Editor.prototype.updateButtons = function () {
@@ -725,6 +747,9 @@ Editor.prototype.initEditorActions = function () {
 
     this.isCpp = this.editor.createContextKey('isCpp', true);
     this.isCpp.set(this.currentLanguage.id === 'c++');
+    
+    this.isClean = this.editor.createContextKey('isClean', true);
+    this.isClean.set(this.currentLanguage.id === 'clean');
 
     this.editor.addAction({
         id: 'cpprefsearch',
@@ -735,6 +760,17 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         precondition: 'isCpp',
         run: _.bind(this.searchOnCppreference, this),
+    });
+
+    this.editor.addAction({
+        id: 'clooglesearch',
+        label: 'Search on Cloogle',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+        keybindingContext: null,
+        contextMenuGroupId: 'help',
+        contextMenuOrder: 1.5,
+        precondition: 'isClean',
+        run: _.bind(this.searchOnCloogle, this),
     });
 
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, _.bind(function () {
@@ -758,6 +794,14 @@ Editor.prototype.searchOnCppreference = function (ed) {
         langTag +
         '.cppreference.com/mwiki/index.php?search=' +
         encodeURIComponent(word.word);
+    window.open(url, '_blank', 'noopener');
+};
+
+Editor.prototype.searchOnCloogle = function (ed) {
+    var pos = ed.getPosition();
+    var word = ed.getModel().getWordAtPosition(pos);
+    if (!word || !word.word) return;
+    var url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
     window.open(url, '_blank', 'noopener');
 };
 
@@ -1340,6 +1384,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             this.initLoadSaver();
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
             this.isCpp.set(this.currentLanguage.id === 'c++');
+            this.isClean.set(this.currentLanguage.id === 'clean');
             this.updateTitle();
             this.updateState();
             // Broadcast the change to other panels
