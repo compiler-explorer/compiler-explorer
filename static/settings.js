@@ -135,6 +135,8 @@ function setupSettings(root, settings, onChange, subLangId) {
         });
     }
 
+    // Don't forget to edit the settings.interfaces.ts file if you add/modify
+    // a setting!
     function add(elem, key, defaultValue, Type, param) {
         if (settings[key] === undefined)
             settings[key] = defaultValue;
