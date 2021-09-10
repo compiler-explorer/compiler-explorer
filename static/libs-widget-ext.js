@@ -27,12 +27,10 @@ var options = require('options'),
     local = require('./local'),
     $ = require('jquery');
 
-function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback) {
+function LibsWidgetExt(langId, compiler, dropdownButton, state, onChangeCallback, possibleLibs) {
     this.dropdownButton = dropdownButton;
-    var possibleLibs = false;
     if (compiler) {
         this.currentCompilerId = compiler.id;
-        possibleLibs = compiler.libs;
     } else {
         this.currentCompilerId = '_default_';
     }

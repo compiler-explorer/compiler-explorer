@@ -150,24 +150,7 @@ describe('Compiler-finder', function () {
     it('should be able to filter libraries', async () => {
         const finder = new CompilerFinder({}, libraryCompilerProps, properties.fakeProps({}), {}, optionsHandler);
         const compilers = await finder.getCompilers();
-        const libs = compilers[0].libs;
-        libs.should.deep.equal({
-            catch2: {
-                versions: {
-                    2101: {
-                        version: '2.1.0.1',
-                        libPath: '/catch2/2.1.0.1/lib/x86_64',
-                    },
-                },
-            },
-            fmt: {
-                versions: {
-                    trunk: {
-                        version: '(trunk)',
-                        libPath: '/fmt/trunk/lib',
-                    },
-                },
-            },
-        });
+        const libsArr = compilers[0].libsArr;
+        libsArr.should.deep.equal(['fmt', 'catch2.2101']);
     });
 });
