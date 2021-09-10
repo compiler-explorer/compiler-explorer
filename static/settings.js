@@ -68,15 +68,18 @@ Select.prototype.putUi = function (elem, value) {
 };
 
 function Slider(elem, sliderSettings) {
-    elem.slider(sliderSettings);
+    elem
+        .prop('max', sliderSettings.max || 100)
+        .prop('min', sliderSettings.min || 1)
+        .prop('step', sliderSettings.step || 1);
 }
 
 Slider.prototype.getUi = function (elem) {
-    return elem.slider('getValue');
+    return parseInt(elem.val());
 };
 
 Slider.prototype.putUi = function (elem, value) {
-    elem.slider('setValue', value);
+    elem.val(value);
 };
 
 function Textbox() {
@@ -242,7 +245,9 @@ function setupSettings(root, settings, onChange, subLangId) {
     }
     add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
     add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
+    // note: this is the ctrl+s "Save option"
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
+    add(root.find('.enableCtrlStree'), 'enableCtrlStree', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
     add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);

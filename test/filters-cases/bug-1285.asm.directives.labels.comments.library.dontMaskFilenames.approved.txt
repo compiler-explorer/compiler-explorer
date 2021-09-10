@@ -1,0 +1,37 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z16apply_known_maskRSt6bitsetILm64EE:  # @_Z16apply_known_maskRSt6bitsetILm64EE"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/opt/compiler-explorer/gcc-8.3.0/lib/gcc/x86_64-linux-gnu/8.3.0/../../../../include/c++/8.3.0/bitset",
+        "line": 433,
+        "mainsource": false
+      },
+      "text": "        andq    $775946532, (%rdi)      # imm = 0x2E400124"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 15,
+        "mainsource": true
+      },
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "_Z16apply_known_maskRSt6bitsetILm64EE": 1
+  }
+}

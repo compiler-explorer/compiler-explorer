@@ -86,6 +86,7 @@ CompilerPicker.prototype.initialize = function (langId, compilerId) {
                     eventAction: val,
                 });
                 this.onCompilerChange(val);
+                this.lastCompilerId = val;
             }
         }, this),
         duplicates: true,
@@ -164,6 +165,7 @@ CompilerPicker.prototype.update = function (langId, compilerId) {
 
 CompilerPicker.prototype.onCompilerFavoriteChange = function (id) {
     if (this.id !== id) {
+        // Rebuild the rest of compiler pickers so they can properly show the new fav status
         this.update(this.lastLangId, this.lastCompilerId);
     }
 };

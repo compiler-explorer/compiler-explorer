@@ -13,6 +13,7 @@ extends:
   - plugin:import/recommended
   - plugin:node/recommended
   - plugin:unicorn/recommended
+  - prettier
 env:
   mocha: true
   node: true
@@ -44,10 +45,6 @@ rules:
         order: asc
         caseInsensitive: true
       newlines-between: always
-  indent:
-    - error
-    - 4
-    - SwitchCase: 1
   max-len:
     - error
     - 120
@@ -87,7 +84,7 @@ rules:
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn
-  jsdoc/check-tag-names: warn
+  jsdoc/check-tag-names: off
   jsdoc/check-types: warn
   jsdoc/empty-tags: warn
   jsdoc/newline-after-description: warn

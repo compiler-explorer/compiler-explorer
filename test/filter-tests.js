@@ -41,8 +41,10 @@ function processAsm(filename, filters) {
         parser = new VcAsmParser();
     else if (filename.includes('sass-'))
         parser = new SassAsmParser();
-    else
+    else {
         parser = new AsmParser();
+        parser.binaryHideFuncRe = /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/;
+    }
     return parser.process(file, filters);
 }
 
@@ -106,6 +108,37 @@ describe('Filter test cases', function () {
             }
         }
     });
+    describe('Binary, directives, labels, comments and library code', function () {
+        if (process.platform !== 'win32') {
+            for (const x of cases) {
+                if (!x.endsWith('-bin.asm')) continue;
+
+                testFilter(x, '.binary.directives.labels.comments.library', {
+                    binary: true,
+                    directives: true,
+                    labels: true,
+                    commentOnly: true,
+                    libraryCode: true,
+                });
+            }
+        }
+    });
+    describe('Binary, directives, labels, comments and library code with dontMaskFilenames', function () {
+        if (process.platform !== 'win32') {
+            for (const x of cases) {
+                if (!x.endsWith('-bin.asm')) continue;
+
+                testFilter(x, '.binary.directives.labels.comments.library.dontMaskFilenames', {
+                    binary: true,
+                    directives: true,
+                    labels: true,
+                    commentOnly: true,
+                    libraryCode: true,
+                    dontMaskFilenames: true,
+                });
+            }
+        }
+    });
     describe('Directives and comments', function () {
         for (const x of cases) testFilter(x, '.directives.comments', {directives: true, commentOnly: true});
     });
@@ -116,6 +149,12 @@ describe('Filter test cases', function () {
         for (const x of cases) {
             testFilter(x, '.directives.labels.comments.library',
                 {directives: true, labels: true, commentOnly: true, libraryCode: true});
+        }
+    });
+    describe('Directives, labels, comments and library code with dontMaskFilenames', function () {
+        for (const x of cases) {
+            testFilter(x, '.directives.labels.comments.library.dontMaskFilenames',
+                {directives: true, labels: true, commentOnly: true, libraryCode: true, dontMaskFilenames: true});
         }
     });
 });

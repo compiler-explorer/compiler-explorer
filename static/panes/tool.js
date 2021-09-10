@@ -34,6 +34,7 @@ var Components = require('../components');
 var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options');
+var utils = require('../utils');
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
@@ -50,6 +51,7 @@ function Tool(hub, container, state) {
     this.container = container;
     this.compilerId = state.compiler;
     this.editorId = state.editor;
+    this.treeId = state.tree;
     this.toolId = state.toolId;
     this.toolName = 'Tool';
     this.compilerService = hub.compilerService;
@@ -146,7 +148,7 @@ Tool.prototype.initCallbacks = function () {
 };
 
 Tool.prototype.onLanguageChange = function (editorId, newLangId) {
-    if (this.editorId === editorId) {
+    if (this.editorId && this.editorId === editorId) {
         var tools = ceoptions.tools[newLangId];
         this.toggleUsable(tools && tools[this.toolId]);
     }
@@ -266,6 +268,7 @@ Tool.prototype.getEffectiveOptions = function () {
 };
 
 Tool.prototype.resize = function () {
+    utils.updateAndCalcTopBarHeight(this.domRoot, this.optionsToolbar, this.hideable);
     var barsHeight = this.optionsToolbar.outerHeight() + 2;
     if (!this.panelArgs.hasClass('d-none')) {
         barsHeight += this.panelArgs.outerHeight();
@@ -296,6 +299,8 @@ Tool.prototype.initButtons = function (state) {
 
     this.panelArgs = this.domRoot.find('.panel-args');
     this.panelStdin = this.domRoot.find('.panel-stdin');
+
+    this.hideable = this.domRoot.find('.hideable');
 
     this.initToggleButtons(state);
 };
@@ -345,6 +350,7 @@ Tool.prototype.currentState = function () {
     var state = {
         compiler: this.compilerId,
         editor: this.editorId,
+        tree: this.treeId,
         wrap: options.wrap,
         toolId: this.toolId,
         args: this.getInputArgs(),
@@ -397,6 +403,10 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             toolResult = _.find(result.tools, function (tool) {
                 return (tool.id === this.toolId);
             }, this);
+        } else if (result && result.result && result.result.tools) {
+            toolResult = _.find(result.result.tools, function (tool) {
+                return (tool.id === this.toolId);
+            }, this);
         }
 
         var toolInfo = null;
@@ -446,7 +456,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             this.toolName = toolResult.name;
             this.updateCompilerName();
 
-            if (toolResult.sourcechanged) {
+            if (toolResult.sourcechanged && this.editorId) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
             }
         } else {
@@ -460,12 +470,12 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
 
 Tool.prototype.add = function (msg, lineNum) {
     var elem = $('<div/>').appendTo(this.plainContentRoot);
-    if (lineNum) {
+    if (lineNum && this.editorId) {
         elem.html(
             $('<a></a>')
                 .prop('href', 'javascript:;')
                 .html(msg)
-                .click(_.bind(function (e) {
+                .on('click', _.bind(function (e) {
                     this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
                     e.preventDefault();
                     return false;

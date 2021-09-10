@@ -1,0 +1,284 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z8testfuncf:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movss   xmm3, DWORD PTR .LC1[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movss   xmm4, DWORD PTR .LC0[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movaps  xmm2, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movaps  xmm1, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        andps   xmm2, xmm3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        ucomiss xmm4, xmm2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        jbe     .L2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        cvttss2si       eax, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        pxor    xmm2, xmm2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movss   xmm4, DWORD PTR .LC2[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        andnps  xmm3, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        cvtsi2ss        xmm2, eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movaps  xmm5, xmm2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        cmpnless        xmm5, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movaps  xmm1, xmm5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        andps   xmm1, xmm4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        subss   xmm2, xmm1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        movaps  xmm1, xmm2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 28,
+        "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
+        "line": 261,
+        "mainsource": false
+      },
+      "text": "        orps    xmm1, xmm3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 24,
+        "file": "example.cpp",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        cvttss2si       eax, xmm1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1258291200"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   2147483647"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1065353216"
+    }
+  ],
+  "labelDefinitions": {
+    ".L2": 21,
+    ".LC0": 24,
+    ".LC1": 26,
+    ".LC2": 31,
+    "_Z8testfuncf": 1
+  }
+}

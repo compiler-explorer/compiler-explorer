@@ -119,6 +119,10 @@ a.navbar-brand img.logo.normal {
     background: #555657 !important;
 }
 
+.linked-compiler-output-line {
+    color: #007bfd !important;
+}
+
 .rainbow-decoration {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -318,7 +322,7 @@ textarea.form-control {
     color: orange !important;
 }
 
-.optgroup-header {
+.ts-dropdown .optgroup-header {
     background-color: #555 !important;
     color: #EEE !important;
     text-shadow: none !important;
@@ -382,7 +386,6 @@ textarea.form-control {
 
 kbd {
     border-color: #818181 !important;
-    background-color: #979797 !important;
 }
 
 .prepend-options {
@@ -490,4 +493,22 @@ a {
 
 .conformance-wrapper .compiler-list .form-row {
     border-bottom: 1px solid #3e3e3e;
+}
+
+.tree ul, .tree li {
+    background-color: #222222 !important;
+    color: white;
+}
+
+.tree li.tree-editor-file {
+    background-color: #303030 !important;
+    color: white;
+}
+
+.tree li.tree-editor-file:hover {
+    background-color: #333 !important;
+}
+
+.popular-arguments-btn {
+    border-color: #474747 !important;
 }

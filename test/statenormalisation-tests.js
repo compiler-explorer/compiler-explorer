@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { ClientState } from '../lib/clientstate';
-import { ClientStateNormalizer } from '../lib/clientstate-normalizer';
+import { ClientStateGoldenifier, ClientStateNormalizer } from '../lib/clientstate-normalizer';
 
 import { fs } from './utils';
 
@@ -32,12 +32,14 @@ describe('Normalizing clientstate', () => {
         const normalizer = new ClientStateNormalizer();
 
         const data =  JSON.parse(fs.readFileSync('test/state/twocompilers.json'));
-
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        // note: this trick is to get rid of undefined parameters
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        normalized.should.deep.equal(resultdata);
     });
 
     it('Should recognize everything and kitchensink as well', () => {
@@ -49,7 +51,9 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/andthekitchensink.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        normalized.should.deep.equal(resultdata);
     });
 
     it('Should support conformanceview', () => {
@@ -61,7 +65,9 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/conformanceview.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        normalized.should.deep.equal(resultdata);
     });
 
     it('Should support executors', () => {
@@ -73,7 +79,9 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/executor.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        normalized.should.deep.equal(resultdata);
     });
 
     it('Should support newer features', () => {
@@ -85,7 +93,21 @@ describe('Normalizing clientstate', () => {
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/executorwrap.json.normalized'));
 
-        normalizer.normalized.should.deep.equal(resultdata);
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        normalized.should.deep.equal(resultdata);
+    });
+
+    it('Allow output without editor id', () => {
+        const normalizer = new ClientStateNormalizer();
+        const data =  JSON.parse(fs.readFileSync('test/state/output-editor-id.json'));
+        normalizer.fromGoldenLayout(data);
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/output-editor-id.normalized.json'));
+
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        normalized.should.deep.equal(resultdata);
     });
 });
 
@@ -125,5 +147,64 @@ describe('ClientState parsing', () => {
         const jsonStr = fs.readFileSync('test/state/bug-2231.json');
         const state = new ClientState(JSON.parse(jsonStr));
         state.sessions[0].compilers.length.should.equal(1);
+    });
+});
+
+describe('Trees', () => {
+    it('ClientState to GL', () => {
+        const jsonStr = fs.readFileSync('test/state/tree.json');
+        const state = new ClientState(JSON.parse(jsonStr));
+        state.trees.length.should.equal(1);
+
+        const gl = new ClientStateGoldenifier();
+        gl.fromClientState(state);
+
+        const golden = JSON.parse(JSON.stringify(gl.golden));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/tree.goldenified.json'));
+        golden.should.deep.equal(resultdata);
+    });
+
+    it('GL to ClientState', () => {
+        const jsonStr = fs.readFileSync('test/state/tree-gl.json');
+        const gl = JSON.parse(jsonStr);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(gl);
+
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/tree.normalized.json'));
+
+        normalized.should.deep.equal(resultdata);
+    });
+
+    it('GL to ClientState with correct output pane', () => {
+        const jsonStr = fs.readFileSync('test/state/tree-gl-outputpane.json');
+        const gl = JSON.parse(jsonStr);
+
+        const normalizer = new ClientStateNormalizer();
+        normalizer.fromGoldenLayout(gl);
+
+        const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/tree-gl-outputpane.normalized.json'));
+
+        normalized.should.deep.equal(resultdata);
+    });
+
+    it('ClientState to Mobile GL', () => {
+        const jsonStr = fs.readFileSync('test/state/tree-mobile.json');
+        const state = new ClientState(JSON.parse(jsonStr));
+        state.trees.length.should.equal(1);
+
+        const gl = new ClientStateGoldenifier();
+        const slides = gl.generatePresentationModeMobileViewerSlides(state);
+
+        const golden = JSON.parse(JSON.stringify(slides));
+        //fs.writeFileSync('test/state/tree-mobile.goldenified.json', JSON.stringify(golden));
+
+        const resultdata = JSON.parse(fs.readFileSync('test/state/tree-mobile.goldenified.json'));
+        golden.should.deep.equal(resultdata);
     });
 });

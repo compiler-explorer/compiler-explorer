@@ -4,9 +4,17 @@
 		"outDir": ".",
 		"sourceMap": true,
 		"rootDir": ".",
-        "esModuleInterop": true
+		"esModuleInterop": true
 	},
 	"files": [
-		"alert.ts"
+		"global.ts",
+		"multifile-service.ts",
+		"line-colouring.ts",
+		"panes/tree.ts",
+		"alert.ts",
+		"formatter-registry.ts",
+		"sharing.ts",
+		"url.ts",
+		"utils.ts"
 	]
 }

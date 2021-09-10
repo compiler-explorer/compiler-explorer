@@ -206,6 +206,43 @@ CompilerService.prototype.submit = function (request) {
     }, this));
 };
 
+CompilerService.prototype.submitCMake = function (request) {
+    request.allowStoreCodeDebug = this.allowStoreCodeDebug;
+    var jsonRequest = JSON.stringify(request);
+    if (options.doCache) {
+        var cachedResult = this.cache.get(jsonRequest);
+        if (cachedResult) {
+            return Promise.resolve({
+                request: request,
+                result: cachedResult,
+                localCacheHit: true,
+            });
+        }
+    }
+    return new Promise(_.bind(function (resolve, reject) {
+        var bindHandler = _.partial(handleRequestError, request, reject);
+        var compilerId = encodeURIComponent(request.compiler);
+        $.ajax({
+            type: 'POST',
+            url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/cmake',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: jsonRequest,
+            success: _.bind(function (result) {
+                if (result && result.okToCache && options.doCache) {
+                    this.cache.set(jsonRequest, result);
+                }
+                resolve({
+                    request: request,
+                    result: result,
+                    localCacheHit: false,
+                });
+            }, this),
+            error: bindHandler,
+        });
+    }, this));
+};
+
 CompilerService.prototype.requestPopularArguments = function (compilerId, options) {
     return new Promise(_.bind(function (resolve, reject) {
         var bindHandler = _.partial(handleRequestError, compilerId, reject);
@@ -309,7 +346,7 @@ function ariaLabel(status) {
 
 function color(status) {
     // Compiling...
-    if (status.code === 4) return 'black';
+    if (status.code === 4) return '#888888';
     if (status.compilerOut === 0) {
         // StdErr.length > 0
         if (status.code === 3) return '#FF6645';
@@ -340,7 +377,7 @@ CompilerService.prototype.handleCompilationStatus = function (statusLabel, statu
             .toggle(status.code !== 0)
             .prop('aria-label', ariaLabel(status))
             .prop('data-status', status.code)
-            .toggleClass('fa-spinner', status.code === 4)
+            .toggleClass('fa-spinner fa-spin', status.code === 4)
             .toggleClass('fa-times-circle', status.code === 3)
             .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
     }

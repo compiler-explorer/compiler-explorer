@@ -33,6 +33,7 @@ var $ = require('jquery');
 var ga = require('../analytics');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
+var utils = require('../utils');
 
 
 function GccDump(hub, container, state) {
@@ -146,6 +147,8 @@ GccDump.prototype.initButtons = function (state) {
 
     this.optionAllButton = this.domRoot.find('[data-bind=\'allOption\']');
     this.optionAllTitle = this.optionAllButton.prop('title');
+
+    this.hideable = this.domRoot.find('.hideable');
 };
 
 GccDump.prototype.initCallbacks = function () {
@@ -215,9 +218,8 @@ GccDump.prototype.onPassSelect = function (passId) {
     this.saveState();
 };
 
-// TODO: de-dupe with compiler etc
 GccDump.prototype.resize = function () {
-    var topBarHeight = this.topBar.outerHeight(true);
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
     this.gccDumpEditor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight,

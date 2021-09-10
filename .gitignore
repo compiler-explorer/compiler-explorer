@@ -1,3 +1,4 @@
+# If you change this file, please also modify .prettierignore
 # build generated files
 /.node-bin
 /.npm-updated
@@ -7,6 +8,7 @@
 
 # generated from opcode docenzier.py scripts
 /asm-docs*
+/etc/scripts/asm-docs*
 
 # user local customizations
 /etc/**/*.local.*
