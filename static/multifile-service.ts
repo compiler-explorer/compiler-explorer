@@ -200,7 +200,8 @@ export class MultifileService {
     }
 
     public isCompatibleWithCMake(): boolean {
-        return this.compilerLanguageId === 'c++' || this.compilerLanguageId === 'c';
+        return this.compilerLanguageId === 'c++' || this.compilerLanguageId === 'c' ||
+            this.compilerLanguageId === 'fortran';
     }
 
     public setLanguageId(id: string) {
