@@ -47,7 +47,7 @@ export class LibUtils {
 
     public getSupportedLibraries(supportedLibrariesArr, langId) {
         const allLibs = options.libs[langId];
-        if (supportedLibrariesArr.length > 0) {
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
             return this.copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
         return allLibs;
