@@ -194,7 +194,6 @@ Conformance.prototype.addCompilerPicker = function (config) {
         this.compileChild(newCompilerEntry);
     }, this);
 
-    var compilerPickerNode = newSelector[0].querySelector('select.compiler-picker');
     newCompilerEntry.picker = new CompilerPicker(
         $(newSelector[0]), this.hub, this.langId,
         config.compilerId, _.bind(onCompilerChange, this)
@@ -203,7 +202,7 @@ Conformance.prototype.addCompilerPicker = function (config) {
     var getCompilerConfig = _.bind(function () {
         return Components.getCompilerWith(
             this.editorId, undefined, newCompilerEntry.optionsField.val(),
-            compilerPickerNode.value, this.langId, this.lastState.libs
+            newCompilerEntry.picker.lastCompilerId, this.langId, this.lastState.libs
         );
     }, this);
 
