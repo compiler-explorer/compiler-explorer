@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var _ = require('underscore');
+import * as monaco from 'monaco-editor';
 
-var config = {
-    value: '',
-    fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-    scrollBeyondLastLine: true,
-    quickSuggestions: false,
-    fixedOverflowWidgets: true,
-    minimap: {
-        maxColumn: 80,
-    },
-    folding: true,
-    lineNumbersMinChars: 1,
-    emptySelectionClipboard: true,
-};
-
-function extendConfig(options, settings) {
-    var settingsObject = {};
-    if (settings !== undefined) {
-        settingsObject = {
-            fontFamily: settings.editorsFFont,
-            autoIndent: settings.autoIndent ? 'advanced' : 'none',
-            vimInUse: settings.useVim,
-            fontLigatures: settings.editorsFLigatures,
-        };
-    }
-    return _.extend({}, config, settingsObject, options);
+export interface PaneCompilerState {
+    compilerId: number;
+    compilerName: string;
+    editorId: number;
 }
 
-module.exports = {
-    extendConfig: extendConfig,
-};
+export interface PaneState {
+    id: number;
+    editorId: number;
+    selection: monaco.Selection;
+}
+
+// TODO(supergrecko): get the full type
+export interface BasePaneState {
+    selection: monaco.Selection;
+    id: number;
+    compilerName: string;
+    editorid: number;
+}
+

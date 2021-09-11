@@ -135,6 +135,8 @@ function setupSettings(root, settings, onChange, subLangId) {
         });
     }
 
+    // Don't forget to edit the settings.interfaces.ts file if you add/modify
+    // a setting!
     function add(elem, key, defaultValue, Type, param) {
         if (settings[key] === undefined)
             settings[key] = defaultValue;
@@ -231,7 +233,7 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 
-    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit'];
+    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
     add(root.find('.formatBase'), 'formatBase', formats[0], Select,
         _.map(formats, function (format) {
             return {label: format, desc: format};
