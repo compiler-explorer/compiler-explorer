@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { MultifileFile, MultifileService, MultifileServiceState } from "../multifile-service";
-import { saveAs } from "file-saver";
-import { LineColouring } from "../line-colouring";
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
+import {LineColouring} from '../line-colouring';
+import * as utils from '../utils';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -39,7 +39,7 @@ const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
 
 export class TreeState extends MultifileServiceState {
-    id: number
+    id: number;
     cmakeArgs: string;
     customOutputFilename: string;
 }
@@ -138,7 +138,7 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: _.bind(this.onLanguageChange, this),
+            onChange: this.onLanguageChange.bind(this),
         });
 
         this.updateTitle();
@@ -179,8 +179,8 @@ export class Tree {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
-            ... this.multifileService.getState()
-        }
+            ...this.multifileService.getState(),
+        };
     };
 
     private updateState() {
@@ -205,10 +205,10 @@ export class Tree {
 
         this.eventHub.on('compileResult', this.onCompileResponse, this);
 
-        this.toggleCMakeButton.on('change', _.bind(this.onToggleCMakeChange, this));
+        this.toggleCMakeButton.on('change', this.onToggleCMakeChange.bind(this));
 
-        this.cmakeArgsInput.on('change', _.bind(this.updateCMakeArgs, this));
-        this.customOutputFilenameInput.on('change', _.bind(this.updateCustomOutputFilename, this));
+        this.cmakeArgsInput.on('change', this.updateCMakeArgs.bind(this));
+        this.customOutputFilenameInput.on('change', this.updateCustomOutputFilename.bind(this));
     }
 
     private updateCMakeArgs() {
@@ -317,7 +317,8 @@ export class Tree {
 
     private addRowToTreelist(file: MultifileFile) {
         const item = $(this.rowTemplate.children()[0].cloneNode(true));
-        const stagingButton = item.find('.stage-file');
+        const stageButton = item.find('.stage-file');
+        const unstageButton = item.find('.unstage-file');
         const renameButton = item.find('.rename-file');
         const deleteButton = item.find('.delete-file');
 
@@ -351,29 +352,29 @@ export class Tree {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
-                this.alertSystem.ask('Delete file', 'Are you sure you want to delete ' + file.filename, {
+                this.alertSystem.ask('Delete file', `Are you sure you want to delete ${file.filename ? file.filename : 'this file'}?` , {
                     yes: () => {
                         this.removeFile(fileId);
                     },
+                    yesClass: 'btn-danger',
+                    yesHtml: 'Delete',
+                    noClass: 'btn-primary',
+                    noHtml: 'Cancel'
                 });
             }
         });
 
-        if (file.isIncluded) {
-            stagingButton.removeClass('fa-plus').addClass('fa-minus');
-            stagingButton.on('click', async (e) => {
-                const fileId = $(e.currentTarget).parent('li').data('fileId');
-                await this.moveToExclude(fileId);
-            });
-            this.namedItems.append(item);
-        } else {
-            stagingButton.removeClass('fa-minus').addClass('fa-plus');
-            stagingButton.on('click', async (e) => {
-                const fileId = $(e.currentTarget).parent('li').data('fileId');
-                await this.moveToInclude(fileId);
-            });
-            this.unnamedItems.append(item);
-        }
+        stageButton.on('click', async (e) => {
+            const fileId = $(e.currentTarget).parent('li').data('fileId');
+            await this.moveToInclude(fileId);
+        });
+        unstageButton.on('click', async (e) => {
+            const fileId = $(e.currentTarget).parent('li').data('fileId');
+            await this.moveToExclude(fileId);
+        });
+        stageButton.toggle(!file.isIncluded);
+        unstageButton.toggle(file.isIncluded);
+        (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
     }
 
     private refresh() {
@@ -414,8 +415,14 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
+        this.container.layoutManager
+            .createDragSource(dragSource, dragConfig.bind(this))
+            ._dragListener.on('dragStart', () => {
+                this.domRoot.find('.add-pane').dropdown('toggle');
+            });
+
         dragSource.on('click', () => {
-            this.hub.addInEditorStackIfPossible(_.bind(dragConfig, this));
+            this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
         });
     }
 
@@ -475,7 +482,7 @@ export class Tree {
         const saveProjectButton = this.domRoot.find('.save-project-to-file');
 
         saveProjectButton.on('click', () => {
-            this.multifileService.saveProjectToZipfile(_.bind(Tree.triggerSaveAs, this));
+            this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file');
@@ -581,21 +588,8 @@ export class Tree {
         }
     }
 
-    private updateHideables() {
-        var topBar = this.topBar;
-        if (!topBar.hasClass('d-none')) {
-            this.hideable.show();
-            var topBarHeightMax = topBar.outerHeight(true);
-            this.hideable.hide();
-            var topBarHeightMin = topBar.outerHeight(true);
-            if (topBarHeightMin === topBarHeightMax) {
-                this.hideable.show();
-            }
-        }
-    }
-
     private resize() {
-        this.updateHideables();
+        utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
         const mainbarHeight = this.topBar.outerHeight(true);
         const argsHeight = this.domRoot.find('.panel-args').outerHeight(true);

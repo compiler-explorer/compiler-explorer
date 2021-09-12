@@ -37,6 +37,7 @@ var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings');
+var utils = require('../utils');
 require('../formatter-registry');
 require('../modes/_all');
 
@@ -306,6 +307,10 @@ Editor.prototype.initCallbacks = function () {
         this.cursorSelectionThrottledFunction(e);
     }, this));
 
+    this.editor.onDidFocusEditorText(_.bind(this.onDidFocusEditorText, this));
+    this.editor.onDidBlurEditorText(_.bind(this.onDidBlurEditorText, this));
+    this.editor.onDidChangeCursorPosition(_.bind(this.onDidChangeCursorPosition,this));
+
     this.eventHub.on('initialised', this.maybeEmitChange, this);
 
     $(document).on('keyup.editable', _.bind(function (e) {
@@ -335,6 +340,21 @@ Editor.prototype.onDidChangeCursorSelection = function (e) {
         this.selection = e.selection;
         this.updateState();
     }
+};
+
+Editor.prototype.onDidChangeCursorPosition = function (e) {
+    if (e.position) {
+        this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
+    }
+};
+
+Editor.prototype.onDidFocusEditorText = function () {
+    this.currentCursorPosition.show();
+};
+
+Editor.prototype.onDidBlurEditorText = function () {
+    this.currentCursorPosition.text('');
+    this.currentCursorPosition.hide();
 };
 
 Editor.prototype.onEscapeKey = function () {
@@ -397,9 +417,6 @@ Editor.prototype.initButtons = function (state) {
     this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
     var addEditorButton = this.domRoot.find('.btn.add-editor');
     var toggleVimButton = this.domRoot.find('#vim-flag');
-    var togglePaneAdder = function () {
-        paneAdderDropdown.dropdown('toggle');
-    };
     this.vimFlag = this.domRoot.find('#vim-flag');
     toggleVimButton.on('click', _.bind(function () {
         if (this.editor.vimInUse) {
@@ -428,32 +445,27 @@ Editor.prototype.initButtons = function (state) {
         return Components.getEditor();
     }, this);
 
-    var addDragListener = _.bind(function (dragSource, dragConfig) {
+    var addPaneOpener = _.bind(function (dragSource, dragConfig) {
         this.container.layoutManager
             .createDragSource(dragSource, dragConfig)
-            ._dragListener.on('dragStart', togglePaneAdder);
-    }, this);
+            ._dragListener.on('dragStart', function () {
+                paneAdderDropdown.dropdown('toggle');
+            });
 
-    addDragListener(addCompilerButton, getCompilerConfig);
-    addDragListener(addExecutorButton, getExecutorConfig);
-    addDragListener(this.conformanceViewerButton, getConformanceConfig);
-    addDragListener(addEditorButton, getEditorConfig);
-
-    var bindClickEvent = _.bind(function (dragSource, dragConfig) {
-        dragSource.click(_.bind(function () {
+        dragSource.on('click', _.bind(function () {
             var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
                 this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(dragConfig);
         }, this));
     }, this);
 
-    bindClickEvent(addCompilerButton, getCompilerConfig);
-    bindClickEvent(addExecutorButton, getExecutorConfig);
-    bindClickEvent(this.conformanceViewerButton, getConformanceConfig);
-    bindClickEvent(addEditorButton, getEditorConfig);
+    addPaneOpener(addCompilerButton, getCompilerConfig);
+    addPaneOpener(addExecutorButton, getExecutorConfig);
+    addPaneOpener(this.conformanceViewerButton, getConformanceConfig);
+    addPaneOpener(addEditorButton, getEditorConfig);
 
     this.initLoadSaver();
-    $(this.domRoot).keydown(_.bind(function (event) {
+    $(this.domRoot).on('keydown', _.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
             event.preventDefault();
             if (this.settings.enableCtrlStree && this.hub.hasTree()) {
@@ -484,6 +496,9 @@ Editor.prototype.initButtons = function (state) {
     this.quickBenchButton.on('mousedown', _.bind(function () {
         this.updateOpenInQuickBench();
     }, this));
+
+    this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
+    this.currentCursorPosition.hide();
 };
 
 Editor.prototype.updateButtons = function () {
@@ -732,6 +747,9 @@ Editor.prototype.initEditorActions = function () {
 
     this.isCpp = this.editor.createContextKey('isCpp', true);
     this.isCpp.set(this.currentLanguage.id === 'c++');
+    
+    this.isClean = this.editor.createContextKey('isClean', true);
+    this.isClean.set(this.currentLanguage.id === 'clean');
 
     this.editor.addAction({
         id: 'cpprefsearch',
@@ -742,6 +760,17 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         precondition: 'isCpp',
         run: _.bind(this.searchOnCppreference, this),
+    });
+
+    this.editor.addAction({
+        id: 'clooglesearch',
+        label: 'Search on Cloogle',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
+        keybindingContext: null,
+        contextMenuGroupId: 'help',
+        contextMenuOrder: 1.5,
+        precondition: 'isClean',
+        run: _.bind(this.searchOnCloogle, this),
     });
 
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, _.bind(function () {
@@ -765,6 +794,14 @@ Editor.prototype.searchOnCppreference = function (ed) {
         langTag +
         '.cppreference.com/mwiki/index.php?search=' +
         encodeURIComponent(word.word);
+    window.open(url, '_blank', 'noopener');
+};
+
+Editor.prototype.searchOnCloogle = function (ed) {
+    var pos = ed.getPosition();
+    var word = ed.getModel().getWordAtPosition(pos);
+    if (!word || !word.word) return;
+    var url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
     window.open(url, '_blank', 'noopener');
 };
 
@@ -898,45 +935,19 @@ Editor.prototype.formatCurrentText = function () {
 };
 
 Editor.prototype.resize = function () {
-    var topBarHeight = this.updateAndCalcTopBarHeight();
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
     this.editor.layout({
         width: this.domRoot.width(),
         height: this.domRoot.height() - topBarHeight,
     });
+
     // Only update the options if needed
     if (this.settings.wordWrap) {
         this.editor.updateOptions({
             wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
         });
     }
-};
-
-Editor.prototype.updateAndCalcTopBarHeight = function () {
-    var width = this.domRoot.width();
-    if (width === this.cachedTopBarHeightAtWidth && !this.topBar.hasClass('d-none')) {
-        return this.cachedTopBarHeight;
-    }
-
-    var topBarHeight = 0;
-    var topBarHeightMax = 0;
-    var topBarHeightMin = 0;
-
-    if (!this.topBar.hasClass('d-none')) {
-        this.hideable.show();
-        topBarHeightMax = this.topBar.outerHeight(true);
-        this.hideable.hide();
-        topBarHeightMin = this.topBar.outerHeight(true);
-        topBarHeight = topBarHeightMin;
-        if (topBarHeightMin === topBarHeightMax) {
-            this.hideable.show();
-            topBarHeight = topBarHeightMax;
-        }
-    }
-
-    this.cachedTopBarHeight = topBarHeight;
-    this.cachedTopBarHeightAtWidth = width;
-    return topBarHeight;
 };
 
 Editor.prototype.onSettingsChange = function (newSettings) {
@@ -1005,13 +1016,15 @@ Editor.prototype.numberUsedLines = function () {
             _.each(this.treeCompilers, _.bind(function (compilerIds, treeId) {
                 if (compilerIds[compilerId]) {
                     var tree = this.hub.getTreeById(Number(treeId));
-                    var defaultFile = this.defaultFileByCompiler[compilerId];
-                    foundInTrees = true;
+                    if (tree) {
+                        var defaultFile = this.defaultFileByCompiler[compilerId];
+                        foundInTrees = true;
 
-                    if (asmLine.source && asmLine.source.line > 0) {
-                        var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
-                        if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
-                            result[asmLine.source.line - 1] = true;
+                        if (asmLine.source && asmLine.source.line > 0) {
+                            var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
+                            if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
+                                result[asmLine.source.line - 1] = true;
+                            }
                         }
                     }
                 }
@@ -1123,11 +1136,27 @@ Editor.prototype.onCompiling = function (compilerId) {
     this.busyCompilers[compilerId] = true;
 };
 
+Editor.prototype.getAllOutputAndErrors = function (result) {
+    var all = (result.stdout || []);
+    if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            all = all.concat(step.stdout);
+        });
+
+        _.each(result.buildsteps, function (step) {
+            all = all.concat(step.stderr);
+        });
+    }
+    all = all.concat(result.stderr || []);
+
+    return all;
+};
+
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
-    var output = (result.stdout || []).concat(result.stderr || []);
+    var output = this.getAllOutputAndErrors(result);
     var widgets = _.compact(_.map(output, function (obj) {
         if (!obj.tag) return;
 
@@ -1355,6 +1384,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             this.initLoadSaver();
             monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
             this.isCpp.set(this.currentLanguage.id === 'c++');
+            this.isClean.set(this.currentLanguage.id === 'clean');
             this.updateTitle();
             this.updateState();
             // Broadcast the change to other panels

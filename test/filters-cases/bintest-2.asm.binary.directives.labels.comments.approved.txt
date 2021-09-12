@@ -3,155 +3,6 @@
     {
       "labels": [],
       "source": null,
-      "text": "_init:"
-    },
-    {
-      "address": 4202496,
-      "labels": [],
-      "opcodes": [
-        "f3",
-        "0f",
-        "1e",
-        "fa"
-      ],
-      "source": null,
-      "text": " endbr64"
-    },
-    {
-      "address": 4202500,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "83",
-        "ec",
-        "08"
-      ],
-      "source": null,
-      "text": " sub    $0x8,%rsp"
-    },
-    {
-      "address": 4202504,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "8b",
-        "05",
-        "d1",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " mov    0x17fd1(%rip),%rax        # 419fe0 <__gmon_start__>"
-    },
-    {
-      "address": 4202511,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "85",
-        "c0"
-      ],
-      "source": null,
-      "text": " test   %rax,%rax"
-    },
-    {
-      "address": 4202514,
-      "labels": [
-        {
-          "name": "_init",
-          "range": {
-            "endCol": 22,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "74",
-        "02"
-      ],
-      "source": null,
-      "text": " je     402016 <_init+0x16>"
-    },
-    {
-      "address": 4202516,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "d0"
-      ],
-      "source": null,
-      "text": " callq  *%rax"
-    },
-    {
-      "address": 4202518,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "83",
-        "c4",
-        "08"
-      ],
-      "source": null,
-      "text": " add    $0x8,%rsp"
-    },
-    {
-      "address": 4202522,
-      "labels": [],
-      "opcodes": [
-        "c3"
-      ],
-      "source": null,
-      "text": " retq"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": ".plt:"
-    },
-    {
-      "address": 4202528,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "35",
-        "e2",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  0x17fe2(%rip)        # 41a008 <_GLOBAL_OFFSET_TABLE_+0x8>"
-    },
-    {
-      "address": 4202534,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "e4",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17fe4(%rip)        # 41a010 <_GLOBAL_OFFSET_TABLE_+0x10>"
-    },
-    {
-      "address": 4202540,
-      "labels": [],
-      "opcodes": [
-        "0f",
-        "1f",
-        "40",
-        "00"
-      ],
-      "source": null,
-      "text": " nopl   0x0(%rax)"
-    },
-    {
-      "labels": [],
-      "source": null,
       "text": "_ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_@plt:"
     },
     {
@@ -183,15 +34,7 @@
     },
     {
       "address": 4202555,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "e0",
@@ -236,15 +79,7 @@
     },
     {
       "address": 4202571,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "d0",
@@ -289,15 +124,7 @@
     },
     {
       "address": 4202587,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "c0",
@@ -342,15 +169,7 @@
     },
     {
       "address": 4202603,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "b0",
@@ -395,15 +214,7 @@
     },
     {
       "address": 4202619,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "a0",
@@ -448,15 +259,7 @@
     },
     {
       "address": 4202635,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "90",
@@ -501,71 +304,10 @@
     },
     {
       "address": 4202651,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "80",
-        "ff",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_begin_catch@plt:"
-    },
-    {
-      "address": 4202656,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "aa",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17faa(%rip)        # 41a050 <__cxa_begin_catch@CXXABI_1.3>"
-    },
-    {
-      "address": 4202662,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "07",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x7"
-    },
-    {
-      "address": 4202667,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "70",
         "ff",
         "ff",
         "ff"
@@ -607,15 +349,7 @@
     },
     {
       "address": 4202683,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "60",
@@ -660,15 +394,7 @@
     },
     {
       "address": 4202699,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "50",
@@ -713,71 +439,10 @@
     },
     {
       "address": 4202715,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "40",
-        "ff",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_allocate_exception@plt:"
-    },
-    {
-      "address": 4202720,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "8a",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17f8a(%rip)        # 41a070 <__cxa_allocate_exception@CXXABI_1.3>"
-    },
-    {
-      "address": 4202726,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "0b",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0xb"
-    },
-    {
-      "address": 4202731,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "30",
         "ff",
         "ff",
         "ff"
@@ -819,15 +484,7 @@
     },
     {
       "address": 4202747,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "20",
@@ -872,15 +529,7 @@
     },
     {
       "address": 4202763,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "10",
@@ -925,15 +574,7 @@
     },
     {
       "address": 4202779,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "00",
@@ -978,124 +619,10 @@
     },
     {
       "address": 4202795,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "f0",
-        "fe",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_guard_abort@plt:"
-    },
-    {
-      "address": 4202800,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "62",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17f62(%rip)        # 41a098 <__cxa_guard_abort@CXXABI_1.3>"
-    },
-    {
-      "address": 4202806,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "10",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x10"
-    },
-    {
-      "address": 4202811,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "e0",
-        "fe",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_guard_release@plt:"
-    },
-    {
-      "address": 4202816,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "5a",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17f5a(%rip)        # 41a0a0 <__cxa_guard_release@CXXABI_1.3>"
-    },
-    {
-      "address": 4202822,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "11",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x11"
-    },
-    {
-      "address": 4202827,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "d0",
         "fe",
         "ff",
         "ff"
@@ -1137,15 +664,7 @@
     },
     {
       "address": 4202843,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "c0",
@@ -1190,71 +709,10 @@
     },
     {
       "address": 4202859,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "b0",
-        "fe",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_free_exception@plt:"
-    },
-    {
-      "address": 4202864,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "42",
-        "7f",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17f42(%rip)        # 41a0b8 <__cxa_free_exception@CXXABI_1.3>"
-    },
-    {
-      "address": 4202870,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "14",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x14"
-    },
-    {
-      "address": 4202875,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "a0",
         "fe",
         "ff",
         "ff"
@@ -1296,15 +754,7 @@
     },
     {
       "address": 4202891,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "90",
@@ -1349,15 +799,7 @@
     },
     {
       "address": 4202907,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "80",
@@ -1402,15 +844,7 @@
     },
     {
       "address": 4202923,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "70",
@@ -1455,15 +889,7 @@
     },
     {
       "address": 4202939,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "60",
@@ -1508,15 +934,7 @@
     },
     {
       "address": 4202955,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "50",
@@ -1561,15 +979,7 @@
     },
     {
       "address": 4202971,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "40",
@@ -1614,15 +1024,7 @@
     },
     {
       "address": 4202987,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "30",
@@ -1667,15 +1069,7 @@
     },
     {
       "address": 4203003,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "20",
@@ -1720,71 +1114,10 @@
     },
     {
       "address": 4203019,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "10",
-        "fe",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__dynamic_cast@plt:"
-    },
-    {
-      "address": 4203024,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "f2",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17ef2(%rip)        # 41a108 <__dynamic_cast@CXXABI_1.3>"
-    },
-    {
-      "address": 4203030,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "1e",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x1e"
-    },
-    {
-      "address": 4203035,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "00",
         "fe",
         "ff",
         "ff"
@@ -1826,15 +1159,7 @@
     },
     {
       "address": 4203051,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "f0",
@@ -1879,15 +1204,7 @@
     },
     {
       "address": 4203067,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "e0",
@@ -1932,15 +1249,7 @@
     },
     {
       "address": 4203083,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "d0",
@@ -1985,15 +1294,7 @@
     },
     {
       "address": 4203099,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "c0",
@@ -2038,15 +1339,7 @@
     },
     {
       "address": 4203115,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "b0",
@@ -2091,15 +1384,7 @@
     },
     {
       "address": 4203131,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "a0",
@@ -2144,71 +1429,10 @@
     },
     {
       "address": 4203147,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "90",
-        "fd",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_rethrow@plt:"
-    },
-    {
-      "address": 4203152,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "b2",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17eb2(%rip)        # 41a148 <__cxa_rethrow@CXXABI_1.3>"
-    },
-    {
-      "address": 4203158,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "26",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x26"
-    },
-    {
-      "address": 4203163,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "80",
         "fd",
         "ff",
         "ff"
@@ -2250,177 +1474,10 @@
     },
     {
       "address": 4203179,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "70",
-        "fd",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_end_catch@plt:"
-    },
-    {
-      "address": 4203184,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "a2",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17ea2(%rip)        # 41a158 <__cxa_end_catch@CXXABI_1.3>"
-    },
-    {
-      "address": 4203190,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "28",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x28"
-    },
-    {
-      "address": 4203195,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "60",
-        "fd",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__gxx_personality_v0@plt:"
-    },
-    {
-      "address": 4203200,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "9a",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17e9a(%rip)        # 41a160 <__gxx_personality_v0@CXXABI_1.3>"
-    },
-    {
-      "address": 4203206,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "29",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x29"
-    },
-    {
-      "address": 4203211,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "50",
-        "fd",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_throw@plt:"
-    },
-    {
-      "address": 4203216,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "92",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17e92(%rip)        # 41a168 <__cxa_throw@CXXABI_1.3>"
-    },
-    {
-      "address": 4203222,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "2a",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x2a"
-    },
-    {
-      "address": 4203227,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "40",
         "fd",
         "ff",
         "ff"
@@ -2462,15 +1519,7 @@
     },
     {
       "address": 4203243,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "30",
@@ -2515,15 +1564,7 @@
     },
     {
       "address": 4203259,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "20",
@@ -2568,71 +1609,10 @@
     },
     {
       "address": 4203275,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "10",
-        "fd",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_guard_acquire@plt:"
-    },
-    {
-      "address": 4203280,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "72",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17e72(%rip)        # 41a188 <__cxa_guard_acquire@CXXABI_1.3>"
-    },
-    {
-      "address": 4203286,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "2e",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x2e"
-    },
-    {
-      "address": 4203291,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "00",
         "fd",
         "ff",
         "ff"
@@ -2674,15 +1654,7 @@
     },
     {
       "address": 4203307,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "f0",
@@ -2727,71 +1699,10 @@
     },
     {
       "address": 4203323,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "e0",
-        "fc",
-        "ff",
-        "ff"
-      ],
-      "source": null,
-      "text": " jmpq   402020 <.plt>"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__cxa_bad_cast@plt:"
-    },
-    {
-      "address": 4203328,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "25",
-        "5a",
-        "7e",
-        "01",
-        "00"
-      ],
-      "source": null,
-      "text": " jmpq   *0x17e5a(%rip)        # 41a1a0 <__cxa_bad_cast@CXXABI_1.3>"
-    },
-    {
-      "address": 4203334,
-      "labels": [],
-      "opcodes": [
-        "68",
-        "31",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": null,
-      "text": " pushq  $0x31"
-    },
-    {
-      "address": 4203339,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e9",
-        "d0",
         "fc",
         "ff",
         "ff"
@@ -2833,15 +1744,7 @@
     },
     {
       "address": 4203355,
-      "labels": [
-        {
-          "name": ".plt",
-          "range": {
-            "endCol": 21,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e9",
         "c0",
@@ -2947,15 +1850,7 @@
     },
     {
       "address": 4203376,
-      "labels": [
-        {
-          "name": "__cxa_allocate_exception@plt",
-          "range": {
-            "endCol": 45,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "6b",
@@ -3127,15 +2022,7 @@
     },
     {
       "address": 4203420,
-      "labels": [
-        {
-          "name": "__cxa_throw@plt",
-          "range": {
-            "endCol": 32,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "2f",
@@ -3182,15 +2069,7 @@
     },
     {
       "address": 4203431,
-      "labels": [
-        {
-          "name": "__cxa_free_exception@plt",
-          "range": {
-            "endCol": 41,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "c4",
@@ -4231,1064 +3110,6 @@
         "mainsource": true
       },
       "text": " nopl   (%rax)"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "_start:"
-    },
-    {
-      "address": 4203696,
-      "labels": [],
-      "opcodes": [
-        "f3",
-        "0f",
-        "1e",
-        "fa"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " endbr64"
-    },
-    {
-      "address": 4203700,
-      "labels": [],
-      "opcodes": [
-        "31",
-        "ed"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " xor    %ebp,%ebp"
-    },
-    {
-      "address": 4203702,
-      "labels": [],
-      "opcodes": [
-        "49",
-        "89",
-        "d1"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    %rdx,%r9"
-    },
-    {
-      "address": 4203705,
-      "labels": [],
-      "opcodes": [
-        "5e"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " pop    %rsi"
-    },
-    {
-      "address": 4203706,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "89",
-        "e2"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    %rsp,%rdx"
-    },
-    {
-      "address": 4203709,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "83",
-        "e4",
-        "f0"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " and    $0xfffffffffffffff0,%rsp"
-    },
-    {
-      "address": 4203713,
-      "labels": [],
-      "opcodes": [
-        "50"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " push   %rax"
-    },
-    {
-      "address": 4203714,
-      "labels": [],
-      "opcodes": [
-        "54"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " push   %rsp"
-    },
-    {
-      "address": 4203715,
-      "labels": [],
-      "opcodes": [
-        "49",
-        "c7",
-        "c0",
-        "30",
-        "36",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x413630,%r8"
-    },
-    {
-      "address": 4203722,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "c7",
-        "c1",
-        "c0",
-        "35",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x4135c0,%rcx"
-    },
-    {
-      "address": 4203729,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "c7",
-        "c7",
-        "90",
-        "24",
-        "40",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x402490,%rdi"
-    },
-    {
-      "address": 4203736,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "15",
-        "fa",
-        "7a",
-        "01",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " callq  *0x17afa(%rip)        # 419fd8 <__libc_start_main@GLIBC_2.2.5>"
-    },
-    {
-      "address": 4203742,
-      "labels": [],
-      "opcodes": [
-        "f4"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " hlt"
-    },
-    {
-      "address": 4203743,
-      "labels": [],
-      "opcodes": [
-        "90"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nop"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "_dl_relocate_static_pie:"
-    },
-    {
-      "address": 4203744,
-      "labels": [],
-      "opcodes": [
-        "f3",
-        "0f",
-        "1e",
-        "fa"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " endbr64"
-    },
-    {
-      "address": 4203748,
-      "labels": [],
-      "opcodes": [
-        "c3"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " retq"
-    },
-    {
-      "address": 4203749,
-      "labels": [],
-      "opcodes": [
-        "66",
-        "2e",
-        "0f",
-        "1f",
-        "84",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopw   %cs:0x0(%rax,%rax,1)"
-    },
-    {
-      "address": 4203759,
-      "labels": [],
-      "opcodes": [
-        "90"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nop"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "deregister_tm_clones:"
-    },
-    {
-      "address": 4203760,
-      "labels": [],
-      "opcodes": [
-        "b8",
-        "e0",
-        "a5",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x41a5e0,%eax"
-    },
-    {
-      "address": 4203765,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "3d",
-        "e0",
-        "a5",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " cmp    $0x41a5e0,%rax"
-    },
-    {
-      "address": 4203771,
-      "labels": [
-        {
-          "name": "deregister_tm_clones",
-          "range": {
-            "endCol": 37,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "74",
-        "13"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " je     402510 <deregister_tm_clones+0x20>"
-    },
-    {
-      "address": 4203773,
-      "labels": [],
-      "opcodes": [
-        "b8",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x0,%eax"
-    },
-    {
-      "address": 4203778,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "85",
-        "c0"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " test   %rax,%rax"
-    },
-    {
-      "address": 4203781,
-      "labels": [
-        {
-          "name": "deregister_tm_clones",
-          "range": {
-            "endCol": 37,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "74",
-        "09"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " je     402510 <deregister_tm_clones+0x20>"
-    },
-    {
-      "address": 4203783,
-      "labels": [],
-      "opcodes": [
-        "bf",
-        "e0",
-        "a5",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x41a5e0,%edi"
-    },
-    {
-      "address": 4203788,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "e0"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " jmpq   *%rax"
-    },
-    {
-      "address": 4203790,
-      "labels": [],
-      "opcodes": [
-        "66",
-        "90"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " xchg   %ax,%ax"
-    },
-    {
-      "address": 4203792,
-      "labels": [],
-      "opcodes": [
-        "c3"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " retq"
-    },
-    {
-      "address": 4203793,
-      "labels": [],
-      "opcodes": [
-        "66",
-        "66",
-        "2e",
-        "0f",
-        "1f",
-        "84",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " data16 nopw %cs:0x0(%rax,%rax,1)"
-    },
-    {
-      "address": 4203804,
-      "labels": [],
-      "opcodes": [
-        "0f",
-        "1f",
-        "40",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopl   0x0(%rax)"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "register_tm_clones:"
-    },
-    {
-      "address": 4203808,
-      "labels": [],
-      "opcodes": [
-        "be",
-        "e0",
-        "a5",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x41a5e0,%esi"
-    },
-    {
-      "address": 4203813,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "81",
-        "ee",
-        "e0",
-        "a5",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " sub    $0x41a5e0,%rsi"
-    },
-    {
-      "address": 4203820,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "89",
-        "f0"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    %rsi,%rax"
-    },
-    {
-      "address": 4203823,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "c1",
-        "ee",
-        "3f"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " shr    $0x3f,%rsi"
-    },
-    {
-      "address": 4203827,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "c1",
-        "f8",
-        "03"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " sar    $0x3,%rax"
-    },
-    {
-      "address": 4203831,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "01",
-        "c6"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " add    %rax,%rsi"
-    },
-    {
-      "address": 4203834,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "d1",
-        "fe"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " sar    %rsi"
-    },
-    {
-      "address": 4203837,
-      "labels": [
-        {
-          "name": "register_tm_clones",
-          "range": {
-            "endCol": 35,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "74",
-        "11"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " je     402550 <register_tm_clones+0x30>"
-    },
-    {
-      "address": 4203839,
-      "labels": [],
-      "opcodes": [
-        "b8",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x0,%eax"
-    },
-    {
-      "address": 4203844,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "85",
-        "c0"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " test   %rax,%rax"
-    },
-    {
-      "address": 4203847,
-      "labels": [
-        {
-          "name": "register_tm_clones",
-          "range": {
-            "endCol": 35,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "74",
-        "07"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " je     402550 <register_tm_clones+0x30>"
-    },
-    {
-      "address": 4203849,
-      "labels": [],
-      "opcodes": [
-        "bf",
-        "e0",
-        "a5",
-        "41",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    $0x41a5e0,%edi"
-    },
-    {
-      "address": 4203854,
-      "labels": [],
-      "opcodes": [
-        "ff",
-        "e0"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " jmpq   *%rax"
-    },
-    {
-      "address": 4203856,
-      "labels": [],
-      "opcodes": [
-        "c3"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " retq"
-    },
-    {
-      "address": 4203857,
-      "labels": [],
-      "opcodes": [
-        "66",
-        "66",
-        "2e",
-        "0f",
-        "1f",
-        "84",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " data16 nopw %cs:0x0(%rax,%rax,1)"
-    },
-    {
-      "address": 4203868,
-      "labels": [],
-      "opcodes": [
-        "0f",
-        "1f",
-        "40",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopl   0x0(%rax)"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "__do_global_dtors_aux:"
-    },
-    {
-      "address": 4203872,
-      "labels": [],
-      "opcodes": [
-        "80",
-        "3d",
-        "81",
-        "80",
-        "01",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " cmpb   $0x0,0x18081(%rip)        # 41a5e8 <completed.0>"
-    },
-    {
-      "address": 4203879,
-      "labels": [
-        {
-          "name": "__do_global_dtors_aux",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "75",
-        "17"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " jne    402580 <__do_global_dtors_aux+0x20>"
-    },
-    {
-      "address": 4203881,
-      "labels": [],
-      "opcodes": [
-        "55"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " push   %rbp"
-    },
-    {
-      "address": 4203882,
-      "labels": [],
-      "opcodes": [
-        "48",
-        "89",
-        "e5"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " mov    %rsp,%rbp"
-    },
-    {
-      "address": 4203885,
-      "labels": [
-        {
-          "name": "deregister_tm_clones",
-          "range": {
-            "endCol": 37,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "e8",
-        "7e",
-        "ff",
-        "ff",
-        "ff"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " callq  4024f0 <deregister_tm_clones>"
-    },
-    {
-      "address": 4203890,
-      "labels": [],
-      "opcodes": [
-        "c6",
-        "05",
-        "6f",
-        "80",
-        "01",
-        "00",
-        "01"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " movb   $0x1,0x1806f(%rip)        # 41a5e8 <completed.0>"
-    },
-    {
-      "address": 4203897,
-      "labels": [],
-      "opcodes": [
-        "5d"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " pop    %rbp"
-    },
-    {
-      "address": 4203898,
-      "labels": [],
-      "opcodes": [
-        "c3"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " retq"
-    },
-    {
-      "address": 4203899,
-      "labels": [],
-      "opcodes": [
-        "0f",
-        "1f",
-        "44",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopl   0x0(%rax,%rax,1)"
-    },
-    {
-      "address": 4203904,
-      "labels": [],
-      "opcodes": [
-        "c3"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " retq"
-    },
-    {
-      "address": 4203905,
-      "labels": [],
-      "opcodes": [
-        "66",
-        "66",
-        "2e",
-        "0f",
-        "1f",
-        "84",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " data16 nopw %cs:0x0(%rax,%rax,1)"
-    },
-    {
-      "address": 4203916,
-      "labels": [],
-      "opcodes": [
-        "0f",
-        "1f",
-        "40",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopl   0x0(%rax)"
-    },
-    {
-      "labels": [],
-      "source": null,
-      "text": "frame_dummy:"
-    },
-    {
-      "address": 4203920,
-      "labels": [
-        {
-          "name": "register_tm_clones",
-          "range": {
-            "endCol": 35,
-            "startCol": 17
-          }
-        }
-      ],
-      "opcodes": [
-        "eb",
-        "8e"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " jmp    402520 <register_tm_clones>"
-    },
-    {
-      "address": 4203922,
-      "labels": [],
-      "opcodes": [
-        "66",
-        "2e",
-        "0f",
-        "1f",
-        "84",
-        "00",
-        "00",
-        "00",
-        "00",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopw   %cs:0x0(%rax,%rax,1)"
-    },
-    {
-      "address": 4203932,
-      "labels": [],
-      "opcodes": [
-        "0f",
-        "1f",
-        "40",
-        "00"
-      ],
-      "source": {
-        "file": null,
-        "line": 15,
-        "mainsource": true
-      },
-      "text": " nopl   0x0(%rax)"
     },
     {
       "labels": [],
@@ -23234,15 +21055,7 @@
     },
     {
       "address": 4207893,
-      "labels": [
-        {
-          "name": "__cxa_guard_acquire@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "f6",
@@ -23331,15 +21144,7 @@
     },
     {
       "address": 4207914,
-      "labels": [
-        {
-          "name": "__cxa_guard_release@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "11",
@@ -23615,15 +21420,7 @@
     },
     {
       "address": 4207973,
-      "labels": [
-        {
-          "name": "__cxa_guard_acquire@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "a6",
@@ -23712,15 +21509,7 @@
     },
     {
       "address": 4207994,
-      "labels": [
-        {
-          "name": "__cxa_guard_release@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "c1",
@@ -27920,15 +25709,7 @@
     },
     {
       "address": 4208828,
-      "labels": [
-        {
-          "name": "__cxa_guard_acquire@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "4f",
@@ -28322,15 +26103,7 @@
     },
     {
       "address": 4208910,
-      "labels": [
-        {
-          "name": "__cxa_guard_release@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "2d",
@@ -28401,15 +26174,7 @@
     },
     {
       "address": 4208925,
-      "labels": [
-        {
-          "name": "__cxa_guard_abort@plt",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "0e",
@@ -28633,15 +26398,7 @@
     },
     {
       "address": 4208972,
-      "labels": [
-        {
-          "name": "__cxa_guard_acquire@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "bf",
@@ -29035,15 +26792,7 @@
     },
     {
       "address": 4209054,
-      "labels": [
-        {
-          "name": "__cxa_guard_release@plt",
-          "range": {
-            "endCol": 40,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "9d",
@@ -29114,15 +26863,7 @@
     },
     {
       "address": 4209069,
-      "labels": [
-        {
-          "name": "__cxa_guard_abort@plt",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "7e",
@@ -52993,15 +50734,7 @@
     },
     {
       "address": 4214821,
-      "labels": [
-        {
-          "name": "__dynamic_cast@plt",
-          "range": {
-            "endCol": 35,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "e6",
@@ -53818,15 +51551,7 @@
     },
     {
       "address": 4215038,
-      "labels": [
-        {
-          "name": "__cxa_bad_cast@plt",
-          "range": {
-            "endCol": 35,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "3d",
@@ -56973,15 +54698,7 @@
     },
     {
       "address": 4215748,
-      "labels": [
-        {
-          "name": "__cxa_begin_catch@plt",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "d7",
@@ -57052,15 +54769,7 @@
     },
     {
       "address": 4215763,
-      "labels": [
-        {
-          "name": "__cxa_rethrow@plt",
-          "range": {
-            "endCol": 34,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "b8",
@@ -57206,15 +54915,7 @@
     },
     {
       "address": 4215793,
-      "labels": [
-        {
-          "name": "__cxa_begin_catch@plt",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "aa",
@@ -57285,15 +54986,7 @@
     },
     {
       "address": 4215808,
-      "labels": [
-        {
-          "name": "__cxa_rethrow@plt",
-          "range": {
-            "endCol": 34,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "8b",
@@ -57540,15 +55233,7 @@
     },
     {
       "address": 4215851,
-      "labels": [
-        {
-          "name": "__cxa_end_catch@plt",
-          "range": {
-            "endCol": 36,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "80",
@@ -57580,15 +55265,7 @@
     },
     {
       "address": 4215859,
-      "labels": [
-        {
-          "name": "__cxa_begin_catch@plt",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "68",
@@ -57746,15 +55423,7 @@
     },
     {
       "address": 4215897,
-      "labels": [
-        {
-          "name": "__cxa_rethrow@plt",
-          "range": {
-            "endCol": 34,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "32",
@@ -57771,15 +55440,7 @@
     },
     {
       "address": 4215902,
-      "labels": [
-        {
-          "name": "__cxa_end_catch@plt",
-          "range": {
-            "endCol": 36,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "4d",
@@ -57811,15 +55472,7 @@
     },
     {
       "address": 4215910,
-      "labels": [
-        {
-          "name": "__cxa_begin_catch@plt",
-          "range": {
-            "endCol": 38,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "35",
@@ -57985,15 +55638,7 @@
     },
     {
       "address": 4215944,
-      "labels": [
-        {
-          "name": "__cxa_end_catch@plt",
-          "range": {
-            "endCol": 36,
-            "startCol": 17
-          }
-        }
-      ],
+      "labels": [],
       "opcodes": [
         "e8",
         "23",
@@ -85476,147 +83121,2447 @@
       "text": " cmp    %r12,0x28(%rsp)"
     },
     {
+      "address": 4221816,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "85",
+        "ea",
+        "fe",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 623,
+        "mainsource": true
+      },
+      "text": " jne    406a68 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x1a8>"
+    },
+    {
+      "address": 4221822,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "7b",
+        "70"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " mov    0x70(%rbx),%rdi"
+    },
+    {
+      "address": 4221826,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "0f",
+        "b7",
+        "6b",
+        "60"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " movzwl 0x60(%rbx),%r13d"
+    },
+    {
+      "address": 4221831,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "0f",
+        "b6",
+        "63",
+        "62"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " movzbl 0x62(%rbx),%r12d"
+    },
+    {
+      "address": 4221836,
+      "labels": [
+        {
+          "name": "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt",
+          "range": {
+            "endCol": 63,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "1f",
+        "b5",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " callq  4020b0 <_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt>"
+    },
+    {
+      "address": 4221841,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "89",
+        "ea"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " mov    %r13d,%edx"
+    },
+    {
+      "address": 4221844,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "c7"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " mov    %rax,%r15"
+    },
+    {
+      "address": 4221847,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "44",
+        "2d",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " lea    0x0(%rbp,%rbp,1),%rax"
+    },
+    {
+      "address": 4221852,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "44",
+        "24",
+        "10"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " mov    %rax,0x10(%rsp)"
+    },
+    {
+      "address": 4221857,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "47",
+        "30"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " mov    0x30(%r15),%rax"
+    },
+    {
+      "address": 4221861,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "23",
+        "14",
+        "68"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " and    (%rax,%rbp,2),%dx"
+    },
+    {
+      "address": 4221865,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "85",
+        "22",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 332,
+        "mainsource": true
+      },
+      "text": " jne    406ad1 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x211>"
+    },
+    {
+      "address": 4221871,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "83",
+        "e4",
+        "01"
+      ],
+      "source": {
+        "file": null,
+        "line": 332,
+        "mainsource": true
+      },
+      "text": " and    $0x1,%r12d"
+    },
+    {
+      "address": 4221875,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "1c"
+      ],
+      "source": {
+        "file": null,
+        "line": 332,
+        "mainsource": true
+      },
+      "text": " je     406bd1 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x311>"
+    },
+    {
+      "address": 4221877,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "80",
+        "7f",
+        "38",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 874,
+        "mainsource": true
+      },
+      "text": " cmpb   $0x0,0x38(%r15)"
+    },
+    {
+      "address": 4221882,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "15",
+        "03",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 874,
+        "mainsource": true
+      },
+      "text": " je     406ed5 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x615>"
+    },
+    {
+      "address": 4221888,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "0f",
+        "b6",
+        "87",
+        "98",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 875,
+        "mainsource": true
+      },
+      "text": " movzbl 0x98(%r15),%eax"
+    },
+    {
+      "address": 4221896,
+      "labels": [],
+      "opcodes": [
+        "40",
+        "38",
+        "e8"
+      ],
+      "source": {
+        "file": null,
+        "line": 333,
+        "mainsource": true
+      },
+      "text": " cmp    %bpl,%al"
+    },
+    {
+      "address": 4221899,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "00",
+        "ff",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 333,
+        "mainsource": true
+      },
+      "text": " je     406ad1 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x211>"
+    },
+    {
+      "address": 4221905,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "7b",
+        "70"
+      ],
+      "source": {
+        "file": null,
+        "line": 258,
+        "mainsource": true
+      },
+      "text": " mov    0x70(%rbx),%r15"
+    },
+    {
+      "address": 4221909,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "43",
+        "20"
+      ],
+      "source": {
+        "file": null,
+        "line": 954,
+        "mainsource": true
+      },
+      "text": " mov    0x20(%rbx),%rax"
+    },
+    {
+      "address": 4221913,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 258,
+        "mainsource": true
+      },
+      "text": " mov    %r15,%rdi"
+    },
+    {
+      "address": 4221916,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "44",
+        "24",
+        "28"
+      ],
+      "source": {
+        "file": null,
+        "line": 954,
+        "mainsource": true
+      },
+      "text": " mov    %rax,0x28(%rsp)"
+    },
+    {
+      "address": 4221921,
+      "labels": [
+        {
+          "name": "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt",
+          "range": {
+            "endCol": 63,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "ca",
+        "b4",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 258,
+        "mainsource": true
+      },
+      "text": " callq  4020b0 <_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt>"
+    },
+    {
+      "address": 4221926,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "01",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 115,
+        "mainsource": true
+      },
+      "text": " mov    $0x1,%edi"
+    },
+    {
+      "address": 4221931,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "c5"
+      ],
+      "source": {
+        "file": null,
+        "line": 258,
+        "mainsource": true
+      },
+      "text": " mov    %rax,%r13"
+    },
+    {
+      "address": 4221934,
+      "labels": [
+        {
+          "name": "_Znwm@plt",
+          "range": {
+            "endCol": 26,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "bd",
+        "b5",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 115,
+        "mainsource": true
+      },
+      "text": " callq  4021b0 <_Znwm@plt>"
+    },
+    {
+      "address": 4221939,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "ef"
+      ],
+      "source": {
+        "file": null,
+        "line": 853,
+        "mainsource": true
+      },
+      "text": " mov    %r13,%rdi"
+    },
+    {
+      "address": 4221942,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "89",
+        "c4"
+      ],
+      "source": {
+        "file": null,
+        "line": 115,
+        "mainsource": true
+      },
+      "text": " mov    %rax,%r12"
+    },
+    {
+      "address": 4221945,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "b6",
+        "44",
+        "24",
+        "20"
+      ],
+      "source": {
+        "file": null,
+        "line": 426,
+        "mainsource": true
+      },
+      "text": " movzbl 0x20(%rsp),%eax"
+    },
+    {
+      "address": 4221950,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8d",
+        "54",
+        "24",
+        "01"
+      ],
+      "source": {
+        "file": null,
+        "line": 1583,
+        "mainsource": true
+      },
+      "text": " lea    0x1(%r12),%rdx"
+    },
+    {
+      "address": 4221955,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "e6"
+      ],
+      "source": {
+        "file": null,
+        "line": 853,
+        "mainsource": true
+      },
+      "text": " mov    %r12,%rsi"
+    },
+    {
+      "address": 4221958,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "88",
+        "04",
+        "24"
+      ],
+      "source": {
+        "file": null,
+        "line": 426,
+        "mainsource": true
+      },
+      "text": " mov    %al,(%r12)"
+    },
+    {
+      "address": 4221962,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "45",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 853,
+        "mainsource": true
+      },
+      "text": " mov    0x0(%r13),%rax"
+    },
+    {
+      "address": 4221966,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "50",
+        "28"
+      ],
+      "source": {
+        "file": null,
+        "line": 853,
+        "mainsource": true
+      },
+      "text": " callq  *0x28(%rax)"
+    },
+    {
+      "address": 4221969,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 228,
+        "mainsource": true
+      },
+      "text": " mov    %r15,%rdi"
+    },
+    {
+      "address": 4221972,
+      "labels": [
+        {
+          "name": "_ZSt9use_facetINSt7__cxx117collateIcEEERKT_RKSt6locale@plt",
+          "range": {
+            "endCol": 75,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "87",
+        "b5",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 228,
+        "mainsource": true
+      },
+      "text": " callq  4021a0 <_ZSt9use_facetINSt7__cxx117collateIcEEERKT_RKSt6locale@plt>"
+    },
+    {
+      "address": 4221977,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "c6"
+      ],
+      "source": {
+        "file": null,
+        "line": 228,
+        "mainsource": true
+      },
+      "text": " mov    %rax,%rsi"
+    },
+    {
+      "address": 4221980,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "0f",
+        "b6",
+        "04",
+        "24"
+      ],
+      "source": {
+        "file": null,
+        "line": 322,
+        "mainsource": true
+      },
+      "text": " movzbl (%r12),%eax"
+    },
+    {
+      "address": 4221985,
+      "labels": [],
+      "opcodes": [
+        "c6",
+        "44",
+        "24",
+        "61",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 322,
+        "mainsource": true
+      },
+      "text": " movb   $0x0,0x61(%rsp)"
+    },
+    {
+      "address": 4221990,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8d",
+        "7c",
+        "24",
+        "60"
+      ],
+      "source": {
+        "file": null,
+        "line": 157,
+        "mainsource": true
+      },
+      "text": " lea    0x60(%rsp),%r15"
+    },
+    {
+      "address": 4221995,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "7c",
+        "24",
+        "50"
+      ],
+      "source": {
+        "file": null,
+        "line": 157,
+        "mainsource": true
+      },
+      "text": " mov    %r15,0x50(%rsp)"
+    },
+    {
+      "address": 4222000,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "4c",
+        "24",
+        "61"
+      ],
+      "source": {
+        "file": null,
+        "line": 722,
+        "mainsource": true
+      },
+      "text": " lea    0x61(%rsp),%rcx"
+    },
+    {
+      "address": 4222005,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "fa"
+      ],
+      "source": {
+        "file": null,
+        "line": 722,
+        "mainsource": true
+      },
+      "text": " mov    %r15,%rdx"
+    },
+    {
+      "address": 4222008,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "7c",
+        "24",
+        "30"
+      ],
+      "source": {
+        "file": null,
+        "line": 722,
+        "mainsource": true
+      },
+      "text": " lea    0x30(%rsp),%rdi"
+    },
+    {
+      "address": 4222013,
+      "labels": [],
+      "opcodes": [
+        "88",
+        "44",
+        "24",
+        "60"
+      ],
+      "source": {
+        "file": null,
+        "line": 322,
+        "mainsource": true
+      },
+      "text": " mov    %al,0x60(%rsp)"
+    },
+    {
+      "address": 4222017,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "06"
+      ],
+      "source": {
+        "file": null,
+        "line": 722,
+        "mainsource": true
+      },
+      "text": " mov    (%rsi),%rax"
+    },
+    {
+      "address": 4222020,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c7",
+        "44",
+        "24",
+        "58",
+        "01",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 183,
+        "mainsource": true
+      },
+      "text": " movq   $0x1,0x58(%rsp)"
+    },
+    {
+      "address": 4222029,
+      "labels": [],
+      "opcodes": [
+        "ff",
+        "50",
+        "18"
+      ],
+      "source": {
+        "file": null,
+        "line": 722,
+        "mainsource": true
+      },
+      "text": " callq  *0x18(%rax)"
+    },
+    {
+      "address": 4222032,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "7c",
+        "24",
+        "50"
+      ],
+      "source": {
+        "file": null,
+        "line": 187,
+        "mainsource": true
+      },
+      "text": " mov    0x50(%rsp),%rdi"
+    },
+    {
+      "address": 4222037,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "39",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 231,
+        "mainsource": true
+      },
+      "text": " cmp    %r15,%rdi"
+    },
+    {
+      "address": 4222040,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "0e"
+      ],
+      "source": {
+        "file": null,
+        "line": 231,
+        "mainsource": true
+      },
+      "text": " je     406c68 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x3a8>"
+    },
+    {
+      "address": 4222042,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "44",
+        "24",
+        "60"
+      ],
+      "source": {
+        "file": null,
+        "line": 237,
+        "mainsource": true
+      },
+      "text": " mov    0x60(%rsp),%rax"
+    },
+    {
+      "address": 4222047,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "70",
+        "01"
+      ],
+      "source": {
+        "file": null,
+        "line": 237,
+        "mainsource": true
+      },
+      "text": " lea    0x1(%rax),%rsi"
+    },
+    {
+      "address": 4222051,
+      "labels": [
+        {
+          "name": "_ZdlPvm@plt",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "58",
+        "b5",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 133,
+        "mainsource": true
+      },
+      "text": " callq  4021c0 <_ZdlPvm@plt>"
+    },
+    {
+      "address": 4222056,
+      "labels": [],
+      "opcodes": [
+        "be",
+        "01",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 133,
+        "mainsource": true
+      },
+      "text": " mov    $0x1,%esi"
+    },
+    {
+      "address": 4222061,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "e7"
+      ],
+      "source": {
+        "file": null,
+        "line": 133,
+        "mainsource": true
+      },
+      "text": " mov    %r12,%rdi"
+    },
+    {
+      "address": 4222064,
+      "labels": [
+        {
+          "name": "_ZdlPvm@plt",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "4b",
+        "b5",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 133,
+        "mainsource": true
+      },
+      "text": " callq  4021c0 <_ZdlPvm@plt>"
+    },
+    {
+      "address": 4222069,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "73",
+        "20"
+      ],
+      "source": {
+        "file": null,
+        "line": 954,
+        "mainsource": true
+      },
+      "text": " mov    0x20(%rbx),%r14"
+    },
+    {
+      "address": 4222073,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "6b",
+        "18"
+      ],
+      "source": {
+        "file": null,
+        "line": 954,
+        "mainsource": true
+      },
+      "text": " mov    0x18(%rbx),%r13"
+    },
+    {
+      "address": 4222077,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "7c",
+        "24",
+        "30"
+      ],
+      "source": {
+        "file": null,
+        "line": 1177,
+        "mainsource": true
+      },
+      "text": " mov    0x30(%rsp),%r15"
+    },
+    {
+      "address": 4222082,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "f0"
+      ],
+      "source": {
+        "file": null,
+        "line": 1180,
+        "mainsource": true
+      },
+      "text": " mov    %r14,%rax"
+    },
+    {
+      "address": 4222085,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "29",
+        "e8"
+      ],
+      "source": {
+        "file": null,
+        "line": 1180,
+        "mainsource": true
+      },
+      "text": " sub    %r13,%rax"
+    },
+    {
+      "address": 4222088,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "c2"
+      ],
+      "source": {
+        "file": null,
+        "line": 1180,
+        "mainsource": true
+      },
+      "text": " mov    %rax,%rdx"
+    },
+    {
+      "address": 4222091,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "f8",
+        "07"
+      ],
+      "source": {
+        "file": null,
+        "line": 1928,
+        "mainsource": true
+      },
+      "text": " sar    $0x7,%rax"
+    },
+    {
+      "address": 4222095,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "fa",
+        "05"
+      ],
+      "source": {
+        "file": null,
+        "line": 1180,
+        "mainsource": true
+      },
+      "text": " sar    $0x5,%rdx"
+    },
+    {
+      "address": 4222099,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "85",
+        "c0"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " test   %rax,%rax"
+    },
+    {
+      "address": 4222102,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "8e",
+        "c5",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " jle    406e61 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x5a1>"
+    },
+    {
+      "address": 4222108,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "c1",
+        "e0",
+        "07"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " shl    $0x7,%rax"
+    },
+    {
+      "address": 4222112,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "64",
+        "24",
+        "38"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " mov    0x38(%rsp),%r12"
+    },
+    {
+      "address": 4222117,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "01",
+        "e8"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " add    %r13,%rax"
+    },
+    {
+      "address": 4222120,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "44",
+        "24",
+        "20"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " mov    %rax,0x20(%rsp)"
+    },
+    {
+      "address": 4222125,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "eb",
+        "49"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " jmp    406cf8 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x438>"
+    },
+    {
+      "address": 4222127,
+      "labels": [],
+      "opcodes": [
+        "90"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " nop"
+    },
+    {
+      "address": 4222128,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8d",
+        "45",
+        "20"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " lea    0x20(%r13),%rax"
+    },
+    {
+      "address": 4222132,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "44",
+        "24",
+        "18"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " mov    %rax,0x18(%rsp)"
+    },
+    {
+      "address": 4222137,
+      "labels": [],
+      "opcodes": [
+        "4d",
+        "3b",
+        "65",
+        "28"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " cmp    0x28(%r13),%r12"
+    },
+    {
+      "address": 4222141,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "fd",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " je     406dc0 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x500>"
+    },
+    {
+      "address": 4222147,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8d",
+        "45",
+        "40"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " lea    0x40(%r13),%rax"
+    },
+    {
+      "address": 4222151,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "44",
+        "24",
+        "18"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " mov    %rax,0x18(%rsp)"
+    },
+    {
+      "address": 4222156,
+      "labels": [],
+      "opcodes": [
+        "4d",
+        "3b",
+        "65",
+        "48"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " cmp    0x48(%r13),%r12"
+    },
+    {
+      "address": 4222160,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "2a",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " je     406e00 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x540>"
+    },
+    {
+      "address": 4222166,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8d",
+        "45",
+        "60"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " lea    0x60(%r13),%rax"
+    },
+    {
+      "address": 4222170,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "89",
+        "44",
+        "24",
+        "18"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " mov    %rax,0x18(%rsp)"
+    },
+    {
+      "address": 4222175,
+      "labels": [],
+      "opcodes": [
+        "4d",
+        "3b",
+        "65",
+        "68"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " cmp    0x68(%r13),%r12"
+    },
+    {
+      "address": 4222179,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "47",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " je     406e30 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x570>"
+    },
+    {
+      "address": 4222185,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "83",
+        "ed",
+        "80"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " sub    $0xffffffffffffff80,%r13"
+    },
+    {
+      "address": 4222189,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "39",
+        "6c",
+        "24",
+        "20"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " cmp    %r13,0x20(%rsp)"
+    },
+    {
+      "address": 4222194,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "5f",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 1930,
+        "mainsource": true
+      },
+      "text": " je     406e57 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x597>"
+    },
+    {
+      "address": 4222200,
+      "labels": [],
+      "opcodes": [
+        "4d",
+        "39",
+        "65",
+        "08"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " cmp    %r12,0x8(%r13)"
+    },
+    {
+      "address": 4222204,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "b2"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " jne    406cb0 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x3f0>"
+    },
+    {
+      "address": 4222206,
+      "labels": [],
+      "opcodes": [
+        "4d",
+        "85",
+        "e4"
+      ],
+      "source": {
+        "file": null,
+        "line": 339,
+        "mainsource": true
+      },
+      "text": " test   %r12,%r12"
+    },
+    {
+      "address": 4222209,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "1d"
+      ],
+      "source": {
+        "file": null,
+        "line": 339,
+        "mainsource": true
+      },
+      "text": " je     406d20 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x460>"
+    },
+    {
+      "address": 4222211,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "8b",
+        "7d",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 347,
+        "mainsource": true
+      },
+      "text": " mov    0x0(%r13),%rdi"
+    },
+    {
+      "address": 4222215,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "e2"
+      ],
+      "source": {
+        "file": null,
+        "line": 347,
+        "mainsource": true
+      },
+      "text": " mov    %r12,%rdx"
+    },
+    {
+      "address": 4222218,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "fe"
+      ],
+      "source": {
+        "file": null,
+        "line": 347,
+        "mainsource": true
+      },
+      "text": " mov    %r15,%rsi"
+    },
+    {
+      "address": 4222221,
+      "labels": [
+        {
+          "name": "memcmp@plt",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "ae",
+        "b3",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 347,
+        "mainsource": true
+      },
+      "text": " callq  4020c0 <memcmp@plt>"
+    },
+    {
+      "address": 4222226,
+      "labels": [],
+      "opcodes": [
+        "85",
+        "c0"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " test   %eax,%eax"
+    },
+    {
+      "address": 4222228,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "9a"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " jne    406cb0 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x3f0>"
+    },
+    {
+      "address": 4222230,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 6164,
+        "mainsource": true
+      },
+      "text": " nopw   %cs:0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4222240,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "44",
+        "24",
+        "40"
+      ],
+      "source": {
+        "file": null,
+        "line": 231,
+        "mainsource": true
+      },
+      "text": " lea    0x40(%rsp),%rax"
+    },
+    {
+      "address": 4222245,
+      "labels": [],
+      "opcodes": [
+        "49",
+        "39",
+        "c7"
+      ],
+      "source": {
+        "file": null,
+        "line": 231,
+        "mainsource": true
+      },
+      "text": " cmp    %rax,%r15"
+    },
+    {
+      "address": 4222248,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "11"
+      ],
+      "source": {
+        "file": null,
+        "line": 231,
+        "mainsource": true
+      },
+      "text": " je     406d3b <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x47b>"
+    },
+    {
+      "address": 4222250,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "44",
+        "24",
+        "40"
+      ],
+      "source": {
+        "file": null,
+        "line": 237,
+        "mainsource": true
+      },
+      "text": " mov    0x40(%rsp),%rax"
+    },
+    {
+      "address": 4222255,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "89",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 133,
+        "mainsource": true
+      },
+      "text": " mov    %r15,%rdi"
+    },
+    {
+      "address": 4222258,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8d",
+        "70",
+        "01"
+      ],
+      "source": {
+        "file": null,
+        "line": 237,
+        "mainsource": true
+      },
+      "text": " lea    0x1(%rax),%rsi"
+    },
+    {
+      "address": 4222262,
+      "labels": [
+        {
+          "name": "_ZdlPvm@plt",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "85",
+        "b4",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 133,
+        "mainsource": true
+      },
+      "text": " callq  4021c0 <_ZdlPvm@plt>"
+    },
+    {
+      "address": 4222267,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "39",
+        "6c",
+        "24",
+        "28"
+      ],
+      "source": {
+        "file": null,
+        "line": 628,
+        "mainsource": true
+      },
+      "text": " cmp    %r13,0x28(%rsp)"
+    },
+    {
+      "address": 4222272,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "85",
+        "8b",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 628,
+        "mainsource": true
+      },
+      "text": " jne    406ad1 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x211>"
+    },
+    {
+      "address": 4222278,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "73",
+        "50"
+      ],
+      "source": {
+        "file": null,
+        "line": 954,
+        "mainsource": true
+      },
+      "text": " mov    0x50(%rbx),%r14"
+    },
+    {
+      "address": 4222282,
+      "labels": [],
+      "opcodes": [
+        "4c",
+        "8b",
+        "6b",
+        "48"
+      ],
+      "source": {
+        "file": null,
+        "line": 632,
+        "mainsource": true
+      },
+      "text": " mov    0x48(%rbx),%r13"
+    },
+    {
+      "address": 4222286,
+      "labels": [],
+      "opcodes": [
+        "4d",
+        "39",
+        "f5"
+      ],
+      "source": {
+        "file": null,
+        "line": 632,
+        "mainsource": true
+      },
+      "text": " cmp    %r14,%r13"
+    },
+    {
+      "address": 4222289,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "74",
+        "5e"
+      ],
+      "source": {
+        "file": null,
+        "line": 632,
+        "mainsource": true
+      },
+      "text": " je     406db1 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x4f1>"
+    },
+    {
+      "address": 4222291,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 632,
+        "mainsource": true
+      },
+      "text": " nopl   0x0(%rax,%rax,1)"
+    },
+    {
+      "address": 4222296,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "7b",
+        "70"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " mov    0x70(%rbx),%rdi"
+    },
+    {
+      "address": 4222300,
+      "labels": [],
+      "opcodes": [
+        "45",
+        "0f",
+        "b7",
+        "7d",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " movzwl 0x0(%r13),%r15d"
+    },
+    {
+      "address": 4222305,
+      "labels": [],
+      "opcodes": [
+        "45",
+        "0f",
+        "b6",
+        "65",
+        "02"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " movzbl 0x2(%r13),%r12d"
+    },
+    {
+      "address": 4222310,
+      "labels": [
+        {
+          "name": "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt",
+          "range": {
+            "endCol": 63,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e8",
+        "45",
+        "b3",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 328,
+        "mainsource": true
+      },
+      "text": " callq  4020b0 <_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt>"
+    },
+    {
+      "address": 4222315,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "54",
+        "24",
+        "10"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " mov    0x10(%rsp),%rdx"
+    },
+    {
+      "address": 4222320,
+      "labels": [],
+      "opcodes": [
+        "44",
+        "89",
+        "f9"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " mov    %r15d,%ecx"
+    },
+    {
+      "address": 4222323,
+      "labels": [],
+      "opcodes": [
+        "48",
+        "8b",
+        "70",
+        "30"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " mov    0x30(%rax),%rsi"
+    },
+    {
+      "address": 4222327,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "23",
+        "0c",
+        "16"
+      ],
+      "source": {
+        "file": null,
+        "line": 44,
+        "mainsource": true
+      },
+      "text": " and    (%rsi,%rdx,1),%cx"
+    },
+    {
+      "address": 4222331,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "75",
+        "2b"
+      ],
+      "source": {
+        "file": null,
+        "line": 332,
+        "mainsource": true
+      },
+      "text": " jne    406da8 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x4e8>"
+    },
+    {
+      "address": 4222333,
+      "labels": [],
+      "opcodes": [
+        "41",
+        "83",
+        "e4",
+        "01"
+      ],
+      "source": {
+        "file": null,
+        "line": 332,
+        "mainsource": true
+      },
+      "text": " and    $0x1,%r12d"
+    },
+    {
+      "address": 4222337,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "4a",
+        "fd",
+        "ff",
+        "ff"
+      ],
+      "source": {
+        "file": null,
+        "line": 332,
+        "mainsource": true
+      },
+      "text": " je     406ad1 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x211>"
+    },
+    {
+      "address": 4222343,
+      "labels": [],
+      "opcodes": [
+        "80",
+        "78",
+        "38",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 874,
+        "mainsource": true
+      },
+      "text": " cmpb   $0x0,0x38(%rax)"
+    },
+    {
+      "address": 4222347,
+      "labels": [
+        {
+          "name": "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv",
+          "range": {
+            "endCol": 98,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "0f",
+        "84",
+        "07",
+        "01",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 874,
+        "mainsource": true
+      },
+      "text": " je     406e98 <_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv+0x5d8>"
+    },
+    {
+      "address": 4222353,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "b6",
+        "88",
+        "98",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 875,
+        "mainsource": true
+      },
+      "text": " movzbl 0x98(%rax),%ecx"
+    },
+    {
       "labels": [],
       "source": null,
       "text": "[truncated; too many lines]"
     }
   ],
   "labelDefinitions": {
-    ".plt": 10,
-    "_Unwind_Resume@plt": 186,
-    "_Z9regexTestv": 877,
-    "_Z9regexTestv.cold": 272,
-    "_ZNKSt5ctypeIcE13_M_widen_initEv@plt": 138,
-    "_ZNKSt5ctypeIcE8do_widenEc": 1046,
-    "_ZNKSt5ctypeIcE9do_narrowEcc": 1051,
-    "_ZNKSt6locale2id5_M_idEv@plt": 62,
-    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7compareEPKc@plt": 18,
-    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0": 701,
-    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0.cold": 241,
-    "_ZNSi10_M_extractIlEERSiRT_@plt": 118,
-    "_ZNSt11regex_errorD1Ev@plt": 126,
-    "_ZNSt13runtime_errorC2EPKc@plt": 206,
-    "_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EE10_M_releaseEv": 1989,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1171,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1440,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1184,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1417,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1206,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1743,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1228,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1701,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1250,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1056,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1263,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1066,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1285,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1625,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1307,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1663,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1329,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1076,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1351,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1082,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1373,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1463,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1395,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1482,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1088,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1099,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1111,
-    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1123,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_destroyEv": 1143,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_disposeEv": 2095,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE14_M_get_deleterERKSt9type_info": 1147,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED0Ev": 1139,
-    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED1Ev": 1135,
-    "_ZNSt6localeC1ERKS_@plt": 74,
-    "_ZNSt6localeC1Ev@plt": 214,
-    "_ZNSt6localeD1Ev@plt": 162,
-    "_ZNSt6localeaSERKS_@plt": 130,
-    "_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EED1Ev": 4074,
-    "_ZNSt6vectorINSt8__detail6_StateIcEESaIS2_EE17_M_realloc_insertIJS2_EEEvN9__gnu_cxx17__normal_iteratorIPS2_S4_EEDpOT_": 3195,
-    "_ZNSt6vectorISt4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES6_ESaIS7_EED1Ev": 4689,
-    "_ZNSt6vectorImSaImEE17_M_realloc_insertIJRKmEEEvN9__gnu_cxx17__normal_iteratorIPmS1_EEDpOT_": 2775,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructEmc@plt": 142,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPcEEvT_S7_St20forward_iterator_tag.isra.0": 648,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE14_M_replace_auxEmmmc@plt": 202,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_@plt": 70,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm@plt": 190,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm@plt": 194,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9push_backEc@plt": 102,
-    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEOS4_.isra.0": 466,
-    "_ZNSt7__cxx1115basic_stringbufIcSt11char_traitsIcESaIcEE7_M_syncEPcmm@plt": 150,
-    "_ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEED1Ev@plt": 54,
-    "_ZNSt8_Rb_treeIlSt4pairIKllESt10_Select1stIS2_ESt4lessIlESaIS2_EE8_M_eraseEPSt13_Rb_tree_nodeIS2_E.isra.0": 1501,
-    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EE8_M_readyEv": 4116,
-    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EED1Ev": 3658,
-    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EED1Ev": 3717,
-    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv": 4809,
-    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EED1Ev": 3805,
-    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EED1Ev": 3864,
-    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE15_M_insert_dummyEv": 3457,
-    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE15_M_insert_stateENS_6_StateIcEE": 3425,
-    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE16_M_insert_repeatEllb": 3952,
-    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE17_M_insert_backrefEm": 3578,
-    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE17_M_insert_matcherESt8functionIFbcEE": 4009,
-    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE23_M_insert_subexpr_beginEv": 3508,
-    "_ZNSt8__detail6_StateIcEC1EOS1_": 2135,
-    "_ZNSt8__detail6_StateIcED1Ev": 2080,
-    "_ZNSt8__detail8_ScannerIcE10_M_advanceEv": 3057,
-    "_ZNSt8__detail8_ScannerIcE12_M_eat_classEc": 2875,
-    "_ZNSt8__detail8_ScannerIcE14_M_scan_normalEv": 2416,
-    "_ZNSt8__detail8_ScannerIcE16_M_scan_in_braceEv": 2639,
-    "_ZNSt8__detail8_ScannerIcE17_M_eat_escape_awkEv": 2159,
-    "_ZNSt8__detail8_ScannerIcE18_M_eat_escape_ecmaEv": 1785,
-    "_ZNSt8__detail8_ScannerIcE18_M_scan_in_bracketEv": 2959,
-    "_ZNSt8__detail8_ScannerIcE19_M_eat_escape_posixEv": 2324,
-    "_ZNSt8__detail8_ScannerIcEC1EPKcS3_NSt15regex_constants18syntax_option_typeESt6locale": 3079,
-    "_ZNSt8__detail9_CompilerINSt7__cxx1112regex_traitsIcEEE6_M_popEv": 2032,
-    "_ZNSt8functionIFbcEEC1INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEvvEET_": 4618,
-    "_ZNSt8functionIFbcEEC1INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEvvEET_": 4737,
-    "_ZNSt8ios_baseC2Ev@plt": 22,
-    "_ZNSt8ios_baseD2Ev@plt": 30,
-    "_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E@plt": 154,
-    "_ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElcNS0_5__ops15_Iter_less_iterEEvT_T0_SA_T1_T2_.isra.0": 361,
-    "_ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElNS0_5__ops15_Iter_less_iterEEvT_S9_T0_T1_.isra.0": 523,
-    "_ZSt16__throw_bad_castv@plt": 146,
-    "_ZSt17__throw_bad_allocv@plt": 34,
-    "_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base@plt": 122,
-    "_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base@plt": 86,
-    "_ZSt19__throw_logic_errorPKc@plt": 90,
-    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeE@plt": 26,
-    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeEPKc": 218,
-    "_ZSt20__throw_length_errorPKc@plt": 66,
-    "_ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_@plt": 14,
-    "_ZSt9use_facetINSt7__cxx117collateIcEEERKT_RKSt6locale@plt": 106,
-    "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt": 46,
-    "_ZdlPvm@plt": 114,
-    "_Znwm@plt": 110,
-    "__cxa_allocate_exception@plt": 58,
-    "__cxa_bad_cast@plt": 210,
-    "__cxa_begin_catch@plt": 42,
-    "__cxa_end_catch@plt": 174,
-    "__cxa_free_exception@plt": 94,
-    "__cxa_guard_abort@plt": 78,
-    "__cxa_guard_acquire@plt": 198,
-    "__cxa_guard_release@plt": 82,
-    "__cxa_rethrow@plt": 166,
-    "__cxa_throw@plt": 182,
-    "__do_global_dtors_aux": 344,
-    "__dynamic_cast@plt": 134,
-    "__gxx_personality_v0@plt": 178,
-    "_dl_relocate_static_pie": 309,
-    "_init": 1,
-    "_start": 294,
-    "deregister_tm_clones": 314,
-    "frame_dummy": 357,
-    "main": 286,
-    "memcmp@plt": 50,
-    "memcpy@plt": 98,
-    "memmove@plt": 170,
-    "register_tm_clones": 327,
-    "strchr@plt": 38,
-    "strcmp@plt": 158
+    "_Unwind_Resume@plt": 133,
+    "_Z9regexTestv": 749,
+    "_Z9regexTestv.cold": 211,
+    "_ZNKSt5ctypeIcE13_M_widen_initEv@plt": 101,
+    "_ZNKSt5ctypeIcE8do_widenEc": 918,
+    "_ZNKSt5ctypeIcE9do_narrowEcc": 923,
+    "_ZNKSt6locale2id5_M_idEv@plt": 41,
+    "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7compareEPKc@plt": 5,
+    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0": 573,
+    "_ZNKSt7__cxx1112regex_traitsIcE5valueEci.isra.0.cold": 180,
+    "_ZNSi10_M_extractIlEERSiRT_@plt": 85,
+    "_ZNSt11regex_errorD1Ev@plt": 93,
+    "_ZNSt13runtime_errorC2EPKc@plt": 149,
+    "_ZNSt16_Sp_counted_baseILN9__gnu_cxx12_Lock_policyE2EE10_M_releaseEv": 1861,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1043,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1312,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1056,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1289,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1078,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1615,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1100,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1573,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1122,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 928,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1135,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 938,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1157,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1497,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1179,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail11_AnyMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1535,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1201,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 948,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1223,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 954,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1245,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 1335,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE10_M_managerERSt9_Any_dataRKS8_St18_Manager_operation": 1267,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail12_CharMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 1354,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 960,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 971,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EEEE9_M_invokeERKSt9_Any_dataOc": 983,
+    "_ZNSt17_Function_handlerIFbcENSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EEEE9_M_invokeERKSt9_Any_dataOc": 995,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_destroyEv": 1015,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE10_M_disposeEv": 1967,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EE14_M_get_deleterERKSt9type_info": 1019,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED0Ev": 1011,
+    "_ZNSt23_Sp_counted_ptr_inplaceINSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEEESaIS5_ELN9__gnu_cxx12_Lock_policyE2EED1Ev": 1007,
+    "_ZNSt6localeC1ERKS_@plt": 53,
+    "_ZNSt6localeC1Ev@plt": 153,
+    "_ZNSt6localeD1Ev@plt": 125,
+    "_ZNSt6localeaSERKS_@plt": 97,
+    "_ZNSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS5_EED1Ev": 3946,
+    "_ZNSt6vectorINSt8__detail6_StateIcEESaIS2_EE17_M_realloc_insertIJS2_EEEvN9__gnu_cxx17__normal_iteratorIPS2_S4_EEDpOT_": 3067,
+    "_ZNSt6vectorISt4pairINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES6_ESaIS7_EED1Ev": 4561,
+    "_ZNSt6vectorImSaImEE17_M_realloc_insertIJRKmEEEvN9__gnu_cxx17__normal_iteratorIPmS1_EEDpOT_": 2647,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructEmc@plt": 105,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_M_constructIPcEEvT_S7_St20forward_iterator_tag.isra.0": 520,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE14_M_replace_auxEmmmc@plt": 145,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_assignERKS4_@plt": 49,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm@plt": 137,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_mutateEmmPKcm@plt": 141,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9push_backEc@plt": 69,
+    "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEaSEOS4_.isra.0": 338,
+    "_ZNSt7__cxx1115basic_stringbufIcSt11char_traitsIcESaIcEE7_M_syncEPcmm@plt": 113,
+    "_ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEED1Ev@plt": 37,
+    "_ZNSt8_Rb_treeIlSt4pairIKllESt10_Select1stIS2_ESt4lessIlESaIS2_EE8_M_eraseEPSt13_Rb_tree_nodeIS2_E.isra.0": 1373,
+    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EE8_M_readyEv": 3988,
+    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EED1Ev": 3530,
+    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EED1Ev": 3589,
+    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EE8_M_readyEv": 4681,
+    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb0EED1Ev": 3677,
+    "_ZNSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb1ELb1EED1Ev": 3736,
+    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE15_M_insert_dummyEv": 3329,
+    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE15_M_insert_stateENS_6_StateIcEE": 3297,
+    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE16_M_insert_repeatEllb": 3824,
+    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE17_M_insert_backrefEm": 3450,
+    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE17_M_insert_matcherESt8functionIFbcEE": 3881,
+    "_ZNSt8__detail4_NFAINSt7__cxx1112regex_traitsIcEEE23_M_insert_subexpr_beginEv": 3380,
+    "_ZNSt8__detail6_StateIcEC1EOS1_": 2007,
+    "_ZNSt8__detail6_StateIcED1Ev": 1952,
+    "_ZNSt8__detail8_ScannerIcE10_M_advanceEv": 2929,
+    "_ZNSt8__detail8_ScannerIcE12_M_eat_classEc": 2747,
+    "_ZNSt8__detail8_ScannerIcE14_M_scan_normalEv": 2288,
+    "_ZNSt8__detail8_ScannerIcE16_M_scan_in_braceEv": 2511,
+    "_ZNSt8__detail8_ScannerIcE17_M_eat_escape_awkEv": 2031,
+    "_ZNSt8__detail8_ScannerIcE18_M_eat_escape_ecmaEv": 1657,
+    "_ZNSt8__detail8_ScannerIcE18_M_scan_in_bracketEv": 2831,
+    "_ZNSt8__detail8_ScannerIcE19_M_eat_escape_posixEv": 2196,
+    "_ZNSt8__detail8_ScannerIcEC1EPKcS3_NSt15regex_constants18syntax_option_typeESt6locale": 2951,
+    "_ZNSt8__detail9_CompilerINSt7__cxx1112regex_traitsIcEEE6_M_popEv": 1904,
+    "_ZNSt8functionIFbcEEC1INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb0EEEvvEET_": 4490,
+    "_ZNSt8functionIFbcEEC1INSt8__detail15_BracketMatcherINSt7__cxx1112regex_traitsIcEELb0ELb1EEEvvEET_": 4609,
+    "_ZNSt8ios_baseC2Ev@plt": 9,
+    "_ZNSt8ios_baseD2Ev@plt": 17,
+    "_ZNSt9basic_iosIcSt11char_traitsIcEE4initEPSt15basic_streambufIcS1_E@plt": 117,
+    "_ZSt13__adjust_heapIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElcNS0_5__ops15_Iter_less_iterEEvT_T0_SA_T1_T2_.isra.0": 233,
+    "_ZSt16__introsort_loopIN9__gnu_cxx17__normal_iteratorIPcSt6vectorIcSaIcEEEElNS0_5__ops15_Iter_less_iterEEvT_S9_T0_T1_.isra.0": 395,
+    "_ZSt16__throw_bad_castv@plt": 109,
+    "_ZSt17__throw_bad_allocv@plt": 21,
+    "_ZSt18_Rb_tree_decrementPSt18_Rb_tree_node_base@plt": 89,
+    "_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base@plt": 57,
+    "_ZSt19__throw_logic_errorPKc@plt": 61,
+    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeE@plt": 13,
+    "_ZSt19__throw_regex_errorNSt15regex_constants10error_typeEPKc": 157,
+    "_ZSt20__throw_length_errorPKc@plt": 45,
+    "_ZSt29_Rb_tree_insert_and_rebalancebPSt18_Rb_tree_node_baseS0_RS_@plt": 1,
+    "_ZSt9use_facetINSt7__cxx117collateIcEEERKT_RKSt6locale@plt": 73,
+    "_ZSt9use_facetISt5ctypeIcEERKT_RKSt6locale@plt": 29,
+    "_ZdlPvm@plt": 81,
+    "_Znwm@plt": 77,
+    "main": 225,
+    "memcmp@plt": 33,
+    "memcpy@plt": 65,
+    "memmove@plt": 129,
+    "strchr@plt": 25,
+    "strcmp@plt": 121
   }
 }

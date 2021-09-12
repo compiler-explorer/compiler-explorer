@@ -1,0 +1,267 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .entry _Z6vecAddPfS_S_i("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u64 _Z6vecAddPfS_S_i_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u64 _Z6vecAddPfS_S_i_param_1,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u64 _Z6vecAddPfS_S_i_param_2,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u32 _Z6vecAddPfS_S_i_param_3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [_Z6vecAddPfS_S_i_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd2, [_Z6vecAddPfS_S_i_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd3, [_Z6vecAddPfS_S_i_param_2];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r2, [_Z6vecAddPfS_S_i_param_3];"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        mov.u32         %r3, %ctaid.x;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        mov.u32         %r4, %ntid.x;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        mov.u32         %r5, %tid.x;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        mad.lo.s32      %r1, %r4, %r3, %r5;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/tmp/moo.cu",
+        "line": 12,
+        "mainsource": false
+      },
+      "text": "        setp.ge.s32     %p1, %r1, %r2;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/tmp/moo.cu",
+        "line": 12,
+        "mainsource": false
+      },
+      "text": "        @%p1 bra        BB0_2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        cvta.to.global.u64      %rd4, %rd1;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        mul.wide.s32    %rd5, %r1, 4;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        add.s64         %rd6, %rd4, %rd5;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        cvta.to.global.u64      %rd7, %rd2;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        add.s64         %rd8, %rd7, %rd5;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        ld.global.f32   %f1, [%rd8];"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        ld.global.f32   %f2, [%rd6];"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        add.f32         %f3, %f2, %f1;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 12,
+        "file": "/tmp/moo.cu",
+        "line": 9,
+        "mainsource": false
+      },
+      "text": "        cvta.to.global.u64      %rd9, %rd3;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        add.s64         %rd10, %rd9, %rd5;"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 9,
+        "file": "/tmp/moo.cu",
+        "line": 13,
+        "mainsource": false
+      },
+      "text": "        st.global.f32   [%rd10], %f3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "/tmp/moo.cu",
+        "line": 14,
+        "mainsource": false
+      },
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "entry": 1
+  }
+}

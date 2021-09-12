@@ -68,15 +68,18 @@ Select.prototype.putUi = function (elem, value) {
 };
 
 function Slider(elem, sliderSettings) {
-    elem.slider(sliderSettings);
+    elem
+        .prop('max', sliderSettings.max || 100)
+        .prop('min', sliderSettings.min || 1)
+        .prop('step', sliderSettings.step || 1);
 }
 
 Slider.prototype.getUi = function (elem) {
-    return elem.slider('getValue');
+    return parseInt(elem.val());
 };
 
 Slider.prototype.putUi = function (elem, value) {
-    elem.slider('setValue', value);
+    elem.val(value);
 };
 
 function Textbox() {
@@ -132,6 +135,8 @@ function setupSettings(root, settings, onChange, subLangId) {
         });
     }
 
+    // Don't forget to edit the settings.interfaces.ts file if you add/modify
+    // a setting!
     function add(elem, key, defaultValue, Type, param) {
         if (settings[key] === undefined)
             settings[key] = defaultValue;
@@ -228,7 +233,7 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 
-    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit'];
+    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
     add(root.find('.formatBase'), 'formatBase', formats[0], Select,
         _.map(formats, function (format) {
             return {label: format, desc: format};

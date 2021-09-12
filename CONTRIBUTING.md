@@ -32,11 +32,9 @@ Nonetheless, it _should_ run in everything post-Node.js 12.18. [Contact us] if
     and PRs won't pass unless it detects no errors.
     * Running `make lint` will run the linter, which will auto-fix everything 
     it can and report back any errors and warnings.
-* If adding a new server-side component please do your best to add a test to
+* If you're adding a new server-side component, please do your best to add a test to
  cover it. For client-side changes that's trickier.
-* Run the git hooks installer (_Only needed once_): `make install-git-hooks`.
- This will automatically run the tests before you can commit, ensuring that 
- they pass before committing your changes.
+* Tests should run automatically as a pre-commit step.
  _You can disable this check with `git commit --no-verify` if needed_.
 * You can run `make check` to run both the linter and the code tests
 * Do a smoke test:
@@ -82,11 +80,15 @@ Note that a current issue makes every project media asset to be locally
 
 ## Gotchas
 
-* Stick to **ES5** (no `let` or arrow operators) in the client-side code.
- Sadly there are still enough users out there on old browsers,
- but feel free to use all the cool stuff on the server side code.
+* New client-side code should preferably be written in TypeScript,
+ but we will always accept js code too. Be aware that in that case,
+ you must stick to **ES5** (so no `let` or arrow operators) js code.
+ Sadly there are still enough users out there on old browsers.
+ Note that this restriction does not apply to the server side code,
+ in which you can use all the cool features you want.
  In lieu of ES6 features, [Underscore.js](https://underscorejs.org/) is available
- as a way to bridge the feature gap.
+ as a way to bridge the feature gap. The library is available both 
+ in the client and server code.
 * Be aware that **Compiler Explorer** runs on a cluster on the live site.
  No local state is kept between invocations, and the user's next request will 
  likely hit a different node in the cluster, so don't rely on

@@ -35,6 +35,7 @@ var AnsiToHtml = require('../ansi-to-html');
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
+var utils = require('../utils');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -156,18 +157,10 @@ Executor.prototype.undefer = function () {
     if (this.needsCompile) this.compile();
 };
 
-Executor.prototype.updateAndCalcTopBarHeight = function () {
-    // If we save vertical space by hiding stuff that's OK to hide
-    // when thin, then hide that stuff.
-    this.hideable.show();
-    var topBarHeightMax = this.topBar.outerHeight(true);
-    this.hideable.hide();
-    var topBarHeightMin = this.topBar.outerHeight(true);
-    var topBarHeight = topBarHeightMin;
-    if (topBarHeightMin === topBarHeightMax) {
-        this.hideable.show();
-    }
+Executor.prototype.resize = function () {
+    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, $(this.topBar[0]), this.hideable);
 
+    // We have some more elements that modify the topBarHeight
     if (!this.panelCompilation.hasClass('d-none')) {
         topBarHeight += this.panelCompilation.outerHeight(true);
     }
@@ -178,11 +171,6 @@ Executor.prototype.updateAndCalcTopBarHeight = function () {
         topBarHeight += this.panelStdin.outerHeight(true);
     }
 
-    return topBarHeight;
-};
-
-Executor.prototype.resize = function () {
-    var topBarHeight = this.updateAndCalcTopBarHeight();
     var bottomBarHeight = this.bottomBar.outerHeight(true);
     this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
 
@@ -265,7 +253,7 @@ Executor.prototype.compileFromTree = function (options, bypassCache) {
     };
 
     var treeState = tree.currentState();
-    var cmakeProject = treeState.isCMakeProject;
+    var cmakeProject = tree.multifileService.isACMakeProject();
 
     if (bypassCache) request.bypassCache = true;
     if (!this.compiler) {
@@ -423,6 +411,22 @@ Executor.prototype.getBuildStderrFromResult = function (result) {
     return arr;
 };
 
+Executor.prototype.getExecutionStdoutfromResult = function (result) {
+    if (result.execResult) {
+        return result.execResult.stdout;
+    }
+
+    return result.stdout || [];
+};
+
+Executor.prototype.getExecutionStderrfromResult = function (result) {
+    if (result.execResult) {
+        return result.execResult.stderr;
+    }
+
+    return result.stderr || [];
+};
+
 Executor.prototype.onCMakeResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
@@ -470,11 +474,22 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
     this.clearPreviousOutput();
     var compileStdout = this.getBuildStdoutFromResult(result);
     var compileStderr = this.getBuildStderrFromResult(result);
-    var execStdout = result.stdout || result.execResult.stdout || [];
-    var execStderr = result.stderr || result.execResult.stderr || [];
+    var execStdout = this.getExecutionStdoutfromResult(result);
+    var execStderr = this.getExecutionStderrfromResult(result);
+
+    var buildResultCode = 0;
+
+    if (result.buildResult) {
+        buildResultCode = result.buildResult.code;
+    } else if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            buildResultCode = step.code;
+        });
+    }
+
     if (!result.didExecute) {
         this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
-        this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + result.buildResult.code));
+        this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
     }
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
@@ -912,7 +927,7 @@ Executor.prototype.getLinkHint = function () {
 Executor.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return 'Executor ' + compName + ' (' + langName + ',' + this.getLinkHint() + ')';
+    return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
 };
 
 Executor.prototype.updateCompilerName = function () {
@@ -989,7 +1004,7 @@ function ariaLabel(status) {
 
 function color(status) {
     // Compiling...
-    if (status.code === 4) return 'black';
+    if (status.code === 4) return '#888888';
     if (status.didExecute) return '#12BB12';
     return '#FF1212';
 }
@@ -1006,7 +1021,7 @@ Executor.prototype.handleCompilationStatus = function (status) {
             .toggle(status.code !== 0)
             .prop('aria-label', ariaLabel(status))
             .prop('data-status', status.code)
-            .toggleClass('fa-spinner', status.code === 4)
+            .toggleClass('fa-spinner fa-spin', status.code === 4)
             .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
             .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
     }

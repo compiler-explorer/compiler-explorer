@@ -136,7 +136,7 @@ export class MultifileService {
         zip.forEach(async (relativePath, zipEntry) => {
             if (!zipEntry.dir) {
                 let removeFromName = 0;
-                if (relativePath.indexOf(zipFilename) === 0) {
+                if (relativePath.indexOf(zipFilename + '/') === 0) {
                     removeFromName = zipFilename.length + 1;
                 }
 
@@ -473,7 +473,7 @@ export class MultifileService {
         let suggestedFilename = this.getSuggestedFilename(file, editor);
 
         return new Promise((resolve) => {
-            this.alertSystem.enterSomething('Rename file', 'Please enter a filename', suggestedFilename, {
+            this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
                 yes: (value) => {
                     if (value !== '' && value[0] !== '/') {
                         if (!this.fileExists(value, file)) {
@@ -495,7 +495,11 @@ export class MultifileService {
                 },
                 no: () => {
                     resolve(false);
-                }
+                },
+                yesClass: 'btn btn-primary',
+                yesHtml: 'Rename',
+                noClass: 'btn-outline-info',
+                noHtml: 'Cancel'
             });
         });
     }

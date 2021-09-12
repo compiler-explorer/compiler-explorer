@@ -1,0 +1,149 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "y:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   100"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "d:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   98"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "f:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   3435973837"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   1092337616"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "v:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "dd:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "yuu:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "jj:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "q:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "x():"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 11,
+        "mainsource": true
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 11,
+        "mainsource": true
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 12,
+        "mainsource": true
+      },
+      "text": "        mov     eax, DWORD PTR d[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 13,
+        "mainsource": true
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 13,
+        "mainsource": true
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "d": 3,
+    "dd": 10,
+    "f": 5,
+    "jj": 14,
+    "q": 16,
+    "v": 8,
+    "y": 1,
+    "yuu": 12
+  }
+}

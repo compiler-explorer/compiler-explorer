@@ -346,7 +346,7 @@ function ariaLabel(status) {
 
 function color(status) {
     // Compiling...
-    if (status.code === 4) return 'black';
+    if (status.code === 4) return '#888888';
     if (status.compilerOut === 0) {
         // StdErr.length > 0
         if (status.code === 3) return '#FF6645';
@@ -377,7 +377,7 @@ CompilerService.prototype.handleCompilationStatus = function (statusLabel, statu
             .toggle(status.code !== 0)
             .prop('aria-label', ariaLabel(status))
             .prop('data-status', status.code)
-            .toggleClass('fa-spinner', status.code === 4)
+            .toggleClass('fa-spinner fa-spin', status.code === 4)
             .toggleClass('fa-times-circle', status.code === 3)
             .toggleClass('fa-check-circle', status.code === 1 || status.code === 2);
     }
