@@ -318,9 +318,8 @@ Conformance.prototype.compileChild = function (compilerEntry) {
             options: {
                 userArguments: compilerEntry.optionsField.val() || '',
                 filters: {},
-                compilerOptions: {produceAst: false, produceOptInfo: false},
+                compilerOptions: {produceAst: false, produceOptInfo: false, skipAsm: true},
                 libraries: [],
-                skipAsm: true,
             },
             lang: this.langId,
             files: [],
