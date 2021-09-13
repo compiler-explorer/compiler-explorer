@@ -295,10 +295,18 @@ export class MultifileService {
                 return false;
             }
         } else {
-            if (file.filename === MultifileService.getDefaultMainSourceFilename(this.compilerLanguageId)) {
-                this.setAsMainSource(file.fileId);
+            if (this.compilerLanguageId === 'pascal') {
+                if (file.filename.endsWith('.dpr')) {
+                    this.setAsMainSource(file.fileId);
+                } else {
+                    return false;
+                }
             } else {
-                return false;
+                if (file.filename === MultifileService.getDefaultMainSourceFilename(this.compilerLanguageId)) {
+                    this.setAsMainSource(file.fileId);
+                } else {
+                    return false;
+                }
             }
         }
 

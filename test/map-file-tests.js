@@ -45,25 +45,25 @@ describe('Code Segments', function () {
         reader.segments.length.should.equal(1);
 
         let info = reader.getSegmentInfoByStartingAddress('0001', 0x2838);
-        info.unitName.should.equal('output');
+        info.unitName.should.equal('output.pas');
 
         info = reader.getSegmentInfoByStartingAddress(false, reader.getSegmentOffset('0001') + 0x2838);
-        info.unitName.should.equal('output');
+        info.unitName.should.equal('output.pas');
 
         info = reader.getSegmentInfoByStartingAddress('0001', '2838');
         info.should.equal(false, 'Address should not be a Start for any segment');
 
         info = reader.getSegmentInfoAddressIsIn('0001', 0x2838 + 0x10);
-        info.unitName.should.equal('output');
+        info.unitName.should.equal('output.pas');
 
         info = reader.getSegmentInfoAddressIsIn(false, reader.getSegmentOffset('0001') + 0x2838 + 0x10);
-        info.unitName.should.equal('output');
+        info.unitName.should.equal('output.pas');
 
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2838 + 0x80 + 1);
         info.should.equal(false, 'Address should not be in any segment');
 
-        info = reader.getSegmentInfoByUnitName('output');
-        info.unitName.should.equal('output');
+        info = reader.getSegmentInfoByUnitName('output.pas');
+        info.unitName.should.equal('output.pas');
         info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
     });
 
@@ -209,10 +209,10 @@ describe('Delphi-Map load test', function () {
         reader.lineNumbers.length.should.equal(7);
         reader.namedAddresses.length.should.equal(11);
 
-        let info = reader.getSegmentInfoByUnitName('output');
+        let info = reader.getSegmentInfoByUnitName('output.pas');
         info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2C4C);
 
-        info = reader.getICodeSegmentInfoByUnitName('output');
+        info = reader.getICodeSegmentInfoByUnitName('output.pas');
         info.segment.should.equal('0002');
         info.addressWithoutOffset.should.equal(0xB0);
         info.addressInt.should.equal(0x4040B0);
