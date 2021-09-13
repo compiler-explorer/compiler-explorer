@@ -104,6 +104,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-rustmir(title="Show Rust Mid-level Intermediate Representation")
             span.dropdown-icon.fas.fa-water
             | Rust MIR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-rustmacroexp(title="Show Rust Macro Expansion")
+            span.dropdown-icon.fas.fa-arrows-alt
+            | Rust Macro Expansion output
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
@@ -286,7 +289,12 @@
 
   #rustmir
     .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size.pug
+      include font-size
+    .monaco-placeholder
+
+  #rustmacroexp
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
     .monaco-placeholder
 
   #gccdump
