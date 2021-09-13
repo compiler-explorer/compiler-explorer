@@ -33,6 +33,7 @@ var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
 var CompilerPicker = require('../compiler-picker');
 var utils = require('../utils');
+var LibUtils = require('../lib-utils').LibUtils;
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -399,21 +400,27 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
         return this.compilerService.findCompiler(this.langId, compilerId);
     }, this));
 
+    var libUtils = new LibUtils();
+
+    var langId = this.langId;
+
     var libraries = {};
     var first = true;
     _.forEach(compilers, function (compiler) {
         if (compiler) {
+            var filteredLibraries = libUtils.getSupportedLibraries(compiler.libsArr, langId);
+
             if (first) {
-                libraries = _.extend({}, compiler.libs);
+                libraries = _.extend({}, filteredLibraries);
                 first = false;
             } else {
                 var libsInCommon = _.intersection(_.keys(libraries),
-                    _.keys(compiler.libs));
+                    _.keys(filteredLibraries));
 
                 _.forEach(libraries, function (lib, libkey) {
                     if (libsInCommon.includes(libkey)) {
                         var versionsInCommon = _.intersection(_.keys(lib.versions),
-                            _.keys(compiler.libs[libkey].versions));
+                            _.keys(filteredLibraries[libkey].versions));
 
                         libraries[libkey].versions = _.pick(lib.versions,
                             function (version, versionkey) {

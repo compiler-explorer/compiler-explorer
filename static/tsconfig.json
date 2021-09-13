@@ -20,5 +20,6 @@
 		"sharing.ts",
 		"url.ts",
 		"utils.ts",
+		"lib-utils.ts"
 	]
 }

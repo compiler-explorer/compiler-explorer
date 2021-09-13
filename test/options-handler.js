@@ -128,6 +128,7 @@ const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
         group: group,
         isSemVer: isSemver,
         semver: semver,
+        libsArr: [],
     };
 };
 
@@ -350,8 +351,13 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
+
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         const staticlinks = compiler.getStaticLibraryLinks([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['-lc++fs', '-lrt', '-lpthread']);
@@ -368,8 +374,13 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
+
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'trunk'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
@@ -388,8 +399,13 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
+
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fs', version: 'std'}]);
@@ -404,8 +420,13 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
+
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
@@ -422,14 +443,40 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'}]);
         staticlinks.should.deep.equal(['fourthlib', 'yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
+    });
+    it('filtered library list', () => {
+        const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+        const env = {
+            ceProps: () => {
+            },
+            compilerProps: () => {
+            },
+        };
+
+        compilerInfo.libsArr = ['fs.std', 'someotherlib'];
+
+        const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
+
+        const libNames = _.keys(compiler.supportedLibraries);
+        libNames.should.deep.equal(['fs', 'someotherlib']);
     });
     it('can detect libraries from options', () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
@@ -440,8 +487,13 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
+
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         const obj = {
             libraries: [{id: 'ctre', version: 'trunk'}],
@@ -464,8 +516,13 @@ describe('Options handler', () => {
             compilerProps: () => {
             },
         };
-        compilerInfo.libs = libs.fake;
+
         const compiler = new BaseCompiler(compilerInfo, env);
+        compiler.initialiseLibraries({
+            libs: {
+                'c++': libs.fake,
+            },
+        });
 
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'someotherlib', version: 'master'}]);

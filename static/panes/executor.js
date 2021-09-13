@@ -36,6 +36,7 @@ var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker');
 var Settings = require('../settings');
 var utils = require('../utils');
+var LibUtils = require('../lib-utils').LibUtils;
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -674,8 +675,11 @@ Executor.prototype.onLibsChanged = function () {
 };
 
 Executor.prototype.initLibraries = function (state) {
+    var libUtils = new LibUtils();
+
     this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler,
-        this.libsButton, state, _.bind(this.onLibsChanged, this));
+        this.libsButton, state, _.bind(this.onLibsChanged, this),
+        libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId));
 };
 
 Executor.prototype.onFontScale = function () {
