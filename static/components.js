@@ -310,6 +310,26 @@ module.exports = {
             },
         };
     },
+    getRustMacroExpView: function() {
+        return {
+            type: 'component',
+            componentName: 'rustmacroexp',
+            componentState: {},
+        };
+    },
+    getRustMacroExpViewWith: function (id, source, rustMacroExpOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rustmacroexp',
+            componentState: {
+                id: id,
+                source: source,
+                rustMacroExpOutput: rustMacroExpOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
     getDeviceView: function () {
         return {
             type: 'component',
