@@ -49,6 +49,7 @@ describe('Execution tests', () => {
                         {
                             code: 0,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: 'hello world\n',
                         });
@@ -60,6 +61,7 @@ describe('Execution tests', () => {
                         {
                             code: 0,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: 'A very ver\n[Truncated]',
                         });
@@ -71,6 +73,7 @@ describe('Execution tests', () => {
                         {
                             code: 1,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: '',
                         });
@@ -82,6 +85,7 @@ describe('Execution tests', () => {
                         {
                             code: -1,
                             okToCache: false,
+                            signal: null,
                             stderr: '\nKilled - processing time exceeded',
                             stdout: '',
                         });
@@ -97,6 +101,7 @@ describe('Execution tests', () => {
                         {
                             code: 0,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: 'this is stdin',
                         });
@@ -112,6 +117,7 @@ describe('Execution tests', () => {
                         {
                             code: 0,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: 'hello world\r\n',
                         });
@@ -123,6 +129,7 @@ describe('Execution tests', () => {
                         {
                             code: 0,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: 'A very ver\n[Truncated]',
                         });
@@ -134,6 +141,7 @@ describe('Execution tests', () => {
                         {
                             code: 1,
                             okToCache: true,
+                            signal: null,
                             stderr: '',
                             stdout: '',
                         });
@@ -145,6 +153,7 @@ describe('Execution tests', () => {
                         {
                             code: 1,
                             okToCache: false,
+                            signal: null,
                             stderr: '\nKilled - processing time exceeded',
                             stdout: '',
                         });
