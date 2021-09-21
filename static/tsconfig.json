@@ -7,9 +7,11 @@
 		"esModuleInterop": true
 	},
 	"files": [
+		"alert.interfaces.ts",
 		"alert.ts",
 		"formatter-registry.ts",
 		"global.ts",
+		"lib-utils.ts",
 		"line-colouring.ts",
 		"monaco-config.ts",
 		"multifile-service.ts",
@@ -17,9 +19,9 @@
 		"panes/pane.ts",
 		"panes/pane.interfaces.ts",
 		"panes/rustmir-view.ts",
+		"settings.interfaces.ts",
 		"sharing.ts",
 		"url.ts",
 		"utils.ts",
-		"lib-utils.ts"
 	]
 }
