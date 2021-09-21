@@ -35,7 +35,9 @@ type FormatBase =
     | 'LLVM'
     | 'Mozilla'
     | 'Chromium'
-    | 'WebKit';
+    | 'WebKit'
+    | 'Microsoft'
+    | 'GNU';
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
