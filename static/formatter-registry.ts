@@ -24,65 +24,80 @@
 
 import $ from 'jquery';
 import * as monaco from 'monaco-editor';
-import { Promise } from "es6-promise";
 
-import { Alert } from "./alert";
+import { Alert } from './alert';
+import { getStoredSettings } from './settings';
+import { FormatRequestOptions } from './formatter-registry.interfaces';
+import { SiteSettings } from './settings.interfaces';
+
+const getFormattedCode = ({ source, formatterId, base, tabWidth, useSpaces }: FormatRequestOptions): Promise<string> => {
+    const alert = new Alert();
+    return new Promise((resolve, reject) => {
+        $.ajax(({
+            type: 'POST',
+            url: `${window.location.origin}${window.httpRoot}api/format/${formatterId}`,
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                source,
+                base,
+                tabWidth,
+                useSpaces,
+            }),
+            success: (result) => {
+                if (result.exit === 0) {
+                    resolve(result.answer);
+                } else {
+                    alert.notify(`We encountered an error formatting your code: ${result.answer}`, {
+                        group: 'formatting',
+                        alertClass: 'notification-error',
+                    });
+                }
+            },
+            error: (xhr, status, error) => {
+                // Hopefully we have not exploded!
+                if (xhr.responseText) {
+                    try {
+                        var res = JSON.parse(xhr.responseText);
+                        error = res.answer || error;
+                    } catch (e) {
+                        // continue regardless of error
+                    }
+                }
+                error = error || 'Unknown error';
+                alert.notify(`We ran into some issues while formatting your code: ${error}`, {
+                    group: 'formatting',
+                    alertClass: 'notification-error',
+                });
+                reject();
+            },
+            cache: true,
+        }));
+    });
+}
 
 const getDocumentFormatter = (
     language: string,
     formatter: string,
     formatBase: string
 ): monaco.languages.DocumentFormattingEditProvider => ({
-    provideDocumentFormattingEdits(
+    async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
         token: monaco.CancellationToken
     ): Promise<monaco.languages.TextEdit[]> {
-        const alertSystem = new Alert();
-        return new Promise((resolve, reject) => {
-            const source = model.getValue();
-            $.ajax({
-                type: 'POST',
-                url: `${window.location.origin}${window.httpRoot}api/format/${formatter}`,
-                dataType: 'json',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    source,
-                    base: formatBase,
-                }),
-                success: (result) => {
-                    if (result.exit === 0) {
-                        resolve([{
-                            range: model.getFullModelRange(),
-                            text: result.answer,
-                        }]);
-                    } else {
-                        alertSystem.notify(`We encountered an error formatting your code: ${result.answer}`, {
-                            group: 'formatting',
-                            alertClass: 'notification-error',
-                        });
-                    }
-                },
-                error: (xhr, status, error) => {
-                    // Hopefully we have not exploded!
-                    if (xhr.responseText) {
-                        try {
-                            var res = JSON.parse(xhr.responseText);
-                            error = res.answer || error;
-                        } catch (e) {
-                            // continue regardless of error
-                        }
-                    }
-                    error = error || 'Unknown error';
-                    alertSystem.notify(`We ran into some issues while formatting your code: ${error}`, {
-                        group: 'formatting',
-                        alertClass: 'notification-error',
-                    });
-                    reject();
-                },
-                cache: true,
-            });
+        const settings: SiteSettings = getStoredSettings();
+        const formattedSource = await getFormattedCode({
+            source: model.getValue(),
+            formatterId: formatter,
+            base: formatBase,
+            tabWidth: settings.tabWidth,
+            useSpaces: settings.useSpaces
         });
+        return [{
+            range: model.getFullModelRange(),
+            text: formattedSource,
+        }];
     }
 });
 

@@ -9,6 +9,7 @@
 	"files": [
 		"alert.interfaces.ts",
 		"alert.ts",
+		"formatter-registry.interfaces.ts",
 		"formatter-registry.ts",
 		"global.ts",
 		"lib-utils.ts",
