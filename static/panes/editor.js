@@ -776,6 +776,10 @@ Editor.prototype.initEditorActions = function () {
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, _.bind(function () {
         this.editor.getAction('editor.action.formatDocument').run();
     }, this));
+
+    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_D, _.bind(function () {
+        this.editor.getAction('editor.action.duplicateSelection').run();
+    }, this));
 };
 
 Editor.prototype.searchOnCppreference = function (ed) {
