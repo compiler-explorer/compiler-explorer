@@ -15,8 +15,8 @@
     ```
   - The value returned by `key` above corresponds to the `type` property you set in the compiler-explorer properties
      configuration file.
-  - Tweak `format(args, source)`, `getDefaultArguments()`, `getStyleArguments(style)` and `isValidStyle(style)` as
-     necessary
+  - Tweak `format(source, options)` and `isValidStyle(style)` as necessary. See the JSDoc for `format` and the
+     implementations for other formatters to get a further understanding of how to implement `format(source, options)`.
 * Add your `TypeFormatter` to `lib/formatters/_all.js` in alphabetical order
 
 * You can check the output of http://localhost:10240/api/formats to be sure your formatter is there.
