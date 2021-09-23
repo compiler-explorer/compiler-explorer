@@ -218,6 +218,12 @@ Executor.prototype.compile = function (bypassCache) {
 };
 
 Executor.prototype.compileFromEditorSource = function (options, bypassCache) {
+    if (!this.compiler.supportsExecute) {
+        this.alertSystem.notify('This compiler (' + this.compiler.name + ') does not support execution', {
+            group: 'execution',
+        });
+        return;
+    }
     this.compilerService.expand(this.source).then(_.bind(function (expanded) {
         var request = {
             source: expanded || '',
