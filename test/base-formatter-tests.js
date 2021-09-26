@@ -33,7 +33,6 @@ describe('Basic formatter functionality', () => {
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
         });
-        fmt.isOneTrueStyle().should.equal(true);
         fmt.isValidStyle('foostyle').should.equal(false);
         fmt.formatterInfo.styles.should.deep.equal([]);
     });
@@ -46,9 +45,7 @@ describe('Basic formatter functionality', () => {
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
         });
-        fmt.isOneTrueStyle().should.equal(false);
         fmt.isValidStyle('foostyle').should.equal(true);
         fmt.formatterInfo.styles.should.deep.equal(['foostyle']);
-        fmt.getStyleArguments('foostyle').should.deep.equal(['--style=foostyle']);
     });
 });

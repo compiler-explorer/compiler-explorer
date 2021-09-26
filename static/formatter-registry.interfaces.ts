@@ -22,25 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseFormatter } from '../base-formatter';
-import * as exec from '../exec';
-
-export class RustFmtFormatter extends BaseFormatter {
-    static get key() { return 'rustfmt'; }
-
-    async format(source, options) {
-        const args = [
-            '--emit', 'stdout',
-            '--config', `hard_tabs=${options.useSpaces ? 'false' : 'true'}`,
-            '--config', `tab_spaces=${options.tabWidth}`,
-        ];
-        return await exec.execute(this.formatterInfo.exe, args, {input: source});
-    }
-
-    /**
-     * Rust format only has one style.
-     */
-    isValidStyle() {
-        return true;
-    }
+export interface FormatRequestOptions {
+    source: string;
+    formatterId: string;
+    base: string;
+    tabWidth: number;
+    useSpaces: boolean;
 }
