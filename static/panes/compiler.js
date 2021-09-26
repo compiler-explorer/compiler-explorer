@@ -258,6 +258,11 @@ Compiler.prototype.initPanerButtons = function () {
             this.getCompilerName(), this.sourceEditorId);
     }, this);
 
+    var createRustMacroExpView = _.bind(function () {
+        return Components.getRustMacroExpViewWith(this.id, this.source, this.lastResult.rustMacroExpOutput,
+            this.getCompilerName(), this.sourceEditorId);
+    }, this);
+
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
             this.lastResult.gccDumpOutput);
@@ -359,6 +364,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createRustMirView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.rustMacroExpButton, createRustMacroExpView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.rustMacroExpButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createRustMacroExpView);
     }, this));
 
     this.container.layoutManager
@@ -672,6 +687,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceIr: this.irViewOpen,
             produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
+            produceRustMacroExp: this.rustMacroExpViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
@@ -1242,6 +1258,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onRustMacroExpViewOpened = function (id) {
+    if (this.id === id) {
+        this.rustMacroExpButton.prop('disabled', true);
+        this.rustMacroExpViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onRustMacroExpViewClosed = function (id) {
+    if (this.id === id) {
+        this.rustMacroExpButton.prop('disabled', false);
+        this.rustMacroExpViewOpen = false;
+    }
+};
+
 Compiler.prototype.onGccDumpUIInit = function (id) {
     if (this.id === id) {
         this.compile();
@@ -1379,6 +1410,7 @@ Compiler.prototype.initButtons = function (state) {
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
+    this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
@@ -1591,6 +1623,7 @@ Compiler.prototype.updateButtons = function () {
     this.irButton.prop('disabled', this.irViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
+    this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
     // The executorButton does not need to be changed here, because you can create however
@@ -1601,6 +1634,7 @@ Compiler.prototype.updateButtons = function () {
     this.irButton.toggle(!!this.compiler.supportsIrView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
+    this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
@@ -1688,6 +1722,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
     this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
+    this.eventHub.on('rustMacroExpViewOpened', this.onRustMacroExpViewOpened, this);
+    this.eventHub.on('rustMacroExpViewClosed', this.onRustMacroExpViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
     this.eventHub.on('outputClosed', this.onOutputClosed, this);
 
