@@ -367,7 +367,7 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     this.container.layoutManager
-        .createDragSource(this.rustMirButton, createRustMacroExpView)
+        .createDragSource(this.rustMacroExpButton, createRustMacroExpView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
     this.rustMacroExpButton.click(_.bind(function () {
