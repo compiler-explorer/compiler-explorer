@@ -352,7 +352,7 @@ export class Tree {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
-                this.alertSystem.ask('Delete file', `Are you sure you want to delete ${file.filename ? file.filename : 'this file'}?` , {
+                this.alertSystem.ask('Delete file', `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
                     yes: () => {
                         this.removeFile(fileId);
                     },
