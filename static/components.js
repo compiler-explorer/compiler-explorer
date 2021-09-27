@@ -310,7 +310,7 @@ module.exports = {
             },
         };
     },
-    getRustMacroExpView: function() {
+    getRustMacroExpView: function () {
         return {
             type: 'component',
             componentName: 'rustmacroexp',
