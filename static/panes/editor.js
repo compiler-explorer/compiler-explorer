@@ -1414,7 +1414,7 @@ Editor.prototype.getPaneName = function () {
 };
 
 Editor.prototype.setFilename = function (name) {
-    this.filename = name;
+    this.filename = _.escape(name);
     this.updateTitle();
     this.updateState();
 };
