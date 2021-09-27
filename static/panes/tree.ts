@@ -171,7 +171,7 @@ export class Tree {
     }
 
     private getCustomOutputFilename(): string {
-        return this.customOutputFilenameInput.val();
+        return _.escape(this.customOutputFilenameInput.val());
     }
 
     public currentState(): TreeState {
