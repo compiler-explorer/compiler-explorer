@@ -55,7 +55,7 @@ function configuration() {
         ],
 
         indentationRules: {
-            increaseIndentPattern: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#{;]|("|'|\/).*\4|\{\{.*\}\}|\{.*\})*(#.*)?$/,
+            increaseIndentPattern: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?$/,
             decreaseIndentPattern: /^\s*([}\]]([,)]?\s*(#|$)|\.[a-zA-Z_]\w*\b)|(end|rescue|ensure|else|elsif|when)\b)/,
         },
     };
@@ -138,8 +138,8 @@ function definition() {
         ],
 
         symbols: /[=><!~?:&|+\-*/^%.]+/,
-        escapes: /\\(?:[abefnrtv\\"'#]|[0-7]{1,3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\{[0-9A-Fa-f]{1,6}\})/,
-        numsuffix: /(?:i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64)/,
+        escapes: /\\(?:[abefnrtv\\"'#]|[0-7]{1,3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u{[0-9A-Fa-f]{1,6}})/,
+        numsuffix: /i8|i16|i32|i64|i128|u8|u16|u32|u64|u128|f32|f64/,
 
         tokenizer: {
             root: [
