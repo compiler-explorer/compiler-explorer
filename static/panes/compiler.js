@@ -1475,7 +1475,7 @@ Compiler.prototype.initLibraries = function (state) {
 
     this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
         state, _.bind(this.onLibsChanged, this),
-        libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId));
+        libUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
 };
 
 Compiler.prototype.updateLibraries = function () {
