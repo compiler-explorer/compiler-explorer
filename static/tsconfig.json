@@ -16,6 +16,7 @@
 		"line-colouring.ts",
 		"monaco-config.ts",
 		"multifile-service.ts",
+		"options.ts",
 		"panes/tree.ts",
 		"panes/pane.ts",
 		"panes/pane.interfaces.ts",

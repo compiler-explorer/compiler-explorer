@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
-var configElement = document.getElementById('config');
+const configElement = document.getElementById('config');
 
 window.httpRoot = configElement.getAttribute('httpRoot');
 window.staticRoot = configElement.getAttribute('staticRoot');
 
-var extraOptions = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
-for (var k in extraOptions) {
-    window.compilerExplorerOptions[k] = extraOptions[k];
+const extraOptions = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
+for (const key in Object) {
+    window.compilerExplorerOptions[key] = extraOptions[key];
 }
 
-__webpack_public_path__ = window.staticRoot;
+declare var __webpack_public_path__: string;
 
-module.exports = window.compilerExplorerOptions;
+__webpack_public_path__ = window.httpRoot;
+
+export default window.compilerExplorerOptions;
