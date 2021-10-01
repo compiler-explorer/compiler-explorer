@@ -27,8 +27,8 @@ const configElement = document.getElementById('config');
 window.httpRoot = configElement.getAttribute('httpRoot');
 window.staticRoot = configElement.getAttribute('staticRoot');
 
-const extraOptions = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
-for (const key in Object) {
+const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
+for (const key in extraOptions) {
     window.compilerExplorerOptions[key] = extraOptions[key];
 }
 
