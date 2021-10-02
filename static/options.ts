@@ -34,6 +34,6 @@ for (const key in extraOptions) {
 
 declare var __webpack_public_path__: string;
 
-__webpack_public_path__ = window.httpRoot;
+__webpack_public_path__ = window.staticRoot;
 
 export default window.compilerExplorerOptions;
