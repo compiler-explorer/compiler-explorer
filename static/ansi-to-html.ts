@@ -27,8 +27,6 @@
 // Includes patches from https://github.com/rburns/ansi-to-html/pull/84
 // Converted to typescript by MarkusJx
 
-'use strict';
-
 import _ from 'underscore';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces';
 
@@ -369,10 +367,10 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
-    type Token = {
-        pattern: RegExp,
-        sub: (m: string, ...args: any[]) => string
-    };
+    interface Token {
+        pattern: RegExp;
+        sub: (m: string, ...args: any[]) => string;
+    }
 
     /* eslint no-control-regex:0 */
     var tokens: Token[] = [{
@@ -440,11 +438,11 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
 /**
  * A sticky stack element
  */
-type StickyStackElement = {
-    token: string,
-    data: number | string,
-    category: string
-};
+interface StickyStackElement {
+    token: string;
+    data: number | string;
+    category: string;
+}
 
 /**
  * If streaming, then the stack is "sticky"
