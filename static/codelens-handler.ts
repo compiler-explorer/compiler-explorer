@@ -24,14 +24,20 @@
 
 'use strict';
 
-var _ = require('underscore'),
-    monaco = require('monaco-editor');
+import _ from 'underscore';
+import * as monaco from 'monaco-editor';
 
-var registeredCodelenses = [];
-var providersPerLanguage = {};
+interface RegisteredCodeLens {
+    compilerId: number;
+    editorModel: monaco.editor.ITextModel;
+    lenses: monaco.languages.CodeLens[];
+}
 
-function registerLensesForCompiler(compilerId, editorModel, lenses) {
-    var item = _.find(registeredCodelenses, function (item) {
+let registeredCodelenses: RegisteredCodeLens[] = [];
+let providersPerLanguage: Record<string, monaco.IDisposable> = {};
+
+export function registerLensesForCompiler(compilerId: number, editorModel: monaco.editor.ITextModel, lenses: monaco.languages.CodeLens[]): void {
+    const item: RegisteredCodeLens = _.find(registeredCodelenses, function(item: RegisteredCodeLens) {
         return item.compilerId === compilerId;
     });
 
@@ -46,8 +52,8 @@ function registerLensesForCompiler(compilerId, editorModel, lenses) {
     }
 }
 
-function provide(model) {
-    var item = _.find(registeredCodelenses, function (item) {
+function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList {
+    const item: RegisteredCodeLens = _.find(registeredCodelenses, function(item: RegisteredCodeLens) {
         return item.editorModel === model;
     });
 
@@ -64,8 +70,8 @@ function provide(model) {
     }
 }
 
-function unregister(compilerId) {
-    var item = _.find(registeredCodelenses, function (item) {
+export function unregister(compilerId: number): void {
+    const item: RegisteredCodeLens = _.find(registeredCodelenses, function(item: RegisteredCodeLens) {
         return item.compilerId === compilerId;
     });
 
@@ -74,16 +80,10 @@ function unregister(compilerId) {
     }
 }
 
-function registerProviderForLanguage(language) {
+export function registerProviderForLanguage(language: string): void {
     if (!providersPerLanguage[language]) {
         providersPerLanguage[language] = monaco.languages.registerCodeLensProvider(language, {
             provideCodeLenses: provide,
         });
     }
 }
-
-module.exports = {
-    registerLensesForCompiler: registerLensesForCompiler,
-    unregister: unregister,
-    registerProviderForLanguage: registerProviderForLanguage,
-};

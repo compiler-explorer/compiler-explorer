@@ -9,6 +9,7 @@
 	"files": [
 		"alert.interfaces.ts",
 		"alert.ts",
+		"codelens-handler.ts",
 		"formatter-registry.interfaces.ts",
 		"formatter-registry.ts",
 		"global.ts",
