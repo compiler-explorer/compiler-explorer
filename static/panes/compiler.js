@@ -268,6 +268,11 @@ Compiler.prototype.initPanerButtons = function () {
             this.lastResult.gccDumpOutput);
     }, this);
 
+    var createGnatDebugView = _.bind(function () {
+        return Components.getGnatDebugViewWith(this.id, this.source, this.lastResult.gnatDebugOutput,
+            this.getCompilerName(), this.sourceEditorId);
+    }, this);
+
     var createCfgView = _.bind(function () {
         return Components.getCfgViewWith(this.id, this.sourceEditorId);
     }, this);
@@ -384,6 +389,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createGccDumpView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.gnatDebugButton, createGnatDebugView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.gnatDebugButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createGnatDebugView);
     }, this));
 
     this.container.layoutManager
@@ -684,6 +699,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
+            produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
             produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
@@ -1258,6 +1274,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onGnatDebugViewOpened = function (id) {
+    if (this.id === id) {
+        this.gnatDebugButton.prop('disabled', true);
+        this.gnatDebugViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onGnatDebugViewClosed = function (id) {
+    if (this.id === id) {
+        this.gnatDebugButton.prop('disabled', false);
+        this.gnatDebugViewOpen = false;
+    }
+};
+
 Compiler.prototype.onRustMacroExpViewOpened = function (id) {
     if (this.id === id) {
         this.rustMacroExpButton.prop('disabled', true);
@@ -1409,9 +1440,11 @@ Compiler.prototype.initButtons = function (state) {
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
+    this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
+    this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -1626,6 +1659,7 @@ Compiler.prototype.updateButtons = function () {
     this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
+    this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
     // The executorButton does not need to be changed here, because you can create however
     // many executors as you want.
 
@@ -1637,6 +1671,7 @@ Compiler.prototype.updateButtons = function () {
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
+    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugView);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
@@ -1683,6 +1718,8 @@ Compiler.prototype.onFontScale = function () {
     this.saveState();
 };
 
+// Disable only for initListeners as there are more and more callbacks.
+// eslint-disable-next-line max-statements
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
@@ -1732,6 +1769,9 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('gccDumpViewOpened', this.onGccDumpViewOpened, this);
     this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
     this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
+
+    this.eventHub.on('gnatDebugViewOpened', this.onGnatDebugViewOpened, this);
+    this.eventHub.on('gnatDebugViewClosed', this.onGnatDebugViewClosed, this);
 
     this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
     this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
