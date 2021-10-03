@@ -25,10 +25,7 @@
 /**
  * The color code container
  */
-export interface colors_t {
-    // A color code member
-    [index: number]: string;
-}
+export type ColorCodes = Record<number, string>;
 
 /**
  * The Ansi to HTML options
@@ -45,5 +42,5 @@ export interface AnsiToHtmlOptions {
     // Whether to use stream mode. Defaults to false.
     stream?: boolean;
     // The color codes to use. If not set, this will be generated.
-    colors?: colors_t;
+    colors?: ColorCodes;
 }

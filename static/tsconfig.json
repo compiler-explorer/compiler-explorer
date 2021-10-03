@@ -9,6 +9,8 @@
 	"files": [
 		"alert.interfaces.ts",
 		"alert.ts",
+		"ansi-to-html.interfaces.ts",
+		"ansi-to-html.ts",
 		"formatter-registry.interfaces.ts",
 		"formatter-registry.ts",
 		"global.ts",
@@ -25,7 +27,5 @@
 		"sharing.ts",
 		"url.ts",
 		"utils.ts",
-		"ansi-to-html.ts",
-		"ansi-to-html.interfaces.ts"
 	]
 }

@@ -30,7 +30,7 @@
 'use strict';
 
 import _ from 'underscore';
-import {AnsiToHtmlOptions, colors_t} from './ansi-to-html.interfaces';
+import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -41,8 +41,8 @@ const defaults: AnsiToHtmlOptions = {
     colors: getDefaultColors(),
 };
 
-function getDefaultColors(): colors_t {
-    const colors: colors_t = {
+function getDefaultColors(): ColorCodes {
+    const colors: ColorCodes = {
         0: '#000',
         1: '#A00',
         2: '#0A0',
@@ -79,7 +79,7 @@ function getDefaultColors(): colors_t {
     return colors;
 }
 
-function setStyleColor(red: number, green: number, blue: number, colors: colors_t): void {
+function setStyleColor(red: number, green: number, blue: number, colors: ColorCodes): void {
     const c: number = 16 + red * 36 + green * 6 + blue;
     const r: number = red > 0 ? red * 40 + 55 : 0;
     const g: number = green > 0 ? green * 40 + 55 : 0;
@@ -151,7 +151,7 @@ function handleDisplay(stack: string[], _code: string | number, options: AnsiToH
     const code: number = parseInt(_code as string, 10);
     let result: string;
 
-    const codeMap: {[index: number]: () => string} = {
+    const codeMap: Record<number, () => string> = {
         '-1': function _() {
             return '<br/>';
         },
@@ -244,8 +244,8 @@ function range(low: number, high: number): number[] {
 /**
  * Returns a new function that is true if value is NOT the same category
  */
-function notCategory(category: string): (e: stickyStackElement) => boolean {
-    return function(e: stickyStackElement): boolean {
+function notCategory(category: string): (e: StickyStackElement) => boolean {
+    return function(e: StickyStackElement): boolean {
         return (category === null || e.category !== category) && category !== 'all';
     };
 }
@@ -323,9 +323,9 @@ function closeTag(stack: string[], style: string): string {
     }
 }
 
-type tokenizeCallback_t = (token: string, data: string | number) => void;
+type TokenizeCallback = (token: string, data: string | number) => void;
 
-function tokenize(text: string, options: AnsiToHtmlOptions, callback: tokenizeCallback_t) {
+function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
     var ansiMatch: boolean = false;
     var ansiHandler: number = 3;
 
@@ -369,13 +369,13 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: tokenizeCa
         return '';
     }
 
-    type token_t = {
+    type Token = {
         pattern: RegExp,
         sub: (m: string, ...args: any[]) => string
     };
 
     /* eslint no-control-regex:0 */
-    var tokens: token_t[] = [{
+    var tokens: Token[] = [{
         pattern: /^\x08+/,
         sub: remove,
     }, {
@@ -398,7 +398,7 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: tokenizeCa
         sub: realText,
     }];
 
-    function process(handler: token_t, i: number): void {
+    function process(handler: Token, i: number): void {
         if (i > ansiHandler && ansiMatch) {
             return;
         }
@@ -408,7 +408,7 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: tokenizeCa
         text = text.replace(handler.pattern, handler.sub);
     }
 
-    var handler: token_t;
+    var handler: Token;
     var results1: number[] = [];
     var length: number = text.length;
 
@@ -440,21 +440,16 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: tokenizeCa
 /**
  * A sticky stack element
  */
-type stickyStackElement = {
+type StickyStackElement = {
     token: string,
     data: number | string,
     category: string
 };
 
 /**
- * The type of the sticky stack
- */
-type stickyStack_t = stickyStackElement[];
-
-/**
  * If streaming, then the stack is "sticky"
  */
-function updateStickyStack(stickyStack: stickyStack_t, token: string, data: string | number): stickyStack_t {
+function updateStickyStack(stickyStack: StickyStackElement[], token: string, data: string | number): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
         stickyStack.push({
@@ -470,7 +465,7 @@ function updateStickyStack(stickyStack: stickyStack_t, token: string, data: stri
 export default class Filter {
     private readonly opts: AnsiToHtmlOptions;
     private readonly stack: string[];
-    private stickyStack: stickyStack_t;
+    private stickyStack: StickyStackElement[];
 
     public constructor(options: AnsiToHtmlOptions) {
         options = options || {};
@@ -492,7 +487,7 @@ export default class Filter {
         const options: AnsiToHtmlOptions = this.opts;
         const buf: string[] = [];
 
-        this.stickyStack.forEach(function(element: stickyStackElement) {
+        this.stickyStack.forEach(function(element: StickyStackElement) {
             const output: string = generateOutput(stack, element.token, element.data, options);
 
             if (output) {
