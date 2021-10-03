@@ -22,28 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
 // here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
 import {
+    AstOutputComponentState,
     CompilerComponentState,
-    CompilerFilterComponentState,
-    ComponentConfig, IdComponentState, LangComponentState, LibraryItem, OptionsComponentState, SourceComponentState,
+    CompilerFilterComponentState, CompilerFlagsComponentState, CompilerNameComponentState,
+    ComponentConfig, DeviceOutputComponentState,
+    EditorComponentState, EditorIdComponentState, GccDumpComponentConfig,
+    IdComponentState, IrOutputComponentState, LangIdComponentState,
+    LibraryComponentState,
+    LibraryItem, OptimizationComponentState,
+    OptionsComponentState, RustMacroComponentState, RustMirComponentState,
+    SourceComponentState, ToolInputViewComponentState, ToolViewComponentState,
     TreeComponentState,
 } from './components.interfaces';
+import {Dictionary} from 'underscore';
 
-export function getCompiler(editorId: number, lang: string): ComponentConfig {
+export function getCompiler(editorId: number, lang: string): ComponentConfig<SourceComponentState> {
     return {
         type: 'component',
         componentName: 'compiler',
         componentState: {
             source: editorId,
-            lang: lang
-        }
+            lang: lang,
+        },
     };
 }
 
-export function getCompilerWith(editorId: number, filters, options, compilerId: string, langId: string, libs: LibraryItem[]): ComponentConfig<CompilerFilterComponentState> {
+// TODO: Add options type
+export function getCompilerWith(editorId: number, filters: Dictionary<boolean>, options, compilerId: string, langId: string, libs: LibraryItem[]): ComponentConfig<CompilerFilterComponentState> {
     return {
         type: 'component',
         componentName: 'compiler',
@@ -64,23 +71,26 @@ export function getCompilerForTree(treeId: number, lang: string): ComponentConfi
         componentName: 'compiler',
         componentState: {
             tree: treeId,
-            lang: lang
-        }
+            lang: lang,
+        },
     };
 }
 
-export function getExecutor(editorId: number, lang: string): ComponentConfig {
+export function getExecutor(editorId: number, lang: string): ComponentConfig<SourceComponentState> {
     return {
         type: 'component',
         componentName: 'executor',
         componentState: {
             source: editorId,
-            lang: lang
-        }
+            lang: lang,
+        },
     };
 }
 
-export function getExecutorWith(editorId: number, lang: string, compilerId: string, libraries: LibraryItem[], compilerArgs, treeId: number): ComponentConfig<CompilerComponentState & TreeComponentState> {
+type GetExecutorWithConfig = ComponentConfig<CompilerComponentState & TreeComponentState & LibraryComponentState>;
+
+// TODO: Add compilerArgs type
+export function getExecutorWith(editorId: number, lang: string, compilerId: string, libraries: LibraryItem[], compilerArgs, treeId: number): GetExecutorWithConfig {
     return {
         type: 'component',
         componentName: 'executor',
@@ -101,51 +111,61 @@ export function getExecutorForTree(treeId: number, lang: string): ComponentConfi
         componentName: 'executor',
         componentState: {
             tree: treeId,
-            lang: lang
-        }
+            lang: lang,
+        },
     };
 }
 
-export function getEditor(id: number, langId: string): ComponentConfig<IdComponentState & LangComponentState> {
+export function getEditor(id: number, langId: string): ComponentConfig<IdComponentState> {
     return {
         type: 'component',
         componentName: 'codeEditor',
         componentState: {
             id: id,
-            lang: langId
+            lang: langId,
         }
     };
 }
 
-export function getEditorWith(id: number, source: number, options): ComponentConfig<IdComponentState & OptionsComponentState & SourceComponentState> {
+type GetEditorWithConfig = ComponentConfig<IdComponentState & OptionsComponentState & SourceComponentState>;
+
+// TODO: Add options type
+export function getEditorWith(id: number, source: number, options): GetEditorWithConfig {
     return {
         type: 'component',
         componentName: 'codeEditor',
         componentState: {
             id: id,
             source: source,
-            options: options
+            options: options,
         }
     };
 }
 
-export function getTree(id) {
+export function getTree(id: number): ComponentConfig<IdComponentState> {
     return {
         type: 'component',
         componentName: 'tree',
-        componentState: {id: id},
+        componentState: {
+            id: id
+        },
     };
 }
 
-export function getOutput(compiler, editor, tree) {
+export function getOutput(compiler: string, editor: number, tree: number): ComponentConfig<EditorComponentState> {
     return {
         type: 'component',
         componentName: 'output',
-        componentState: {compiler: compiler, editor: editor, tree: tree},
+        componentState: {
+            compiler: compiler,
+            editor: editor,
+            tree: tree,
+        },
     };
 }
 
-export function getToolViewWith(compiler, editor, toolId, args, monacoStdin, tree) {
+// TODO: Add toolId type
+export function getToolViewWith(compiler: string, editor: number, toolId, args: string, monacoStdin: boolean, tree: number): ComponentConfig<ToolViewComponentState> {
     return {
         type: 'component',
         componentName: 'tool',
@@ -160,7 +180,7 @@ export function getToolViewWith(compiler, editor, toolId, args, monacoStdin, tre
     };
 }
 
-export function getToolInputView() {
+export function getToolInputView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'toolInputView',
@@ -168,7 +188,8 @@ export function getToolInputView() {
     };
 }
 
-export function getToolInputViewWith(compilerId, toolId, toolName) {
+// TODO: Add toolId type
+export function getToolInputViewWith(compilerId: string, toolId, toolName: string): ComponentConfig<ToolInputViewComponentState> {
     return {
         type: 'component',
         componentName: 'toolInputView',
@@ -180,7 +201,7 @@ export function getToolInputViewWith(compilerId, toolId, toolName) {
     };
 }
 
-export function getDiff() {
+export function getDiff(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'diff',
@@ -196,7 +217,10 @@ export function getOptView() {
     };
 }
 
-export function getOptViewWith(id, source, optimization, compilerName, editorid) {
+type GetOptViewWithConfig = ComponentConfig<CompilerNameComponentState & SourceComponentState & EditorIdComponentState & OptimizationComponentState>;
+
+// TODO: Add optimization type
+export function getOptViewWith(id: number, source: number, optimization, compilerName: string, editorid: boolean): GetOptViewWithConfig {
     return {
         type: 'component',
         componentName: 'opt',
@@ -210,7 +234,7 @@ export function getOptViewWith(id, source, optimization, compilerName, editorid)
     };
 }
 
-export function getFlagsView() {
+export function getFlagsView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'flags',
@@ -218,7 +242,8 @@ export function getFlagsView() {
     };
 }
 
-export function getFlagsViewWith(id, compilerName, compilerFlags) {
+// TODO: Add compilerFlags type
+export function getFlagsViewWith(id: number, compilerName: string, compilerFlags): ComponentConfig<CompilerFlagsComponentState> {
     return {
         type: 'component',
         componentName: 'flags',
@@ -230,7 +255,7 @@ export function getFlagsViewWith(id, compilerName, compilerFlags) {
     };
 }
 
-export function getAstView() {
+export function getAstView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'ast',
@@ -238,7 +263,8 @@ export function getAstView() {
     };
 }
 
-export function getAstViewWith(id, source, astOutput, compilerName, editorid) {
+// TODO: Add astOutput type
+export function getAstViewWith(id: number, source: number, astOutput, compilerName: string, editorid: boolean): ComponentConfig<AstOutputComponentState> {
     return {
         type: 'component',
         componentName: 'ast',
@@ -252,7 +278,7 @@ export function getAstViewWith(id, source, astOutput, compilerName, editorid) {
     };
 }
 
-export function getGccDumpView() {
+export function getGccDumpView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'gccdump',
@@ -260,8 +286,9 @@ export function getGccDumpView() {
     };
 }
 
-export function getGccDumpViewWith(id, compilerName, editorid, gccDumpOutput) {
-    var ret = {
+// TODO: Add gccDumpOutput type
+export function getGccDumpViewWith(id: number, compilerName: string, editorid: boolean, gccDumpOutput): GccDumpComponentConfig {
+    var ret: GccDumpComponentConfig = {
         type: 'component',
         componentName: 'gccdump',
         componentState: {
@@ -291,7 +318,7 @@ export function getGccDumpViewWith(id, compilerName, editorid, gccDumpOutput) {
     return ret;
 }
 
-export function getCfgView() {
+export function getCfgView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'cfg',
@@ -299,7 +326,7 @@ export function getCfgView() {
     };
 }
 
-export function getCfgViewWith(id, editorid) {
+export function getCfgViewWith(id: number, editorid: boolean): ComponentConfig<EditorIdComponentState & IdComponentState> {
     return {
         type: 'component',
         componentName: 'cfg',
@@ -310,7 +337,9 @@ export function getCfgViewWith(id, editorid) {
     };
 }
 
-export function getConformanceView(editorid, source, langId) {
+// langId may be string...
+// TODO: Add langId type
+export function getConformanceView(editorid: boolean, source: number, langId): ComponentConfig<LangIdComponentState> {
     return {
         type: 'component',
         componentName: 'conformance',
@@ -322,7 +351,7 @@ export function getConformanceView(editorid, source, langId) {
     };
 }
 
-export function getIrView() {
+export function getIrView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'ir',
@@ -330,7 +359,8 @@ export function getIrView() {
     };
 }
 
-export function getIrViewWith(id, source, irOutput, compilerName, editorid) {
+// TODO: Add irOutput type
+export function getIrViewWith(id: number, source: number, irOutput, compilerName: string, editorid: boolean): ComponentConfig<IrOutputComponentState> {
     return {
         type: 'component',
         componentName: 'ir',
@@ -344,7 +374,7 @@ export function getIrViewWith(id, source, irOutput, compilerName, editorid) {
     };
 }
 
-export function getRustMirView() {
+export function getRustMirView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'rustmir',
@@ -352,7 +382,8 @@ export function getRustMirView() {
     };
 }
 
-export function getRustMirViewWith(id, source, rustMirOutput, compilerName, editorid) {
+// TODO: Add rustMirOutput type
+export function getRustMirViewWith(id: number, source: number, rustMirOutput, compilerName: string, editorid: boolean): ComponentConfig<RustMirComponentState> {
     return {
         type: 'component',
         componentName: 'rustmir',
@@ -366,7 +397,7 @@ export function getRustMirViewWith(id, source, rustMirOutput, compilerName, edit
     };
 }
 
-export function getRustMacroExpView() {
+export function getRustMacroExpView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'rustmacroexp',
@@ -374,7 +405,8 @@ export function getRustMacroExpView() {
     };
 }
 
-export function getRustMacroExpViewWith(id, source, rustMacroExpOutput, compilerName, editorid) {
+// TODO: Add rustMacroExpOutput type
+export function getRustMacroExpViewWith(id: number, source: number, rustMacroExpOutput, compilerName: string, editorid: boolean): ComponentConfig<RustMacroComponentState> {
     return {
         type: 'component',
         componentName: 'rustmacroexp',
@@ -388,7 +420,7 @@ export function getRustMacroExpViewWith(id, source, rustMacroExpOutput, compiler
     };
 }
 
-export function getDeviceView() {
+export function getDeviceView(): ComponentConfig {
     return {
         type: 'component',
         componentName: 'device',
@@ -396,7 +428,8 @@ export function getDeviceView() {
     };
 }
 
-export function getDeviceViewWith(id, source, deviceOutput, compilerName, editorid) {
+// TODO: Add deviceOutput type
+export function getDeviceViewWith(id: number, source: number, deviceOutput, compilerName: string, editorid: boolean): ComponentConfig<DeviceOutputComponentState> {
     return {
         type: 'component',
         componentName: 'device',

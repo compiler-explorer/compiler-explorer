@@ -31,17 +31,14 @@ export interface ComponentConfig<State extends ComponentState = ComponentState> 
 }
 
 export interface ComponentState {
+    lang?: string;
 }
 
 export interface SourceComponentState extends ComponentState {
     source: number;
 }
 
-export interface LangComponentState extends ComponentState {
-    lang: string;
-}
-
-export interface TreeComponentState extends LangComponentState {
+export interface TreeComponentState extends ComponentState {
     // The tree id
     tree: number;
 }
@@ -50,6 +47,7 @@ export interface IdComponentState extends ComponentState {
     id: number;
 }
 
+// TODO: Add types
 export interface OptionsComponentState extends ComponentState, SourceComponentState {
     options: any;
 }
@@ -59,11 +57,107 @@ export interface LibraryItem {
     ver: string;
 }
 
-export interface CompilerComponentState extends OptionsComponentState {
+export interface CompilerComponentState extends ComponentState {
     compiler: string;
+}
+
+export interface LibraryComponentState extends CompilerComponentState, OptionsComponentState {
     libs: LibraryItem[];
 }
 
-export interface CompilerFilterComponentState extends CompilerComponentState, LangComponentState {
+export interface CompilerFilterComponentState extends LibraryComponentState {
     filters: Dictionary<boolean>;
+}
+
+export interface EditorComponentState extends CompilerComponentState, TreeComponentState {
+    editor: number;
+}
+
+// TODO: Add types
+export interface ToolIdComponentState extends ComponentState {
+    toolId: any;
+}
+
+export interface ToolInputViewComponentState extends ToolIdComponentState {
+    compilerId: string;
+    toolName: string;
+}
+
+// TODO: Add types
+export interface ToolViewComponentState extends EditorComponentState, ToolIdComponentState {
+    args: string;
+    monacoStdin: boolean;
+}
+
+export interface CompilerNameComponentState extends IdComponentState {
+    compilerName: string;
+}
+
+// TODO: Add types
+export interface EditorIdComponentState extends ComponentState {
+    editorid: boolean;
+}
+
+// TODO: Add types
+export interface OptimizationComponentState extends ComponentState {
+    optOutput: any;
+}
+
+// TODO: Add types
+export interface CompilerFlagsComponentState extends ComponentState, CompilerNameComponentState {
+    compilerFlags: any;
+}
+
+// TODO: Add types
+export interface AstOutputComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
+    astOutput: any;
+}
+
+export interface GccDumpViewComponentState extends ComponentState {
+    _compilerid: number;
+    _compilerName: string;
+    _editorid: boolean;
+}
+
+// TODO: Add types
+export interface GccDumpComponentConfig extends ComponentConfig<GccDumpViewComponentState> {
+    treeDump?: any;
+    rtlDump?: any;
+    ipaDump?: any;
+    addressOption?: any;
+    slimOption?: any;
+    rawOption?: any;
+    detailsOption?: any;
+    statsOption?: any;
+    blocksOption?: any;
+    vopsOption?: any;
+    linenoOption?: any;
+    uidOption?: any;
+    allOption?: any;
+    selectedPass?: string;
+}
+
+// TODO: Add types
+export interface LangIdComponentState extends EditorIdComponentState, SourceComponentState {
+    langId: any;
+}
+
+// TODO: Add types
+export interface IrOutputComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
+    irOutput: any;
+}
+
+// TODO: Add types
+export interface RustMirComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState{
+    rustMirOutput: any;
+}
+
+// TODO: Add types
+export interface RustMacroComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
+    rustMacroExpOutput: any;
+}
+
+// TODO: Add types
+export interface DeviceOutputComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
+    deviceOutput: any;
 }
