@@ -25,12 +25,14 @@
 
 // Converted from https://github.com/rburns/ansi-to-html
 // Includes patches from https://github.com/rburns/ansi-to-html/pull/84
+// Converted to typescript by MarkusJx
 
 'use strict';
 
-var _ = require('underscore');
+import _ from 'underscore';
+import {AnsiToHtmlOptions, colors_t} from './ansi-to-html.interfaces';
 
-var defaults = {
+const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
     bg: '#000',
     newline: false,
@@ -39,8 +41,8 @@ var defaults = {
     colors: getDefaultColors(),
 };
 
-function getDefaultColors() {
-    var colors = {
+function getDefaultColors(): colors_t {
+    const colors: colors_t = {
         0: '#000',
         1: '#A00',
         2: '#0A0',
@@ -59,17 +61,17 @@ function getDefaultColors() {
         15: '#FFF',
     };
 
-    range(0, 5).forEach(function (red) {
-        range(0, 5).forEach(function (green) {
-            range(0, 5).forEach(function (blue) {
+    range(0, 5).forEach(function(red: number) {
+        range(0, 5).forEach(function(green: number) {
+            range(0, 5).forEach(function(blue: number) {
                 return setStyleColor(red, green, blue, colors);
             });
         });
     });
 
-    range(0, 23).forEach(function (gray) {
-        var c = gray + 232;
-        var l = toHexString(gray * 10 + 8);
+    range(0, 23).forEach(function(gray: number) {
+        const c: number = gray + 232;
+        const l: string = toHexString(gray * 10 + 8);
 
         colors[c] = '#' + l + l + l;
     });
@@ -77,17 +79,11 @@ function getDefaultColors() {
     return colors;
 }
 
-/**
- * @param {number} red
- * @param {number} green
- * @param {number} blue
- * @param {object} colors
- */
-function setStyleColor(red, green, blue, colors) {
-    var c = 16 + red * 36 + green * 6 + blue;
-    var r = red > 0 ? red * 40 + 55 : 0;
-    var g = green > 0 ? green * 40 + 55 : 0;
-    var b = blue > 0 ? blue * 40 + 55 : 0;
+function setStyleColor(red: number, green: number, blue: number, colors: colors_t): void {
+    const c: number = 16 + red * 36 + green * 6 + blue;
+    const r: number = red > 0 ? red * 40 + 55 : 0;
+    const g: number = green > 0 ? green * 40 + 55 : 0;
+    const b: number = blue > 0 ? blue * 40 + 55 : 0;
 
     colors[c] = toColorHexString([r, g, b]);
 }
@@ -95,11 +91,11 @@ function setStyleColor(red, green, blue, colors) {
 /**
  * Converts from a number like 15 to a hex string like 'F'
  *
- * @param {number} num
- * @returns {string}
+ * @param num the number to convert
+ * @returns the resulting hex string
  */
-function toHexString(num) {
-    var str = num.toString(16);
+function toHexString(num: number): string {
+    let str: string = num.toString(16);
 
     while (str.length < 2) {
         str = '0' + str;
@@ -111,43 +107,39 @@ function toHexString(num) {
 /**
  * Converts from an array of numbers like [15, 15, 15] to a hex string like 'FFF'
  *
- * @param {number[]} ref
- * @returns {string}
+ * @param ref the array of numbers to join
+ * @returns the resulting hex string
  */
-function toColorHexString(ref) {
-    var results = [];
+function toColorHexString(ref: number[]): string {
+    const results: string[] = [];
 
-    for (var j = 0, len = ref.length; j < len; j++) {
+    for (let j = 0, len = ref.length; j < len; j++) {
         results.push(toHexString(ref[j]));
     }
 
     return '#' + results.join('');
 }
 
-/**
- * @param {Array} stack
- * @param {string} token
- * @param {*} data
- * @param {object} options
- */
-function generateOutput(stack, token, data, options) {
-    var result;
+function generateOutput(stack: string[], token: string, data: string | number, options: AnsiToHtmlOptions): string {
+    let result: string;
 
     if (token === 'text') {
-        result = pushText(data, options);
+        // Note: Param 'data' must be a string at this point
+        result = pushText(data as string, options);
     } else if (token === 'display') {
         result = handleDisplay(stack, data, options);
     } else if (token === 'xterm256') {
-        result = handleXterm256(stack, data, options);
+        // Note: Param 'data' must be a string at this point
+        result = handleXterm256(stack, data as string, options);
     }
 
     return result;
 }
 
-function handleXterm256(stack, data, options) {
+function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     data = data.substring(2).slice(0, -1);
-    var operation = +data.substr(0, 2);
-    var color = +data.substr(5);
+    const operation: number = +data.substr(0, 2);
+    const color: number = +data.substr(5);
     if (operation === 38) {
         return pushForegroundColor(stack, options.colors[color]);
     } else {
@@ -155,17 +147,11 @@ function handleXterm256(stack, data, options) {
     }
 }
 
-/**
- * @param {Array} stack
- * @param {number} code
- * @param {object} options
- * @returns {*}
- */
-function handleDisplay(stack, code, options) {
-    code = parseInt(code, 10);
-    var result;
+function handleDisplay(stack: string[], _code: string | number, options: AnsiToHtmlOptions): string {
+    const code: number = parseInt(_code as string, 10);
+    let result: string;
 
-    var codeMap = {
+    const codeMap: {[index: number]: () => string} = {
         '-1': function _() {
             return '<br/>';
         },
@@ -226,15 +212,13 @@ function handleDisplay(stack, code, options) {
 
 /**
  * Clear all the styles
- *
- * @returns {string}
  */
-function resetStyles(stack) {
-    var stackClone = stack.slice(0);
+function resetStyles(stack: string[]): string {
+    const stackClone: string[] = stack.slice(0);
 
     stack.length = 0;
 
-    return stackClone.reverse().map(function (tag) {
+    return stackClone.reverse().map(function(tag: string) {
         return '</' + tag + '>';
     }).join('');
 }
@@ -242,15 +226,15 @@ function resetStyles(stack) {
 /**
  * Creates an array of numbers ranging from low to high
  *
- * @param {number} low
- * @param {number} high
- * @returns {Array}
+ * @param low the lowest number in the array to create
+ * @param high the highest number in the array to create
+ * @returns the resulting array
  * @example range(3, 7); // creates [3, 4, 5, 6, 7]
  */
-function range(low, high) {
-    var results = [];
+function range(low: number, high: number): number[] {
+    const results: number[] = [];
 
-    for (var j = low; j <= high; j++) {
+    for (let j: number = low; j <= high; j++) {
         results.push(j);
     }
 
@@ -259,12 +243,9 @@ function range(low, high) {
 
 /**
  * Returns a new function that is true if value is NOT the same category
- *
- * @param {string} category
- * @returns {Function}
  */
-function notCategory(category) {
-    return function (e) {
+function notCategory(category: string): (e: stickyStackElement) => boolean {
+    return function(e: stickyStackElement): boolean {
         return (category === null || e.category !== category) && category !== 'all';
     };
 }
@@ -272,12 +253,12 @@ function notCategory(category) {
 /**
  * Converts a code into an ansi token type
  *
- * @param {number} code
- * @returns {string}
+ * @param _code the code to convert
+ * @returns the ansi token type
  */
-function categoryForCode(code) {
-    code = parseInt(code, 10);
-    var result = null;
+function categoryForCode(_code: string | number): string {
+    const code: number = parseInt(_code as string, 10);
+    let result: string = null;
 
     if (code === 0) {
         result = 'all';
@@ -300,12 +281,7 @@ function categoryForCode(code) {
     return result;
 }
 
-/**
- * @param {string} text
- * @param {object} options
- * @returns {string}
- */
-function pushText(text, options) {
+function pushText(text: string, options: AnsiToHtmlOptions): string {
     if (options.escapeXML) {
         return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -313,13 +289,7 @@ function pushText(text, options) {
     return text;
 }
 
-/**
- * @param {Array} stack
- * @param {string} tag
- * @param {string} [style='']
- * @returns {string}
- */
-function pushTag(stack, tag, style) {
+function pushTag(stack: string[], tag: string, style?: string): string {
     if (!style) {
         style = '';
     }
@@ -329,30 +299,20 @@ function pushTag(stack, tag, style) {
     return ['<' + tag, style ? ' style="' + style + '"' : void 0, '>'].join('');
 }
 
-/**
- * @param {Array} stack
- * @param {string} style
- * @returns {string}
- */
-function pushStyle(stack, style) {
+function pushStyle(stack: string[], style: string): string {
     return pushTag(stack, 'span', style);
 }
 
-function pushForegroundColor(stack, color) {
+function pushForegroundColor(stack: string[], color: string): string {
     return pushTag(stack, 'span', 'color:' + color);
 }
 
-function pushBackgroundColor(stack, color) {
+function pushBackgroundColor(stack: string[], color: string): string {
     return pushTag(stack, 'span', 'background-color:' + color);
 }
 
-/**
- * @param {Array} stack
- * @param {string} style
- * @returns {string}
- */
-function closeTag(stack, style) {
-    var last;
+function closeTag(stack: string[], style: string): string {
+    let last: string = null;
 
     if (stack.slice(-1)[0] === style) {
         last = stack.pop();
@@ -363,26 +323,22 @@ function closeTag(stack, style) {
     }
 }
 
-/**
- * @param {string} text
- * @param {object} options
- * @param {Function} callback
- * @returns {Array}
- */
-function tokenize(text, options, callback) {
-    var ansiMatch = false;
-    var ansiHandler = 3;
+type tokenizeCallback_t = (token: string, data: string | number) => void;
 
-    function remove() {
+function tokenize(text: string, options: AnsiToHtmlOptions, callback: tokenizeCallback_t) {
+    var ansiMatch: boolean = false;
+    var ansiHandler: number = 3;
+
+    function remove(): string {
         return '';
     }
 
-    function removeXterm256(m) {
+    function removeXterm256(m: string): string {
         callback('xterm256', m);
         return '';
     }
 
-    function newline(m) {
+    function newline(m: string): string {
         if (options.newline) {
             callback('display', -1);
         } else {
@@ -392,29 +348,34 @@ function tokenize(text, options, callback) {
         return '';
     }
 
-    function ansiMess(m, g1) {
+    function ansiMess(m: string, g1: string): string {
         ansiMatch = true;
         if (g1.trim().length === 0) {
             g1 = '0';
         }
 
-        g1 = g1.replace(/;+$/, '').split(';');
+        let res: string[] = g1.replace(/;+$/, '').split(';');
 
-        for (var o = 0, len = g1.length; o < len; o++) {
-            callback('display', g1[o]);
+        for (let o: number = 0, len: number = res.length; o < len; o++) {
+            callback('display', res[o]);
         }
 
         return '';
     }
 
-    function realText(m) {
+    function realText(m: string): string {
         callback('text', m);
 
         return '';
     }
 
+    type token_t = {
+        pattern: RegExp,
+        sub: (m: string, ...args: any[]) => string
+    };
+
     /* eslint no-control-regex:0 */
-    var tokens = [{
+    var tokens: token_t[] = [{
         pattern: /^\x08+/,
         sub: remove,
     }, {
@@ -437,7 +398,7 @@ function tokenize(text, options, callback) {
         sub: realText,
     }];
 
-    function process(handler, i) {
+    function process(handler: token_t, i: number): void {
         if (i > ansiHandler && ansiMatch) {
             return;
         }
@@ -447,12 +408,12 @@ function tokenize(text, options, callback) {
         text = text.replace(handler.pattern, handler.sub);
     }
 
-    var handler;
-    var results1 = [];
-    var length = text.length;
+    var handler: token_t;
+    var results1: number[] = [];
+    var length: number = text.length;
 
     outer: while (length > 0) {
-        for (var i = 0, o = 0, len = tokens.length; o < len; i = ++o) {
+        for (let i: number = 0, o: number = 0, len: number = tokens.length; o < len; i = ++o) {
             handler = tokens[i];
             process(handler, i);
 
@@ -477,52 +438,70 @@ function tokenize(text, options, callback) {
 }
 
 /**
- * If streaming, then the stack is "sticky"
- *
- * @param {Array} stickyStack
- * @param {string} token
- * @param {*} data
- * @returns {Array}
+ * A sticky stack element
  */
-function updateStickyStack(stickyStack, token, data) {
+type stickyStackElement = {
+    token: string,
+    data: number | string,
+    category: string
+};
+
+/**
+ * The type of the sticky stack
+ */
+type stickyStack_t = stickyStackElement[];
+
+/**
+ * If streaming, then the stack is "sticky"
+ */
+function updateStickyStack(stickyStack: stickyStack_t, token: string, data: string | number): stickyStack_t {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
-        stickyStack.push({token: token, data: data, category: categoryForCode(data)});
+        stickyStack.push({
+            token: token,
+            data: data,
+            category: categoryForCode(data),
+        });
     }
 
     return stickyStack;
 }
 
-function Filter(options) {
-    options = options || {};
+export default class Filter {
+    private readonly opts: AnsiToHtmlOptions;
+    private readonly stack: string[];
+    private stickyStack: stickyStack_t;
 
-    if (options.colors) {
-        options.colors = _.extend(defaults.colors, options.colors);
+    public constructor(options: AnsiToHtmlOptions) {
+        options = options || {};
+
+        if (options.colors) {
+            options.colors = _.extend(defaults.colors, options.colors);
+        }
+
+        this.opts = _.extend({}, defaults, options);
+        this.stack = [];
+        this.stickyStack = [];
     }
-    this.opts = _.extend({}, defaults, options);
-    this.stack = [];
-    this.stickyStack = [];
-}
 
-Filter.prototype = {
-    toHtml: function toHtml(input) {
-        var _this = this;
+    public toHtml(_input: string | string[]): string {
+        const _this = this;
 
-        input = typeof input === 'string' ? [input] : input;
-        var stack = this.stack;
-        var options = this.opts;
-        var buf = [];
+        const input: string[] = typeof _input === 'string' ? [_input] : _input;
+        const stack: string[] = this.stack;
+        const options: AnsiToHtmlOptions = this.opts;
+        const buf: string[] = [];
 
-        this.stickyStack.forEach(function (element) {
-            var output = generateOutput(stack, element.token, element.data, options);
+        this.stickyStack.forEach(function(element: stickyStackElement) {
+            const output: string = generateOutput(stack, element.token, element.data, options);
 
             if (output) {
                 buf.push(output);
             }
         });
 
-        tokenize(input.join(''), options, function (token, data) {
-            var output = generateOutput(stack, token, data, options);
+        tokenize(input.join(''), options, function(token: string, data: string | number) {
+            let output: string = generateOutput(stack, token, data, options);
 
             if (output) {
                 buf.push(output);
@@ -538,7 +517,5 @@ Filter.prototype = {
         }
 
         return buf.join('');
-    },
-};
-
-module.exports = Filter;
+    }
+}

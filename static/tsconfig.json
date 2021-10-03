@@ -25,5 +25,7 @@
 		"sharing.ts",
 		"url.ts",
 		"utils.ts",
+		"ansi-to-html.ts",
+		"ansi-to-html.interfaces.ts"
 	]
 }
