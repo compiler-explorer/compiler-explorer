@@ -72,7 +72,7 @@ function getDefaultColors(): ColorCodes {
         const l = toHexString(gray * 10 + 8);
 
         colors[c] = `#${l}${l}${l}`;
-    })
+    });
 
     return colors;
 }
@@ -463,7 +463,7 @@ class Filter {
             if (options.stream) {
                 _this.stickyStack = updateStickyStack(_this.stickyStack, token, data);
             }
-        })
+        });
 
         if (stack.length) {
             buf.push(resetStyles(stack));
