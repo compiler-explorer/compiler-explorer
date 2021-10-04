@@ -78,11 +78,11 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(id: unknown, compiler: unknown, result: any): void {
+    override onCompileResult(id: unknown, compiler: any, result: any): void {
         if (this.compilerInfo.compilerId !== id) return;
         if (result.hasRustMirOutput) {
             this.showRustMirResults(result.rustMirOutput);
-        } else {
+        } else if (compiler.supportsRustMirView) {
             this.showRustMirResults([{text: '<No output>'}]);
         }
     }
@@ -93,7 +93,7 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
             this.compilerInfo.editorId = editorId;
             this.setTitle();
             if (compiler && !compiler.supportsRustMirView) {
-                this.editor.setValue('<Rust MIR output is not supported for this compiler>');
+                this.showRustMirResults([{text: '<Rust MIR output is not supported for this compiler>'}]);
             }
         }
     }
