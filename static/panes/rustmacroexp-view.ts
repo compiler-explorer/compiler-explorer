@@ -78,11 +78,11 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor> {
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(id: unknown, compiler: unknown, result: any): void {
+    override onCompileResult(id: unknown, compiler: any, result: any): void {
         if (this.compilerInfo.compilerId !== id) return;
         if (result.hasRustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
-        } else {
+        } else if (compiler.supportsRustMacroExpView) {
             this.showRustMacroExpResults([{text: '<No output>'}]);
         }
     }
@@ -93,7 +93,9 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor> {
             this.compilerInfo.editorId = editorId;
             this.setTitle();
             if (compiler && !compiler.supportsRustMacroExpView) {
-                this.editor.setValue('<Rust Macro Expansion output is not supported for this compiler>');
+                this.showRustMacroExpResults([{
+                    text: '<Rust Macro Expansion output is not supported for this compiler>'
+                }]);
             }
         }
     }
