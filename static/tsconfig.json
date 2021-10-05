@@ -11,6 +11,7 @@
 		"alert.ts",
 		"ansi-to-html.interfaces.ts",
 		"ansi-to-html.ts",
+		"codelens-handler.ts",
 		"colour.ts",
 		"formatter-registry.interfaces.ts",
 		"formatter-registry.ts",
