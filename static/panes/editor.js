@@ -413,7 +413,7 @@ Editor.prototype.initButtons = function (state) {
     this.loadSaveButton = this.domRoot.find('.load-save');
     var paneAdderDropdown = this.domRoot.find('.add-pane');
     var addCompilerButton = this.domRoot.find('.btn.add-compiler');
-    var addExecutorButton = this.domRoot.find('.btn.add-executor');
+    this.addExecutorButton = this.domRoot.find('.btn.add-executor');
     this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
     var addEditorButton = this.domRoot.find('.btn.add-editor');
     var toggleVimButton = this.domRoot.find('#vim-flag');
@@ -460,7 +460,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     addPaneOpener(addCompilerButton, getCompilerConfig);
-    addPaneOpener(addExecutorButton, getExecutorConfig);
+    addPaneOpener(this.addExecutorButton, getExecutorConfig);
     addPaneOpener(this.conformanceViewerButton, getConformanceConfig);
     addPaneOpener(addEditorButton, getEditorConfig);
 
@@ -509,6 +509,8 @@ Editor.prototype.updateButtons = function () {
         this.cppInsightsButton.hide();
         this.quickBenchButton.hide();
     }
+
+    this.addExecutorButton.prop('disabled', !this.currentLanguage.supportsExecute);
 };
 
 Editor.prototype.b64UTFEncode = function (str) {
