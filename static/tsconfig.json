@@ -9,6 +9,8 @@
 	"files": [
 		"alert.interfaces.ts",
 		"alert.ts",
+		"ansi-to-html.interfaces.ts",
+		"ansi-to-html.ts",
 		"colour.ts",
 		"formatter-registry.interfaces.ts",
 		"formatter-registry.ts",
