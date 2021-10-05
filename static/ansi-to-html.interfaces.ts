@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,37 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCompiler } from '../base-compiler';
+/**
+ * The color code container
+ */
+export type ColorCodes = Record<number, string>;
 
-import { ISPCParser } from './argument-parsers';
-
-export class ISPCCompiler extends BaseCompiler {
-    static get key() { return 'ispc'; }
-
-    constructor(info, env) {
-        super(info, env);
-        this.compiler.supportsIrView = true;
-        this.compiler.irArg = ['--emit-llvm-text'];
-    }
-
-    optionsForFilter(filters, outputFilename) {
-        let options = ['--target=avx2-i32x8', '--emit-asm', '-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options = options.concat(this.compiler.intelAsm.split(' '));
-        }
-        return options;
-    }
-
-    async generateIR(inputFilename, options, filters) {
-        const newOptions = [...options, ...this.compiler.irArg, '-o', this.getIrOutputFilename(inputFilename)];
-        return super.generateIR(inputFilename, newOptions, filters);
-    }
-
-    getArgumentParser() {
-        return ISPCParser;
-    }
-
-    isCfgCompiler(/*compilerVersion*/) {
-        return true;
-    }
+/**
+ * The Ansi to HTML options
+ */
+export interface AnsiToHtmlOptions {
+    // The foreground color. Defaults to '#FFF'
+    fg?: string;
+    // The background color. Defaults to '#000'
+    bg?: string;
+    // Whether to add a new line. Defaults to false.
+    newline?: boolean;
+    // Whether to escape xml in text. Defaults to false.
+    escapeXML?: boolean;
+    // Whether to use stream mode. Defaults to false.
+    stream?: boolean;
+    // The color codes to use. If not set, this will be generated.
+    colors?: ColorCodes;
 }

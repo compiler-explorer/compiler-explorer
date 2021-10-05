@@ -22,13 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import _ from 'underscore';
+import * as monaco from 'monaco-editor';
 
-var _ = require('underscore');
-var monaco = require('monaco-editor');
+/**
+ * A colour scheme
+ */
+interface ColourScheme {
+    name: string;
+    desc: string;
+    count: number;
+    themes: string[];
+}
 
 // If you want to use an scheme in every theme, set `theme: ['all']`
-var schemes = [
+export const schemes: ColourScheme[] = [
     { name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default'] },
     { name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default'] },
     { name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default'] },
@@ -37,13 +45,14 @@ var schemes = [
     { name: 'rainbow-dark', desc: 'Dark Rainbow', count: 12, themes: ['dark'] },
 ];
 
-function applyColours(editor, colours, schemeName, prevDecorations) {
-    var scheme = _.findWhere(schemes, { name: schemeName });
+export function applyColours(editor: monaco.editor.ICodeEditor, colours: number[], schemeName: string, prevDecorations: string[]): string[] {
+    let scheme: ColourScheme = _.findWhere(schemes, { name: schemeName });
     if (!scheme) {
         scheme = schemes[0];
     }
-    var newDecorations = _.map(colours, function (ordinal, line) {
-        line = parseInt(line) + 1;
+
+    const newDecorations = _.map(colours, (ordinal: number, _line: number | string) => {
+        const line: number = parseInt(_line as string) + 1;
         return {
             range: new monaco.Range(line, 1, line, 1),
             options: {
@@ -52,10 +61,6 @@ function applyColours(editor, colours, schemeName, prevDecorations) {
             },
         };
     });
+
     return editor.deltaDecorations(prevDecorations, newDecorations);
 }
-
-module.exports = {
-    applyColours: applyColours,
-    schemes: schemes,
-};
