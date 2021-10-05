@@ -175,4 +175,8 @@ describe('javap parsing', () => {
             testJava('test/java/two-classes', 'ASecondClass', 'ZFirstClass'),
         ]);
     });
+
+    it('Properly parses lookupswitch blocks', () => {
+        return testJava('test/java/lookupswitch-bug-2995', 'Main');
+    });
 });

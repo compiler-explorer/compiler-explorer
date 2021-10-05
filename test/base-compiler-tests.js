@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import sinon from 'sinon';
+import { match, mock, restore, stub } from 'sinon';
 
 import { BaseCompiler } from '../lib/base-compiler';
 import { BuildEnvSetupBase } from '../lib/buildenvsetup';
@@ -137,7 +137,7 @@ describe('Compiler execution', function () {
         compilerNoExec = new BaseCompiler(noExecuteSupportCompilerInfo, ce);
     });
 
-    afterEach(() => sinon.restore());
+    afterEach(() => restore());
 
     function stubOutCallToExec(execStub, compiler, content, result, nthCall) {
         execStub.onCall(nthCall || 0).callsFake((compiler, args) => {
@@ -213,7 +213,7 @@ describe('Compiler execution', function () {
     });
 
     it('should compile', async () => {
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', {
             code: 0,
             okToCache: true,
@@ -242,7 +242,7 @@ describe('Compiler execution', function () {
     });
 
     it('should handle compilation failures', async () => {
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', {
             code: 1,
             okToCache: true,
@@ -263,18 +263,18 @@ describe('Compiler execution', function () {
     });
 
     it('should cache results (when asked)', async () => {
-        const ceMock = sinon.mock(ce);
+        const ceMock = mock(ce);
         const fakeExecResults = {
             code: 0,
             okToCache: true,
             stdout: 'stdout',
             stderr: 'stderr',
         };
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
         const source = 'Some cacheable source';
         const options = 'Some cacheable options';
-        ceMock.expects('cachePut').withArgs(sinon.match({source, options}), sinon.match(fakeExecResults)).resolves();
+        ceMock.expects('cachePut').withArgs(match({source, options}), match(fakeExecResults)).resolves();
         const uncachedResult = await compiler.compile(
             source,
             options,
@@ -289,14 +289,14 @@ describe('Compiler execution', function () {
     });
 
     it('should not cache results (when not asked)', async () => {
-        const ceMock = sinon.mock(ce);
+        const ceMock = mock(ce);
         const fakeExecResults = {
             code: 0,
             okToCache: false,
             stdout: 'stdout',
             stderr: 'stderr',
         };
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
         ceMock.expects('cachePut').never();
         const source = 'Some cacheable source';
@@ -315,10 +315,10 @@ describe('Compiler execution', function () {
     });
 
     it('should read from the cache (when asked)', async () => {
-        const ceMock = sinon.mock(ce);
+        const ceMock = mock(ce);
         const source = 'Some previously cached source';
         const options = 'Some previously cached options';
-        ceMock.expects('cacheGet').withArgs(sinon.match({source, options})).resolves({code: 123});
+        ceMock.expects('cacheGet').withArgs(match({source, options})).resolves({code: 123});
         const cachedResult = await compiler.compile(
             source,
             options,
@@ -333,7 +333,7 @@ describe('Compiler execution', function () {
     });
 
     it('should note read from the cache (when bypassed)', async () => {
-        const ceMock = sinon.mock(ce);
+        const ceMock = mock(ce);
         const fakeExecResults = {
             code: 0,
             okToCache: true,
@@ -343,7 +343,7 @@ describe('Compiler execution', function () {
         const source = 'Some previously cached source';
         const options = 'Some previously cached options';
         ceMock.expects('cacheGet').never();
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
         const uncachedResult = await compiler.compile(
             source,
@@ -359,8 +359,8 @@ describe('Compiler execution', function () {
     });
 
     it('should execute', async () => {
-        const execMock = sinon.mock(exec);
-        const execStub = sinon.stub(compiler, 'exec');
+        const execMock = mock(exec);
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output asm file', {
             code: 0,
             okToCache: true,
@@ -373,7 +373,7 @@ describe('Compiler execution', function () {
             stdout: 'binary stdout',
             stderr: 'binary stderr',
         }, 1);
-        execMock.expects('sandbox').withArgs(sinon.match.string, sinon.match.array, sinon.match.object).resolves({
+        execMock.expects('sandbox').withArgs(match.string, match.array, match.object).resolves({
             code: 0,
             stdout: 'exec stdout',
             stderr: 'exec stderr',
@@ -393,8 +393,8 @@ describe('Compiler execution', function () {
     it('should execute with an execution wrapper', async () => {
         const executionWrapper = '/some/wrapper/script.sh';
         compiler.compiler.executionWrapper = executionWrapper;
-        const execMock = sinon.mock(exec);
-        const execStub = sinon.stub(compiler, 'exec');
+        const execMock = mock(exec);
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'This is the output asm file', {
             code: 0,
             okToCache: true,
@@ -407,7 +407,7 @@ describe('Compiler execution', function () {
             stdout: 'binary stdout',
             stderr: 'binary stderr',
         }, 1);
-        execMock.expects('sandbox').withArgs(executionWrapper, sinon.match.array, sinon.match.object).resolves({
+        execMock.expects('sandbox').withArgs(executionWrapper, match.array, match.object).resolves({
             code: 0,
             stdout: 'exec stdout',
             stderr: 'exec stderr',
@@ -417,8 +417,8 @@ describe('Compiler execution', function () {
     });
 
     it('should not execute where not supported', async () => {
-        const execMock = sinon.mock(exec);
-        const execStub = sinon.stub(compilerNoExec, 'exec');
+        const execMock = mock(exec);
+        const execStub = stub(compilerNoExec, 'exec');
         stubOutCallToExec(execStub, compilerNoExec, 'This is the output asm file', {
             code: 0,
             okToCache: true,
@@ -446,7 +446,7 @@ describe('Compiler execution', function () {
     it('should demangle', async () => {
         const withDemangler = {...noExecuteSupportCompilerInfo, demangler: 'demangler-exe', demanglerType: 'cpp'};
         const compiler = new BaseCompiler(withDemangler, ce);
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         stubOutCallToExec(execStub, compiler, 'someMangledSymbol:\n', {
             code: 0,
             okToCache: true,
@@ -485,7 +485,7 @@ describe('Compiler execution', function () {
             objdumperType: type,
         };
         const compiler = new BaseCompiler(withObjdumper, ce);
-        const execStub = sinon.stub(compiler, 'exec');
+        const execStub = stub(compiler, 'exec');
         execStub.onCall(0).callsFake((objdumper, args, options) => {
             objdumper.should.equal('objdump-exe');
             args.should.deep.equal(expectedArgs);
