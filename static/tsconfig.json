@@ -1,30 +1,8 @@
 {
 	"compilerOptions": {
 		"target": "es5",
-		"outDir": ".",
 		"sourceMap": true,
 		"rootDir": ".",
 		"esModuleInterop": true
-	},
-	"files": [
-		"alert.interfaces.ts",
-		"alert.ts",
-		"formatter-registry.interfaces.ts",
-		"formatter-registry.ts",
-		"global.ts",
-		"lib-utils.ts",
-		"line-colouring.ts",
-		"monaco-config.ts",
-		"multifile-service.ts",
-		"options.ts",
-		"panes/tree.ts",
-		"panes/pane.ts",
-		"panes/pane.interfaces.ts",
-		"panes/rustmacroexp-view.ts",
-		"panes/rustmir-view.ts",
-		"settings.interfaces.ts",
-		"sharing.ts",
-		"url.ts",
-		"utils.ts",
-	]
+	}
 }
