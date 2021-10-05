@@ -22,9 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+type CompilerExplorerOptions = Record<string, unknown>;
+
 declare global {
     export interface Window {
         httpRoot: string | null;
+        staticRoot: string | null;
+        compilerExplorerOptions: CompilerExplorerOptions;
     }
 }
 
