@@ -27,6 +27,7 @@ type SimpleCookieCallback = () => void;
 export class SimpleCook {
     private onDoConsent: SimpleCookieCallback = () => undefined;
     private onDontConsent: SimpleCookieCallback = () => undefined;
+    private onHide: SimpleCookieCallback = () => undefined;
     private readonly elem: JQuery;
 
     public constructor() {
@@ -67,7 +68,7 @@ export class SimpleCook {
         this.onDontConsent = callback;
     }
 
-    private onHide(): void {
-
+    public setOnHide(callback: SimpleCookieCallback): void {
+        this.onHide = callback;
     }
 }
