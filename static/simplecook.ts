@@ -1,4 +1,4 @@
-// Copyright (c) 2018 - 2021, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
 export class SimpleCook {
-    private readonly elem: JQuery<HTMLElement>;
+    private readonly elem: JQuery;
 
     public constructor() {
         this.elem = $('#simplecook');
