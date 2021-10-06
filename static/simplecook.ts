@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2018 - 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,49 +22,50 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import $ from 'jquery';
 
-var $ = require('jquery');
+export class SimpleCook {
+    private readonly elem: JQuery<HTMLElement>;
 
-function SimpleCook() {
-    this.elem = $('#simplecook');
-    this.elem.hide();
+    public constructor() {
+        this.elem = $('#simplecook');
+        this.elem.hide();
 
-    this.onDoConsent = function () {
+        this.elem.find('.cookies').on('click', () => {
+            $('#cookies').trigger('click');
+        });
+        this.elem.find('.cook-do-consent').on('click', this.callDoConsent.bind(this));
+        this.elem.find('.cook-dont-consent').on('click', this.callDontConsent.bind(this));
+    }
 
+    public show(): void {
+        this.elem.show();
     };
-    this.onDontConsent = function () {
 
+    public hide(): void {
+        this.elem.hide();
+        this.onHide();
     };
-    this.onHide = function () {
 
+    public callDoConsent(): void {
+        this.hide();
+        this.onDoConsent();
     };
-    this.elem.find('.cookies').on('click', function () {
-        $('#cookies').trigger('click');
-    });
-    this.elem.find('.cook-do-consent').on('click', this.callDoConsent.bind(this));
-    this.elem.find('.cook-dont-consent').on('click', this.callDontConsent.bind(this));
+
+    public callDontConsent(): void {
+        this.hide();
+        this.onDontConsent();
+    };
+
+    private onDoConsent(): void {
+
+    }
+
+    private onDontConsent(): void {
+
+    }
+
+    private onHide(): void {
+
+    }
 }
-
-SimpleCook.prototype.show = function () {
-    this.elem.show();
-};
-
-SimpleCook.prototype.hide = function () {
-    this.elem.hide();
-    this.onHide();
-};
-
-SimpleCook.prototype.callDoConsent = function () {
-    this.hide();
-    this.onDoConsent();
-};
-
-SimpleCook.prototype.callDontConsent = function () {
-    this.hide();
-    this.onDontConsent();
-};
-
-module.exports = {
-    SimpleCook: SimpleCook,
-};
