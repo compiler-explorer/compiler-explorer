@@ -22,7 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+type SimpleCookieCallback = () => void;
+
 export class SimpleCook {
+    private onDoConsent: SimpleCookieCallback = () => undefined;
+    private onDontConsent: SimpleCookieCallback = () => undefined;
     private readonly elem: JQuery;
 
     public constructor() {
@@ -55,12 +59,12 @@ export class SimpleCook {
         this.onDontConsent();
     };
 
-    private onDoConsent(): void {
-
+    public setOnDoConsent(callback: SimpleCookieCallback): void {
+        this.onDoConsent = callback;
     }
 
-    private onDontConsent(): void {
-
+    public setOnDontConsent(callback: SimpleCookieCallback): void {
+        this.onDontConsent = callback;
     }
 
     private onHide(): void {

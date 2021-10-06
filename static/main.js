@@ -343,18 +343,18 @@ function initPolicies(options) {
             });
         }
     }
-    simpleCooks.onDoConsent = function () {
+    simpleCooks.setOnDoConsent(function () {
         jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
             expires: 365, sameSite: 'strict',
         });
         analytics.toggle(true);
-    };
-    simpleCooks.onDontConsent = function () {
+    });
+    simpleCooks.setOnDontConsent(function () {
         analytics.toggle(false);
         jsCookie.set(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
-    };
+    });
     simpleCooks.onHide = function () {
         var spolicyBellNotification = $('#policyBellNotification');
         var sprivacyBellNotification = $('#privacyBellNotification');
