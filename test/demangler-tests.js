@@ -261,6 +261,14 @@ async function DoDemangleTest(filename) {
 }
 
 describe('File demangling', () => {
+    if (process.platform !== 'linux') {
+        it('Should be skipped', (done) => {
+            done();
+        });
+
+        return;
+    }
+
     const testcasespath = resolvePathFromTestRoot('demangle-cases');
 
     /*
