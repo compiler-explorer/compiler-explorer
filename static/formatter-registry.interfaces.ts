@@ -29,3 +29,9 @@ export interface FormatRequestOptions {
     tabWidth: number;
     useSpaces: boolean;
 }
+
+export interface FormatResponse {
+    answer: string;
+    exit: number;
+    throw?: true;
+}
