@@ -31,7 +31,7 @@ var Promise = require('es6-promise').Promise;
 var ga = require('../analytics').ga;
 var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
-var CompilerPicker = require('../compiler-picker');
+var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils').LibUtils;
 
