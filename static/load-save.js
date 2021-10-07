@@ -29,7 +29,7 @@ var saveAs = require('file-saver').saveAs;
 var Alert = require('./alert').Alert;
 var local = require('./local');
 var Promise = require('es6-promise').Promise;
-var ga = require('./analytics');
+var ga = require('./analytics').ga;
 var history = require('./history');
 
 function getLocalFiles() {

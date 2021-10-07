@@ -25,7 +25,7 @@
 'use strict';
 var $ = require('jquery'),
     _ = require('underscore'),
-    ga = require('analytics');
+    ga = require('analytics').ga;
 
 function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     if (motd.motd) {

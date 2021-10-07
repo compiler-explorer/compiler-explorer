@@ -25,7 +25,7 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
-var ga = require('./analytics');
+var ga = require('./analytics').ga;
 var local = require('./local');
 var TomSelect = require('tom-select');
 
