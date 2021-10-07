@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var options = require('options');
+var options = require('options').options;
 var Sentry = require('@sentry/browser');
 
 if (options.sentryDsn) {

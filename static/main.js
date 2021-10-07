@@ -426,7 +426,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
 function start() {
     initializeResetLayoutLink();
 
-    var options = require('options');
+    var options = require('options').options;
 
     var hostnameParts = window.location.hostname.split('.');
     var subLangId = undefined;

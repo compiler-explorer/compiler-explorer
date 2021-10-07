@@ -32,7 +32,7 @@ import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
 
 const ga = require('./analytics');
-const options = require('./options');
+const options = require('./options').options;
 const url = require('./url');
 const cloneDeep = require('lodash.clonedeep');
 

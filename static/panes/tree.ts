@@ -34,7 +34,7 @@ const local = require('../local');
 const ga = require('../analytics');
 const TomSelect = require('tom-select');
 const Toggles = require('../toggles');
-const options = require('../options');
+const options = require('../options').options;
 const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
 

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-var options = require('options'),
+var options = require('options').options,
     _ = require('underscore'),
     local = require('./local'),
     $ = require('jquery');
