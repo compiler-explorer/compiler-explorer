@@ -484,4 +484,6 @@ Hub.prototype.activateTabForContainer = function (container) {
         container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
 };
 
-module.exports = Hub;
+module.exports = {
+    Hub: Hub,
+};
