@@ -65,4 +65,6 @@ SimpleCook.prototype.callDontConsent = function () {
     this.onDontConsent();
 };
 
-module.exports = SimpleCook;
+module.exports = {
+    SimpleCook: SimpleCook,
+};
