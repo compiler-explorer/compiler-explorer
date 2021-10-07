@@ -27,7 +27,7 @@
 var _ = require('underscore');
 var $ = require('jquery');
 var FontScale = require('../fontscale');
-var AnsiToHtml = require('../ansi-to-html');
+var AnsiToHtml = require('../ansi-to-html').Filter;
 var Toggles = require('../toggles');
 var ga = require('../analytics');
 
