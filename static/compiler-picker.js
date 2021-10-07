@@ -196,4 +196,6 @@ CompilerPicker.prototype.removeFromFavorites = function (compilerId) {
     this.eventHub.emit('compilerFavoriteChange', this.id);
 };
 
-module.exports = CompilerPicker;
+module.exports = {
+    CompilerPicker: CompilerPicker,
+};
