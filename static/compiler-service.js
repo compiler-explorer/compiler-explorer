@@ -400,4 +400,6 @@ CompilerService.prototype.handleOutputButtonTitle = function (element, result) {
     element.prop('title', output);
 };
 
-module.exports = CompilerService;
+module.exports = {
+    CompilerService: CompilerService,
+};
