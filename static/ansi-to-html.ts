@@ -156,7 +156,7 @@ function handleDisplay(stack: string[], _code: string | number, options: AnsiToH
         23: () => closeTag(stack, 'i'),
         24: () => closeTag(stack, 'u'),
         39: () => pushForegroundColor(stack, options.fg),
-        49: () => pushForegroundColor(stack, options.bg),
+        49: () => pushBackgroundColor(stack, options.bg),
     };
 
     if (codeMap[code]) {
