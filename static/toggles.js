@@ -124,4 +124,6 @@ Togglesv2.prototype._change = function (update) {
     this.emit('change', before, this.get());
 };
 
-module.exports = Togglesv2;
+module.exports = {
+    Toggles: Togglesv2,
+};

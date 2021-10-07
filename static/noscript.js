@@ -30,7 +30,7 @@ var $ = require('jquery');
 require('popper.js');
 require('bootstrap');
 
-var Toggles = require('./toggles');
+var Toggles = require('./toggles').Toggles;
 
 function initMenus() {
     $('.button-checkbox').each(function () {
