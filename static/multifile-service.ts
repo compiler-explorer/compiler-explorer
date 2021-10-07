@@ -24,7 +24,7 @@
 
 import _ from 'underscore';
 import path from 'path';
-var options = require('./options');
+var options = require('./options').options;
 var languages = options.languages;
 var JSZip = require('jszip');
 

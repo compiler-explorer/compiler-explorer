@@ -33,7 +33,7 @@ var ga = require('../analytics');
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
-var ceoptions = require('../options');
+var ceoptions = require('../options').options;
 var utils = require('../utils');
 require('../modes/asm6502-mode');
 

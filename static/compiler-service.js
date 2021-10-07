@@ -27,7 +27,7 @@ var Sentry = require('@sentry/browser');
 var $ = require('jquery');
 var _ = require('underscore');
 var LruCache = require('lru-cache');
-var options = require('./options');
+var options = require('./options').options;
 var Promise = require('es6-promise').Promise;
 
 function CompilerService(eventHub) {

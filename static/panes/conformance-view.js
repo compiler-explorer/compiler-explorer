@@ -24,7 +24,7 @@
 
 'use strict';
 
-var options = require('../options');
+var options = require('../options').options;
 var _ = require('underscore');
 var $ = require('jquery');
 var Promise = require('es6-promise').Promise;

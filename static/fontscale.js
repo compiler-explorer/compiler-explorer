@@ -26,7 +26,7 @@
 var _ = require('underscore');
 var $ = require('jquery');
 var EventEmitter = require('events');
-var options = require('./options');
+var options = require('./options').options;
 
 function makeFontSizeDropdown(elem, obj, buttonDropdown) {
     var onWheelEvent = function (e) {

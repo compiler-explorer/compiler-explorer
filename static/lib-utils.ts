@@ -1,5 +1,5 @@
 import _ from 'underscore';
-const options = require('./options');
+const options = require('./options').options;
 
 export class LibUtils {
     private copyAndFilterLibraries(allLibraries, filter) {
