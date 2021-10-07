@@ -86,4 +86,6 @@ function GAProxy() {
 
 var ga = new GAProxy();
 
-module.exports = ga;
+module.exports = {
+    ga: ga,
+};

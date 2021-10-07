@@ -25,7 +25,7 @@
 'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
-var analytics = require('./analytics');
+var analytics = require('./analytics').ga;
 
 // eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');

@@ -31,7 +31,7 @@ import ClipboardJS from 'clipboard';
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
 
-const ga = require('./analytics');
+const ga = require('./analytics').ga;
 const options = require('./options').options;
 const url = require('./url');
 const cloneDeep = require('lodash.clonedeep');

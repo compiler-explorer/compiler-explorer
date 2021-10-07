@@ -28,7 +28,7 @@ var FontScale = require('../fontscale');
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
-var ga = require('../analytics');
+var ga = require('../analytics').ga;
 var TomSelect = require('tom-select');
 
 require('../modes/asm-mode');

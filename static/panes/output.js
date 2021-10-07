@@ -29,7 +29,7 @@ var $ = require('jquery');
 var FontScale = require('../fontscale');
 var AnsiToHtml = require('../ansi-to-html').Filter;
 var Toggles = require('../toggles');
-var ga = require('../analytics');
+var ga = require('../analytics').ga;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
