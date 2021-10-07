@@ -24,7 +24,7 @@
 
 'use strict';
 
-var FontScale = require('../fontscale');
+var FontScale = require('../fontscale').FontScale;
 var monaco = require('monaco-editor');
 var Toggles = require('../toggles');
 require('../modes/gccdump-rtl-gimple-mode');
