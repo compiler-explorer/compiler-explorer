@@ -420,7 +420,7 @@ function updateStickyStack(stickyStack: StickyStackElement[], token: string, dat
     return stickyStack;
 }
 
-class Filter {
+export class Filter {
     private readonly opts: AnsiToHtmlOptions;
     private readonly stack: string[];
     private stickyStack: StickyStackElement[];
@@ -472,9 +472,3 @@ class Filter {
         return buf.join('');
     }
 }
-
-// Use this thing here as 'export default'
-// can't be used when the module is imported
-// by plain javascript. Maybe replace this
-// once everything is converted to typescript code.
-export = Filter;
