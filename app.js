@@ -95,7 +95,7 @@ const opts = nopt({
     metricsPort: [Number],
     loki: [String],
     discoveryonly: [String],
-    prediscovered: [String]
+    prediscovered: [String],
 });
 
 if (opts.debug) logger.level = 'debug';
