@@ -94,6 +94,8 @@ const opts = nopt({
     suppressConsoleLog: [Boolean],
     metricsPort: [Number],
     loki: [String],
+    discoveryonly: [String],
+    prediscovered: [String]
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -464,17 +466,34 @@ async function main() {
     if (gitReleaseName) logger.info(`  git release ${gitReleaseName}`);
     if (releaseBuildNumber) logger.info(`  release build ${releaseBuildNumber}`);
 
-    const initialFindResults = await compilerFinder.find();
-    const initialCompilers = initialFindResults.compilers;
+    let initialCompilers;
     let prevCompilers;
-    if (defArgs.ensureNoCompilerClash) {
-        logger.warn('Ensuring no compiler ids clash');
-        if (initialFindResults.foundClash) {
-            // If we are forced to have no clashes, throw an error with some explanation
-            throw new Error('Clashing compilers in the current environment found!');
-        } else {
-            logger.info('No clashing ids found, continuing normally...');
+
+    if (opts.prediscovered) {
+        const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered);
+        initialCompilers = JSON.parse(prediscoveredCompilersJson);
+        await compilerFinder.loadPrediscovered(initialCompilers);
+    } else {
+        const initialFindResults = await compilerFinder.find();
+        initialCompilers = initialFindResults.compilers;
+        if (defArgs.ensureNoCompilerClash) {
+            logger.warn('Ensuring no compiler ids clash');
+            if (initialFindResults.foundClash) {
+                // If we are forced to have no clashes, throw an error with some explanation
+                throw new Error('Clashing compilers in the current environment found!');
+            } else {
+                logger.info('No clashing ids found, continuing normally...');
+            }
         }
+    }
+
+    if (opts.discoveryonly) {
+        for (const compiler of initialCompilers) {
+            if (compiler.buildenvsetup && compiler.buildenvsetup.id === '')
+                delete compiler.buildenvsetup;
+        }
+        await fs.writeFile(opts.discoveryonly, JSON.stringify(initialCompilers));
+        process.exit(0);
     }
 
     const webServer = express(), router = express.Router();
