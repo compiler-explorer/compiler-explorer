@@ -1,4 +1,5 @@
 // Copyright (c) 2017, Marc Poulhiès - Kalray Inc.
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -54,7 +55,7 @@ function GccDump(hub, container, state) {
 
     var gccdump_picker = this.domRoot[0].querySelector('.gccdump-pass-picker');
     this.selectize = new TomSelect(gccdump_picker, {
-        sortField: 'name',
+        sortField: -1, // do not sort
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
@@ -78,7 +79,24 @@ function GccDump(hub, container, state) {
 
     if (state && state.selectedPass) {
         this.state.selectedPass = state.selectedPass;
-        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, state.selectedPass, false);
+
+        // To keep URL format stable wrt GccDump, only a string of the form 'r.expand' is stored.
+        // Old links also have the pass number prefixed but this can be ignored.
+        // Create the object that will be used instead of this bare string.
+        var selectedPassRe = /[0-9]*(i|t|r)\.([\w-_]*)/;
+        var passType = {
+            i: 'ipa',
+            r: 'rtl',
+            t: 'tree',
+        };
+        var match = state.selectedPass.match(selectedPassRe);
+        var selectedPassO = {
+            filename_suffix: match[1] + '.' + match[2],
+            name: match[2] + ' (' + passType[match[1]] + ')',
+            command_prefix: '-fdump-' + passType[match[1]] + '-' + match[2],
+        };
+
+        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, selectedPassO, false);
     }
 
     // until we get our first result from compilation backend with all fields,
@@ -211,10 +229,21 @@ GccDump.prototype.onUiReady = function () {
 };
 
 GccDump.prototype.onPassSelect = function (passId) {
+    var selectedPass = this.selectize.options[passId];
+
     if (this.inhibitPassSelect !== true) {
-        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, passId, true);
+        this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, selectedPass, true);
     }
-    this.state.selectedPass = passId;
+
+    // To keep shared URL compatible, we keep on storing only a string in the
+    // state and stick to the original format.
+    // Previously, we were simply storing the full file suffix (the part after [...]):
+    //    [file.c.]123t.expand
+    // We don't have the number now, but we can store the file suffix without this number
+    // (the number is useless and should probably have never been there in the
+    // first place).
+
+    this.state.selectedPass = selectedPass.filename_suffix;
     this.saveState();
 };
 
@@ -235,23 +264,17 @@ GccDump.prototype.updatePass = function (filters, selectize, gccDumpOutput) {
     // trigger new compilation
     this.inhibitPassSelect = true;
 
-    _.each(selectize.options, function (p) {
-        if (passes.indexOf(p.name) === -1) {
-            selectize.removeOption(p.name);
-        }
-    }, this);
+    selectize.clear(true);
+    selectize.clearOptions(true);
 
     _.each(passes, function (p) {
-        selectize.addOption({
-            name: p,
-        });
+        selectize.addOption(p);
     }, this);
 
-    if (gccDumpOutput.selectedPass && gccDumpOutput.selectedPass !== '') {
-        selectize.addItem(gccDumpOutput.selectedPass, true);
-    } else {
+    if (gccDumpOutput.selectedPass)
+        selectize.addItem(gccDumpOutput.selectedPass.name, true);
+    else
         selectize.clear(true);
-    }
 
     this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, gccDumpOutput.selectedPass, false);
 
@@ -271,9 +294,9 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
 
         // if result contains empty selected pass, probably means
         // we requested an invalid/outdated pass.
-        if (result.gccDumpOutput.selectedPass === '') {
+        if (!result.gccDumpOutput.selectedPass) {
             this.selectize.clear(true);
-            this.state.selectedPass = '';
+            this.state.selectedPass = null;
         }
         this.updatePass(this.filters, this.selectize, result.gccDumpOutput);
         this.showGccDumpResults(currOutput);
@@ -285,7 +308,7 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
         }
     } else {
         this.selectize.clear(true);
-        this.state.selectedPass = '';
+        this.state.selectedPass = null;
         this.updatePass(this.filters, this.selectize, false);
         this.uiIsReady = false;
         this.onUiNotReady();

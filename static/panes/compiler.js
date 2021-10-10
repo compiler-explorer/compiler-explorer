@@ -1334,11 +1334,11 @@ Compiler.prototype.onGccDumpFiltersChanged = function (id, filters, reqCompile) 
     }
 };
 
-Compiler.prototype.onGccDumpPassSelected = function (id, passId, reqCompile) {
+Compiler.prototype.onGccDumpPassSelected = function (id, passObject, reqCompile) {
     if (this.id === id) {
-        this.gccDumpPassSelected = passId;
+        this.gccDumpPassSelected = passObject;
 
-        if (reqCompile && passId !== '') {
+        if (reqCompile && passObject !== null) {
             this.compile();
         }
     }
