@@ -28,16 +28,13 @@ import { Container } from 'golden-layout';
 
 import { Pane } from './pane';
 import { BasePaneState } from './pane.interfaces';
+import { RustMirState } from './rustmir-view.interfaces';
 
 import ga from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export interface RustMirState extends BasePaneState {
-    rustMirOutput: any;
-}
-
-export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor> {
-    constructor(hub: any, container: Container, state: RustMirState) {
+export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirState> {
+    constructor(hub: any, container: Container, state: RustMirState & BasePaneState) {
         super(hub, container, state);
         if (state && state.rustMirOutput) {
             this.showRustMirResults(state.rustMirOutput);

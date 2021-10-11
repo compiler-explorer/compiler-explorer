@@ -38,7 +38,7 @@ import * as utils from '../utils';
  * Type parameter E indicates which monaco editor kind this pane hosts. Common
  * values are monaco.editor.IDiffEditor and monaco.ICodeEditor
  */
-export abstract class Pane<E extends monaco.editor.IEditor> {
+export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
@@ -57,7 +57,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
      *
      * Overridable for implementors
      */
-    protected constructor(hub: any /* Hub */, container: Container, state: BasePaneState) {
+    protected constructor(hub: any /* Hub */, container: Container, state: S & BasePaneState) {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
@@ -120,14 +120,14 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
     abstract registerOpeningAnalyticsEvent(): void
 
     /** Optionally overridable code for initializing pane buttons */
-    registerButtons(state: BasePaneState /* typeof state */): void {}
+    registerButtons(state: S): void {}
 
     /** Optionally overridable code for initializing event callbacks */
     registerCallbacks(): void {}
 
     abstract getPaneName(): string;
     abstract onCompiler(id: number, compiler: any, options: any, editorId: number): void;
-    abstract onCompileResult(id: unknown, compiler: unknown, result: unknown): void;
+    abstract onCompileResult(id: number, compiler: unknown, result: unknown): void;
     abstract close(): void;
 
     /** Initialize standard lifecycle hooks */
@@ -147,7 +147,7 @@ export abstract class Pane<E extends monaco.editor.IEditor> {
         this.container.setTitle(this.getPaneName());
     }
 
-    protected onCompilerClose(id: unknown) {
+    protected onCompilerClose(id: number) {
         if (this.compilerInfo.compilerId === id) {
             _.defer(() => this.container.close());
         }
