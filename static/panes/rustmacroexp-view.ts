@@ -28,16 +28,13 @@ import { Container } from 'golden-layout';
 
 import { Pane } from './pane';
 import { BasePaneState } from './pane.interfaces';
+import { RustMacroExpState } from './rustmacroexp-view.interfaces';
 
 import ga from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export interface RustMacroExpState extends BasePaneState {
-    rustMacroExpOutput: any;
-}
-
-export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor> {
-    constructor(hub: any, container: Container, state: RustMacroExpState) {
+export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
+    constructor(hub: any, container: Container, state: RustMacroExpState & BasePaneState) {
         super(hub, container, state);
         if (state && state.rustMacroExpOutput) {
             this.showRustMacroExpResults(state.rustMacroExpOutput);
@@ -78,7 +75,7 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor> {
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(id: unknown, compiler: any, result: any): void {
+    override onCompileResult(id: number, compiler: any, result: any): void {
         if (this.compilerInfo.compilerId !== id) return;
         if (result.hasRustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
