@@ -343,19 +343,19 @@ function initPolicies(options) {
             });
         }
     }
-    simpleCooks.onDoConsent = function () {
+    simpleCooks.setOnDoConsent(function () {
         jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
             expires: 365, sameSite: 'strict',
         });
         analytics.toggle(true);
-    };
-    simpleCooks.onDontConsent = function () {
+    });
+    simpleCooks.setOnDontConsent(function () {
         analytics.toggle(false);
         jsCookie.set(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
-    };
-    simpleCooks.onHide = function () {
+    });
+    simpleCooks.setOnHide(function () {
         var spolicyBellNotification = $('#policyBellNotification');
         var sprivacyBellNotification = $('#privacyBellNotification');
         var scookiesBellNotification = $('#cookiesBellNotification');
@@ -365,7 +365,7 @@ function initPolicies(options) {
         }
         scookiesBellNotification.addClass('d-none');
         $(window).trigger('resize');
-    };
+    });
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
