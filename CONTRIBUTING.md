@@ -20,10 +20,10 @@ If there is something you would like to do yourself, it might help to make an is
 
 
 ## Node version
-**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 12.18,
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 14.18.0,
  so it's better if you do so as well when testing your changes locally.
 
-Nonetheless, it _should_ run in everything post-Node.js 12.18. [Contact us] if
+Nonetheless, it _should_ run in everything post-Node.js 14.18. [Contact us] if
  this is not the case for you.
 
 ## In brief
