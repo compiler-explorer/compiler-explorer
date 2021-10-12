@@ -102,3 +102,5 @@ function configuration() {
 monaco.languages.register({ id: 'cmake' });
 monaco.languages.setMonarchTokensProvider('cmake', definition());
 monaco.languages.setLanguageConfiguration('cmake', configuration());
+
+export {};

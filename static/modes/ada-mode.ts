@@ -26,7 +26,7 @@
 
 var monaco = require('monaco-editor');
 
-function definition() {
+export function definition() {
     // Ada 2012 Language Definition
     return {
         keywords: [
@@ -195,3 +195,5 @@ function definition() {
 }
 monaco.languages.register({id: 'ada'});
 monaco.languages.setMonarchTokensProvider('ada', definition());
+
+export {};

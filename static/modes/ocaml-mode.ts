@@ -132,3 +132,5 @@ function definition() {
 
 monaco.languages.register({id: 'ocaml'});
 monaco.languages.setMonarchTokensProvider('ocaml', definition());
+
+export {};

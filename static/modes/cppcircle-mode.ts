@@ -65,3 +65,5 @@ function definition() {
 monaco.languages.register({ id: 'cppcircle' });
 monaco.languages.setLanguageConfiguration('cppcircle', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cppcircle', definition());
+
+export {};

@@ -87,3 +87,5 @@ function definition() {
 
 monaco.languages.register({ id: 'clean' });
 monaco.languages.setMonarchTokensProvider('clean', definition());
+
+export {};

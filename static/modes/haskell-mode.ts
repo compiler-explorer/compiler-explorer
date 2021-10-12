@@ -87,3 +87,5 @@ function definition() {
 
 monaco.languages.register({id: 'haskell'});
 monaco.languages.setMonarchTokensProvider('haskell', definition());
+
+export {}

@@ -96,3 +96,5 @@ function definition() {
 monaco.languages.register({id: 'openclc'});
 monaco.languages.setLanguageConfiguration('openclc', cpp.conf);
 monaco.languages.setMonarchTokensProvider('openclc', definition());
+
+export {};

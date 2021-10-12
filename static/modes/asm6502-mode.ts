@@ -65,4 +65,4 @@ var def = definition();
 monaco.languages.register({ id: 'asm6502' });
 monaco.languages.setMonarchTokensProvider('asm6502', def);
 
-module.exports = def;
+export = def;
