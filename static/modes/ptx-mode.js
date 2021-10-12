@@ -25,7 +25,7 @@
 'use strict';
 var $ = require('jquery');
 var monaco = require('monaco-editor');
-var asm = require('./asm-mode');
+var asm = require('./asm-mode').definition();
 
 function definition() {
     var ptx = $.extend(true, {}, asm); // deep copy
