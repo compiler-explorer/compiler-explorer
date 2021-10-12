@@ -160,7 +160,7 @@
     "format-fix": "prettier --write --ignore-unknown"
   },
   "lint-staged": {
-    "*.{js}": [
+    "*.js": [
       "npm run ci-lint --",
       "npm run format-fix --"
     ]
