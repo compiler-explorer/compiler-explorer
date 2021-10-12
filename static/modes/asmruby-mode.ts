@@ -22,38 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import * as monaco from 'monaco-editor';
 
-var monaco = require('monaco-editor');
+export const definition: () => monaco.languages.IMonarchLanguage = () => ({
+    tokenizer: {
+        root: [
+            [/^(\| )*==.*$/, 'comment'],
+            [/^(\| )*catch type.*$/, 'comment'],
+            [/^(\| )*local table.*$/, 'comment'],
+            [/^(\| )*\[\s*\d+\].*$/, 'comment'],
+            [/^(\| )*\|-+$/, 'comment'],
+            [/^((?:\| )*)(\d+)/, [{token: 'comment'}, {token: 'number', next: '@opcode'}]],
+            [/^((?:\| )*)(\d+)(\s+)/, [{token: 'comment'}, {token: 'number'}, {token: '', next: '@opcode'}]],
+        ],
 
-function definition() {
-    return {
-        tokenizer: {
-            root: [
-                [/^(\| )*==.*$/, 'comment'],
-                [/^(\| )*catch type.*$/, 'comment'],
-                [/^(\| )*local table.*$/, 'comment'],
-                [/^(\| )*\[\s*\d+\].*$/, 'comment'],
-                [/^(\| )*\|-+$/, 'comment'],
-                [/^((?:\| )*)(\d+)/, ['comment', { token: 'number', next: '@opcode' }]],
-                [/^((?:\| )*)(\d+)(\s+)/, ['comment', 'number', { token: '', next: '@opcode' }]],
-            ],
+        opcode: [
+            [/[a-z_]\w*\s*$/, {token: 'keyword', next: '@root'}],
+            [/([a-z_]\w*)(\s+)/, [{token: 'keyword'}, {token: '', next: '@arguments'}]],
+        ],
 
-            opcode: [
-                [/[a-z_]\w*\s*$/, { token: 'keyword', next: '@root' }],
-                [/([a-z_]\w*)(\s+)/, ['keyword', { token: '', next: '@arguments' }]],
-            ],
+        arguments: [
+            [/(.*?)(\(\s*\d+\)(?:\[[^\]]+\])?)$/, [{token: ''}, {token: 'comment', next: '@root'}]],
+            [/.*$/, {token: '', next: '@root'}],
+        ],
+    },
+});
 
-            arguments: [
-                [/(.*?)(\(\s*\d+\)(?:\[[^\]]+\])?)$/, ['', { token: 'comment', next: '@root' }]],
-                [/.*$/, { token: '', next: '@root' }],
-            ],
-        },
-    };
-}
-
-var def = definition();
-monaco.languages.register({ id: 'asmruby' });
-monaco.languages.setMonarchTokensProvider('asmruby', def);
-
-module.exports = def;
+monaco.languages.register({id: 'asmruby'});
+monaco.languages.setMonarchTokensProvider('asmruby', definition());
