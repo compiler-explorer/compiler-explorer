@@ -73,7 +73,7 @@ const getDocumentFormatter = (
         const settings: SiteSettings = getStoredSettings();
         const source = model.getValue();
         // Request the formatted code. If that API call fails, we just back off and return the user's old code.
-        const result = await getFormattedCode({
+        const formattedSource = await getFormattedCode({
             formatterId: formatter,
             base: formatBase,
             tabWidth: settings.tabWidth,
@@ -82,7 +82,7 @@ const getDocumentFormatter = (
         }).catch(err => onFormatError(err, source));
         return [{
             range: model.getFullModelRange(),
-            text: result,
+            text: formattedSource,
         }];
     },
 });
