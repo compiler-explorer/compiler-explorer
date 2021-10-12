@@ -30,7 +30,7 @@ var Settings = require('settings');
 // The name of the package itself contains .js, it's not referencing a file
 // eslint-disable-next-line requirejs/no-js-extension
 var Chart = require('chart.js');
-
+require('chart.js/auto');
 
 function pushTimingInfo(data, step, time) {
     data.labels.push(step);
@@ -143,7 +143,7 @@ function displayData(data) {
     }
 
     var ctx = canvas[0].getContext('2d');
-    new Chart(ctx, {
+    new Chart.Chart(ctx, {
         type: 'bar',
         data: data,
         options: {
