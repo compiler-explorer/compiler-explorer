@@ -36,4 +36,4 @@ declare var __webpack_public_path__: string;
 
 __webpack_public_path__ = window.staticRoot;
 
-export = window.compilerExplorerOptions;
+export const options = window.compilerExplorerOptions;

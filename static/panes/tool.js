@@ -26,14 +26,14 @@
 
 var _ = require('underscore');
 var $ = require('jquery');
-var FontScale = require('../fontscale');
-var AnsiToHtml = require('../ansi-to-html');
-var Toggles = require('../toggles');
-var ga = require('../analytics');
+var FontScale = require('../fontscale').FontScale;
+var AnsiToHtml = require('../ansi-to-html').Filter;
+var Toggles = require('../toggles').Toggles;
+var ga = require('../analytics').ga;
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
-var ceoptions = require('../options');
+var ceoptions = require('../options').options;
 var utils = require('../utils');
 require('../modes/asm6502-mode');
 

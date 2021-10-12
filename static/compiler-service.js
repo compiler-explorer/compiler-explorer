@@ -27,7 +27,7 @@ var Sentry = require('@sentry/browser');
 var $ = require('jquery');
 var _ = require('underscore');
 var LruCache = require('lru-cache');
-var options = require('./options');
+var options = require('./options').options;
 var Promise = require('es6-promise').Promise;
 
 function CompilerService(eventHub) {
@@ -400,4 +400,6 @@ CompilerService.prototype.handleOutputButtonTitle = function (element, result) {
     element.prop('title', output);
 };
 
-module.exports = CompilerService;
+module.exports = {
+    CompilerService: CompilerService,
+};

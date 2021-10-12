@@ -27,7 +27,7 @@ var $ = require('jquery');
 var _ = require('underscore');
 var colour = require('./colour');
 var themes = require('./themes').themes;
-var options = require('./options');
+var options = require('./options').options;
 var local = require('./local');
 
 function Setting(elem, name, Control, param) {

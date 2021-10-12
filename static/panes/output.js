@@ -26,10 +26,10 @@
 
 var _ = require('underscore');
 var $ = require('jquery');
-var FontScale = require('../fontscale');
-var AnsiToHtml = require('../ansi-to-html');
-var Toggles = require('../toggles');
-var ga = require('../analytics');
+var FontScale = require('../fontscale').FontScale;
+var AnsiToHtml = require('../ansi-to-html').Filter;
+var Toggles = require('../toggles').Toggles;
+var ga = require('../analytics').ga;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({

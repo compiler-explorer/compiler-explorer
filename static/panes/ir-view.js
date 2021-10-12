@@ -24,12 +24,12 @@
 
 'use strict';
 
-var FontScale = require('../fontscale');
+var FontScale = require('../fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
-var ga = require('../analytics');
+var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 
 function Ir(hub, container, state) {

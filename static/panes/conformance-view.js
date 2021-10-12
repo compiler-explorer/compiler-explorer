@@ -24,14 +24,14 @@
 
 'use strict';
 
-var options = require('../options');
+var options = require('../options').options;
 var _ = require('underscore');
 var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
-var ga = require('../analytics');
+var ga = require('../analytics').ga;
 var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
-var CompilerPicker = require('../compiler-picker');
+var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils').LibUtils;
 

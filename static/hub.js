@@ -45,7 +45,7 @@ var rustMacroExpView = require('./panes/rustmacroexp-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
-var CompilerService = require('compiler-service');
+var CompilerService = require('compiler-service').CompilerService;
 
 function Ids() {
     this.used = {};
@@ -484,4 +484,6 @@ Hub.prototype.activateTabForContainer = function (container) {
         container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
 };
 
-module.exports = Hub;
+module.exports = {
+    Hub: Hub,
+};

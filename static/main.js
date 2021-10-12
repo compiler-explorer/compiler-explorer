@@ -25,7 +25,7 @@
 'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
-var analytics = require('./analytics');
+var analytics = require('./analytics').ga;
 
 // eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');
@@ -38,7 +38,7 @@ var GoldenLayout = require('golden-layout');
 var Components = require('./components');
 var url = require('./url');
 var clipboard = require('clipboard');
-var Hub = require('./hub');
+var Hub = require('./hub').Hub;
 var Sentry = require('@sentry/browser');
 var Settings = require('./settings');
 var local = require('./local');
@@ -46,7 +46,7 @@ var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
-var SimpleCook = require('./simplecook');
+var SimpleCook = require('./simplecook').SimpleCook;
 var HistoryWidget = require('./history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
@@ -426,7 +426,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
 function start() {
     initializeResetLayoutLink();
 
-    var options = require('options');
+    var options = require('options').options;
 
     var hostnameParts = window.location.hostname.split('.');
     var subLangId = undefined;
