@@ -4,43 +4,43 @@ set -e
 OUT="$1"
 
 find_node() {
-    local NODE="${NODE_DIR}/bin/node"
-    local CE_NODE="/opt/compiler-explorer/node/bin/node"
-    local SYS_NODE="$(which node 2>/dev/null)"
-    local SYS_NODEJS="$(which nodejs 2>/dev/null)"
+  NODE="${NODE_DIR}/bin/node"
+  CE_NODE="/opt/compiler-explorer/node/bin/node"
+  SYS_NODE="$(which node 2>/dev/null || true)"
+  SYS_NODEJS="$(which nodejs 2>/dev/null || true)"
 
-    if test -x "${NODE}" -a -n "${NODE_DIR}"; then
-        echo "${NODE}"
-    elif test -x "${CE_NODE}"; then
-        echo "${CE_NODE}"
-    elif test -x "${SYS_NODE}"; then
-        echo "${SYS_NODE}"
-    elif test -x "${SYS_NODEJS}"; then
-        echo "${SYS_NODEJS}"
-    else
-        >&2 echo "Unable to find a node"
-    fi
+  if test -x "${NODE}" -a -n "${NODE_DIR}"; then
+    echo "${NODE}"
+  elif test -x "${CE_NODE}"; then
+    echo "${CE_NODE}"
+  elif test -x "${SYS_NODE}"; then
+    echo "${SYS_NODE}"
+  elif test -x "${SYS_NODEJS}"; then
+    echo "${SYS_NODEJS}"
+  else
+    echo >&2 "Unable to find a node"
+  fi
 }
 
-NODE=$(find_node)
+NODE="$(find_node)"
 
-NODE_MIN_VERSION=12
-NODE_VERSION_USED=12
+NODE_MIN_VERSION=14
+NODE_VERSION_USED=14
 NODE_VERSION=$(${NODE} --version)
-NODE_MAJOR_VERSION=$(echo ${NODE_VERSION} | cut -f1 -d. | sed 's/^v//g')
+NODE_MAJOR_VERSION=$(echo "${NODE_VERSION}" | cut -f1 -d. | sed 's/^v//g')
 
-if test ${NODE_MAJOR_VERSION} -lt ${NODE_MIN_VERSION}; then
-    >&2 echo Compiler Explorer is known not to run with versions prior to v${NODE_MIN_VERSION}
-    >&2 echo Visit https://nodejs.org/ for installation instructions for newer versions
-    >&2 echo To configure where we look for node, set NODE_DIR to its installation base
-    exit 1
+if test "${NODE_MAJOR_VERSION}" -lt ${NODE_MIN_VERSION}; then
+  echo >&2 "Compiler Explorer is known not to run with versions prior to v${NODE_MIN_VERSION}"
+  echo >&2 "Visit https://nodejs.org/ for installation instructions for newer versions"
+  echo >&2 "To configure where we look for node, set NODE_DIR to its installation base"
+  exit 1
 fi
 
-if test ${NODE_VERSION_USED} -ne ${NODE_MAJOR_VERSION}; then
-    >&2 echo Warning: Compiler Explorer is only tested against v${NODE_VERSION_USED}.x, but v${NODE_MAJOR_VERSION} was found.
-    >&2 echo Note that you might find issues if you decide to keep this version
-    >&2 echo Visit https://nodejs.org/ for installation instructions for the required version
-    >&2 echo To configure where we look for node, set NODE_DIR to its installation base
+if test ${NODE_VERSION_USED} -ne "${NODE_MAJOR_VERSION}"; then
+  echo >&2 "Warning: Compiler Explorer is only tested against v${NODE_VERSION_USED}.x, but v${NODE_MAJOR_VERSION} was found."
+  echo >&2 "Note that you might find issues if you decide to keep this version"
+  echo >&2 "Visit https://nodejs.org/ for installation instructions for the required version"
+  echo >&2 "To configure where we look for node, set NODE_DIR to its installation base"
 fi
 
-echo ${NODE} > ${OUT}
+echo "${NODE}" >"${OUT}"
