@@ -491,8 +491,14 @@ async function main() {
         for (const compiler of initialCompilers) {
             if (compiler.buildenvsetup && compiler.buildenvsetup.id === '')
                 delete compiler.buildenvsetup;
+
+            const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
+            if (compilerInstance) {
+                compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
+            }
         }
         await fs.writeFile(opts.discoveryonly, JSON.stringify(initialCompilers));
+        logger.info(`Discovered compilers saved to ${opts.discoveryonly}`);
         process.exit(0);
     }
 
