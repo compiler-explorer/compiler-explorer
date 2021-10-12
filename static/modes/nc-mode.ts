@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,65 +23,28 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-
-var jquery = require('jquery');
 var monaco = require('monaco-editor');
 var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
+// We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
+// https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++
 function definition() {
-    var ispc = jquery.extend(true, {}, cpp.language); // deep copy
-
-    ispc.tokenPostfix = '.ispc';
-
-    ispc.keywords.push(
-        'cbreak',
-        'ccontinue',
-        'cdo',
-        'cfor',
-        'cif',
-        'creturn',
-        'cwhile',
-        'delete',
-        'export',
-        'foreach',
-        'foreach_active',
-        'foreach_tiled',
-        'foreach_unique',
-        'int16',
-        'int32',
-        'int64',
-        'int8',
-        'launch',
-        'new',
-        'operator',
-        'programCount',
-        'programIndex',
-        'reference',
-        'size_t',
-        'soa',
-        'sync',
-        'task',
-        'taskCount',
-        'taskCount0',
-        'taskCount1',
-        'taskCount2',
-        'taskIndex',
-        'taskIndex0',
-        'taskIndex1',
-        'taskIndex2',
-        'threadCount',
-        'threadIndex',
-        'uint16',
-        'uint32',
-        'uint64',
-        'uint8',
-        'uniform',
-        'unmasked',
-        'varying'
-    );
-    return ispc;
+    var nc = $.extend(true, {}, cpp.language); // deep copy
+    // https://en.cppreference.com/w/c/keyword
+    nc.keywords = ['auto', 'break', 'case', 'char', 'const', 'continue', 'default',
+        'do', 'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
+        'int', 'long', 'register', 'restrict', 'return', 'short', 'signed', 'sizeof', 'static',
+        'struct', 'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
+        '_Alignas', '_Alignof', '_Atomic', '_Bool', '_Complex', '_Generic', '_Imaginary',
+        '_Noreturn', '_Static_assert', '_Thread_local',
+    ];
+    return nc;
 }
 
-monaco.languages.register({id: 'ispc'});
-monaco.languages.setLanguageConfiguration('ispc', cpp.conf);
-monaco.languages.setMonarchTokensProvider('ispc', definition());
+var def = definition();
+
+monaco.languages.register({id: 'nc'});
+monaco.languages.setLanguageConfiguration('nc', cpp.conf);
+monaco.languages.setMonarchTokensProvider('nc', def);
+
+module.exports = def;

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,33 +23,64 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var $ = require('jquery');
+
 var monaco = require('monaco-editor');
-var asm = require('./asm-mode');
+var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 function definition() {
-    var ptx = $.extend(true, {}, asm); // deep copy
+    var ispc = $.extend(true, {}, cpp.language); // deep copy
 
-    // Redefine registers for ptx:
-    // Usually ptx registers are in the form "%[pr][0-9]+", but a bunch of magic registers does not follow
-    // this scheme (see https://docs.nvidia.com/cuda/parallel-thread-execution/index.html#special-registers ).
-    // Thus the register-regex captures everything that starts with a '%'.
-    ptx.registers = /%[a-z0-9_\\.]+/;
+    ispc.tokenPostfix = '.ispc';
 
-
-    // Redefine whitespaces, as asm interprets strings with a leading '@' as comments.
-    ptx.tokenizer.whitespace = [
-        [/[ \t\r\n]+/, 'white'],
-        [/\/\*/, 'comment', '@comment'],
-        [/\/\/.*$/, 'comment'],
-        [/[#;\\].*$/, 'comment'],
-    ];
-
-    // Add predicated instructions to the list of root tokens. Search for an opcode next, which is also a root token.
-    ptx.tokenizer.root.push([/@%p[0-9]+/, {token: 'operator', next: '@root'}]);
-
-    return ptx;
+    ispc.keywords.push(
+        'cbreak',
+        'ccontinue',
+        'cdo',
+        'cfor',
+        'cif',
+        'creturn',
+        'cwhile',
+        'delete',
+        'export',
+        'foreach',
+        'foreach_active',
+        'foreach_tiled',
+        'foreach_unique',
+        'int16',
+        'int32',
+        'int64',
+        'int8',
+        'launch',
+        'new',
+        'operator',
+        'programCount',
+        'programIndex',
+        'reference',
+        'size_t',
+        'soa',
+        'sync',
+        'task',
+        'taskCount',
+        'taskCount0',
+        'taskCount1',
+        'taskCount2',
+        'taskIndex',
+        'taskIndex0',
+        'taskIndex1',
+        'taskIndex2',
+        'threadCount',
+        'threadIndex',
+        'uint16',
+        'uint32',
+        'uint64',
+        'uint8',
+        'uniform',
+        'unmasked',
+        'varying'
+    );
+    return ispc;
 }
 
-monaco.languages.register({id: 'ptx'});
-monaco.languages.setMonarchTokensProvider('ptx', definition());
+monaco.languages.register({id: 'ispc'});
+monaco.languages.setLanguageConfiguration('ispc', cpp.conf);
+monaco.languages.setMonarchTokensProvider('ispc', definition());

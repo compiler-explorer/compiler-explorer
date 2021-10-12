@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,29 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var $ = require('jquery');
 var monaco = require('monaco-editor');
 var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+var cppp = require('./cppp-mode');
 
-// We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
-// https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++
 function definition() {
-    var nc = $.extend(true, {}, cpp.language); // deep copy
-    // https://en.cppreference.com/w/c/keyword
-    nc.keywords = ['auto', 'break', 'case', 'char', 'const', 'continue', 'default',
-        'do', 'double', 'else', 'enum', 'extern', 'float', 'for', 'goto', 'if', 'inline',
-        'int', 'long', 'register', 'restrict', 'return', 'short', 'signed', 'sizeof', 'static',
-        'struct', 'switch', 'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
-        '_Alignas', '_Alignof', '_Atomic', '_Bool', '_Complex', '_Generic', '_Imaginary',
-        '_Noreturn', '_Static_assert', '_Thread_local',
-    ];
-    return nc;
+    var cppx_blue = $.extend(true, {}, cppp); // deep copy
+    cppx_blue.tokenPostfix = '.cppx-blue';
+
+    // add the 'type' keyword
+    cppx_blue.keywords.push('type');
+
+    // pick up 'identifier:' as a definition.
+    cppx_blue.tokenizer.root.unshift([/[a-zA-Z_]\w*\s*:/, 'identifier.definition']);
+
+    return cppx_blue;
 }
 
-var def = definition();
-
-monaco.languages.register({id: 'nc'});
-monaco.languages.setLanguageConfiguration('nc', cpp.conf);
-monaco.languages.setMonarchTokensProvider('nc', def);
-
-module.exports = def;
+monaco.languages.register({id: 'cppx-blue'});
+monaco.languages.setLanguageConfiguration('cppx-blue', cpp.conf);
+monaco.languages.setMonarchTokensProvider('cppx-blue', definition());
