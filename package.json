@@ -55,7 +55,7 @@
     "morgan": "^1.10.0",
     "node-graceful": "^3.1.0",
     "node-targz": "^0.2.0",
-    "nopt": "^4.0.3",
+    "nopt": "^5.0.0",
     "p-queue": "^6.6.2",
     "popper.js": "^1.16.1",
     "profanities": "^2.14.0",
