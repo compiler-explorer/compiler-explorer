@@ -30,7 +30,7 @@ import { Pane } from './pane';
 import { BasePaneState } from './pane.interfaces';
 import { RustMirState } from './rustmir-view.interfaces';
 
-import ga from '../analytics';
+import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
 export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirState> {

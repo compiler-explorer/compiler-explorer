@@ -30,7 +30,7 @@ import { Pane } from './pane';
 import { BasePaneState } from './pane.interfaces';
 import { RustMacroExpState } from './rustmacroexp-view.interfaces';
 
-import ga from '../analytics';
+import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
 export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
