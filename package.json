@@ -75,6 +75,7 @@
     "underscore": "^1.13.1",
     "url-join": "^4.0.1",
     "vis": "4.20.1",
+    "whatwg-fetch": "^3.6.2",
     "which": "^2.0.2",
     "winston": "^3.3.3",
     "winston-loki": "^6.0.2",
