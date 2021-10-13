@@ -22,83 +22,69 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 
 import { Alert } from './alert';
 import { getStoredSettings } from './settings';
-import { FormatRequestOptions } from './formatter-registry.interfaces';
+import { FormatRequestOptions, FormatResponse } from './formatter-registry.interfaces';
 import { SiteSettings } from './settings.interfaces';
 
-const getFormattedCode = ({ source, formatterId, base, tabWidth, useSpaces }: FormatRequestOptions): Promise<string> => {
-    const alert = new Alert();
-    return new Promise((resolve, reject) => {
-        $.ajax(({
-            type: 'POST',
-            url: `${window.location.origin}${window.httpRoot}api/format/${formatterId}`,
-            dataType: 'json',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                source,
-                base,
-                tabWidth,
-                useSpaces,
-            }),
-            success: (result) => {
-                if (result.exit === 0) {
-                    resolve(result.answer);
-                } else {
-                    alert.notify(`We encountered an error formatting your code: ${result.answer}`, {
-                        group: 'formatting',
-                        alertClass: 'notification-error',
-                    });
-                }
-            },
-            error: (xhr, status, error) => {
-                // Hopefully we have not exploded!
-                if (xhr.responseText) {
-                    try {
-                        var res = JSON.parse(xhr.responseText);
-                        error = res.answer || error;
-                    } catch (e) {
-                        // continue regardless of error
-                    }
-                }
-                error = error || 'Unknown error';
-                alert.notify(`We ran into some issues while formatting your code: ${error}`, {
-                    group: 'formatting',
-                    alertClass: 'notification-error',
-                });
-                reject();
-            },
-            cache: true,
-        }));
+// Proxy function to emit the error to the alert system
+const onFormatError = (cause: string, source: string) => {
+    const alertSystem = new Alert();
+    alertSystem.notify(`We encountered an error formatting your code: ${cause}`, {
+        group: 'formatting',
+        alertClass: 'notification-error',
     });
-}
+    return source;
+};
+
+const getFormattedCode = async ({ source, formatterId, base, tabWidth, useSpaces }: FormatRequestOptions) => {
+    const res = await fetch(`${window.location.origin}${window.httpRoot}api/format/${formatterId}`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ source, base, tabWidth, useSpaces }),
+    });
+    const body = await res.json() as FormatResponse;
+    if (res.status === 200 && body.exit === 0) {
+        // API sent 200 and we have a valid response
+        return body.answer;
+    }
+    // We had an error (either HTTP request error, or API error)
+    // Figure out which it is, show it to the user, and reject the promise
+    const cause = (res.status === 200) ? body.answer : res.statusText;
+    throw new Error(cause);
+};
 
 const getDocumentFormatter = (
     language: string,
     formatter: string,
-    formatBase: string
+    formatBase: string,
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
-        token: monaco.CancellationToken
+        token: monaco.CancellationToken,
     ): Promise<monaco.languages.TextEdit[]> {
         const settings: SiteSettings = getStoredSettings();
+        const source = model.getValue();
+        // Request the formatted code. If that API call fails, we just back off and return the user's old code.
         const formattedSource = await getFormattedCode({
-            source: model.getValue(),
             formatterId: formatter,
             base: formatBase,
             tabWidth: settings.tabWidth,
-            useSpaces: settings.useSpaces
-        });
+            useSpaces: settings.useSpaces,
+            source,
+        }).catch(err => onFormatError(err, source));
         return [{
             range: model.getFullModelRange(),
             text: formattedSource,
         }];
-    }
+    },
 });
 
 monaco.languages.registerDocumentFormattingEditProvider('cppp', getDocumentFormatter('cppp', 'clangformat', 'Google'));
