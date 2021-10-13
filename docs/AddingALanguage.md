@@ -14,9 +14,9 @@ If you want to add a new language to the site, you should follow this steps:
   ```
     - If the language is supported by Monaco Editor (You can find the
       list [here](https://github.com/microsoft/monaco-languages/tree/main/src)), you should add it to the list of
-      languages inside the `MonacoEditorWebpackPlugin` config in `webpack.config.js`
+      languages inside the `MonacoEditorWebpackPlugin` config in `webpack.config.esm.js`
     - If not, you should implement your own language mode; see `static/modes/asm-mode.js` as an example. Don't forget
-      to *require* your mode file in `static/modes/_all.js`, in alphabetical order
+      to *require* your mode file in `static/modes/_all.ts`, in alphabetical order
     - `language-key` is how your language will be referred internally by the code. In the rest of this document,
       replace `{language-key}` by the corresponding value in the real files.
 
