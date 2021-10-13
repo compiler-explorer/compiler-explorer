@@ -29,7 +29,6 @@ import { Container } from 'golden-layout';
 import { Pane } from './pane';
 import { GnatDebugState } from './gnatdebug-view.interfaces';
 import { BasePaneState } from './pane.interfaces';
-import { GnatDebugState } from './gnatdebug-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
