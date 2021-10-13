@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,53 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var monaco = require('monaco-editor');
-var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import { conf as cppConfig, language as cppMode, CppModeProps } from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+
+import { LanguageConfigProducer, LanguageDefinitionProducer } from './modes.interfaces';
+import {createLanguageMode} from './modes';
+
+const KEYWORDS_TO_REMOVE = ['abstract', 'amp', 'array', 'cpu', 'delegate', 'each', 'event', 'finally', 'gcnew',
+    'generic', 'in', 'initonly', 'interface', 'interior_ptr', 'internal', 'literal', 'partial', 'pascal',
+    'pin_ptr', 'property', 'ref', 'restrict', 'safe_cast', 'sealed', 'title_static', 'where'];
+
+const KEYWORDS_TO_ADD = ['alignas', 'alignof', 'and', 'and_eq', 'asm', 'bitand', 'bitor', 'char8_t', 'char16_t',
+    'char32_t', 'compl', 'concept', 'consteval', 'constinit', 'co_await', 'co_return', 'co_yield', 'not', 'not_eq',
+    'or', 'or_eq', 'requires', 'xor', 'xor_eq'];
+
+export interface CpppModeProps extends CppModeProps {}
 
 // We need to create a new definition for cpp so we can remove invalid keywords
+export const createCpppMode: LanguageDefinitionProducer<CpppModeProps> = createLanguageMode(() => cppMode, (cpp) => ({
+    ...cpp,
+    keywords: cpp.keywords
+        .filter((keyword) => !KEYWORDS_TO_REMOVE.includes(keyword))
+        .concat(KEYWORDS_TO_ADD),
+}));
 
-function definition() {
-    var cppp = $.extend(true, {}, cpp.language); // deep copy
-
-    function removeKeyword(keyword) {
-        var index = cppp.keywords.indexOf(keyword);
-        if (index > -1) {
-            cppp.keywords.splice(index, 1);
-        }
-    }
-
-    function removeKeywords(keywords) {
-        for (var i = 0; i < keywords.length; ++i) {
-            removeKeyword(keywords[i]);
-        }
-    }
-
-    function addKeywords(keywords) {
-        // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as
-        // far as I can tell, they indeed are all strings. This somehow fixes it. If you know how to fix it, plz go
-        for (var i = 0; i < keywords.length; ++i) {
-            cppp.keywords.push(keywords[i]);
-        }
-    }
-
-    // We remove everything that's not an identifier, underscore reserved name and not an official C++ keyword...
-    // Regarding #617, final is a identifier with special meaning, not a fully qualified keyword
-    removeKeywords(['abstract', 'amp', 'array', 'cpu', 'delegate', 'each', 'event', 'finally', 'gcnew',
-        'generic', 'in', 'initonly', 'interface', 'interior_ptr', 'internal', 'literal', 'partial', 'pascal',
-        'pin_ptr', 'property', 'ref', 'restrict', 'safe_cast', 'sealed', 'title_static', 'where']);
-
-    addKeywords(['alignas', 'alignof', 'and', 'and_eq', 'asm', 'bitand', 'bitor', 'char8_t', 'char16_t',
-        'char32_t', 'compl', 'concept', 'consteval', 'constinit', 'co_await', 'co_return', 'co_yield', 'not', 'not_eq',
-        'or', 'or_eq', 'requires', 'xor', 'xor_eq']);
-
-    return cppp;
-}
-
-var def = definition();
+export const createCpppConfig: LanguageConfigProducer = () => cppConfig;
 
 monaco.languages.register({id: 'cppp'});
-monaco.languages.setLanguageConfiguration('cppp', cpp.conf);
-monaco.languages.setMonarchTokensProvider('cppp', def);
-
-export = def;
+monaco.languages.setLanguageConfiguration('cppp', createCpppConfig());
+monaco.languages.setMonarchTokensProvider('cppp', createCpppMode());

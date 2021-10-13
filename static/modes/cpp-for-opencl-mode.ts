@@ -30,7 +30,7 @@ var cppp = require('./cppp-mode');
 // We need to create a new definition for C++ for OpenCL so we can remove invalid keywords
 
 function definition() {
-    var cppForOpenCL = $.extend(true, {}, cppp); // deep copy
+    var cppForOpenCL = $.extend(true, {}, cppp.createCpppMode()); // deep copy
 
     function addKeywords(keywords) {
         // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as

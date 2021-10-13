@@ -28,7 +28,7 @@ var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 var cppp = require('./cppp-mode');
 
 function definition() {
-    var cppx_blue = $.extend(true, {}, cppp); // deep copy
+    var cppx_blue = $.extend(true, {}, cppp.createCpppMode()); // deep copy
     cppx_blue.tokenPostfix = '.cppx-blue';
 
     // add the 'type' keyword
