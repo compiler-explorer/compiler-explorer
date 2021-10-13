@@ -310,6 +310,26 @@ module.exports = {
             },
         };
     },
+    getGnatDebugView: function () {
+        return {
+            type: 'component',
+            componentName: 'gnatdebug',
+            componentState: {},
+        };
+    },
+    getGnatDebugViewWith: function (id, source, gnatDebugOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'gnatdebug',
+            componentState: {
+                id: id,
+                source: source,
+                gnatDebugOutput: gnatDebugOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
     getRustMacroExpView: function () {
         return {
             type: 'component',
