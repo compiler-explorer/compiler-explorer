@@ -41,8 +41,8 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         }
     }
 
-    override initializeDOMRoot(): void {
-        this.domRoot.html($('#rustmacroexp').html());
+    override getInitialHTML(): string {
+        return $('#rustmacroexp').html();
     }
 
     override createEditor(editorRoot: HTMLElement): void {

@@ -41,8 +41,8 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirSt
         }
     }
 
-    override initializeDOMRoot(): void {
-        this.domRoot.html($('#rustmir').html());
+    override getInitialHTML(): string {
+        return $('#rustmir').html();
     }
 
     override createEditor(editorRoot: HTMLElement): void {

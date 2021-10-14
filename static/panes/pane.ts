@@ -62,8 +62,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.hideable = this.domRoot.find('.hideable');
-        this.initializeDOMRoot();
 
+        this.domRoot.html(this.getInitialHTML());
         const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
         this.createEditor(editorRoot);
 
@@ -85,14 +85,16 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     }
 
     /**
-     * Initialize the DOM root node with the pane's default content. Typical
+     * Get the initial HTML layout for the pane's default content. A typical
      * implementation looks like this:
      *
      * ```ts
-     * this.domRoot.html($('#rustmir').html());
+     * override getInitialHTML(): string {
+     *     return $('#rustmir').html();
+     * }
      * ```
      */
-    abstract initializeDOMRoot(): void;
+    abstract getInitialHTML(): string;
 
     /**
      * Initialize the monaco editor instance. Typical implementation for looks

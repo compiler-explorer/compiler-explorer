@@ -41,8 +41,8 @@ export class GnatDebug extends Pane<monaco.editor.IStandaloneCodeEditor, GnatDeb
         }
     }
 
-    override initializeDOMRoot(): void {
-        this.domRoot.html($('#gnatdebug').html());
+    override getInitialHTML(): string {
+        return $('#gnatdebug').html();
     }
 
     override createEditor(editorRoot: HTMLElement): void {
