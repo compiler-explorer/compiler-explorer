@@ -38,10 +38,11 @@ import { LanguageDefinitionProducer, LanguageDefinition } from './modes.interfac
  *
  * ```ts
  * export interface FooModeProps extends CpppModeProps {}
- * export const createFooMode: LanguageDefinitionProducer<FooModeProps> = createLanguageMode(createCpppMode, (cppp) => {
- *   ...cppp,
- *   keywords: ['some', 'overridden', 'keywords'],
- * }));
+ * export const createFooMode: LanguageDefinitionProducer<FooModeProps> =
+ *   createLanguageMode(createCpppMode, (cppp) => ({
+ *     ...cppp,
+ *     keywords: ['some', 'overridden', 'keywords'],
+ *   }));
  * ```
  */
 export const createLanguageMode = <S, T>(
