@@ -41,17 +41,17 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         }
     }
 
-    override initializeDOMRoot(): void {
-        this.domRoot.html($('#rustmacroexp').html());
+    override getInitialHTML(): string {
+        return $('#rustmacroexp').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): void {
-        this.editor = monaco.editor.create(editorRoot, extendConfig({
+    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
+        return monaco.editor.create(editorRoot, extendConfig({
             language: 'rust',
             readOnly: true,
             glyphMargin: true,
             lineNumbersMinChars: 3,
-        }))
+        }));
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -75,8 +75,8 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(id: number, compiler: any, result: any): void {
-        if (this.compilerInfo.compilerId !== id) return;
+    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+        if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasRustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
         } else if (compiler.supportsRustMacroExpView) {
@@ -84,8 +84,8 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         }
     }
 
-    override onCompiler(id: number, compiler: any, options: any, editorId: number): void {
-        if (this.compilerInfo.compilerId === id) {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number): void {
+        if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
             this.setTitle();
