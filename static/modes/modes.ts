@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import { LanguageDefinitionProducer, LanguageDefinition } from './modes.interfaces';
 
 /**
@@ -34,8 +33,18 @@ import { LanguageDefinitionProducer, LanguageDefinition } from './modes.interfac
  *
  * Warning: this function does not do deep copies, so do not modify properties
  * on the base parameter in the callback, do local copies there.
+ *
+ * Example usage for extending the Cppp mode looks like this:
+ *
+ * ```ts
+ * export interface FooModeProps extends CpppModeProps {}
+ * export const createFooMode: LanguageDefinitionProducer<FooModeProps> = createLanguageMode(createCpppMode, (cppp) => {
+ *   ...cppp,
+ *   keywords: ['some', 'overridden', 'keywords'],
+ * }));
+ * ```
  */
 export const createLanguageMode = <S, T>(
     base: LanguageDefinitionProducer<T>,
-    producer: (base: LanguageDefinition<T>) => LanguageDefinition<S>
-): LanguageDefinitionProducer<T & S> => () => _.extend({}, base, producer(base()));
+    producer: (base: LanguageDefinition<T>) => LanguageDefinition<S & T>
+): LanguageDefinitionProducer<T & S> => () => producer(base());
