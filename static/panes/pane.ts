@@ -183,7 +183,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * view is attached to. This can be done with a simple check.
      *
      * ```ts
-     * if (this.compilerInfo.compilerId === id) { ... }
+     * if (this.compilerInfo.compilerId === compilerId) { ... }
      * ```
      *
      * @param compilerId Id of the compiler that had a compilation
