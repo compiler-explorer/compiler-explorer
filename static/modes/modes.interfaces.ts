@@ -24,6 +24,8 @@
 
 import * as monaco from 'monaco-editor';
 
+export type LanguageDefinition<T> = monaco.languages.IMonarchLanguage & T;
+
 /**
  * Type definition of a function which creates a monaco monarch language
  * definition.
@@ -33,7 +35,7 @@ import * as monaco from 'monaco-editor';
  * only describes arbitrary keys. Adding an additional type provides better
  * intellisense, stronger types and better code completion.
  */
-export type LanguageDefinitionProducer<T> = () => monaco.languages.IMonarchLanguage & T;
+export type LanguageDefinitionProducer<T> = () => LanguageDefinition<T>;
 
 /**
  * Type definition of a function which creates a monaco language configuration

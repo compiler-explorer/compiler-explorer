@@ -23,9 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { LanguageDefinitionProducer } from './modes.interfaces';
-
-type LanguageDefinition<T> = ReturnType<LanguageDefinitionProducer<T>>;
+import { LanguageDefinitionProducer, LanguageDefinition } from './modes.interfaces';
 
 /**
  * Helper function for creating a language mode which extends a different
