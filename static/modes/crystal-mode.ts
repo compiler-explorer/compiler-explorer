@@ -57,6 +57,7 @@ function configuration() {
         indentationRules: {
             /* TODO(supergrecko): Investigate inefficient regex
             *   original regexp was: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?$/
+            *   truncated piece in fixed regex is: \b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?
             *
             * See https://github.com/github/codeql/blob/06b36f742e88b610e0c2b75e2668603fc3a0f359/javascript/ql/src/Performance/ReDoS.ql for reference
             */
