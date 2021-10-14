@@ -101,7 +101,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * like this:
      *
      * ```ts
-     * this.editor = monaco.editor.create(editorRoot, extendConfig({
+     * return monaco.editor.create(editorRoot, extendConfig({
      *     // goodies
      * }));
      * ```
@@ -134,9 +134,70 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      */
     registerEditorActions(): void {}
 
+    /**
+     * Produce a textual title for the pane
+     *
+     * Typical implementation uses the compiler and editor ids in combination
+     * with a name.
+     *
+     * This title is attached to the pane in the UI.
+     *
+     * ```ts
+     * return `Rust MIR Viewer ${this.compilerInfo.compilerName}` +
+     *     `(Editor #${this.compilerInfo.editorId}, ` +
+     *     `Compiler #${this.compilerInfo.compilerId})`;
+     * ```
+     */
     abstract getPaneName(): string;
-    abstract onCompiler(id: number, compiler: any, options: any, editorId: number): void;
-    abstract onCompileResult(id: number, compiler: unknown, result: unknown): void;
+
+    /**
+     * Handle user selected compiler change.
+     *
+     * This event is triggered when the user selects a different compiler in the
+     * compiler dropdown.
+     *
+     * Note that this event is also triggered when the changed compiler is not
+     * the one this view is attached to. Therefore it is smart to check that
+     * the updated compiler is the one the view is attached to. This can be done
+     * with a simple check.
+     *
+     * ```ts
+     * if (this.compilerInfo.compilerId === compilerId) { ... }
+     * ```
+     *
+     * @param compilerId Id of the compiler that had its version changed
+     * @param compiler The updated compiler object
+     * @param options
+     * @param editorId The editor id the updated compiler is attached to
+     */
+    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number): void;
+
+    /**
+     * Handle compilation result.
+     *
+     * This event is triggered when a code compilation was triggered.
+     *
+     * Note that this event is triggered for *any* compilation, even when the
+     * compilation was done for a source/compiler this view is not attached to.
+     * Therefore it is smart to check that the updated compiler is the one the
+     * view is attached to. This can be done with a simple check.
+     *
+     * ```ts
+     * if (this.compilerInfo.compilerId === id) { ... }
+     * ```
+     *
+     * @param compilerId Id of the compiler that had a compilation
+     * @param compiler The compiler object
+     * @param result The entire HTTP request response
+     */
+    abstract onCompileResult(compilerId: number, compiler: unknown, result: unknown): void;
+
+    /**
+     * Perform any clean-up events when the pane is closed.
+     *
+     * This is typically used to emit an analytics event for closing the pane,
+     * unsubscribing from the event hub and disposing the monaco editor.
+     */
     abstract close(): void;
 
     /** Initialize standard lifecycle hooks */
@@ -156,8 +217,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.container.setTitle(this.getPaneName());
     }
 
-    protected onCompilerClose(id: number) {
-        if (this.compilerInfo.compilerId === id) {
+    /** Close the pane if the compiler this pane was attached to closes */
+    protected onCompilerClose(compilerId: number) {
+        if (this.compilerInfo.compilerId === compilerId) {
             _.defer(() => this.container.close());
         }
     }
