@@ -79,6 +79,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
+        this.registerEditorActions();
         this.setTitle();
         this.registerOpeningAnalyticsEvent();
     }
@@ -124,6 +125,12 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
 
     /** Optionally overridable code for initializing event callbacks */
     registerCallbacks(): void {}
+
+    /**
+     * Optionally overridable code for initializing monaco actions on the
+     * editor instance
+     */
+    registerEditorActions(): void {}
 
     abstract getPaneName(): string;
     abstract onCompiler(id: number, compiler: any, options: any, editorId: number): void;
