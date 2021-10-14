@@ -45,13 +45,13 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         return $('#rustmacroexp').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): void {
-        this.editor = monaco.editor.create(editorRoot, extendConfig({
+    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
+        return monaco.editor.create(editorRoot, extendConfig({
             language: 'rust',
             readOnly: true,
             glyphMargin: true,
             lineNumbersMinChars: 3,
-        }))
+        }));
     }
 
     override registerOpeningAnalyticsEvent(): void {

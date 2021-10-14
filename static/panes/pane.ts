@@ -65,7 +65,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
 
         this.domRoot.html(this.getInitialHTML());
         const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
-        this.createEditor(editorRoot);
+        this.editor = this.createEditor(editorRoot);
 
         this.selection = state.selection;
         this.compilerInfo = {
@@ -106,7 +106,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * }));
      * ```
      */
-    abstract createEditor(editorRoot: HTMLElement): void;
+    abstract createEditor(editorRoot: HTMLElement): E;
 
     /**
      * Emit analytics event for opening the pane tab. Typical implementation

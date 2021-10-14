@@ -45,13 +45,13 @@ export class GnatDebug extends Pane<monaco.editor.IStandaloneCodeEditor, GnatDeb
         return $('#gnatdebug').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): void {
-        this.editor = monaco.editor.create(editorRoot, extendConfig({
+    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
+        return monaco.editor.create(editorRoot, extendConfig({
             language: 'ada',
             readOnly: true,
             glyphMargin: true,
             lineNumbersMinChars: 3,
-        }))
+        }));
     }
 
     override registerOpeningAnalyticsEvent(): void {
