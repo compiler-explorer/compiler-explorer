@@ -62,5 +62,3 @@ export const createCppCircleMode: LanguageDefinitionProducer<CleanModeProps> =
 monaco.languages.register({ id: 'cppcircle' });
 monaco.languages.setLanguageConfiguration('cppcircle', createCpppConfig());
 monaco.languages.setMonarchTokensProvider('cppcircle', createCppCircleMode());
-
-export {};
