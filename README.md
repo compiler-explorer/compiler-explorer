@@ -53,7 +53,7 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
  on your local machine: [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact
  us, as we consider it important you can quickly and easily get running.
  Currently, **Compiler Explorer**
- requires [at least `node` 14 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR`
+ requires [`node` 14 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR`
  (an environment variable or `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load
