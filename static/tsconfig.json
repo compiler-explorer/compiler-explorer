@@ -1,8 +1,13 @@
 {
 	"compilerOptions": {
+		/* Module options */
 		"target": "es5",
-		"sourceMap": true,
 		"rootDir": ".",
-		"esModuleInterop": true
+		/* Code emitting options */
+		"sourceMap": true,
+		"downlevelIteration": true,
+		"importHelpers": true,
+		/* Interoperability constraints */
+		"esModuleInterop": true,
 	}
 }
