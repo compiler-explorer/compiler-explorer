@@ -42,10 +42,10 @@ const KEYWORDS_TO_ADD = ['@array', '@attribute', '@base_count', '@base_offset', 
     '@pack_type', '@parse_expression', '@puts', '@range', '@sfinae', '@statements', '@static_type', '@string',
     '@tattribute', '@type_enum', '@type_id', '@type_name', '@type_string'];
 
-export interface CleanModeProps extends CpppModeProps {}
+export interface CppCircleModeProps extends CpppModeProps {}
 
 // circle is c++ with a few extra '@'-prefixed keywords.
-export const createCppCircleMode: LanguageDefinitionProducer<CleanModeProps> =
+export const createCppCircleMode: LanguageDefinitionProducer<CppCircleModeProps> =
     createLanguageMode(createCpppMode, (cppp) => ({
         ...cppp,
         keywords: cppp.keywords.concat(KEYWORDS_TO_ADD),
