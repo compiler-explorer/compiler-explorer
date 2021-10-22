@@ -23,18 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {options} from './options'
-var prefix = options.localStoragePrefix || '';
+
+const prefix = options.localStoragePrefix ?? '';
 
 export function get(key: string, ifNotPresent: string): string {
-    let result;
     try {
-        result = window.localStorage.getItem(prefix + key)
+        return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
     } catch (e) {
         // Swallow up any security exceptions...
         return ifNotPresent;
     }
-    if (result === null) return ifNotPresent;
-    return result
 }
 
 export function set(key: string, value: string): boolean {
