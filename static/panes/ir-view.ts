@@ -24,15 +24,15 @@
 
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import {Container} from 'golden-layout';
+import { Container } from 'golden-layout';
 
-import {Pane} from './pane';
-import {IrState} from './ir-view.interfaces';
-import {BasePaneState} from './pane.interfaces';
+import { Pane } from './pane';
+import { IrState } from './ir-view.interfaces';
+import { BasePaneState } from './pane.interfaces';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {applyColours} from '../colour';
+import { ga } from '../analytics';
+import { extendConfig } from '../monaco-config';
+import { applyColours } from '../colour';
 
 export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: number = -1;
@@ -95,7 +95,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     override registerCallbacks(): void {
         const onMouseMove = _.throttle(this.onMouseMove.bind(this), 50);
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours.bind(this), this.onCompileResult.bind(this));
+        const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours.bind(this),
+            this.onCompileResult.bind(this));
 
         this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
         this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
@@ -144,96 +145,108 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         }
     }
 
-    // TODO(supergrecko): refactor this function
     onColours(compilerId: number, colours: any, scheme: any): void {
-        if (compilerId === this.compilerInfo.compilerId) {
-            var irColours = {};
-            _.each(this.irCode, function (x, index) {
-                if (x.source && x.source.file === null && x.source.line > 0 && colours[x.source.line - 1] !== undefined) {
-                    irColours[index] = colours[x.source.line - 1];
-                }
-            });
-            // @ts-expect-error
-            this.colours = applyColours(this.editor, irColours, scheme, this.colours);
+        if (compilerId !== this.compilerInfo.compilerId) return;
+        const irColours: Record<number, number> = {};
+        for (const [index, code] of this.irCode.entries()) {
+            if (code.source
+                && code.source.file === null
+                && code.source.line > 0
+                && colours[code.source.line - 1] !== undefined) {
+                irColours[index] = colours[code.source.line - 1];
+            }
         }
+        // @ts-expect-error mismatched types on irColours and applyColours
+        this.colours = applyColours(this.editor, irColours, scheme, this.colours);
     }
 
-    // TODO(supergrecko): refactor this function
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
         if (e === null || e.target === null || e.target.position === null) return;
-        // @ts-expect-error
+        // @ts-expect-error mismatched types on this.settings
         if (this.settings.hoverShowSource === true && this.irCode) {
             this.clearLinkedLines();
-            var hoverCode = this.irCode[e.target.position.lineNumber - 1];
+            const hoverCode = this.irCode[e.target.position.lineNumber - 1];
             if (hoverCode) {
-                // We check that we actually have something to show at this point!
-                var sourceLine = -1;
-                var sourceColBegin = -1;
-                var sourceColEnd = -1;
+                let sourceLine = -1;
+                let sourceColumnBegin = -1;
+                let sourceColumnEnd = -1;
+
                 if (hoverCode.source && !hoverCode.source.file) {
                     sourceLine = hoverCode.source.line;
                     if (hoverCode.source.column) {
-                        sourceColBegin = hoverCode.source.column;
-                        sourceColEnd = sourceColBegin;
+                        sourceColumnBegin = hoverCode.source.column;
+                        sourceColumnEnd = sourceColumnBegin;
                     }
                 }
-                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, sourceColBegin, sourceColEnd, false);
-                this.eventHub.emit('panesLinkLine', this.compilerInfo.compilerId,
-                    sourceLine, sourceColBegin, sourceColEnd,
-                    false, this.getPaneName());
+
+                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, sourceColumnBegin,
+                    sourceColumnEnd, false);
+                this.eventHub.emit('panesLinkLine', this.compilerInfo.compilerId, sourceLine, sourceColumnBegin,
+                    sourceColumnEnd, false, this.getPaneName());
             }
         }
     }
 
-    // TODO(supergrecko): refactor this function
-    onPanesLinkLine(compilerId: number, lineNumber: number, colBegin, colEnd, revealLine, sender): void {
-        if (Number(compilerId) === this.compilerInfo.compilerId) {
-            var lineNums = [];
-            var directlyLinkedLineNums = [];
-            var signalFromAnotherPane = sender !== this.getPaneName();
-            _.each(this.irCode, function (irLine, i) {
-                if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
-                    var line = i + 1;
-                    lineNums.push(line);
-                    var currentCol = irLine.source.column;
-                    if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
-                        directlyLinkedLineNums.push(line);
-                    }
+    onPanesLinkLine(
+        compilerId: number,
+        lineNumber: number,
+        columnBegin: number,
+        columnEnd: number,
+        revealLinesInEditor: boolean,
+        sender: string,
+    ): void {
+        if (compilerId !== this.compilerInfo.compilerId) return;
+        const lineNumbers: number[] = [];
+        const directlyLinkedLineNumbers: number[] = [];
+        const isSignalFromAnotherPane = sender !== this.getPaneName();
+
+        for (const [index, irLine] of this.irCode.entries()) {
+            if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
+                const line = index + 1;
+                const currentColumn = irLine.source.column;
+                lineNumbers.push(line);
+                if (isSignalFromAnotherPane
+                    && currentColumn
+                    && columnBegin <= currentColumn
+                    && currentColumn <= columnEnd) {
+                    directlyLinkedLineNumbers.push(line);
                 }
-            });
-            if (revealLine && lineNums[0]) this.editor.revealLineInCenter(lineNums[0]);
-            var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-            var linkedLineDecorations = _.map(lineNums, function (line) {
-                return {
-                    range: new monaco.Range(line, 1, line, 1),
-                    options: {
-                        isWholeLine: true,
-                        linesDecorationsClassName: 'linked-code-decoration-margin',
-                        className: lineClass,
-                    },
-                };
-            });
-            var directlyLinkedLineDecorations = _.map(directlyLinkedLineNums, function (line) {
-                return {
-                    range: new monaco.Range(line, 1, line, 1),
-                    options: {
-                        isWholeLine: true,
-                        inlineClassName: 'linked-code-decoration-column',
-                    },
-                };
-            });
-            // @ts-expect-error
-            this.decorations.linkedCode = linkedLineDecorations.concat(directlyLinkedLineDecorations);
-            if (this.linkedFadeTimeoutId !== -1) {
-                clearTimeout(this.linkedFadeTimeoutId);
             }
-            // @ts-expect-error
-            this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
-                this.clearLinkedLines();
-                this.linkedFadeTimeoutId = -1;
-            }, this), 5000);
-            this.updateDecorations();
         }
+
+        if (revealLinesInEditor && lineNumbers[0]) {
+            // Just make sure that the mapped line is in view!
+            this.editor.revealLinesInCenter(lineNumbers[0], lineNumbers[0]);
+        }
+
+        const lineClassName = isSignalFromAnotherPane ? 'linked-code-decoration-line' : '';
+        const linkedLineDecorations: monaco.editor.IModelDeltaDecoration[] = lineNumbers.map((line) => ({
+            range: new monaco.Range(line, 1, line, 1),
+            options: {
+                isWholeLine: true,
+                linesDecorationsClassName: 'linked-code-decoration-margin',
+                className: lineClassName,
+            },
+        }));
+        const directlyLinkedLineDecorations: monaco.editor.IModelDeltaDecoration[] =
+            directlyLinkedLineNumbers.map((line) => ({
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            }));
+        this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
+
+        if (this.linkedFadeTimeoutId !== -1) {
+            clearTimeout(this.linkedFadeTimeoutId);
+        }
+        // @ts-expect-error mismatched type on setTimeout, assumes NodeJS.Timeout
+        this.linkedFadeTimeoutId = setTimeout(() => {
+            this.clearLinkedLines();
+            this.linkedFadeTimeoutId = -1;
+        }, 5000);
+        this.updateDecorations();
     }
 
     updateDecorations(): void {
