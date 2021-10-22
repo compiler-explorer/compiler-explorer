@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var options = require('./options').options;
+import {options} from './options'
 var prefix = options.localStoragePrefix || '';
 
-function get(key, ifNotPresent) {
-    var result;
+export function get(key: string, ifNotPresent: string): string {
+    let result;
     try {
-        result = window.localStorage.getItem(prefix + key);
+        result = window.localStorage.getItem(prefix + key)
     } catch (e) {
         // Swallow up any security exceptions...
         return ifNotPresent;
     }
     if (result === null) return ifNotPresent;
-    return result;
+    return result
 }
 
-function set(key, value) {
+export function set(key: string, value: string): boolean {
     try {
         window.localStorage.setItem(prefix + key, value);
         return true;
@@ -48,16 +47,10 @@ function set(key, value) {
     return false;
 }
 
-function remove(key) {
+export function remove(key: string) {
     try {
         window.localStorage.removeItem(prefix + key);
     } catch (e) {
         // Swallow up any security exceptions...
     }
 }
-
-module.exports = {
-    set: set,
-    get: get,
-    remove: remove,
-};
