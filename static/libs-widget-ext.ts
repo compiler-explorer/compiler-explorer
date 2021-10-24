@@ -25,14 +25,19 @@
 import { options } from './options'
 import * as local from './local'
 
-var _ = require('underscore');
+const _ = require('underscore');
 
 export class Widget {
-    private dropdownButton: JQuery;
+    private domRoot: JQuery<HTMLElement>;
+
     private currentLangId: string;
     private currentCompilerId: string;
-    private domRoot: JQuery;
+
+    private dropdownButton: JQuery<HTMLElement>;
+    private searchResults: any;
+
     private onChangeCallback: () => void;
+
     private availableLibs: any;
 
 
@@ -45,6 +50,7 @@ export class Widget {
         }
         this.currentLangId = langId;
         this.domRoot = $('#library-selection').clone(true);
+        this.initButtons();
         this.onChangeCallback = function () {
             this.updateButton();
             onChangeCallback();
@@ -61,7 +67,7 @@ export class Widget {
 
         this.fullRefresh();
 
-        var searchInput = this.domRoot.find('.lib-search-input');
+        const searchInput = this.domRoot.find('.lib-search-input');
 
         if (window.compilerExplorerOptions.mobileViewer) {
             this.domRoot.addClass('mobile');
@@ -86,6 +92,10 @@ export class Widget {
         this.updateButton();
     }
 
+    initButtons() {
+        this.searchResults = this.domRoot.find('.lib-results-items');
+    }
+
     fullRefresh() {
         this.showSelectedLibs();
         this.showSelectedLibsAsSearchResults();
@@ -93,8 +103,8 @@ export class Widget {
     }
 
     updateButton () {
-        var selectedLibs = this.get();
-        var text = ' Libraries';
+        const selectedLibs = this.get();
+        let text = ' Libraries';
         if (selectedLibs.length > 0) {
             this.dropdownButton
                 .addClass('btn-success')
@@ -114,19 +124,19 @@ export class Widget {
     }
 
     getFavorites() {
-        var storkey = 'favlibs';
+        const storkey = 'favlibs';
 
         return JSON.parse(local.get(storkey, '{}'));
     }
 
     setFavorites(faves) {
-        var storkey = 'favlibs';
+        const storkey = 'favlibs';
 
         local.set(storkey, JSON.stringify(faves));
     }
 
     isAFavorite(libId, versionId) {
-        var faves = this.getFavorites();
+        const faves = this.getFavorites();
         if (faves[libId]) {
             return faves[libId].includes(versionId);
         }
@@ -135,7 +145,7 @@ export class Widget {
     }
 
     addToFavorites(libId, versionId) {
-        var faves = this.getFavorites();
+        const faves = this.getFavorites();
         if (faves[libId]) {
             faves[libId].push(versionId);
         } else {
@@ -147,7 +157,7 @@ export class Widget {
     }
 
     removeFromFavorites(libId, versionId) {
-        var faves = this.getFavorites();
+        const faves = this.getFavorites();
         if (faves[libId]) {
             faves[libId] = _.filter(faves[libId], function (v) {
                 return (v !== versionId);
@@ -158,11 +168,11 @@ export class Widget {
     }
 
     newFavoriteLibDiv = function (libId, versionId, lib, version) {
-        var template = $('#lib-favorite-tpl');
+        const template = $('#lib-favorite-tpl');
 
-        var libDiv = $(template.children()[0].cloneNode(true));
+        const libDiv = $(template.children()[0].cloneNode(true));
 
-        var quickSelectButton = libDiv.find('.lib-name-and-version');
+        const quickSelectButton = libDiv.find('.lib-name-and-version');
         quickSelectButton.html(lib.name + ' ' + version.version);
         quickSelectButton.on('click', _.bind(function () {
             this.selectLibAndVersion(libId, versionId);
@@ -174,17 +184,17 @@ export class Widget {
     }
 
     showFavorites() {
-        var favoritesDiv = this.domRoot.find('.lib-favorites');
+        const favoritesDiv = this.domRoot.find('.lib-favorites');
         favoritesDiv.html('');
 
-        var faves = this.getFavorites();
+        const faves = this.getFavorites();
         _.each(faves, _.bind(function (versionArr, libId) {
             _.each(versionArr, _.bind(function (versionId) {
-                var lib = this.getLibInfoById(libId);
+                const lib = this.getLibInfoById(libId);
                 if (lib) {
-                    var version = lib.versions[versionId];
+                    const version = lib.versions[versionId];
                     if (version) {
-                        var div = this.newFavoriteLibDiv(libId, versionId, lib, version);
+                        const div = this.newFavoriteLibDiv(libId, versionId, lib, version);
                         favoritesDiv.append(div);
                     }
                 }
@@ -192,25 +202,23 @@ export class Widget {
         }, this));
     }
 
-    getAndEmptySearchResults() {
-        var searchResults = this.domRoot.find('.lib-results-items');
-        searchResults.html('');
-        return searchResults;
+    emptySearchResults() {
+        this.searchResults.html('');
     }
 
     newSelectedLibDiv(libId, versionId, lib, version) {
-        var template = $('#lib-selected-tpl');
+        const template = $('#lib-selected-tpl');
 
-        var libDiv = $(template.children()[0].cloneNode(true));
+        const libDiv = $(template.children()[0].cloneNode(true));
 
-        var detailsButton = libDiv.find('.lib-name-and-version');
+        const detailsButton = libDiv.find('.lib-name-and-version');
         detailsButton.html(lib.name + ' ' + version.version);
         detailsButton.on('click', _.bind(function () {
-            var searchResults = this.getAndEmptySearchResults();
-            this.addSearchResult(libId, lib, searchResults);
+            this.emptySearchResults()
+            this.addSearchResult(libId, lib);
         }, this));
 
-        var deleteButton = libDiv.find('.lib-remove');
+        const deleteButton = libDiv.find('.lib-remove');
         deleteButton.on('click', _.bind(function () {
             this.markLibrary(libId, versionId, false);
             libDiv.remove();
@@ -224,14 +232,14 @@ export class Widget {
     }
 
     conjureUpExamples(result, lib) {
-        var examples = result.find('.lib-examples');
+        const examples = result.find('.lib-examples');
         if (lib.examples && lib.examples.length > 0) {
-            var examplesHeader = $('<b>Examples</b>');
-            var examplesList = $('<ul />');
+            const examplesHeader = $('<b>Examples</b>');
+            const examplesList = $('<ul />');
             _.each(lib.examples, function (exampleId) {
-                var li = $('<li />');
+                const li = $('<li />');
                 examplesList.append(li);
-                var exampleLink = $('<a>Example</a>');
+                const exampleLink = $('<a>Example</a>');
                 exampleLink.attr('href', window.httpRoot + 'z/' + exampleId);
                 exampleLink.attr('target', '_blank');
                 exampleLink.attr('rel', 'noopener');
@@ -244,9 +252,9 @@ export class Widget {
     }
 
     newSearchResult(libId, lib) {
-        var template = $('#lib-search-result-tpl');
+        const template = $('#lib-search-result-tpl');
 
-        var result = $(template.children()[0].cloneNode(true));
+        const result = $($(template.children()[0].cloneNode(true)));
         result.find('.lib-name').html(lib.name);
         if (!lib.description) {
             result.find('.lib-description').hide();
@@ -257,18 +265,18 @@ export class Widget {
 
         this.conjureUpExamples(result, lib);
 
-        var faveButton = result.find('.lib-fav-button');
-        var faveStar = faveButton.find('.lib-fav-btn-icon');
+        const faveButton = result.find('.lib-fav-button');
+        const faveStar = faveButton.find('.lib-fav-btn-icon');
         faveButton.hide();
 
-        var versions = result.find('.lib-version-select');
+        const versions = result.find('.lib-version-select');
         versions.html('');
-        var noVersionSelectedOption = $('<option value="">-</option>');
+        const noVersionSelectedOption = $('<option value="">-</option>');
         versions.append(noVersionSelectedOption);
-        var hasVisibleVersions = false;
+        let hasVisibleVersions = false;
 
         _.each(lib.versions, _.bind(function (version, versionId) {
-            var option = $('<option>');
+            const option = $('<option>');
             if (version.used) {
                 option.attr('selected','selected');
 
@@ -292,8 +300,8 @@ export class Widget {
         }
 
         faveButton.on('click', _.bind(function () {
-            var option = versions.find('option:selected');
-            var verId = option.attr('value');
+            const option = versions.find('option:selected');
+            const verId = option.attr('value');
             if (this.isAFavorite(libId, verId)) {
                 this.removeFromFavorites(libId, verId);
                 faveStar.removeClass('fas').addClass('far');
@@ -305,8 +313,8 @@ export class Widget {
         }, this));
 
         versions.on('change', _.bind(function () {
-            var option = versions.find('option:selected');
-            var verId = option.attr('value');
+            const option = versions.find('option:selected');
+            const verId = option.attr('value');
 
             this.selectLibAndVersion(libId, verId);
             this.showSelectedLibs();
@@ -329,91 +337,79 @@ export class Widget {
         return result;
     }
 
-    addSearchResult(libId, library, searchResults) {
-        var card = this.newSearchResult(libId, library);
-        searchResults.append(card);
+    addSearchResult(libId, library) {
+        this.searchResults.append(this.newSearchResult(libId, library));
     }
 
     startSearching() {
-        var searchtext = this.domRoot.find('.lib-search-input').val();
-        var lcSearchtext = searchtext.toLowerCase();
+        const searchtext = this.domRoot.find('.lib-search-input').val().toString();
+        const lcSearchtext = searchtext.toLowerCase();
 
-        var searchResults = this.getAndEmptySearchResults();
+        this.emptySearchResults();
 
         if (Object.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length === 0) {
-            var nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
-            searchResults.append(nolibsMessage);
+            const nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
+            this.searchResults.append(nolibsMessage);
             return;
         }
-
-        var descriptionSearchResults = [];
 
         _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
             if (library.versions && library.versions.autodetect) return;
 
             if (library.name) {
                 if (library.name.toLowerCase().includes(lcSearchtext)) {
-                    this.addSearchResult(libId, library, searchResults);
+                    this.addSearchResult(libId, library);
                     return;
                 }
             }
 
             if (library.description) {
                 if (library.description.toLowerCase().includes(lcSearchtext)) {
-
-                    descriptionSearchResults.push({
-                        libId: libId,
-                        library: library,
-                        searchResults: searchResults,
-                    });
+                    this.addSearchResult(libId, library);
                 }
             }
-        }, this));
-
-        _.each(descriptionSearchResults, _.bind(function (res) {
-            this.addSearchResult(res.libId, res.library, res.searchResults);
         }, this));
     }
 
     showSelectedLibs() {
-        var items = this.domRoot.find('.libs-selected-items');
+        const items = this.domRoot.find('.libs-selected-items');
         items.html('');
 
-        var selectedLibs = this.listUsedLibs();
+        const selectedLibs = this.listUsedLibs();
         _.each(selectedLibs, _.bind(function (versionId, libId) {
-            var lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
-            var version = lib.versions[versionId];
+            const lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
+            const version = lib.versions[versionId];
 
-            var libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
+            const libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
             items.append(libDiv);
         }, this));
     }
 
     showSelectedLibsAsSearchResults() {
-        var searchResults = this.getAndEmptySearchResults();
+        this.emptySearchResults();
 
         if (Object.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length === 0) {
-            var nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
-            searchResults.append(nolibsMessage);
+            const nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
+            this.searchResults.append(nolibsMessage);
             return;
         }
 
         _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
             if (library.versions && library.versions.autodetect) return;
 
-            var card = this.newSearchResult(libId, library);
-            searchResults.append(card);
+            const card = this.newSearchResult(libId, library);
+            this.searchResults.append(card);
         }, this));
     }
 
     initLangDefaultLibs() {
-        var defaultLibs = options.defaultLibs[this.currentLangId];
+        const defaultLibs = options.defaultLibs[this.currentLangId];
         if (!defaultLibs) return;
         _.each(defaultLibs.split(':'), _.bind(function (libPair) {
-            var pairSplits = libPair.split('.');
+            const pairSplits = libPair.split('.');
             if (pairSplits.length === 2) {
-                var lib = pairSplits[0];
-                var ver = pairSplits[1];
+                const lib = pairSplits[0];
+                const ver = pairSplits[1];
                 this.markLibrary(lib, ver, true);
             }
         }, this));
@@ -438,7 +434,7 @@ export class Widget {
     }
 
     setNewLangId(langId, compilerId, possibleLibs) {
-        var libsInUse = this.listUsedLibs();
+        const libsInUse = this.listUsedLibs();
 
         this.currentLangId = langId;
 
@@ -486,7 +482,7 @@ export class Widget {
     };
 
     markLibrary(name, version, used) {
-        var actualVersion = this.getVersionOrAlias(name, version);
+        const actualVersion = this.getVersionOrAlias(name, version);
 
         if (this.availableLibs[this.currentLangId] &&
             this.availableLibs[this.currentLangId][this.currentCompilerId] &&
@@ -516,11 +512,11 @@ export class Widget {
     };
 
     listUsedLibs() {
-        var libs = {};
+        const libs = {};
         _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
             _.each(library.versions, function (version, ver) {
                 if (library.versions[ver].used) {
-                    // We trust the invariant of only 1 used version at any given time per lib
+                    // We trust the inconstiant of only 1 used version at any given time per lib
                     libs[libId] = ver;
                 }
             });
@@ -529,11 +525,11 @@ export class Widget {
     };
 
     getLibsInUse() {
-        var libs = [];
+        const libs = [];
         _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
             _.each(library.versions, function (version, ver) {
                 if (library.versions[ver].used) {
-                    var libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
+                    const libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
                     libs.push(libVer);
                 }
             });
