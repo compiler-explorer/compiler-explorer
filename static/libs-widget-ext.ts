@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options'
-import * as local from './local'
+import {options} from './options';
+import * as local from './local';
 
-const _ = require('underscore');
+const FAV_LIBS_STORE_KEY = 'favlibs';
 
 export class Widget {
     private domRoot: JQuery<HTMLElement>;
@@ -34,14 +34,14 @@ export class Widget {
     private currentCompilerId: string;
 
     private dropdownButton: JQuery<HTMLElement>;
-    private searchResults: any;
+    private searchResults: JQuery<HTMLElement>;
 
     private onChangeCallback: () => void;
 
     private availableLibs: any;
 
 
-    constructor(langId, compiler, dropdownButton, state, onChangeCallback, possibleLibs) {
+    constructor(langId: string, compiler: any, dropdownButton: JQuery<HTMLElement>, state: any, onChangeCallback: () => void, possibleLibs: any) {
         this.dropdownButton = dropdownButton;
         if (compiler) {
             this.currentCompilerId = compiler.id;
@@ -51,19 +51,13 @@ export class Widget {
         this.currentLangId = langId;
         this.domRoot = $('#library-selection').clone(true);
         this.initButtons();
-        this.onChangeCallback = function () {
+        this.onChangeCallback = function() {
             this.updateButton();
             onChangeCallback();
         };
         this.availableLibs = {};
         this.updateAvailableLibs(possibleLibs);
-        _.each(state.libs, _.bind(function (lib) {
-            if (lib.name && lib.ver) {
-                this.markLibrary(lib.name, lib.ver, true);
-            } else {
-                this.markLibrary(lib.id, lib.version, true);
-            }
-        }, this));
+        this.loadState(state);
 
         this.fullRefresh();
 
@@ -73,23 +67,31 @@ export class Widget {
             this.domRoot.addClass('mobile');
         }
 
-        this.domRoot.on('shown.bs.modal', function () {
+        this.domRoot.on('shown.bs.modal', function() {
             searchInput.trigger('focus');
         });
 
-        searchInput.on('input', _.bind(function () {
-            this.startSearching();
-        }, this));
+        searchInput.on('input', this.startSearching.bind(this));
 
-        this.domRoot.find('.lib-search-button').on('click', _.bind(function () {
-            this.startSearching();
-        }, this));
+        this.domRoot.find('.lib-search-button')
+            .on('click', this.startSearching.bind(this));
 
-        this.dropdownButton.on('click', _.bind(function () {
+        this.dropdownButton.on('click', () => {
             this.domRoot.modal({});
-        }, this));
+        });
 
         this.updateButton();
+    }
+
+    loadState(state: any) {
+        if (!state) return;
+        for (let lib of state.libs ?? []) {
+            if (lib.name && lib.ver) {
+                this.markLibrary(lib.name, lib.ver, true);
+            } else {
+                this.markLibrary(lib.id, lib.version, true);
+            }
+        }
     }
 
     initButtons() {
@@ -102,16 +104,16 @@ export class Widget {
         this.showFavorites();
     }
 
-    updateButton () {
+    updateButton() {
         const selectedLibs = this.get();
         let text = ' Libraries';
         if (selectedLibs.length > 0) {
+            // TEST
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
-                .prop('title', 'Current libraries:\n' + _.map(selectedLibs, function (lib) {
-                    return '- ' + lib.name;
-                }).join('\n'));
+                .prop('title', 'Current libraries:\n' +
+                    selectedLibs.map(lib => '- ' + lib.name).join('\n'));
             text = text + ' (' + selectedLibs.length + ')';
         } else {
             this.dropdownButton
@@ -124,15 +126,11 @@ export class Widget {
     }
 
     getFavorites() {
-        const storkey = 'favlibs';
-
-        return JSON.parse(local.get(storkey, '{}'));
+        return JSON.parse(local.get(FAV_LIBS_STORE_KEY, '{}'));
     }
 
     setFavorites(faves) {
-        const storkey = 'favlibs';
-
-        local.set(storkey, JSON.stringify(faves));
+        local.set(FAV_LIBS_STORE_KEY, JSON.stringify(faves));
     }
 
     isAFavorite(libId, versionId) {
@@ -156,29 +154,28 @@ export class Widget {
         this.setFavorites(faves);
     }
 
+    // TEST
     removeFromFavorites(libId, versionId) {
         const faves = this.getFavorites();
         if (faves[libId]) {
-            faves[libId] = _.filter(faves[libId], function (v) {
-                return (v !== versionId);
-            });
+            faves[libId] = faves[libId].filter(v => v !== versionId);
         }
 
         this.setFavorites(faves);
     }
 
-    newFavoriteLibDiv = function (libId, versionId, lib, version) {
+    newFavoriteLibDiv(libId, versionId, lib, version) {
         const template = $('#lib-favorite-tpl');
 
         const libDiv = $(template.children()[0].cloneNode(true));
 
         const quickSelectButton = libDiv.find('.lib-name-and-version');
         quickSelectButton.html(lib.name + ' ' + version.version);
-        quickSelectButton.on('click', _.bind(function () {
+        quickSelectButton.on('click', () => {
             this.selectLibAndVersion(libId, versionId);
             this.showSelectedLibs();
             this.onChangeCallback();
-        }, this));
+        });
 
         return libDiv;
     }
@@ -188,21 +185,23 @@ export class Widget {
         favoritesDiv.html('');
 
         const faves = this.getFavorites();
-        _.each(faves, _.bind(function (versionArr, libId) {
-            _.each(versionArr, _.bind(function (versionId) {
+        for (let libId in faves) {
+            const versionArr = faves[libId];
+            for (let versionId of versionArr) {
                 const lib = this.getLibInfoById(libId);
                 if (lib) {
                     const version = lib.versions[versionId];
                     if (version) {
-                        const div = this.newFavoriteLibDiv(libId, versionId, lib, version);
+                        // TEST
+                        const div: any = this.newFavoriteLibDiv(libId, versionId, lib, version);
                         favoritesDiv.append(div);
                     }
                 }
-            }, this));
-        }, this));
+            }
+        }
     }
 
-    emptySearchResults() {
+    clearSearchResults() {
         this.searchResults.html('');
     }
 
@@ -213,20 +212,20 @@ export class Widget {
 
         const detailsButton = libDiv.find('.lib-name-and-version');
         detailsButton.html(lib.name + ' ' + version.version);
-        detailsButton.on('click', _.bind(function () {
-            this.emptySearchResults()
+        detailsButton.on('click', () => {
+            this.clearSearchResults();
             this.addSearchResult(libId, lib);
-        }, this));
+        });
 
         const deleteButton = libDiv.find('.lib-remove');
-        deleteButton.on('click', _.bind(function () {
+        deleteButton.on('click', () => {
             this.markLibrary(libId, versionId, false);
             libDiv.remove();
             this.showSelectedLibs();
             this.onChangeCallback();
             // We need to refresh the library lists, or the selector will still show up with the old library version
             this.startSearching();
-        }, this));
+        });
 
         return libDiv;
     }
@@ -234,9 +233,9 @@ export class Widget {
     conjureUpExamples(result, lib) {
         const examples = result.find('.lib-examples');
         if (lib.examples && lib.examples.length > 0) {
-            const examplesHeader = $('<b>Examples</b>');
+            examples.append($('<b>Examples</b>'));
             const examplesList = $('<ul />');
-            _.each(lib.examples, function (exampleId) {
+            for (let exampleId of lib.examples) {
                 const li = $('<li />');
                 examplesList.append(li);
                 const exampleLink = $('<a>Example</a>');
@@ -244,9 +243,7 @@ export class Widget {
                 exampleLink.attr('target', '_blank');
                 exampleLink.attr('rel', 'noopener');
                 li.append(exampleLink);
-            });
-
-            examples.append(examplesHeader);
+            }
             examples.append(examplesList);
         }
     }
@@ -275,10 +272,11 @@ export class Widget {
         versions.append(noVersionSelectedOption);
         let hasVisibleVersions = false;
 
-        _.each(lib.versions, _.bind(function (version, versionId) {
+        for (let versionId in lib.versions) {
+            const version = lib.versions[versionId];
             const option = $('<option>');
             if (version.used) {
-                option.attr('selected','selected');
+                option.attr('selected', 'selected');
 
                 if (this.isAFavorite(libId, versionId)) {
                     faveStar.removeClass('far').addClass('fas');
@@ -292,14 +290,14 @@ export class Widget {
                 hasVisibleVersions = true;
                 versions.append(option);
             }
-        }, this));
+        }
 
         if (!hasVisibleVersions) {
             noVersionSelectedOption.text('No available versions');
             versions.prop('disabled', true);
         }
 
-        faveButton.on('click', _.bind(function () {
+        faveButton.on('click', () => {
             const option = versions.find('option:selected');
             const verId = option.attr('value');
             if (this.isAFavorite(libId, verId)) {
@@ -310,9 +308,9 @@ export class Widget {
                 faveStar.removeClass('far').addClass('fas');
             }
             this.showFavorites();
-        }, this));
+        });
 
-        versions.on('change', _.bind(function () {
+        versions.on('change', () => {
             const option = versions.find('option:selected');
             const verId = option.attr('value');
 
@@ -332,34 +330,37 @@ export class Widget {
             }
 
             this.onChangeCallback();
-        }, this));
+        });
 
         return result;
     }
 
     addSearchResult(libId, library) {
-        this.searchResults.append(this.newSearchResult(libId, library));
+        const result: any = this.newSearchResult(libId, library);
+        this.searchResults.append(result);
     }
 
     startSearching() {
-        const searchtext = this.domRoot.find('.lib-search-input').val().toString();
-        const lcSearchtext = searchtext.toLowerCase();
+        const searchValue = this.domRoot.find('.lib-search-input').val();
+        const lcSearchtext = searchValue.toString().toLowerCase();
 
-        this.emptySearchResults();
+        this.clearSearchResults();
 
         if (Object.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length === 0) {
-            const nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
+            const nolibsMessage: any = $($('#libs-dropdown').children()[0].cloneNode(true));
             this.searchResults.append(nolibsMessage);
             return;
         }
+        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        for (let libId in currentAvailableLibs) {
+            const library = currentAvailableLibs[libId];
 
-        _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
-            if (library.versions && library.versions.autodetect) return;
+            if (library.versions && library.versions.autodetect) break;
 
             if (library.name) {
                 if (library.name.toLowerCase().includes(lcSearchtext)) {
                     this.addSearchResult(libId, library);
-                    return;
+                    break;
                 }
             }
 
@@ -368,7 +369,7 @@ export class Widget {
                     this.addSearchResult(libId, library);
                 }
             }
-        }, this));
+        }
     }
 
     showSelectedLibs() {
@@ -376,43 +377,48 @@ export class Widget {
         items.html('');
 
         const selectedLibs = this.listUsedLibs();
-        _.each(selectedLibs, _.bind(function (versionId, libId) {
+        for (let libId in selectedLibs) {
+            const versionId = selectedLibs[libId];
+
             const lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
             const version = lib.versions[versionId];
 
-            const libDiv = this.newSelectedLibDiv(libId, versionId, lib, version);
+            const libDiv: any = this.newSelectedLibDiv(libId, versionId, lib, version);
             items.append(libDiv);
-        }, this));
+        }
     }
 
     showSelectedLibsAsSearchResults() {
-        this.emptySearchResults();
+        this.clearSearchResults();
 
         if (Object.keys(this.availableLibs[this.currentLangId][this.currentCompilerId]).length === 0) {
-            const nolibsMessage = $($('#libs-dropdown').children()[0].cloneNode(true));
+            const nolibsMessage: any = $($('#libs-dropdown').children()[0].cloneNode(true));
             this.searchResults.append(nolibsMessage);
             return;
         }
 
-        _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], _.bind(function (library, libId) {
+        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        for (let libId in currentAvailableLibs) {
+            const library = currentAvailableLibs[libId];
+
             if (library.versions && library.versions.autodetect) return;
 
-            const card = this.newSearchResult(libId, library);
+            const card: any = this.newSearchResult(libId, library);
             this.searchResults.append(card);
-        }, this));
+        }
     }
 
     initLangDefaultLibs() {
         const defaultLibs = options.defaultLibs[this.currentLangId];
         if (!defaultLibs) return;
-        _.each(defaultLibs.split(':'), _.bind(function (libPair) {
+        for (let libPair of defaultLibs.split(':')) {
             const pairSplits = libPair.split('.');
             if (pairSplits.length === 2) {
                 const lib = pairSplits[0];
                 const ver = pairSplits[1];
                 this.markLibrary(lib, ver, true);
             }
-        }, this));
+        }
     }
 
     updateAvailableLibs(possibleLibs) {
@@ -447,93 +453,77 @@ export class Widget {
         // Clear the dom Root so it gets rebuilt with the new language libraries
         this.updateAvailableLibs(possibleLibs);
 
-        _.forEach(libsInUse, _.bind(function (version, lib) {
-            this.markLibrary(lib, version, true);
-        }, this));
+        // TEST
+        for (let lib in libsInUse) {
+            this.markLibrary(lib, libsInUse[lib], true);
+        }
 
         this.fullRefresh();
         this.onChangeCallback();
     }
 
     getVersionOrAlias(name, version) {
-        if (this.availableLibs[this.currentLangId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId][name]) {
-            if (this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[version]) {
-                return version;
-            } else {
-                return _.findKey(
-                    this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions,
-                    function (ver) {
-                        return ver.alias && ver.alias.includes(version);
-                    });
-            }
+        // TEST
+        const lib = this.getLibInfoById(name);
+        if (!lib) return null;
+        if (lib.versions[version] != null) {
+            return version;
+        } else {
+            return lib.versions
+                .filter(ver => ver.alias && ver.alias.includes(version));
         }
     }
 
     getLibInfoById(libId) {
-        if (this.availableLibs[this.currentLangId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId][libId]) {
-            return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
-        }
-
-        return false;
+        // TEST
+        return this.availableLibs[this.currentLangId]?.[this.currentCompilerId]?.[libId];
     };
 
     markLibrary(name, version, used) {
-        const actualVersion = this.getVersionOrAlias(name, version);
-
-        if (this.availableLibs[this.currentLangId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId][name] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion]) {
-            this.availableLibs[this.currentLangId][this.currentCompilerId][name].versions[actualVersion].used = used;
+        const v = this.getLibInfoById(name)?.versions[this.getVersionOrAlias(name, version)];
+        if (v != null) {
+            v.used = used;
         }
     };
 
     selectLibAndVersion(libId, versionId) {
-        if (this.availableLibs[this.currentLangId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId] &&
-            this.availableLibs[this.currentLangId][this.currentCompilerId][libId]) {
-
-            _.each(
-                this.availableLibs[this.currentLangId][this.currentCompilerId][libId].versions,
-                function (curver, curverId) {
-                    curver.used = curverId === versionId;
-                });
-        }
+        this.markLibrary(libId, versionId, true);
     };
 
     get() {
-        return _.map(this.listUsedLibs(), function (item, libId) {
-            return {name: libId, ver: item};
-        });
+        const result = [];
+        const usedLibs = this.listUsedLibs();
+        for (let libId in usedLibs) {
+            result.push({name: libId, ver: usedLibs[libId]});
+        }
+        return result;
     };
 
     listUsedLibs() {
         const libs = {};
-        _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
-            _.each(library.versions, function (version, ver) {
-                if (library.versions[ver].used) {
-                    // We trust the inconstiant of only 1 used version at any given time per lib
-                    libs[libId] = ver;
+        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        for (let libId in currentAvailableLibs) {
+            const library = currentAvailableLibs[libId];
+            for (let verId in library.versions) {
+                if (library.versions[verId].used) {
+                    libs[libId] = verId;
                 }
-            });
-        });
+            }
+        }
         return libs;
     };
 
     getLibsInUse() {
         const libs = [];
-        _.each(this.availableLibs[this.currentLangId][this.currentCompilerId], function (library, libId) {
-            _.each(library.versions, function (version, ver) {
-                if (library.versions[ver].used) {
-                    const libVer = Object.assign({libId: libId, versionId: ver}, library.versions[ver]);
-                    libs.push(libVer);
+        const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
+        for (let libId in currentAvailableLibs) {
+            const library = currentAvailableLibs[libId];
+            for (let verId in library.versions) {
+                if (library.versions[verId].used) {
+                    libs.push(Object.assign({libId: libId, versionId: verId}, library.versions[verId]));
                 }
-            });
-        });
+            }
+        }
         return libs;
     };
 }
