@@ -1,0 +1,42 @@
+name: Library request
+description: Request a new library
+title: "[LIB REQUEST]: "
+labels: ["request", "new-libs"]
+body:
+  - type: input
+    id: library-name
+    attributes:
+      label: Library name
+      description: What is the name of the library?
+      placeholder: GoogleTest
+    validations:
+      required: true
+  - type: textarea
+    id: library-description
+    attributes:
+      label: Library description
+      description: A sentence that describes what this library does. It helps us when filling some of the UI elements when adding the library
+      placeholder: GoogleTest is a testing library for C++
+    validations:
+      required: true
+  - type: input
+    id: library-repository
+    attributes:
+      label: Library repository
+      description: A URL of where we can find the library.
+      placeholder: https://github.com/google/googletest
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: |
+        Is there any specific reason as to why you want this library to be added?
+
+        EXTRA:
+        It would be very helpful for the implementator to have some small snippet of code to tell when the library has been properly installed.
+        BUT do not feel forced to provide one, this is just a nice-to-have extra!
+      placeholder: It's an excellent testing library for testing C++ code
+    validations:
+      required: true

@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest an idea for the project
+title: "[REQUEST]: "
+labels: ["request"]
+body:
+  - type: textarea
+    id: introduction
+    attributes:
+      label: Is your feature request related to a problem? Please describe
+      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+      placeholder: I would like for there to be a macro expansion view for C++
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+      placeholder: Under the tool dropown, there would be a macro expansion pane, which pops up a new pane.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Describe alternatives you've considered
+      description: If applicable, please add a clear and concise description of any alternative solutions or features you've considered.
+      placeholder: You can pass -E to the compiler flags, but I'd like to easily side-by-side compare
+    validations:
+      required: true
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+      placeholder: I've also seen other users request this
+      value: Not applicable
+    validations:
+      required: false
