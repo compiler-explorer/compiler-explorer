@@ -57,11 +57,11 @@ body:
       label: Operating System
       placeholder: Ubuntu Linux 20.04
     validations:
-      required: true
+      required: false
   - type: input
     id: browser-version
     attributes:
       label: Browser version
       placeholder: Google Chrome 90.0.4430.72 (Official Build) (64-bit)
     validations:
-      required: true
+      required: false
