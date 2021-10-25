@@ -27,8 +27,8 @@ assignees:
 **Desktop**
 <!-- Please complete the following information if you are running a local instance of Compiler Explorer -->
  - OS: <!-- [e.g. iOS] -->
- - Browser <!-- [e.g. chrome, safari] -->
- - Version <!-- [e.g. 22] -->
+ - Browser: <!-- [e.g. chrome, safari] -->
+ - Version: <!-- [e.g. 22] -->
 
 **Additional context**
 <!-- Add any other context about the problem here. -->
