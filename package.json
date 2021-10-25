@@ -79,7 +79,7 @@
     "whatwg-fetch": "^3.6.2",
     "which": "^2.0.2",
     "winston": "^3.3.3",
-    "winston-loki": "^6.0.2",
+    "winston-loki": "6.0.1",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.4.0",
     "wolfy87-eventemitter": "^5.2.9",
