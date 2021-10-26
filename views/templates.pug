@@ -26,15 +26,16 @@
         button#vim-flag.btn.btn-sm.btn-light(title="Toggle Vim Keybindings")
           span.fab.fa-vimeo-v
           span.hideable Vim
-      .btn-group.btn-group-sm(role="group" aria-label="External Sites")
-        a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" aria-label="Open in Cppinsights")
-          svg(height="16" width="16")
-            include resources/cppinsights.svg
-          span.hideable CppInsights
-        a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
-          svg(height="16" width="16")
-            include resources/quickbench.svg
-          span.hideable Quick-bench
+      if thirdPartyIntegrationEnabled
+        .btn-group.btn-group-sm(role="group" aria-label="External Sites")
+          a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" aria-label="Open in Cppinsights")
+            svg(height="16" width="16")
+              include resources/cppinsights.svg
+            span.hideable CppInsights
+          a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
+            svg(height="16" width="16")
+              include resources/quickbench.svg
+            span.hideable Quick-bench
       .btn-group.btn-group-sm.mx-auto
         button.btn.btn-sm.btn-outline-info.currentCursorPosition(disabled=true)
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
