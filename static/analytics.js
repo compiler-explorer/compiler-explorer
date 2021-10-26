@@ -26,7 +26,7 @@
 var options = require('options').options;
 var Sentry = require('@sentry/browser');
 
-if (options.sentryDsn) {
+if (options.statusTrackingEnabled && options.sentryDsn) {
     Sentry.init({
         dsn: options.sentryDsn,
         release: options.release,
@@ -41,7 +41,7 @@ function GAProxy() {
     this.proxy = function () {};
 
     this.initialise = function () {
-        if (!this.isEnabled && options.googleAnalyticsEnabled) {
+        if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
             // Check if this is a re-enable, as the script is already there in this case
             if (!this.hasBeenEnabled) {
                 (function (i, s, o, g, r, a, m) {

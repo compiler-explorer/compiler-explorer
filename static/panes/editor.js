@@ -487,27 +487,31 @@ Editor.prototype.initButtons = function (state) {
         }
     }, this));
 
-    this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
-    this.cppInsightsButton.on('mousedown', _.bind(function () {
-        this.updateOpenInCppInsights();
-    }, this));
+    if (options.thirdPartyIntegrationEnabled) {
+        this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
+        this.cppInsightsButton.on('mousedown', _.bind(function () {
+            this.updateOpenInCppInsights();
+        }, this));
 
-    this.quickBenchButton = this.domRoot.find('.open-in-quickbench');
-    this.quickBenchButton.on('mousedown', _.bind(function () {
-        this.updateOpenInQuickBench();
-    }, this));
+        this.quickBenchButton = this.domRoot.find('.open-in-quickbench');
+        this.quickBenchButton.on('mousedown', _.bind(function () {
+            this.updateOpenInQuickBench();
+        }, this));
+    }
 
     this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
     this.currentCursorPosition.hide();
 };
 
 Editor.prototype.updateButtons = function () {
-    if (this.currentLanguage.id === 'c++') {
-        this.cppInsightsButton.show();
-        this.quickBenchButton.show();
-    } else {
-        this.cppInsightsButton.hide();
-        this.quickBenchButton.hide();
+    if (options.thirdPartyIntegrationEnabled) {
+        if (this.currentLanguage.id === 'c++') {
+            this.cppInsightsButton.show();
+            this.quickBenchButton.show();
+        } else {
+            this.cppInsightsButton.hide();
+            this.quickBenchButton.hide();
+        }
     }
 
     this.addExecutorButton.prop('disabled', !this.currentLanguage.supportsExecute);
@@ -546,30 +550,33 @@ Editor.prototype.getCompilerStates = function () {
 };
 
 Editor.prototype.updateOpenInCppInsights = function () {
-    var cppStd = 'cpp2a';
+    if (options.thirdPartyIntegrationEnabled) {
+        var cppStd = 'cpp2a';
 
-    var compilers = this.getCompilerStates();
-    _.each(compilers, _.bind(function (compiler) {
-        if ((compiler.options.indexOf('-std=c++11') !== -1) ||
-            (compiler.options.indexOf('-std=gnu++11') !== -1)) {
-            cppStd = 'cpp11';
-        } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
-            (compiler.options.indexOf('-std=gnu++14') !== -1)) {
-            cppStd = 'cpp14';
-        } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
-            (compiler.options.indexOf('-std=gnu++17') !== -1)) {
-            cppStd = 'cpp17';
-        } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
-            (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
-            cppStd = 'cpp2a';
-        } else if (compiler.options.indexOf('-std=c++98') !== -1) {
-            cppStd = 'cpp98';
-        }
-    }, this));
+        var compilers = this.getCompilerStates();
+        _.each(compilers, _.bind(function (compiler) {
+            if ((compiler.options.indexOf('-std=c++11') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++11') !== -1)) {
+                cppStd = 'cpp11';
+            } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++14') !== -1)) {
+                cppStd = 'cpp14';
+            } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++17') !== -1)) {
+                cppStd = 'cpp17';
+            } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
+                (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
+                cppStd = 'cpp2a';
+            } else if (compiler.options.indexOf('-std=c++98') !== -1) {
+                cppStd = 'cpp98';
+            }
+        }, this));
 
-    var link = 'https://cppinsights.io/lnk?code=' + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
+        var link = 'https://cppinsights.io/lnk?code='
+            + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
 
-    this.domRoot.find('.open-in-cppinsights').attr('href', link);
+        this.cppInsightsButton.attr('href', link);
+    }
 };
 
 Editor.prototype.cleanupSemVer = function (semver) {
@@ -585,64 +592,66 @@ Editor.prototype.cleanupSemVer = function (semver) {
 };
 
 Editor.prototype.updateOpenInQuickBench = function () {
-    var quickBenchState = {
-        text: this.getSource(),
-    };
+    if (options.thirdPartyIntegrationEnabled) {
+        var quickBenchState = {
+            text: this.getSource(),
+        };
 
-    var compilers = this.getCompilerStates();
+        var compilers = this.getCompilerStates();
 
-    _.each(compilers, _.bind(function (compiler) {
-        var knownCompiler = false;
+        _.each(compilers, _.bind(function (compiler) {
+            var knownCompiler = false;
 
-        var compilerExtInfo = this.hub.compilerService.findCompiler(this.currentLanguage.id, compiler.compiler);
-        var semver = this.cleanupSemVer(compilerExtInfo.semver);
-        var groupOrName =
-            compilerExtInfo.baseName ? compilerExtInfo.baseName :
-                compilerExtInfo.groupName ? compilerExtInfo.groupName : compilerExtInfo.name;
+            var compilerExtInfo = this.hub.compilerService.findCompiler(this.currentLanguage.id, compiler.compiler);
+            var semver = this.cleanupSemVer(compilerExtInfo.semver);
+            var groupOrName =
+                compilerExtInfo.baseName ? compilerExtInfo.baseName :
+                    compilerExtInfo.groupName ? compilerExtInfo.groupName : compilerExtInfo.name;
 
-        if (semver && groupOrName) {
-            groupOrName = groupOrName.toLowerCase();
-            if (groupOrName.indexOf('gcc') !== -1) {
-                quickBenchState.compiler = 'gcc-' + semver;
-                knownCompiler = true;
-            } else if (groupOrName.indexOf('clang') !== -1) {
-                quickBenchState.compiler = 'clang-' + semver;
-                knownCompiler = true;
-            }
-        }
-
-        if (knownCompiler) {
-            var match = compiler.options.match(/-(O([0-3sg]|fast))/);
-            if (match !== null) {
-                if (match[2] === 'fast') {
-                    quickBenchState.optim = 'F';
-                } else {
-                    quickBenchState.optim = match[2].toUpperCase();
+            if (semver && groupOrName) {
+                groupOrName = groupOrName.toLowerCase();
+                if (groupOrName.indexOf('gcc') !== -1) {
+                    quickBenchState.compiler = 'gcc-' + semver;
+                    knownCompiler = true;
+                } else if (groupOrName.indexOf('clang') !== -1) {
+                    quickBenchState.compiler = 'clang-' + semver;
+                    knownCompiler = true;
                 }
             }
 
-            if ((compiler.options.indexOf('-std=c++11') !== -1) ||
-                (compiler.options.indexOf('-std=gnu++11') !== -1)) {
-                quickBenchState.cppVersion = '11';
-            } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
-                (compiler.options.indexOf('-std=gnu++14') !== -1)) {
-                quickBenchState.cppVersion = '14';
-            } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
-                (compiler.options.indexOf('-std=gnu++17') !== -1)) {
-                quickBenchState.cppVersion = '17';
-            } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
-                (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
-                quickBenchState.cppVersion = '20';
-            }
+            if (knownCompiler) {
+                var match = compiler.options.match(/-(O([0-3sg]|fast))/);
+                if (match !== null) {
+                    if (match[2] === 'fast') {
+                        quickBenchState.optim = 'F';
+                    } else {
+                        quickBenchState.optim = match[2].toUpperCase();
+                    }
+                }
 
-            if ((compiler.options.indexOf('-stdlib=libc++') !== -1)) {
-                quickBenchState.lib = 'llvm';
-            }
-        }
-    }, this));
+                if ((compiler.options.indexOf('-std=c++11') !== -1) ||
+                    (compiler.options.indexOf('-std=gnu++11') !== -1)) {
+                    quickBenchState.cppVersion = '11';
+                } else if ((compiler.options.indexOf('-std=c++14') !== -1) ||
+                    (compiler.options.indexOf('-std=gnu++14') !== -1)) {
+                    quickBenchState.cppVersion = '14';
+                } else if ((compiler.options.indexOf('-std=c++17') !== -1) ||
+                    (compiler.options.indexOf('-std=gnu++17') !== -1)) {
+                    quickBenchState.cppVersion = '17';
+                } else if ((compiler.options.indexOf('-std=c++2a') !== -1) ||
+                    (compiler.options.indexOf('-std=gnu++2a') !== -1)) {
+                    quickBenchState.cppVersion = '20';
+                }
 
-    var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
-    this.domRoot.find('.open-in-quickbench').attr('href', link);
+                if ((compiler.options.indexOf('-stdlib=libc++') !== -1)) {
+                    quickBenchState.lib = 'llvm';
+                }
+            }
+        }, this));
+
+        var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
+        this.quickBenchButton.attr('href', link);
+    }
 };
 
 Editor.prototype.changeLanguage = function (newLang) {
@@ -749,7 +758,7 @@ Editor.prototype.initEditorActions = function () {
 
     this.isCpp = this.editor.createContextKey('isCpp', true);
     this.isCpp.set(this.currentLanguage.id === 'c++');
-    
+
     this.isClean = this.editor.createContextKey('isClean', true);
     this.isClean.set(this.currentLanguage.id === 'clean');
 
