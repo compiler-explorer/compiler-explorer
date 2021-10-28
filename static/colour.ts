@@ -24,11 +24,13 @@
 
 import * as monaco from 'monaco-editor';
 
+type AppTheme = 'default' | 'dark' | 'all';
+
 interface ColourScheme {
     name: string;
     desc: string;
     count: number;
-    themes: ('default' | 'dark' | 'all')[];
+    themes: AppTheme[];
 }
 
 // If you want to use a scheme in every theme, set `theme: ['all']`
