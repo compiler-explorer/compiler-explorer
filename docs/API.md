@@ -163,7 +163,9 @@ Formatters available can be found with `GET /api/formats`
 ```JSON
 {
     "source": "int main(     ) {}",
-    "base": "Google"
+    "base": "Google",
+    "useSpaces": false,
+    "tabWidth": 4
 }
 ```
 
