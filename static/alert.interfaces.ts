@@ -39,6 +39,11 @@ export interface AlertAskOptions {
     onClose?: () => void;
 }
 
+export type AlertEnterTextOptions = {
+    /** The enter text action returns a value which is captured here */
+    yes?: (answer: string) => void;
+} & Partial<Pick<AlertAskOptions, 'no' | 'yesHtml' | 'yesClass' | 'noHtml' | 'noClass' | 'onClose'>>;
+
 export interface AlertNotifyOptions {
     /**
      * Which group this notification is from. Sets data-group attribute value
