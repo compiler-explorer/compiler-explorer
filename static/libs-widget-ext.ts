@@ -427,7 +427,7 @@ export class Widget {
     }
 
     initLangDefaultLibs() {
-        const defaultLibs: string | null = options.defaultLibs[this.currentLangId];
+        const defaultLibs = options.defaultLibs[this.currentLangId];
         if (!defaultLibs) return;
         for (let libPair of defaultLibs.split(':')) {
             const pairSplits = libPair.split('.');

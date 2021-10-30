@@ -44,6 +44,7 @@ export type LanguageLibs = {[libId: string]: Library};
 
 export type Libs = {[langId: string]: LanguageLibs};
 
-export interface CompilerExplorerOptions {
+export interface Options {
     libs: Libs;
+    defaultLibs: {[langId: string]: string | null};
 }

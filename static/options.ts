@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerExplorerOptions } from './options.interfaces';
+import { Options } from './options.interfaces';
 
 const configElement = document.getElementById('config');
 
@@ -38,4 +38,4 @@ declare var __webpack_public_path__: string;
 
 __webpack_public_path__ = window.staticRoot;
 
-export const options: CompilerExplorerOptions & {[key: string]: unknown} = window.compilerExplorerOptions as CompilerExplorerOptions & {[key: string]: unknown} ;
+export const options: Options & {[key: string]: unknown} = window.compilerExplorerOptions as Options & {[key: string]: unknown} ;
