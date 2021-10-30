@@ -1504,20 +1504,16 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    var libUtils = new LibUtils();
-
     this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
         state, _.bind(this.onLibsChanged, this),
-        libUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
 };
 
 Compiler.prototype.updateLibraries = function () {
     if (this.libsWidget) {
-        var libUtils = new LibUtils();
-
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
         }
 
         this.libsWidget.setNewLangId(this.currentLangId,

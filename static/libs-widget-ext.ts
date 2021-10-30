@@ -24,6 +24,8 @@
 
 import { options } from './options';
 import * as local from './local';
+import { Library, LibraryVersion } from './options.interfaces';
+
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -31,26 +33,10 @@ interface WidgetState {
     libs?: {id?: string, name?: string, ver?: string, version?: string}[];
 }
 
-interface LibraryVersion {
-    version: string;
-    hidden: boolean;
-    used: boolean;
-    alias?: string[];
-}
 
-type LibraryVersions = {[versionId: string]: LibraryVersion};
-
-interface Library {
-    name: string;
-    description?: string;
-    url?: string;
-    versions: LibraryVersions;
-    examples?: string[];
-}
-
-type CompilerLibs = {[libId: string]: Library};
-type LanguageLibs = {[compilerId: string]: CompilerLibs};
-type AvailableLibs = {[langId: string]: LanguageLibs};
+export type CompilerLibs = {[libId: string]: Library};
+type LangLibs = {[libId: string]: CompilerLibs};
+type AvailableLibs = {[langId: string]: LangLibs};
 
 type FavLibraries = {[libId: string]: string[]};
 

@@ -22,20 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerExplorerOptions } from './options.interfaces';
-
-const configElement = document.getElementById('config');
-
-window.httpRoot = configElement.getAttribute('httpRoot');
-window.staticRoot = configElement.getAttribute('staticRoot');
-
-const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
-for (const key in extraOptions) {
-    window.compilerExplorerOptions[key] = extraOptions[key];
+export interface LibraryVersion {
+    version: string;
+    hidden: boolean;
+    used: boolean;
+    alias?: string[];
 }
 
-declare var __webpack_public_path__: string;
+export type LibraryVersions = {[versionId: string]: LibraryVersion};
 
-__webpack_public_path__ = window.staticRoot;
+export interface Library {
+    name: string;
+    description?: string;
+    url?: string;
+    versions: LibraryVersions;
+    examples?: string[];
+}
 
-export const options: CompilerExplorerOptions & {[key: string]: unknown} = window.compilerExplorerOptions as CompilerExplorerOptions & {[key: string]: unknown} ;
+
+export type LanguageLibs = {[libId: string]: Library};
+
+export type Libs = {[langId: string]: LanguageLibs};
+
+export interface CompilerExplorerOptions {
+    libs: Libs;
+}
