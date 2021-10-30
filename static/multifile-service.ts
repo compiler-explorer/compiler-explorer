@@ -475,7 +475,7 @@ export class MultifileService {
 
         return new Promise((resolve) => {
             this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
-                yes: (value) => {
+                yes: (value: string) => {
                     if (value !== '' && value[0] !== '/') {
                         if (!this.fileExists(value, file)) {
                             file.filename = value;

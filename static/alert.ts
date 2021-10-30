@@ -24,7 +24,7 @@
 
 import $ from 'jquery';
 
-import { AlertAskOptions, AlertNotifyOptions } from "./alert.interfaces";
+import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
 
 export class Alert {
     yesHandler: (answer?: string | string[] | number) => void | null = null;
@@ -137,7 +137,7 @@ export class Alert {
     /**
      * Asks the user a two choice question, where the title, content and buttons are customizable
      */
-    enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertAskOptions) {
+    enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
         this.yesHandler = askOptions?.yes ?? (() => undefined);
         this.noHandler = askOptions?.no ?? (() => undefined);
