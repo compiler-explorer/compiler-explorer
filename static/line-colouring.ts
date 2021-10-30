@@ -112,10 +112,18 @@ export class LineColouring {
     }
 
     public getColoursForCompiler(compilerId: number): Object {
-        return this.linesAndColourByCompiler[compilerId];
+        if (this.linesAndColourByCompiler[compilerId]) {
+            return this.linesAndColourByCompiler[compilerId];
+        } else {
+            return {};
+        }
     }
 
     public getColoursForEditor(editorId: number): Object {
-        return this.linesAndColourByEditor[editorId];
+        if (this.linesAndColourByEditor[editorId]) {
+            return this.linesAndColourByEditor[editorId];
+        } else {
+            return {};
+        }
     }
 };
