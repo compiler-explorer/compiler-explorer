@@ -4,6 +4,7 @@ on: [ push ]
 
 jobs:
   build-and-test:
+    if: github.repository_owner != 'compiler-explorer'
     runs-on: ubuntu-20.04
 
     steps:
@@ -34,7 +35,6 @@ jobs:
         run: npm run codecov
 
   build-dist-and-deploy:
-    needs: build-and-test
     if: github.repository_owner == 'compiler-explorer'
     runs-on: ubuntu-20.04
 
@@ -60,6 +60,14 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Install prerequisites
+        run: make prereqs
+      - name: Build and test
+        run: |
+          npm run lint
+          npm run ci-test
+      - name: Code coverage
+        run: npm run codecov
       - name: Build distribution
         id: build_dist
         run: |
