@@ -43,12 +43,14 @@ export interface SiteSettings {
     autoCloseBrackets: boolean;
     autoIndent: boolean;
     allowStoreCodeDebug: boolean;
+    alwaysEnableAllSchemes: boolean;
     colouriseAsm: boolean;
     colourScheme: ColourScheme;
     compileOnChange: boolean;
     // TODO(supergrecko): make this more precise
     defaultLanguage: string;
     delayAfterChange: number;
+    enableCodeLens: boolean;
     enableCommunityAds: boolean
     enableCtrlS: boolean;
     enableCtrlStree: boolean;

@@ -121,11 +121,14 @@ function setupSettings(root, settings, onChange, subLangId) {
     settings.defaultLanguage = settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
     var settingsObjs = [];
 
+    var currentSettings = settings;
+
     function onUiChange() {
         var settings = {};
         _.each(settingsObjs, function (s) {
             settings[s.name] = s.getUi();
         });
+        currentSettings = settings;
         onChange(settings);
     }
 
@@ -186,6 +189,9 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.useCustomContextMenu'), 'useCustomContextMenu', true, Checkbox);
     add(root.find('.showMinimap'), 'showMinimap', true, Checkbox);
 
+    var enableAllSchemesCheckbox = root.find('.alwaysEnableAllSchemes');
+    add(enableAllSchemesCheckbox, 'alwaysEnableAllSchemes', false, Checkbox);
+
     function handleThemes() {
         var newTheme = themeSelect.val();
         // Store the scheme of the old theme
@@ -195,8 +201,9 @@ function setupSettings(root, settings, onChange, subLangId) {
         var isStoredUsable = false;
         colourSchemeSelect.empty();
         _.each(colour.schemes, function (scheme) {
-            if (!scheme.themes || scheme.themes.length === 0 || scheme.themes.indexOf(newTheme) !== -1 ||
-                scheme.themes.indexOf('all') !== -1) {
+            if (currentSettings.alwaysEnableAllSchemes
+                || !scheme.themes || scheme.themes.length === 0
+                || scheme.themes.indexOf(newTheme) !== -1 || scheme.themes.indexOf('all') !== -1) {
 
                 colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
                 if (newThemeStoredScheme === scheme.name) {
@@ -256,6 +263,7 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.useVim'), 'useVim', false, Checkbox);
     add(root.find('.autoIndent'), 'autoIndent', true, Checkbox);
     add(root.find('.keepSourcesOnLangChange'), 'keepSourcesOnLangChange', false, Checkbox);
+    add(root.find('.enableCodeLens'), 'enableCodeLens', true, Checkbox);
 
     setSettings(settings);
     handleThemes();
@@ -263,6 +271,8 @@ function setupSettings(root, settings, onChange, subLangId) {
         handleThemes();
         $.data(themeSelect, 'last-theme', themeSelect.val());
     });
+    enableAllSchemesCheckbox.change(handleThemes);
+
     $.data(themeSelect, 'last-theme', themeSelect.val());
     return setSettings;
 }
