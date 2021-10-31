@@ -133,8 +133,8 @@ describe('Multi caches', () => {
         const subCache1 = new InMemoryCache('test', 1);
         const subCache2 = new InMemoryCache('test', 1);
         // Set up caches with deliberately skew values for the same key.
-        subCache1.put('a key', 'cache1');
-        subCache2.put('a key', 'cache2');
+        await subCache1.put('a key', 'cache1');
+        await subCache2.put('a key', 'cache2');
         const cache = new MultiCache('test', subCache1, subCache2);
         await cache.get('a key').should.eventually.eql({hit: true, data: Buffer.from('cache1')});
 

@@ -481,19 +481,19 @@ export class Tree {
         const addEditorButton = this.domRoot.find('.add-editor');
         const saveProjectButton = this.domRoot.find('.save-project-to-file');
 
-        saveProjectButton.on('click', () => {
-            this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
+        saveProjectButton.on('click', async () => {
+            await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file');
-        loadProjectFromFile.on('change', (e) => {
+        loadProjectFromFile.on('change', async (e) => {
             const files = e.target.files;
             if (files.length > 0) {
                 this.multifileService.forEachFile((file: MultifileFile) => {
                     this.removeFile(file.fileId);
                 });
 
-                this.multifileService.loadProjectFromFile(files[0], (file: MultifileFile) => {
+                await this.multifileService.loadProjectFromFile(files[0], (file: MultifileFile) => {
                     this.refresh();
                     if (file.filename === 'CMakeLists.txt') {
                         // todo: find a way to toggle on CMake checkbox...
