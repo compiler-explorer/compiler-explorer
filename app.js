@@ -557,7 +557,7 @@ async function main() {
         metricsServer.get('/metrics', async (req, res) => {
             try {
                 res.set('Content-Type', PromClient.register.contentType);
-                res.end(await PromClient.register.metrics());
+                res.end(PromClient.register.metrics());
             } catch (ex) {
                 res.status(500).end(ex);
             }

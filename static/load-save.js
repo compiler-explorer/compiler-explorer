@@ -50,7 +50,12 @@ function LoadSave() {
     this.editorText = '';
     this.extension = '.txt';
     this.base = window.httpRoot;
-    this.fetchBuiltins();
+    this.fetchBuiltins()
+        .then(function () {
+        })
+        .catch(function () {
+            // swallow up errors
+        });
 }
 
 LoadSave.prototype.initializeIfNeeded = function () {
@@ -179,8 +184,8 @@ LoadSave.prototype.onSaveToBrowserStorage = function () {
         this.modal.modal('hide');
         this.alertSystem.ask(
             'Replace current?',
-            "Do you want to replace the existing saved file '" + name + "'?",
-            { yes: done });
+            'Do you want to replace the existing saved file \'' + name + '\'?',
+            {yes: done});
     } else {
         done();
         this.modal.modal('hide');
@@ -199,7 +204,7 @@ LoadSave.prototype.onSaveToFile = function (fileEditor) {
         var name = fileLang !== undefined && fileEditor !== undefined ?
             (fileLang + ' Editor #' + fileEditor + ' ') : '';
         saveAs(
-            new Blob([this.editorText], { type: 'text/plain;charset=utf-8' }),
+            new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
             'Compiler Explorer ' + name + 'Code' + this.extension);
         return true;
     } catch (e) {
@@ -222,4 +227,4 @@ LoadSave.prototype.doLoad = function (element) {
 };
 
 
-module.exports = { LoadSave: LoadSave };
+module.exports = {LoadSave: LoadSave};
