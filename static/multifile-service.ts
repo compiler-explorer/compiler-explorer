@@ -133,7 +133,7 @@ export class MultifileService {
 
         const zip = await JSZip.loadAsync(f);
 
-        zip.forEach(async (relativePath, zipEntry) => {
+        await Promise.all(zip.map(async (relativePath, zipEntry) => {
             if (!zipEntry.dir) {
                 let removeFromName = 0;
                 if (relativePath.indexOf(zipFilename + '/') === 0) {
@@ -167,7 +167,7 @@ export class MultifileService {
                 this.addFile(file);
                 callback(file);
             }
-        });
+        }));
     }
 
     public async saveProjectToZipfile(callback: (any) => void) {
@@ -389,7 +389,7 @@ export class MultifileService {
         if (file.filename === '') {
             const isRenamed = await this.renameFile(fileId);
             if (isRenamed) {
-                this.includeByFileId(fileId);
+                await this.includeByFileId(fileId);
             } else {
                 file.isIncluded = false;
             }
