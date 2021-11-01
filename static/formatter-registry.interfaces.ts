@@ -22,10 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { FormatBase } from './settings.interfaces';
+
 export interface FormatRequestOptions {
     source: string;
     formatterId: string;
-    base: string;
+    /**
+     * Specifies which formatting preset to use. "__DefaultStyle" means the
+     * formatter doesn't have style presets, and that the backend should
+     * ignore the "base" option.
+     */
+    base: FormatBase | '__DefaultStyle';
     tabWidth: number;
     useSpaces: boolean;
 }
