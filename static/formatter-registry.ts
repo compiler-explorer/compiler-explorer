@@ -56,14 +56,22 @@ const getFormattedCode = async ({ source, formatterId, base, tabWidth, useSpaces
     }
     // We had an error (either HTTP request error, or API error)
     // Figure out which it is, show it to the user, and reject the promise
-    const cause = (res.status === 200) ? body.answer : res.statusText;
+    const cause = body?.answer ?? res.statusText
     throw new Error(cause);
 };
 
+/**
+ * Create a monaco DocumentFormattingEditProvider for a registered monaco
+ * language.
+ *
+ * @param language The monaco-editor registered language to format code for
+ * @param formatter The CE format API backend to use
+ * @param isOneTrueStyle Whether the CE format API backend has one true style
+ */
 const getDocumentFormatter = (
     language: string,
     formatter: string,
-    formatBase: string,
+    isOneTrueStyle: boolean,
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
@@ -71,14 +79,17 @@ const getDocumentFormatter = (
         token: monaco.CancellationToken,
     ): Promise<monaco.languages.TextEdit[]> {
         const settings: SiteSettings = getStoredSettings();
+        // If there is only one style, return __DefaultStyle.
+        const base = isOneTrueStyle ? '__DefaultStyle' : settings.formatBase;
         const source = model.getValue();
-        // Request the formatted code. If that API call fails, we just back off and return the user's old code.
+        // Request the formatted code. If that API call fails, we just back off
+        // and return the user's old code.
         const formattedSource = await getFormattedCode({
             formatterId: formatter,
-            base: formatBase,
             tabWidth: settings.tabWidth,
             useSpaces: settings.useSpaces,
             source,
+            base,
         }).catch(err => onFormatError(err, source));
         return [{
             range: model.getFullModelRange(),
@@ -87,7 +98,13 @@ const getDocumentFormatter = (
     },
 });
 
-monaco.languages.registerDocumentFormattingEditProvider('cppp', getDocumentFormatter('cppp', 'clangformat', 'Google'));
-monaco.languages.registerDocumentFormattingEditProvider('go', getDocumentFormatter('go', 'gofmt', 'None'));
-monaco.languages.registerDocumentFormattingEditProvider('nc', getDocumentFormatter('nc', 'clangformat', 'Google'));
-monaco.languages.registerDocumentFormattingEditProvider('rust', getDocumentFormatter('rust', 'rustfmt', 'None'));
+/** Register a monaco-editor language's default document formatting provider */
+const register = (lang: string, formatter: string, isOneTrueStyle: boolean) => {
+    const provider = getDocumentFormatter(lang, formatter, isOneTrueStyle);
+    monaco.languages.registerDocumentFormattingEditProvider(lang, provider);
+}
+
+register('cppp', 'clangformat', false);
+register('nc', 'clangformat', false);
+register('go', 'gofmt', true);
+register('rust', 'rustfmt', true);

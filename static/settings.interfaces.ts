@@ -30,7 +30,7 @@ type ColourScheme =
     | 'gray-shade'
     | 'rainbow-dark';
 
-type FormatBase =
+export type FormatBase =
     | 'Google'
     | 'LLVM'
     | 'Mozilla'
