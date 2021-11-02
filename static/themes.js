@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt & Rubén Rincón
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,23 +24,40 @@
 
 'use strict';
 var $ = require('jquery');
+var monaco = require('monaco-editor');
 
 var themes = {
     default: {
         path: 'default',
         id: 'default',
-        name: 'Default',
+        name: 'Light',
         'main-color': '#f2f2f2',
-        monaco: 'vs', // Optional field
+        monaco: 'ce',
     },
     dark: {
         path: 'dark',
         id: 'dark',
         name: 'Dark',
         'main-color': '#333333',
-        monaco: 'vs-dark',
+        monaco: 'ce-dark',
     },
 };
+
+monaco.editor.defineTheme('ce', {
+    base: 'vs',
+    inherit: true,
+    rules: [
+        { token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold' },
+    ],
+});
+
+monaco.editor.defineTheme('ce-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+        { token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold' },
+    ],
+});
 
 function Themer(eventHub, initialSettings) {
     this.currentTheme = null;
@@ -48,8 +65,7 @@ function Themer(eventHub, initialSettings) {
 
     this.setTheme = function (theme) {
         if (this.currentTheme === theme) return;
-        var cssData = require('./themes/' + theme.path + '-theme.css');
-        $('#theme').html(cssData.toString());
+        $('html').attr('data-theme', theme.path);
         $('#meta-theme').prop('content', theme['main-color']);
         monaco.editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
@@ -61,6 +77,11 @@ function Themer(eventHub, initialSettings) {
         if (!newTheme.monaco)
             newTheme.monaco = 'vs';
         this.setTheme(newTheme);
+
+        // This line is used to set thet codelens font
+        // Official support using the IEditorOptions.codeLensFontFamily property has landed in vscode
+        // It should be removed once a downstream release of monaco is cut
+        document.querySelector(':root').style.setProperty('--user-selected-font-stack', newSettings.editorsFFont);
     };
     this.onSettingsChange(initialSettings);
 

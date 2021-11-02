@@ -18,17 +18,15 @@
 // CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 // SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const NimCompiler = require('../lib/compilers/nim');
-const {makeCompilationEnvironment} = require('./utils');
+import path from 'path';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { NimCompiler } from '../lib/compilers/nim';
+
+import { makeCompilationEnvironment, should } from './utils';
 
 const languages = {
     nim: {id: 'nim'},
@@ -62,7 +60,7 @@ describe('Nim', () => {
     it('test getCacheFile from possible user-options', () => {
         const compiler = new NimCompiler(info, ce),
             input = 'test.min',
-            folder = '/tmp/',
+            folder = path.join('/', 'tmp/'),
             expected = {
                 cpp: folder + '@m' + input + '.cpp.o',
                 c: folder + '@m' + input + '.c.o',
@@ -72,7 +70,8 @@ describe('Nim', () => {
         for (const lang of ['cpp', 'c', 'objc']) {
             compiler.getCacheFile([lang], input, folder).should.equal(expected[lang]);
         }
-        chai.assert.equal(compiler.getCacheFile([], input, folder), null);
-        chai.assert.equal(compiler.getCacheFile(['js'], input, folder), null);
+
+        should.equal(compiler.getCacheFile([], input, folder), null);
+        should.equal(compiler.getCacheFile(['js'], input, folder), null);
     });
 });

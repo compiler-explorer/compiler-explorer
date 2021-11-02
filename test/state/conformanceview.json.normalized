@@ -45,6 +45,7 @@
             },
             "compilers": [
                 {
+                    "_internalid": 1,
                     "id": "vc2017_64",
                     "options": "",
                     "filters": {
@@ -62,6 +63,7 @@
                     "tools": []
                 },
                 {
+                    "_internalid": 2,
                     "id": "vc2017_32",
                     "options": "-O3",
                     "filters": {
@@ -79,6 +81,7 @@
                     "tools": []
                 },
                 {
+                    "_internalid": 3,
                     "id": "vc2017_64",
                     "options": "-O2",
                     "filters": {
@@ -98,5 +101,6 @@
             ],
             "executors": []
         }
-    ]
+    ],
+    "trees": []
 }

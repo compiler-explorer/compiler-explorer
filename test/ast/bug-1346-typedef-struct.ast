@@ -1,0 +1,20 @@
+TranslationUnitDecl 0x602c78 <<invalid sloc>> <invalid sloc>
+|-TypedefDecl 0x603570 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'
+| `-BuiltinType 0x603210 '__int128'
+|-TypedefDecl 0x6035e0 <<invalid sloc>> <invalid sloc> implicit __uint128_t 'unsigned __int128'
+| `-BuiltinType 0x603230 'unsigned __int128'
+|-TypedefDecl 0x603958 <<invalid sloc>> <invalid sloc> implicit __NSConstantString '__NSConstantString_tag'
+| `-RecordType 0x6036d0 '__NSConstantString_tag'
+|   `-CXXRecord 0x603638 '__NSConstantString_tag'
+|-TypedefDecl 0x6039f0 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'
+| `-PointerType 0x6039b0 'char *'
+|   `-BuiltinType 0x602d10 'char'
+|-TypedefDecl 0x643bc8 <<invalid sloc>> <invalid sloc> implicit __builtin_va_list '__va_list_tag [1]'
+| `-ConstantArrayType 0x643b70 '__va_list_tag [1]' 1
+|   `-RecordType 0x603ae0 '__va_list_tag'
+|     `-CXXRecord 0x603a48 '__va_list_tag'
+|-CXXRecordDecl 0x643c20 <<source>:1:9, col:16> col:16 struct x
+`-TypedefDecl 0x643d28 <col:1, col:18> col:18 y 'struct x':'x'
+  `-ElaboratedType 0x643cd0 'struct x' sugar
+    `-RecordType 0x643cb0 'x'
+      `-CXXRecord 0x643c20 'x'

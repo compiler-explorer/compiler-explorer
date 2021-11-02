@@ -31,8 +31,7 @@ Due to the amount of compilers and information available through this api call,
 If you require different fields, you can specify them by adding `?fields=field1,field2,field3`
  to your query.
 
-To see all the available fields, you can use `?fields=all`. It is not recommended
- to use this by default.
+To see all the available fields, you can use `?fields=all`. It is not recommended using this by default.
 
 ### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
@@ -50,7 +49,7 @@ Returns a list of libraries and library versions available for the provided lang
 
 You can use the given include paths to supply in the userArguments for compilation. *(deprecated)*
 
-You will need the library id's and the version id's to supply to **compile** if you want to include libraries during compilation.
+You will need the library id's, and the version id's to supply to **compile** if you want to include libraries during compilation.
 
 ###  `GET /api/shortlinkinfo/<linkid>` - return information about a given link
 
@@ -138,6 +137,47 @@ Libraries can be marked to have their directories available when including
  their header files. The can be listed by supplying the library ids and versions in an array.
  The id's to supply can be found with the `/api/libraries/<language-id>`
 
+### `GET /api/formats` - return available code formatters
+
+Returns a list of code formatters. The API returns an array of formatter objects
+ which have the following object structure:
+
+```JSON
+{
+    "exe": "/opt/compiler-explorer/rustfmt-1.4.36/rustfmt",
+    "version": "rustfmt 1.4.36-nightly (7de6968 2021-02-07)",
+    "name": "rustfmt",
+    "styles": [],
+    "type": "rustfmt"
+}
+```
+
+The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`
+
+### `POST /api/format/<formatter>` - perform a formatter run
+
+Formats a piece of code according to the given base style using the provided formatter
+
+Formatters available can be found with `GET /api/formats`
+
+```JSON
+{
+    "source": "int main(     ) {}",
+    "base": "Google"
+}
+```
+
+The returned JSON body has the following object structure:
+
+```JSON
+{
+    "answer": "int main() {}",
+    "exit": 0
+}
+```
+
+In cases of internal code formatter failure an additional field named `throw`
+ is also provided and set to true.
 
 # Non-REST API's
 
@@ -208,9 +248,9 @@ If JSON is present in the request's `Accept` header, the compilation results
 }
 ```
 
-### `POST /shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
+### `POST /api/shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
 
-The body of this post should be in the format of a [ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/master/lib/clientstate.js)
+The body of this post should be in the format of a [ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/main/lib/clientstate.js)
 Be sure that the Content-Type of your post is application/json
 
 An example of one the easiest forms of a clientstate:
@@ -261,12 +301,12 @@ This call opens the website in a state that was previously saved using the built
 
 This call returns plain/text for the code that was previously saved using the built-in shortener.
 
-If there were multiple editors during the saved session, you can retreive them by setting <sourceid> to 1, 2, 3, etcetera, otherwise <sourceid> can be set to 1.
+If there were multiple editors during the saved session, you can retrieve them by setting <sourceid> to 1, 2, 3, etcetera, otherwise <sourceid> can be set to 1.
 
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state
 
-This call is to open the website with a given state (without having to store the state first with /shortener)
+This call is to open the website with a given state (without having to store the state first with /api/shortener)
 Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly onto the URL.
 
 
@@ -279,3 +319,4 @@ Here are some examples of projects using the Compiler Explorer API:
 * [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
 * [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
 * [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
+* [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)

@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,8 @@ var $ = require('jquery');
 var _ = require('underscore');
 var colour = require('./colour');
 var themes = require('./themes').themes;
-var options = require('./options');
+var options = require('./options').options;
+var local = require('./local');
 
 function Setting(elem, name, Control, param) {
     this.elem = elem;
@@ -67,15 +68,18 @@ Select.prototype.putUi = function (elem, value) {
 };
 
 function Slider(elem, sliderSettings) {
-    elem.slider(sliderSettings);
+    elem
+        .prop('max', sliderSettings.max || 100)
+        .prop('min', sliderSettings.min || 1)
+        .prop('step', sliderSettings.step || 1);
 }
 
 Slider.prototype.getUi = function (elem) {
-    return elem.slider('getValue');
+    return parseInt(elem.val());
 };
 
 Slider.prototype.putUi = function (elem, value) {
-    elem.slider('setValue', value);
+    elem.val(value);
 };
 
 function Textbox() {
@@ -131,6 +135,8 @@ function setupSettings(root, settings, onChange, subLangId) {
         });
     }
 
+    // Don't forget to edit the settings.interfaces.ts file if you add/modify
+    // a setting!
     function add(elem, key, defaultValue, Type, param) {
         if (settings[key] === undefined)
             settings[key] = defaultValue;
@@ -227,7 +233,7 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
 
-    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit'];
+    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
     add(root.find('.formatBase'), 'formatBase', formats[0], Select,
         _.map(formats, function (format) {
             return {label: format, desc: format};
@@ -241,7 +247,9 @@ function setupSettings(root, settings, onChange, subLangId) {
     }
     add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
     add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
+    // note: this is the ctrl+s "Save option"
     add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
+    add(root.find('.enableCtrlStree'), 'enableCtrlStree', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
     add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);
@@ -259,4 +267,11 @@ function setupSettings(root, settings, onChange, subLangId) {
     return setSettings;
 }
 
-module.exports = setupSettings;
+function getStoredSettings() {
+    return JSON.parse(local.get('settings', '{}'));
+}
+
+module.exports = {
+    init: setupSettings,
+    getStoredSettings: getStoredSettings,
+};

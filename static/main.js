@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -20,45 +20,44 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE
+// POSSIBILITY OF SUCH DAMAGE.
+
 'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
-var analytics = require('./analytics');
+var analytics = require('./analytics').ga;
 
+require('whatwg-fetch');
 // eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');
 require('bootstrap');
-require('bootstrap-slider');
 
-var sharing = require('./sharing');
+var Sharing = require('./sharing').Sharing;
 var _ = require('underscore');
-var cloneDeep = require('lodash.clonedeep');
 var $ = require('jquery');
 var GoldenLayout = require('golden-layout');
 var Components = require('./components');
 var url = require('./url');
 var clipboard = require('clipboard');
-var Hub = require('./hub');
+var Hub = require('./hub').Hub;
 var Sentry = require('@sentry/browser');
-var settings = require('./settings');
+var Settings = require('./settings');
 var local = require('./local');
-var Alert = require('./alert');
+var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
-var SimpleCook = require('./simplecook');
-var History = require('./history');
+var SimpleCook = require('./simplecook').SimpleCook;
 var HistoryWidget = require('./history-widget').HistoryWidget;
+var History = require('./history');
 var presentation = require('./presentation');
 
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
-require('selectize/dist/css/selectize.bootstrap2.css');
-require('bootstrap-slider/dist/css/bootstrap-slider.css');
-require('./colours.css');
-require('./explorer.css');
+require('tom-select/dist/css/tom-select.bootstrap4.css');
+require('./colours.scss');
+require('./explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -101,6 +100,7 @@ function setupSettings(hub) {
                 eventAction: newSettings.colourScheme,
             });
         }
+        $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
         local.set('settings', JSON.stringify(newSettings));
         eventHub.emit('settingsChange', newSettings);
@@ -112,7 +112,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         setSettings(_.extend(currentSettings, newSettings));
     });
@@ -127,20 +127,28 @@ function isMobileViewer() {
     return window.compilerExplorerOptions.mobileViewer;
 }
 
+function calcLocaleChangedDate(policyModal) {
+    var timestamp = policyModal.find('#changed-date');
+    timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+}
+
 function setupButtons(options) {
     var alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
-        $('#privacy').click(function (event, data) {
-            alertSystem.alert(
+        $('#privacy').on('click', function (event, data) {
+            var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
                 require('./policies/privacy.html')
             );
+            calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
+                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
+                    expires: 365, sameSite: 'strict',
+                });
             }
         });
     }
@@ -151,8 +159,8 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'green' : 'red') + '">' +
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
-        $('#cookies').click(function () {
-            alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+        $('#cookies').on('click', function () {
+            var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -162,25 +170,26 @@ function setupButtons(options) {
                 },
                 noHtml: 'Do NOT consent',
             });
+            calcLocaleChangedDate(modal);
         });
     }
 
-    $('#ui-reset').click(function () {
+    $('#ui-reset').on('click', function () {
         local.remove('gl');
         hasUIBeenReset = true;
         window.history.replaceState(null, null, window.httpRoot);
         window.location.reload();
     });
 
-    $('#ui-duplicate').click(function () {
+    $('#ui-duplicate').on('click', function () {
         window.open('/', '_blank');
     });
 
-    $('#changes').click(function () {
+    $('#changes').on('click', function () {
         alertSystem.alert('Changelog', $(require('./changelog.html')));
     });
 
-    $('#ces').click(function () {
+    $('#ces').on('click', function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
@@ -197,7 +206,7 @@ function setupButtons(options) {
             });
     });
 
-    $('#ui-history').click(function () {
+    $('#ui-history').on('click', function () {
         historyWidget.run(function (data) {
             local.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
@@ -217,8 +226,49 @@ function setupButtons(options) {
     }
 }
 
+function configFromEmbedded(embeddedUrl) {
+    // Old-style link?
+    var params;
+    try {
+        params = url.unrisonify(embeddedUrl);
+    } catch (e) {
+        // Ignore this, it's not a problem
+    }
+    if (params && params.source && params.compiler) {
+        var filters = _.chain((params.filters || '').split(','))
+            .map(function (o) {
+                return [o, true];
+            })
+            .object()
+            .value();
+        return {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        Components.getEditorWith(1, params.source, filters),
+                        Components.getCompilerWith(1, filters, params.options, params.compiler),
+                    ],
+                },
+            ],
+        };
+    } else {
+        return url.deserialiseState(embeddedUrl);
+    }
+}
+
+function fixBugsInConfig(config) {
+    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
+        config.activeItemIndex = config.content.length - 1;
+    }
+
+    _.each(config.content, function (item) {
+        fixBugsInConfig(item);
+    });
+}
+
 function findConfig(defaultConfig, options) {
-    var config = null;
+    var config;
     if (!options.embedded) {
         if (options.slides) {
             presentation.init(window.compilerExplorerOptions.slides.length);
@@ -252,71 +302,91 @@ function findConfig(defaultConfig, options) {
                 showCloseIcon: false,
                 hasHeaders: false,
             },
-        }, sharing.configFromEmbedded(window.location.hash.substr(1)));
+        }, configFromEmbedded(window.location.hash.substr(1)));
     }
+
+    removeOrphanedMaximisedItemFromConfig(config);
+    fixBugsInConfig(config);
+
     return config;
 }
 
 function initializeResetLayoutLink() {
     var currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
-        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/'));
-        $('#ui-brokenlink').show();
+        $('#ui-brokenlink')
+            .attr('href', currentUrl.replace('/z/', '/resetlayout/'))
+            .show();
     } else {
         $('#ui-brokenlink').hide();
     }
 }
 
 function initPolicies(options) {
-    // Ensure old cookies are removed, to avoid user confusion
-
-    jsCookie.remove('fs_uid');
-    jsCookie.remove('cookieconsent_status');
-    if (options.policies.privacy.enabled &&
-        options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
-        $('#privacy').trigger('click', {
-            title: 'New Privacy Policy. Please take a moment to read it',
-        });
+    if (options.policies.privacy.enabled) {
+        if (jsCookie.get(options.policies.privacy.key) == null) {
+            $('#privacy').trigger('click', {
+                title: 'New Privacy Policy. Please take a moment to read it',
+            });
+        } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+            // When the user has already accepted the privacy, just show a pretty notification.
+            var ppolicyBellNotification = $('#policyBellNotification');
+            var pprivacyBellNotification = $('#privacyBellNotification');
+            var pcookiesBellNotification = $('#cookiesBellNotification');
+            ppolicyBellNotification.removeClass('d-none');
+            pprivacyBellNotification.removeClass('d-none');
+            $('#privacy').on('click', function () {
+                // Only hide if the other policy does not also have a bell
+                if (pcookiesBellNotification.hasClass('d-none')) {
+                    ppolicyBellNotification.addClass('d-none');
+                }
+                pprivacyBellNotification.addClass('d-none');
+            });
+        }
     }
-    simpleCooks.onDoConsent = function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
+    simpleCooks.setOnDoConsent(function () {
+        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
+            expires: 365, sameSite: 'strict',
+        });
         analytics.toggle(true);
-    };
-    simpleCooks.onDontConsent = function () {
+    });
+    simpleCooks.setOnDontConsent(function () {
         analytics.toggle(false);
-        jsCookie.set(options.policies.cookies.key, '');
-    };
-    simpleCooks.onHide = function () {
+        jsCookie.set(options.policies.cookies.key, '', {
+            sameSite: 'strict',
+        });
+    });
+    simpleCooks.setOnHide(function () {
+        var spolicyBellNotification = $('#policyBellNotification');
+        var sprivacyBellNotification = $('#privacyBellNotification');
+        var scookiesBellNotification = $('#cookiesBellNotification');
+        // Only hide if the other policy does not also have a bell
+        if (sprivacyBellNotification.hasClass('d-none')) {
+            spolicyBellNotification.addClass('d-none');
+        }
+        scookiesBellNotification.addClass('d-none');
         $(window).trigger('resize');
-    };
+    });
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
-    if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
-        options.policies.cookies.hash !== storedCookieConsent) {
-        simpleCooks.show();
-    } else if (options.policies.cookies.enabled && hasCookieConsented(options)) {
-        analytics.initialise();
-    }
-}
-
-function filterComponentState(config, keysToRemove) {
-    function filterComponentStateImpl(component) {
-        if (component.content) {
-            for (var i = 0; i < component.content.length; i++) {
-                filterComponentStateImpl(component.content[i], keysToRemove);
-            }
-        }
-
-        if (component.componentState) {
-            Object.keys(component.componentState)
-                .filter(function (key) { return keysToRemove.includes(key); })
-                .forEach(function (key) { delete component.componentState[key]; });
+    if (options.policies.cookies.enabled) {
+        if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
+            simpleCooks.show();
+            var cpolicyBellNotification = $('#policyBellNotification');
+            var cprivacyBellNotification = $('#privacyBellNotification');
+            var ccookiesBellNotification = $('#cookiesBellNotification');
+            cpolicyBellNotification.removeClass('d-none');
+            ccookiesBellNotification.removeClass('d-none');
+            $('#cookies').on('click', function () {
+                if (cprivacyBellNotification.hasClass('d-none')) {
+                    cpolicyBellNotification.addClass('d-none');
+                }
+                ccookiesBellNotification.addClass('d-none');
+            });
+        } else if (hasCookieConsented(options)) {
+            analytics.initialise();
         }
     }
-
-    config = cloneDeep(config);
-    filterComponentStateImpl(config);
-    return config;
 }
 
 /*
@@ -331,6 +401,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     if (config.maximisedItemId !== '__glMaximised') return;
 
     var found = false;
+
     function impl(component) {
         if (component.id === '__glMaximised') {
             found = true;
@@ -356,7 +427,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
 function start() {
     initializeResetLayoutLink();
 
-    var options = require('options');
+    var options = require('options').options;
 
     var hostnameParts = window.location.hostname.split('.');
     var subLangId = undefined;
@@ -415,7 +486,6 @@ function start() {
     }
 
     var config = findConfig(defaultConfig, options);
-    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $('#root');
 
@@ -435,29 +505,9 @@ function start() {
         hub = new Hub(layout, subLangId, defaultLangId);
     }
 
-    var lastState = null;
-    var storedPaths = {};  // TODO maybe make this an LRU cache?
-
-    layout.on('stateChanged', function () {
-        var config = filterComponentState(layout.toConfig(), ['selection']);
-        var stringifiedConfig = JSON.stringify(config);
-        if (stringifiedConfig !== lastState) {
-            if (storedPaths[stringifiedConfig]) {
-                window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
-            } else if (window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, null, window.httpRoot);
-                // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
-            }
-            lastState = stringifiedConfig;
-
-            History.push(stringifiedConfig);
-        }
-        if (options.embedded) {
-            var strippedToLast = window.location.pathname;
-            strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
-            $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
-        }
-    });
+    if (hub.hasTree()) {
+        $('#add-tree').prop('disabled', true);
+    }
 
     function sizeRoot() {
         var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
@@ -484,15 +534,20 @@ function start() {
         setupButtons(options);
     }
 
-    sharing.initShareButton($('#share'), layout, function (config, extra) {
-        window.history.pushState(null, null, extra);
-        storedPaths[JSON.stringify(config)] = extra;
-    });
+    var addDropdown = $('#addDropdown');
 
     function setupAdd(thing, func) {
-        layout.createDragSource(thing, func);
+        layout.createDragSource(thing, func)
+            ._dragListener.on('dragStart', function () {
+                addDropdown.dropdown('toggle');
+            });
+
         thing.click(function () {
-            hub.addAtRoot(func());
+            if (hub.hasTree()) {
+                hub.addInEditorStackIfPossible(func());
+            } else {
+                hub.addAtRoot(func());
+            }
         });
     }
 
@@ -501,6 +556,10 @@ function start() {
     });
     setupAdd($('#add-diff'), function () {
         return Components.getDiff();
+    });
+    setupAdd($('#add-tree'), function () {
+        $('#add-tree').prop('disabled', true);
+        return Components.getTree();
     });
 
     if (hashPart) {
@@ -550,10 +609,19 @@ function start() {
         window.open(sponsor.url);
     };
 
+    if (options.pageloadUrl) {
+        setTimeout(function () {
+            var visibleIcons = $('.ces-icon:visible').map(function (index, value) {
+                return value.dataset.statsid;
+            }).get().join(',');
+            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+        }, 5000);
+    }
+
     sizeRoot();
-    var initialConfig = JSON.stringify(filterComponentState(layout.toConfig(), ['selection']));
-    lastState = initialConfig;
-    storedPaths[initialConfig] = window.location.href;
+
+    History.trackHistory(layout);
+    new Sharing(layout);
 }
 
 $(start);

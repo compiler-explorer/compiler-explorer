@@ -1,0 +1,226 @@
+{
+  "asm": [
+    {
+      "labels": [
+        {
+          "name": "LongLong",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  LongLong"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "LongLong:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x0001e240,0x00000000"
+    },
+    {
+      "labels": [
+        {
+          "name": "LongLong",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   LongLong,@object"
+    },
+    {
+      "labels": [
+        {
+          "name": "LongLong",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   LongLong,8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "Int",
+          "range": {
+            "endCol": 19,
+            "startCol": 16
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl Int"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Int:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   123"
+    },
+    {
+      "labels": [
+        {
+          "name": "Int",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   Int,@object"
+    },
+    {
+      "labels": [
+        {
+          "name": "Int",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Int,4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 2"
+    },
+    {
+      "labels": [
+        {
+          "name": "Short",
+          "range": {
+            "endCol": 21,
+            "startCol": 16
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl Short"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Short:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .word   4660"
+    },
+    {
+      "labels": [
+        {
+          "name": "Short",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   Short,@object"
+    },
+    {
+      "labels": [
+        {
+          "name": "Short",
+          "range": {
+            "endCol": 22,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Short,2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 1"
+    },
+    {
+      "labels": [
+        {
+          "name": "Char",
+          "range": {
+            "endCol": 20,
+            "startCol": 16
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl Char"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Char:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   -128"
+    },
+    {
+      "labels": [
+        {
+          "name": "Char",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   Char,@object"
+    },
+    {
+      "labels": [
+        {
+          "name": "Char",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   Char,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .data"
+    }
+  ],
+  "labelDefinitions": {
+    "Char": 20,
+    "Int": 8,
+    "LongLong": 2,
+    "Short": 14
+  }
+}

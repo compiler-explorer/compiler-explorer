@@ -30,19 +30,18 @@ info: node-installed ## print out some useful variables
 	@echo PATH is $(PATH)
 
 .PHONY: clean run test run-amazon
-.PHONY: dist lint lint-fix ci-lint prereqs node_modules travis-dist check pre-commit
+.PHONY: dist lint lint-fix ci-lint prereqs node_modules gh-dist check pre-commit
 prereqs: node_modules
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
 	$(NPM) install --only=prod $(NPM_FLAGS)
 	$(NPM) install --only=dev $(NPM_FLAGS)
+	@rm -rf node_modules/.cache/esm/*
 	@touch $@
 
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js
-webpack: $(NODE_MODULES)  ## Runs webpack (useful only for debugging webpack)
-	rm -rf out/dist/static out/dist/manifest.json
-	$(WEBPACK) $(WEBPACK_ARGS)
+$(WEBPACK): $(NODE_MODULES)
 
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
 	$(NPM) run lint
@@ -54,7 +53,9 @@ ci-lint: $(NODE_MODULES)
 	$(NPM) run ci-lint
 
 node_modules: $(NODE_MODULES)
-webpack: $(WEBPACK)
+webpack: $(WEBPACK)  ## Runs webpack (useful only for debugging webpack)
+	rm -rf out/dist/static out/dist/manifest.json
+	$(WEBPACK) $(WEBPACK_ARGS)
 
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
@@ -71,15 +72,15 @@ clean:  ## Cleans up everything
 run: export NODE_ENV=production
 run: export WEBPACK_ARGS="-p"
 run: prereqs webpack  ## Runs the site normally
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=development
-dev: prereqs install-git-hooks ## Runs the site as a developer; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- ./app.js $(EXTRA_ARGS)
+dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js $(EXTRA_ARGS)
 
 debug: export NODE_ENV=development
-debug: prereqs install-git-hooks ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config -e 'js|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- ./app.js --debug $(EXTRA_ARGS)
+debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --inspect 9229 --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js --debug $(EXTRA_ARGS)
 
 HASH := $(shell git rev-parse HEAD)
 dist: export NODE_ENV=production
@@ -87,28 +88,28 @@ dist: export WEBPACK_ARGS=-p
 dist: prereqs webpack  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
-SENTRY := ./node_modules/.bin/sentry-cli
-travis-dist: dist  ## Creates a distribution as if we were running on travis
-	echo $(TRAVIS_BUILD_NUMBER) > out/dist/travis_build
+RELEASE_FILE_NAME=$(GITHUB_RUN_NUMBER)
+RELEASE_NAME=gh-$(RELEASE_FILE_NAME)
+gh-dist: dist  ## Creates a distribution as if we were running on github
+	# Output some magic for GH to set the branch name
+	echo "::set-output name=branch::$${GITHUB_REF#refs/heads/}"
+	echo $(RELEASE_NAME) > out/dist/release_build
 	rm -rf out/dist-bin
 	mkdir -p out/dist-bin
-	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).tar.xz -T travis-dist-files.txt
-	tar -Jcf out/dist-bin/$(TRAVIS_BUILD_NUMBER).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
-	echo $(HASH) > out/dist-bin/$(TRAVIS_BUILD_NUMBER).txt
+	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).tar.xz -T gh-dist-files.txt
+	tar -Jcf out/dist-bin/$(RELEASE_FILE_NAME).static.tar.xz --transform="s,^out/dist/static/,," out/dist/static/*
+	echo $(HASH) > out/dist-bin/$(RELEASE_FILE_NAME).txt
 	du -ch out/**/*
 	# Create and set commits for a sentry release if and only if we have the secure token set
 	# External GitHub PRs etc won't have the variable set.
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(SENTRY) releases new -p compiler-explorer $(TRAVIS_BUILD_NUMBER)
-	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(SENTRY) releases set-commits --auto $(TRAVIS_BUILD_NUMBER)
-
-install-git-hooks:  ## Install git hooks that will ensure code is linted and tests are run before allowing a check in
-	ln -sf $(shell pwd)/etc/scripts/pre-commit  $(shell git rev-parse --git-dir)/hooks/pre-commit
-.PHONY: install-git-hooks
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases new -p compiler-explorer $(RELEASE_NAME)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases set-commits --auto $(RELEASE_NAME)
+	@[ -z "$(SENTRY_AUTH_TOKEN)" ] || $(NPM) run sentry -- releases files $(RELEASE_NAME) upload-sourcemaps out/dist/static
 
 changelog:  ## Create the changelog
-	python ./etc/scripts/changelog.py
+	python3 ./etc/scripts/changelog.py
 
 policies:
-	python ./etc/scripts/politic.py
+	python3 ./etc/scripts/politic.py
 
 .PHONY: changelog

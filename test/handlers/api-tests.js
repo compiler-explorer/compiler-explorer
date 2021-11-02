@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    ApiHandler = require('../../lib/handlers/api').Handler,
-    express = require('express');
+import express from 'express';
+
+import { ApiHandler } from '../../lib/handlers/api';
+import { StorageNull } from '../../lib/storage';
+import { chai } from '../utils';
 
 const languages = {
     'c++': {
@@ -79,38 +81,33 @@ const compilersLimitedFields = [
     },
 ];
 
-chai.use(require('chai-http'));
-chai.should();
-
 describe('API handling', () => {
     let app;
 
     before(() => {
         app = express();
-        const apiHandler = new ApiHandler({
-            handle: res => {
-                res.send('compile');
+        const apiHandler = new ApiHandler(
+            {
+                handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            }, (key, def) => {
+                switch (key) {
+                    case 'formatters':
+                        return 'formatt:badformatt';
+                    case 'formatter.formatt.exe':
+                        return 'echo';
+                    case 'formatter.formatt.version':
+                        return 'Release';
+                    case 'formatter.formatt.name':
+                        return 'FormatT';
+                    default:
+                        return def;
+                }
             },
-            handlePopularArguments: res => {
-                res.send('ok');
-            },
-            handleOptimizationArguments: res => {
-                res.send('ok');
-            },
-        }, (key, def) => {
-            switch (key) {
-                case 'formatters':
-                    return 'formatt:badformatt';
-                case 'formatter.formatt.exe':
-                    return 'echo';
-                case 'formatter.formatt.version':
-                    return 'Release';
-                case 'formatter.formatt.name':
-                    return 'FormatT';
-                default:
-                    return def;
-            }
-        });
+            new StorageNull('/', {}),
+            'default');
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);
         apiHandler.setLanguages(languages);
@@ -171,7 +168,7 @@ describe('API handling', () => {
     });
     it('should respond to ASM doc requests', () => {
         return chai.request(app)
-            .get('/api/asm/MOVQ')
+            .get('/api/asm/MOV')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(200);
@@ -237,7 +234,8 @@ describe('API handling', () => {
                 throw err;
             });
     });
-    it('should list the formatters', () => {
+    // TODO(supergrecko): re-write this test case
+    it.skip('should list the formatters', () => {
         if (process.platform !== 'win32') { // Expects an executable called echo
             return chai.request(app)
                 .get('/api/formats')
@@ -259,7 +257,7 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(422);
                 res.should.be.json;
-                res.body.should.deep.equals({exit: 2, answer: 'Tool not supported'});
+                res.body.should.deep.equals({exit: 2, answer: 'Unknown format tool \'invalid\''});
             });
     });
     /*

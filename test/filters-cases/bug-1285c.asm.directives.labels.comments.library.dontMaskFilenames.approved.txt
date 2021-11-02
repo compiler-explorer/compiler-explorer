@@ -1,0 +1,124 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3foov:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 24,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        mov     eax, 42"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 24,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3barv:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100,
+        "mainsource": false
+      },
+      "text": "        mov     rax, QWORD PTR _ZTIi[rip+8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 31,
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100,
+        "mainsource": false
+      },
+      "text": "        cmp     BYTE PTR [rax], 42"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 31,
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100,
+        "mainsource": false
+      },
+      "text": "        sete    dl"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 31,
+        "file": "/opt/compiler-explorer/gcc-8.3.0/include/c++/8.3.0/typeinfo",
+        "line": 100,
+        "mainsource": false
+      },
+      "text": "        movzx   edx, dl"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 40,
+        "file": "example.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        movsx   eax, BYTE PTR [rax+rdx]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 43,
+        "file": "example.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3bazv:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 45,
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": "        mov     eax, 53"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 45,
+        "file": "example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z3barv": 4,
+    "_Z3bazv": 11,
+    "_Z3foov": 1
+  }
+}

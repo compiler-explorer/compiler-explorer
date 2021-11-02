@@ -1,29 +1,36 @@
+#include <experimental/meta>
+#include <experimental/compiler>
+
+using namespace std::experimental;
 
 //====================================================================
 // Library code: implementing the metaclass (once)
 
-$class interface {
-    constexpr {
-        compiler.require($interface.variables().empty(),
-                         "interfaces may not contain data");
-        for... (auto f : $interface.functions()) {
-            compiler.require(!f.is_copy() && !f.is_move(),
-                "interfaces may not copy or move; consider a"
-                " virtual clone() instead");
-            if (!f.has_access()) f.make_public();
-            compiler.require(f.is_public(),
-                "interface functions must be public");
-            f.make_pure_virtual();
-        }
-    }
-    virtual ~interface() noexcept { }
+consteval void interface(meta::info source) {
+  for (meta::info mem : meta::member_range(source)) {
+    meta::compiler.require(!meta::is_data_member(mem), "interfaces may not contain data");
+    meta::compiler.require(!meta::is_copy(mem) && !meta::is_move(mem),
+       "interfaces may not copy or move; consider"
+       " a virtual clone() instead");
+
+    if (meta::has_default_access(mem))
+      meta::make_public(mem);
+
+    meta::compiler.require(meta::is_public(mem), "interface functions must be public");
+
+    meta::make_pure_virtual(mem);
+
+    -> mem;
+  }
+
+  -> fragment struct X { virtual ~X() noexcept {} };
 };
 
 
 //====================================================================
 // User code: using the metaclass to write a type (many times)
 
-interface Shape {
+class(interface) Shape {
     int area() const;
     void scale_by(double factor);
 };
@@ -37,11 +44,9 @@ interface Shape {
     // Shape(const Shape&); // error: interfaces may not copy or move;
     //                      //        consider a virtual clone() instead
 
-// Godbolt.org note: Click the "triangle ! icon" to see the output
-constexpr {
-    compiler.debug($Shape);
+consteval {
+  meta::compiler.print(reflexpr(Shape));
 }
-
 
 //====================================================================
 // And then continue to use it as "just a class" as always... this is
@@ -52,6 +57,10 @@ public:
     int area() const override { return 1; }
     void scale_by(double factor) override { }
 };
+
+consteval {
+  meta::compiler.print(reflexpr(Circle));
+}
 
 #include <memory>
 

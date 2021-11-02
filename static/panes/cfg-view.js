@@ -27,10 +27,10 @@
 var $ = require('jquery');
 var vis = require('vis');
 var _ = require('underscore');
-var Toggles = require('../toggles');
-var ga = require('../analytics');
+var Toggles = require('../toggles').Toggles;
+var ga = require('../analytics').ga;
 
-require('selectize');
+var TomSelect = require('tom-select');
 
 function Cfg(hub, container, state) {
     this.container = container;
@@ -102,25 +102,28 @@ function Cfg(hub, container, state) {
     this._editorid = state.editorid;
     this._binaryFilter = false;
 
-    this.functionPicker = $(this.domRoot).find('.function-picker').selectize({
+    var pickerEl = this.domRoot[0].querySelector('.function-picker');
+    this.functionPicker = new TomSelect(pickerEl, {
         sortField: 'name',
         valueField: 'name',
         labelField: 'name',
         searchField: ['name'],
         dropdownParent: 'body',
-    }).on('change', _.bind(function (e) {
-        var selectedFn = this.functions[e.target.value];
-        if (selectedFn) {
-            this.currentFunc = e.target.value;
-            this.showCfgResults({
-                nodes: selectedFn.nodes,
-                edges: selectedFn.edges,
-            });
-            this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
-            this.resize();
-            this.saveState();
-        }
-    }, this));
+        plugins: ['input_autogrow'],
+        onChange: _.bind(function (val) {
+            var selectedFn = this.functions[val];
+            if (selectedFn) {
+                this.currentFunc = val;
+                this.showCfgResults({
+                    nodes: selectedFn.nodes,
+                    edges: selectedFn.edges,
+                });
+                this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+                this.resize();
+                this.saveState();
+            }
+        }, this),
+    });
 
     this.initCallbacks();
     this.adaptStructure = function (names) {
@@ -157,13 +160,13 @@ Cfg.prototype.onCompileResult = function (id, compiler, result) {
             this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
         }
 
-        this.functionPicker[0].selectize.clearOptions();
-        this.functionPicker[0].selectize.addOption(functionNames.length ?
+        this.functionPicker.clearOptions();
+        this.functionPicker.addOption(functionNames.length ?
             this.adaptStructure(functionNames) : {name: 'The input does not contain functions'});
-        this.functionPicker[0].selectize.refreshOptions(false);
+        this.functionPicker.refreshOptions(false);
 
-        this.functionPicker[0].selectize.clear();
-        this.functionPicker[0].selectize.addItem(functionNames.length ?
+        this.functionPicker.clear();
+        this.functionPicker.addItem(functionNames.length ?
             this.currentFunc : 'The input does not contain any function', true);
         this.saveState();
     }
@@ -221,8 +224,10 @@ Cfg.prototype.initCallbacks = function () {
 
     this.toggleNavigationButton.on('click', _.bind(function () {
         this.networkOpts.interaction.navigationButtons = this.toggleNavigationButton.hasClass('active');
-        this.cfgVisualiser.setOptions({interaction: {
-            navigationButtons: this.networkOpts.interaction.navigationButtons},
+        this.cfgVisualiser.setOptions({
+            interaction: {
+                navigationButtons: this.networkOpts.interaction.navigationButtons,
+            },
         });
     }, this));
     this.toggles.on('change', _.bind(function () {
@@ -247,9 +252,13 @@ Cfg.prototype.resize = function () {
     }
 };
 
+Cfg.prototype.getPaneName = function () {
+    return 'Graph Viewer ' + this._compilerName +
+        ' (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')';
+};
+
 Cfg.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Graph Viewer (Editor #' + this._editorid + ', Compiler #' + this.compilerId + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 Cfg.prototype.assignLevels = function (data) {

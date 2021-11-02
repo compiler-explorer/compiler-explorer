@@ -24,12 +24,12 @@
 
 'use strict';
 
-var FontScale = require('../fontscale');
+var FontScale = require('../fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
-var ga = require('../analytics');
+var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 
 function Ir(hub, container, state) {
@@ -60,8 +60,6 @@ function Ir(hub, container, state) {
 
     this.colours = [];
     this.irCode = [];
-    this.lastColours = [];
-    this.lastColourScheme = {};
 
     this.initButtons(state);
     this.initCallbacks();
@@ -92,7 +90,7 @@ Ir.prototype.initEditorActions = function () {
             var source = this.irCode[desiredLine].source;
             if (source !== null && source.file === null) {
                 // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, true);
+                this.eventHub.emit('editorLinkLine', this._editorid, source.line, -1, -1, true);
             }
         }, this),
     });
@@ -121,9 +119,11 @@ Ir.prototype.initCallbacks = function () {
 
     this.container.on('destroy', this.close, this);
 
-    this.eventHub.on('compileResult', this.onCompileResponse, this);
+    var onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours, this.onCompileResponse);
+
+    this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
     this.eventHub.on('compiler', this.onCompiler, this);
-    this.eventHub.on('colours', this.onColours, this);
+    this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
     this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -150,14 +150,10 @@ Ir.prototype.onCompileResponse = function (id, compiler, result) {
     } else if (compiler.supportsIrView) {
         this.showIrResults([{text: '<No output>'}]);
     }
-
-    // Why call this explicitly instead of just listening to the "colours" event?
-    // Because the recolouring happens before this editors value is set using "showIrResults".
-    this.onColours(this._compilerid, this.lastColours, this.lastColourScheme);
 };
 
 Ir.prototype.getPaneName = function () {
-    return this._compilerName + ' IR Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return 'IR Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
 };
 
 Ir.prototype.setTitle = function () {
@@ -191,9 +187,6 @@ Ir.prototype.onCompiler = function (id, compiler, options, editorid) {
 };
 
 Ir.prototype.onColours = function (id, colours, scheme) {
-    this.lastColours = colours;
-    this.lastColourScheme = scheme;
-
     if (id === this._compilerid) {
         var irColours = {};
         _.each(this.irCode, function (x, index) {
@@ -259,9 +252,20 @@ Ir.prototype.onMouseMove = function (e) {
         var hoverCode = this.irCode[e.target.position.lineNumber - 1];
         if (hoverCode) {
             // We check that we actually have something to show at this point!
-            var sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
-            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, -1, false);
-            this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine, false, this.getPaneName());
+            var sourceLine = -1;
+            var sourceColBegin = -1;
+            var sourceColEnd = -1;
+            if (hoverCode.source && !hoverCode.source.file) {
+                sourceLine = hoverCode.source.line;
+                if (hoverCode.source.column) {
+                    sourceColBegin = hoverCode.source.column;
+                    sourceColEnd = sourceColBegin;
+                }
+            }
+            this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, sourceColBegin, sourceColEnd, false);
+            this.eventHub.emit('panesLinkLine', this._compilerid,
+                sourceLine, sourceColBegin, sourceColEnd,
+                false, this.getPaneName());
         }
     }
 };
@@ -284,18 +288,24 @@ Ir.prototype.clearLinkedLines = function () {
     this.updateDecorations();
 };
 
-Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sender) {
+Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
+        var directlyLinkedLineNums = [];
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.irCode, function (irLine, i) {
             if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {
                 var line = i + 1;
                 lineNums.push(line);
+                var currentCol = irLine.source.column;
+                if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                    directlyLinkedLineNums.push(line);
+                }
             }
         });
         if (revealLine && lineNums[0]) this.irEditor.revealLineInCenter(lineNums[0]);
         var lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-        this.decorations.linkedCode = _.map(lineNums, function (line) {
+        var linkedLineDecorations = _.map(lineNums, function (line) {
             return {
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
@@ -305,6 +315,16 @@ Ir.prototype.onPanesLinkLine = function (compilerId, lineNumber, revealLine, sen
                 },
             };
         });
+        var directlyLinkedLineDecorations = _.map(directlyLinkedLineNums, function (line) {
+            return {
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            };
+        });
+        this.decorations.linkedCode = linkedLineDecorations.concat(directlyLinkedLineDecorations);
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }

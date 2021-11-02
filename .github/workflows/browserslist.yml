@@ -1,0 +1,26 @@
+name: Update browsers list
+on:
+  workflow_dispatch: # To allow manual runs
+  schedule:
+    - cron: '0 0 1 * *' # Monthly
+
+jobs:
+  update:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update browerslist
+        run: |
+          git config user.name 'Compiler Explorer Bot'
+          git config user.email 'mattgodbolt@users.noreply.github.com'
+          make prereqs
+          npm run update-browserslist
+          git commit -am "Automated checkin - update browsers list"
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "[bot] Update browsers list"
+          body: |
+           Automatic run of `npm run-update-browerslist` which needs to
+            be done periodically to keep in-date.
+            See [here](https://github.com/browserslist/browserslist#browsers-data-updating) for more details.

@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,22 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-require('../../lib/handlers/compile').SetTestMode();
+import bodyParser from 'body-parser';
+import express from 'express';
 
-const chai = require('chai'),
-    CompileHandler = require('../../lib/handlers/compile').Handler,
-    express = require('express'),
-    bodyParser = require('body-parser'),
-    {makeCompilationEnvironment} = require('../utils');
-chai.use(require('chai-http'));
-chai.should();
+import { CompileHandler, SetTestMode } from '../../lib/handlers/compile';
+import { chai, makeCompilationEnvironment } from '../utils';
+
+SetTestMode();
 
 const languages = {
-    a: {id: 'a'},
-    b: {id: 'b'},
-    d: {id: 'd'},
+    a: {id: 'a', name: 'A lang'},
+    b: {id: 'b', name: 'B lang'},
+    d: {id: 'd', name: 'D lang'},
 };
-
 
 describe('Compiler tests', () => {
     let app, compileHandler;
@@ -54,6 +51,7 @@ describe('Compiler tests', () => {
 
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
+        app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
     });
 
     it('throws for unknown compilers', () => {
@@ -122,6 +120,36 @@ describe('Compiler tests', () => {
                     });
             });
         });
+
+        it('supports alias compile', () => {
+            return compileHandler.setCompilers([{
+                id: 'newcompilerid',
+                alias: ['oldid1', 'oldid2'],
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {
+                    code: 0,
+                    stdout: [{text: 'Something from stdout'}],
+                    stderr: [{text: 'Something from stderr'}],
+                    asm: [{text: 'ASMASMASM'}],
+                },
+            }]).then(() => {
+                return chai.request(app)
+                    .post('/oldid1/compile')
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
+                    .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
+                    .then(res => {
+                        res.should.have.status(200);
+                        res.should.be.text;
+                        res.text.should.contain('Something from stdout');
+                        res.text.should.contain('Something from stderr');
+                        res.text.should.contain('ASMASMASM');
+                    })
+                    .catch(err => {
+                        throw err;
+                    });
+            });
+        });
     });
 
     describe('JSON API', () => {
@@ -139,7 +167,7 @@ describe('Compiler tests', () => {
                 return chai.request(app)
                     .post('/fake-for-test/compile')
                     .send({
-                        options: '',
+                        options: {},
                         source: 'I am a program',
                     })
                     .then(res => {
@@ -167,6 +195,38 @@ describe('Compiler tests', () => {
                     .send({
                         options: options || {},
                         source: source || '',
+                    }));
+        }
+
+        function makeFakeWithExtraFilesJson(source, options, files, fakeResult) {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || '',
+                        files: files || [],
+                    }));
+        }
+
+        function makeFakeCmakeJson(source, options, fakeResult, files) {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: fakeResult || {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/cmake')
+                    .set('Accept', 'application/json')
+                    .send({
+                        options: options || {},
+                        source: source || '',
+                        files: files || [],
                     }));
         }
 
@@ -207,6 +267,61 @@ describe('Compiler tests', () => {
                     res.should.be.json;
                     res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
                     res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                });
+        });
+
+        it('parses extra files', () => {
+            return makeFakeWithExtraFilesJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true},
+            }, [{
+                filename: 'myresource.txt',
+                contents: 'Hello, World!\nHow are you?\n',
+            }], {})
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
+                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                    res.body.input.files.should.deep.equals([{
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    }]);
+                });
+        });
+
+        it('cmakes', () => {
+            return makeFakeCmakeJson('I am a program', {
+                userArguments: '-O1 -monkey "badger badger"',
+                filters: {a: true, b: true, c: true},
+            }, {
+            }, [{
+                filename: 'myresource.txt',
+                contents: 'Hello, World!\nHow are you?\n',
+            }])
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.input.options.should.deep.equals({
+                        backendOptions: {},
+                        bypassCache: false,
+                        executionParameters: {
+                            args: [],
+                        },
+                        filters: {
+                            a: true,
+                            b: true,
+                            c: true,
+                        },
+                        libraries: [],
+                        options: ['-O1', '-monkey', 'badger badger'],
+                        source: 'I am a program',
+                        tools: [],
+                    });
+                    res.body.input.files.should.deep.equals([{
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    }]);
                 });
         });
     });

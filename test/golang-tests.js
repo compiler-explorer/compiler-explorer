@@ -22,15 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    fs = require('fs-extra'),
-    utils = require('../lib/utils'),
-    GoCompiler = require('../lib/compilers/golang'),
-    {makeCompilationEnvironment} = require('./utils');
+import { GolangCompiler } from '../lib/compilers/golang';
+import * as utils from '../lib/utils';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { fs, makeCompilationEnvironment } from './utils';
 
 const languages = {
     go: {id: 'go'},
@@ -44,7 +39,7 @@ const info = {
 };
 
 function testGoAsm(basefilename) {
-    const compiler = new GoCompiler(info, ce);
+    const compiler = new GolangCompiler(info, ce);
 
     const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
 

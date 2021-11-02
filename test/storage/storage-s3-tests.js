@@ -22,14 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    chaiAsPromised = require('chai-as-promised'),
-    properties = require('../../lib/properties'),
-    s3s = require('../../lib/storage/storage-s3'),
-    AWS = require('aws-sdk-mock');
+import AWS from 'aws-sdk-mock';
 
-chai.use(chaiAsPromised);
-const should = chai.should();
+import * as properties from '../../lib/properties';
+import { StorageS3 } from '../../lib/storage';
+import { should } from '../utils';
 
 // NB!!! Anything using mocked AWS calls needs to be initialised in the `it(...)` block! If you initialise it in the
 // `describe()` top level code then it won't be mocked in time. We only mock and de-mock before/after else we end up
@@ -54,10 +51,6 @@ function mockerise(service, method) {
     return handlers;
 }
 
-
-////////////////
-
-
 describe('Find unique subhash tests', () => {
     const dynamoDbQueryHandlers = mockerise('DynamoDB', 'query');
     const compilerProps = properties.fakeProps({});
@@ -69,7 +62,7 @@ describe('Find unique subhash tests', () => {
         storageDynamoTable: 'table',
     });
     it('works when empty', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push((q) => {
             q.TableName.should.equal('table');
             return {};
@@ -78,12 +71,12 @@ describe('Find unique subhash tests', () => {
             {
                 alreadyPresent: false,
                 prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEF',
+                uniqueSubHash: 'ABCDEFGHI',
             },
         );
     });
     it('works when not empty', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
@@ -98,18 +91,18 @@ describe('Find unique subhash tests', () => {
             {
                 alreadyPresent: false,
                 prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEF',
+                uniqueSubHash: 'ABCDEFGHI',
             },
         );
     });
     it('works when there\' a collision', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
                     {
-                        full_hash: {S: 'ABCDEFZZ'},
-                        unique_subhash: {S: 'ABCDEF'},
+                        full_hash: {S: 'ABCDEFGHIZZ'},
+                        unique_subhash: {S: 'ABCDEFGHI'},
                     },
                 ],
             };
@@ -118,18 +111,18 @@ describe('Find unique subhash tests', () => {
             {
                 alreadyPresent: false,
                 prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEFG',
+                uniqueSubHash: 'ABCDEFGHIJ',
             },
         );
     });
     it('finds an existing match', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         dynamoDbQueryHandlers.push(() => {
             return {
                 Items: [
                     {
                         full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
-                        unique_subhash: {S: 'ABCDEF'},
+                        unique_subhash: {S: 'ABCDEFGHI'},
                     },
                 ],
             };
@@ -138,12 +131,11 @@ describe('Find unique subhash tests', () => {
             {
                 alreadyPresent: true,
                 prefix: 'ABCDEF',
-                uniqueSubHash: 'ABCDEF',
+                uniqueSubHash: 'ABCDEFGHI',
             },
         );
     });
 });
-
 
 describe('Stores to s3', () => {
     const dynamoDbPutItemHandlers = mockerise('DynamoDB', 'putItem');
@@ -157,7 +149,7 @@ describe('Stores to s3', () => {
         storageDynamoTable: 'table',
     });
     it('and works ok', () => {
-        const storage = new s3s(httpRootDir, compilerProps, awsProps);
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         const object = {
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFG',
@@ -190,5 +182,82 @@ describe('Stores to s3', () => {
         return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
             ran.should.deep.equal({s3: true, dynamo: true});
         });
+    });
+});
+
+describe('Retrieves from s3', () => {
+    const dynamoDbGetItemHandlers = mockerise('DynamoDB', 'getItem');
+    const s3GetObjectHandlers = mockerise('S3', 'getObject');
+    const httpRootDir = '/';
+    const compilerProps = properties.fakeProps({});
+    const awsProps = properties.fakeProps({
+        region: 'not-a-region',
+        storageBucket: 'bucket',
+        storagePrefix: 'prefix',
+        storageDynamoTable: 'table',
+    });
+    it('fetches in the happy path', async () => {
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
+        const ran = {s3: false, dynamo: false};
+        dynamoDbGetItemHandlers.push(q => {
+            q.TableName.should.equals('table');
+            q.Key.should.deep.equals({
+                prefix: {S: 'ABCDEF'},
+                unique_subhash: {S: 'ABCDEF'},
+            });
+            ran.dynamo = true;
+            return {Item: {full_hash: {S: 'ABCDEFGHIJKLMNOP'}}};
+        });
+        s3GetObjectHandlers.push(q => {
+            q.Bucket.should.equal('bucket');
+            q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
+            ran.s3 = true;
+            return {
+                Body: 'I am a monkey',
+            };
+        });
+
+        const result = await storage.expandId('ABCDEF');
+        ran.should.deep.equal({s3: true, dynamo: true});
+        result.should.deep.equal({config: 'I am a monkey', specialMetadata: null});
+    });
+    it('should handle failures', async () => {
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
+        for (let i = 0; i < 10; ++i)
+            dynamoDbGetItemHandlers.push(() => ({}));
+        return storage.expandId('ABCDEF').should.be.rejectedWith(Error, 'ID ABCDEF not present in links table');
+    });
+});
+
+describe('Updates counts in s3', async () => {
+    const dynamoDbUpdateItemHandlers = mockerise('DynamoDB', 'updateItem');
+    const httpRootDir = '/';
+    const compilerProps = properties.fakeProps({});
+    const awsProps = properties.fakeProps({
+        region: 'not-a-region',
+        storageBucket: 'bucket',
+        storagePrefix: 'prefix',
+        storageDynamoTable: 'table',
+    });
+    it('should increment for simple cases', async () => {
+        const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
+        let called = false;
+        dynamoDbUpdateItemHandlers.push(q => {
+            q.should.deep.equals(
+                {
+                    ExpressionAttributeValues: {':inc': {N: '1'}},
+                    Key: {
+                        prefix: {S: 'ABCDEF'},
+                        unique_subhash: {S: 'ABCDEF'},
+                    },
+                    ReturnValues: 'NONE',
+                    TableName: 'table',
+                    UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
+                },
+            );
+            called = true;
+        });
+        await storage.incrementViewCount('ABCDEF');
+        called.should.be.true;
     });
 });

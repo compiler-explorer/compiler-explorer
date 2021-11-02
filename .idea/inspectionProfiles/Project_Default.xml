@@ -17,5 +17,6 @@
     </inspection_tool>
     <inspection_tool class="JSLastCommaInArrayLiteral" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="JSLastCommaInObjectLiteral" enabled="false" level="WARNING" enabled_by_default="false" />
+    <inspection_tool class="UnusedProperty" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

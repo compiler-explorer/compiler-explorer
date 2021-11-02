@@ -28,7 +28,7 @@ var
     $ = require('jquery'),
     _ = require('underscore'),
     monaco = require('monaco-editor'),
-    ga = require('analytics'),
+    ga = require('analytics').ga,
     History = require('./history');
 
 function HistoryDiffState(model) {

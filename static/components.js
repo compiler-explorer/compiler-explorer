@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,13 @@ module.exports = {
             },
         };
     },
+    getCompilerForTree: function (treeId, lang) {
+        return {
+            type: 'component',
+            componentName: 'compiler',
+            componentState: {tree: treeId, lang: lang},
+        };
+    },
     getExecutor: function (editorId, lang) {
         return {
             type: 'component',
@@ -53,17 +60,25 @@ module.exports = {
             componentState: {source: editorId, lang: lang},
         };
     },
-    getExecutorWith: function (editorId, lang, compilerId, libraries, compilerArgs) {
+    getExecutorWith: function (editorId, lang, compilerId, libraries, compilerArgs, treeId) {
         return {
             type: 'component',
             componentName: 'executor',
             componentState: {
                 source: editorId,
+                tree: treeId,
                 lang: lang,
                 compiler: compilerId,
                 libs: libraries,
                 options: compilerArgs,
             },
+        };
+    },
+    getExecutorForTree: function (treeId, lang) {
+        return {
+            type: 'component',
+            componentName: 'executor',
+            componentState: {tree: treeId, lang: lang},
         };
     },
     getEditor: function (id, langId) {
@@ -80,14 +95,21 @@ module.exports = {
             componentState: {id: id, source: source, options: options},
         };
     },
-    getOutput: function (compiler, editor) {
+    getTree: function (id) {
+        return {
+            type: 'component',
+            componentName: 'tree',
+            componentState: {id: id},
+        };
+    },
+    getOutput: function (compiler, editor, tree) {
         return {
             type: 'component',
             componentName: 'output',
-            componentState: {compiler: compiler, editor: editor},
+            componentState: {compiler: compiler, editor: editor, tree: tree},
         };
     },
-    getToolViewWith: function (compiler, editor, toolId, args) {
+    getToolViewWith: function (compiler, editor, toolId, args, monacoStdin, tree) {
         return {
             type: 'component',
             componentName: 'tool',
@@ -96,6 +118,26 @@ module.exports = {
                 editor: editor,
                 toolId: toolId,
                 args: args,
+                tree: tree,
+                monacoStdin: monacoStdin,
+            },
+        };
+    },
+    getToolInputView: function () {
+        return {
+            type: 'component',
+            componentName: 'toolInputView',
+            componentState: {},
+        };
+    },
+    getToolInputViewWith: function (compilerId, toolId, toolName) {
+        return {
+            type: 'component',
+            componentName: 'toolInputView',
+            componentState: {
+                compilerId: compilerId,
+                toolId: toolId,
+                toolName: toolName,
             },
         };
     },
@@ -123,6 +165,24 @@ module.exports = {
                 optOutput: optimization,
                 compilerName: compilerName,
                 editorid: editorid,
+            },
+        };
+    },
+    getFlagsView: function () {
+        return {
+            type: 'component',
+            componentName: 'flags',
+            componentState: {},
+        };
+    },
+    getFlagsViewWith: function (id, compilerName, compilerFlags) {
+        return {
+            type: 'component',
+            componentName: 'flags',
+            componentState: {
+                id: id,
+                compilerName: compilerName,
+                compilerFlags: compilerFlags,
             },
         };
     },
@@ -225,6 +285,86 @@ module.exports = {
                 id: id,
                 source: source,
                 irOutput: irOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getRustMirView: function () {
+        return {
+            type: 'component',
+            componentName: 'rustmir',
+            componentState: {},
+        };
+    },
+    getRustMirViewWith: function (id, source, rustMirOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rustmir',
+            componentState: {
+                id: id,
+                source: source,
+                rustMirOutput: rustMirOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getGnatDebugView: function () {
+        return {
+            type: 'component',
+            componentName: 'gnatdebug',
+            componentState: {},
+        };
+    },
+    getGnatDebugViewWith: function (id, source, gnatDebugOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'gnatdebug',
+            componentState: {
+                id: id,
+                source: source,
+                gnatDebugOutput: gnatDebugOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getRustMacroExpView: function () {
+        return {
+            type: 'component',
+            componentName: 'rustmacroexp',
+            componentState: {},
+        };
+    },
+    getRustMacroExpViewWith: function (id, source, rustMacroExpOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rustmacroexp',
+            componentState: {
+                id: id,
+                source: source,
+                rustMacroExpOutput: rustMacroExpOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getDeviceView: function () {
+        return {
+            type: 'component',
+            componentName: 'device',
+            componentState: {},
+        };
+    },
+    getDeviceViewWith: function (id, source, deviceOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'device',
+            componentState: {
+                id: id,
+                source: source,
+                deviceOutput: deviceOutput,
                 compilerName: compilerName,
                 editorid: editorid,
             },

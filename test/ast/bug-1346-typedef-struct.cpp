@@ -1,0 +1,1 @@
+typedef struct x y;

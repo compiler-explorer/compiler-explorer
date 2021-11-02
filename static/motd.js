@@ -24,9 +24,8 @@
 
 'use strict';
 var $ = require('jquery'),
-    Sentry = require('@sentry/browser'),
     _ = require('underscore'),
-    ga = require('analytics');
+    ga = require('analytics').ga;
 
 function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     if (motd.motd) {
@@ -74,8 +73,10 @@ function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) 
             onMotd(res);
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
-        .catch(function (jqXHR, textStatus, errorThrown) {
-            Sentry.captureMessage('MOTD error for ' + url + ' - ' + textStatus + ' - ' + errorThrown, 'warning');
+        .catch(function () {
+            // do nothing! we've long tried to find out why this might fail, and it seems page load cancels or ad
+            // blockers might reasonably cause a failure here, and it's no big deal.
+            // Some history at https://github.com/compiler-explorer/compiler-explorer/issues/1057
         });
 }
 

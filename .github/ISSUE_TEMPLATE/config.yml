@@ -1,0 +1,12 @@
+# Allow people to open issues which are not based on a template
+blank_issues_enabled: true
+contact_links:
+  - name: Compiler Explorer Discord
+    url: https://discord.gg/B5WacA7
+    about: Discord server for everything related to Compiler Explorer
+  - name: Compiler Explorer Mailing list
+    url: https://groups.google.com/g/compiler-explorer-discussion
+    about: Public Compiler Explorer mailing list
+  - name: CppLang Slack channel
+    url: https://cppalliance.org/slack/
+    about: General discussion about Compiler Explorer (#compiler-explorer)

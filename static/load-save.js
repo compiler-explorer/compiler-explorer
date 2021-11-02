@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,10 +26,10 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var saveAs = require('file-saver').saveAs;
-var Alert = require('./alert');
+var Alert = require('./alert').Alert;
 var local = require('./local');
 var Promise = require('es6-promise').Promise;
-var ga = require('./analytics');
+var ga = require('./analytics').ga;
 var history = require('./history');
 
 function getLocalFiles() {
@@ -139,7 +139,7 @@ LoadSave.prototype.onLocalFile = function (event) {
         var file = files[0];
         var reader = new FileReader();
         reader.onload = _.bind(function () {
-            this.onLoad(reader.result);
+            this.onLoad(reader.result, file.name);
         }, this);
         reader.readAsText(file);
     }

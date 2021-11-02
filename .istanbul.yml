@@ -1,8 +1,0 @@
-instrumentation:
-    root: ./lib
-    include-all-sources: true
-    excludes:
-        - "handlers/asm-docs.js"
-        - "compilers/fake-for-test.js"
-reporting:
-    dir: ./out/coverage

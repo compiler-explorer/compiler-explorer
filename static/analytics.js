@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Matt Godbolt
+// Copyright (c) 2016, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var options = require('options');
+var options = require('options').options;
 var Sentry = require('@sentry/browser');
 
 if (options.sentryDsn) {
@@ -57,7 +57,10 @@ function GAProxy() {
                     m.parentNode.insertBefore(a, m);
                 })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
                 window.ga('set', 'anonymizeIp', true);
-                window.ga('create', options.googleAnalyticsAccount, 'auto');
+                window.ga('create', options.googleAnalyticsAccount, {
+                    cookieDomain: 'auto',
+                    cookieFlags: 'SameSite=None; Secure',
+                });
                 window.ga('send', 'pageview');
             }
             this.proxy = function () {
@@ -83,4 +86,6 @@ function GAProxy() {
 
 var ga = new GAProxy();
 
-module.exports = ga;
+module.exports = {
+    ga: ga,
+};

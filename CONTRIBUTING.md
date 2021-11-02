@@ -5,17 +5,26 @@ First off, if you're reading this: thank you! Even considering contributing to
 Before we go too far, an apology: **Compiler Explorer** grew out of a bit of
  hacky JavaScript into a pretty large and well-used project pretty quickly.
 Not all the code was originally well-written or well-tested.
-Please be forgiving of that, and be ready to help in improving that.
+Please be forgiving of that.
 
 **Compiler Explorer** follows a [Code of Conduct](CODE_OF_CONDUCT.md) which
  aims to foster an open and welcoming environment.
 
+# Where to start
+
+We have labeled issues which should be easy to do that you can find [here](https://github.com/compiler-explorer/compiler-explorer/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+
+If you have any questions, don't hesitate: [Contact us].
+
+If there is something you would like to do yourself, it might help to make an issue so people can weigh in and point you in the right direction.
+
+
 ## Node version
-**Compiler Explorer** targets the latest [Node.js](https://nodejs.org/) LTS,
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 14.18.0,
  so it's better if you do so as well when testing your changes locally.
 
-Nonetheless, it _should_ run in everything post-Node.js 11. [Contact us] if
- this is not the case for you.
+We're aware of [an issue](https://github.com/compiler-explorer/compiler-explorer/issues/3047#issuecomment-948032360) that
+makes **Compiler Explorer** not runnable in anything newer than Node LTS 14.18.0
 
 ## In brief
 * Make your changes, trying to stick to the style and format where possible.
@@ -23,11 +32,9 @@ Nonetheless, it _should_ run in everything post-Node.js 11. [Contact us] if
     and PRs won't pass unless it detects no errors.
     * Running `make lint` will run the linter, which will auto-fix everything 
     it can and report back any errors and warnings.
-* If adding a new server-side component please do your best to add a test to
+* If you're adding a new server-side component, please do your best to add a test to
  cover it. For client-side changes that's trickier.
-* Run the git hooks installer (_Only needed once_): `make install-git-hooks`.
- This will automatically run the tests before you can commit, ensuring that 
- they pass before committing your changes.
+* Tests should run automatically as a pre-commit step.
  _You can disable this check with `git commit --no-verify` if needed_.
 * You can run `make check` to run both the linter and the code tests
 * Do a smoke test:
@@ -35,8 +42,6 @@ Nonetheless, it _should_ run in everything post-Node.js 11. [Contact us] if
  areas you'd expect to have changed, but if you can, click about generally to
  help check you haven't unintentionally broken something else
 * Submit a Pull Request.
-
-If you have any questions, don't hesitate: [Contact us].
 
 ## Basic code layout
 
@@ -53,7 +58,7 @@ In the server code, the `app.js` sets up a basic `express`
  `lib/asm-parser.js`, and similar, files.
 
 In the client code, [GoldenLayout](https://www.golden-layout.com/) is used as
- the container. If you look at some of the components like the
+ the container. If you look at some components like the
  `static/compiler.js`, you'll see the general flow.
  Any state stored makes it into the URL, so be careful not to stash
  anything too big in there.
@@ -75,9 +80,15 @@ Note that a current issue makes every project media asset to be locally
 
 ## Gotchas
 
-* Stick to **ES5** (no `let` or arrow operators) in the client-side code.
- Sadly there are still enough users out there on old browsers,
- but feel free to use all the cool stuff on the server side code.
+* New client-side code should preferably be written in TypeScript,
+ but we will always accept js code too. Be aware that in that case,
+ you must stick to **ES5** (so no `let` or arrow operators) js code.
+ Sadly there are still enough users out there on old browsers.
+ Note that this restriction does not apply to the server side code,
+ in which you can use all the cool features you want.
+ In lieu of ES6 features, [Underscore.js](https://underscorejs.org/) is available
+ as a way to bridge the feature gap. The library is available both 
+ in the client and server code.
 * Be aware that **Compiler Explorer** runs on a cluster on the live site.
  No local state is kept between invocations, and the user's next request will 
  likely hit a different node in the cluster, so don't rely on

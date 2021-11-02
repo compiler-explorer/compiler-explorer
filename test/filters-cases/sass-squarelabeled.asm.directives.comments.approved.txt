@@ -1,0 +1,121 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarePii:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".text._Z6squarePii:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "S2R R0, SR_CTAID.X;                          /* 0x2c00000094001c04 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "ISETP.GE.AND P0, PT, R0, c[0x0][0x148], PT;  /* 0x1b0e40052001dc23 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "MOV R0, c[0x0][0x148];                       /* 0x2800400520001de4 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "MOV32I R3, 0x4;                              /* 0x180000001000dde2 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "IADD32I R0, R0, -0x1;                        /* 0x0bfffffffc001c02 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "IMAD.HI.X R3, R0, R3, c[0x0][0x144];         /* 0x208680051000dce3 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "ST.E [R2], RZ;                               /* 0x94000000002fdc85 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "EXIT;                                        /* 0x8000000000001de7 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L_1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "ISCADD R2.CC, R0, c[0x0][0x140], 0x2;        /* 0x4001400500009c43 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "MOV32I R3, 0x4;                              /* 0x180000001000dde2 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "IMAD.HI.X R3, R0, R3, c[0x0][0x144];         /* 0x208680051000dce3 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "IMAD R0, R0, R0, c[0x0][0x148];              /* 0x2000800520001ca3 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "IADD32I R4, R0, 0x1;                         /* 0x0800000004011c02 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "ST.E [R2], R4;                               /* 0x9400000000211c85 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "EXIT;                                        /* 0x8000000000001de7 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L_2:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L_2",
+          "range": {
+            "endCol": 11,
+            "startCol": 7
+          }
+        }
+      ],
+      "source": null,
+      "text": "BRA `(.L_2);                                 /* 0x4003ffffe0001de7 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L_19:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L_2": 19,
+    "_Z6squarePii": 1
+  }
+}

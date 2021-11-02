@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,14 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    CompilationQueue = require('../../lib/compilation-queue'),
-    HealthCheckHandler = require('../../lib/handlers/health-check').HealthCheckHandler,
-    express = require('express'),
-    mockfs = require('mock-fs');
+import express from 'express';
+import mockfs from 'mock-fs';
 
-chai.use(require('chai-http'));
-chai.should();
+import { CompilationQueue } from '../../lib/compilation-queue';
+import { HealthCheckHandler } from '../../lib/handlers/health-check';
+import { chai } from '../utils';
 
 describe('Health checks', () => {
     let app;
@@ -82,7 +80,6 @@ describe('Health checks on disk', () => {
         const res = await chai.request(app).get('/hc');
         res.should.have.status(500);
     });
-
 
     it('should respond with OK and file contents when found', async () => {
         const res = await chai.request(app).get('/hc2');

@@ -2,9 +2,11 @@
 
 Contact: [@AndrewPardoe](https://github.com/AndrewPardoe)
 
-The Compiler Explorer ("CE" from here on) runs quite well on the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) ("WSL"). Running on WSL enables Linux-based compilers to continue running natively while enabling Windows-based compilers to run in a real Windows environment. 
+The Compiler Explorer ("CE" from here on) runs quite well on the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/faq) ("WSL").
+Running on WSL enables Linux-based compilers to continue running natively while enabling Windows-based compilers to run in a real Windows environment.
 
-No special configuration is needed to run CE under WSL. Some configuration is required for hosting the Microsoft Visual C++ ("MSVC") compiler. Testing has mainly been done on the Ubuntu distro but any distro should work.
+No special configuration is needed to run CE under WSL. Some configuration is required for hosting the Microsoft Visual C++ ("MSVC") compiler.
+Testing has mainly been done on the Ubuntu distro but any distro should work.
 
 ## WSL/Windows interop and its limitations
 WSL offers rich interop with Windows processes. You can run any Windows executable, such as "`cl.exe`", from a bash shell. But this interop capability has some limitations. 
@@ -50,10 +52,10 @@ CE only required a few changes in order to run properly under WSL. Those changes
 - `lib/exec.js`: Execute the compiler in the temporary directory. If the compiler's binary is located on a mounted volume (`startsWith("/mnt"`)) and CE is running under WSL, run the compiler in the `winTmp` directory. Otherwise, use the Linux temp directory. 
 - `lib/compilers/wsl-vc.js`: See also `wine-vc.js`, the Wine version of this compiler-specific file. These files provide custom behaviors for a compiler. This file does two interesting things:
   - The `CompileCl` function translates from Linux-style directories to Windows-style directories (`/mnt/c/tmp` to `c:/tmp`) so that `CL.exe` can find its input files. 
-  -  The `newTempDir` function creates a temporary directory in `winTmp`. CEs creates directories under the temp directory that start with `compiler-explorer-compiler` where the compiland and compiler output lives. This is similar to the function in `lib/base-compiler.js`. 
+  - The `newTempDir` function creates a temporary directory in `winTmp`. CEs creates directories under the temp directory that start with `compiler-explorer-compiler` where the compiler and compiler output lives. This is similar to the function in `lib/base-compiler.js`.
 - `etc/config/c++.defaults.properties`: Add a configuration (`&cl19`) for MSVC compilers. This edits in here are currently wrong in two ways, but it doesn't affect the main CE instance as it uses `amazon` properties files, and it doesn't affect anyone running a local copy of CE because CE will just fail silently when it can't find a compiler.
   - The locations of these are hardcoded to a particular install location. See **MSVC setup** below for more information.
-  - Setting of the `%INCLUDE%` path is done with the `/I` switch. This is very clunky and will fall over when command-line limits are hit but it's the only option currently as environments aren't passed through when starting a Windows process from WSL. 
+  - Setting of the `%INCLUDE%` path is done with the `/I` switch. This is very clunky and will fall over when command-line limits are hit, but it's the only option currently as environments aren't passed through when starting a Windows process from WSL.
 
 ## Debugging
 
@@ -77,9 +79,9 @@ The only viable option for debugging under WSL is to use [VS Code](https://code.
 }
 ```
 
-Launch CE with `make NODE_ARGS="--inspect"` to have node listen on port 9229. 
+Launch CE with `make NODE_ARGS="--inspect"` to have node listen on port 9229.
 
-Because you can only attach to the process, as opposed to launching the process, you're limited to `printf` debugging for startup code. Search the code for `logger.info` to see examples of how to `printf` debug. 
+Because you can only attach to the process, as opposed to launching the process, you're limited to `printf` debugging for startup code. Search the code for `logger.info` to see examples of how to `printf` debug.
 
 ## MSVC setup
 

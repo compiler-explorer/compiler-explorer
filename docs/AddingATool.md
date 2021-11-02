@@ -13,7 +13,10 @@ tools.rewritecpp.type=independent
 tools.rewritecpp.exclude=
 tools.rewritecpp.class=base-tool
 tools.rewritecpp.stdinHint=disabled
+tools.rewritecpp.monacoStdin=false
 tools.rewritecpp.languageId=cppp
+tools.rewritecpp.options=--a
+tools.rewritecpp.args=--b
 ```
 
 The `name` and `exe` are what they say they are, this is the display name for within CE and the tool executable that will be used.
@@ -23,7 +26,7 @@ The `type` of the tool represents the stage in which the tool will run:
 * postcompilation - when running a tool on the assembly or a binary
 
 The `exclude` property is to indicate which compilers are proven to be incompatible with the tool.
-You can supply the full id of the compiler or a partial id (for example 'arm' to exclude all arm compilers).
+You can supply the full id of the compiler, or a partial id (for example 'arm' to exclude all arm compilers).
 
 The `class` of the tool says which javascript class is needed to run the tool and process its output. The folder _lib/tooling_ is used for these classes.
 
@@ -32,7 +35,13 @@ you should add a new class that extends from `base-tool`.
 
 The `stdinHint` is there to show the user a hint as to what the stdin field is used for in the tool. To disable stdin you can use _disabled_ here.
 
+The `monacoStdin` option makes the stdin editor a separate pane containing a monaco editor. This is useful when a tool has complex input spanning multiple lines and it's more friendly to indent it.
+
 The `languageId` can be used to highlight the output of the tool according to a language known within CE. For example `cppp` will highlight c++ output. Leaving `languageId` empty will use the terminal-like output.
+
+The `options` field is useful for tools that derive `base-tool` and want to add non-user configurable options to it
+
+The `args` field is shown and editable by the user in the UI, and passed automatically to the tool
 
 # compilationInfo
 
@@ -94,4 +103,4 @@ The `options` are the arguments the user gave for the compilation.
 
 The `outputFilename` is always filled, but not guaranteed to exist, for example when the compilation has failed.
 
-The `executableFilename` is always filled, but does not guarantee the existance of an executable.
+The `executableFilename` is always filled, but does not guarantee the existence of an executable.

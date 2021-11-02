@@ -21,17 +21,18 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+
 'use strict';
 
-var FontScale = require('../fontscale');
+var FontScale = require('../fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
-var ga = require('../analytics');
+var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 
 require('../modes/asm-mode');
-require('selectize');
+
 
 function Opt(hub, container, state) {
     state = state || {};
@@ -128,9 +129,12 @@ Opt.prototype.getCurrentEditorLanguage = function () {
     return this.optEditor.getModel().getModeId();
 };
 
+Opt.prototype.getPaneName = function () {
+    return 'Opt Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+};
+
 Opt.prototype.setTitle = function () {
-    this.container.setTitle(
-        this._compilerName + ' Opt Viewer (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')');
+    this.container.setTitle(this.getPaneName());
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {

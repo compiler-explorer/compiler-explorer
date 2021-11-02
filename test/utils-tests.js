@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Matt Godbolt
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger').logger,
-    fs = require('fs-extra');
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-chai.should();
+import { logger } from '../lib/logger';
+import * as utils from '../lib/utils';
+
+import { fs } from './utils';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {
@@ -177,6 +178,64 @@ describe('Pascal compiler output', () => {
     });
 });
 
+describe('Rust compiler output', () => {
+    it('handles simple cases', () => {
+        utils.parseRustOutput('Line one\nLine two', 'bob.rs').should.deep.equals([
+            {text: 'Line one'},
+            {text: 'Line two'},
+        ]);
+        utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs').should.deep.equals([
+            {text: 'Unrelated'},
+            {
+                tag: {column: 0, line: 1, text: 'Line one'},
+                text: 'Line one',
+            },
+            {
+                tag: {column: 0, line: 1, text: ''},
+                text: ' --> <source>:1',
+            },
+            {text: 'Unrelated'},
+        ]);
+        utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs').should.deep.equals([
+            {
+                tag: {column: 5, line: 1, text: 'Line one'},
+                text: 'Line one',
+            },
+            {
+                tag: {column: 5, line: 1, text: ''},
+                text: ' --> <source>:1:5',
+            },
+        ]);
+    });
+
+    it('replaces all references to input source', () => {
+        utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs').should.deep.equals([
+            {
+                tag: {column: 0, line: 1, text: 'error: Error in <source>'},
+                text: 'error: Error in <source>',
+            },
+            {
+                tag: {column: 0, line: 1, text: ''},
+                text: ' --> <source>:1',
+            },
+        ]);
+    });
+
+    it('treats <stdin> as if it were the compiler source', () => {
+        utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs')
+            .should.deep.equals([
+                {
+                    tag: {column: 25, line: 120, text: 'error: <source> is sad'},
+                    text: 'error: <source> is sad',
+                },
+                {
+                    tag: {column: 25, line: 120, text: ''},
+                    text: ' --> <source>:120:25',
+                },
+            ]);
+    });
+});
+
 describe('Tool output', () => {
     it('removes the relative path', () => {
         utils.parseOutput('./example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping', './example.cpp').should.deep.equals([
@@ -286,26 +345,24 @@ describe('Hash interface', () => {
 });
 
 describe('GoldenLayout utils', () => {
-    it('finds every editor & compiler', () => {
-        fs.readJson('test/example-states/default-state.json')
-            .then(state => {
-                const contents = utils.glGetMainContents(state.content);
-                contents.should.deep.equal({
-                    editors: [
-                        {source: 'Editor 1', language: 'c++'},
-                        {source: 'Editor 2', language: 'c++'},
-                        {source: 'Editor 3', language: 'c++'},
-                        {source: 'Editor 4', language: 'c++'},
-                    ],
-                    compilers: [
-                        {compiler: 'clang_trunk'},
-                        {compiler: 'gsnapshot'},
-                        {compiler: 'clang_trunk'},
-                        {compiler: 'gsnapshot'},
-                        {compiler: 'rv32clang'},
-                    ],
-                });
-            });
+    it('finds every editor & compiler', async () => {
+        const state = await fs.readJson('test/example-states/default-state.json');
+        const contents = utils.glGetMainContents(state.content);
+        contents.should.deep.equal({
+            editors: [
+                {source: 'Editor 1', language: 'c++'},
+                {source: 'Editor 2', language: 'c++'},
+                {source: 'Editor 3', language: 'c++'},
+                {source: 'Editor 4', language: 'c++'},
+            ],
+            compilers: [
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'clang_trunk'},
+                {compiler: 'gsnapshot'},
+                {compiler: 'rv32-clang'},
+            ],
+        });
     });
 });
 
@@ -336,7 +393,7 @@ describe('squashes horizontal whitespace', () => {
 describe('replaces all substrings', () => {
     it('works with no substitutions', () => {
         const string = 'This is a line with no replacements';
-        utils.replaceAll(string, 'not present', "won't be substituted").should.equal(string);
+        utils.replaceAll(string, 'not present', 'won\'t be substituted').should.equal(string);
     });
     it('handles odd cases', () => {
         utils.replaceAll('', '', '').should.equal('');
@@ -398,5 +455,17 @@ describe('encodes in our version of base32', () => {
         doTest('foo', '8rrx8');
 
         doTest('foobar', '8rrx8b7Pc5');
+    });
+});
+
+describe('fileExists', () => {
+    it('Returns true for files that exists', async () => {
+        (await utils.fileExists(fileURLToPath(import.meta.url))).should.be.true;
+    });
+    it('Returns false for files that don\'t exist', async () => {
+        (await utils.fileExists('./ABC-FileThatDoesNotExist.extension')).should.be.false;
+    });
+    it('Returns false for directories that exist', async () => {
+        (await utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).should.be.false;
     });
 });

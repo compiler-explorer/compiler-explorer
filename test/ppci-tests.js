@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Patrick Quist
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,13 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const chaiAsPromised = require('chai-as-promised');
-const PPCICompiler = require('../lib/compilers/ppci');
-const {makeCompilationEnvironment} = require('./utils');
+import { PPCICompiler } from '../lib/compilers/ppci';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { makeCompilationEnvironment } from './utils';
 
 const languages = {
     c: {id: 'c'},

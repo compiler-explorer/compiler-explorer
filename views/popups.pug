@@ -1,6 +1,6 @@
 #load-save.modal.fade.gl_keep(tabindex="-1" role="dialog")
-  .modal-dialog.modal-lg
-    .modal-content
+  .modal-dialog.modal-lg(style="max-width: unset")
+    .modal-content(style="max-width: unset")
       .modal-header
         h5.modal-title Load and save editor text
         button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
@@ -38,7 +38,7 @@
               label.btn.btn-outline-secondary.btn-file.save-btn(role="button") Save to file
                 input.save-file(type="button")
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal" aria-label="Close") Close
 
 #alert.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
@@ -50,7 +50,7 @@
             | &times;
       .modal-body
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
 
 #yes-no.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
@@ -62,40 +62,57 @@
             | &times;
       .modal-body
       .modal-footer
-        button.btn.btn-light.no(type="button" data-dismiss="modal") No
-        button.btn.btn-light.yes(type="button" data-dismiss="modal") Yes
+        button.btn.btn-link.no(type="button" data-dismiss="modal") No
+        button.btn.btn-link.yes(type="button" data-dismiss="modal") Yes
 
-#settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
+#enter-something.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        h5.modal-title Compiler Explorer Settings
+        h5.modal-title Enter something here
         button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
           span(aria-hidden="true")
             | &times;
+      .modal-body
+        .question
+        input.question-answer
+      .modal-footer
+        button.btn.btn-light.no(type="button" data-dismiss="modal") Cancel
+        button.btn.btn-light.yes(type="button" data-dismiss="modal") Ok
+
+#settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg(role="document")
+    .modal-content
+      .modal-header
+        h5.modal-title
+          | Compiler Explorer Settings
+        button.close(type="button" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
       .modal-body
         .card
           .card-header
             | These settings control how Compiler Explorer acts for you. They are not
             | preserved as part of shared URLs, and are persisted locally using browser
             | local storage.
-          .card-body
+        .card.mt-2
+          .card-header
             .card-title
               h4 Site behaviour
+          .card-body
             .form-group(role="group")
               label
-                | Default language&nbsp;
-                small
+                | Default language
+                small(style="margin-left: 3px")
                   span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
-                select.defaultLanguage
+              select.defaultLanguage
               .checkbox
                 label
                   input.allowStoreCodeDebug(type="checkbox")
                   | Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
               div
                 label
-                  | Theme&nbsp;
-                  select.theme
+                  | Theme
+                select.theme
               .checkbox
                 label
                   input.newEditorLastLang(type="checkbox")
@@ -104,19 +121,37 @@
                 label
                   input.enableCommunityAds(type="checkbox")
                   | Show community events
-        .card
-          .card-body
+        .card.mt-1
+          .card-header
             .card-title
               h4 Keybindings
+          .card-body
             .form-group(role="group")
               .checkbox
                 label
                   input.useVim(type="checkbox")
-                  | Vim
-        .card
-          .card-body
+                  | Vim editor mode
+              .checkbox.the-save-option-to-auto-share
+                label
+                  input.enableCtrlS(type="checkbox")
+                  | Make
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;save to local file instead of creating a share link
+              .checkbox.the-save-option-to-tree-save
+                label
+                  input.enableCtrlStree(type="checkbox")
+                  | Make
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;include and save the file to a Tree if that's added to the UI
+        .card.mt-1
+          .card-header
             .card-title
               h4 Editor
+          .card-body
             .form-group(role="group")
               div
                 label
@@ -163,39 +198,32 @@
                   input.useSpaces(type="checkbox")
                   | Use spaces for indentation
               div
-                label
-                  | &nbsp;Tab width&nbsp;
-                  input.tabWidth(type="numeric")
+                label Tab width
+                input.tabWidth(type="number")
               div
-                label
-                  | Format based on&nbsp;
-                  select.formatBase
-              .checkbox
-                label
-                  input.enableCtrlS(type="checkbox")
-                  | Make
-                  kbd Ctrl
-                  | +
-                  kbd S
-                  | &nbsp;save to local file instead of creating a share link
+                label Format based on
+                select.formatBase
               .checkbox
                 label
                   input.wordWrap(type="checkbox")
                   | Enable Word Wrapping
-        .card
-          .card-body
+        .card.mt-1
+          .card-header
             .card-title
               h4 Compilation
+          .card-body
             .form-group(role="group")
               div
                 .checkbox
                   label
                     input.compileOnChange(type="checkbox")
                     | Compile automatically when source changes
-                div Delay before compiling:&nbsp;
-                  b 0.25s&nbsp;
-                  .slider.slider-horizontal.delay
-                  b &nbsp;3s
+                div
+                  label Delay before compiling
+                  .slider-input
+                    b 0.25s
+                    input.delay(type="range")
+                    b 3s
               .checkbox
                 label
                   input.colourise(type="checkbox")
@@ -204,7 +232,7 @@
                 | Colour scheme&nbsp;
                 select.colourScheme
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
 
 #simplecook.gl_keep(tabindex="-1" role="dialog" style="display:none")
   .message
@@ -214,39 +242,43 @@
         | &nbsp;Read the new cookie policy
       p.new-cookie-msg Compiler Explorer uses cookies and other related techs to serve you
     .btn-group.btn-group-sm(role="group" aria-label="Consent options" style="float:right")
-      button.btn.btn-light.btn-sm.cook-do-consent.consent-cookie-yes(title="Consent cookie policy" aria-label="Consent cookie policy")
-        span.fas.fa-thumbs-up
-        | &nbsp;Consent
-      button.btn.btn-light.btn-sm.cook-dont-consent.consent-cookie-no(title="Do not consent cookie policy" aria-label="Oppose cookie policy")
+      button.btn.btn-secondary.btn-sm.cook-dont-consent(title="Do not consent cookie policy" aria-label="Oppose cookie policy")
         span.fas.fa-thumbs-down
         | &nbsp;Don't consent
+      button.btn.btn-primary.btn-sm.cook-do-consent(title="Consent cookie policy" aria-label="Consent cookie policy")
+        span.fas.fa-thumbs-up
+        | &nbsp;Consent
 
 #notifications
 
-#shareembedlink.modal.fade.gl_keep(tabindex="-1" role="dialog")
+#sharelinkdialog.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
     .modal-content
       .modal-header
-        h5.modal-title Share embedded
+        h5.modal-title Share
         button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
           span(aria-hidden="true")
             | &times;
       .modal-body
         .card
           .card-body
-            .input-group-append
-              input.form-control.input-sm.permalink(type="text" placeholder="Loading" readonly size="1024" style="font-size: 10px")
-              button.input-group-btn.btn.btn-outline-secondary.btn-sm.clippy(type="button" data-clipboard-target="#shareembedlink .permalink" title="Copy to clipboard")
-                span.fa.fa-clipboard
-            #embedsettings.form-group(role="group")
-              .checkbox
-                label
-                  input.readOnly(type="checkbox")
-                  | Read Only
-              .checkbox
-                label
-                  input.hideEditorToolbars(type="checkbox")
-                  | Hide Editor Toolbars
+            .container
+              .input-group
+                input.form-control.permalink(type="text" placeholder="Loading" readonly size="1024")
+                .input-group-append
+                  button.btn.btn-outline-secondary.clippy(type="button" data-clipboard-target="#sharelinkdialog .permalink" title="Copy to clipboard")
+                    span.fa.fa-clipboard
+              #embedsettings.form-group(role="group")
+                .checkbox
+                  label
+                    input.readOnly(type="checkbox")
+                    | Read Only
+                .checkbox
+                  label
+                    input.hideEditorToolbars(type="checkbox")
+                    | Hide Editor Toolbars
+              if sharingEnabled
+                .socialsharing.mt-2
 
 #history.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
@@ -282,4 +314,51 @@
                     | Inline diff
                 div.monaco-placeholder#history-diff
       .modal-footer
-        button.btn.btn-light(type="button" data-dismiss="modal" aria-label="Close") Close
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
+
+#library-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Libraries
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg
+                  div(style='text-align: center')
+                    input.lib-search-input(value="" placeholder="Search text")
+                    button.btn.btn-primary.lib-search-button(type="button") Search
+                    hr
+              .row
+                .col-lg.libs-how-to-use To add a library, search for one you want and select the version in the dropdown. Or if you have favorited it before, just click the library name in the Favorites section.
+              .row
+                .col-lg &nbsp;
+              .row
+                .libs-selected-col.col-md
+                  div
+                    h6 Selected
+                  .libs-selected-items
+                .libs-results-col.col-md
+                  h6 Results
+                  .lib-results-items
+                .libs-favorites-col.col-md
+                  h6 Favorites
+                  .lib-favorites
+
+#timing-info.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Timing
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        #chart
+      .modal-footer
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close

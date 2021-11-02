@@ -1,0 +1,37 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "example::abort:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/home/ce/./example.rs",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        .inst.n 0xdefe"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 5,
+        "file": "/home/ce/./example.rs",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        .inst.n 0xdefe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "example": 1
+  }
+}

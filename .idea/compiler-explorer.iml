@@ -5,6 +5,8 @@
       <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/out" />
       <excludeFolder url="file://$MODULE_DIR$/static/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/lib/storage/data" />
+      <excludeFolder url="file://$MODULE_DIR$/etc/scripts/asm-docs" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

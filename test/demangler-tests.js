@@ -22,19 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const
-    chai = require('chai'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    utils = require('../lib/utils'),
-    chaiAsPromised = require('chai-as-promised'),
-    SymbolStore = require('../lib/symbol-store').SymbolStore,
-    Demangler = require('../lib/demangler-cpp').Demangler,
-    DemanglerWin32 = require('../lib/demangler-win32').Demangler,
-    exec = require('../lib/exec');
+import { CppDemangler, Win32Demangler } from '../lib/demangler';
+import { PrefixTree } from '../lib/demangler/prefix-tree';
+import * as exec from '../lib/exec';
+import { SymbolStore } from '../lib/symbol-store';
+import * as utils from '../lib/utils';
 
-chai.use(chaiAsPromised);
-chai.should();
+import { chai, fs, path, resolvePathFromTestRoot } from './utils';
 
 const cppfiltpath = 'c++filt';
 
@@ -56,7 +50,7 @@ describe('Basic demangling', function () {
             asm: [{text: 'Hello, World!'}],
         };
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
@@ -73,7 +67,7 @@ describe('Basic demangling', function () {
             {text: '  ret'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
@@ -93,7 +87,7 @@ describe('Basic demangling', function () {
             {text: '  mov eax, $_Z6squarei'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return Promise.all([
@@ -119,7 +113,7 @@ describe('Basic demangling', function () {
             {text: '  rep ret'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
 
         return demangler.process(result)
@@ -137,7 +131,7 @@ describe('Basic demangling', function () {
             {text: '        call     ??3@YAXPEAX_K@Z                ; operator delete'},
         ];
 
-        const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
+        const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
@@ -156,7 +150,7 @@ describe('Basic demangling', function () {
             {text: '        call     hello                ; operator delete'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
@@ -176,7 +170,7 @@ describe('Basic demangling', function () {
             {text: '   bl _ZN3FooC1Ev'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
@@ -189,22 +183,21 @@ describe('Basic demangling', function () {
             ],
         );
     });
-    
+
     it('Should NOT handle undecorated labels', () => {
         const result = {};
         result.asm = [
             {text: '$LN3@caller2:'},
         ];
 
-        const demangler = new DemanglerWin32(cppfiltpath, new DummyCompiler());
+        const demangler = new Win32Demangler(cppfiltpath, new DummyCompiler());
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
         demangler.collectLabels();
 
         const output = demangler.win32RawSymbols;
         output.should.deep.equal(
-            [
-            ],
+            [],
         );
     });
 
@@ -214,7 +207,7 @@ describe('Basic demangling', function () {
             {text: '  jmp _Z1fP6mytype # TAILCALL'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
@@ -234,7 +227,7 @@ describe('Basic demangling', function () {
             {text: '  jmp _Z1fP6mytype'},
         ];
 
-        const demangler = new Demangler(cppfiltpath, new DummyCompiler());
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
         demangler.demanglerArguments = ['-n'];
         demangler.result = result;
         demangler.symbolstore = new SymbolStore();
@@ -249,49 +242,94 @@ describe('Basic demangling', function () {
     });
 });
 
-function DoDemangleTest(root, filename, resolve, reject) {
-    fs.readFile(path.join(root, filename), function (err, dataIn) {
-        if (err) reject(err);
-
-        let resultIn = {asm: []};
-
-        resultIn.asm = utils.splitLines(dataIn.toString()).map(function (line) {
-            return {text: line};
-        });
-
-        fs.readFile(path.join(root, filename + '.demangle'), function (err, dataOut) {
-            if (err) reject(err);
-
-            let resultOut = {asm: []};
-            resultOut.asm = utils.splitLines(dataOut.toString()).map(function (line) {
-                return {text: line};
-            });
-
-            const demangler = new Demangler(cppfiltpath, new DummyCompiler());
-            demangler.demanglerArguments = ['-n'];
-            demangler.process(resultIn)
-                .then((output) => {
-                    try {
-                        output.should.deep.equal(resultOut);
-                        resolve();
-                    } catch(err) {
-                        reject(err);
-                    }
-                });
-        });
+async function readResultFile(filename) {
+    const data = await fs.readFile(filename);
+    const asm = utils.splitLines(data.toString()).map(line => {
+        return {text: line};
     });
+
+    return {asm};
 }
 
-describe('File demangling',async () => {
-    const testcasespath = __dirname + '/demangle-cases';
+async function DoDemangleTest(filename) {
+    const resultIn = await readResultFile(filename);
+    const resultOut = await readResultFile(filename + '.demangle');
 
-    const files = await fs.readdir(testcasespath);
+    const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
+    demangler.demanglerArguments = ['-n'];
+    return demangler.process(resultIn).should.eventually.deep.equal(resultOut);
+}
 
-    files.forEach((filename) => {
+describe('File demangling', () => {
+    if (process.platform !== 'linux') {
+        it('Should be skipped', (done) => {
+            done();
+        });
+
+        return;
+    }
+
+    const testcasespath = resolvePathFromTestRoot('demangle-cases');
+
+    /*
+     * NB: this readdir must *NOT* be async
+     *
+     * Mocha calls the function passed to `describe` synchronously
+     * and expects the test suite to be fully configured upon return.
+     *
+     * If you pass an async function to describe and setup test cases
+     * after an await there is no guarantee they will be found, and
+     * if they are they will not end up in the expected suite.
+     */
+    const files = fs.readdirSync(testcasespath);
+
+    for (const filename of files) {
         if (filename.endsWith('.asm')) {
-            it(filename, (done) => {
-                DoDemangleTest(testcasespath, filename, () => done(), (err) => done(err));
+            it(filename, async () => {
+                await DoDemangleTest(path.join(testcasespath, filename));
             });
         }
+    }
+});
+
+describe('Demangler prefix tree', () => {
+    const replacements = new PrefixTree();
+    replacements.add('a', 'short_a');
+    replacements.add('aa', 'long_a');
+    replacements.add('aa_shouldnotmatch', 'ERROR');
+    it('should replace a short match', () => {
+        replacements.replaceAll('a').should.eq('short_a');
+    });
+    it('should replace using the longest match', () => {
+        replacements.replaceAll('aa').should.eq('long_a');
+    });
+    it('should replace using both', () => {
+        replacements.replaceAll('aaa').should.eq('long_ashort_a');
+    });
+    it('should replace using both', () => {
+        replacements.replaceAll('a aa a aa').should.eq('short_a long_a short_a long_a');
+    });
+    it('should work with empty replacements', () => {
+        new PrefixTree().replaceAll('Testing 123').should.eq('Testing 123');
+    });
+    it('should leave unmatching text alone', () => {
+        replacements.replaceAll('Some text with none of the first letter of the ordered letter list')
+            .should.eq('Some text with none of the first letter of the ordered letter list');
+    });
+    it('should handle a mixture', () => {
+        replacements.replaceAll('Everyone loves an aardvark')
+            .should.eq('Everyone loves short_an long_ardvshort_ark');
+    });
+    it('should find exact matches', () => {
+        replacements.findExact('a').should.eq('short_a');
+        replacements.findExact('aa').should.eq('long_a');
+        replacements.findExact('aa_shouldnotmatch').should.eq('ERROR');
+    });
+    it('should find not find mismatches', () => {
+        chai.expect(replacements.findExact('aaa')).to.be.null;
+        chai.expect(replacements.findExact(' aa')).to.be.null;
+        chai.expect(replacements.findExact(' a')).to.be.null;
+        chai.expect(replacements.findExact('Oh noes')).to.be.null;
+        chai.expect(replacements.findExact('')).to.be.null;
     });
 });

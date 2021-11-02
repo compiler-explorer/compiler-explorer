@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Rubén Rincón
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -18,31 +18,27 @@
 // CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
 // SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ,
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const chai = require('chai');
-const csp = require('../lib/csp');
-
-chai.should();
-
+import * as csp from '../lib/csp';
 
 describe('CSP', () => {
     it('Should work in the godbolt.org domain for every field', () => {
-        Object.keys(csp.data).forEach(value => {
+        for (const value of Object.keys(csp.data)) {
             csp.data[value].should.include.members(['https://*.godbolt.org', "'self'"]);
-        });
+        }
     });
     it('Should work in the compiler-explorer domain for every field', () => {
-        Object.keys(csp.data).forEach(value => {
+        for (const value of Object.keys(csp.data)) {
             csp.data[value].should.include.members(['https://*.compiler-explorer.com', "'self'"]);
-        });
+        }
     });
     it('Should work in a localhost environment for every field', () => {
-        Object.keys(csp.data).forEach(value => {
+        for (const value of Object.keys(csp.data)) {
             csp.data[value].should.include.members(['localhost:*', "'self'"]);
-        });
+        }
     });
     it('Should be a valid policy', () => {
         csp.policy.should.be.a('string');
