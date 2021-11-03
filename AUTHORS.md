@@ -13,5 +13,6 @@ Additionally, these people have been immensely helpful in the development of Com
 - [Simon Brand](https://blog.tartanllama.xyz/)
 - [Filipe Cabecinhas](https://github.com/filcab)
 - [Mats Larsen](https://supergrecko.dev)
+- [Marc Poulhiès](https://poulhies.fr)
 
 Please also see our [Contributors](CONTRIBUTORS.md) for a full list.
