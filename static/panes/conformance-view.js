@@ -33,7 +33,7 @@ var Components = require('../components');
 var Libraries = require('../libs-widget-ext');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
 
 function Conformance(hub, container, state) {
     this.hub = hub;

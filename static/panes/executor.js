@@ -36,7 +36,7 @@ var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings');
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');

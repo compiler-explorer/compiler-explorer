@@ -29,32 +29,39 @@ import { Library, LibraryVersion } from './options.interfaces';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
-interface WidgetState {
-    libs?: {id?: string, name?: string, ver?: string, version?: string}[];
+interface StateLib {
+    id?: string;
+    name?: string;
+    ver?: string;
+    version?: string;
 }
 
+interface WidgetState {
+    libs?: StateLib[];
+}
 
-export type CompilerLibs = {[libId: string]: Library};
-type LangLibs = {[libId: string]: CompilerLibs};
-type AvailableLibs = {[langId: string]: LangLibs};
+export type CompilerLibs = Record<string, Library>;
+type LangLibs = Record<string, CompilerLibs>;
+type AvailableLibs = Record<string, LangLibs>;
+type LibInUse = {libId: string, versionId: string} & LibraryVersion;
 
-type FavLibraries = {[libId: string]: string[]};
+type FavLibraries = Record<string, string[]>;
 
 export class Widget {
-    private domRoot: JQuery<HTMLElement>;
+    private domRoot: JQuery;
 
     private currentLangId: string;
     private currentCompilerId: string;
 
-    private dropdownButton: JQuery<HTMLElement>;
-    private searchResults: JQuery<HTMLElement>;
+    private dropdownButton: JQuery;
+    private searchResults: JQuery;
 
     private readonly onChangeCallback: () => void;
 
     private availableLibs: AvailableLibs;
 
 
-    constructor(langId: string, compiler: any, dropdownButton: JQuery<HTMLElement>, state: WidgetState, onChangeCallback: () => void, possibleLibs: CompilerLibs) {
+    constructor(langId: string, compiler: any, dropdownButton: JQuery, state: WidgetState, onChangeCallback: () => void, possibleLibs: CompilerLibs) {
         this.dropdownButton = dropdownButton;
         if (compiler) {
             this.currentCompilerId = compiler.id;
@@ -129,7 +136,7 @@ export class Widget {
                 .removeClass('btn-light')
                 .prop('title', 'Current libraries:\n' +
                     selectedLibs.map(lib => '- ' + lib.name).join('\n'));
-            text = text + ' (' + selectedLibs.length + ')';
+            text += ' (' + selectedLibs.length + ')';
         } else {
             this.dropdownButton
                 .removeClass('btn-success')
@@ -526,7 +533,7 @@ export class Widget {
         return result;
     };
 
-    listUsedLibs(): {[libId: string]: string} {
+    listUsedLibs(): Record<string, string> {
         const libs = {};
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
         for (let libId in currentAvailableLibs) {
@@ -540,8 +547,8 @@ export class Widget {
         return libs;
     };
 
-    getLibsInUse(): ({libId: string, versionId: string} & LibraryVersion)[] {
-        const libs = [];
+    getLibsInUse(): LibInUse[] {
+        const libs: LibInUse[] = [];
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
         for (let libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];

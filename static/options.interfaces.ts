@@ -29,7 +29,7 @@ export interface LibraryVersion {
     alias?: string[];
 }
 
-export type LibraryVersions = {[versionId: string]: LibraryVersion};
+export type LibraryVersions = Record<string, LibraryVersion>;
 
 export interface Library {
     name: string;
@@ -40,11 +40,11 @@ export interface Library {
 }
 
 
-export type LanguageLibs = {[libId: string]: Library};
+export type LanguageLibs = Record<string, Library>;
 
-export type Libs = {[langId: string]: LanguageLibs};
+export type Libs = Record<string, LanguageLibs>;
 
 export interface Options {
     libs: Libs;
-    defaultLibs: {[langId: string]: string | null};
+    defaultLibs: Record<string, string | null>;
 }
