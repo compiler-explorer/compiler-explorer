@@ -58,7 +58,7 @@ export class Widget {
 
     private readonly onChangeCallback: () => void;
 
-    private availableLibs: AvailableLibs;
+    private readonly availableLibs: AvailableLibs;
 
 
     constructor(langId: string, compiler: any, dropdownButton: JQuery, state: WidgetState, onChangeCallback: () => void, possibleLibs: CompilerLibs) {
@@ -130,7 +130,6 @@ export class Widget {
         const selectedLibs = this.get();
         let text = 'Libraries';
         if (selectedLibs.length > 0) {
-            // TEST
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
@@ -176,7 +175,6 @@ export class Widget {
         this.setFavorites(faves);
     }
 
-    // TEST
     removeFromFavorites(libId: string, versionId: string) {
         const faves = this.getFavorites();
         if (faves[libId]) {
@@ -214,7 +212,6 @@ export class Widget {
                 if (lib) {
                     const version = lib.versions[versionId];
                     if (version) {
-                        // TEST
                         const div: any = this.newFavoriteLibDiv(libId, versionId, lib, version);
                         favoritesDiv.append(div);
                     }
@@ -358,14 +355,21 @@ export class Widget {
     }
 
     addSearchResult(libId: string, library: Library) {
-        // Explain
+        // FIXME: Type mismatch.
+        // The any here stops TS from complaining
         const result: any = this.newSearchResult(libId, library);
         this.searchResults.append(result);
     }
 
+    static _libVersionMatchesQuery(library: Library, searchText: string): boolean {
+        const text = searchText.toLowerCase();
+        return library.name?.toLowerCase().includes(text)
+            || library.description?.toLowerCase().includes(text);
+    }
+
     startSearching() {
         const searchValue = this.domRoot.find('.lib-search-input').val();
-        const lcSearchtext = searchValue.toString().toLowerCase();
+        const searchText = searchValue.toString();
 
         this.clearSearchResults();
 
@@ -379,19 +383,10 @@ export class Widget {
         for (let libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
-            if (library.versions && library.versions.autodetect) break;
+            if (library.versions && library.versions.autodetect) continue;
 
-            if (library.name) {
-                if (library.name.toLowerCase().includes(lcSearchtext)) {
-                    this.addSearchResult(libId, library);
-                    break;
-                }
-            }
-
-            if (library.description) {
-                if (library.description.toLowerCase().includes(lcSearchtext)) {
-                    this.addSearchResult(libId, library);
-                }
+            if (Widget._libVersionMatchesQuery(library, searchText)) {
+               this.addSearchResult(libId, library);
             }
         }
     }
@@ -426,7 +421,7 @@ export class Widget {
         for (let libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
-            if (library.versions && library.versions.autodetect) return;
+            if (library.versions && library.versions.autodetect) continue;
 
             const card: any = this.newSearchResult(libId, library);
             this.searchResults.append(card);
@@ -478,25 +473,25 @@ export class Widget {
         // Clear the dom Root so it gets rebuilt with the new language libraries
         this.updateAvailableLibs(possibleLibs);
 
-        // TEST
-        for (let lib in libsInUse) {
-            this.markLibrary(lib, libsInUse[lib], true);
+        for (let libId in libsInUse) {
+            this.markLibrary(libId, libsInUse[libId], true);
         }
 
         this.fullRefresh();
         this.onChange();
     }
 
-    getVersionOrAlias(name: string, version: string): string | null {
-        // TEST
+    getVersionOrAlias(name: string, versionId: string): string | null {
         const lib = this.getLibInfoById(name);
         if (!lib) return null;
-        if (lib.versions[version] != null) {
-            return version;
+        // If it's already a key, return it directly
+        if (lib.versions[versionId] != null) {
+            return versionId;
         } else {
+            // Else, look in each version and see if it has the id as an alias
             for (let verId in lib.versions) {
-                const ver = lib.versions[verId];
-                if (ver.alias && ver.alias.includes(version)) {
+                const version = lib.versions[verId];
+                if (version.alias?.includes(versionId)) {
                     return verId;
                 }
             }
@@ -504,14 +499,12 @@ export class Widget {
         }
     }
 
-    getLibInfoById(libId: string): Library {
-        // TEST
+    getLibInfoById(libId: string): Library | null {
         return this.availableLibs[this.currentLangId]?.[this.currentCompilerId]?.[libId];
     };
 
-    // Explain
-    markLibrary(name: string, version: string, used: boolean) {
-        const actualId = this.getVersionOrAlias(name, version);
+    markLibrary(name: string, versionId: string, used: boolean) {
+        const actualId = this.getVersionOrAlias(name, versionId);
         if (actualId != null) {
             const v = this.getLibInfoById(name)?.versions[actualId];
             if (v != null) {
@@ -534,7 +527,7 @@ export class Widget {
     };
 
     listUsedLibs(): Record<string, string> {
-        const libs = {};
+        const libs: Record<string, string> = {};
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
         for (let libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
@@ -554,7 +547,6 @@ export class Widget {
             const library = currentAvailableLibs[libId];
             for (let verId in library.versions) {
                 if (library.versions[verId].used) {
-                    // TEST
                     libs.push({...library.versions[verId], libId: libId, versionId: verId});
                 }
             }

@@ -23,22 +23,32 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface LibraryVersion {
-    version: string;
+    alias: string[];
+    dependencies: string[];
     hidden: boolean;
+    libId: string;
+    liblink: string[];
+    libpath: string[];
+    lookupversion?: string;
+    options: string[];
+    path: string[];
+    staticliblink: string[];
     used: boolean;
-    alias?: string[];
+    version?: string;
+    versionId: string;
 }
-
-export type LibraryVersions = Record<string, LibraryVersion>;
 
 export interface Library {
-    name: string;
+    dependencies: string[];
     description?: string;
+    examples: string[];
+    liblink: string[];
+    name?: string;
+    options: string[];
+    staticliblink: string[];
     url?: string;
-    versions: LibraryVersions;
-    examples?: string[];
+    versions: Record<string, LibraryVersion>;
 }
-
 
 export type LanguageLibs = Record<string, Library>;
 
