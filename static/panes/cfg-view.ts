@@ -166,7 +166,7 @@ export class Cfg {
 
     onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerId === compilerId) {
-            var functionNames = [];
+            let functionNames: string[] = [];
             if (this.supportsCfg && !$.isEmptyObject(result.cfg)) {
                 this.functions = result.cfg;
                 functionNames = Object.keys(this.functions);
