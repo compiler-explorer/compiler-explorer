@@ -40,7 +40,8 @@ var
     DiffType_CompilerStdOut = 1,
     DiffType_CompilerStdErr = 2,
     DiffType_ExecStdOut = 3,
-    DiffType_ExecStdErr = 4;
+    DiffType_ExecStdErr = 4,
+    DiffType_GNAT_ExpandedCode = 5;
 
 function State(id, model, difftype) {
     this.id = id;
@@ -79,6 +80,10 @@ State.prototype.refresh = function () {
             case DiffType_ExecStdErr:
                 if (this.result.execResult)
                     output = this.result.execResult.stderr || [];
+                break;
+            case DiffType_GNAT_ExpandedCode:
+                if (this.result.hasGnatDebugOutput)
+                    output = this.result.gnatDebugOutput || [];
                 break;
         }
     }
@@ -130,6 +135,7 @@ function Diff(hub, container, state) {
                 {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
                 {id: DiffType_ExecStdOut, name: 'Execution stdout'},
                 {id: DiffType_ExecStdErr, name: 'Execution stderr'},
+                {id: DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
             ],
             items: [],
             render: {
