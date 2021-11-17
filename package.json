@@ -82,7 +82,6 @@
     "winston-loki": "6.0.1",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.4.0",
-    "wolfy87-eventemitter": "^5.2.9",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
