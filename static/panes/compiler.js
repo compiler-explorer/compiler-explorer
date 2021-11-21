@@ -952,10 +952,15 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
         this.setNormalMargin();
     }
 
-    codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
+    if (this.settings.enableCodeLens) {
+        codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
 
-    var currentAsmLang = editorModel.getModeId();
-    codeLensHandler.registerProviderForLanguage(currentAsmLang);
+        var currentAsmLang = editorModel.getModeId();
+        codeLensHandler.registerProviderForLanguage(currentAsmLang);
+    } else {
+        // Make sure the codelens is disabled
+        codeLensHandler.unregister(this.id);
+    }
 };
 
 function errorResult(text) {
