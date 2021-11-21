@@ -156,12 +156,12 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
                 irColours[index] = colours[code.source.line - 1];
             }
         }
-        // @ts-expect-error mismatched types on irColours and applyColours
         this.colours = applyColours(this.editor, irColours, scheme, this.colours);
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
         if (e === null || e.target === null || e.target.position === null) return;
+        // TODO(supergrecko): Refactor base class to properly type this.
         // @ts-expect-error mismatched types on this.settings
         if (this.settings.hoverShowSource === true && this.irCode) {
             this.clearLinkedLines();
