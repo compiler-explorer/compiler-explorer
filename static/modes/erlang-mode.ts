@@ -28,8 +28,6 @@ var monaco = require('monaco-editor');
 
 function definition() {
     return {
-        defaultToken: 'invalid',
-
         commands: ['-module', '-export', '-compile', '-record'],
 
         funcdef: ['when', '->'],
