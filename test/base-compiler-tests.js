@@ -84,6 +84,25 @@ describe('Basic compiler invariants', function () {
         should.exist(badSource);
         badSource.should.equal('<stdin>:1:1: no absolute or relative includes please');
     });
+    it('should not warn of path-likes outside C++ includes (Bug #3045)', () => {
+        function testIncludeG(text) {
+            should.equal(compiler.checkSource(text), null);
+        }
+        testIncludeG('#include <iostream>');
+        testIncludeG('#include <iostream>  // <..>');
+        testIncludeG('#include <type_traits> // for std::is_same_v<...>');
+        testIncludeG('#include <ranges>      // for std::ranges::range<...> and std::ranges::range_type_v<...>');
+        testIncludeG('#include <https://godbolt.com> // /home/');
+    });
+    it('should not allow path C++ includes', () => {
+        function testIncludeNotG(text) {
+            should.equal(compiler.checkSource(text), '<stdin>:1:1: no absolute or relative includes please');
+        }
+        testIncludeNotG('#include <./.bashrc>');
+        testIncludeNotG('#include </dev/null>  // <..>');
+        testIncludeNotG('#include <../fish.config> // for std::is_same_v<...>');
+        testIncludeNotG('#include <./>      // for std::ranges::range<...> and std::ranges::range_type_v<...>');
+    });
     it('should skip version check if forced to', () => {
         const newConfig = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig, ce);
