@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
@@ -132,7 +130,7 @@ function configuration() {
     };
 }
 
-var def = definition();
+const def = definition();
 
 monaco.languages.register({ id: 'erlang' });
 monaco.languages.setMonarchTokensProvider('erlang', def);
