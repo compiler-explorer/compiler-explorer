@@ -28,7 +28,7 @@ function definition() {
     return {
         commands: ['-module', '-export', '-compile', '-record'],
 
-        funcdef: ['when', '->'],
+        funcdef: ['when', '->', 'if', 'end', 'unknown', 'case', 'of', 'receive', 'after'],
 
         operators: [
             '<=', '>=', '==', '!=', '=<', '+', '-', '*', '/',
