@@ -133,7 +133,7 @@ export class MultifileService {
 
         const zip = await JSZip.loadAsync(f);
 
-        await Promise.all(zip.map(async (relativePath, zipEntry) => {
+        zip.forEach(async (relativePath, zipEntry) => {
             if (!zipEntry.dir) {
                 let removeFromName = 0;
                 if (relativePath.indexOf(zipFilename + '/') === 0) {
@@ -167,7 +167,7 @@ export class MultifileService {
                 this.addFile(file);
                 callback(file);
             }
-        }));
+        });
     }
 
     public async saveProjectToZipfile(callback: (any) => void) {
