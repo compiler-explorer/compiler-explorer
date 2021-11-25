@@ -69,6 +69,8 @@ describe('IDE Mode', () => {
         const filepath = '../resources/project-example.zip';
         cy.get('.lm_item input[type="file"]').attachFile(filepath);
 
+        cy.task('pause', 3000);
+
         cy.window().then(window => {
             window.saveGL();
             expect(window.localStorage.gl.includes('CMakeLists.txt')).to.be.true;
