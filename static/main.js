@@ -515,13 +515,17 @@ function start() {
         layout.updateSize();
     }
 
+    window.saveGL = function () {
+        local.set('gl', JSON.stringify(layout.toConfig()));
+    };
+
     $(window)
         .resize(sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
             var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
-                local.set('gl', JSON.stringify(layout.toConfig()));
+                window.saveGL();
             }
         });
 

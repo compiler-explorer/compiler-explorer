@@ -103,6 +103,15 @@ There's a simple restful API that can be used to do compiles to asm and to
 
 You can find the API documentation [here](docs/API.md).
 
+## Testing
+
+Cypress requirements:
+
+* xvfb
+* libnss3
+* libxss1
+
+
 ## Contact us
 
 We run a [Compiler Explorer Discord](https://discord.gg/B5WacA7), which is a place to discuss using or developing
