@@ -24,14 +24,9 @@
 
 export interface LibraryVersion {
     alias: string[];
-    dependencies: string[];
     hidden: boolean;
     libId: string;
-    liblink: string[];
-    libpath: string[];
-    lookupversion?: string;
     options: string[];
-    path: string[];
     staticliblink: string[];
     used: boolean;
     version?: string;
@@ -42,10 +37,8 @@ export interface Library {
     dependencies: string[];
     description?: string;
     examples: string[];
-    liblink: string[];
     name?: string;
     options: string[];
-    staticliblink: string[];
     url?: string;
     versions: Record<string, LibraryVersion>;
 }
