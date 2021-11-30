@@ -43,6 +43,7 @@ var deviceView = require('./panes/device-view');
 var rustMirView = require('./panes/rustmir-view');
 var gnatDebugView = require('./panes/gnatdebug-view');
 var rustMacroExpView = require('./panes/rustmacroexp-view');
+var rustHirView = require('./panes/rusthir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -152,6 +153,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getRustMacroExpView().componentName,
         function (container, state) {
             return self.rustMacroExpViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getRustHirView().componentName,
+        function (container, state) {
+            return self.rustHirViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -333,6 +338,10 @@ Hub.prototype.rustMirViewFactory = function (container, state) {
 
 Hub.prototype.rustMacroExpViewFactory = function (container, state) {
     return new rustMacroExpView.RustMacroExp(this, container, state);
+};
+
+Hub.prototype.rustHirViewFactory = function (container, state) {
+    return new rustHirView.RustHir(this, container, state);
 };
 
 Hub.prototype.gccDumpViewFactory = function (container, state) {

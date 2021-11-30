@@ -350,6 +350,26 @@ module.exports = {
             },
         };
     },
+    getRustHirView: function () {
+        return {
+            type: 'component',
+            componentName: 'rusthir',
+            componentState: {},
+        };
+    },
+    getRustHirViewWith: function (id, source, rustHirOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rusthir',
+            componentState: {
+                id: id,
+                source: source,
+                rustHirOutput: rustHirOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
     getDeviceView: function () {
         return {
             type: 'component',
