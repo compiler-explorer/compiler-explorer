@@ -59,10 +59,9 @@ describe('arm32 assembly documentation', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.found.should.equal(true);
-                res.body.result.html.should.contain('writes an immediate value');
-                res.body.result.tooltip.should.contain('writes an immediate value');
-                res.body.result.url.should.contain('https://developer.arm.com/documentation/');
+                res.body.html.should.contain('writes an immediate value');
+                res.body.tooltip.should.contain('writes an immediate value');
+                res.body.url.should.contain('https://developer.arm.com/documentation/');
             }).catch(e => { throw e; });
     });
 

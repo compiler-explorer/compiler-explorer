@@ -59,10 +59,9 @@ describe('jvm assembly documentation', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.found.should.equal(true);
-                res.body.result.html.should.contain('Load int from local variable');
-                res.body.result.tooltip.should.contain('Load int from local variable');
-                res.body.result.url.should.contain('https://docs.oracle.com/javase/specs/jvms/se16/html/');
+                res.body.html.should.contain('Load int from local variable');
+                res.body.tooltip.should.contain('Load int from local variable');
+                res.body.url.should.contain('https://docs.oracle.com/javase/specs/jvms/se16/html/');
             }).catch(e => { throw e; });
     });
 

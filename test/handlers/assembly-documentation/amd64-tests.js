@@ -59,10 +59,9 @@ describe('amd64 assembly documentation', () => {
           .then(res => {
               res.should.have.status(200);
               res.should.be.json;
-              res.body.found.should.equal(true);
-              res.body.result.html.should.contain('Copies the second operand');
-              res.body.result.tooltip.should.contain('Copies the second operand');
-              res.body.result.url.should.contain('www.felixcloutier.com');
+              res.body.html.should.contain('Copies the second operand');
+              res.body.tooltip.should.contain('Copies the second operand');
+              res.body.url.should.contain('www.felixcloutier.com');
           }).catch(e => { throw e; });
    });
 

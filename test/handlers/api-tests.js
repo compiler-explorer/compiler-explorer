@@ -173,7 +173,6 @@ describe('API handling', () => {
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.found.should.be.true;
             })
             .catch(err => {
                 throw err;
