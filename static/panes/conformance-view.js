@@ -107,7 +107,6 @@ Conformance.prototype.initLibraries = function (state) {
     );
     // No callback is done on initialization, so make sure we store the current libs
     this.currentLibs = this.libsWidget.get();
-    console.log(this.currentLibs, compilerIds, this.getOverlappingLibraries(compilerIds));
 };
 
 Conformance.prototype.initButtons = function () {
@@ -467,7 +466,6 @@ Conformance.prototype.updateLibraries = function () {
         compilerIds.join('|'),
         this.getOverlappingLibraries(compilerIds)
     );
-    console.log(compilerIds, this.getOverlappingLibraries(compilerIds));
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {

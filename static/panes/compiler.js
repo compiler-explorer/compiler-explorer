@@ -845,7 +845,10 @@ Compiler.prototype.sendCompile = function (request) {
                 message = e;
             } else if (e) {
                 message = e.error || e.code || e.message;
-                if (e.stack) console.log(e);
+                if (e.stack) {
+                    // eslint-disable-next-line no-console
+                    console.log(e);
+                }
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
