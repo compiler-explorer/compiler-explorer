@@ -2427,7 +2427,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {
         this.updateCompilersSelector(info);
         this.saveState();
         this.updateCompilerUI();
-
+        this.setAssembly(fakeAsm(''));
         // this is a workaround to delay compilation further until the Editor sends a compile request
         this.needsCompile = false;
 
