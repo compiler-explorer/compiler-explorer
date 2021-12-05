@@ -30,7 +30,7 @@ var Toggles = require('../toggles').Toggles;
 var FontScale = require('../fontscale').FontScale;
 var options = require('../options').options;
 var Alert = require('../alert').Alert;
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../libs-widget').LibsWidget;
 var AnsiToHtml = require('../ansi-to-html').Filter;
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
@@ -681,9 +681,14 @@ Executor.prototype.onLibsChanged = function () {
 };
 
 Executor.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler,
-        this.libsButton, state, _.bind(this.onLibsChanged, this),
-        LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr : [], this.currentLangId)
+    );
 };
 
 Executor.prototype.onFontScale = function () {

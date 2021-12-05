@@ -36,7 +36,7 @@ var options = require('../options').options;
 var monaco = require('monaco-editor');
 var Alert = require('../alert').Alert;
 var bigInt = require('big-integer');
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../libs-widget').LibsWidget;
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var TimingWidget = require('../timing-info-widget');
@@ -1504,9 +1504,14 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
-        state, _.bind(this.onLibsChanged, this),
-        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId)
+    );
 };
 
 Compiler.prototype.updateLibraries = function () {

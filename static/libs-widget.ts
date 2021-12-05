@@ -47,7 +47,7 @@ type LibInUse = {libId: string, versionId: string} & LibraryVersion;
 
 type FavLibraries = Record<string, string[]>;
 
-export class Widget {
+export class LibsWidget {
     private domRoot: JQuery;
 
     private currentLangId: string;
@@ -385,7 +385,7 @@ export class Widget {
 
             if (library.versions && library.versions.autodetect) continue;
 
-            if (Widget._libVersionMatchesQuery(library, searchText)) {
+            if (LibsWidget._libVersionMatchesQuery(library, searchText)) {
                this.addSearchResult(libId, library);
             }
         }
