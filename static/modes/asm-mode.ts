@@ -117,7 +117,7 @@ function definition() {
                 [/[^\\']+/, 'string'],
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
-                [/'/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+                [/'/, {token: 'string.singlequote', bracket: '@close', next: '@pop'}],
             ],
 
             whitespace: [
