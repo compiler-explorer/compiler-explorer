@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { FormatBase } from './settings.interfaces';
+import { FormatBase } from '../settings.interfaces';
 
-export interface FormatRequestOptions {
+export interface FormattingRequest {
     source: string;
     formatterId: string;
     /**
@@ -37,7 +37,7 @@ export interface FormatRequestOptions {
     useSpaces: boolean;
 }
 
-export interface FormatResponse {
+export interface FormattingResponse {
     answer: string;
     exit: number;
     throw?: true;
