@@ -44,6 +44,7 @@ var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings');
 var utils = require('../utils');
 var LibUtils = require('../lib-utils').LibUtils;
+var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 
 require('../modes/asm-mode');
 require('../modes/asmruby-mode');
@@ -2264,24 +2265,26 @@ function getAsmInfo(opcode, instructionSet) {
     var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
-        return Promise.resolve(cached.found ? cached.result : null);
+        if (cached.found) {
+            return Promise.resolve(cached.data);
+        }
+        return Promise.reject(cached.data);
     }
-    var base = window.httpRoot;
     return new Promise(function (resolve, reject) {
-        $.ajax({
-            type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode,
-            dataType: 'json',  // Expected,
-            contentType: 'text/plain',  // Sent
-            success: function (result) {
-                OpcodeCache.set(cacheName, result);
-                resolve(result.found ? result.result : null);
-            },
-            error: function (result) {
-                reject(result);
-            },
-            cache: true,
-        });
+        getAssemblyDocumentation({ opcode: opcode, instructionSet: instructionSet })
+            .then(function (response) {
+                response.json().then(function (body) {
+                    if (response.status === 200) {
+                        OpcodeCache.set(cacheName, { found: true, data: body });
+                        resolve(body);
+                    } else {
+                        OpcodeCache.set(cacheName, { found: false, data: body.error });
+                        reject(body.error);
+                    }
+                });
+            }).catch(function (error) {
+                reject('Fetch error: ' + error);
+            });
     });
 }
 

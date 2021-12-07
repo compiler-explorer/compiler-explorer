@@ -22,29 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as props from '../properties';
+export interface AssemblyDocumentationRequest {
+    /** Specifies which instruction set to look for */
+    instructionSet: 'amd64' | 'arm32' | 'java';
+    /** Instruction set opcode to look for */
+    opcode: string;
+}
 
-import { getAsmOpcode } from './asm-docs-java';
+export interface AssemblyDocumentationResponse {
+    tooltip: string;
+    html: string;
+    url: string;
+}
 
-export class AsmDocsHandler {
-    constructor() {
-        const asmProps = props.propsFor('asm-docs');
-        this.staticMaxAgeSecs = asmProps('staticMaxAgeSecs', 10);
-    }
-
-    handle(req, res) {
-        const info = getAsmOpcode(req.params.opcode);
-        if (this.staticMaxAgeSecs) {
-            res.setHeader('Cache-Control', `public, max-age=${this.staticMaxAgeSecs}`);
-        }
-        if (req.accepts(['text', 'json']) === 'json') {
-            res.send({found: !!info, result: info});
-        } else {
-            if (info) {
-                res.send(info.html);
-            } else {
-                res.send('Unknown opcode');
-            }
-        }
-    }
+export interface AssemblyDocumentationError {
+    /** Explanatory error string */
+    error: string;
 }
