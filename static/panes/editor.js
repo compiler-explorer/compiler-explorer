@@ -130,11 +130,13 @@ function Editor(hub, state, container) {
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
+        placeholder: '🔍 Select a language...',
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-        plugins: ['input_autogrow'],
+        plugins: ['dropdown_input'],
         onChange: _.bind(this.onLanguageChange, this),
+        closeAfterSelect: true,
     });
 
 
