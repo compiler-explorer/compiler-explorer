@@ -107,3 +107,4 @@ From oldest to newest contributor, we would like to thank:
 - [Quinton Miller](https://github.com/HertzDevil)
 - [Kevin Adler](https://github.com/kadler)
 - [Björn Gustavsson](https://github.com/bjorng)
+- [Steven He](https://github.com/hez2010)

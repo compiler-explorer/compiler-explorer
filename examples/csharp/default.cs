@@ -1,7 +1,4 @@
-public static class Program
+class Program
 {
-    public static int Square(int x)
-    {
-        return x*x;
-    }
+    static int Square(int num) => num * num;
 }
