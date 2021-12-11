@@ -389,7 +389,7 @@ export class MultifileService {
         if (file.filename === '') {
             const isRenamed = await this.renameFile(fileId);
             if (isRenamed) {
-                this.includeByFileId(fileId);
+                await this.includeByFileId(fileId);
             } else {
                 file.isIncluded = false;
             }
@@ -475,7 +475,7 @@ export class MultifileService {
 
         return new Promise((resolve) => {
             this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
-                yes: (value) => {
+                yes: (value: string) => {
                     if (value !== '' && value[0] !== '/') {
                         if (!this.fileExists(value, file)) {
                             file.filename = value;

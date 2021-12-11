@@ -207,6 +207,10 @@
                 label
                   input.wordWrap(type="checkbox")
                   | Enable Word Wrapping
+              .checkbox
+                label
+                  input.enableCodeLens(type="checkbox")
+                  | Enable CodeLens features (requires refresh to take effect)
         .card.mt-1
           .card-header
             .card-title
@@ -228,6 +232,10 @@
                 label
                   input.colourise(type="checkbox")
                   | Colourise lines to show how the source maps to the output
+              .checkbox
+                label
+                  input.alwaysEnableAllSchemes(type="checkbox")
+                  | Make all colour schemes available regardless of theme
               label
                 | Colour scheme&nbsp;
                 select.colourScheme

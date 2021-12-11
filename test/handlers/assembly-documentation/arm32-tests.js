@@ -24,73 +24,63 @@
 
 import express from 'express';
 
-import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api-arm32';
-import { chai } from '../utils';
+import { Arm32DocumentationHandler } from '../../../lib/handlers/assembly-documentation/arm32';
+import { chai } from '../../utils';
 
-describe('Assembly documents', () => {
+describe('arm32 assembly documentation', () => {
     let app;
-
     before(() => {
         app = express();
-        const handler = new AsmDocsHandler();
+        const handler = new Arm32DocumentationHandler();
         app.use('/asm/:opcode', handler.handle.bind(handler));
     });
 
-    // We don't serve a 404 for unknown opcodes as it allows the not-an-opcode to be cached.
-    it('should respond with "unknown opcode" for unknown opcodes', () => {
-        return chai.request(app)
-            .get('/asm/NOTANOPCODE')
+    it('returns 404 for unknown opcodes', () => {
+        return chai.request(app).get('/asm/mov_oh_wait')
             .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.equal('Unknown opcode');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+                res.should.have.status(404);
+                res.should.be.json;
+                res.body.should.deep.equal({ error: 'Unknown opcode' });
+            }).catch(e => { throw e; });
     });
 
-    it('should respond to text requests', () => {
-        return chai.request(app)
-            .get('/asm/mov')
+    it('responds to accept=text requests', () => {
+        return chai.request(app).get('/asm/mov')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
                 res.text.should.contain('writes an immediate value to the destination register');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+            }).catch(e => { throw e; });
     });
 
-    it('should respond to json requests', () => {
-        return chai.request(app)
-            .get('/asm/mov')
+    it('responds to accept=json requests', () => {
+        return chai.request(app).get('/asm/mov')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.found.should.equal(true);
-                res.body.result.html.should.contain('writes an immediate value');
-                res.body.result.tooltip.should.contain('writes an immediate value');
-                res.body.result.url.should.contain('https://developer.arm.com/documentation/');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+                res.body.html.should.contain('writes an immediate value');
+                res.body.tooltip.should.contain('writes an immediate value');
+                res.body.url.should.contain('https://developer.arm.com/documentation/');
+            }).catch(e => { throw e; });
     });
+
     it('should respond to json for unknown opcodes', () => {
         return chai.request(app)
             .get('/asm/NOANOPCODE')
             .set('Accept', 'application/json')
             .then(res => {
-                res.should.have.status(200);
+                res.should.have.status(404);
                 res.should.be.json;
-                res.body.found.should.equal(false);
-            })
-            .catch(function (err) {
-                throw err;
-            });
+            }).catch(e => { throw e; });
+    });
+
+    it('should return 406 on bad accept type', () => {
+        return chai.request(app).get('/asm/mov')
+            .set('Accept', 'application/pdf')
+            .then(res => {
+                res.should.have.status(406);
+            }).catch(e => { throw e; });
     });
 
     it('should handle opcodes with a conditional type suffix that are not conditionals', () => {
@@ -100,10 +90,7 @@ describe('Assembly documents', () => {
                 res.should.have.status(200);
                 res.should.be.html;
                 res.text.should.contain('adds an immediate value and the Carry flag');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+            }).catch(e => { throw e; });
     });
 
     it('should handle conditional opcodes', () => {
@@ -113,23 +100,16 @@ describe('Assembly documents', () => {
                 res.should.have.status(200);
                 res.should.be.html;
                 res.text.should.contain('If equal, <p>Branch causes a branch');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+            }).catch(e => { throw e; });
     });
 
     it('should respond with "unknown opcode" for unknown opcodes that can be parsed as conditional', () => {
         return chai.request(app)
             .get('/asm/jne')
             .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.equal('Unknown opcode');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+                res.should.have.status(404);
+                res.should.be.json;
+                res.body.should.deep.equal({ error: 'Unknown opcode' });
+            }).catch(e => { throw e; });
     });
-
 });

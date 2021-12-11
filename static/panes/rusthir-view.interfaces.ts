@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,37 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as props from '../properties';
-
-import { getAsmOpcode } from './asm-docs-amd64';
-
-export class AsmDocsHandler {
-    constructor() {
-        const asmProps = props.propsFor('asm-docs');
-        this.staticMaxAgeSecs = asmProps('staticMaxAgeSecs', 10);
-        this.atAndTSuffixRemover = /^([a-z]+)[blqw]$/i;
-    }
-
-    handle(req, res) {
-        let info = getAsmOpcode(req.params.opcode);
-        if (!info) {
-            // If the opcode ends with an AT&T suffix, try removing that and giving it another go.
-            // Ideally, we'd be smarter here, but this is a quick win.
-            const suffixRemoved = this.atAndTSuffixRemover.exec(req.params.opcode);
-            if (suffixRemoved) {
-                info = getAsmOpcode(suffixRemoved[1]);
-            }
-        }
-        if (this.staticMaxAgeSecs) {
-            res.setHeader('Cache-Control', 'public, max-age=' + this.staticMaxAgeSecs);
-        }
-        if (req.accepts(['text', 'json']) === 'json') {
-            res.send({found: !!info, result: info});
-        } else {
-            if (info)
-                res.send(info.html);
-            else
-                res.send('Unknown opcode');
-        }
-    }
+export interface RustHirState {
+    rustHirOutput: any;
 }

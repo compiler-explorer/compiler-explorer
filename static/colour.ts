@@ -22,45 +22,45 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 
-/**
- * A colour scheme
- */
+type AppTheme = 'default' | 'dark' | 'all';
+
 interface ColourScheme {
     name: string;
     desc: string;
     count: number;
-    themes: string[];
+    themes: AppTheme[];
 }
 
-// If you want to use an scheme in every theme, set `theme: ['all']`
+// If you want to use a scheme in every theme, set `theme: ['all']`
 export const schemes: ColourScheme[] = [
-    { name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default'] },
-    { name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default'] },
-    { name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default'] },
-    { name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4, themes: ['default'] },
-    { name: 'gray-shade', desc: 'Gray shades', count: 4, themes: ['dark'] },
-    { name: 'rainbow-dark', desc: 'Dark Rainbow', count: 12, themes: ['dark'] },
+    {name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default']},
+    {name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default']},
+    {name: 'earth', desc: 'Earth tones (colourblind safe)', count: 9, themes: ['default']},
+    {name: 'green-blue', desc: 'Greens and blues (colourblind safe)', count: 4, themes: ['default']},
+    {name: 'gray-shade', desc: 'Gray shades', count: 4, themes: ['dark']},
+    {name: 'rainbow-dark', desc: 'Dark Rainbow', count: 12, themes: ['dark']},
 ];
 
-export function applyColours(editor: monaco.editor.ICodeEditor, colours: number[], schemeName: string, prevDecorations: string[]): string[] {
-    let scheme: ColourScheme = _.findWhere(schemes, { name: schemeName });
-    if (!scheme) {
-        scheme = schemes[0];
-    }
+export function applyColours(
+    editor: monaco.editor.ICodeEditor,
+    colours: Record<number, number>,
+    schemeName: string,
+    previousDecorations: string[],
+): string[] {
+    const scheme = schemes.find((scheme) => scheme.name === schemeName) ?? schemes[0];
+    const newDecorations: monaco.editor.IModelDeltaDecoration[] = Object.entries(colours)
+        .map(([line, index]) => {
+            const realLineNumber = parseInt(line) + 1;
+            return {
+                range: new monaco.Range(realLineNumber, 1, realLineNumber, 1),
+                options: {
+                    isWholeLine: true,
+                    className: 'line-linkage ' + scheme.name + '-' + (index % scheme.count),
+                },
+            };
+        });
 
-    const newDecorations = _.map(colours, (ordinal: number, _line: number | string) => {
-        const line: number = parseInt(_line as string) + 1;
-        return {
-            range: new monaco.Range(line, 1, line, 1),
-            options: {
-                isWholeLine: true,
-                className: 'line-linkage ' + scheme.name + '-' + (ordinal % scheme.count),
-            },
-        };
-    });
-
-    return editor.deltaDecorations(prevDecorations, newDecorations);
+    return editor.deltaDecorations(previousDecorations, newDecorations);
 }

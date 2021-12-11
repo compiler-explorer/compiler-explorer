@@ -1,0 +1,67 @@
+name: Bug Report
+description: Create a report to help us improve
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: e.g. Assembly output is not working for clang-12
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Steps used to reproduce the bug.
+      placeholder: |
+        1. Visit godbolt.org
+        2. Select the clang-12 x86-64 compiler for C++
+        3. View output pane
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen.
+      placeholder: The assembly output should be there
+    validations:
+      required: true
+  - type: input
+    id: reproduction-link
+    attributes:
+      label: Reproduction link
+      description: If applicable, please provide a link to Compiler Explorer to help explain your problem.
+      placeholder: https://godbolt.org/z/YdMa3vcvM
+      value: Not applicable
+    validations:
+      required: false
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+      placeholder: As you can see here, the assembly output is not showing up
+      value: Not applicable
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: "# System information"
+  - type: input
+    id: operating-system
+    attributes:
+      label: Operating System
+      placeholder: Ubuntu Linux 20.04
+    validations:
+      required: false
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser version
+      placeholder: Google Chrome 90.0.4430.72 (Official Build) (64-bit)
+    validations:
+      required: false

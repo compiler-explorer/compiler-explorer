@@ -42,3 +42,4 @@ require('../modes/ocaml-mode');
 require('../modes/openclc-mode');
 require('../modes/zig-mode');
 require('../modes/cmake-mode');
+require('../modes/erlang-mode');

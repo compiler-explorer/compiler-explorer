@@ -24,63 +24,62 @@
 
 import express from 'express';
 
-import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api-java';
-import { chai } from '../utils';
+import { JavaDocumentationHandler } from '../../../lib/handlers/assembly-documentation/java';
+import { chai } from '../../utils';
 
-describe('Assembly documents', () => {
+describe('jvm assembly documentation', () => {
     let app;
-
     before(() => {
         app = express();
-        const handler = new AsmDocsHandler();
+        const handler = new JavaDocumentationHandler();
         app.use('/asm/:opcode', handler.handle.bind(handler));
     });
 
-    it('should respond with "unknown opcode" for unknown opcodes', () => {
-        return chai.request(app).get('/asm/NOTANOPCODE')
+    it('returns 404 for unknown opcodes', () => {
+        return chai.request(app).get('/asm/mov_oh_wait')
+            .then(res => {
+                res.should.have.status(404);
+                res.should.be.json;
+                res.body.should.deep.equal({ error: 'Unknown opcode' });
+            }).catch(e => { throw e; });
+    });
+
+    it('responds to accept=text requests', () => {
+        return chai.request(app).get('/asm/iload_0')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.html;
-                res.text.should.equal('Unknown opcode');
-            })
-            .catch(err => { throw err; });
+                res.text.should.contain('Load int from local variable');
+            }).catch(e => { throw e; });
     });
 
-    it('should respond to text requests', () => {
-        return chai.request(app)
-            .get('/asm/aaload')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.contain('Load reference from array');
-            })
-            .catch(err => { throw err; });
-    });
-
-    it('should respond to json requests', () => {
-        return chai.request(app)
-            .get('/asm/aaload')
+    it('responds to accept=json requests', () => {
+        return chai.request(app).get('/asm/iload_0')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.found.should.equal(true);
-                res.body.result.html.should.contain('Load reference from array');
-                res.body.result.tooltip.should.contain('Load reference from array');
-                res.body.result.url.should.contain('https://docs.oracle.com/javase/specs/');
-            })
-            .catch(err => { throw err; });
+                res.body.html.should.contain('Load int from local variable');
+                res.body.tooltip.should.contain('Load int from local variable');
+                res.body.url.should.contain('https://docs.oracle.com/javase/specs/jvms/se16/html/');
+            }).catch(e => { throw e; });
     });
 
     it('should respond to json for unknown opcodes', () => {
         return chai.request(app)
-            .get('/asm/NOTANOPCODE')
+            .get('/asm/NOANOPCODE')
             .set('Accept', 'application/json')
             .then(res => {
-                res.should.have.status(200);
+                res.should.have.status(404);
                 res.should.be.json;
-                res.body.found.should.equal(false);
-            })
-            .catch(err => { throw err; });
+            }).catch(e => { throw e; });
+    });
+
+    it('should return 406 on bad accept type', () => {
+        return chai.request(app).get('/asm/iload_0')
+            .set('Accept', 'application/pdf')
+            .then(res => {
+                res.should.have.status(406);
+            }).catch(e => { throw e; });
     });
 });

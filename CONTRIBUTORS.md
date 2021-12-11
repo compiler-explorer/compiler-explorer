@@ -104,3 +104,4 @@ From oldest to newest contributor, we would like to thank:
 - [Oleksandr Muliar](https://github.com/msdinit)
 - [Quinton Miller](https://github.com/HertzDevil)
 - [Kevin Adler](https://github.com/kadler)
+- [Björn Gustavsson](https://github.com/bjorng)
