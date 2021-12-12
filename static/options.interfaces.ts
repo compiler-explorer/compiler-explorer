@@ -22,18 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Options } from './options.interfaces';
-
-type CompilerExplorerOptions = Record<string, unknown> & Options
-
-declare global {
-    export interface Window {
-        httpRoot: string | null;
-        staticRoot: string | null;
-        compilerExplorerOptions: CompilerExplorerOptions;
-    }
+export interface LibraryVersion {
+    alias: string[];
+    hidden: boolean;
+    libId: string;
+    used: boolean;
+    version?: string;
+    versionId: string;
 }
 
-// Necessary because we're not exporting any actual symbols from this file
-// See https://www.typescriptlang.org/docs/handbook/declaration-files/templates/global-modifying-module-d-ts.html
-export {};
+export interface Library {
+    dependencies: string[];
+    description?: string;
+    examples: string[];
+    name?: string;
+    url?: string;
+    versions: Record<string, LibraryVersion>;
+}
+
+export type LanguageLibs = Record<string, Library>;
+
+export type Libs = Record<string, LanguageLibs>;
+
+export interface Options {
+    libs: Libs;
+    defaultLibs: Record<string, string | null>;
+}

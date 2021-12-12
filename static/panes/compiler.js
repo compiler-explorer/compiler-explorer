@@ -36,14 +36,14 @@ var options = require('../options').options;
 var monaco = require('monaco-editor');
 var Alert = require('../alert').Alert;
 var bigInt = require('big-integer');
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../libs-widget').LibsWidget;
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings');
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 
 require('../modes/asm-mode');
@@ -862,7 +862,10 @@ Compiler.prototype.sendCompile = function (request) {
                 message = e;
             } else if (e) {
                 message = e.error || e.code || e.message;
-                if (e.stack) console.log(e);
+                if (e.stack) {
+                    // eslint-disable-next-line no-console
+                    console.log(e);
+                }
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
@@ -1542,20 +1545,21 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    var libUtils = new LibUtils();
-
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
-        state, _.bind(this.onLibsChanged, this),
-        libUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId)
+    );
 };
 
 Compiler.prototype.updateLibraries = function () {
     if (this.libsWidget) {
-        var libUtils = new LibUtils();
-
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
         }
 
         this.libsWidget.setNewLangId(this.currentLangId,
