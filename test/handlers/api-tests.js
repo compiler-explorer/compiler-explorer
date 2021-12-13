@@ -166,18 +166,6 @@ describe('API handling', () => {
                 throw err;
             });
     });
-    it('should respond to ASM doc requests', () => {
-        return chai.request(app)
-            .get('/api/asm/MOV')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-            })
-            .catch(err => {
-                throw err;
-            });
-    });
     it('should respond to JSON compilers requests with c++ filter', () => {
         return chai.request(app)
             .get('/api/compilers/c++')

@@ -40,7 +40,7 @@ describe('arm32 assembly documentation', () => {
             .then(res => {
                 res.should.have.status(404);
                 res.should.be.json;
-                res.body.should.deep.equal({ error: 'Unknown opcode' });
+                res.body.should.deep.equal({ error: 'Unknown opcode \'MOV_OH_WAIT\'' });
             }).catch(e => { throw e; });
     });
 
@@ -62,16 +62,6 @@ describe('arm32 assembly documentation', () => {
                 res.body.html.should.contain('writes an immediate value');
                 res.body.tooltip.should.contain('writes an immediate value');
                 res.body.url.should.contain('https://developer.arm.com/documentation/');
-            }).catch(e => { throw e; });
-    });
-
-    it('should respond to json for unknown opcodes', () => {
-        return chai.request(app)
-            .get('/asm/NOANOPCODE')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(404);
-                res.should.be.json;
             }).catch(e => { throw e; });
     });
 
@@ -109,7 +99,7 @@ describe('arm32 assembly documentation', () => {
             .then(res => {
                 res.should.have.status(404);
                 res.should.be.json;
-                res.body.should.deep.equal({ error: 'Unknown opcode' });
+                res.body.should.deep.equal({ error: 'Unknown opcode \'JNE\'' });
             }).catch(e => { throw e; });
     });
 });

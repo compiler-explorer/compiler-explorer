@@ -22,54 +22,52 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
+import express, { Router } from 'express';
 
-import { JavaDocumentationHandler } from '../../../lib/handlers/assembly-documentation/java';
+import { setup } from '../../../lib/handlers/assembly-documentation/router';
 import { chai } from '../../utils';
 
-describe('jvm assembly documentation', () => {
+describe('Assembly Documentation API', () => {
     let app;
+
     before(() => {
         app = express();
-        const handler = new JavaDocumentationHandler();
-        app.use('/asm/:opcode', handler.handle.bind(handler));
+        /** @type {e.Router} */
+        const router = Router();
+        setup(router);
+        app.use('/api', router);
     });
 
-    it('returns 404 for unknown opcodes', () => {
-        return chai.request(app).get('/asm/mov_oh_wait')
-            .then(res => {
-                res.should.have.status(404);
-                res.should.be.json;
-                res.body.should.deep.equal({ error: 'Unknown opcode \'MOV_OH_WAIT\'' });
-            }).catch(e => { throw e; });
-    });
-
-    it('responds to accept=text requests', () => {
-        return chai.request(app).get('/asm/iload_0')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.contain('Load int from local variable');
-            }).catch(e => { throw e; });
-    });
-
-    it('responds to accept=json requests', () => {
-        return chai.request(app).get('/asm/iload_0')
+    it('should accept requests to the api', () => {
+        return chai.request(app)
+            .get('/api/asm/amd64/mov')
             .set('Accept', 'application/json')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
-                res.body.html.should.contain('Load int from local variable');
-                res.body.tooltip.should.contain('Load int from local variable');
-                res.body.url.should.contain('https://docs.oracle.com/javase/specs/jvms/se16/html/');
+            })
+            .catch(err => {
+                throw err;
+            });
+    });
+
+    it('should return opcode not found', () => {
+        return chai.request(app).get('/api/asm/amd64/notexistingop')
+            .set('Accept', 'application/json')
+            .then((res) => {
+                res.should.have.status(404);
+                res.should.be.json;
+                res.body.should.deep.equals({ error: `Unknown opcode 'NOTEXISTINGOP'` });
             }).catch(e => { throw e; });
     });
 
-    it('should return 406 on bad accept type', () => {
-        return chai.request(app).get('/asm/iload_0')
-            .set('Accept', 'application/pdf')
-            .then(res => {
-                res.should.have.status(406);
+    it('should return architecture not found', () => {
+        return chai.request(app).get('/api/asm/notarch/mov')
+            .set('Accept', 'application/json')
+            .then((res) => {
+                res.should.have.status(404);
+                res.should.be.json;
+                res.body.should.deep.equals({ error: `No documentation for 'notarch'` });
             }).catch(e => { throw e; });
     });
 });
