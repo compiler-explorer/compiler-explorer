@@ -86,8 +86,8 @@
   },
   "devDependencies": {
     "@types/bootstrap": "^5.1.6",
-    "@types/jquery": "^3.5.7",
-    "@types/underscore": "^1.11.2",
+    "@types/jquery": "^3.5.10",
+    "@types/underscore": "^1.11.4",
     "@typescript-eslint/eslint-plugin": "^4.33.0",
     "@typescript-eslint/parser": "^4.33.0",
     "approvals": "^4.0.0-beta.1",
