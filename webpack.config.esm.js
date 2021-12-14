@@ -22,17 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/* eslint-disable node/no-unpublished-import */
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
+/* eslint-disable node/no-unpublished-import */
+import path from 'path';
 import TerserPlugin from 'terser-webpack-plugin';
+import {fileURLToPath} from 'url';
 import webpack from 'webpack';
-import ManifestPlugin from 'webpack-manifest-plugin';
+import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
@@ -46,15 +45,17 @@ const staticPath = path.join(distPath, 'static');
 const webjackJsHack = '.v4.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala', 'ruby' ],
+        languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala', 'ruby'],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
-    new CopyWebpackPlugin([
-        {
-            from: 'node_modules/es6-shim/es6-shim.min.js',
-            to: staticPath,
-        },
-    ]),
+    // new CopyWebpackPlugin({
+    //     patterns: [
+    //         {
+    //             from: 'node_modules/es6-shim/es6-shim.min.js',
+    //             to: staticPath,
+    //         },
+    //     ],
+    // }),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery',
@@ -62,11 +63,15 @@ const plugins = [
     new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : '[name].[contenthash].css',
     }),
-    new ManifestPlugin({
+    new WebpackManifestPlugin({
         fileName: path.join(distPath, 'manifest.json'),
         publicPath: '',
     }),
 ];
+
+if (isDev) {
+    plugins.push(new webpack.HotModuleReplacementPlugin());
+}
 
 // eslint-disable-next-line import/no-default-export
 export default {
@@ -84,7 +89,7 @@ export default {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
         },
         modules: ['./static', './node_modules'],
-        extensions: [ '.tsx', '.ts', '.js' ],
+        extensions: ['.tsx', '.ts', '.js'],
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -100,18 +105,18 @@ export default {
                 },
             },
         },
-        moduleIds: 'hashed',
+        moduleIds: 'deterministic',
         minimizer: [
             new OptimizeCssAssetsPlugin({
                 cssProcessorPluginOptions: {
-                    preset: ['default', { discardComments: { removeAll: true } }],
+                    preset: ['default', {discardComments: {removeAll: true}}],
                 },
             }),
             new TerserPlugin({
                 parallel: true,
-                sourceMap: true,
                 terserOptions: {
-                    ecma: 5,
+                    ecma: 5,                sourceMap: true,
+
                 },
             }),
         ],
@@ -125,7 +130,6 @@ export default {
                         loader: MiniCssExtractPlugin.loader,
                         options: {
                             publicPath: './',
-                            hmr: isDev,
                         },
                     },
                     'css-loader',
@@ -138,7 +142,6 @@ export default {
                         loader: MiniCssExtractPlugin.loader,
                         options: {
                             publicPath: './',
-                            hmr: isDev,
                         },
                     },
                     'css-loader',
@@ -147,7 +150,8 @@ export default {
             },
             {
                 test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-                loader: 'url-loader?limit=8192',
+                loader: 'url-loader',
+                options: {limit: 8192},
             },
             {
                 test: /\.(html)$/,
