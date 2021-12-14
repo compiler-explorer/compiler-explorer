@@ -111,7 +111,7 @@
     "eslint-plugin-sonarjs": "^0.11.0",
     "eslint-plugin-unicorn": "^39.0.0",
     "file-loader": "^5.1.0",
-    "lint-staged": "^11.2.6",
+    "lint-staged": "^12.1.2",
     "mini-css-extract-plugin": "^0.9.0",
     "mocha": "^8.4.0",
     "mock-fs": "^5.1.2",
