@@ -41,7 +41,7 @@
     "golden-layout": "^1.5.9",
     "html-loader": "^0.5.5",
     "http-proxy": "^1.18.1",
-    "husky": "^7.0.2",
+    "husky": "^7.0.4",
     "husky-init": "^7.0.0",
     "jquery": "^3.6.0",
     "js-cookie": "^2.2.1",
