@@ -120,7 +120,6 @@
     "nyc": "^15.1.0",
     "optimize-css-assets-webpack-plugin": "^5.0.8",
     "prettier": "2.3.2",
-    "pretty-quick": "^3.1.1",
     "sass": "^1.43.2",
     "sass-loader": "^10.2.0",
     "sinon": "^11.1.2",
