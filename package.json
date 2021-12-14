@@ -119,7 +119,7 @@
     "nock": "^13.2.1",
     "nyc": "^15.1.0",
     "optimize-css-assets-webpack-plugin": "^5.0.8",
-    "prettier": "2.3.2",
+    "prettier": "^2.5.1",
     "sass": "^1.45.0",
     "sass-loader": "^10.2.0",
     "sinon": "^12.0.1",
@@ -156,8 +156,8 @@
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
-    "format": "prettier --ignore-unknown",
-    "format-fix": "prettier --write --ignore-unknown"
+    "format": "prettier --ignore-unknown .",
+    "format-fix": "prettier --write --ignore-unknown ."
   },
   "lint-staged": {
     "*.js": [
