@@ -22,14 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+/* eslint-disable node/no-unpublished-import */
+import path from 'path';
+import {fileURLToPath} from 'url';
+
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
-/* eslint-disable node/no-unpublished-import */
-import path from 'path';
 import TerserPlugin from 'terser-webpack-plugin';
-import {fileURLToPath} from 'url';
 import webpack from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
@@ -42,20 +43,20 @@ const staticPath = path.join(distPath, 'static');
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v4.';
+const webjackJsHack = '.v5.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala', 'ruby'],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
-    // new CopyWebpackPlugin({
-    //     patterns: [
-    //         {
-    //             from: 'node_modules/es6-shim/es6-shim.min.js',
-    //             to: staticPath,
-    //         },
-    //     ],
-    // }),
+    new CopyWebpackPlugin({
+        patterns: [
+            {
+                from: 'node_modules/es6-shim/es6-shim.min.js',
+                to: staticPath,
+            },
+        ],
+    }),
     new webpack.ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery',
@@ -88,6 +89,9 @@ export default {
         alias: {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
         },
+        fallback: {
+            path: 'path-browserify',
+        },
         modules: ['./static', './node_modules'],
         extensions: ['.tsx', '.ts', '.js'],
     },
@@ -115,7 +119,7 @@ export default {
             new TerserPlugin({
                 parallel: true,
                 terserOptions: {
-                    ecma: 5,                sourceMap: true,
+                    ecma: 5, sourceMap: true,
 
                 },
             }),
