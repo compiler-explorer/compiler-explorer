@@ -18,9 +18,9 @@
   "esm": true,
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
-    "@sentry/browser": "^6.13.3",
-    "@sentry/node": "^6.13.3",
-    "@sentry/tracing": "^6.13.3",
+    "@sentry/browser": "^6.16.1",
+    "@sentry/node": "^6.16.1",
+    "@sentry/tracing": "^6.16.1",
     "aws-sdk": "^2.1009.0",
     "big-integer": "^1.6.50",
     "body-parser": "^1.18.2",
