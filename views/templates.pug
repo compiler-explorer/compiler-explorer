@@ -114,6 +114,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
+          button.dropdown-item.btn.btn-sm.btn-light.view-gnatdebugtree(title="Show GNAT Debug Tree")
+              span.dropdown-icon.fas.fa-tree
+              | GNAT Debug Tree
           button.dropdown-item.btn.btn-sm.btn-light.view-gnatdebug(title="Show GNAT Debug Expanded Code")
             span.dropdown-icon.fas.fa-tree
             | GNAT Debug Expanded Code
@@ -292,6 +295,11 @@
       include font-size.pug
       .btn-group.btn-group-sm(role="group")
         select.change-device(placeholder="Select a device...")
+    .monaco-placeholder
+
+  #gnatdebugtree
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
     .monaco-placeholder
 
   #gnatdebug

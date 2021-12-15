@@ -42,6 +42,7 @@ var irView = require('./panes/ir-view');
 var deviceView = require('./panes/device-view');
 var rustMirView = require('./panes/rustmir-view');
 var gnatDebugView = require('./panes/gnatdebug-view');
+var gnatDebugTreeView = require('./panes/gnatdebugtree-view');
 var rustMacroExpView = require('./panes/rustmacroexp-view');
 var rustHirView = require('./panes/rusthir-view');
 var gccDumpView = require('./panes/gccdump-view');
@@ -145,6 +146,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getRustMirView().componentName,
         function (container, state) {
             return self.rustMirViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getGnatDebugTreeView().componentName,
+        function (container, state) {
+            return self.gnatDebugTreeViewFactory(container, state);
         });
     layout.registerComponent(Components.getGnatDebugView().componentName,
         function (container, state) {
@@ -326,6 +331,10 @@ Hub.prototype.irViewFactory = function (container, state) {
 
 Hub.prototype.deviceViewFactory = function (container, state) {
     return new deviceView.DeviceAsm(this, container, state);
+};
+
+Hub.prototype.gnatDebugTreeViewFactory = function (container, state) {
+    return new gnatDebugTreeView.GnatDebugTree(this, container, state);
 };
 
 Hub.prototype.gnatDebugViewFactory = function (container, state) {
