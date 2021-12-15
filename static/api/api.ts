@@ -22,25 +22,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import _ from 'underscore';
+
 import { AssemblyDocumentationResponse, AssemblyDocumentationRequest } from './assemblydocumentation.interfaces';
+import { FormattingRequest, FormattingResponse } from './formatting.interfaces';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
-type TypedResponse<R> = Response & {
-    json(): Promise<R>
+interface TypedResponse<T> extends Response {
+    json(): Promise<T>;
 }
 
 /** Lightweight fetch() wrapper for CE API urls */
 const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResponse<R>> => fetch(
     `${window.location.origin}${window.httpRoot}api${uri}`,
     {
-      ...options,
-      headers: {
-          ...options?.headers,
-          'Accept': 'application/json',
-      }
+        ...options,
+        credentials: 'include',
+        headers: {
+            ...options?.headers,
+            'Accept': 'application/json',
+        },
     },
 );
 
+/** GET /api/asm/:arch/:instruction */
 export const getAssemblyDocumentation = async (
-    options: AssemblyDocumentationRequest
-) => request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`);
+    options: AssemblyDocumentationRequest,
+) => await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`);
+
+/** POST /api/format/:formatter */
+export const getFormattedCode = async (
+    options: FormattingRequest,
+) => await request<FormattingResponse>(`/format/${options.formatterId}`, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(_.pick(options, 'source', 'base', 'tabWidth', 'useSpaces')),
+});
