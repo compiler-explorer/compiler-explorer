@@ -41,7 +41,8 @@ var
     DiffType_CompilerStdErr = 2,
     DiffType_ExecStdOut = 3,
     DiffType_ExecStdErr = 4,
-    DiffType_GNAT_ExpandedCode = 5;
+    DiffType_GNAT_ExpandedCode = 5,
+    DiffType_GNAT_Tree = 6;
 
 function State(id, model, difftype) {
     this.id = id;
@@ -85,6 +86,11 @@ State.prototype.refresh = function () {
                 if (this.result.hasGnatDebugOutput)
                     output = this.result.gnatDebugOutput || [];
                 break;
+            case DiffType_GNAT_Tree:
+                if (this.result.hasGnatDebugTreeOutput)
+                    output = this.result.gnatDebugTreeOutput || [];
+                break;
+
         }
     }
     this.model.setValue(_.pluck(output, 'text').join('\n'));
@@ -136,6 +142,7 @@ function Diff(hub, container, state) {
                 {id: DiffType_ExecStdOut, name: 'Execution stdout'},
                 {id: DiffType_ExecStdErr, name: 'Execution stderr'},
                 {id: DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
+                {id: DiffType_GNAT_Tree, name: 'GNAT Tree Code'},
             ],
             items: [],
             render: {
