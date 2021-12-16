@@ -543,8 +543,7 @@ async function main() {
     const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
     if (rescanCompilerSecs && !opts.prediscovered) {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-        setInterval(() => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
-            rescanCompilerSecs * 1000);
+        setInterval(() => compilerFinder.find().then(result => onCompilerChange(result.compilers)), rescanCompilerSecs * 1000);
     }
 
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
