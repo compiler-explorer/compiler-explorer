@@ -78,6 +78,7 @@ jobs:
           make changelog
           make policies
           make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
+          echo HACK THE SYSTEM
       - name: Deploy
         uses: jakejarvis/s3-sync-action@master
         with:
