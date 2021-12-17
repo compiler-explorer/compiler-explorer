@@ -204,6 +204,7 @@ Compiler.prototype.close = function () {
     this.outputEditor.dispose();
 };
 
+// eslint-disable-next-line max-statements
 Compiler.prototype.initPanerButtons = function () {
     var outputConfig = _.bind(function () {
         return Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId);
@@ -272,6 +273,11 @@ Compiler.prototype.initPanerButtons = function () {
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
             this.lastResult.gccDumpOutput);
+    }, this);
+
+    var createGnatDebugTreeView = _.bind(function () {
+        return Components.getGnatDebugTreeViewWith(this.id, this.source, this.lastResult.gnatDebugTreeOutput,
+            this.getCompilerName(), this.sourceEditorId);
     }, this);
 
     var createGnatDebugView = _.bind(function () {
@@ -405,6 +411,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createGccDumpView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.gnatDebugTreeButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createGnatDebugTreeView);
     }, this));
 
     this.container.layoutManager
@@ -715,6 +731,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
+            produceGnatDebugTree: this.gnatDebugTreeViewOpen,
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
             produceDevice: this.deviceViewOpen,
@@ -1299,6 +1316,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onGnatDebugTreeViewOpened = function (id) {
+    if (this.id === id) {
+        this.gnatDebugTreeButton.prop('disabled', true);
+        this.gnatDebugTreeViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onGnatDebugTreeViewClosed = function (id) {
+    if (this.id === id) {
+        this.gnatDebugTreeButton.prop('disabled', false);
+        this.gnatDebugTreeViewOpen = false;
+    }
+};
+
 Compiler.prototype.onGnatDebugViewOpened = function (id) {
     if (this.id === id) {
         this.gnatDebugButton.prop('disabled', true);
@@ -1480,12 +1512,12 @@ Compiler.prototype.initButtons = function (state) {
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
+    this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
     this.rustHirButton = this.domRoot.find('.btn.view-rusthir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
-    this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -1702,6 +1734,7 @@ Compiler.prototype.updateButtons = function () {
     this.rustHirButton.prop('disabled', this.rustHirViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
+    this.gnatDebugTreeButton.prop('disabled', this.gnatDebugTreeViewOpen);
     this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
     // The executorButton does not need to be changed here, because you can create however
     // many executors as you want.
@@ -1715,7 +1748,8 @@ Compiler.prototype.updateButtons = function () {
     this.rustHirButton.toggle(!!this.compiler.supportsRustHirView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
-    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugView);
+    this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
+    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
@@ -1816,6 +1850,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
     this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
 
+    this.eventHub.on('gnatDebugTreeViewOpened', this.onGnatDebugTreeViewOpened, this);
+    this.eventHub.on('gnatDebugTreeViewClosed', this.onGnatDebugTreeViewClosed, this);
     this.eventHub.on('gnatDebugViewOpened', this.onGnatDebugViewOpened, this);
     this.eventHub.on('gnatDebugViewClosed', this.onGnatDebugViewClosed, this);
 
