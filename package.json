@@ -109,7 +109,7 @@
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jsdoc": "^37.4.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.2.0",
+    "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-requirejs": "^4.0.1",
     "eslint-plugin-sonarjs": "^0.11.0",
     "eslint-plugin-unicorn": "^39.0.0",
