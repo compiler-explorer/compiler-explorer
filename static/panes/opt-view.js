@@ -126,7 +126,7 @@ Opt.prototype.onCompileResult = function (id, compiler, result, lang) {
 
 // Monaco language id of the current editor
 Opt.prototype.getCurrentEditorLanguage = function () {
-    return this.optEditor.getModel().getModeId();
+    return this.optEditor.getModel().getLanguageId();
 };
 
 Opt.prototype.getPaneName = function () {

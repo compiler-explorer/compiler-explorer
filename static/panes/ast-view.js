@@ -138,7 +138,7 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
 
 // Monaco language id of the current editor
 Ast.prototype.getCurrentEditorLanguage = function () {
-    return this.astEditor.getModel().getModeId();
+    return this.astEditor.getModel().getLanguageId();
 };
 
 Ast.prototype.getPaneName = function () {
