@@ -29,7 +29,7 @@ import {fileURLToPath} from 'url';
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
-import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
 import webpack from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
@@ -111,11 +111,7 @@ export default {
         },
         moduleIds: 'deterministic',
         minimizer: [
-            new OptimizeCssAssetsPlugin({
-                cssProcessorPluginOptions: {
-                    preset: ['default', {discardComments: {removeAll: true}}],
-                },
-            }),
+            new CssMinimizerPlugin(),
             new TerserPlugin({
                 parallel: true,
                 terserOptions: {
@@ -128,19 +124,7 @@ export default {
     module: {
         rules: [
             {
-                test: /\.css$/,
-                use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            publicPath: './',
-                        },
-                    },
-                    'css-loader',
-                ],
-            },
-            {
-                test: /\.scss$/,
+                test: /\.s?css$/,
                 use: [
                     {
                         loader: MiniCssExtractPlugin.loader,
