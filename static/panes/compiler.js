@@ -137,7 +137,7 @@ function Compiler(hub, container, state) {
         readOnly: true,
         language: monacoDisassembly,
         glyphMargin: !options.embedded,
-        renderIndentGuides: false,
+        guides: false,
         vimInUse: false,
     }, this.settings));
 
@@ -975,7 +975,7 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     if (this.settings.enableCodeLens) {
         codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
 
-        var currentAsmLang = editorModel.getModeId();
+        var currentAsmLang = editorModel.getLanguageId();
         codeLensHandler.registerProviderForLanguage(currentAsmLang);
     } else {
         // Make sure the codelens is disabled
@@ -2388,7 +2388,7 @@ Compiler.prototype.onMouseMove = function (e) {
 Compiler.prototype.getLineTokens = function (line) {
     var model = this.outputEditor.getModel();
     if (!model || line > model.getLineCount()) return [];
-    var flavour = model.getModeId();
+    var flavour = model.getLanguageId();
     var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
     return tokens.length > 0 ? tokens[0] : [];
 };

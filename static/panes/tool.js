@@ -78,7 +78,7 @@ function Tool(hub, container, state) {
         language: 'text',
         fontFamily: 'courier new',
         lineNumbersMinChars: 5,
-        renderIndentGuides: false,
+        guides: false,
     }));
 
     this.fontScale = new FontScale(this.domRoot, state, '.content');
