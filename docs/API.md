@@ -121,7 +121,9 @@ Execution Only request example:
 ```
 
 The filters are a JSON object with `true`/`false` values. If not supplied,
- defaults are used. If supplied, the filters are used as-is.
+ defaults are used. If supplied, the filters are used as-is. The `addFilters`
+ and `removeFilters` option can be used to add or remove individual filters
+ without affecting the default values.
  The `compilerOptions` is used to pass extra arguments to the back end, and is
  probably not useful for most REST users.
 
