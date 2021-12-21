@@ -39,7 +39,7 @@
     "file-saver": "^2.0.5",
     "fs-extra": "^10.0.0",
     "golden-layout": "^1.5.9",
-    "html-loader": "^0.5.5",
+    "html-loader": "^3.0.1",
     "http-proxy": "^1.18.1",
     "husky": "^7.0.4",
     "husky-init": "^7.0.0",
