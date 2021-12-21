@@ -21,7 +21,7 @@
     "@sentry/browser": "^6.16.1",
     "@sentry/node": "^6.16.1",
     "@sentry/tracing": "^6.16.1",
-    "aws-sdk": "^2.1047.0",
+    "aws-sdk": "^2.1048.0",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
     "bootstrap": "^4.6.1",
