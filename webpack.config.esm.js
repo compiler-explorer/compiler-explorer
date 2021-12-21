@@ -53,7 +53,7 @@ const plugins = [
         patterns: [
             {
                 from: 'node_modules/es6-shim/es6-shim.min.js',
-                to: staticPath,
+                to: path.join(staticPath, '[name].[contenthash][ext]'),
             },
         ],
     }),
