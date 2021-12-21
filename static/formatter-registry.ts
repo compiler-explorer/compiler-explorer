@@ -26,8 +26,9 @@ import * as monaco from 'monaco-editor';
 
 import { Alert } from './alert';
 import { getStoredSettings } from './settings';
-import { FormatRequestOptions, FormatResponse } from './formatter-registry.interfaces';
 import { SiteSettings } from './settings.interfaces';
+import { FormattingRequest } from './api/formatting.interfaces';
+import { getFormattedCode } from './api/api';
 
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {
@@ -39,17 +40,9 @@ const onFormatError = (cause: string, source: string) => {
     return source;
 };
 
-const getFormattedCode = async ({ source, formatterId, base, tabWidth, useSpaces }: FormatRequestOptions) => {
-    const res = await fetch(`${window.location.origin}${window.httpRoot}api/format/${formatterId}`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({ source, base, tabWidth, useSpaces }),
-    });
-    const body = await res.json() as FormatResponse;
+const doFormatRequest = async (options: FormattingRequest) => {
+    const res = await getFormattedCode(options);
+    const body = await res.json();
     if (res.status === 200 && body.exit === 0) {
         // API sent 200 and we have a valid response
         return body.answer;
@@ -84,7 +77,7 @@ const getDocumentFormatter = (
         const source = model.getValue();
         // Request the formatted code. If that API call fails, we just back off
         // and return the user's old code.
-        const formattedSource = await getFormattedCode({
+        const formattedSource = await doFormatRequest({
             formatterId: formatter,
             tabWidth: settings.tabWidth,
             useSpaces: settings.useSpaces,

@@ -40,7 +40,7 @@ describe('amd64 assembly documentation', () => {
            .then(res => {
                res.should.have.status(404);
                res.should.be.json;
-               res.body.should.deep.equal({ error: 'Unknown opcode' });
+               res.body.should.deep.equal({ error: 'Unknown opcode \'MOV_OH_WAIT\'' });
            }).catch(e => { throw e; });
    });
 
@@ -64,16 +64,6 @@ describe('amd64 assembly documentation', () => {
               res.body.url.should.contain('www.felixcloutier.com');
           }).catch(e => { throw e; });
    });
-
-    it('should respond to json for unknown opcodes', () => {
-        return chai.request(app)
-            .get('/asm/NOANOPCODE')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(404);
-                res.should.be.json;
-            }).catch(e => { throw e; });
-    });
 
     it('should return 406 on bad accept type', () => {
         return chai.request(app).get('/asm/mov')

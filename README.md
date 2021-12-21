@@ -39,6 +39,7 @@ There are a number of videos that showcase some features of Compiler Explorer:
 * [Presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 * [Older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
  into the more obscure features.
+* [Just Enough Assembly for Compiler Explorer](https://youtu.be/QLolzolunJ4): Practical introduction to Assembly with a focus on usage on Compiler Explorer, from CppCon 2021.
 * [Playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
 
 A [Road map](docs/Roadmap.md) is available which gives a little insight into
