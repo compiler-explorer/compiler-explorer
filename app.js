@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // shebang interferes with license header plugin
 /* eslint-disable header/header */
 
