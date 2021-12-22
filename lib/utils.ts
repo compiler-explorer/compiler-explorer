@@ -30,6 +30,18 @@ import fs from 'fs-extra';
 import quote from 'shell-quote';
 import _ from 'underscore';
 
+interface IResultLineTag {
+    line?: number;
+    column?: number;
+    file?: string;
+    text: string;
+}
+
+interface IResultLine {
+    text: string;
+    tag?: IResultLineTag;
+}
+
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
 
@@ -58,7 +70,7 @@ export function splitLines(text) {
  * @param {eachLineFunc} func
  * @param {*} [context]
  */
-export function eachLine(text, func, context) {
+export function eachLine(text: string, func, context?): IResultLine[] {
     return _.each(splitLines(text), func, context);
 }
 
@@ -133,7 +145,7 @@ export function parseOutput(lines, inputFilename, pathPrefix) {
             line = maskRootdir(line);
         }
         if (line !== null) {
-            const lineObj = {text: line};
+            const lineObj: IResultLine = { text: line };
             const filteredline = line.replace(ansiColoursRe, '');
             let match = filteredline.match(re);
             if (match) {
@@ -172,7 +184,7 @@ export function parseRustOutput(lines, inputFilename, pathPrefix) {
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
-            const lineObj = {text: line};
+            const lineObj: IResultLine = { text: line };
             const match = line.replace(ansiColoursRe, '').match(re);
 
             if (match) {
@@ -307,13 +319,13 @@ export function getHash(object, HashVersion = DefaultHash) {
  * @returns {glContents}
  */
 export function glGetMainContents(content) {
-    let contents = {editors: [], compilers: []};
+    const contents = { editors: [], compilers: [] };
     _.each(content, element => {
         if (element.type === 'component') {
             if (element.componentName === 'codeEditor') {
-                contents.editors.push({source: element.componentState.source, language: element.componentState.lang});
+                contents.editors.push({ source: element.componentState.source, language: element.componentState.lang });
             } else if (element.componentName === 'compiler') {
-                contents.compilers.push({compiler: element.componentState.compiler});
+                contents.compilers.push({ compiler: element.componentState.compiler });
             }
         } else {
             const subComponents = glGetMainContents(element.content);
@@ -459,7 +471,7 @@ export async function dirExists(dir) {
 export function countOccurrences(collection, item) {
     // _.reduce(collection, (total, value) => value === item ? total + 1 : total, 0) would work, but is probably slower
     let result = 0;
-    for (let element of collection) {
+    for (const element of collection) {
         if (element === item) {
             result++;
         }
