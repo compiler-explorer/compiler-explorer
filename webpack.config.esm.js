@@ -31,7 +31,7 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import webpack from 'webpack';
+import {HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
@@ -57,7 +57,7 @@ const plugins = [
             },
         ],
     }),
-    new webpack.ProvidePlugin({
+    new ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery',
     }),
@@ -71,7 +71,7 @@ const plugins = [
 ];
 
 if (isDev) {
-    plugins.push(new webpack.HotModuleReplacementPlugin());
+    plugins.push(new HotModuleReplacementPlugin());
 }
 
 // eslint-disable-next-line import/no-default-export
