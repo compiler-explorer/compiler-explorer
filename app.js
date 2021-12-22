@@ -1,6 +1,3 @@
-// shebang interferes with license header plugin
-/* eslint-disable header/header */
-
 // Copyright (c) 2012, Compiler Explorer Authors
 // All rights reserved.
 //
