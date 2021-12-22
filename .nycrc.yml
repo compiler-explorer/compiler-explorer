@@ -1,6 +1,7 @@
 all: true
 include:
   - lib/**/*.js
+  - lib/**/*.ts
 exclude:
   - lib/handlers/asm-docs-amd64.js
   - lib/handlers/asm-docs-arm32.js
@@ -11,3 +12,5 @@ reporter:
   - lcov
 require:
   - esm
+  - source-map-support/register
+  - ts-node/register
