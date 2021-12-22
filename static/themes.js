@@ -49,6 +49,7 @@ monaco.editor.defineTheme('ce', {
     rules: [
         { token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold' },
     ],
+    colors: {},
 });
 
 monaco.editor.defineTheme('ce-dark', {
@@ -57,6 +58,7 @@ monaco.editor.defineTheme('ce-dark', {
     rules: [
         { token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold' },
     ],
+    colors: {},
 });
 
 function Themer(eventHub, initialSettings) {

@@ -22,23 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { FormatBase } from './settings.interfaces';
-
-export interface FormatRequestOptions {
-    source: string;
-    formatterId: string;
-    /**
-     * Specifies which formatting preset to use. "__DefaultStyle" means the
-     * formatter doesn't have style presets, and that the backend should
-     * ignore the "base" option.
-     */
-    base: FormatBase | '__DefaultStyle';
-    tabWidth: number;
-    useSpaces: boolean;
+export interface LibraryVersion {
+    alias: string[];
+    hidden: boolean;
+    libId: string;
+    used: boolean;
+    version?: string;
+    versionId: string;
 }
 
-export interface FormatResponse {
-    answer: string;
-    exit: number;
-    throw?: true;
+export interface Library {
+    dependencies: string[];
+    description?: string;
+    examples: string[];
+    name?: string;
+    url?: string;
+    versions: Record<string, LibraryVersion>;
+}
+
+export type LanguageLibs = Record<string, Library>;
+
+export type Libs = Record<string, LanguageLibs>;
+
+export interface Options {
+    libs: Libs;
+    defaultLibs: Record<string, string | null>;
 }

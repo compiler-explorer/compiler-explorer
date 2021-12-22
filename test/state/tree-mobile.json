@@ -1,92 +1,90 @@
 {
-    "sessions": [
+  "sessions": [
+    {
+      "id": 1,
+      "language": "cmake",
+      "source": "project(hello)\n\nadd_executable(hellow\n    example.cpp)\n\ntarget_link_libraries(hellow\n    fmtd)\n",
+      "conformanceview": false,
+      "compilers": [],
+      "executors": [],
+      "filename": "CMakeLists.txt"
+    },
+    {
+      "id": 2,
+      "language": "c++",
+      "source": "#include \"fmt/core.h\"\n\nint main() {\n    fmt::print(\"H€llo, world!\\n\");\n    return 0;\n}",
+      "conformanceview": false,
+      "compilers": [],
+      "executors": [],
+      "filename": "example.cpp"
+    }
+  ],
+  "trees": [
+    {
+      "id": 1,
+      "cmakeArgs": "",
+      "customOutputFilename": "hellow",
+      "isCMakeProject": true,
+      "compilerLanguageId": "c++",
+      "files": [
         {
-            "id": 1,
-            "language": "cmake",
-            "source": "project(hello)\n\nadd_executable(hellow\n    example.cpp)\n\ntarget_link_libraries(hellow\n    fmtd)\n",
-            "conformanceview": false,
-            "compilers": [],
-            "executors": [],
-            "filename": "CMakeLists.txt"
+          "fileId": 1,
+          "isIncluded": true,
+          "isOpen": true,
+          "isMainSource": true,
+          "filename": "CMakeLists.txt",
+          "content": "project(hello)\n\nadd_executable(hellow\n    example.cpp)\n\ntarget_link_libraries(hellow\n    fmtd)\n",
+          "editorId": 1,
+          "langId": "cmake"
         },
         {
-            "id": 2,
-            "language": "c++",
-            "source": "#include \"fmt/core.h\"\n\nint main() {\n    fmt::print(\"H€llo, world!\\n\");\n    return 0;\n}",
-            "conformanceview": false,
-            "compilers": [],
-            "executors": [],
-            "filename": "example.cpp"
-        }
-    ],
-    "trees": [
+          "fileId": 2,
+          "isIncluded": true,
+          "isOpen": true,
+          "isMainSource": false,
+          "filename": "example.cpp",
+          "content": "#include \"fmt/core.h\"\n\nint main() {\n    fmt::print(\"H€llo, world!\\n\");\n    return 0;\n}",
+          "editorId": 2,
+          "langId": "c++"
+        },
         {
-            "id": 1,
-            "cmakeArgs": "",
-            "customOutputFilename": "hellow",
-            "isCMakeProject": true,
-            "compilerLanguageId": "c++",
-            "files": [
-                {
-                    "fileId": 1,
-                    "isIncluded": true,
-                    "isOpen": true,
-                    "isMainSource": true,
-                    "filename": "CMakeLists.txt",
-                    "content": "project(hello)\n\nadd_executable(hellow\n    example.cpp)\n\ntarget_link_libraries(hellow\n    fmtd)\n",
-                    "editorId": 1,
-                    "langId": "cmake"
-                },
-                {
-                    "fileId": 2,
-                    "isIncluded": true,
-                    "isOpen": true,
-                    "isMainSource": false,
-                    "filename": "example.cpp",
-                    "content": "#include \"fmt/core.h\"\n\nint main() {\n    fmt::print(\"H€llo, world!\\n\");\n    return 0;\n}",
-                    "editorId": 2,
-                    "langId": "c++"
-                },
-                {
-                    "fileId": 3,
-                    "isIncluded": true,
-                    "isOpen": false,
-                    "isMainSource": false,
-                    "filename": "subdir/hello.txt",
-                    "content": "Hello, World!!!!\n",
-                    "editorId": -1,
-                    "langId": "cmake"
-                }
-            ],
-            "newFileId": 4,
-            "compilers": [
-                {
-                    "_internalid": 1,
-                    "id": "g103",
-                    "options": "-g -O3 -flto",
-                    "filters": {
-                        "binary": false,
-                        "commentOnly": true,
-                        "demangle": true,
-                        "directives": true,
-                        "execute": false,
-                        "intel": true,
-                        "labels": true,
-                        "trim": false
-                    },
-                    "libs": [
-                        {
-                            "name": "fmt",
-                            "ver": "700"
-                        }
-                    ],
-                    "specialoutputs": [
-                        "compilerOutput"
-                    ],
-                    "tools": []
-                }
-            ],
-            "executors": []
+          "fileId": 3,
+          "isIncluded": true,
+          "isOpen": false,
+          "isMainSource": false,
+          "filename": "subdir/hello.txt",
+          "content": "Hello, World!!!!\n",
+          "editorId": -1,
+          "langId": "cmake"
         }
-    ]
+      ],
+      "newFileId": 4,
+      "compilers": [
+        {
+          "_internalid": 1,
+          "id": "g103",
+          "options": "-g -O3 -flto",
+          "filters": {
+            "binary": false,
+            "commentOnly": true,
+            "demangle": true,
+            "directives": true,
+            "execute": false,
+            "intel": true,
+            "labels": true,
+            "trim": false
+          },
+          "libs": [
+            {
+              "name": "fmt",
+              "ver": "700"
+            }
+          ],
+          "specialoutputs": ["compilerOutput"],
+          "tools": []
+        }
+      ],
+      "executors": []
+    }
+  ]
 }

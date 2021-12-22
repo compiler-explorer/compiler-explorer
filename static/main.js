@@ -456,8 +456,7 @@ function start() {
     // share the same cookie domain for some settings.
     var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {
-        cookieDomain = cookieDomain[0];
-        jsCookie.defaults.domain = cookieDomain;
+        jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
     var defaultConfig = {

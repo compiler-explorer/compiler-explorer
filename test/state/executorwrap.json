@@ -1,179 +1,179 @@
 {
-    "settings": {
-        "hasHeaders": true,
-        "constrainDragToContainer": false,
-        "reorderEnabled": true,
-        "selectionEnabled": false,
-        "popoutWholeStack": false,
-        "blockedPopoutsThrowError": true,
-        "closePopoutsOnUnload": true,
-        "showPopoutIcon": false,
-        "showMaximiseIcon": true,
-        "showCloseIcon": true,
-        "responsiveMode": "onload",
-        "tabOverlapAllowance": 0,
-        "reorderOnTabMenuClick": true,
-        "tabControlOffset": 10
-    },
-    "dimensions": {
-        "borderWidth": 5,
-        "borderGrabWidth": 15,
-        "minItemHeight": 10,
-        "minItemWidth": 10,
-        "headerHeight": 20,
-        "dragProxyWidth": 300,
-        "dragProxyHeight": 200
-    },
-    "labels": {
-        "close": "close",
-        "maximise": "maximise",
-        "minimise": "minimise",
-        "popout": "open in new window",
-        "popin": "pop in",
-        "tabDropdown": "additional tabs"
-    },
-    "content": [
-        {
-            "type": "column",
-            "isClosable": true,
-            "reorderEnabled": true,
-            "title": "",
-            "content": [
-                {
-                    "type": "stack",
-                    "width": 100,
-                    "height": 50,
-                    "isClosable": true,
-                    "reorderEnabled": true,
-                    "title": "",
-                    "activeItemIndex": 0,
-                    "content": [
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": 1,
-                                "source": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
-                                "lang": "c++",
-                                "selection": {
-                                    "startLineNumber": 2,
-                                    "startColumn": 12,
-                                    "endLineNumber": 2,
-                                    "endColumn": 19,
-                                    "selectionStartLineNumber": 2,
-                                    "selectionStartColumn": 19,
-                                    "positionLineNumber": 2,
-                                    "positionColumn": 12
-                                },
-                                "fontScale": 14,
-                                "fontUsePx": true
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true,
-                            "title": "C++ source #1"
-                        }
-                    ]
-                },
-                {
-                    "type": "row",
-                    "isClosable": true,
-                    "reorderEnabled": true,
-                    "title": "",
-                    "height": 50,
-                    "content": [
-                        {
-                            "type": "stack",
-                            "header": {},
-                            "isClosable": true,
-                            "reorderEnabled": true,
-                            "title": "",
-                            "activeItemIndex": 0,
-                            "height": 50,
-                            "width": 50,
-                            "content": [
-                                {
-                                    "type": "component",
-                                    "componentName": "compiler",
-                                    "componentState": {
-                                        "id": 1,
-                                        "compiler": "g111",
-                                        "source": 1,
-                                        "options": "",
-                                        "filters": {
-                                            "binary": false,
-                                            "execute": false,
-                                            "intel": true,
-                                            "demangle": true,
-                                            "labels": true,
-                                            "libraryCode": true,
-                                            "directives": true,
-                                            "commentOnly": true,
-                                            "trim": false
-                                        },
-                                        "libs": [],
-                                        "lang": "c++",
-                                        "selection": {
-                                            "startLineNumber": 4,
-                                            "startColumn": 17,
-                                            "endLineNumber": 4,
-                                            "endColumn": 39,
-                                            "selectionStartLineNumber": 4,
-                                            "selectionStartColumn": 17,
-                                            "positionLineNumber": 4,
-                                            "positionColumn": 39
-                                        },
-                                        "fontScale": 14,
-                                        "fontUsePx": true
-                                    },
-                                    "isClosable": true,
-                                    "reorderEnabled": true,
-                                    "title": "x86-64 gcc 11.1 (Editor #1, Compiler #1) C++"
-                                }
-                            ]
-                        },
-                        {
-                            "type": "stack",
-                            "header": {},
-                            "isClosable": true,
-                            "reorderEnabled": true,
-                            "title": "",
-                            "activeItemIndex": 0,
-                            "width": 50,
-                            "content": [
-                                {
-                                    "type": "component",
-                                    "componentName": "executor",
-                                    "componentState": {
-                                        "id": 1,
-                                        "compiler": "g111",
-                                        "source": 1,
-                                        "options": "",
-                                        "execArgs": "",
-                                        "execStdin": "",
-                                        "libs": [],
-                                        "lang": "c++",
-                                        "compilationPanelShown": true,
-                                        "compilerOutShown": true,
-                                        "argsPanelShown": false,
-                                        "stdinPanelShown": false,
-                                        "wrap": true,
-                                        "fontScale": 14,
-                                        "fontUsePx": true
-                                    },
-                                    "isClosable": true,
-                                    "reorderEnabled": true,
-                                    "title": "x86-64 gcc 11.1 Executor (Editor #1) C++"
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    ],
-    "isClosable": true,
+  "settings": {
+    "hasHeaders": true,
+    "constrainDragToContainer": false,
     "reorderEnabled": true,
-    "title": "",
-    "openPopouts": [],
-    "maximisedItemId": null
+    "selectionEnabled": false,
+    "popoutWholeStack": false,
+    "blockedPopoutsThrowError": true,
+    "closePopoutsOnUnload": true,
+    "showPopoutIcon": false,
+    "showMaximiseIcon": true,
+    "showCloseIcon": true,
+    "responsiveMode": "onload",
+    "tabOverlapAllowance": 0,
+    "reorderOnTabMenuClick": true,
+    "tabControlOffset": 10
+  },
+  "dimensions": {
+    "borderWidth": 5,
+    "borderGrabWidth": 15,
+    "minItemHeight": 10,
+    "minItemWidth": 10,
+    "headerHeight": 20,
+    "dragProxyWidth": 300,
+    "dragProxyHeight": 200
+  },
+  "labels": {
+    "close": "close",
+    "maximise": "maximise",
+    "minimise": "minimise",
+    "popout": "open in new window",
+    "popin": "pop in",
+    "tabDropdown": "additional tabs"
+  },
+  "content": [
+    {
+      "type": "column",
+      "isClosable": true,
+      "reorderEnabled": true,
+      "title": "",
+      "content": [
+        {
+          "type": "stack",
+          "width": 100,
+          "height": 50,
+          "isClosable": true,
+          "reorderEnabled": true,
+          "title": "",
+          "activeItemIndex": 0,
+          "content": [
+            {
+              "type": "component",
+              "componentName": "codeEditor",
+              "componentState": {
+                "id": 1,
+                "source": "// Type your code here, or load an example.\nint square(int num) {\n    return num * num;\n}",
+                "lang": "c++",
+                "selection": {
+                  "startLineNumber": 2,
+                  "startColumn": 12,
+                  "endLineNumber": 2,
+                  "endColumn": 19,
+                  "selectionStartLineNumber": 2,
+                  "selectionStartColumn": 19,
+                  "positionLineNumber": 2,
+                  "positionColumn": 12
+                },
+                "fontScale": 14,
+                "fontUsePx": true
+              },
+              "isClosable": true,
+              "reorderEnabled": true,
+              "title": "C++ source #1"
+            }
+          ]
+        },
+        {
+          "type": "row",
+          "isClosable": true,
+          "reorderEnabled": true,
+          "title": "",
+          "height": 50,
+          "content": [
+            {
+              "type": "stack",
+              "header": {},
+              "isClosable": true,
+              "reorderEnabled": true,
+              "title": "",
+              "activeItemIndex": 0,
+              "height": 50,
+              "width": 50,
+              "content": [
+                {
+                  "type": "component",
+                  "componentName": "compiler",
+                  "componentState": {
+                    "id": 1,
+                    "compiler": "g111",
+                    "source": 1,
+                    "options": "",
+                    "filters": {
+                      "binary": false,
+                      "execute": false,
+                      "intel": true,
+                      "demangle": true,
+                      "labels": true,
+                      "libraryCode": true,
+                      "directives": true,
+                      "commentOnly": true,
+                      "trim": false
+                    },
+                    "libs": [],
+                    "lang": "c++",
+                    "selection": {
+                      "startLineNumber": 4,
+                      "startColumn": 17,
+                      "endLineNumber": 4,
+                      "endColumn": 39,
+                      "selectionStartLineNumber": 4,
+                      "selectionStartColumn": 17,
+                      "positionLineNumber": 4,
+                      "positionColumn": 39
+                    },
+                    "fontScale": 14,
+                    "fontUsePx": true
+                  },
+                  "isClosable": true,
+                  "reorderEnabled": true,
+                  "title": "x86-64 gcc 11.1 (Editor #1, Compiler #1) C++"
+                }
+              ]
+            },
+            {
+              "type": "stack",
+              "header": {},
+              "isClosable": true,
+              "reorderEnabled": true,
+              "title": "",
+              "activeItemIndex": 0,
+              "width": 50,
+              "content": [
+                {
+                  "type": "component",
+                  "componentName": "executor",
+                  "componentState": {
+                    "id": 1,
+                    "compiler": "g111",
+                    "source": 1,
+                    "options": "",
+                    "execArgs": "",
+                    "execStdin": "",
+                    "libs": [],
+                    "lang": "c++",
+                    "compilationPanelShown": true,
+                    "compilerOutShown": true,
+                    "argsPanelShown": false,
+                    "stdinPanelShown": false,
+                    "wrap": true,
+                    "fontScale": 14,
+                    "fontUsePx": true
+                  },
+                  "isClosable": true,
+                  "reorderEnabled": true,
+                  "title": "x86-64 gcc 11.1 Executor (Editor #1) C++"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "isClosable": true,
+  "reorderEnabled": true,
+  "title": "",
+  "openPopouts": [],
+  "maximisedItemId": null
 }

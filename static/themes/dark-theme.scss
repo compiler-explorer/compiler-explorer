@@ -136,14 +136,14 @@ a.navbar-brand img.logo.normal {
     color-stop(1.00, violet));
 }
 
-.ts-control.single .ts-input {
+.ts-wrapper.single .ts-control {
     border: none;
     color: #f2f2f2 !important;
     background: #444 !important;
     text-shadow: none !important;
 }
 
-.ts-control.single .ts-input:after {
+.ts-wrapper.single .ts-control:after {
     border-color: #728690 transparent transparent transparent;
 }
 
@@ -157,10 +157,10 @@ a.navbar-brand img.logo.normal {
 .ts-dropdown {
     color: #f2f2f2 !important;
     background-color: #303030 !important;
-	margin: 0 !important;
+    margin: 0 !important;
 }
 
-.ts-control.single .ts-input.disabled {
+.ts-wrapper.single .ts-control.disabled {
     color: #f2f2f2 !important;
     background-color: #383838 !important;
 }

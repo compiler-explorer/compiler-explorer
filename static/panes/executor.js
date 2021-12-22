@@ -30,13 +30,13 @@ var Toggles = require('../toggles').Toggles;
 var FontScale = require('../fontscale').FontScale;
 var options = require('../options').options;
 var Alert = require('../alert').Alert;
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../libs-widget').LibsWidget;
 var AnsiToHtml = require('../ansi-to-html').Filter;
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings');
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -681,11 +681,14 @@ Executor.prototype.onLibsChanged = function () {
 };
 
 Executor.prototype.initLibraries = function (state) {
-    var libUtils = new LibUtils();
-
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler,
-        this.libsButton, state, _.bind(this.onLibsChanged, this),
-        libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr : [], this.currentLangId)
+    );
 };
 
 Executor.prototype.onFontScale = function () {
@@ -1038,7 +1041,16 @@ Executor.prototype.handleCompilationStatus = function (status) {
 };
 
 Executor.prototype.updateLibraries = function () {
-    if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
+    if (this.libsWidget) {
+        var filteredLibraries = {};
+        if (this.compiler) {
+            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+        }
+
+        this.libsWidget.setNewLangId(this.currentLangId,
+            this.compiler ? this.compiler.id : false,
+            filteredLibraries);
+    }
 };
 
 Executor.prototype.onLanguageChange = function (editorId, newLangId) {
