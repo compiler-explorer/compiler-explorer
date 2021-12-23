@@ -24,7 +24,7 @@
 
 import _ from 'underscore';
 
-import { AssemblyDocumentationResponse, AssemblyDocumentationRequest } from './assemblydocumentation.interfaces';
+import { AssemblyDocumentationResponse, AssemblyDocumentationRequest } from '../../types/features/assembly-documentation.interfaces';
 import { FormattingRequest, FormattingResponse } from './formatting.interfaces';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
