@@ -13,3 +13,4 @@ views/
 app.js
 package-lock.json
 package.json
+tsconfig.json
