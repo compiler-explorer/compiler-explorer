@@ -12,7 +12,7 @@ import urllib.request
 FILE = ("https://ww1.microchip.com/downloads/en/DeviceDoc/"
         "AVR-InstructionSet-Manual-DS40002198.pdf")
 
-section_regex = re.compile(r"^(6\.\d{1,3}?)\s+?(?P<mnemonic>\w+?)\s+?\u2013\s+?(?P<name>.+?)\s*?$\s+?\1\.1\s+?Description\s+(?P<description>(?s:.+?))\s+?Operation:", re.MULTILINE)
+section_regex = re.compile(r"^(6\.\d{1,3}?)\s+?(?P<mnemonic>\w+?)\s+?(?:\((?P<mnemonic_2>\w+?)\)\s+?)?[-\u2013]\s+?(?P<name>.+?)\s*?$\s+?\1\.1\s+?Description\s+(?P<description>(?s:.+?))\s+?Operation:", re.MULTILINE)
 header_footer_regex = re.compile(r"\s+?\w+?-page \d{1,3}?\s+?Manual\s+?\u00a9 2021 Microchip Technology Inc.\s+?AVR\u00ae Instruction Set Manual\s+?Instruction Description\s*", re.MULTILINE)
 page_num_regex = re.compile(r"\b\w+?-page (\d{1,3})")
 
@@ -23,6 +23,7 @@ class Instruction:
         self.name = mnemonic
         self.description = ""
         self.page = 2
+        self.mnemonic_2 = ""
 
 
 def main():
@@ -57,15 +58,20 @@ def parse_docs(docs):
     instructions = {}
     log_message("searching for pattern matches...")
     for match in section_regex.finditer(docs):
-        instr = Instruction(match.group("mnemonic"))
-        instr.name = match.group("name")
-        instr.description = process_description(match.group("description"))
-        instr.page = page_num_regex.search(docs, match.start()).group(1)
-        #print(40 * "-")
-        #print(f"Mnemonic: {instr.mnemonic}\nName: {instr.name}")
-        #print(f"Description: {instr.description}")
-        #print(instr.description)
-        instructions[instr.mnemonic] = instr
+        if match.group("mnemonic") not in instructions:
+            instr = Instruction(match.group("mnemonic"))
+            instr.name = match.group("name")
+            instr.description = process_description(match.group("description"))
+            instr.page = page_num_regex.search(docs, match.start()).group(1)
+            #print(40 * "-")
+            #print(f"Mnemonic: {instr.mnemonic}\nName: {instr.name}")
+            #print(f"Description: {instr.description}")
+            #print(instr.description)
+            instructions[instr.mnemonic] = instr
+        else:
+            instr = instructions[match.group("mnemonic")]
+        if match.group("mnemonic_2"):
+            instr.mnemonic_2 = match.group("mnemonic_2")
     return instructions
 
 
@@ -88,6 +94,8 @@ def write_script(filename, instructions):
         script.write("    switch (opcode.toUpperCase()) {\n")
         for inst in instructions.values():
             script.write(f"        case \"{inst.mnemonic}\":\n")
+            if inst.mnemonic_2:
+                script.write(f"        case \"{inst.mnemonic_2}\":\n")
             script.write("            return {\n")
             html = f"{16 * ' '}\"html\": \"<p>"
             html += inst.description.replace("\n\n", "</p><p>")
