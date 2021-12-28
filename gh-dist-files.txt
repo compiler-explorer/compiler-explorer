@@ -10,6 +10,7 @@ node_modules/
 static/policies/
 static/favicon.ico
 views/
+types/
 app.js
 package-lock.json
 package.json
