@@ -632,6 +632,7 @@ async function main() {
         options.storageSolution = storageSolution;
         options.require = pugRequireHandler;
         options.sponsors = sponsorConfig;
+        options.testingmode = true; // todo: make this a command line variable
         return options;
     }
 
