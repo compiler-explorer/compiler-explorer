@@ -22,24 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/**
- * @typedef {object} AssemblyInstructionInfo
- * @property {string} url - URL to more in-depth documentation
- * @property {string} html - Raw HTML to embed into the popup
- * @property {string} tooltip - Text snippet to show in the tooltip
- */
+import express from 'express';
+
+import { AssemblyDocumentationResponse } from '../../types/features/assembly-documentation.interfaces';
 
 export class BaseAssemblyDocumentationHandler {
     /**
      * Gather the assembly instruction information by the instruction name.
      *
      * Implementors should return null if the instruction is not supported.
-     *
-     * @param {string} instruction
-     * @returns {AssemblyInstructionInfo | null}
      */
     // eslint-disable-next-line no-unused-vars
-    getInstructionInformation(instruction) {
+    getInstructionInformation(instruction: string): AssemblyDocumentationResponse | null {
         return null;
     }
 
@@ -47,11 +41,8 @@ export class BaseAssemblyDocumentationHandler {
      * Handle a request for assembly instruction documentation.
      *
      * Implementors should not have to override this.
-     *
-     * @param {e.Request} request
-     * @param {e.Response} response
      */
-    handle(request, response) {
+    handle(request: express.Request, response: express.Response) {
         // If the request had no opcode parameter, we should fail. This assumes
         // no assembly language has a __unknown_opcode instruction.
         const instruction = (request.params.opcode || '__UNKNOWN_OPCODE').toUpperCase();
