@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["lib/**/*"],
+  "exclude": ["static/**/*"],
+  "compilerOptions": {
+    /* Module resolution */
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    /* Code generation */
+    "outDir": "./out/app",
+    "typeRoots": ["./typings", "./node_modules/@types"]
+  }
+}

@@ -130,11 +130,13 @@ function Editor(hub, state, container) {
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
+        placeholder: '🔍 Select a language...',
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-        plugins: ['input_autogrow'],
+        plugins: ['dropdown_input'],
         onChange: _.bind(this.onLanguageChange, this),
+        closeAfterSelect: true,
     });
 
 
@@ -788,7 +790,7 @@ Editor.prototype.initEditorActions = function () {
         this.editor.getAction('editor.action.formatDocument').run();
     }, this));
 
-    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_D, _.bind(function () {
+    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, _.bind(function () {
         this.editor.getAction('editor.action.duplicateSelection').run();
     }, this));
 };
@@ -1253,7 +1255,7 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
     if (lineNum <= model.getLineCount()) {
         var line = model.getLineContent(lineNum);
         if (0 < column && column < line.length) {
-            var tokens = monaco.editor.tokenize(line, model.getModeId());
+            var tokens = monaco.editor.tokenize(line, model.getLanguageId());
             if (tokens.length > 0) {
                 var lastOffset = 0;
                 var lastWasString = false;

@@ -30,10 +30,10 @@ var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
 var ga = require('../analytics').ga;
 var Components = require('../components');
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../libs-widget').LibsWidget;
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -58,9 +58,9 @@ function Conformance(hub, container, state) {
     this.stateByLang = {};
 
     this.initButtons();
-    this.initLibraries(state);
     this.initCallbacks();
     this.initFromState(state);
+    this.initLibraries(state);
     this.handleToolbarUI();
     ga.proxy('send', {
         hitType: 'event',
@@ -96,7 +96,15 @@ Conformance.prototype.onLibsChanged = function () {
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, null, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    var compilerIds = this.getCurrentCompilersIds();
+    this.libsWidget = new LibsWidget(
+        this.langId,
+        compilerIds.join('|'),
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        this.getOverlappingLibraries(compilerIds)
+    );
     // No callback is done on initialization, so make sure we store the current libs
     this.currentLibs = this.libsWidget.get();
 };
@@ -400,15 +408,13 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
         return this.compilerService.findCompiler(this.langId, compilerId);
     }, this));
 
-    var libUtils = new LibUtils();
-
     var langId = this.langId;
 
     var libraries = {};
     var first = true;
     _.forEach(compilers, function (compiler) {
         if (compiler) {
-            var filteredLibraries = libUtils.getSupportedLibraries(compiler.libsArr, langId);
+            var filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId);
 
             if (first) {
                 libraries = _.extend({}, filteredLibraries);
@@ -441,8 +447,8 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
     return libraries;
 };
 
-Conformance.prototype.updateLibraries = function () {
-    var compilerIds = _.uniq(
+Conformance.prototype.getCurrentCompilersIds = function () {
+    return _.uniq(
         _.filter(
             _.map(this.compilerPickers, function (compilerEntry) {
                 return getCompilerId(compilerEntry);
@@ -451,10 +457,15 @@ Conformance.prototype.updateLibraries = function () {
                 return compilerId !== '';
             })
     );
+};
 
-    var libraries = this.getOverlappingLibraries(compilerIds);
-
-    this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), libraries);
+Conformance.prototype.updateLibraries = function () {
+    var compilerIds = this.getCurrentCompilersIds();
+    this.libsWidget.setNewLangId(
+        this.langId,
+        compilerIds.join('|'),
+        this.getOverlappingLibraries(compilerIds)
+    );
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {

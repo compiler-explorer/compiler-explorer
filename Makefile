@@ -43,7 +43,7 @@ $(NODE_MODULES): package.json | node-installed
 WEBPACK:=./node_modules/webpack-cli/bin/cli.js
 $(WEBPACK): $(NODE_MODULES)
 
-lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
+lint: $(NODE_MODULES) ts-compile ## Checks if the source currently matches code conventions
 	$(NPM) run lint
 
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
@@ -70,22 +70,27 @@ clean:  ## Cleans up everything
 # Don't use $(NODE) ./node_modules/<path to node_module> as sometimes that's not actually a node script. Instead, rely
 # on PATH ensuring "node" is found in our distribution first.
 run: export NODE_ENV=production
-run: export WEBPACK_ARGS="-p"
+run: export WEBPACK_ARGS="--node-env=production"
 run: prereqs webpack  ## Runs the site normally
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js $(EXTRA_ARGS)
 
 dev: export NODE_ENV=development
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js $(EXTRA_ARGS)
 
 debug: export NODE_ENV=development
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --inspect 9229 --exec $(NODE) $(NODE_ARGS) -- -r esm ./app.js --debug $(EXTRA_ARGS)
+	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --inspect 9229 --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js --debug $(EXTRA_ARGS)
+
+.PHONY: ts-compile
+# one day we'll put `--strict` in this
+ts-compile: prereqs
+	./node_modules/.bin/tsc
 
 HASH := $(shell git rev-parse HEAD)
 dist: export NODE_ENV=production
-dist: export WEBPACK_ARGS=-p
-dist: prereqs webpack  ## Creates a distribution
+dist: export WEBPACK_ARGS="--node-env=production"
+dist: prereqs webpack ts-compile  ## Creates a distribution
 	echo $(HASH) > out/dist/git_hash
 
 RELEASE_FILE_NAME=$(GITHUB_RUN_NUMBER)

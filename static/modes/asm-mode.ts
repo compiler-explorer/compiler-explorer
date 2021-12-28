@@ -85,6 +85,7 @@ function definition() {
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 
                 // characters
                 [/'[^\\']'/, 'string'],
@@ -110,6 +111,13 @@ function definition() {
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+
+            sstring: [
+                [/[^\\']+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/'/, {token: 'string.singlequote', bracket: '@close', next: '@pop'}],
             ],
 
             whitespace: [

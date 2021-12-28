@@ -310,6 +310,28 @@ module.exports = {
             },
         };
     },
+
+    getGnatDebugTreeView: function () {
+        return {
+            type: 'component',
+            componentName: 'gnatdebugtree',
+            componentState: {},
+        };
+    },
+    getGnatDebugTreeViewWith: function (id, source, gnatDebugTreeOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'gnatdebugtree',
+            componentState: {
+                id: id,
+                source: source,
+                gnatDebugTreeOutput: gnatDebugTreeOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+
     getGnatDebugView: function () {
         return {
             type: 'component',
@@ -345,6 +367,26 @@ module.exports = {
                 id: id,
                 source: source,
                 rustMacroExpOutput: rustMacroExpOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+    getRustHirView: function () {
+        return {
+            type: 'component',
+            componentName: 'rusthir',
+            componentState: {},
+        };
+    },
+    getRustHirViewWith: function (id, source, rustHirOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'rusthir',
+            componentState: {
+                id: id,
+                source: source,
+                rustHirOutput: rustHirOutput,
                 compilerName: compilerName,
                 editorid: editorid,
             },

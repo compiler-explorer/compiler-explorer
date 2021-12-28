@@ -1,7 +1,3 @@
-#!/usr/bin/env node
-// shebang interferes with license header plugin
-/* eslint-disable header/header */
-
 // Copyright (c) 2012, Compiler Explorer Authors
 // All rights reserved.
 //
@@ -286,16 +282,15 @@ let pugRequireHandler = () => {
 async function setupWebPackDevMiddleware(router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unpublished-import,import/extensions */
-    const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
-    const webpackConfig = (await import('./webpack.config.esm.js')).default;
-    const webpack = (await import('webpack')).default;
+    /* eslint-disable node/no-unpublished-import,import/extensions, */
+    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
+    const {default: webpackConfig} = await import('./webpack.config.esm.js');
+    const {default: webpack} = await import('webpack');
     /* eslint-enable */
 
     const webpackCompiler = webpack(webpackConfig);
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
-        logger: logger,
         stats: 'errors-only',
     }));
 
@@ -557,7 +552,7 @@ async function main() {
         metricsServer.get('/metrics', async (req, res) => {
             try {
                 res.set('Content-Type', PromClient.register.contentType);
-                res.end(PromClient.register.metrics());
+                res.end(await PromClient.register.metrics());
             } catch (ex) {
                 res.status(500).end(ex);
             }

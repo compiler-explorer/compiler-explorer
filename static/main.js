@@ -143,7 +143,7 @@ function setupButtons(options) {
         $('#privacy').on('click', function (event, data) {
             var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                require('./policies/privacy.html')
+                require('./policies/privacy.html').default
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -162,7 +162,7 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+            var modal = alertSystem.ask(getCookieTitle(), require('./policies/cookies.html').default, {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -458,8 +458,7 @@ function start() {
     // share the same cookie domain for some settings.
     var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {
-        cookieDomain = cookieDomain[0];
-        jsCookie.defaults.domain = cookieDomain;
+        jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
     var defaultConfig = {

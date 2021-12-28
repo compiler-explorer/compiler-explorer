@@ -244,7 +244,7 @@ describe('Compiler tests', () => {
                     code: 0,
                     input: {
                         backendOptions: {},
-                        filters: [],
+                        filters: {},
                         options: [],
                         source: 'I am a program',
                     },

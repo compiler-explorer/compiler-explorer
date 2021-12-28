@@ -79,7 +79,7 @@ export class GnatDebug extends Pane<monaco.editor.IStandaloneCodeEditor, GnatDeb
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasGnatDebugOutput) {
             this.showGnatDebugResults(result.gnatDebugOutput);
-        } else if (compiler.supportsGnatDebugView) {
+        } else if (compiler.supportsGnatDebugViews) {
             this.showGnatDebugResults([{text: '<No output>'}]);
         }
     }
@@ -89,7 +89,7 @@ export class GnatDebug extends Pane<monaco.editor.IStandaloneCodeEditor, GnatDeb
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
             this.setTitle();
-            if (compiler && !compiler.supportsGnatDebugView) {
+            if (compiler && !compiler.supportsGnatDebugViews) {
                 this.showGnatDebugResults([{text: '<GNAT Debug output is not supported for this compiler>'}]);
             }
         }
