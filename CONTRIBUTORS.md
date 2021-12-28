@@ -106,3 +106,4 @@ From oldest to newest contributor, we would like to thank:
 - [Kevin Adler](https://github.com/kadler)
 - [Björn Gustavsson](https://github.com/bjorng)
 - [Gregory Anders](https://github.com/gpanders)
+- [Marcus Geelnard](https://github.com/mbitsnbites)
