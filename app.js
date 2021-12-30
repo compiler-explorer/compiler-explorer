@@ -92,6 +92,7 @@ const opts = nopt({
     loki: [String],
     discoveryonly: [String],
     prediscovered: [String],
+    frontendTesting: [Boolean],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -632,7 +633,7 @@ async function main() {
         options.storageSolution = storageSolution;
         options.require = pugRequireHandler;
         options.sponsors = sponsorConfig;
-        options.testingmode = true; // todo: make this a command line variable
+        options.testingmode = opts.frontendTesting;
         return options;
     }
 
