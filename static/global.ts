@@ -31,6 +31,8 @@ declare global {
         httpRoot: string | null;
         staticRoot: string | null;
         compilerExplorerOptions: CompilerExplorerOptions;
+        ga: any;
+        GoogleAnalyticsObject: any;
     }
 }
 
