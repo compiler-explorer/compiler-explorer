@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {options} from './options';
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 if (options.statusTrackingEnabled && options.sentryDsn) {
     Sentry.init({
@@ -36,7 +36,8 @@ if (options.statusTrackingEnabled && options.sentryDsn) {
 class GAProxy {
     private hasBeenEnabled: boolean = false;
     private isEnabled: boolean = false;
-    private _proxy: (...args) => void = () => {};
+    private _proxy: (...args) => void = () => {
+    };
 
     initialise() {
         if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
@@ -66,7 +67,8 @@ class GAProxy {
             this.hasBeenEnabled = true;
         } else {
             this.isEnabled = false;
-            this._proxy = () => {};
+            this._proxy = () => {
+            };
         }
     }
 
@@ -75,7 +77,8 @@ class GAProxy {
             if (!this.isEnabled) this.initialise();
         } else {
             this.isEnabled = false;
-            this._proxy = () => {};
+            this._proxy = () => {
+            };
         }
     }
 
@@ -86,5 +89,5 @@ class GAProxy {
 
 const ga = new GAProxy();
 export {
-    ga
+    ga,
 };
