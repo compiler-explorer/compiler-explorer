@@ -47,7 +47,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     eventHub: any /* typeof hub.createEventHub() */;
     selection: monaco.Selection;
     editor: E;
-    fontScale: typeof FontScale;
+    fontScale: FontScale;
     isAwaitingInitialResults: boolean = false;
     settings: SiteSettings | {} = {};
 
