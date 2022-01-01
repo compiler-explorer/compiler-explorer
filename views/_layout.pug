@@ -36,6 +36,9 @@ html(lang="en")
       | })();
 
   body(class=extraBodyClass)
+    if testingmode
+      block testing
+
     block content
         #root
           noscript
