@@ -47,4 +47,8 @@ export type Libs = Record<string, LanguageLibs>;
 export interface Options {
     libs: Libs;
     defaultLibs: Record<string, string | null>;
+    defaultFontScale: number;
+    sentryDsn?: string;
+    release?: string;
+    sentryEnvironment?: string
 }

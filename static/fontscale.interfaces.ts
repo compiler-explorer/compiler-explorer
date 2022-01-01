@@ -22,22 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ICEFrontendTesting, ICEFrontendTestResult } from './frontend-testing.interfaces';
-import { Options } from './options.interfaces';
-
-type CompilerExplorerOptions = Record<string, unknown> & Options
-
-declare global {
-    export interface Window {
-        httpRoot: string | null;
-        staticRoot: string | null;
-        compilerExplorerOptions: CompilerExplorerOptions;
-        frontendTesting: ICEFrontendTesting;
-        ga: any;
-        GoogleAnalyticsObject: any;
-    }
+export interface FontScaleState {
+    fontScale: number,
+    fontUsePx: boolean
 }
-
-// Necessary because we're not exporting any actual symbols from this file
-// See https://www.typescriptlang.org/docs/handbook/declaration-files/templates/global-modifying-module-d-ts.html
-export {};
