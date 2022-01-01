@@ -1,9 +1,7 @@
-import { ICETestable } from './frontend-testing.interfaces';
+import { ICEFrontendTesting, ICETestable } from './frontend-testing.interfaces';
 
 type describedTestfunc = () => Promise<void>;
 type itTestfunc = () => Promise<void>;
-
-const frontendTestingResults: any = {};
 
 export class CEDescribedTest implements ICETestable {
     public Name: string;
@@ -67,7 +65,7 @@ export class CEExpectedFrom {
     }
 }
 
-class CEFrontendTesting {
+class CEFrontendTesting implements ICEFrontendTesting {
     private testSuites: Array<ICETestable>;
 
     constructor() {
@@ -80,26 +78,12 @@ class CEFrontendTesting {
 
     public async run() {
         for (let testSuite of this.testSuites) {
-            testSuite.run();
+            await testSuite.run();
         }
     }
 }
 
-export const frontendTesting = new CEFrontendTesting();
-
-export function describe(name: string, func: describedTestfunc) {
-    frontendTesting.add(new CEDescribedTest(name, func));
-}
-
-export async function it(desc: string, func: itTestfunc) {
-    try {
-        await func();
-
-        console.log('- ' + desc + ': pass');
-    } catch (e) {
-        console.log('- ' + desc + ': ' + e);
-    }
-}
+window.frontendTesting = new CEFrontendTesting();
 
 export function expect(something: any): CEExpectedFrom {
     return new CEExpectedFrom(something);

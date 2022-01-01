@@ -1,16 +1,14 @@
-import { frontendTesting, describe, it, expect } from "../frontend-testing";
+import { expect } from "../frontend-testing";
 import { ICETestable } from "../frontend-testing.interfaces";
 
 class HelloWorldTests implements ICETestable {
     public run() {
-        describe('Hello-world testing', async () => {
-            it('should be polite', async () => {
-                const hello = 'Hello, World!';
+        const hello = 'Hello, World!';
+        expect(hello).includes('Hello');
 
-                expect(hello).includes('Hello');
-            });
-        });
+        const person = false;
+        expect(person).equal(true);
     }
 }
 
-frontendTesting.add(new HelloWorldTests());
+window.frontendTesting.add(new HelloWorldTests());

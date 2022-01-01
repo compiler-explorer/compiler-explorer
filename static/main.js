@@ -623,8 +623,6 @@ function start() {
 
     History.trackHistory(layout);
     new Sharing(layout);
-
-    frontendTesting.run();
 }
 
 $(start);
