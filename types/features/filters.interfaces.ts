@@ -24,6 +24,7 @@
 
 export type CompilerFilters = {
     binary: boolean;
+    binaryobject: boolean;
     execute: boolean;
     demangle: boolean;
     intel: boolean;

@@ -1460,7 +1460,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateDecorations();
 
         const codeLenses: monaco.languages.CodeLens[] = [];
-        if (this.getEffectiveFilters().binary || result.forceBinaryView) {
+        if (this.getEffectiveFilters().binary
+            || this.getEffectiveFilters().binaryobject
+            || this.getEffectiveFilters().binaryobject
+            || result.forceBinaryView) {
             this.setBinaryMargin();
             this.assembly.forEach((obj, line) => {
                 if (obj.opcodes) {
@@ -2221,6 +2224,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     initFilterButtons(): void {
+        this.filterBinaryObjectButton = this.domRoot.find("[data-bind='binaryobject']");
+        this.filterBinaryObjectTitle = this.filterBinaryObjectButton.prop('title');
+
         this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
         this.filterBinaryTitle = this.filterBinaryButton.prop('title');
 
@@ -2497,19 +2503,26 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     (button.prop('disabled') ? ' [LOCKED]' : '')
             );
         };
-        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary;
+        const isIntelFilterDisabled = !this.compiler.supportsIntel && (!filters.binary && !filters.binaryobject);
         this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
-        // Disable binary support on compilers that don't work with it.
-        this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary);
+
+        // Disable binaryobject support on compilers that don't work with it or if binary is selected
+        this.filterBinaryObjectButton.prop('disabled', !this.compiler.supportsBinary || filters.binary);
+        formatFilterTitle(this.filterBinaryObjectButton, this.filterBinaryObjectTitle);
+
+        // Disable binary support on compilers that don't work with it or if binaryobject is selected
+        this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryobject);
         formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
-        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
+
+        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute || filters.binaryobject);
         formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
         // Disable demangle for compilers where we can't access it
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
         formatFilterTitle(this.filterDemangleButton, this.filterDemangleTitle);
         // Disable any of the options which don't make sense in binary mode.
-        const noBinaryFiltersDisabled = filters.binary && !(this.compiler as any).supportsFiltersInBinary;
+        const noBinaryFiltersDisabled = (filters.binaryobject || filters.binary)
+            && !(this.compiler as any).supportsFiltersInBinary;
         this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
 
         this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);

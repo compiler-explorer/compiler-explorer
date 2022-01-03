@@ -115,6 +115,8 @@ export class AsmParser extends AsmRegex {
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
+        this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
         this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump
@@ -323,7 +325,7 @@ export class AsmParser extends AsmRegex {
     }
 
     processAsm(asmResult, filters: ParseFilters): ParsedAsmResult {
-        if (filters.binary) return this.processBinaryAsm(asmResult, filters);
+        if (filters.binary || filters.binaryobject) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
 
@@ -703,6 +705,20 @@ export class AsmParser extends AsmRegex {
                     text: disassembly,
                     source: source,
                     labels: labelsInLine,
+                });
+            }
+
+            match = line.match(this.relocationRe);
+            if (match) {
+                const address = parseInt(match.groups.address, 16);
+                const relocname = match.groups.relocname;
+                const relocdata = match.groups.relocdata;
+                const match_value = relocdata.match(this.relocDataSymNameRe);
+                asm.push({
+                    text: `      ${relocname} ${relocdata}`,
+                    address: address,
+                    labels: labelsInLine,
+                    source: null,
                 });
             }
         }

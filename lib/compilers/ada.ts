@@ -95,7 +95,7 @@ export class AdaCompiler extends BaseCompiler {
             inputFilename,
         );
 
-        if (!filters.binary) {
+        if (!filters.binary && !filters.binaryobject) {
             gnatmake_opts.push(
                 '-S', // Generate ASM
                 '-c', // Compile only
@@ -109,6 +109,22 @@ export class AdaCompiler extends BaseCompiler {
                 for (const opt of this.compiler.intelAsm.split(' ')) {
                     gnatmake_opts.push(opt);
                 }
+            }
+        } else if (filters.binaryobject) {
+            options.push(
+                'compile',
+                '-g', // enable debugging
+                '-fdiagnostics-color=always',
+                '-fverbose-asm', // Generate verbose ASM showing variables
+                '-c', // Compile only
+                '-eS', // commands are not errors
+                '-cargs', // Compiler Switches for gcc.
+                '-o',
+                outputFilename,
+            );
+
+            if (this.compiler.intelAsm && filters.intel) {
+                options = options.concat(this.compiler.intelAsm.split(' '));
             }
         } else {
             gnatmake_opts.push('-o', outputFilename);

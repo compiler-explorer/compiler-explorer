@@ -392,7 +392,7 @@ export class BaseCompiler {
         return output;
     }
 
-    async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+    async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters, staticReloc: any, dynamicReloc: any) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         if (!(await utils.fileExists(outputFilename))) {
@@ -401,7 +401,7 @@ export class BaseCompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm, staticReloc, dynamicReloc);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
@@ -582,10 +582,12 @@ export class BaseCompiler {
 
     protected optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryobject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary) options = options.concat('-S');
+        if (!filters.binary && !filters.binaryobject) options = options.concat('-S');
+        else if (filters.binaryobject) options = options.concat('-c');
+
         return options;
     }
 
@@ -864,7 +866,7 @@ export class BaseCompiler {
         let libPaths: string[] = [];
         let staticLibLinks: string[] = [];
 
-        if (filters.binary) {
+        if (filters.binary || filters.binaryobject) {
             libLinks = this.getSharedLibraryLinks(libraries) || [];
             libPaths = this.getSharedLibraryPathsAsArguments(libraries);
             staticLibLinks = this.getStaticLibraryLinks(libraries) || [];
@@ -1653,7 +1655,7 @@ export class BaseCompiler {
     }
 
     async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
-        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, filters.binary);
+        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryobject);
 
         const inputFilenameSafe = this.filename(inputFilename);
 
@@ -2449,7 +2451,7 @@ but nothing was dumped. Possible causes are:
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
-            filters.binary && this.supportsObjdump()
+              (filters.binary || filters.binaryobject) && this.supportsObjdump()
                 ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters)
                 : (async () => {
                       if (result.asmSize === undefined) {
