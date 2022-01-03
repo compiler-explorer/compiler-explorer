@@ -84,21 +84,22 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 
 ### Configuration keys
 
-| Key Name         | Type       | Description                                                                                                      |
-| ---------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| name             | String     | Human readable name of the compiler                                                                              |
-| exe              | Path       | Path to the executable                                                                                           |
-| alias            | Identifier | Another identifier for this compiler (mostly deprecated, used for backwards compatibility with very old CE URLs) |
-| options          | String     | Additional compiler options passed to the compiler when running it                                               |
-| intelAsm         | String     | Flags used to select intel assembly format (if not detected automatically)                                       |
-| needsMulti       | Boolean    | Whether the compiler needs multi arch support (defaults to yes if the host has multiarch enabled)                |
-| supportsBinary   | Boolean    | Whether this compiler supports compiling to binary                                                               |
-| supportsExecute  | Boolean    | Whether binary output from this compiler can be executed                                                         |
-| versionFlag      | String     | The flag to pass to the compiler to make it emit its version                                                     |
-| versionRe        | RegExp     | A regular expression used to capture the version from the version output                                         |
-| compilerType     | String     | The name of the class handling this compiler                                                                     |
-| interpreted      | Boolean    | Whether this is an interpreted language, and so the "compiler" is really an interpreter                          |
-| executionWrapper | Path       | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)      |
+| Key Name             | Type       | Description                                                                                                      |
+|----------------------|------------|------------------------------------------------------------------------------------------------------------------|
+| name                 | String     | Human readable name of the compiler                                                                              |
+| exe                  | Path       | Path to the executable                                                                                           |
+| alias                | Identifier | Another identifier for this compiler (mostly deprecated, used for backwards compatibility with very old CE URLs) |
+| options              | String     | Additional compiler options passed to the compiler when running it                                               |
+| intelAsm             | String     | Flags used to select intel assembly format (if not detected automatically)                                       |
+| needsMulti           | Boolean    | Whether the compiler needs multi arch support (defaults to yes if the host has multiarch enabled)                |
+| supportsBinary       | Boolean    | Whether this compiler supports linking to binary (e.g. compile, assemble and link to final executable program)   |
+| supportsBinaryObject | Boolean    | Whether this compiler supports compiling to binary object (e.g. compile and assemble to binary object)           |
+| supportsExecute      | Boolean    | Whether binary output from this compiler can be executed                                                         |
+| versionFlag          | String     | The flag to pass to the compiler to make it emit its version                                                     |
+| versionRe            | RegExp     | A regular expression used to capture the version from the version output                                         |
+| compilerType         | String     | The name of the class handling this compiler                                                                     |
+| interpreted          | Boolean    | Whether this is an interpreted language, and so the "compiler" is really an interpreter                          |
+| executionWrapper     | Path       | Path to script that can execute the compiler's output (e.g. could run under `qemu` or `mpi_run` or similar)      |
 
 The `compilerType` option is special: it refers to the Javascript class in `lib/compilers/*.js` which handles running
 and handling output for this compiler type.
