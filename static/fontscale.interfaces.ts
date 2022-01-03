@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,60 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
-export class FakeCompiler {
-    static get key() {
-        return 'fake-for-test';
-    }
-
-    constructor(info) {
-        this.compiler = Object.assign({
-            id: 'fake-for-test',
-            lang: 'fake-lang',
-            options: '',
-        }, info);
-        this.lang = {id: this.compiler.lang, name: `Language ${this.compiler.lang}`};
-        this.info = info;
-    }
-
-    getInfo() {
-        return null;
-    }
-
-    getDefaultFilters() {
-        return {};
-    }
-
-    getRemote() {
-        return null;
-    }
-
-    compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
-        const inputBody = {
-            input: {
-                source: source,
-                options: options,
-                backendOptions: backendOptions,
-                filters: filters,
-            },
-        };
-
-        if (files) inputBody.input.files = files;
-
-        return Promise.resolve(_.extend(this.info.fakeResult || {}, inputBody));
-    }
-
-    cmake(files, options) {
-        return Promise.resolve(_.extend(this.info.fakeResult || {}, {
-            input: {
-                files: files,
-                options: options,
-            },
-        }));
-    }
-
-    initalize() {
-        return null;
-    }
+export interface FontScaleState {
+    fontScale: number,
+    fontUsePx: boolean
 }

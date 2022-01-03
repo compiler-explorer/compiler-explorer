@@ -310,6 +310,28 @@ module.exports = {
             },
         };
     },
+
+    getGnatDebugTreeView: function () {
+        return {
+            type: 'component',
+            componentName: 'gnatdebugtree',
+            componentState: {},
+        };
+    },
+    getGnatDebugTreeViewWith: function (id, source, gnatDebugTreeOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'gnatdebugtree',
+            componentState: {
+                id: id,
+                source: source,
+                gnatDebugTreeOutput: gnatDebugTreeOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
+
     getGnatDebugView: function () {
         return {
             type: 'component',

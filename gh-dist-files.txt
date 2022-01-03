@@ -10,6 +10,11 @@ node_modules/
 static/policies/
 static/favicon.ico
 views/
+types/
 app.js
 package-lock.json
 package.json
+tsconfig.json
+tsconfig.backend.json
+tsconfig.base.json
+tsconfig.frontend.json

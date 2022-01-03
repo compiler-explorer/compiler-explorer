@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var options = require('options').options;
-var Sentry = require('@sentry/browser');
+import {options} from './options';
+import * as Sentry from '@sentry/browser';
 
 if (options.statusTrackingEnabled && options.sentryDsn) {
     Sentry.init({
@@ -34,22 +33,22 @@ if (options.statusTrackingEnabled && options.sentryDsn) {
     });
 }
 
-function GAProxy() {
-    this.hasBeenEnabled = false;
-    this.isEnabled = false;
+class GAProxy {
+    private hasBeenEnabled: boolean = false;
+    private isEnabled: boolean = false;
+    private _proxy: (...args) => void = () => {
+    };
 
-    this.proxy = function () {};
-
-    this.initialise = function () {
+    initialise() {
         if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
             // Check if this is a re-enable, as the script is already there in this case
             if (!this.hasBeenEnabled) {
-                (function (i, s, o, g, r, a, m) {
+                (function(i, s, o, g, r, a, m) {
                     i.GoogleAnalyticsObject = r;
-                    i[r] = i[r] || function () {
+                    i[r] = i[r] || function() {
                         (i[r].q = i[r].q || []).push(arguments);
                     };
-                    i[r].l = 1 * new Date();
+                    i[r].l = Date.now();
                     a = s.createElement(o);
                     m = s.getElementsByTagName(o)[0];
                     a.async = 1;
@@ -63,29 +62,32 @@ function GAProxy() {
                 });
                 window.ga('send', 'pageview');
             }
-            this.proxy = function () {
-                window.ga.apply(window.ga, arguments);
-            };
+            this._proxy = (...args) => window.ga.apply(window.ga, args);
             this.isEnabled = true;
             this.hasBeenEnabled = true;
         } else {
             this.isEnabled = false;
-            this.proxy = function () {};
+            this._proxy = () => {
+            };
         }
-    };
+    }
 
-    this.toggle = function (doEnable) {
+    toggle(doEnable) {
         if (doEnable) {
             if (!this.isEnabled) this.initialise();
         } else {
             this.isEnabled = false;
-            this.proxy = function () {};
+            this._proxy = () => {
+            };
         }
-    };
+    }
+
+    proxy(...args) {
+        this._proxy(args);
+    }
 }
 
-var ga = new GAProxy();
-
-module.exports = {
-    ga: ga,
+const ga = new GAProxy();
+export {
+    ga,
 };

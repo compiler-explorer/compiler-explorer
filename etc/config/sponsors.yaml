@@ -11,14 +11,6 @@ levels:
         priority: 100
         topIcon: true
         statsId: solid_sands
-      - name: Stop Bugs
-        description: Identify defects, vulnerabilities, unmaintainable code, and more with PC-lint Plus.
-        icon: https://static.ce-cdn.net/gimpel/pcl_logo2.png
-        img: https://static.ce-cdn.net/gimpel/logo_large_tint.png
-        url: https://gimpel.com/?promo=godbolt
-        priority: 200
-        topIcon: true
-        statsId: gimpel
       - name: Intel
         description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
         icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
@@ -350,3 +342,5 @@ levels:
       - Nico L'Insalata
       - James Wilcox
       - Jonas Greitemann
+      - Andrew Spencer
+      - Nathan Lawrence
