@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ICEFrontendTesting, ICEFrontendTestResult } from './frontend-testing.interfaces';
+import { ICEFrontendTesting } from './frontend-testing.interfaces';
 import { Options } from './options.interfaces';
 
 type CompilerExplorerOptions = Record<string, unknown> & Options

@@ -1,15 +1,10 @@
 
 export interface ICETestable {
-    run();
+    readonly description: string;
+    run(): Promise<void>;
 };
-
-export interface ICEFrontendTestResult {
-    desc: string;
-    success: Boolean;
-    error?: string;
-}
 
 export interface ICEFrontendTesting {
     add(test: ICETestable);
-    run();
+    run(testToRun: string): Promise<void>;
 }

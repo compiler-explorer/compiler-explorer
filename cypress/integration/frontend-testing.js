@@ -1,11 +1,15 @@
-describe('Frontendtestresults', () => {
-    it('Startup', () => {
-        cy.visit('/');
-        cy.get('title').should('have.html', 'Compiler Explorer');
+function runFrontendTest(name) {
+    it(name, () => {
         cy.window().then((win) => {
-            if (win.frontendTesting) {
-                return win.frontendTesting.run();
-            }
+            return win.frontendTesting.run(name);
         });
     });
+}
+
+describe('Frontendtestresults', () => {
+    before(() => {
+        cy.visit('/');
+    });
+
+    runFrontendTest('HelloWorld');
 });
