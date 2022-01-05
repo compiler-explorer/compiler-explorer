@@ -35,7 +35,7 @@ prereqs: node_modules
 
 NODE_MODULES=.npm-updated
 $(NODE_MODULES): package.json | node-installed
-	$(NPM) install $(NPM_FLAGS)
+	NODE_ENV=development $(NPM) install $(NPM_FLAGS)
 	@rm -rf node_modules/.cache/esm/*
 	@touch $@
 
