@@ -156,7 +156,6 @@
     "test": "mocha --recursive",
     "check": "npm run lint && npm run test",
     "dev": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js",
-    "frontend-test": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js --frontendTesting true",
     "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm -r ts-node/register app.js --debug",
     "debug": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js --debug",
     "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm -r ts-node/register app.js",
