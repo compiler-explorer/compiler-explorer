@@ -1,0 +1,4 @@
+{
+  "baseUrl": "http://127.0.0.1:10240/",
+  "downloadsFolder": "cypress/downloads"
+}
