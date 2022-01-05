@@ -1689,6 +1689,8 @@ Compiler.prototype.enableToolButtons = function () {
     }, this));
 };
 
+// Disable max line count only updateButtons.
+// eslint-disable-next-line max-statements
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
     var filters = this.getEffectiveFilters();
@@ -1716,7 +1718,8 @@ Compiler.prototype.updateButtons = function () {
     this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
     formatFilterTitle(this.filterDemangleButton, this.filterDemangleTitle);
     // Disable any of the options which don't make sense in binary mode.
-    var noBinaryFiltersDisabled = (!!filters.binaryobject || !!filters.binary) && !this.compiler.supportsFiltersInBinary;
+    var noBinaryFiltersDisabled = (!!filters.binaryobject || !!filters.binary)
+        && !this.compiler.supportsFiltersInBinary;
     this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
 
     this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);
