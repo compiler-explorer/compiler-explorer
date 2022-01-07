@@ -24,7 +24,7 @@
 
 import express, { Router } from 'express';
 
-import { setup } from '../../../lib/handlers/assembly-documentation/router';
+import { withAssemblyDocumentationProviders } from '../../../lib/handlers/assembly-documentation';
 import { chai } from '../../utils';
 
 describe('Assembly Documentation API', () => {
@@ -34,7 +34,7 @@ describe('Assembly Documentation API', () => {
         app = express();
         /** @type {e.Router} */
         const router = Router();
-        setup(router);
+        withAssemblyDocumentationProviders(router);
         app.use('/api', router);
     });
 
