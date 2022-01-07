@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,28 +22,30 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var $ = require('jquery'),
-    _ = require('underscore'),
-    ga = require('analytics').ga;
+import $ from 'jquery';
+import {ga} from './analytics';
 
-function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
+import {Motd} from './motd.interfaces';
+
+
+function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: boolean, onHide: () => void) {
     if (motd.motd) {
         motdNode.find('.content').html(motd.motd);
         motdNode.removeClass('d-none');
         motdNode.find('.close')
-            .on('click', function () {
+            .on('click', () => {
                 motdNode.addClass('d-none');
             })
             .prop('title', 'Hide message');
     } else if (adsEnabled) {
-        var applicableAds = _.filter(motd.ads, function (ad) {
+        const applicableAds = motd.ads?.filter((ad) => {
             return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
         });
-        var randomAd = applicableAds[_.random(applicableAds.length - 1)];
-        if (randomAd) {
+
+        if (applicableAds !== null && applicableAds.length > 0) {
+            const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];
             motdNode.find('.content').html(randomAd.html);
-            motdNode.find('.close').on('click', function () {
+            motdNode.find('.close').on('click', () => {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Ads',
@@ -53,7 +55,7 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
                 motdNode.addClass('d-none');
                 onHide();
             });
-            motdNode.find('a').on('click', function () {
+            motdNode.find('a').on('click', function() {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Ads',
@@ -66,20 +68,17 @@ function handleMotd(motd, motdNode, subLang, adsEnabled, onHide) {
     }
 }
 
-function initialise(url, motdNode, defaultLanguage, adsEnabled, onMotd, onHide) {
+export function initialise(url: string, motdNode: JQuery, defaultLanguage: string, adsEnabled: boolean, onMotd: (res?: Motd) => void, onHide: () => void) {
     if (!url) return;
     $.getJSON(url)
-        .then(function (res) {
+        .then((res: Motd) => {
+            console.log(res);
             onMotd(res);
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
-        .catch(function () {
+        .catch(() => {
             // do nothing! we've long tried to find out why this might fail, and it seems page load cancels or ad
             // blockers might reasonably cause a failure here, and it's no big deal.
             // Some history at https://github.com/compiler-explorer/compiler-explorer/issues/1057
         });
 }
-
-module.exports = {
-    initialise: initialise,
-};
