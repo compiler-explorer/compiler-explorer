@@ -22,21 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { getAsmOpcode } from '../asm-docs-amd64';
-import { BaseAssemblyDocumentationHandler } from '../base-assembly-documentation-handler';
+import { makeKeyedTypeGetter } from '../keyed-type';
 
-const ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
+import * as all from './_all';
 
-export class Amd64DocumentationHandler extends BaseAssemblyDocumentationHandler {
-    getInstructionInformation(instruction) {
-        // Try both default and with AT&T suffix removed
-        let info = getAsmOpcode(instruction);
-        if (!info) {
-            const alternativeInstruction = ATT_SUFFIX_REMOVER.exec(instruction);
-            if (alternativeInstruction) {
-                info = getAsmOpcode(alternativeInstruction[1]);
-            }
-        }
-        return info || null;
-    }
-}
+export { BaseAssemblyDocumentationProvider } from '../base-assembly-documentation-provider';
+export * from './_all';
+
+export const getDocumentationProviderTypeByKey = makeKeyedTypeGetter('documentation provider', all);
