@@ -22,40 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
+export type AssemblyInstructionInfo = Record<'tooltip' | 'html' | 'url', string>;
 
-import { AssemblyDocumentationResponse } from '../../types/features/assembly-documentation.interfaces';
-
-export class BaseAssemblyDocumentationHandler {
+/**
+ * Base class for all assembly documentation generators.
+ *
+ * Implementations of this class are responsible for providing documentation
+ * about an instruction set's assembly instructions by instruction opcode.
+ *
+ * Each implementor should provide a static `get key()` method that returns
+ * the name of the instruction set.
+ */
+export abstract class BaseAssemblyDocumentationProvider {
     /**
      * Gather the assembly instruction information by the instruction name.
      *
      * Implementors should return null if the instruction is not supported.
      */
-    // eslint-disable-next-line no-unused-vars
-    getInstructionInformation(instruction: string): AssemblyDocumentationResponse | null {
-        return null;
-    }
-
-    /**
-     * Handle a request for assembly instruction documentation.
-     *
-     * Implementors should not have to override this.
-     */
-    handle(request: express.Request, response: express.Response) {
-        // If the request had no opcode parameter, we should fail. This assumes
-        // no assembly language has a __unknown_opcode instruction.
-        const instruction = (request.params.opcode || '__UNKNOWN_OPCODE').toUpperCase();
-        const information = this.getInstructionInformation(instruction);
-        if (information === null) {
-            return response.status(404).send({ error: `Unknown opcode '${instruction}'` });
-        }
-        // Accept either JSON or Plaintext Content-Type
-        const requestedContentType = request.accepts(['text', 'json']);
-        switch (requestedContentType) {
-            case 'text': response.send(information.html); break;
-            case 'json': response.send(information); break;
-            default: response.status(406).send({ error: 'Not Acceptable' }); break;
-        }
-    }
+    public abstract getInstructionInformation(instruction: string): AssemblyInstructionInfo | null;
 }
