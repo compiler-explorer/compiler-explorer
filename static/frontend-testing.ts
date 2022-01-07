@@ -1,11 +1,7 @@
 import { ICEFrontendTesting, ICETestable } from './frontend-testing.interfaces';
 
 class CEFrontendTesting implements ICEFrontendTesting {
-    private testSuites: Array<ICETestable>;
-
-    constructor() {
-        this.testSuites = [];
-    }
+    private testSuites: Array<ICETestable> = [];
 
     public add(test: ICETestable) {
         this.testSuites.push(test);
