@@ -1,10 +1,14 @@
-import { ICEFrontendTesting, ICETestable } from './frontend-testing.interfaces';
+import { IFrontendTesting, ITestable } from './frontend-testing.interfaces';
 
-class CEFrontendTesting implements ICEFrontendTesting {
-    private testSuites: Array<ICETestable> = [];
+class FrontendTesting implements IFrontendTesting {
+    private testSuites: Array<ITestable> = [];
 
-    public add(test: ICETestable) {
+    public add(test: ITestable) {
         this.testSuites.push(test);
+    }
+
+    public getAllTestNames(): string[] {
+        return this.testSuites.map((val) => val.description);
     }
 
     private findTest(name: string) {
@@ -23,4 +27,4 @@ class CEFrontendTesting implements ICEFrontendTesting {
     }
 }
 
-window.frontendTesting = new CEFrontendTesting();
+window.compilerExplorerFrontendTesting = new FrontendTesting();
