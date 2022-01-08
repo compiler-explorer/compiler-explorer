@@ -1,7 +1,7 @@
-import { ICETestable } from "../frontend-testing.interfaces";
+import { ITestable } from "../frontend-testing.interfaces";
 import { assert } from 'chai';
 
-class HelloWorldTests implements ICETestable {
+class HelloWorldTests implements ITestable {
     public readonly description: string = 'HelloWorld';
 
     public async run() {
@@ -10,4 +10,4 @@ class HelloWorldTests implements ICETestable {
     }
 }
 
-window.frontendTesting.add(new HelloWorldTests());
+window.compilerExplorerFrontendTesting.add(new HelloWorldTests());
