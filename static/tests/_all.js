@@ -1,2 +1,2 @@
-require('../frontend-testing');
+require('./frontend-testing');
 require('./hello-world');
