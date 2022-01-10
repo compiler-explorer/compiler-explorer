@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { makeKeyedTypeGetter } from '../keyed-type';
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-java';
 
-import * as all from './_all';
-
-export { BaseAssemblyDocumentationProvider } from '../base-assembly-documentation-provider';
-export * from './_all';
-
-export const getDocumentationProviderTypeByKey = makeKeyedTypeGetter('documentation provider', all);
+export class JavaDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() { return 'java'; }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction);
+    }
+}
