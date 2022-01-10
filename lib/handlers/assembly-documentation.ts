@@ -24,7 +24,7 @@
 
 import express from 'express';
 
-import { BaseAssemblyDocumentationProvider, getDocumentationProviderTypeByKey } from '../asm-providers';
+import { BaseAssemblyDocumentationProvider, getDocumentationProviderTypeByKey } from '../asm-docs';
 import { propsFor } from '../properties';
 
 const MAX_STATIC_AGE = propsFor('asm-docs')('staticMaxAgeSecs', 10);

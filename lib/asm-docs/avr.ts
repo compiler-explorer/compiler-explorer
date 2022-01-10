@@ -22,13 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from '../base-assembly-documentation-provider';
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-avr';
 
-import { getAsmOpcode } from './generated/asm-docs-java';
-
-export class JavaDocumentationProvider extends BaseAssemblyDocumentationProvider {
-    public static get key() { return 'java'; }
+export class AvrDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() { return 'avr'; }
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction);
+        return getAsmOpcode(instruction) || null;
     }
 }
