@@ -28,6 +28,6 @@ import { getAsmOpcode } from './generated/asm-docs-java';
 export class JavaDocumentationProvider extends BaseAssemblyDocumentationProvider {
     public static get key() { return 'java'; }
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction);
+        return getAsmOpcode(instruction) || null;
     }
 }
