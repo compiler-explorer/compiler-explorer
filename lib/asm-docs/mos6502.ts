@@ -22,22 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from '../base-assembly-documentation-provider';
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-6502';
 
-import { getAsmOpcode } from './generated/asm-docs-amd64';
-
-export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
-    public static get key() { return 'amd64'; }
+export class Mos6502DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() { return '6502'; }
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        // Try both raw opcod eand with AT&T suffix removed
-        let info = getAsmOpcode(instruction);
-        if (!info) {
-            const alternativeInstruction = Amd64DocumentationProvider.ATT_SUFFIX_REMOVER.exec(instruction);
-            if (alternativeInstruction) {
-                info = getAsmOpcode(alternativeInstruction[1]);
-            }
-        }
-        return info || null;
+        return getAsmOpcode(instruction) || null;
     }
 }

@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from '../base-assembly-documentation-provider';
-
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
 import { getAsmOpcode } from './generated/asm-docs-arm32';
 
 export class Arm32DocumentationProvider extends BaseAssemblyDocumentationProvider {

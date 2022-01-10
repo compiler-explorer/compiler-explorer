@@ -22,13 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from '../base-assembly-documentation-provider';
+import { makeKeyedTypeGetter } from '../keyed-type';
 
-import { getAsmOpcode } from './generated/asm-docs-avr';
+import * as all from './_all';
 
-export class AvrDocumentationProvider extends BaseAssemblyDocumentationProvider {
-    public static get key() { return 'avr'; }
-    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        return getAsmOpcode(instruction) || null;
-    }
-}
+export { BaseAssemblyDocumentationProvider } from './base';
+export * from './_all';
+
+export const getDocumentationProviderTypeByKey = makeKeyedTypeGetter('documentation provider', all);
