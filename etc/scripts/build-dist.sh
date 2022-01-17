@@ -32,6 +32,9 @@ python3 ./etc/scripts/politic.py
 # Output some magic for GH to set the branch name
 echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
 
+# Run to make sure we haven't just made something that won't work
+node ./app.js --version
+
 echo "${HASH}" >out/dist/git_hash
 echo "${RELEASE_NAME}" >out/dist/release_build
 rm -rf out/dist-bin

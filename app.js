@@ -92,6 +92,7 @@ const opts = nopt({
     loki: [String],
     discoveryonly: [String],
     prediscovered: [String],
+    version: [Boolean],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -778,6 +779,14 @@ async function main() {
     }
     setupEventLoopLagLogging();
     startListening(webServer);
+}
+
+if (opts.version) {
+    logger.info('Compiler Explorer version info:');
+    logger.info(`  git release ${gitReleaseName}`);
+    logger.info(`  release build ${releaseBuildNumber}`);
+    logger.info('Exiting');
+    process.exit(0);
 }
 
 main()

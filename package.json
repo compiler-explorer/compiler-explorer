@@ -15,7 +15,10 @@
     "node": ">=16"
   },
   "main": "./app.js",
-  "esm": true,
+  "esm": {
+    "mode": "all",
+    "cache": false
+  },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@sentry/browser": "^6.16.1",
