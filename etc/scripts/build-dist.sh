@@ -14,6 +14,8 @@ HASH=$(git rev-parse HEAD)
 # Clear the output
 rm -rf out/dist
 mkdir -p out/dist
+echo "${HASH}" >out/dist/git_hash
+echo "${RELEASE_NAME}" >out/dist/release_build
 
 # Set up and build and webpack everything.
 rm -rf node_modules
@@ -33,10 +35,8 @@ python3 ./etc/scripts/politic.py
 echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
 
 # Run to make sure we haven't just made something that won't work
-node -r esm -r ts-node/register ./app.js --version
+node -r esm -r ts-node/register ./app.js --version --dist
 
-echo "${HASH}" >out/dist/git_hash
-echo "${RELEASE_NAME}" >out/dist/release_build
 rm -rf out/dist-bin
 mkdir -p out/dist-bin
 export XZ_OPT="-1 -T 0"
