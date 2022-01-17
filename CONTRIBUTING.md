@@ -47,10 +47,10 @@ makes **Compiler Explorer** not runnable in anything newer than Node LTS 14.18.0
 
 Code is separated into server-side code and client-side code.
 All dependencies (server and client side) are installed via `package.json`.
-_Server code_ is in `app.js` and in the `lib` directory. 
+_Server code_ is in `app.ts` and in the `lib` directory. 
 _Client code_ is all in the `static` directory.
 
-In the server code, the `app.js` sets up a basic `express`
+In the server code, the `app.ts` sets up a basic `express`
  middleware-driven web server, delegating to the various compiler backends in
  `lib/compilers/`. All of them inherit from `lib/base-compiler.js` which does
  most of the work of running compilers, then parsing the output and forming a

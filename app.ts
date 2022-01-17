@@ -65,7 +65,7 @@ import { loadSponsorsFromString } from './lib/sponsors';
 import { getStorageTypeByKey } from './lib/storage';
 import * as utils from './lib/utils';
 
-// Parse arguments from command line 'node ./app.js args...'
+// Parse arguments from command line 'node ./app.ts args...'
 const opts = nopt({
     env: [String, Array],
     rootDir: [String],
@@ -99,6 +99,7 @@ if (opts.debug) logger.level = 'debug';
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
+    // @ts-expect-error fix later
     process.env.wsl = true;
 }
 
@@ -258,6 +259,7 @@ function setupEventLoopLagLogging() {
 
     async function eventLoopLagHandler() {
         const lagMs = await measureEventLoopLag(lagIntervalMs);
+        // @ts-expect-error fix later
         totalLag += Math.max(lagMs / 1000, 0);
         ceLagSecondsTotalGauge.set(totalLag);
 
@@ -294,6 +296,7 @@ async function setupWebPackDevMiddleware(router) {
         stats: 'errors-only',
     }));
 
+    // @ts-expect-error fix later
     pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
 }
 
@@ -310,6 +313,7 @@ async function setupStaticMiddleware(router) {
         }));
     }
 
+    // @ts-expect-error fix later
     pugRequireHandler = (path) => {
         if (Object.prototype.hasOwnProperty.call(staticManifest, path)) {
             return urljoin(staticRoot, staticManifest[path]);
@@ -366,6 +370,7 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
+        // @ts-expect-error fix later
         const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
         if (idleTimeout) {
             const exit = () => {
@@ -423,6 +428,7 @@ function setupSentry(sentryDsn, expressApp) {
             // enable HTTP calls tracing
             new Sentry.Integrations.Http({tracing: true}),
             // enable Express.js middleware tracing
+            // @ts-expect-error fix later
             new Tracing.Integrations.Express({expressApp}),
         ],
         tracesSampler: samplingContext => {
@@ -575,6 +581,7 @@ async function main() {
             if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
                 Sentry.withScope(scope => {
                     scope.setExtra('duration_ms', time);
+                    // @ts-expect-error fix later
                     Sentry.captureMessage('SlowRequest', 'warning');
                 });
             }
@@ -597,6 +604,7 @@ async function main() {
                 500;
             const message = err.message || 'Internal Server Error';
             res.status(status);
+            // @ts-expect-error fix later
             res.render('error', renderConfig({error: {code: status, message: message}}));
             if (status >= 500) {
                 logger.error('Internal server error:', err);
@@ -641,6 +649,7 @@ async function main() {
 
     function renderGoldenLayout(config, metadata, req, res) {
         staticHeaders(res);
+        // @ts-expect-error fix later
         contentPolicyHeader(res);
 
         const embedded = req.query.embedded === 'true' ? true : false;
@@ -656,6 +665,7 @@ async function main() {
 
     const embeddedHandler = function (req, res) {
         staticHeaders(res);
+        // @ts-expect-error fix later
         contentPolicyHeader(res);
         res.render('embed', renderConfig({
             embedded: true,
@@ -723,6 +733,7 @@ async function main() {
         .use(compression())
         .get('/', (req, res) => {
             staticHeaders(res);
+            // @ts-expect-error fix later
             contentPolicyHeader(res);
             res.render('index', renderConfig({
                 embedded: false,
@@ -734,6 +745,7 @@ async function main() {
         .get('/embed.html', embeddedHandler)
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
+            // @ts-expect-error fix later
             contentPolicyHeader(res);
             res.render('embed', renderConfig({
                 embedded: true,
@@ -758,6 +770,7 @@ async function main() {
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
+            // @ts-expect-error fix later
             contentPolicyHeader(res);
             res.render('bits/' + req.params.bits, renderConfig({
                 embedded: false,

@@ -46,7 +46,7 @@ Now you can point your favorite web browser at http://localhost:10240 and see yo
 
 CE only required a few changes in order to run properly under WSL. Those changes are listed here:
 
-- `app.js`: 
+- `app.ts`: 
   - `process.env.wsl` is set if CE if the string "Microsoft" in found in the output of `uname -a`. This works for all WSL distros as they all run on the base Microsoft Linux kernel. 
   - If the `-tmpDir` option is specified on the command line, both `process.env.tmpDir` and `process.env.winTmp` are set to the specified value Note that if this is specified as a non-Windows volume, Windows executables will fail to run properly. Otherwise, `process.env.winTmp` is set to the value of the Windows `%TEMP%` directory.
 - `lib/exec.js`: Execute the compiler in the temporary directory. If the compiler's binary is located on a mounted volume (`startsWith("/mnt"`)) and CE is running under WSL, run the compiler in the `winTmp` directory. Otherwise, use the Linux temp directory. 

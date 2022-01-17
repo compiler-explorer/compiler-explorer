@@ -11,7 +11,7 @@ static/policies/
 static/favicon.ico
 views/
 types/
-app.js
+app.ts
 package-lock.json
 package.json
 tsconfig.json
