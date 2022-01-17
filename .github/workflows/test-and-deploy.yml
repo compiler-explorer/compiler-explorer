@@ -4,7 +4,6 @@ on: [push, pull_request]
 
 jobs:
   build-and-test:
-    if: github.repository_owner != 'compiler-explorer'
     runs-on: ubuntu-20.04
 
     steps:
@@ -36,6 +35,7 @@ jobs:
 
   build-dist-and-deploy:
     if: github.repository_owner == 'compiler-explorer'
+    needs: [build-and-test]
     runs-on: ubuntu-20.04
 
     steps:
@@ -46,10 +46,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
-      - name: TEST
-        run: |
-          which npx
-          npx --version
       - name: Get npm cache directory
         id: npm-cache
         run: |
@@ -60,14 +56,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-      - name: Install prerequisites
-        run: make prereqs
-      - name: Build and test
-        run: |
-          npm run lint
-          npm run ci-test
-      - name: Code coverage
-        run: npm run codecov
       - name: Build distribution
         id: build_dist
         run: |
@@ -75,9 +63,7 @@ jobs:
           export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
           export SENTRY_ORG=compiler-explorer
           export SENTRY_PROJECT=compiler-explorer
-          make changelog
-          make policies
-          make -j$(nproc) gh-dist NPM_FLAGS="--no-audit"
+          etc/scripts/build-dist.sh
       - name: Deploy
         uses: jakejarvis/s3-sync-action@master
         with:
