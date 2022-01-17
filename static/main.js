@@ -186,7 +186,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./changelog.html')));
+        alertSystem.alert('Changelog', $(require('./changelog.html').default));
     });
 
     $('#ces').on('click', function () {
