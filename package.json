@@ -12,7 +12,7 @@
   },
   "version": "0.0.3",
   "engines": {
-    "node": ">=14.18"
+    "node": ">=16"
   },
   "main": "./app.js",
   "esm": true,
