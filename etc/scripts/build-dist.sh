@@ -33,7 +33,7 @@ python3 ./etc/scripts/politic.py
 echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
 
 # Run to make sure we haven't just made something that won't work
-node ./app.js --version
+node -r esm -r ts-node/register ./app.js --version
 
 echo "${HASH}" >out/dist/git_hash
 echo "${RELEASE_NAME}" >out/dist/release_build
