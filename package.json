@@ -167,9 +167,8 @@
     "prepare": "husky install",
     "format": "prettier --ignore-unknown .",
     "format-fix": "prettier --write --ignore-unknown .",
-    "webpack": "webpack",
     "ts-compile": "tsc",
-    "dist-build": "npm run webpack && npm run ts-compile"
+    "dist-build": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.js": [

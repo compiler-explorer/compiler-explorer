@@ -17,10 +17,9 @@ mkdir -p out/dist
 echo "${HASH}" >out/dist/git_hash
 echo "${RELEASE_NAME}" >out/dist/release_build
 
-# Set up and build and webpack everything.
+# Set up and build and webpack everything
 rm -rf node_modules
 npm install --no-audit
-export WEBPACK_ARGS="--node-env=production"
 npm run dist-build
 
 # Now install only the production dependencies
