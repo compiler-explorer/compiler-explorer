@@ -20,7 +20,7 @@ echo "${RELEASE_NAME}" >out/dist/release_build
 # Set up and build and webpack everything
 rm -rf node_modules
 npm install --no-audit
-npm run dist-build
+npm run webpack
 
 # Now install only the production dependencies
 rm -rf node_modules

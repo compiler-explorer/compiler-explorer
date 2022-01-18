@@ -168,7 +168,7 @@
     "format": "prettier --ignore-unknown .",
     "format-fix": "prettier --write --ignore-unknown .",
     "ts-compile": "tsc",
-    "dist-build": "webpack --node-env=production"
+    "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.js": [
