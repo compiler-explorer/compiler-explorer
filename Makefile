@@ -16,19 +16,20 @@ NPM:=npm-not-found
 
 # All targets that need node must depend on this to ensure the NODE variable
 # is appropriately set, and that PATH is updated.
+.PHONY: node-installed
 node-installed: .node-bin
 	@$(eval NODE:=$(shell cat .node-bin))
 	@$(eval NPM:=$(shell dirname $(shell cat .node-bin))/npm)
 	@$(eval PATH=$(shell dirname $(realpath $(NODE))):$(PATH))
 
+.PHONY: info
 info: node-installed ## print out some useful variables
 	@echo Using node from $(NODE)
 	@echo Using npm from $(NPM)
 	@echo PATH is $(PATH)
 
-.PHONY: clean run test run-amazon
-.PHONY: dist lint lint-fix ci-lint prereqs node_modules gh-dist check pre-commit
-prereqs: node_modules
+.PHONY: prereqs
+prereqs: $(NODE_MODULES)
 
 NODE_MODULES=./node_modules/.npm-updated
 $(NODE_MODULES): package.json | node-installed
@@ -36,34 +37,42 @@ $(NODE_MODULES): package.json | node-installed
 	@rm -rf node_modules/.cache/esm/*
 	@touch $@
 
+.PHONY: lint
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
 	$(NPM) run ts-compile
 	$(NPM) run lint
 
+.PHONY: lint-fix
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
 	$(NPM) run lint-fix
 
+.PHONY: ci-lint
 ci-lint: $(NODE_MODULES)
 	$(NPM) run ci-lint
 
-node_modules: $(NODE_MODULES)
-
+.PHONY: test
 test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
 	@echo Tests pass
 
+.PHONY: check
 check: $(NODE_MODULES) test lint  ## Runs all checks required before committing (fixing trivial things automatically)
+.PHONY: pre-commit
 pre-commit: $(NODE_MODULES) test ci-lint
 
+.PHONY: clean
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out
 
+.PHONY: run
 run: prereqs  ## Runs the site normally
 	$(NPM) run webpack
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js $(EXTRA_ARGS)
 
+.PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js $(EXTRA_ARGS)
 
+.PHONY: debug
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --inspect 9229 --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js --debug $(EXTRA_ARGS)
