@@ -6,6 +6,7 @@ help: # with thanks to Ben Rady
 # If you see "node-not-found" then you need to depend on node-installed.
 NODE:=node-not-found
 NPM:=npm-not-found
+NODE_MODULES:=./node_modules/.npm-updated
 
 # These 'find' scripts cache their results in a dotfile.
 # Doing it this way instead of NODE:=$(shell etc/script/find-node) means
@@ -31,7 +32,6 @@ info: node-installed ## print out some useful variables
 .PHONY: prereqs
 prereqs: $(NODE_MODULES)
 
-NODE_MODULES=./node_modules/.npm-updated
 $(NODE_MODULES): package.json | node-installed
 	$(NPM) install $(NPM_FLAGS)
 	@rm -rf node_modules/.cache/esm/*
