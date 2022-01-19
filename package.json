@@ -166,7 +166,9 @@
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
     "format": "prettier --ignore-unknown .",
-    "format-fix": "prettier --write --ignore-unknown ."
+    "format-fix": "prettier --write --ignore-unknown .",
+    "ts-compile": "tsc",
+    "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.js": [
