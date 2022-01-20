@@ -1103,6 +1103,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     getEffectiveFilters(): Record<string, boolean> {
         if (!this.compiler) return {};
         const filters = this.filters.get();
+        if (filters.binaryobject && !this.compiler.supportsBinaryObject) {
+            delete filters.binaryobject;
+        }
+
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
         }
@@ -2503,19 +2507,19 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     (button.prop('disabled') ? ' [LOCKED]' : '')
             );
         };
-        const isIntelFilterDisabled = !this.compiler.supportsIntel && (!filters.binary && !filters.binaryobject);
+        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryobject;
         this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
 
         // Disable binaryobject support on compilers that don't work with it or if binary is selected
-        this.filterBinaryObjectButton.prop('disabled', !this.compiler.supportsBinary || filters.binary);
+        this.filterBinaryObjectButton.prop('disabled', !this.compiler.supportsBinaryObject || filters.binary);
         formatFilterTitle(this.filterBinaryObjectButton, this.filterBinaryObjectTitle);
 
         // Disable binary support on compilers that don't work with it or if binaryobject is selected
         this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryobject);
         formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
 
-        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute || filters.binaryobject);
+        this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
         formatFilterTitle(this.filterExecuteButton, this.filterExecuteTitle);
         // Disable demangle for compilers where we can't access it
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
@@ -2583,6 +2587,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.gnatDebugTreeButton.toggle(!!(this.compiler as any).supportsGnatDebugViews);
         this.gnatDebugButton.toggle(!!(this.compiler as any).supportsGnatDebugViews);
         this.executorButton.toggle(this.compiler.supportsExecute);
+        this.filterBinaryButton.toggle(this.compiler.supportsBinary);
+        this.filterBinaryObjectButton.toggle(this.compiler.supportsBinaryObject);
 
         this.compilerLicenseButton.toggle(!!this.hasCompilerLicenseInfo());
 

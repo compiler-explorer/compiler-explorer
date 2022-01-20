@@ -116,7 +116,7 @@ export class AsmParser extends AsmRegex {
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
-        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/; // TO REMOVE
         this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump
@@ -295,7 +295,9 @@ export class AsmParser extends AsmRegex {
     // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm, labelDefinitions) {
         for (const obj of asm) {
-            obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            if (obj.labels) {
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            }
         }
     }
 
@@ -713,12 +715,10 @@ export class AsmParser extends AsmRegex {
                 const address = parseInt(match.groups.address, 16);
                 const relocname = match.groups.relocname;
                 const relocdata = match.groups.relocdata;
-                const match_value = relocdata.match(this.relocDataSymNameRe);
+                const match_value = relocdata.match(this.relocDataSymNameRe); // TO REMOVE
                 asm.push({
-                    text: `      ${relocname} ${relocdata}`,
+                    text: `   ${relocname} ${relocdata}`,
                     address: address,
-                    labels: labelsInLine,
-                    source: null,
                 });
             }
         }

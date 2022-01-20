@@ -93,6 +93,7 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 | intelAsm         | String     | Flags used to select intel assembly format (if not detected automatically)                                       |
 | needsMulti       | Boolean    | Whether the compiler needs multi arch support (defaults to yes if the host has multiarch enabled)                |
 | supportsBinary   | Boolean    | Whether this compiler supports compiling to binary                                                               |
+|supportsBinaryObject | Boolean | Whether this compiler supports compiling to binary object (e.g. assembling to binary)                            |
 | supportsExecute  | Boolean    | Whether binary output from this compiler can be executed                                                         |
 | versionFlag      | String     | The flag to pass to the compiler to make it emit its version                                                     |
 | versionRe        | RegExp     | A regular expression used to capture the version from the version output                                         |

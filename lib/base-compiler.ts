@@ -1416,6 +1416,7 @@ export class BaseCompiler {
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
 
         const buildFilters: ParseFilters = Object.assign({}, key.filters);
+        buildFilters.binaryobject = false;
         buildFilters.binary = true;
         buildFilters.execute = true;
 
@@ -2099,6 +2100,8 @@ export class BaseCompiler {
             for (const key in filters) {
                 filters[key] = false;
             }
+        if (filters.binaryobject && !this.compiler.supportsBinaryObject) {
+            delete filters.binaryobject;
         }
 
         const executeParameters = {
