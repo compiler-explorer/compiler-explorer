@@ -5,7 +5,7 @@ The library build status is accessible from https://conan.compiler-explorer.com/
 The build process of libraries (started by https://github.com/compiler-explorer/infra/blob/main/admin-daily-builds.sh)
 has a couple of safeguards to not build libraries allday everyday, namely:
 
-* The compiler needs to have supportBinary=true on in the current https://github.com/compiler-explorer/compiler-explorer/blob/main/etc/config/c%2B%2B.amazon.properties
+* The compiler needs to have supportsBinary=true on in the current https://github.com/compiler-explorer/compiler-explorer/blob/main/etc/config/c%2B%2B.amazon.properties
 * If all libraries are being built, only a commit hash change will result in a new build.
 * If a particular compiler has failed to produce a valid build, it will be marked and will not build the library with this compiler anymore.
 * There are a couple of hardcoded exceptions that never attempt the build, these can be found in https://github.com/compiler-explorer/infra/blob/main/bin/lib/library_builder.py#L29
