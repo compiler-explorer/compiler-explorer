@@ -3,7 +3,7 @@ import { IResultLineTag } from '../../types/resultline/resultline.interfaces';
 
 export interface IParsedAsmResult {
     asm: IResultLineTag[];
-    labelDefinitions: Set<string, number>;
+    labelDefinitions: Map<string, number>;
     parsingTime: string;
     filteredCount: number;
 }
