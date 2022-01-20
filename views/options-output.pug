@@ -13,6 +13,7 @@ mixin outputoption(name, longdescription, shortdescription, defaultchecked)
         span=shortdescription
       input.d-none(type="checkbox" checked=defaultchecked)
 
++outputoption('binaryobject', 'Compile to binary object and disassemble the output', 'Compile to binary object', false)
 +outputoption('binary', 'Compile to binary and disassemble the output', 'Compile to binary', false)
 +outputoption('execute', 'Execute code and show its output', 'Execute the code', false)
 +outputoption('intel', 'Output disassembly in Intel syntax', 'Intel asm syntax', true)
