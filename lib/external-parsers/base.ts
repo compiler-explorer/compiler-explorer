@@ -4,16 +4,16 @@ import path from 'path';
 import { TypicalExecutionFunc } from '../../types/execution/execution.interfaces';
 import { IParseFilters } from '../../types/features/filters.interfaces';
 
-import { IParsedAsmResult } from './external-parser.interface';
+import { IExternalParser, IParsedAsmResult } from './external-parser.interface';
 
-export class ExternalParserBase {
+export class ExternalParserBase implements IExternalParser {
     private objdumperPath: string;
     private parserPath: string;
     private execFunc: TypicalExecutionFunc;
 
-    constructor(objdumperPath: string, parserPath: string, execFunc: TypicalExecutionFunc) {
-        this.objdumperPath = objdumperPath;
-        this.parserPath = parserPath;
+    constructor(compilerInfo, envInfo, execFunc: TypicalExecutionFunc) {
+        this.objdumperPath = compilerInfo.objdumper;
+        this.parserPath = compilerInfo.externalparser.props('exe', '');
         this.execFunc = execFunc;
     }
 
@@ -55,6 +55,8 @@ export class ExternalParserBase {
     }
 
     private parseAsmExecResult(execResult): IParsedAsmResult {
+        console.log(execResult.stdout);
+        console.log(execResult.stderr);
         const result = Object.assign({}, JSON.parse(execResult.stdout));
         if (result.stderr) {
             throw result.stderr;
