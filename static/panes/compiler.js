@@ -2312,16 +2312,10 @@ function getNumericToolTip(value) {
         result += ' = 0x' + numericValue.toString(16).toUpperCase();
     }
 
-    // ASCII character.
-    if (numericValue.greaterOrEquals(0) && numericValue.lesserOrEquals(0x7F)) {
+    // Printable ASCII character.
+    if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7E)) {
         var char = String.fromCharCode(numericValue.valueOf());
-        if (('A' <= char && char <= 'Z')
-            || ('a' <= char && char <= 'z')
-            || ('0' <= char && char <= '9')
-            || "!\"#$%&'()*+,-./:;<=>?@[] ^_`{|}~ ".includes(char)) {
-            // Printable ASCII character.
-            result += ' = \'' + char + '\'';
-        }
+        result += ' = \'' + char + '\'';
     }
 
     return result;
