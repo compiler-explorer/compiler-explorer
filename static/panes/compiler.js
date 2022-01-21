@@ -2284,21 +2284,47 @@ var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
 var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
 var decimalLike = /^(#?)(-?[0-9]+)$/;
 
-function getNumericToolTip(value) {
-    var match = hexLike.exec(value) || hexLike2.exec(value);
-    if (match) {
-        return value + ' = ' + bigInt(match[2], 16).toString(10);
-    }
-    match = decimalLike.exec(value);
-    if (match) {
-        var asBig = bigInt(match[2]);
-        if (asBig.isNegative()) {
-            asBig = bigInt('ffffffffffffffff', 16).and(asBig);
-        }
-        return value + ' = 0x' + asBig.toString(16).toUpperCase();
-    }
+function parseNumericValue(value) {
+    var hexMatch = hexLike.exec(value) || hexLike2.exec(value);
+    if (hexMatch)
+        return bigInt(hexMatch[2], 16);
+
+    var decMatch = decimalLike.exec(value);
+    if (decMatch)
+        return bigInt(decMatch[2]);
 
     return null;
+}
+
+function getNumericToolTip(value) {
+    var numericValue = parseNumericValue(value);
+    if (numericValue === null)
+        return null;
+
+    // Decimal representation.
+    var result = numericValue.toString(10);
+
+    // Hexadecimal representation.
+    if (numericValue.isNegative()) {
+        var masked = bigInt('ffffffffffffffff', 16).and(numericValue);
+        result += ' = 0x' + masked.toString(16).toUpperCase();
+    } else {
+        result += ' = 0x' + numericValue.toString(16).toUpperCase();
+    }
+
+    // ASCII character.
+    if (numericValue.greaterOrEquals(0) && numericValue.lesserOrEquals(0x7F)) {
+        var char = String.fromCharCode(numericValue.valueOf());
+        if (('A' <= char && char <= 'Z')
+            || ('a' <= char && char <= 'z')
+            || ('0' <= char && char <= '9')
+            || "!\"#$%&'()*+,-./:;<=>?@[] ^_`{|}~ ".includes(char)) {
+            // Printable ASCII character.
+            result += ' = \'' + char + '\'';
+        }
+    }
+
+    return result;
 }
 
 function getAsmInfo(opcode, instructionSet) {
@@ -2395,7 +2421,8 @@ Compiler.prototype.onMouseMove = function (e) {
                 range: currentWord.range,
                 options: {
                     isWholeLine: false, hoverMessage: [{
-                        value: '`' + numericToolTip + '`',
+                        // We use double `` as numericToolTip may include a single ` character.
+                        value: '``' + numericToolTip + '``',
                     }],
                 },
             };
