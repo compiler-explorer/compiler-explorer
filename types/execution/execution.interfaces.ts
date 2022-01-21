@@ -9,4 +9,4 @@ export interface UnprocessedExecResult {
     execTime: string;
 }
 
-export type TypicalExecutionFunc = (executable: string, args: string[], execOptions: object) => UnprocessedExecResult;
+export type TypicalExecutionFunc = (executable: string, args: string[], execOptions: object) => IUnprocessedExecResult;
