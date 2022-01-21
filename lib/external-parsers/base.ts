@@ -67,17 +67,13 @@ export class ExternalParserBase implements IExternalParser {
     public async objdumpAndParseAssembly(buildfolder: string, objdumpArgs: string[],
         filters: IParseFilters): Promise<IParsedAsmResult> {
         const scriptFilepath = await this.writeStarterScriptObjdump(buildfolder, filters);
-        const execOptions = {
-            customCwd: buildfolder,
-        };
+        const execOptions = {};
         const execResult = await this.execFunc(scriptFilepath, objdumpArgs, execOptions);
         return this.parseAsmExecResult(execResult);
     }
 
     public async parseAssembly(filepath: string, filters: IParseFilters): Promise<IParsedAsmResult>  {
-        const execOptions = {
-            customCwd: path.dirname(filepath),
-        };
+        const execOptions = {};
 
         const parserArgs = this.getParserArguments(filters, false);
         parserArgs.push(filepath);
