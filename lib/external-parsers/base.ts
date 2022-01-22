@@ -34,6 +34,7 @@ export class ExternalParserBase implements IExternalParser {
         if (filters.commentOnly) parameters.push('-comment_only');
         if (filters.trim) parameters.push('-whitespace');
         if (filters.libraryCode) parameters.push('-library_functions');
+        if (filters.dontMaskFilenames) parameters.push('-dont_mask_filenames');
 
         return parameters;
     }
@@ -78,7 +79,7 @@ export class ExternalParserBase implements IExternalParser {
             env: this.envInfo.getEnv(this.compilerInfo.needsMulti),
             customCwd: buildfolder,
         };
-        const execResult = await this.execFunc('./' + starterScriptName, objdumpArgs, execOptions);
+        const execResult = await this.execFunc(`./${starterScriptName}`, objdumpArgs, execOptions);
         return this.parseAsmExecResult(execResult);
     }
 

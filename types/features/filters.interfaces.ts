@@ -9,4 +9,5 @@ export interface IParseFilters {
     optOutput: boolean;
     libraryCode: boolean;
     trim: boolean;
+    dontMaskFilenames?: boolean;
 }
