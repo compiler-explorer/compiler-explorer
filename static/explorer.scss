@@ -862,7 +862,7 @@ html[data-theme=dark] {
     cursor: pointer;
 }
 
-.currentCursorPosition {
+.currentCursorPosition, .ctrlSNothing {
     font-size: small;
     border: none;
     user-select: text;
