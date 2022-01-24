@@ -500,7 +500,6 @@ Editor.prototype.handleCtrlS = function (event) {
             }, this));
         }
     } else {
-        console.log(typeof(this.settings.enableCtrlS));
         if (this.settings.enableCtrlS === 'true') {
             loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
             if (!loadSave.onSaveToFile(this.id)) {
