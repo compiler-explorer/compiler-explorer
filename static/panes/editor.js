@@ -469,7 +469,23 @@ Editor.prototype.initButtons = function (state) {
     this.initLoadSaver();
     $(this.domRoot).on('keydown', _.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-            this.handleCtrlS(event);
+            event.preventDefault();
+            if (this.settings.enableCtrlStree && this.hub.hasTree()) {
+                var trees = this.hub.trees;
+                // todo: change when multiple trees are used
+                if (trees && trees.length > 0) {
+                    trees[0].multifileService.includeByEditorId(this.id).then(_.bind(function () {
+                        trees[0].refresh();
+                    }, this));
+                }
+            } else if (this.settings.enableCtrlS) {
+                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
+                if (!loadSave.onSaveToFile(this.id)) {
+                    this.showLoadSaver();
+                }
+            } else {
+                this.eventHub.emit('displaySharingPopover');
+            }
         }
     }, this));
 
@@ -487,53 +503,6 @@ Editor.prototype.initButtons = function (state) {
 
     this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
     this.currentCursorPosition.hide();
-};
-
-Editor.prototype.handleCtrlS = function (event) {
-    event.preventDefault();
-    if (this.settings.enableCtrlStree && this.hub.hasTree()) {
-        var trees = this.hub.trees;
-        // todo: change when multiple trees are used
-        if (trees && trees.length > 0) {
-            trees[0].multifileService.includeByEditorId(this.id).then(_.bind(function () {
-                trees[0].refresh();
-            }, this));
-        }
-    } else {
-        if (this.settings.enableCtrlS === 'true') {
-            loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
-            if (!loadSave.onSaveToFile(this.id)) {
-                this.showLoadSaver();
-            }
-        } else if (this.settings.enableCtrlS === 'false') {
-            this.eventHub.emit('displaySharingPopover');
-        } else if (this.settings.enableCtrlS === '2') {
-            this.runFormatDocumentAction();
-        } else if (this.settings.enableCtrlS === '3') {
-            this.handleCtrlSDoNothing();
-        }
-    }
-};
-
-Editor.prototype.handleCtrlSDoNothing = function () {
-    if (this.nothingCtrlSTimes === undefined) {
-        this.nothingCtrlSTimes = 0;
-        this.nothingCtrlSSince = Date.now();
-    } else {
-        if (Date.now() - this.nothingCtrlSSince > 5000) {
-            this.nothingCtrlSTimes = undefined;
-        } else if (this.nothingCtrlSTimes === 4) {
-            var element = this.domRoot.find('.ctrlSNothing');
-            element.show(100);
-            setTimeout(function () {
-                element.hide();
-            }, 2000);
-            this.nothingCtrlSTimes = undefined;
-        } else {
-            this.nothingCtrlSTimes++;
-        }
-    }
-
 };
 
 Editor.prototype.updateButtons = function () {
@@ -818,16 +787,12 @@ Editor.prototype.initEditorActions = function () {
     });
 
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, _.bind(function () {
-        this.runFormatDocumentAction();
+        this.editor.getAction('editor.action.formatDocument').run();
     }, this));
 
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, _.bind(function () {
         this.editor.getAction('editor.action.duplicateSelection').run();
     }, this));
-};
-
-Editor.prototype.runFormatDocumentAction = function () {
-    this.editor.getAction('editor.action.formatDocument').run();
 };
 
 Editor.prototype.searchOnCppreference = function (ed) {
