@@ -12,10 +12,13 @@
   },
   "version": "0.0.3",
   "engines": {
-    "node": ">=14.18"
+    "node": ">=16"
   },
   "main": "./app.js",
-  "esm": true,
+  "esm": {
+    "mode": "all",
+    "cache": false
+  },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@sentry/browser": "^6.16.1",
@@ -72,8 +75,8 @@
     "tom-select": "^2.0.0",
     "tree-kill": "^1.2.2",
     "triple-beam": "^1.3.0",
-    "tslib": "^2.3.1",
     "ts-node": "^10.4.0",
+    "tslib": "^2.3.1",
     "underscore": "^1.13.2",
     "url-join": "^4.0.1",
     "vis": "4.20.1",
@@ -115,7 +118,7 @@
     "eslint-plugin-promise": "^6.0.0",
     "eslint-plugin-requirejs": "^4.0.1",
     "eslint-plugin-sonarjs": "^0.11.0",
-    "eslint-plugin-unicorn": "^39.0.0",
+    "eslint-plugin-unicorn": "^40.1.0",
     "file-loader": "^6.2.0",
     "lint-staged": "^12.1.3",
     "mini-css-extract-plugin": "^2.4.5",
@@ -163,7 +166,9 @@
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
     "format": "prettier --ignore-unknown .",
-    "format-fix": "prettier --write --ignore-unknown ."
+    "format-fix": "prettier --write --ignore-unknown .",
+    "ts-compile": "tsc",
+    "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.js": [
