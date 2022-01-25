@@ -264,6 +264,7 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.autoIndent'), 'autoIndent', true, Checkbox);
     add(root.find('.keepSourcesOnLangChange'), 'keepSourcesOnLangChange', false, Checkbox);
     add(root.find('.enableCodeLens'), 'enableCodeLens', true, Checkbox);
+    add(root.find('.enableSharingPopover'), 'enableSharingPopover', true, Checkbox);
 
     setSettings(settings);
     handleThemes();

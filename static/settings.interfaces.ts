@@ -53,6 +53,7 @@ export interface SiteSettings {
     enableCodeLens: boolean;
     enableCommunityAds: boolean
     enableCtrlS: boolean;
+    enableSharingPopover: boolean;
     enableCtrlStree: boolean;
     editorsFFont: string
     editorsFLigatures: boolean;
