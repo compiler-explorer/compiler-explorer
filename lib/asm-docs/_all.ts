@@ -22,18 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo } from '../../lib/asm-docs/base';
-
-export interface AssemblyDocumentationRequest {
-    /** Specifies which instruction set to look for */
-    instructionSet: 'amd64' | 'arm32' | 'java';
-    /** Instruction set opcode to look for */
-    opcode: string;
-}
-
-export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
-
-export interface AssemblyDocumentationError {
-    /** Explanatory error string */
-    error: string;
-}
+export { Amd64DocumentationProvider } from './amd64';
+export { Arm32DocumentationProvider } from './arm32';
+export { AvrDocumentationProvider } from './avr';
+export { JavaDocumentationProvider } from './java';
+export { Mos6502DocumentationProvider } from './mos6502';

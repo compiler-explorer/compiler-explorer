@@ -22,18 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo } from '../../lib/asm-docs/base';
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-6502';
 
-export interface AssemblyDocumentationRequest {
-    /** Specifies which instruction set to look for */
-    instructionSet: 'amd64' | 'arm32' | 'java';
-    /** Instruction set opcode to look for */
-    opcode: string;
-}
-
-export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
-
-export interface AssemblyDocumentationError {
-    /** Explanatory error string */
-    error: string;
+export class Mos6502DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() { return '6502'; }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
 }
