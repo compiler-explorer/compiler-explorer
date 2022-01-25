@@ -500,17 +500,16 @@ Editor.prototype.handleCtrlS = function (event) {
             }, this));
         }
     } else {
-        console.log(typeof(this.settings.enableCtrlS));
-        if (this.settings.enableCtrlS === "true") {
+        if (this.settings.enableCtrlS === 'true') {
             loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
             if (!loadSave.onSaveToFile(this.id)) {
                 this.showLoadSaver();
             }
-        } else if (this.settings.enableCtrlS === "false") {
+        } else if (this.settings.enableCtrlS === 'false') {
             this.eventHub.emit('displaySharingPopover');
-        } else if (this.settings.enableCtrlS === "2") {
+        } else if (this.settings.enableCtrlS === '2') {
             this.runFormatDocumentAction();
-        } else if (this.settings.enableCtrlS === "3") {
+        } else if (this.settings.enableCtrlS === '3') {
             this.handleCtrlSDoNothing();
         }
     }

@@ -39,6 +39,7 @@ function Setting(elem, name, Control, param) {
 Setting.prototype.getUi = function () {
     return this.control.getUi(this.elem);
 };
+
 Setting.prototype.putUi = function (value) {
     this.control.putUi(this.elem, value);
 };
@@ -49,6 +50,7 @@ function Checkbox() {
 Checkbox.prototype.getUi = function (elem) {
     return !!elem.prop('checked');
 };
+
 Checkbox.prototype.putUi = function (elem, value) {
     elem.prop('checked', !!value);
 };
@@ -63,8 +65,9 @@ function Select(elem, populate) {
 Select.prototype.getUi = function (elem) {
     return elem.val();
 };
+
 Select.prototype.putUi = function (elem, value) {
-    elem.val(value);
+    elem.val(value != null ? value.toString() : null);
 };
 
 function Slider(elem, sliderSettings) {
@@ -256,12 +259,12 @@ function setupSettings(root, settings, onChange, subLangId) {
     add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
     // note: this is the ctrl+s "Save option"
     var actions = [
-        {label: true, desc: "Save To Local File"},
-        {label: false, desc: "Create Short Link"},
-        {label: 2, desc: "Reformat code"},
-        {label: 3, desc: "Do nothing"},
+        {label: 'true', desc: 'Save To Local File'},
+        {label: 'false', desc: 'Create Short Link'},
+        {label: '2', desc: 'Reformat code'},
+        {label: '3', desc: 'Do nothing'},
     ];
-    add(root.find('.enableCtrlS'), 'enableCtrlS', true, Select, actions);
+    add(root.find('.enableCtrlS'), 'enableCtrlS', 'true', Select, actions);
     add(root.find('.enableCtrlStree'), 'enableCtrlStree', true, Checkbox);
     add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
     add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
