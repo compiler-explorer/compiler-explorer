@@ -52,7 +52,7 @@ export interface SiteSettings {
     delayAfterChange: number;
     enableCodeLens: boolean;
     enableCommunityAds: boolean
-    enableCtrlS: boolean | number;
+    enableCtrlS: boolean;
     enableCtrlStree: boolean;
     editorsFFont: string
     editorsFLigatures: boolean;
