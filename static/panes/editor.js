@@ -483,8 +483,10 @@ Editor.prototype.initButtons = function (state) {
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
                 }
-            } else {
+            } else if (this.settings.enableSharingPopover) {
                 this.eventHub.emit('displaySharingPopover');
+            } else {
+                this.eventHub.emit('copyShortLinkToClip');
             }
         }
     }, this));

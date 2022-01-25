@@ -59,6 +59,7 @@ export interface SiteSettings {
     enableCodeLens: boolean;
     enableCommunityAds: boolean
     enableCtrlS: boolean;
+    enableSharingPopover: boolean;
     enableCtrlStree: boolean;
     editorsFFont: string
     editorsFLigatures: boolean;
@@ -248,6 +249,7 @@ export class Settings {
             ['.enableCodeLens', 'enableCodeLens', true],
             ['.enableCommunityAds', 'enableCommunityAds', true],
             ['.enableCtrlS', 'enableCtrlS', true],
+            ['.enableSharingPopover', 'enableSharingPopover', true],
             ['.enableCtrlStree', 'enableCtrlStree', true],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
