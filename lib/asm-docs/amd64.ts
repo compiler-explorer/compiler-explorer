@@ -29,7 +29,7 @@ export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvide
     private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
     public static get key() { return 'amd64'; }
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
-        // Try both raw opcod eand with AT&T suffix removed
+        // Try both raw opcode and with AT&T suffix removed
         let info = getAsmOpcode(instruction);
         if (!info) {
             const alternativeInstruction = Amd64DocumentationProvider.ATT_SUFFIX_REMOVER.exec(instruction);
