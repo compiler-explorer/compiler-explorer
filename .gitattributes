@@ -1,7 +1,7 @@
 docs/*  linguist-documentation
 *.s linguist-generated
 *.asm linguist-generated
-lib/handlers/asm-docs-amd64.js linguist-generated
-lib/handlers/asm-docs-arm32.js linguist-generated
-lib/handlers/asm-docs-java.js linguist-generated
+lib/asm-docs/generated/asm-docs-amd64.js linguist-generated
+lib/asm-docs/generated/asm-docs-arm32.js linguist-generated
+lib/asm-docs/generated/asm-docs-java.js linguist-generated
 test/*-cases/* linguist-generated

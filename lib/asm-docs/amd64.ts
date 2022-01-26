@@ -22,18 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo } from '../../lib/asm-docs/base';
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-amd64';
 
-export interface AssemblyDocumentationRequest {
-    /** Specifies which instruction set to look for */
-    instructionSet: 'amd64' | 'arm32' | 'java';
-    /** Instruction set opcode to look for */
-    opcode: string;
-}
-
-export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
-
-export interface AssemblyDocumentationError {
-    /** Explanatory error string */
-    error: string;
+export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
+    public static get key() { return 'amd64'; }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        // Try both raw opcode and with AT&T suffix removed
+        let info = getAsmOpcode(instruction);
+        if (!info) {
+            const alternativeInstruction = Amd64DocumentationProvider.ATT_SUFFIX_REMOVER.exec(instruction);
+            if (alternativeInstruction) {
+                info = getAsmOpcode(alternativeInstruction[1]);
+            }
+        }
+        return info || null;
+    }
 }
