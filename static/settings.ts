@@ -22,12 +22,60 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { SiteSettings } from './settings.interfaces';
 import { options } from './options';
 import * as colour from './colour';
 import * as local from './local';
 
 const themes = require('./themes').themes
+
+type ColourScheme =
+    | 'rainbow'
+    | 'rainbow2'
+    | 'earth'
+    | 'green-blue'
+    | 'gray-shade'
+    | 'rainbow-dark';
+
+export type FormatBase =
+    | 'Google'
+    | 'LLVM'
+    | 'Mozilla'
+    | 'Chromium'
+    | 'WebKit'
+    | 'Microsoft'
+    | 'GNU';
+
+export interface SiteSettings {
+    autoCloseBrackets: boolean;
+    autoIndent: boolean;
+    allowStoreCodeDebug: boolean;
+    alwaysEnableAllSchemes: boolean;
+    colouriseAsm: boolean;
+    colourScheme: ColourScheme;
+    compileOnChange: boolean;
+    // TODO(supergrecko): make this more precise
+    defaultLanguage: string;
+    delayAfterChange: number;
+    enableCodeLens: boolean;
+    enableCommunityAds: boolean
+    enableCtrlS: boolean;
+    enableCtrlStree: boolean;
+    editorsFFont: string
+    editorsFLigatures: boolean;
+    formatBase: FormatBase;
+    hoverShowAsmDoc: boolean;
+    hoverShowSource: boolean;
+    keepSourcesOnLangChange: boolean;
+    newEditorLastLang: boolean;
+    showMinimap: boolean;
+    showQuickSuggestions: boolean;
+    tabWidth: number;
+    theme: 'default' | 'dark';
+    useCustomContextMenu: boolean;
+    useSpaces: boolean;
+    useVim: boolean;
+    wordWrap: boolean;
+}
 
 class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
@@ -36,23 +84,23 @@ class BaseSetting {
         return this.elem.val();
     }
 
-    putUi(value): void {
+    putUi(value: any): void {
         this.elem.val(value);
     }
 }
 
 class Checkbox extends BaseSetting {
-    override getUi(): any {
+    override getUi(): boolean {
         return !!this.elem.prop('checked');
     }
 
-    override putUi(value) {
+    override putUi(value: any) {
         this.elem.prop('checked', !!value);
     }
 }
 
 class Select extends BaseSetting {
-    constructor(elem, name, populate) {
+    constructor(elem: JQuery, name: string, populate: {label: string, desc: string}[]) {
         super(elem, name);
 
         elem.empty();
@@ -61,7 +109,7 @@ class Select extends BaseSetting {
         }
     }
 
-    override putUi(value) {
+    override putUi(value: string | number | boolean) {
         this.elem.val(value.toString());
     }
 }
@@ -112,7 +160,7 @@ class Numeric extends BaseSetting {
     private readonly min: number;
     private readonly max: number;
 
-    constructor(elem, name, params) {
+    constructor(elem: JQuery, name: string, params: Record<'min' | 'max', number>) {
         super(elem, name);
 
         this.min = params.min;
@@ -122,21 +170,18 @@ class Numeric extends BaseSetting {
             .attr('max', this.max);
     }
 
-    override getUi(): any {
+    override getUi(): number {
         return this.clampValue(parseInt(this.elem.val().toString()));
     }
 
-    override putUi(value) {
+    override putUi(value: number) {
         this.elem.val(this.clampValue(value))
     }
 
-    private clampValue(value) {
+    private clampValue(value: number): number {
         return Math.min(Math.max(value, this.min), this.max);
     }
 }
-
-// Ignore max statements, there's no limit as to how many settings we need
-// eslint-disable-next-line max-statements
 
 export class Settings {
     private settingsObjs: BaseSetting[];
@@ -145,6 +190,7 @@ export class Settings {
                 private settings: SiteSettings,
                 private onChange: (SiteSettings) => void,
                 private subLangId: string | null) {
+
         this.settings = settings;
         this.settings.defaultLanguage = this.settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
         this.settingsObjs = [];
@@ -190,7 +236,7 @@ export class Settings {
     }
 
     private addCheckboxes() {
-        const checkboxes: [string, keyof SiteSettings, any][]= [
+        const checkboxes: [string, keyof SiteSettings, boolean][]= [
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
             ['.autoCloseBrackets', 'autoCloseBrackets', true],
@@ -224,7 +270,7 @@ export class Settings {
             selector: string,
             name: keyof SiteSettings,
             populate: {label: string, desc: string}[],
-            defaultValue: any
+            defaultValue: string
         ) => {
             this.add(new Select(this.root.find(selector), name, populate), defaultValue);
         }
@@ -259,13 +305,11 @@ export class Settings {
                 .css('cursor', 'not-allowed');
         }
 
-        const formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
+        const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {
             return {label: format, desc: format};
         });
         addSelector('.formatBase', 'formatBase', formatsData, formats[0]);
-
-
     }
 
     private addSliders() {

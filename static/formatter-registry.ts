@@ -26,7 +26,7 @@ import * as monaco from 'monaco-editor';
 
 import { Alert } from './alert';
 import { Settings } from './settings';
-import { SiteSettings } from './settings.interfaces';
+import { SiteSettings } from './settings';
 import { FormattingRequest } from './api/formatting.interfaces';
 import { getFormattedCode } from './api/api';
 
