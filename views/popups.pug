@@ -223,7 +223,8 @@
                     input.compileOnChange(type="checkbox")
                     | Compile automatically when source changes
                 div
-                  label Delay before compiling
+                  label Delay before compiling:&nbsp;
+                    span.delay-current-value &nbsp;
                   .slider-input
                     b 0.25s
                     input.delay(type="range")

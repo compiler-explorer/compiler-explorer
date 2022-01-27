@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
 import { SiteSettings } from './settings.interfaces';
 import { options } from './options';
 import * as colour from './colour';
@@ -31,7 +29,7 @@ import * as local from './local';
 
 const themes = require('./themes').themes
 
-class ISetting {
+class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
 
     getUi(): any {
@@ -43,7 +41,7 @@ class ISetting {
     }
 }
 
-class Checkbox extends ISetting {
+class Checkbox extends BaseSetting {
     override getUi(): any {
         return !!this.elem.prop('checked');
     }
@@ -53,7 +51,7 @@ class Checkbox extends ISetting {
     }
 }
 
-class Select extends ISetting {
+class Select extends BaseSetting {
     constructor(elem, name, populate) {
         super(elem, name);
 
@@ -68,24 +66,49 @@ class Select extends ISetting {
     }
 }
 
-class Slider extends ISetting {
-    constructor(elem: JQuery, name: string, sliderSettings: Record<'max' | 'min' | 'step', number>) {
+interface SliderSettings {
+    min: number;
+    max: number;
+    step: number;
+    display: JQuery;
+    formatter: (number) => string;
+}
+
+class Slider extends BaseSetting {
+    private readonly formatter: (number) => string;
+    private display: JQuery;
+
+    constructor(elem: JQuery, name: string, sliderSettings: SliderSettings) {
         super(elem, name);
+
+        this.formatter = sliderSettings.formatter;
+        this.display = sliderSettings.display;
 
         elem
             .prop('max', sliderSettings.max || 100)
             .prop('min', sliderSettings.min || 1)
             .prop('step', sliderSettings.step || 1);
+
+        elem.on('change', this.updateDisplay.bind(this));
+    }
+
+    override putUi(value: number) {
+        this.elem.val(value);
+        this.updateDisplay();
     }
 
     override getUi(): number {
         return parseInt(this.elem.val().toString())
     }
+
+    private updateDisplay() {
+        this.display.text(this.formatter(this.getUi()));
+    };
 }
 
-class Textbox extends ISetting {}
+class Textbox extends BaseSetting {}
 
-class Numeric extends ISetting {
+class Numeric extends BaseSetting {
     private readonly min: number;
     private readonly max: number;
 
@@ -114,98 +137,189 @@ class Numeric extends ISetting {
 
 // Ignore max statements, there's no limit as to how many settings we need
 // eslint-disable-next-line max-statements
-export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) => void, subLangId: string | null) {
-    settings = settings || {};
-    // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
-    settings.defaultLanguage = settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
-    const settingsObjs: ISetting[] = [];
 
-    var currentSettings = settings;
+export class Settings {
+    private settingsObjs: BaseSetting[];
 
-    function onUiChange() {
-        var settings = {};
-        for (let s of settingsObjs) {
-            settings[s.name] = s.getUi();
-        }
-        currentSettings = settings;
-        onChange(settings);
+    constructor(private root: JQuery,
+                private settings: SiteSettings,
+                private onChange: (SiteSettings) => void,
+                private subLangId: string | null) {
+        this.settings = settings;
+        this.settings.defaultLanguage = this.settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
+        this.settingsObjs = [];
+
+        this.addCheckboxes();
+        this.addSelectors();
+        this.addSliders();
+        this.addNumerics();
+        this.addTextBoxes();
+
+        this.setSettings(this.settings);
+        this.handleThemes();
     }
 
-    function onSettingsChange(settings) {
-        for (let s of settingsObjs) {
-            s.putUi(settings[s.name]);
+    public static getStoredSettings(): SiteSettings {
+        return JSON.parse(local.get('settings', '{}'));
+    }
+
+    public setSettings(newSettings: SiteSettings) {
+        this.onSettingsChange(newSettings);
+        this.onChange(newSettings);
+    }
+
+    private onUiChange() {
+        for (let setting of this.settingsObjs) {
+            this.settings[setting.name] = setting.getUi();
+        }
+        this.onChange(this.settings);
+    }
+
+    private onSettingsChange(settings: SiteSettings) {
+        this.settings = settings;
+        for (let setting of this.settingsObjs) {
+            setting.putUi(this.settings[setting.name]);
         }
     }
 
-    // Don't forget to edit the settings.interfaces.ts file if you add/modify
-    // a setting!
-    function add<Type extends ISetting>(setting: Type, defaultValue: any) {
+    private add<Type extends BaseSetting>(setting: Type, defaultValue: any) {
         const key = setting.name;
-        if (settings[key] === undefined)
-            settings[key] = defaultValue;
-        settingsObjs.push(setting);
-        setting.elem.change(onUiChange);
+        if (this.settings[key] === undefined) this.settings[key] = defaultValue;
+        this.settingsObjs.push(setting);
+        setting.elem.on('change', this.onUiChange.bind(this))
     }
 
-    add(new Checkbox(root.find('.colourise'), 'colouriseAsm'), true);
-    add(new Checkbox(root.find('.autoCloseBrackets'), 'autoCloseBrackets'), true);
-    var colourSchemeSelect = root.find('.colourScheme');
-    add(new Select(colourSchemeSelect, 'colourScheme',
-            colour.schemes.map(scheme => {
-                return {label: scheme.name, desc: scheme.desc}
-            })),
-        colour.schemes[0].name,
-    );
-    // Handle older settings
-    if (settings.delayAfterChange === 0) {
-        settings.delayAfterChange = 750;
-        settings.compileOnChange = false;
-    }
-    add(new Checkbox(root.find('.compileOnChange'), 'compileOnChange'), true);
-    add(new Slider(root.find('.delay'), 'delayAfterChange', {
-        max: 3000,
-        step: 250,
-        min: 250,
-        formatter: x => (x / 1000.0).toFixed(2) + 's',
-    }),
-        750);
-    add(new Checkbox(root.find('.enableCommunityAds'), 'enableCommunityAds'), true);
-    add(new Checkbox(root.find('.hoverShowSource'), 'hoverShowSource'), true);
-    add(new Checkbox(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc'), true);
+    private addCheckboxes() {
+        const checkboxes: [string, keyof SiteSettings, any][]= [
+            ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
+            ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
+            ['.autoCloseBrackets', 'autoCloseBrackets', true],
+            ['.autoIndent', 'autoIndent', true],
+            ['.colourise', 'colouriseAsm', true],
+            ['.compileOnChange', 'compileOnChange', true],
+            ['.editorsFLigatures', 'editorsFLigatures', false],
+            ['.enableCodeLens', 'enableCodeLens', true],
+            ['.enableCommunityAds', 'enableCommunityAds', true],
+            ['.enableCtrlS', 'enableCtrlS', true],
+            ['.enableCtrlStree', 'enableCtrlStree', true],
+            ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
+            ['.hoverShowSource', 'hoverShowSource', true],
+            ['.keepSourcesOnLangChange', 'keepSourcesOnLangChange', false],
+            ['.newEditorLastLang', 'newEditorLastLang', true],
+            ['.showMinimap', 'showMinimap', true],
+            ['.showQuickSuggestions', 'showQuickSuggestions', false],
+            ['.useCustomContextMenu', 'useCustomContextMenu', true],
+            ['.useSpaces', 'useSpaces', true],
+            ['.useVim', 'useVim', false],
+            ['.wordWrap', 'wordWrap', false],
+        ]
 
-    var themeSelect = root.find('.theme');
-
-    var defaultThemeId = themes.default.id;
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        defaultThemeId = themes.dark.id;
-    }
-    function keys(obj): string[] {
-        return Object.keys(obj);
+        for (let [selector, name, defaultValue] of checkboxes) {
+            this.add(new Checkbox(this.root.find(selector), name), defaultValue);
+        }
     }
 
-    add(new Select(themeSelect, 'theme',
-            keys(themes).map(theme => {
-                return {label: themes[theme].id, desc: themes[theme].name}
-            })),
-        defaultThemeId
-    );
-    add(new Checkbox(root.find('.showQuickSuggestions'), 'showQuickSuggestions'), false);
-    add(new Checkbox(root.find('.useCustomContextMenu'), 'useCustomContextMenu'), true);
-    add(new Checkbox(root.find('.showMinimap'), 'showMinimap'), true);
+    private addSelectors() {
+        const addSelector = (
+            selector: string,
+            name: keyof SiteSettings,
+            populate: {label: string, desc: string}[],
+            defaultValue: any
+        ) => {
+            this.add(new Select(this.root.find(selector), name, populate), defaultValue);
+        }
 
-    var enableAllSchemesCheckbox = root.find('.alwaysEnableAllSchemes');
-    add(new Checkbox(enableAllSchemesCheckbox, 'alwaysEnableAllSchemes'), false);
+        const colourSchemesData = colour.schemes.map(scheme => {
+            return {label: scheme.name, desc: scheme.desc}
+        });
+        addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
 
-    function handleThemes() {
-        var newTheme = themeSelect.val() as colour.AppTheme;
+        const themesData = Object.keys(themes).map(theme => {
+            return {label: themes[theme].id, desc: themes[theme].name}
+        });
+        let defaultThemeId = themes.default.id;
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            defaultThemeId = themes.dark.id;
+        }
+        addSelector('.theme', 'theme', themesData, defaultThemeId);
+
+        const langs = options.languages;
+        const defaultLanguageSelector = this.root.find('.defaultLanguage');
+        const defLang = this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
+
+        const defaultLanguageData = Object.keys(langs).map(lang => {
+            return {label: langs[lang].id, desc: langs[lang].name};
+        });
+        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang)
+
+        if (this.subLangId) {
+            defaultLanguageSelector
+                .prop('disabled', true)
+                .prop('title', 'Default language inherited from subdomain')
+                .css('cursor', 'not-allowed');
+        }
+
+        const formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
+        const formatsData = formats.map(format => {
+            return {label: format, desc: format};
+        });
+        addSelector('.formatBase', 'formatBase', formatsData, formats[0]);
+
+
+    }
+
+    private addSliders() {
+        // Handle older settings
+        if (this.settings.delayAfterChange === 0) {
+            this.settings.delayAfterChange = 750;
+            this.settings.compileOnChange = false;
+        }
+
+        const delayAfterChangeSettings: SliderSettings = {
+            max: 3000,
+            step: 250,
+            min: 250,
+            display: this.root.find('.delay-current-value'),
+            formatter: x => (x / 1000.0).toFixed(2) + 's',
+        }
+        this.add(new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings), 750);
+    }
+
+    private addNumerics() {
+        this.add(new Numeric(this.root.find('.tabWidth'), 'tabWidth', {min: 1, max: 80}), 4);
+    }
+
+    private addTextBoxes() {
+        this.add(new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'), 'Consolas, "Liberation Mono", Courier, monospace');
+    }
+
+    private handleThemes() {
+        this.onThemeChange();
+        const themeSelect = this.root.find('.theme');
+        themeSelect.on('change', () => {
+            this.onThemeChange();
+            $.data(themeSelect, 'last-theme', themeSelect.val());
+        });
+        const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
+        enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
+
+        $.data(themeSelect, 'last-theme', themeSelect.val());
+    }
+
+    private onThemeChange() {
+        const themeSelect = this.root.find('.theme');
+        const colourSchemeSelect = this.root.find('.colourScheme');
+
+
+        const newTheme = themeSelect.val() as colour.AppTheme;
         // Store the scheme of the old theme
         $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
         // Get the scheme of the new theme
-        var newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
-        var isStoredUsable = false;
+        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
+        let isStoredUsable = false;
         colourSchemeSelect.empty();
         for (let scheme of colour.schemes) {
-            if (currentSettings.alwaysEnableAllSchemes
+            if (this.settings.alwaysEnableAllSchemes
                 || !scheme.themes || scheme.themes.length === 0
                 || scheme.themes.includes(newTheme) || scheme.themes.includes('all')) {
 
@@ -225,63 +339,4 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
         }
         colourSchemeSelect.trigger('change');
     }
-
-    var langs = options.languages;
-
-    var defaultLanguageSelector = root.find('.defaultLanguage');
-    var defLang = settings.defaultLanguage || keys(langs)[0] || 'c++';
-    add(new Select(defaultLanguageSelector, 'defaultLanguage',
-            keys(langs).map(lang => {
-                return {label: langs[lang].id, desc: langs[lang].name};
-            })),
-        defLang
-    );
-    if (subLangId) {
-        defaultLanguageSelector
-            .prop('disabled', true)
-            .prop('title', 'Default language inherited from subdomain')
-            .css('cursor', 'not-allowed');
-    }
-
-    add(new Checkbox(root.find('.newEditorLastLang'), 'newEditorLastLang'), true);
-
-    var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
-    add(new Select(root.find('.formatBase'), 'formatBase', formats.map(format => {
-            return {label: format, desc: format};
-        })),
-        formats[0]);
-    //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
-    add(new Checkbox(root.find('.wordWrap'), 'wordWrap'), false);
-
-    function setSettings(settings) {
-        onSettingsChange(settings);
-        onChange(settings);
-    }
-    add(new Checkbox(root.find('.useSpaces'), 'useSpaces'), true);
-    add(new Numeric(root.find('.tabWidth'), 'tabWidth', {min: 1, max: 80}), 4);
-    // note: this is the ctrl+s "Save option"
-    add(new Checkbox(root.find('.enableCtrlS'), 'enableCtrlS'), true);
-    add(new Checkbox(root.find('.enableCtrlStree'), 'enableCtrlStree'), true);
-    add(new Textbox(root.find('.editorsFFont'), 'editorsFFont'), 'Consolas, "Liberation Mono", Courier, monospace');
-    add(new Checkbox(root.find('.editorsFLigatures'), 'editorsFLigatures'), false);
-    add(new Checkbox(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug'), true);
-    add(new Checkbox(root.find('.useVim'), 'useVim'), false);
-    add(new Checkbox(root.find('.autoIndent'), 'autoIndent'), true);
-    add(new Checkbox(root.find('.keepSourcesOnLangChange'), 'keepSourcesOnLangChange'), false);
-    add(new Checkbox(root.find('.enableCodeLens'), 'enableCodeLens'), true);
-
-    setSettings(settings);
-    handleThemes();
-    themeSelect.change(function () {
-        handleThemes();
-        $.data(themeSelect, 'last-theme', themeSelect.val());
-    });
-    enableAllSchemesCheckbox.change(handleThemes);
-
-    $.data(themeSelect, 'last-theme', themeSelect.val());
-    return setSettings;
-}
-
-export function getStoredSettings(): SiteSettings {
-    return JSON.parse(local.get('settings', '{}'));
 }
