@@ -112,7 +112,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var setSettings = Settings.setupSettings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         setSettings(_.extend(currentSettings, newSettings));
     });

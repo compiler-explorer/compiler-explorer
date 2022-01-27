@@ -24,7 +24,7 @@
 
 import * as monaco from 'monaco-editor';
 
-type AppTheme = 'default' | 'dark' | 'all';
+export type AppTheme = 'default' | 'dark' | 'all';
 
 interface ColourScheme {
     name: string;

@@ -46,6 +46,8 @@ export type Libs = Record<string, LanguageLibs>;
 
 export interface Options {
     libs: Libs;
+    // TODO: Constraint this type
+    languages: Record<string, any>[];
     defaultLibs: Record<string, string | null>;
     defaultFontScale: number;
     sentryDsn?: string;
