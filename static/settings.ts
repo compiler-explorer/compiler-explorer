@@ -69,7 +69,7 @@ class Select extends ISetting {
 }
 
 class Slider extends ISetting {
-    constructor(elem, name, sliderSettings) {
+    constructor(elem: JQuery, name: string, sliderSettings: Record<'max' | 'min' | 'step', number>) {
         super(elem, name);
 
         elem
