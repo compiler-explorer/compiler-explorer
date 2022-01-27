@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import _ from 'underscore'
 
 import { SiteSettings } from './settings.interfaces';
 import { options } from './options';
@@ -131,17 +130,17 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
 
     function onUiChange() {
         var settings = {};
-        _.each(settingsObjs, function (s) {
+        for (let s of settingsObjs) {
             settings[s.name] = s.getUi();
-        });
+        }
         currentSettings = settings;
         onChange(settings);
     }
 
     function onSettingsChange(settings) {
-        _.each(settingsObjs, function (s) {
+        for (let s of settingsObjs) {
             s.putUi(settings[s.name]);
-        });
+        }
     }
 
     // Don't forget to edit the settings.interfaces.ts file if you add/modify
@@ -158,9 +157,9 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
     add(new Checkbox(root.find('.autoCloseBrackets'), 'autoCloseBrackets'), true);
     var colourSchemeSelect = root.find('.colourScheme');
     add(new Select(colourSchemeSelect, 'colourScheme',
-            _.map(colour.schemes, function (scheme) {
-            return {label: scheme.name, desc: scheme.desc};
-        })),
+            colour.schemes.map(scheme => {
+                return {label: scheme.name, desc: scheme.desc}
+            })),
         colour.schemes[0].name,
     );
     // Handle older settings
@@ -173,9 +172,7 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
         max: 3000,
         step: 250,
         min: 250,
-        formatter: function (x) {
-            return (x / 1000.0).toFixed(2) + 's';
-        },
+        formatter: x => (x / 1000.0).toFixed(2) + 's',
     }),
         750);
     add(new Checkbox(root.find('.enableCommunityAds'), 'enableCommunityAds'), true);
@@ -188,10 +185,14 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         defaultThemeId = themes.dark.id;
     }
+    function keys(obj): string[] {
+        return Object.keys(obj);
+    }
 
-    add(new Select(themeSelect, 'theme', _.map(themes, function (theme) {
-            return {label: theme.id, desc: theme.name};
-        })),
+    add(new Select(themeSelect, 'theme',
+            keys(themes).map(theme => {
+                return {label: themes[theme].id, desc: themes[theme].name}
+            })),
         defaultThemeId
     );
     add(new Checkbox(root.find('.showQuickSuggestions'), 'showQuickSuggestions'), false);
@@ -209,17 +210,17 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
         var newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
         var isStoredUsable = false;
         colourSchemeSelect.empty();
-        _.each(colour.schemes, function (scheme) {
+        for (let scheme of colour.schemes) {
             if (currentSettings.alwaysEnableAllSchemes
                 || !scheme.themes || scheme.themes.length === 0
-                || scheme.themes.indexOf(newTheme) !== -1 || scheme.themes.indexOf('all') !== -1) {
+                || scheme.themes.includes(newTheme) || scheme.themes.includes('all')) {
 
                 colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
                 if (newThemeStoredScheme === scheme.name) {
                     isStoredUsable = true;
                 }
             }
-        });
+        }
         if (colourSchemeSelect.children().length >= 1) {
             colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
         } else {
@@ -234,10 +235,11 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
     var langs = options.languages;
 
     var defaultLanguageSelector = root.find('.defaultLanguage');
-    var defLang = settings.defaultLanguage || _.keys(langs)[0] || 'c++';
-    add(new Select(defaultLanguageSelector, 'defaultLanguage', _.map(langs, function (lang) {
-            return {label: lang.id, desc: lang.name};
-        })),
+    var defLang = settings.defaultLanguage || keys(langs)[0] || 'c++';
+    add(new Select(defaultLanguageSelector, 'defaultLanguage',
+            keys(langs).map(lang => {
+                return {label: langs[lang].id, desc: langs[lang].name};
+            })),
         defLang
     );
     if (subLangId) {
@@ -250,7 +252,7 @@ export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) =
     add(new Checkbox(root.find('.newEditorLastLang'), 'newEditorLastLang'), true);
 
     var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
-    add(new Select(root.find('.formatBase'), 'formatBase', _.map(formats, function (format) {
+    add(new Select(root.find('.formatBase'), 'formatBase', formats.map(format => {
             return {label: format, desc: format};
         })),
         formats[0]);
