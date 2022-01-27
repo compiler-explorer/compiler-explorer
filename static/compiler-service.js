@@ -103,10 +103,10 @@ CompilerService.prototype.getGroupsInUse = function (langId) {
     return _.chain(this.getCompilersForLang(langId))
         .map()
         .uniq(false, function (compiler) {
-            return compiler.groupName || compiler.group;
+            return compiler.group;
         })
         .map(function (compiler) {
-            return {value: compiler.groupName || compiler.group, label: compiler.groupName || compiler.group};
+            return {value: compiler.group, label: compiler.groupName || compiler.group};
         })
         .sort(function (a, b){
             return a.label.localeCompare(b.label,
