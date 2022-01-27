@@ -29,7 +29,7 @@ import * as monaco from 'monaco-editor';
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
 
 import { FontScale } from '../fontscale';
-import { SiteSettings } from '../settings.interfaces';
+import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
 /**

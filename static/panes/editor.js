@@ -36,7 +36,7 @@ var ga = require('../analytics').ga;
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
-var Settings = require('../settings');
+var Settings = require('../settings').Settings;
 var utils = require('../utils');
 require('../formatter-registry');
 require('../modes/_all');
