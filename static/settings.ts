@@ -32,13 +32,7 @@ import * as local from './local';
 const themes = require('./themes').themes
 
 class ISetting {
-    elem: JQuery;
-    name: string;
-
-    constructor(elem, name) {
-        this.elem = elem;
-        this.name = name;
-    }
+    constructor(public elem: JQuery, public name: string) {}
 
     getUi(): any {
         return this.elem.val();
