@@ -137,6 +137,24 @@ function Editor(hub, state, container) {
         plugins: ['dropdown_input'],
         onChange: _.bind(this.onLanguageChange, this),
         closeAfterSelect: true,
+        render: {
+            option: function (data, escape) {
+                return '<div class="d-flex">' +
+                    '<div class="mr-1">' +
+                    '<img src="' + data.logoData + '" width="20" height="20"/>' +
+                    '</div>' +
+                    '<div>' + escape(data.name) + '</div>' +
+                    '</div>';
+            },
+            item: function (data, escape) {
+                return '<div class="d-flex">' +
+                '<div class="mr-1">' +
+                '<img src="' + data.logoData + '" width="20" height="20"/>' +
+                '</div>' +
+                '<div>' + escape(data.name) + '</div>' +
+                '</div>';
+            },
+        },
     });
 
 
