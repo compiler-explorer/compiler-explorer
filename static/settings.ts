@@ -22,104 +22,110 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var $ = require('jquery');
-var _ = require('underscore');
-var colour = require('./colour');
-var themes = require('./themes').themes;
-var options = require('./options').options;
-var local = require('./local');
+import $ from 'jquery';
+import _ from 'underscore'
 
-function Setting(elem, name, Control, param) {
-    this.elem = elem;
-    this.name = name;
-    this.control = new Control(elem, param);
+import { SiteSettings } from './settings.interfaces';
+import { options } from './options';
+import * as colour from './colour';
+import * as local from './local';
+
+const themes = require('./themes').themes
+
+class ISetting {
+    elem: JQuery;
+    name: string;
+
+    constructor(elem, name) {
+        this.elem = elem;
+        this.name = name;
+    }
+
+    getUi(): any {
+        return this.elem.val();
+    }
+
+    putUi(value): void {
+        this.elem.val(value);
+    }
 }
 
-Setting.prototype.getUi = function () {
-    return this.control.getUi(this.elem);
-};
-Setting.prototype.putUi = function (value) {
-    this.control.putUi(this.elem, value);
-};
+class Checkbox extends ISetting {
+    override getUi(): any {
+        return !!this.elem.prop('checked');
+    }
 
-function Checkbox() {
+    override putUi(value) {
+        this.elem.prop('checked', !!value);
+    }
 }
 
-Checkbox.prototype.getUi = function (elem) {
-    return !!elem.prop('checked');
-};
-Checkbox.prototype.putUi = function (elem, value) {
-    elem.prop('checked', !!value);
-};
+class Select extends ISetting {
+    constructor(elem, name, populate) {
+        super(elem, name);
 
-function Select(elem, populate) {
-    elem.empty();
-    _.each(populate, function (e) {
-        elem.append($('<option value="' + e.label + '">' + e.desc + '</option>'));
-    });
+        elem.empty();
+        for (let e of populate) {
+            elem.append($(`<option value="${e.label}">${e.desc}</option>`))
+        }
+    }
+
+    override putUi(value) {
+        this.elem.val(value.toString());
+    }
 }
 
-Select.prototype.getUi = function (elem) {
-    return elem.val();
-};
-Select.prototype.putUi = function (elem, value) {
-    elem.val(value);
-};
+class Slider extends ISetting {
+    constructor(elem, name, sliderSettings) {
+        super(elem, name);
 
-function Slider(elem, sliderSettings) {
-    elem
-        .prop('max', sliderSettings.max || 100)
-        .prop('min', sliderSettings.min || 1)
-        .prop('step', sliderSettings.step || 1);
+        elem
+            .prop('max', sliderSettings.max || 100)
+            .prop('min', sliderSettings.min || 1)
+            .prop('step', sliderSettings.step || 1);
+    }
+
+    override getUi(): number {
+        return parseInt(this.elem.val().toString())
+    }
 }
 
-Slider.prototype.getUi = function (elem) {
-    return parseInt(elem.val());
-};
+class Textbox extends ISetting {}
 
-Slider.prototype.putUi = function (elem, value) {
-    elem.val(value);
-};
+class Numeric extends ISetting {
+    private readonly min: number;
+    private readonly max: number;
 
-function Textbox() {
+    constructor(elem, name, params) {
+        super(elem, name);
+
+        this.min = params.min;
+        this.max = params.max;
+
+        elem.attr('min', this.min)
+            .attr('max', this.max);
+    }
+
+    override getUi(): any {
+        return this.clampValue(parseInt(this.elem.val().toString()));
+    }
+
+    override putUi(value) {
+        this.elem.val(this.clampValue(value))
+    }
+
+    private clampValue(value) {
+        return Math.min(Math.max(value, this.min), this.max);
+    }
 }
-
-Textbox.prototype.getUi = function (elem) {
-    return elem.val();
-};
-
-Textbox.prototype.putUi = function (elem, value) {
-    elem.val(value);
-};
-
-function Numeric(elem, params) {
-    this.min = params.min;
-    this.max = params.max;
-    elem.attr('min', params.min)
-        .attr('max', params.max);
-}
-
-Numeric.prototype.getUi = function (elem) {
-    var val = parseInt(elem.val());
-    if (val < this.min) return this.min;
-    if (val > this.max) return this.max;
-    return val;
-};
-
-Numeric.prototype.putUi = function (elem, value) {
-    if (value < this.min) value = this.min;
-    if (value > this.max) value = this.max;
-    elem.val(value);
-};
 
 // Ignore max statements, there's no limit as to how many settings we need
 // eslint-disable-next-line max-statements
-function setupSettings(root, settings, onChange, subLangId) {
+export function setupSettings(root: JQuery, settings, onChange: (SiteSettings) => void, subLangId: string | null) {
     settings = settings || {};
     // Ensure the default language is not "null" but undefined. Temporary patch for a previous bug :(
     settings.defaultLanguage = settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
-    var settingsObjs = [];
+    const settingsObjs: ISetting[] = [];
 
     var currentSettings = settings;
 
@@ -140,38 +146,41 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     // Don't forget to edit the settings.interfaces.ts file if you add/modify
     // a setting!
-    function add(elem, key, defaultValue, Type, param) {
+    function add<Type extends ISetting>(setting: Type, defaultValue: any) {
+        const key = setting.name;
         if (settings[key] === undefined)
             settings[key] = defaultValue;
-        settingsObjs.push(new Setting(elem, key, Type, param));
-        elem.change(onUiChange);
+        settingsObjs.push(setting);
+        setting.elem.change(onUiChange);
     }
 
-    add(root.find('.colourise'), 'colouriseAsm', true, Checkbox);
-    add(root.find('.autoCloseBrackets'), 'autoCloseBrackets', true, Checkbox);
+    add(new Checkbox(root.find('.colourise'), 'colouriseAsm'), true);
+    add(new Checkbox(root.find('.autoCloseBrackets'), 'autoCloseBrackets'), true);
     var colourSchemeSelect = root.find('.colourScheme');
-    add(colourSchemeSelect, 'colourScheme', colour.schemes[0].name, Select,
-        _.map(colour.schemes, function (scheme) {
+    add(new Select(colourSchemeSelect, 'colourScheme',
+            _.map(colour.schemes, function (scheme) {
             return {label: scheme.name, desc: scheme.desc};
-        })
+        })),
+        colour.schemes[0].name,
     );
     // Handle older settings
     if (settings.delayAfterChange === 0) {
         settings.delayAfterChange = 750;
         settings.compileOnChange = false;
     }
-    add(root.find('.compileOnChange'), 'compileOnChange', true, Checkbox);
-    add(root.find('.delay'), 'delayAfterChange', 750, Slider, {
+    add(new Checkbox(root.find('.compileOnChange'), 'compileOnChange'), true);
+    add(new Slider(root.find('.delay'), 'delayAfterChange', {
         max: 3000,
         step: 250,
         min: 250,
         formatter: function (x) {
             return (x / 1000.0).toFixed(2) + 's';
         },
-    });
-    add(root.find('.enableCommunityAds'), 'enableCommunityAds', true, Checkbox);
-    add(root.find('.hoverShowSource'), 'hoverShowSource', true, Checkbox);
-    add(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc', true, Checkbox);
+    }),
+        750);
+    add(new Checkbox(root.find('.enableCommunityAds'), 'enableCommunityAds'), true);
+    add(new Checkbox(root.find('.hoverShowSource'), 'hoverShowSource'), true);
+    add(new Checkbox(root.find('.hoverShowAsmDoc'), 'hoverShowAsmDoc'), true);
 
     var themeSelect = root.find('.theme');
 
@@ -180,20 +189,20 @@ function setupSettings(root, settings, onChange, subLangId) {
         defaultThemeId = themes.dark.id;
     }
 
-    add(themeSelect, 'theme', defaultThemeId, Select,
-        _.map(themes, function (theme) {
+    add(new Select(themeSelect, 'theme', _.map(themes, function (theme) {
             return {label: theme.id, desc: theme.name};
-        })
+        })),
+        defaultThemeId
     );
-    add(root.find('.showQuickSuggestions'), 'showQuickSuggestions', false, Checkbox);
-    add(root.find('.useCustomContextMenu'), 'useCustomContextMenu', true, Checkbox);
-    add(root.find('.showMinimap'), 'showMinimap', true, Checkbox);
+    add(new Checkbox(root.find('.showQuickSuggestions'), 'showQuickSuggestions'), false);
+    add(new Checkbox(root.find('.useCustomContextMenu'), 'useCustomContextMenu'), true);
+    add(new Checkbox(root.find('.showMinimap'), 'showMinimap'), true);
 
     var enableAllSchemesCheckbox = root.find('.alwaysEnableAllSchemes');
-    add(enableAllSchemesCheckbox, 'alwaysEnableAllSchemes', false, Checkbox);
+    add(new Checkbox(enableAllSchemesCheckbox, 'alwaysEnableAllSchemes'), false);
 
     function handleThemes() {
-        var newTheme = themeSelect.val();
+        var newTheme = themeSelect.val() as colour.AppTheme;
         // Store the scheme of the old theme
         $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
         // Get the scheme of the new theme
@@ -226,10 +235,10 @@ function setupSettings(root, settings, onChange, subLangId) {
 
     var defaultLanguageSelector = root.find('.defaultLanguage');
     var defLang = settings.defaultLanguage || _.keys(langs)[0] || 'c++';
-    add(defaultLanguageSelector, 'defaultLanguage', defLang, Select,
-        _.map(langs, function (lang) {
+    add(new Select(defaultLanguageSelector, 'defaultLanguage', _.map(langs, function (lang) {
             return {label: lang.id, desc: lang.name};
-        })
+        })),
+        defLang
     );
     if (subLangId) {
         defaultLanguageSelector
@@ -238,32 +247,32 @@ function setupSettings(root, settings, onChange, subLangId) {
             .css('cursor', 'not-allowed');
     }
 
-    add(root.find('.newEditorLastLang'), 'newEditorLastLang', true, Checkbox);
+    add(new Checkbox(root.find('.newEditorLastLang'), 'newEditorLastLang'), true);
 
     var formats = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
-    add(root.find('.formatBase'), 'formatBase', formats[0], Select,
-        _.map(formats, function (format) {
+    add(new Select(root.find('.formatBase'), 'formatBase', _.map(formats, function (format) {
             return {label: format, desc: format};
-        }));
+        })),
+        formats[0]);
     //add(root.find('.formatOverrides'), 'formatOverrides', "", TextAreaInput);
-    add(root.find('.wordWrap'), 'wordWrap', false, Checkbox);
+    add(new Checkbox(root.find('.wordWrap'), 'wordWrap'), false);
 
     function setSettings(settings) {
         onSettingsChange(settings);
         onChange(settings);
     }
-    add(root.find('.useSpaces'), 'useSpaces', true, Checkbox);
-    add(root.find('.tabWidth'), 'tabWidth', 4, Numeric, {min: 1, max: 80});
+    add(new Checkbox(root.find('.useSpaces'), 'useSpaces'), true);
+    add(new Numeric(root.find('.tabWidth'), 'tabWidth', {min: 1, max: 80}), 4);
     // note: this is the ctrl+s "Save option"
-    add(root.find('.enableCtrlS'), 'enableCtrlS', true, Checkbox);
-    add(root.find('.enableCtrlStree'), 'enableCtrlStree', true, Checkbox);
-    add(root.find('.editorsFFont'), 'editorsFFont', 'Consolas, "Liberation Mono", Courier, monospace', Textbox);
-    add(root.find('.editorsFLigatures'), 'editorsFLigatures', false, Checkbox);
-    add(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug', true, Checkbox);
-    add(root.find('.useVim'), 'useVim', false, Checkbox);
-    add(root.find('.autoIndent'), 'autoIndent', true, Checkbox);
-    add(root.find('.keepSourcesOnLangChange'), 'keepSourcesOnLangChange', false, Checkbox);
-    add(root.find('.enableCodeLens'), 'enableCodeLens', true, Checkbox);
+    add(new Checkbox(root.find('.enableCtrlS'), 'enableCtrlS'), true);
+    add(new Checkbox(root.find('.enableCtrlStree'), 'enableCtrlStree'), true);
+    add(new Textbox(root.find('.editorsFFont'), 'editorsFFont'), 'Consolas, "Liberation Mono", Courier, monospace');
+    add(new Checkbox(root.find('.editorsFLigatures'), 'editorsFLigatures'), false);
+    add(new Checkbox(root.find('.allowStoreCodeDebug'), 'allowStoreCodeDebug'), true);
+    add(new Checkbox(root.find('.useVim'), 'useVim'), false);
+    add(new Checkbox(root.find('.autoIndent'), 'autoIndent'), true);
+    add(new Checkbox(root.find('.keepSourcesOnLangChange'), 'keepSourcesOnLangChange'), false);
+    add(new Checkbox(root.find('.enableCodeLens'), 'enableCodeLens'), true);
 
     setSettings(settings);
     handleThemes();
@@ -277,11 +286,6 @@ function setupSettings(root, settings, onChange, subLangId) {
     return setSettings;
 }
 
-function getStoredSettings() {
+export function getStoredSettings(): SiteSettings {
     return JSON.parse(local.get('settings', '{}'));
 }
-
-module.exports = {
-    init: setupSettings,
-    getStoredSettings: getStoredSettings,
-};
