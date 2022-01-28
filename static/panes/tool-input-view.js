@@ -30,7 +30,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
-var local = require('../local');
+var Settings = require('../settings').Settings;
 
 require('../modes/asm-mode');
 
@@ -43,7 +43,7 @@ function ToolInputView(hub, container, state) {
     this.source = state.source || '';
     var root = this.domRoot.find('.monaco-placeholder');
 
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
 
     this.editor = monaco.editor.create(root[0], monacoConfig.extendConfig({
         value: '',

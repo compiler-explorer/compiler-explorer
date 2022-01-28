@@ -25,8 +25,8 @@
 import * as monaco from 'monaco-editor';
 
 import { Alert } from './alert';
-import { getStoredSettings } from './settings';
-import { SiteSettings } from './settings.interfaces';
+import { Settings } from './settings';
+import { SiteSettings } from './settings';
 import { FormattingRequest } from './api/formatting.interfaces';
 import { getFormattedCode } from './api/api';
 
@@ -71,7 +71,7 @@ const getDocumentFormatter = (
         options: monaco.languages.FormattingOptions,
         token: monaco.CancellationToken,
     ): Promise<monaco.languages.TextEdit[]> {
-        const settings: SiteSettings = getStoredSettings();
+        const settings = Settings.getStoredSettings();
         // If there is only one style, return __DefaultStyle.
         const base = isOneTrueStyle ? '__DefaultStyle' : settings.formatBase;
         const source = model.getValue();
