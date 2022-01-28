@@ -236,6 +236,7 @@ export class Settings {
     }
 
     private addCheckboxes() {
+        // Known checkbox options in order [selector, key, defaultValue]
         const checkboxes: [string, keyof SiteSettings, boolean][]= [
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
