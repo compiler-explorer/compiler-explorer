@@ -30,17 +30,7 @@ import fs from 'fs-extra';
 import quote from 'shell-quote';
 import _ from 'underscore';
 
-interface IResultLineTag {
-    line?: number;
-    column?: number;
-    file?: string;
-    text: string;
-}
-
-interface IResultLine {
-    text: string;
-    tag?: IResultLineTag;
-}
+import { IResultLine } from '../types/resultline/resultline.interfaces';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
