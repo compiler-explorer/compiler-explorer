@@ -25,7 +25,7 @@ export class ExternalParserBase implements IExternalParser {
     }
 
     private getParserArguments(filters: IParseFilters, fromStdin: boolean): string[] {
-        const parameters = [];
+        const parameters = ['-plt'];
 
         if (fromStdin) parameters.push('-stdin');
         if (filters.binary) parameters.push('-binary');
@@ -78,6 +78,7 @@ export class ExternalParserBase implements IExternalParser {
         const execOptions = {
             env: this.envInfo.getEnv(this.compilerInfo.needsMulti),
             customCwd: buildfolder,
+            maxOutput: 1024 * 1024 * 1024,
         };
         const execResult = await this.execFunc(`./${starterScriptName}`, objdumpArgs, execOptions);
         return this.parseAsmExecResult(execResult);
