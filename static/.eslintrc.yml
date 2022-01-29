@@ -92,3 +92,21 @@ parserOptions:
 globals:
   define: false
   __webpack_public_path__: true
+overrides:
+  - files: [ "*.ts"]
+    plugins:
+      - import
+      - '@typescript-eslint'
+    extends:
+      - prettier
+      - plugin:@typescript-eslint/eslint-recommended
+      - plugin:@typescript-eslint/recommended
+      - plugin:import/typescript
+    env:
+      browser: true
+      es6: true
+      node: false
+    parser: '@typescript-eslint/parser'
+    parserOptions:
+      sourceType: module
+      ecmaVersion: latest
