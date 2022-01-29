@@ -80,7 +80,7 @@ function testFilter(filename, suffix, filters) {
     The before() hooks on mocha are for it()s - They don't execute before the describes!
     That's sad because then we can't have cases be loaded in a before() for every describe child to see.
  */
-describe('Filter test cases', function () {
+describe.skip('Filter test cases', function () {
 
     describe('No filters', function () {
         for (const x of cases) testFilter(x, '.none', {});
