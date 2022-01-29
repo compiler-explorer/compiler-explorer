@@ -139,17 +139,17 @@ function Editor(hub, state, container) {
         closeAfterSelect: true,
         render: {
             option: function (data, escape) {
-                return '<div class="d-flex">' +
+                return '<div class="d-flex" style="align-items: center">' +
                     '<div class="mr-1">' +
-                    '<img src="' + data.logoData + '" width="20" height="20"/>' +
+                    '<img src="' + data.logoData + '" width="20" style="max-height: 20px"/>' +
                     '</div>' +
                     '<div>' + escape(data.name) + '</div>' +
                     '</div>';
             },
             item: function (data, escape) {
-                return '<div class="d-flex">' +
+                return '<div class="d-flex" style="align-items: center">' +
                 '<div class="mr-1">' +
-                '<img src="' + data.logoData + '" width="20" height="20"/>' +
+                '<img src="' + data.logoData + '" width="20" style="max-height: 20px"/>' +
                 '</div>' +
                 '<div>' + escape(data.name) + '</div>' +
                 '</div>';
