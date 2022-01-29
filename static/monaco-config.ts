@@ -25,7 +25,7 @@
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 
-import { SiteSettings } from './settings.interfaces';
+import { SiteSettings } from './settings';
 
 const DEFAULT_MONACO_CONFIG = {
     fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
