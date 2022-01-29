@@ -58,7 +58,7 @@ export interface SiteSettings {
     delayAfterChange: number;
     enableCodeLens: boolean;
     enableCommunityAds: boolean
-    enableCtrlS: boolean;
+    enableCtrlS: string;
     enableCtrlStree: boolean;
     editorsFFont: string
     editorsFLigatures: boolean;
@@ -109,8 +109,8 @@ class Select extends BaseSetting {
         }
     }
 
-    override putUi(value: string | number | boolean) {
-        this.elem.val(value.toString());
+    override putUi(value: string | number | boolean | null) {
+        this.elem.val(value?.toString());
     }
 }
 
@@ -247,7 +247,6 @@ export class Settings {
             ['.editorsFLigatures', 'editorsFLigatures', false],
             ['.enableCodeLens', 'enableCodeLens', true],
             ['.enableCommunityAds', 'enableCommunityAds', true],
-            ['.enableCtrlS', 'enableCtrlS', true],
             ['.enableCtrlStree', 'enableCtrlStree', true],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
@@ -311,6 +310,14 @@ export class Settings {
             return {label: format, desc: format};
         });
         addSelector('.formatBase', 'formatBase', formatsData, formats[0]);
+
+        const enableCtrlSData = [
+            {label: 'true', desc: 'Save To Local File'},
+            {label: 'false', desc: 'Create Short Link'},
+            {label: '2', desc: 'Reformat code'},
+            {label: '3', desc: 'Do nothing'},
+        ];
+        addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true')
     }
 
     private addSliders() {
