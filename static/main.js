@@ -450,6 +450,14 @@ function start() {
         }
     }
 
+    _.each(options.languages, function (lang) {
+        try {
+            lang.logoData = require('../views/resources/logos/' + lang.logoUrl);
+        } catch (ignored) {  // eslint-disable-next-line no-empty
+
+        }
+    }, this);
+
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
     // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
