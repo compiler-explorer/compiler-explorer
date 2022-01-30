@@ -222,6 +222,10 @@
                   label
                     input.compileOnChange(type="checkbox")
                     | Compile automatically when source changes
+                .checkbox
+                  label
+                    input.enableFormatCompile(type="checkbox")
+                    | Enable formatting on compilation (for supported languages)
                 div
                   label Delay before compiling:&nbsp;
                     span.delay-current-value &nbsp;
