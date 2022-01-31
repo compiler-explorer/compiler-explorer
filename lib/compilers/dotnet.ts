@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
+
 import fs from 'fs-extra';
 
 /// <reference types="../base-compiler" />
