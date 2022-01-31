@@ -709,7 +709,7 @@ Editor.prototype.tryPanesLinkLine = function (thisLineNumber, column, reveal) {
 Editor.prototype.requestCompilation = function () {
     this.eventHub.emit('requestCompilation', this.id);
     if (this.settings.formatOnCompile) {
-        this.editor.getAction('editor.action.formatDocument').run();
+        this.runFormatDocumentAction();
     }
 
     _.each(this.hub.trees, _.bind(function (tree) {
