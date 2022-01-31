@@ -63,6 +63,7 @@ export interface SiteSettings {
     editorsFFont: string
     editorsFLigatures: boolean;
     formatBase: FormatBase;
+    formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
     hoverShowSource: boolean;
     keepSourcesOnLangChange: boolean;
@@ -249,6 +250,7 @@ export class Settings {
             ['.enableCommunityAds', 'enableCommunityAds', true],
             ['.enableCtrlS', 'enableCtrlS', true],
             ['.enableCtrlStree', 'enableCtrlStree', true],
+            ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
             ['.keepSourcesOnLangChange', 'keepSourcesOnLangChange', false],
