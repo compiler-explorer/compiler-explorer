@@ -22,21 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { getAsmOpcode } from '../asm-docs-amd64';
-import { BaseAssemblyDocumentationHandler } from '../base-assembly-documentation-handler';
+export type AssemblyInstructionInfo = Record<'tooltip' | 'html' | 'url', string>;
 
-const ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
-
-export class Amd64DocumentationHandler extends BaseAssemblyDocumentationHandler {
-    getInstructionInformation(instruction) {
-        // Try both default and with AT&T suffix removed
-        let info = getAsmOpcode(instruction);
-        if (!info) {
-            const alternativeInstruction = ATT_SUFFIX_REMOVER.exec(instruction);
-            if (alternativeInstruction) {
-                info = getAsmOpcode(alternativeInstruction[1]);
-            }
-        }
-        return info || null;
-    }
+/**
+ * Base class for all assembly documentation generators.
+ *
+ * Implementations of this class are responsible for providing documentation
+ * about an instruction set's assembly instructions by instruction opcode.
+ *
+ * Each implementor should provide a static `get key()` method that returns
+ * the name of the instruction set.
+ */
+export abstract class BaseAssemblyDocumentationProvider {
+    /**
+     * Gather the assembly instruction information by the instruction name.
+     *
+     * Implementors should return null if the instruction is not supported.
+     */
+    public abstract getInstructionInformation(instruction: string): AssemblyInstructionInfo | null;
 }
