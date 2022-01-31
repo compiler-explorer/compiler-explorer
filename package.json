@@ -28,7 +28,6 @@
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
     "bootstrap": "^4.6.1",
-    "bootstrap-slider": "^10.6.2",
     "chart.js": "^3.6.2",
     "clipboard": "^2.0.8",
     "compiler-opt-info": "0.0.4",
