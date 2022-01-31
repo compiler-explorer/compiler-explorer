@@ -25,12 +25,12 @@
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
+import { Settings } from '../settings';
 
 const _ = require('underscore');
 const $ = require('jquery');
 const Alert = require('../alert').Alert;
 const Components = require('../components');
-const local = require('../local');
 const ga = require('../analytics').ga;
 const TomSelect = require('tom-select');
 const Toggles = require('../toggles').Toggles;
@@ -79,7 +79,7 @@ export class Tree {
         this.domRoot.html($('#tree').html());
         this.hub = hub;
         this.eventHub = hub.createEventHub();
-        this.settings = JSON.parse(local.get('settings', '{}'));
+        this.settings = Settings.getStoredSettings();
 
         this.httpRoot = window.httpRoot;
 

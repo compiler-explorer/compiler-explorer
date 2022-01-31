@@ -121,9 +121,9 @@ Execution Only request example:
 ```
 
 The filters are a JSON object with `true`/`false` values. If not supplied,
- defaults are used. If supplied, the filters are used as-is.
- The `compilerOptions` is used to pass extra arguments to the back end, and is
- probably not useful for most REST users.
+ defaults are used. If supplied, the provided filters override their default
+ values. The `compilerOptions` is used to pass extra arguments to the back end,
+ and is probably not useful for most REST users.
 
 To force a cache bypass, set `bypassCache` in the root of the request to `true`.
 

@@ -1,113 +1,113 @@
 {
-    "sessions": [
+  "sessions": [
+    {
+      "id": 1,
+      "language": "c++",
+      "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
+      "conformanceview": false,
+      "compilers": [],
+      "executors": [],
+      "filename": "example.cpp"
+    },
+    {
+      "id": 2,
+      "language": "c++",
+      "source": "#pragma once\n\nint square(int num);\n",
+      "conformanceview": false,
+      "compilers": [],
+      "executors": [],
+      "filename": "square.h"
+    },
+    {
+      "id": 4,
+      "language": "c++",
+      "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
+      "conformanceview": false,
+      "compilers": [],
+      "executors": [],
+      "filename": "square.cpp"
+    },
+    {
+      "id": 3,
+      "language": "cmake",
+      "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
+      "conformanceview": false,
+      "compilers": [],
+      "executors": [],
+      "filename": "CMakeLists.txt"
+    }
+  ],
+  "trees": [
+    {
+      "id": 1,
+      "cmakeArgs": "",
+      "customOutputFilename": "",
+      "isCMakeProject": true,
+      "compilerLanguageId": "c++",
+      "files": [
         {
-            "id": 1,
-            "language": "c++",
-            "source": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
-            "conformanceview": false,
-            "compilers": [],
-            "executors": [],
-            "filename": "example.cpp"
+          "fileId": 1,
+          "isIncluded": true,
+          "isOpen": true,
+          "isMainSource": false,
+          "filename": "example.cpp",
+          "content": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
+          "editorId": 1,
+          "langId": "c++"
         },
         {
-            "id": 2,
-            "language": "c++",
-            "source": "#pragma once\n\nint square(int num);\n",
-            "conformanceview": false,
-            "compilers": [],
-            "executors": [],
-            "filename": "square.h"
+          "fileId": 2,
+          "isIncluded": true,
+          "isOpen": true,
+          "isMainSource": false,
+          "filename": "square.h",
+          "content": "#pragma once\n\nint square(int num);\n",
+          "editorId": 2,
+          "langId": "c++"
         },
         {
-            "id": 4,
-            "language": "c++",
-            "source": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
-            "conformanceview": false,
-            "compilers": [],
-            "executors": [],
-            "filename": "square.cpp"
+          "fileId": 3,
+          "isIncluded": true,
+          "isOpen": false,
+          "isMainSource": true,
+          "filename": "CMakeLists.txt",
+          "content": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
+          "editorId": -1,
+          "langId": "cmake"
         },
         {
-            "id": 3,
-            "language": "cmake",
-            "source": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
-            "conformanceview": false,
-            "compilers": [],
-            "executors": [],
-            "filename": "CMakeLists.txt"
+          "fileId": 4,
+          "isIncluded": true,
+          "isOpen": true,
+          "isMainSource": false,
+          "filename": "square.cpp",
+          "content": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
+          "editorId": 4,
+          "langId": ""
         }
-    ],
-    "trees": [
+      ],
+      "newFileId": 7,
+      "compilers": [
         {
-            "id": 1,
-            "cmakeArgs": "",
-            "customOutputFilename": "",
-            "isCMakeProject": true,
-            "compilerLanguageId": "c++",
-            "files": [
-                {
-                    "fileId": 1,
-                    "isIncluded": true,
-                    "isOpen": true,
-                    "isMainSource": false,
-                    "filename": "example.cpp",
-                    "content": "#include \"square.h\"\n\nint main(int argc, char **argv) {\n    return square(argc);\n}\n",
-                    "editorId": 1,
-                    "langId": "c++"
-                },
-                {
-                    "fileId": 2,
-                    "isIncluded": true,
-                    "isOpen": true,
-                    "isMainSource": false,
-                    "filename": "square.h",
-                    "content": "#pragma once\n\nint square(int num);\n",
-                    "editorId": 2,
-                    "langId": "c++"
-                },
-                {
-                    "fileId": 3,
-                    "isIncluded": true,
-                    "isOpen": false,
-                    "isMainSource": true,
-                    "filename": "CMakeLists.txt",
-                    "content": "project(hello)\n\nadd_executable(output.s\n    example.cpp\n    square.cpp)\n",
-                    "editorId": -1,
-                    "langId": "cmake"
-                },
-                {
-                    "fileId": 4,
-                    "isIncluded": true,
-                    "isOpen": true,
-                    "isMainSource": false,
-                    "filename": "square.cpp",
-                    "content": "#include \"square.h\"\n\nint square(int num) {\n    return num * num;\n}\n",
-                    "editorId": 4,
-                    "langId": ""
-                }
-            ],
-            "newFileId": 7,
-            "compilers": [
-                {
-                    "_internalid": 1,
-                    "id": "g103",
-                    "options": "-g -O3 -flto",
-                    "filters": {
-                        "binary": true,
-                        "commentOnly": true,
-                        "demangle": true,
-                        "directives": true,
-                        "execute": false,
-                        "intel": true,
-                        "labels": true,
-                        "trim": false
-                    },
-                    "libs": [],
-                    "specialoutputs": [],
-                    "tools": []
-                }
-            ],
-            "executors": []
+          "_internalid": 1,
+          "id": "g103",
+          "options": "-g -O3 -flto",
+          "filters": {
+            "binary": true,
+            "commentOnly": true,
+            "demangle": true,
+            "directives": true,
+            "execute": false,
+            "intel": true,
+            "labels": true,
+            "trim": false
+          },
+          "libs": [],
+          "specialoutputs": [],
+          "tools": []
         }
-    ]
+      ],
+      "executors": []
+    }
+  ]
 }

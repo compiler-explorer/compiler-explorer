@@ -372,7 +372,7 @@ pre.content.wrap * {
 
 .change-language {
     line-height: 14px;
-    min-width: 150px !important;
+    min-width: 200px !important;
 }
 
 .change-language .ts-input {
@@ -862,7 +862,7 @@ html[data-theme=dark] {
     cursor: pointer;
 }
 
-.currentCursorPosition {
+.currentCursorPosition, .ctrlSNothing {
     font-size: small;
     border: none;
     user-select: text;

@@ -36,14 +36,14 @@ var options = require('../options').options;
 var monaco = require('monaco-editor');
 var Alert = require('../alert').Alert;
 var bigInt = require('big-integer');
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../libs-widget').LibsWidget;
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
-var Settings = require('../settings');
+var Settings = require('../settings').Settings;
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 
 require('../modes/asm-mode');
@@ -137,7 +137,7 @@ function Compiler(hub, container, state) {
         readOnly: true,
         language: monacoDisassembly,
         glyphMargin: !options.embedded,
-        renderIndentGuides: false,
+        guides: false,
         vimInUse: false,
     }, this.settings));
 
@@ -204,6 +204,7 @@ Compiler.prototype.close = function () {
     this.outputEditor.dispose();
 };
 
+// eslint-disable-next-line max-statements
 Compiler.prototype.initPanerButtons = function () {
     var outputConfig = _.bind(function () {
         return Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId);
@@ -272,6 +273,11 @@ Compiler.prototype.initPanerButtons = function () {
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
             this.lastResult.gccDumpOutput);
+    }, this);
+
+    var createGnatDebugTreeView = _.bind(function () {
+        return Components.getGnatDebugTreeViewWith(this.id, this.source, this.lastResult.gnatDebugTreeOutput,
+            this.getCompilerName(), this.sourceEditorId);
     }, this);
 
     var createGnatDebugView = _.bind(function () {
@@ -405,6 +411,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createGccDumpView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.gnatDebugTreeButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createGnatDebugTreeView);
     }, this));
 
     this.container.layoutManager
@@ -715,6 +731,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
+            produceGnatDebugTree: this.gnatDebugTreeViewOpen,
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
             produceDevice: this.deviceViewOpen,
@@ -862,7 +879,10 @@ Compiler.prototype.sendCompile = function (request) {
                 message = e;
             } else if (e) {
                 message = e.error || e.code || e.message;
-                if (e.stack) console.log(e);
+                if (e.stack) {
+                    // eslint-disable-next-line no-console
+                    console.log(e);
+                }
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
@@ -972,7 +992,7 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     if (this.settings.enableCodeLens) {
         codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
 
-        var currentAsmLang = editorModel.getModeId();
+        var currentAsmLang = editorModel.getLanguageId();
         codeLensHandler.registerProviderForLanguage(currentAsmLang);
     } else {
         // Make sure the codelens is disabled
@@ -1296,6 +1316,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onGnatDebugTreeViewOpened = function (id) {
+    if (this.id === id) {
+        this.gnatDebugTreeButton.prop('disabled', true);
+        this.gnatDebugTreeViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onGnatDebugTreeViewClosed = function (id) {
+    if (this.id === id) {
+        this.gnatDebugTreeButton.prop('disabled', false);
+        this.gnatDebugTreeViewOpen = false;
+    }
+};
+
 Compiler.prototype.onGnatDebugViewOpened = function (id) {
     if (this.id === id) {
         this.gnatDebugButton.prop('disabled', true);
@@ -1477,12 +1512,12 @@ Compiler.prototype.initButtons = function (state) {
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
+    this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
     this.rustHirButton = this.domRoot.find('.btn.view-rusthir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
-    this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -1542,20 +1577,21 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    var libUtils = new LibUtils();
-
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
-        state, _.bind(this.onLibsChanged, this),
-        libUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId)
+    );
 };
 
 Compiler.prototype.updateLibraries = function () {
     if (this.libsWidget) {
-        var libUtils = new LibUtils();
-
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
         }
 
         this.libsWidget.setNewLangId(this.currentLangId,
@@ -1698,6 +1734,7 @@ Compiler.prototype.updateButtons = function () {
     this.rustHirButton.prop('disabled', this.rustHirViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
+    this.gnatDebugTreeButton.prop('disabled', this.gnatDebugTreeViewOpen);
     this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
     // The executorButton does not need to be changed here, because you can create however
     // many executors as you want.
@@ -1711,7 +1748,8 @@ Compiler.prototype.updateButtons = function () {
     this.rustHirButton.toggle(!!this.compiler.supportsRustHirView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
-    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugView);
+    this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
+    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
@@ -1812,6 +1850,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
     this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
 
+    this.eventHub.on('gnatDebugTreeViewOpened', this.onGnatDebugTreeViewOpened, this);
+    this.eventHub.on('gnatDebugTreeViewClosed', this.onGnatDebugTreeViewClosed, this);
     this.eventHub.on('gnatDebugViewOpened', this.onGnatDebugViewOpened, this);
     this.eventHub.on('gnatDebugViewClosed', this.onGnatDebugViewClosed, this);
 
@@ -1909,6 +1949,13 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     var names = unwiseOptions.join(', ');
     var are = unwiseOptions.length === 1 ? ' is ' : ' are ';
     var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
+
+    if (_.contains(optionsArray, '-flto')) {
+        this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
+            group: 'unwiseOption',
+            collapseSimilar: true,
+        });
+    }
 
     if (unwiseOptions.length > 0) {
         this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
@@ -2244,21 +2291,41 @@ var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
 var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
 var decimalLike = /^(#?)(-?[0-9]+)$/;
 
-function getNumericToolTip(value) {
-    var match = hexLike.exec(value) || hexLike2.exec(value);
-    if (match) {
-        return value + ' = ' + bigInt(match[2], 16).toString(10);
-    }
-    match = decimalLike.exec(value);
-    if (match) {
-        var asBig = bigInt(match[2]);
-        if (asBig.isNegative()) {
-            asBig = bigInt('ffffffffffffffff', 16).and(asBig);
-        }
-        return value + ' = 0x' + asBig.toString(16).toUpperCase();
-    }
+function parseNumericValue(value) {
+    var hexMatch = hexLike.exec(value) || hexLike2.exec(value);
+    if (hexMatch)
+        return bigInt(hexMatch[2], 16);
+
+    var decMatch = decimalLike.exec(value);
+    if (decMatch)
+        return bigInt(decMatch[2]);
 
     return null;
+}
+
+function getNumericToolTip(value) {
+    var numericValue = parseNumericValue(value);
+    if (numericValue === null)
+        return null;
+
+    // Decimal representation.
+    var result = numericValue.toString(10);
+
+    // Hexadecimal representation.
+    if (numericValue.isNegative()) {
+        var masked = bigInt('ffffffffffffffff', 16).and(numericValue);
+        result += ' = 0x' + masked.toString(16).toUpperCase();
+    } else {
+        result += ' = 0x' + numericValue.toString(16).toUpperCase();
+    }
+
+    // Printable ASCII character.
+    if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7E)) {
+        var char = String.fromCharCode(numericValue.valueOf());
+        result += ' = \'' + char + '\'';
+    }
+
+    return result;
 }
 
 function getAsmInfo(opcode, instructionSet) {
@@ -2355,7 +2422,8 @@ Compiler.prototype.onMouseMove = function (e) {
                 range: currentWord.range,
                 options: {
                     isWholeLine: false, hoverMessage: [{
-                        value: '`' + numericToolTip + '`',
+                        // We use double `` as numericToolTip may include a single ` character.
+                        value: '``' + numericToolTip + '``',
                     }],
                 },
             };
@@ -2384,7 +2452,7 @@ Compiler.prototype.onMouseMove = function (e) {
 Compiler.prototype.getLineTokens = function (line) {
     var model = this.outputEditor.getModel();
     if (!model || line > model.getLineCount()) return [];
-    var flavour = model.getModeId();
+    var flavour = model.getLanguageId();
     var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
     return tokens.length > 0 ? tokens[0] : [];
 };

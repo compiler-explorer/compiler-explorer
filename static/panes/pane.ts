@@ -29,7 +29,7 @@ import * as monaco from 'monaco-editor';
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
 
 import { FontScale } from '../fontscale';
-import { SiteSettings } from '../settings.interfaces';
+import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
 /**
@@ -47,7 +47,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     eventHub: any /* typeof hub.createEventHub() */;
     selection: monaco.Selection;
     editor: E;
-    fontScale: typeof FontScale;
+    fontScale: FontScale;
     isAwaitingInitialResults: boolean = false;
     settings: SiteSettings | {} = {};
 

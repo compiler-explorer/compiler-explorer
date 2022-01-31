@@ -41,7 +41,7 @@ var url = require('./url');
 var clipboard = require('clipboard');
 var Hub = require('./hub').Hub;
 var Sentry = require('@sentry/browser');
-var Settings = require('./settings');
+var Settings = require('./settings').Settings;
 var local = require('./local');
 var Alert = require('./alert').Alert;
 var themer = require('./themes');
@@ -112,9 +112,9 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
-        setSettings(_.extend(currentSettings, newSettings));
+        SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
     return currentSettings;
 }
@@ -141,7 +141,7 @@ function setupButtons(options) {
         $('#privacy').on('click', function (event, data) {
             var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                require('./policies/privacy.html')
+                require('./policies/privacy.html').default
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -160,7 +160,7 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+            var modal = alertSystem.ask(getCookieTitle(), require('./policies/cookies.html').default, {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -186,7 +186,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./changelog.html')));
+        alertSystem.alert('Changelog', $(require('./changelog.html').default));
     });
 
     $('#ces').on('click', function () {
@@ -456,8 +456,7 @@ function start() {
     // share the same cookie domain for some settings.
     var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {
-        cookieDomain = cookieDomain[0];
-        jsCookie.defaults.domain = cookieDomain;
+        jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
     var defaultConfig = {

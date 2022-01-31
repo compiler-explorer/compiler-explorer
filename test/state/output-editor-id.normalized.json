@@ -1,34 +1,32 @@
 {
-    "sessions": [
+  "sessions": [
+    {
+      "id": 1,
+      "language": "c++",
+      "source": "#include <iostream>\n \nint main() {\n  std::cout << \"Hello CE!\";\n}",
+      "conformanceview": false,
+      "compilers": [
         {
-            "id": 1,
-            "language": "c++",
-            "source": "#include <iostream>\n \nint main() {\n  std::cout << \"Hello CE!\";\n}",
-            "conformanceview": false,
-            "compilers": [
-                {
-                    "_internalid": 1,
-                    "id": "g83",
-                    "options": "-O2 -march=haswell -Wall -Wextra -pedantic -Wno-unused-variable -Wno-unused-parameter",
-                    "filters": {
-                        "binary": false,
-                        "commentOnly": true,
-                        "demangle": true,
-                        "directives": true,
-                        "execute": true,
-                        "intel": true,
-                        "labels": true,
-                        "trim": true
-                    },
-                    "libs": [],
-                    "specialoutputs": [
-                        "compilerOutput"
-                    ],
-                    "tools": []
-                }
-            ],
-            "executors": []
+          "_internalid": 1,
+          "id": "g83",
+          "options": "-O2 -march=haswell -Wall -Wextra -pedantic -Wno-unused-variable -Wno-unused-parameter",
+          "filters": {
+            "binary": false,
+            "commentOnly": true,
+            "demangle": true,
+            "directives": true,
+            "execute": true,
+            "intel": true,
+            "labels": true,
+            "trim": true
+          },
+          "libs": [],
+          "specialoutputs": ["compilerOutput"],
+          "tools": []
         }
-    ],
-    "trees": []
+      ],
+      "executors": []
+    }
+  ],
+  "trees": []
 }

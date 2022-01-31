@@ -42,6 +42,11 @@ lang-d:
     - lib/compilers/dmd.js
     - lib/compilers/ldc.js
     - etc/config/d.*.properties
+lang-dotnet:
+    - lib/compilers/dotnet.js
+    - etc/config/csharp.*.properties
+    - etc/config/fsharp.*.properties
+    - etc/config/vb.*.properties
 lang-fortran:
     - lib/compilers/fortran.js
     - etc/config/fortran.*.properties
