@@ -79,7 +79,7 @@
     "tslib": "^2.3.1",
     "underscore": "^1.13.2",
     "url-join": "^4.0.1",
-    "vis": "4.20.1",
+    "vis-network": "^9.1.0",
     "whatwg-fetch": "^3.6.2",
     "which": "^2.0.2",
     "winston": "^3.3.3",
