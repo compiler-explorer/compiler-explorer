@@ -89,6 +89,9 @@ export class Sharing {
         this.layout.eventHub.on('displaySharingPopover', () => {
             this.openShareModalForType(LinkType.Short)
         });
+        this.layout.eventHub.on('copyShortLinkToClip', () => {
+            this.copyLinkTypeToClipboard(LinkType.Short)
+        });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
         $('#sharelinkdialog').on('show.bs.modal', this.onOpenModalPane.bind(this))
