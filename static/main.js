@@ -52,6 +52,12 @@ var HistoryWidget = require('./history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
 
+var logos = require.context(
+    '../views/resources/logos',
+    false,
+    /\.(png|svg)$/
+);
+
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
@@ -423,6 +429,16 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
+function setupLanguageLogos(languages) {
+    _.each(languages, function (lang) {
+        try {
+            lang.logoData = logos('./' + lang.logoUrl);
+        } catch (ignored) {
+            console.log(ignored);
+        }
+    }, this);
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -450,13 +466,7 @@ function start() {
         }
     }
 
-    _.each(options.languages, function (lang) {
-        try {
-            lang.logoData = require('../views/resources/logos/' + lang.logoUrl);
-        } catch (ignored) {  // eslint-disable-next-line no-empty
-
-        }
-    }, this);
+    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
