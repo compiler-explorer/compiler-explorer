@@ -141,7 +141,7 @@ function Editor(hub, state, container) {
             option: function (data, escape) {
                 return '<div class="d-flex" style="align-items: center">' +
                     '<div class="mr-1">' +
-                    '<img src="' + data.logoData + '" width="20" style="max-height: 20px"/>' +
+                    '<img src="' + data.logoData + '" width="23" style="max-height: 23px"/>' +
                     '</div>' +
                     '<div>' + escape(data.name) + '</div>' +
                     '</div>';
