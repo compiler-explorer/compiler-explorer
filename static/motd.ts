@@ -72,7 +72,6 @@ export function initialise(url: string, motdNode: JQuery, defaultLanguage: strin
     if (!url) return;
     $.getJSON(url)
         .then((res: Motd) => {
-            console.log(res);
             onMotd(res);
             handleMotd(res, motdNode, defaultLanguage, adsEnabled, onHide);
         })
