@@ -26,7 +26,6 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 /* eslint-disable node/no-unpublished-import */
-import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
@@ -50,14 +49,6 @@ const plugins = [
         languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 
             'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb'],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
-    }),
-    new CopyWebpackPlugin({
-        patterns: [
-            {
-                from: 'node_modules/es6-shim/es6-shim.min.js',
-                to: path.join(staticPath, '[name].[contenthash][ext]'),
-            },
-        ],
     }),
     new ProvidePlugin({
         $: 'jquery',
