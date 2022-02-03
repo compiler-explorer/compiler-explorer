@@ -32,9 +32,12 @@ interface RegisteredCodeLens {
 }
 
 let registeredCodelenses: RegisteredCodeLens[] = [];
-let providersPerLanguage: Record<string, monaco.IDisposable> = {};
+const providersPerLanguage: Record<string, monaco.IDisposable> = {};
 
-export function registerLensesForCompiler(compilerId: number, editorModel: monaco.editor.ITextModel, lenses: monaco.languages.CodeLens[]): void {
+export function registerLensesForCompiler(
+    compilerId: number,
+    editorModel: monaco.editor.ITextModel,
+    lenses: monaco.languages.CodeLens[]): void {
     const item: RegisteredCodeLens = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
         return item.compilerId === compilerId;
     });

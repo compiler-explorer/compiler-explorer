@@ -35,7 +35,7 @@ import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
 export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
-    linkedFadeTimeoutId: number = -1;
+    linkedFadeTimeoutId = -1;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
@@ -193,7 +193,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         columnBegin: number,
         columnEnd: number,
         revealLinesInEditor: boolean,
-        sender: string,
+        sender: string
     ): void {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const lineNumbers: number[] = [];

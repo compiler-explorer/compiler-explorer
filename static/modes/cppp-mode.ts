@@ -23,23 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
-var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 // We need to create a new definition for cpp so we can remove invalid keywords
 
 function definition() {
-    var cppp = $.extend(true, {}, cpp.language); // deep copy
+    const cppp = $.extend(true, {}, cpp.language); // deep copy
 
     function removeKeyword(keyword) {
-        var index = cppp.keywords.indexOf(keyword);
+        const index = cppp.keywords.indexOf(keyword);
         if (index > -1) {
             cppp.keywords.splice(index, 1);
         }
     }
 
     function removeKeywords(keywords) {
-        for (var i = 0; i < keywords.length; ++i) {
+        for (let i = 0; i < keywords.length; ++i) {
             removeKeyword(keywords[i]);
         }
     }
@@ -47,7 +47,7 @@ function definition() {
     function addKeywords(keywords) {
         // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as
         // far as I can tell, they indeed are all strings. This somehow fixes it. If you know how to fix it, plz go
-        for (var i = 0; i < keywords.length; ++i) {
+        for (let i = 0; i < keywords.length; ++i) {
             cppp.keywords.push(keywords[i]);
         }
     }
@@ -65,7 +65,7 @@ function definition() {
     return cppp;
 }
 
-var def = definition();
+const def = definition();
 
 monaco.languages.register({id: 'cppp'});
 monaco.languages.setLanguageConfiguration('cppp', cpp.conf);

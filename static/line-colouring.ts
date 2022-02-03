@@ -6,13 +6,13 @@ class ColouredSourcelineInfo {
     compilerId: number;
     compilerLine: number;
     colourIdx: number;
-};
+}
 
 export class LineColouring {
-    private colouredSourceLinesByEditor: Object;
+    private colouredSourceLinesByEditor: ColouredSourcelineInfo[][];
     private multifileService: MultifileService;
-    private linesAndColourByCompiler: Object;
-    private linesAndColourByEditor: Object;
+    private linesAndColourByCompiler: Record<number, Record<number, number>>;
+    private linesAndColourByEditor: Record<number, Record<number, number>>;
 
     constructor(multifileService: MultifileService) {
         this.multifileService = multifileService;
@@ -33,7 +33,7 @@ export class LineColouring {
                 const editorId = this.multifileService.getEditorIdByFilename(asmLine.source.file);
                 if (editorId > 0) {
                     if (!this.colouredSourceLinesByEditor[editorId]) {
-                        this.colouredSourceLinesByEditor[editorId] = new Array<ColouredSourcelineInfo>();
+                        this.colouredSourceLinesByEditor[editorId] = [];
                     }
 
                     if (!this.linesAndColourByCompiler[compilerId]) {
@@ -111,7 +111,7 @@ export class LineColouring {
         }
     }
 
-    public getColoursForCompiler(compilerId: number): Object {
+    public getColoursForCompiler(compilerId: number): Record<number, number> {
         if (this.linesAndColourByCompiler[compilerId]) {
             return this.linesAndColourByCompiler[compilerId];
         } else {
@@ -119,11 +119,11 @@ export class LineColouring {
         }
     }
 
-    public getColoursForEditor(editorId: number): Object {
+    public getColoursForEditor(editorId: number): Record<number, number> {
         if (this.linesAndColourByEditor[editorId]) {
             return this.linesAndColourByEditor[editorId];
         } else {
             return {};
         }
     }
-};
+}

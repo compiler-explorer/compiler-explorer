@@ -32,6 +32,7 @@ rules:
     - error
     - 120
     - ignoreRegExpLiterals: true
+      ignoreComments: true
   max-statements:
     - error
     - 50

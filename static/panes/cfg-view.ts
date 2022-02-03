@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as vis from "vis-network";
+import * as vis from 'vis-network';
 import _ from 'underscore';
 import { Toggles } from '../toggles';
-import { ga } from "../analytics";
+import { ga } from '../analytics';
 import TomSelect from 'tom-select';
-import { Container } from "golden-layout";
-import { CfgState } from "./cfg-view.interfaces";
+import { Container } from 'golden-layout';
+import { CfgState } from './cfg-view.interfaces';
 
 export class Cfg {
     container: Container;
@@ -44,11 +44,11 @@ export class Cfg {
     networkOpts: any;
     cfgVisualiser: any;
     compilerId: number;
-    _compilerName: string = '';
+    _compilerName = '';
     _editorid: number;
     _binaryFilter: boolean;
     functionPicker: TomSelect;
-    supportsCfg: boolean = false;
+    supportsCfg = false;
     toggles: Toggles;
     toggleNavigationButton: JQuery;
     toggleNavigationTitle: string;
@@ -279,7 +279,7 @@ export class Cfg {
         return `Graph Viewer ${this._compilerName}` +
             `(Editor #${this._editorid}, ` +
             `Compiler #${this.compilerId})`;
-    };
+    }
 
     setTitle() {
         this.container.setTitle(this.getPaneName());
@@ -324,7 +324,7 @@ export class Cfg {
         };
         const markLevels = (node: any) => {
             node.dagEdges.forEach((targetIndex: number) => {
-                let target = nodes[targetIndex];
+                const target = nodes[targetIndex];
                 target.level = Math.max(target.level, node.level + 1);
                 if (--target.inCount === 0) {
                     markLevels(target);

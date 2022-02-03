@@ -32,8 +32,9 @@ for (const key in extraOptions) {
     window.compilerExplorerOptions[key] = extraOptions[key];
 }
 
-declare var __webpack_public_path__: string;
+declare let __webpack_public_path__: string;
 
+// eslint-disable-next-line prefer-const
 __webpack_public_path__ = window.staticRoot;
 
 export const options = window.compilerExplorerOptions;
