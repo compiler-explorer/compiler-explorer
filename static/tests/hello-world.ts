@@ -1,4 +1,4 @@
-import { ITestable } from "./frontend-testing.interfaces";
+import { ITestable } from './frontend-testing.interfaces';
 import { assert } from 'chai';
 
 class HelloWorldTests implements ITestable {
