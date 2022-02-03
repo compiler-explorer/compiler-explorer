@@ -34,7 +34,7 @@ var LibsWidget = require('../libs-widget').LibsWidget;
 var AnsiToHtml = require('../ansi-to-html').Filter;
 var TimingWidget = require('../timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
-var Settings = require('../settings');
+var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 

@@ -43,7 +43,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
     }
 
     for (let i = 8; i <= 30; i++) {
-        var item = $('<button></button>');
+        const item = $('<button></button>');
 
         item.attr('data-value', i)
             .addClass('dropdown-item btn btn-sm btn-light')
@@ -59,7 +59,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
     if (buttonDropdown) {
         buttonDropdown.on('wheel', (e: any) => {
             e.preventDefault();
-            var selectedId = elem.find('.active').index();
+            let selectedId = elem.find('.active').index();
             if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
                 selectedId++;
             } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
@@ -99,7 +99,7 @@ export class FontScale extends EventEmitter.EventEmitter {
         makeFontSizeDropdown(
             this.domRoot.find('.font-size-list'),
             this,
-            this.domRoot.find('.fs-button'),
+            this.domRoot.find('.fs-button')
         );
     }
 

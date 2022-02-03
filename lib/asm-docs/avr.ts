@@ -22,37 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as exec from './exec';
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-avr';
 
-export class BaseFormatter {
-    constructor(formatterInfo) {
-        this.formatterInfo = formatterInfo;
-    }
-
-    /**
-     * Format the provided source code using the formatting tool.
-     *
-     * This function should construct the final arguments passed to the tool
-     * executable.
-     *
-     * Optionally accept a third argument to respect other formatting options.
-     * The possible options passed are as follows:
-     *
-     * interface AdditionalFormatOptions {
-     *     useSpaces: boolean;
-     *     tabWidth: number;
-     *     baseStyle: string;
-     * }
-     */
-    async format(source, options) {
-        const args = [`--style=${options.baseStyle}`];
-        return await exec.execute(this.formatterInfo.exe, args, {input: source});
-    }
-
-    /**
-     * Test if a formatting base style is valid for this formatter
-     */
-    isValidStyle(style) {
-        return this.formatterInfo.styles.includes(style);
+export class AvrDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() { return 'avr'; }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
     }
 }

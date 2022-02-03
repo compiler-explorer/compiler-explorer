@@ -24,7 +24,7 @@
 
 import * as monaco from 'monaco-editor';
 
-type AppTheme = 'default' | 'dark' | 'all';
+export type AppTheme = 'default' | 'dark' | 'all';
 
 interface ColourScheme {
     name: string;
@@ -47,7 +47,7 @@ export function applyColours(
     editor: monaco.editor.ICodeEditor,
     colours: Record<number, number>,
     schemeName: string,
-    previousDecorations: string[],
+    previousDecorations: string[]
 ): string[] {
     const scheme = schemes.find((scheme) => scheme.name === schemeName) ?? schemes[0];
     const newDecorations: monaco.editor.IModelDeltaDecoration[] = Object.entries(colours)

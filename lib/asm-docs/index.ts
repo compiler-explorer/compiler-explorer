@@ -22,36 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { propsFor } from '../../properties';
+import { makeKeyedTypeGetter } from '../keyed-type';
 
-import { Amd64DocumentationHandler } from './amd64';
-import { Arm32DocumentationHandler } from './arm32';
-import { JavaDocumentationHandler } from './java';
-import { Mos6502DocumentationHandler } from './mos6502';
+import * as all from './_all';
 
-/** @type {Record.<string, BaseAssemblyDocumentationHandler>} */
-const ASSEMBLY_DOCUMENTATION_HANDLERS = {
-    amd64: new Amd64DocumentationHandler(),
-    arm32: new Arm32DocumentationHandler(),
-    java: new JavaDocumentationHandler(),
-    6502: new Mos6502DocumentationHandler(),
-};
+export { BaseAssemblyDocumentationProvider } from './base';
+export * from './_all';
 
-const MAX_STATIC_AGE = propsFor('asm-docs')('staticMaxAgeSecs', 10);
-
-/**
- * Initialize all Assembly Docs routes
- *
- * @param {e.Router} router
- */
-export const setup = (router) => router.get('/asm/:arch/:opcode', (req, res) => {
-    if (MAX_STATIC_AGE > 0) {
-        res.setHeader('Cache-Control', `public, max-age=${MAX_STATIC_AGE}`);
-    }
-    const architecture = req.params.arch;
-    const handler = ASSEMBLY_DOCUMENTATION_HANDLERS[architecture];
-    if (handler !== undefined) {
-        return handler.handle(req, res);
-    }
-    res.status(404).json({ error: `No documentation for '${architecture}'` }).send();
-});
+export const getDocumentationProviderTypeByKey = makeKeyedTypeGetter('documentation provider', all);

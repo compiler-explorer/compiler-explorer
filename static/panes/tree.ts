@@ -25,12 +25,12 @@
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
+import { Settings } from '../settings';
 
 const _ = require('underscore');
 const $ = require('jquery');
 const Alert = require('../alert').Alert;
 const Components = require('../components');
-const local = require('../local');
 const ga = require('../analytics').ga;
 const TomSelect = require('tom-select');
 const Toggles = require('../toggles').Toggles;
@@ -62,9 +62,9 @@ export class Tree {
     private customOutputFilenameInput: any;
     public multifileService: MultifileService;
     private lineColouring: LineColouring;
-    private readonly ourCompilers: {};
-    private readonly busyCompilers: {};
-    private readonly asmByCompiler: {};
+    private readonly ourCompilers: Record<number, boolean>;
+    private readonly busyCompilers: Record<number, boolean>;
+    private readonly asmByCompiler: Record<number, any>;
     private selectize: any;
     private languageBtn: any;
     private toggleCMakeButton: any;
@@ -79,7 +79,7 @@ export class Tree {
         this.domRoot.html($('#tree').html());
         this.hub = hub;
         this.eventHub = hub.createEventHub();
-        this.settings = JSON.parse(local.get('settings', '{}'));
+        this.settings = Settings.getStoredSettings();
 
         this.httpRoot = window.httpRoot;
 
@@ -181,7 +181,7 @@ export class Tree {
             customOutputFilename: this.getCustomOutputFilename(),
             ...this.multifileService.getState(),
         };
-    };
+    }
 
     private updateState() {
         const state = this.currentState();
@@ -352,15 +352,18 @@ export class Tree {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
-                this.alertSystem.ask('Delete file', `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
-                    yes: () => {
-                        this.removeFile(fileId);
-                    },
-                    yesClass: 'btn-danger',
-                    yesHtml: 'Delete',
-                    noClass: 'btn-primary',
-                    noHtml: 'Cancel'
-                });
+                this.alertSystem.ask(
+                    'Delete file',
+                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
+                        yes: () => {
+                            this.removeFile(fileId);
+                        },
+                        yesClass: 'btn-danger',
+                        yesHtml: 'Delete',
+                        noClass: 'btn-primary',
+                        noHtml: 'Cancel',
+                    }
+                );
             }
         });
 

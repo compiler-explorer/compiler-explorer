@@ -35,7 +35,7 @@ import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
 export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
-    linkedFadeTimeoutId: number = -1;
+    linkedFadeTimeoutId = -1;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
@@ -161,8 +161,6 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
         if (e === null || e.target === null || e.target.position === null) return;
-        // TODO(supergrecko): Refactor base class to properly type this.
-        // @ts-expect-error mismatched types on this.settings
         if (this.settings.hoverShowSource === true && this.irCode) {
             this.clearLinkedLines();
             const hoverCode = this.irCode[e.target.position.lineNumber - 1];
@@ -193,7 +191,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         columnBegin: number,
         columnEnd: number,
         revealLinesInEditor: boolean,
-        sender: string,
+        sender: string
     ): void {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const lineNumbers: number[] = [];

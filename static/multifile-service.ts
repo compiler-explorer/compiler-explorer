@@ -24,9 +24,9 @@
 
 import _ from 'underscore';
 import path from 'path';
-var options = require('./options').options;
-var languages = options.languages;
-var JSZip = require('jszip');
+const options = require('./options').options;
+const languages = options.languages;
+const JSZip = require('jszip');
 
 export class MultifileFile {
     fileId: number;
@@ -145,7 +145,7 @@ export class MultifileService {
                     return;
                 }
 
-                let content = await zip.file(zipEntry.name).async("string");
+                let content = await zip.file(zipEntry.name).async('string');
                 if (content.length > this.maxFilesize) {
                     return;
                 }
@@ -177,9 +177,9 @@ export class MultifileService {
             if (file.isIncluded) {
                 zip.file(file.filename, this.getFileContents(file));
             }
-        })
+        });
 
-        zip.generateAsync({type:"blob"}).then((blob) => {
+        zip.generateAsync({type:'blob'}).then((blob) => {
             callback(blob);
         }, (err) => {
             throw err;
@@ -237,15 +237,15 @@ export class MultifileService {
         }
     }
 
-    public isEditorPartOfProject(editorId: Number) {
-        var found = _.find(this.files, (file: MultifileFile) => {
+    public isEditorPartOfProject(editorId: number) {
+        const found = _.find(this.files, (file: MultifileFile) => {
             return (file.isIncluded) && file.isOpen && (editorId === file.editorId);
         });
 
         return !!found;
     }
 
-    public getFileByFileId(fileId: Number) {
+    public getFileByFileId(fileId: number) {
         const file = _.find(this.files, (file: MultifileFile) => {
             return file.fileId === fileId;
         });
@@ -255,12 +255,12 @@ export class MultifileService {
         return file;
     }
 
-    public setAsMainSource(mainFileId: Number) {
-        for (let file of this.files) {
+    public setAsMainSource(mainFileId: number) {
+        for (const file of this.files) {
             file.isMainSource = false;
         }
 
-        var mainfile = this.getFileByFileId(mainFileId);
+        const mainfile = this.getFileByFileId(mainFileId);
         mainfile.isMainSource = true;
     }
 
@@ -275,7 +275,7 @@ export class MultifileService {
     public getFiles(): Array<FiledataPair> {
         this.filterOutNonsense();
 
-        var filtered = _.filter(this.files, (file: MultifileFile) => {
+        const filtered = _.filter(this.files, (file: MultifileFile) => {
             return !file.isMainSource && file.isIncluded;
         });
 
@@ -314,7 +314,7 @@ export class MultifileService {
     }
 
     public getMainSource(): string {
-        var mainFile = _.find(this.files, (file: MultifileFile) => {
+        const mainFile = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -397,7 +397,7 @@ export class MultifileService {
             file.isIncluded = true;
         }
 
-        return;
+        
     }
 
     public async includeByEditorId(editorId: number): Promise<void> {
@@ -464,14 +464,14 @@ export class MultifileService {
     }
 
     public async renameFile(fileId: number): Promise<boolean> {
-        var file = this.getFileByFileId(fileId);
+        const file = this.getFileByFileId(fileId);
 
         let editor: any = null;
         if (file.isOpen && file.editorId > 0) {
             editor = this.hub.getEditorById(file.editorId);
         }
 
-        let suggestedFilename = this.getSuggestedFilename(file, editor);
+        const suggestedFilename = this.getSuggestedFilename(file, editor);
 
         return new Promise((resolve) => {
             this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
@@ -500,13 +500,13 @@ export class MultifileService {
                 yesClass: 'btn btn-primary',
                 yesHtml: 'Rename',
                 noClass: 'btn-outline-info',
-                noHtml: 'Cancel'
+                noHtml: 'Cancel',
             });
         });
     }
 
     public async renameFileByEditorId(editorId: number): Promise<boolean> {
-        var file = this.getFileByEditorId(editorId);
+        const file = this.getFileByEditorId(editorId);
 
         return this.renameFile(file.fileId);
     }
