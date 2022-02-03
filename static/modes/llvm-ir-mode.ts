@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 // This definition is based on the official LLVM vim syntax:
 // http://llvm.org/svn/llvm-project/llvm/trunk/utils/vim/syntax/llvm.vim

@@ -89,7 +89,7 @@ function setStyleColor(red: number, green: number, blue: number, colors: ColorCo
 /**
  * Converts from a number like 15 to a hex string like 'F'
  *
- * @param num the number to convert
+ * @param num - the number to convert
  * @returns the resulting hex string
  */
 function toHexString(num: number): string {
@@ -105,7 +105,7 @@ function toHexString(num: number): string {
 /**
  * Converts from an array of numbers like [15, 15, 15] to a hex string like 'FFF'
  *
- * @param ref the array of numbers to join
+ * @param ref - the array of numbers to join
  * @returns the resulting hex string
  */
 function toColorHexString(ref: number[]): string {
@@ -187,8 +187,8 @@ function resetStyles(stack: string[]): string {
 /**
  * Creates an array of numbers ranging from low to high
  *
- * @param low the lowest number in the array to create
- * @param high the highest number in the array to create
+ * @param low - the lowest number in the array to create
+ * @param high - the highest number in the array to create
  * @returns the resulting array
  * @example range(3, 7); // creates [3, 4, 5, 6, 7]
  */
@@ -208,13 +208,13 @@ function range(low: number, high: number): number[] {
 function notCategory(category: string): (e: StickyStackElement) => boolean {
     return (e: StickyStackElement): boolean => {
         return (category === null || e.category !== category) && category !== 'all';
-    }
+    };
 }
 
 /**
  * Converts a code into an ansi token type
  *
- * @param _code the code to convert
+ * @param _code - the code to convert
  * @returns the ansi token type
  */
 function categoryForCode(_code: string | number): string {
@@ -289,8 +289,8 @@ interface Token {
 }
 
 function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
-    let ansiMatch: boolean = false;
-    let ansiHandler: number = 3;
+    let ansiMatch = false;
+    const ansiHandler = 3;
 
     function remove(): string {
         return '';
@@ -317,7 +317,7 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
             g1 = '0';
         }
 
-        let res: string[] = g1.replace(/;+$/, '').split(';');
+        const res: string[] = g1.replace(/;+$/, '').split(';');
 
         for (let o = 0, len = res.length; o < len; o++) {
             callback('display', res[o]);
@@ -407,7 +407,10 @@ interface StickyStackElement {
 /**
  * If streaming, then the stack is "sticky"
  */
-function updateStickyStack(stickyStack: StickyStackElement[], token: string, data: string | number): StickyStackElement[] {
+function updateStickyStack(
+    stickyStack: StickyStackElement[],
+    token: string,
+    data: string | number): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
         stickyStack.push({
@@ -438,8 +441,6 @@ export class Filter {
     }
 
     public toHtml(_input: string | string[]): string {
-        const _this = this;
-
         const input: string[] = typeof _input === 'string' ? [_input] : _input;
         const stack = this.stack;
         const options = this.opts;
@@ -451,17 +452,17 @@ export class Filter {
             if (output) {
                 buf.push(output);
             }
-        })
+        });
 
         tokenize(input.join(''), options, (token, data) => {
-            let output = generateOutput(stack, token, data, options);
+            const output = generateOutput(stack, token, data, options);
 
             if (output) {
                 buf.push(output);
             }
 
             if (options.stream) {
-                _this.stickyStack = updateStickyStack(_this.stickyStack, token, data);
+                this.stickyStack = updateStickyStack(this.stickyStack, token, data);
             }
         });
 

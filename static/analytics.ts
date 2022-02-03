@@ -34,8 +34,8 @@ if (options.statusTrackingEnabled && options.sentryDsn) {
 }
 
 class GAProxy {
-    private hasBeenEnabled: boolean = false;
-    private isEnabled: boolean = false;
+    private hasBeenEnabled = false;
+    private isEnabled = false;
     private _proxy: (...args) => void = () => {
     };
 
@@ -43,9 +43,11 @@ class GAProxy {
         if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
             // Check if this is a re-enable, as the script is already there in this case
             if (!this.hasBeenEnabled) {
-                (function(i, s, o, g, r, a, m) {
+                (function (i, s, o, g, r, a, m) {
                     i.GoogleAnalyticsObject = r;
-                    i[r] = i[r] || function() {
+                    i[r] = i[r] || function () {
+                        // We could push the unexpanded args, but better might have some unintended side-effects
+                        // eslint-disable-next-line prefer-rest-params
                         (i[r].q = i[r].q || []).push(arguments);
                     };
                     i[r].l = Date.now();

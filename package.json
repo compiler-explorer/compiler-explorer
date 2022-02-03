@@ -168,7 +168,7 @@
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
-    "*.js": [
+    "*.[jt]s": [
       "npm run ci-lint --",
       "npm run format-fix --"
     ]

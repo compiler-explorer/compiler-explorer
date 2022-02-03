@@ -24,11 +24,11 @@
 
 'use strict';
 
-var monaco = require('monaco-editor');
-var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 function definition() {
-    var ispc = $.extend(true, {}, cpp.language); // deep copy
+    const ispc = $.extend(true, {}, cpp.language); // deep copy
 
     ispc.tokenPostfix = '.ispc';
 

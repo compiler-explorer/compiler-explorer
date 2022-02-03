@@ -24,7 +24,10 @@
 
 import _ from 'underscore';
 
-import { AssemblyDocumentationResponse, AssemblyDocumentationRequest } from '../../types/features/assembly-documentation.interfaces';
+import {
+    AssemblyDocumentationResponse,
+    AssemblyDocumentationRequest,
+} from '../../types/features/assembly-documentation.interfaces';
 import { FormattingRequest, FormattingResponse } from './formatting.interfaces';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
@@ -40,19 +43,19 @@ const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResp
         credentials: 'include',
         headers: {
             ...options?.headers,
-            'Accept': 'application/json',
+            Accept: 'application/json',
         },
-    },
+    }
 );
 
 /** GET /api/asm/:arch/:instruction */
 export const getAssemblyDocumentation = async (
-    options: AssemblyDocumentationRequest,
+    options: AssemblyDocumentationRequest
 ) => await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`);
 
 /** POST /api/format/:formatter */
 export const getFormattedCode = async (
-    options: FormattingRequest,
+    options: FormattingRequest
 ) => await request<FormattingResponse>(`/format/${options.formatterId}`, {
     method: 'POST',
     headers: {
