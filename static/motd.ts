@@ -55,7 +55,7 @@ function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: b
                 motdNode.addClass('d-none');
                 onHide();
             });
-            motdNode.find('a').on('click', function() {
+            motdNode.find('a').on('click', function () {
                 ga.proxy('send', {
                     hitType: 'event',
                     eventCategory: 'Ads',
@@ -68,7 +68,14 @@ function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: b
     }
 }
 
-export function initialise(url: string, motdNode: JQuery, defaultLanguage: string, adsEnabled: boolean, onMotd: (res?: Motd) => void, onHide: () => void) {
+export function initialise(
+    url: string,
+    motdNode: JQuery,
+    defaultLanguage: string,
+    adsEnabled: boolean,
+    onMotd: (res?: Motd) => void,
+    onHide: () => void)
+{
     if (!url) return;
     $.getJSON(url)
         .then((res: Motd) => {

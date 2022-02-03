@@ -26,7 +26,7 @@ import { options } from './options';
 import * as colour from './colour';
 import * as local from './local';
 
-const themes = require('./themes').themes
+const themes = require('./themes').themes;
 
 type ColourScheme =
     | 'rainbow'
@@ -106,8 +106,8 @@ class Select extends BaseSetting {
         super(elem, name);
 
         elem.empty();
-        for (let e of populate) {
-            elem.append($(`<option value="${e.label}">${e.desc}</option>`))
+        for (const e of populate) {
+            elem.append($(`<option value="${e.label}">${e.desc}</option>`));
         }
     }
 
@@ -148,12 +148,12 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.elem.val().toString())
+        return parseInt(this.elem.val().toString());
     }
 
     private updateDisplay() {
         this.display.text(this.formatter(this.getUi()));
-    };
+    }
 }
 
 class Textbox extends BaseSetting {}
@@ -177,7 +177,7 @@ class Numeric extends BaseSetting {
     }
 
     override putUi(value: number) {
-        this.elem.val(this.clampValue(value))
+        this.elem.val(this.clampValue(value));
     }
 
     private clampValue(value: number): number {
@@ -217,7 +217,7 @@ export class Settings {
     }
 
     private onUiChange() {
-        for (let setting of this.settingsObjs) {
+        for (const setting of this.settingsObjs) {
             this.settings[setting.name] = setting.getUi();
         }
         this.onChange(this.settings);
@@ -225,7 +225,7 @@ export class Settings {
 
     private onSettingsChange(settings: SiteSettings) {
         this.settings = settings;
-        for (let setting of this.settingsObjs) {
+        for (const setting of this.settingsObjs) {
             setting.putUi(this.settings[setting.name]);
         }
     }
@@ -234,7 +234,7 @@ export class Settings {
         const key = setting.name;
         if (this.settings[key] === undefined) this.settings[key] = defaultValue;
         this.settingsObjs.push(setting);
-        setting.elem.on('change', this.onUiChange.bind(this))
+        setting.elem.on('change', this.onUiChange.bind(this));
     }
 
     private addCheckboxes() {
@@ -262,9 +262,9 @@ export class Settings {
             ['.useSpaces', 'useSpaces', true],
             ['.useVim', 'useVim', false],
             ['.wordWrap', 'wordWrap', false],
-        ]
+        ];
 
-        for (let [selector, name, defaultValue] of checkboxes) {
+        for (const [selector, name, defaultValue] of checkboxes) {
             this.add(new Checkbox(this.root.find(selector), name), defaultValue);
         }
     }
@@ -277,15 +277,15 @@ export class Settings {
             defaultValue: string
         ) => {
             this.add(new Select(this.root.find(selector), name, populate), defaultValue);
-        }
+        };
 
         const colourSchemesData = colour.schemes.map(scheme => {
-            return {label: scheme.name, desc: scheme.desc}
+            return {label: scheme.name, desc: scheme.desc};
         });
         addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
 
         const themesData = Object.keys(themes).map(theme => {
-            return {label: themes[theme].id, desc: themes[theme].name}
+            return {label: themes[theme].id, desc: themes[theme].name};
         });
         let defaultThemeId = themes.default.id;
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -300,7 +300,7 @@ export class Settings {
         const defaultLanguageData = Object.keys(langs).map(lang => {
             return {label: langs[lang].id, desc: langs[lang].name};
         });
-        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang)
+        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang);
 
         if (this.subLangId) {
             defaultLanguageSelector
@@ -321,7 +321,7 @@ export class Settings {
             {label: '2', desc: 'Reformat code'},
             {label: '3', desc: 'Do nothing'},
         ];
-        addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true')
+        addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
     }
 
     private addSliders() {
@@ -337,7 +337,7 @@ export class Settings {
             min: 250,
             display: this.root.find('.delay-current-value'),
             formatter: x => (x / 1000.0).toFixed(2) + 's',
-        }
+        };
         this.add(new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings), 750);
     }
 
@@ -346,7 +346,10 @@ export class Settings {
     }
 
     private addTextBoxes() {
-        this.add(new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'), 'Consolas, "Liberation Mono", Courier, monospace');
+        this.add(
+            new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'),
+            'Consolas, "Liberation Mono", Courier, monospace'
+        );
     }
 
     private handleThemes() {
@@ -374,7 +377,7 @@ export class Settings {
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
         let isStoredUsable = false;
         colourSchemeSelect.empty();
-        for (let scheme of colour.schemes) {
+        for (const scheme of colour.schemes) {
             if (this.settings.alwaysEnableAllSchemes
                 || !scheme.themes || scheme.themes.length === 0
                 || scheme.themes.includes(newTheme) || scheme.themes.includes('all')) {

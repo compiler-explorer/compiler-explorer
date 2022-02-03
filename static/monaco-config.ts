@@ -64,7 +64,7 @@ export function extendConfig<
     E extends EditorKinds = monaco.editor.IStandaloneCodeEditor,
     T = EditorConstructionType<E>>(
     overrides: T,
-    settings?: Pick<SiteSettings, 'editorsFFont' | 'autoIndent' | 'useVim' | 'editorsFLigatures'>,
+    settings?: Pick<SiteSettings, 'editorsFFont' | 'autoIndent' | 'useVim' | 'editorsFLigatures'>
 ): T {
     if (settings !== undefined) {
         return _.extend({}, DEFAULT_MONACO_CONFIG, {

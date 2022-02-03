@@ -32,17 +32,17 @@ export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: strin
         const match = lib.match(LIB_MATCH_RE);
         return {
             id: match ? match[1] : lib,
-            version: match ? match[2] : false
+            version: match ? match[2] : false,
         };
     });
 
     const filterLibIds = new Set(filterLibAndVersion.map(lib => lib.id));
 
     const copiedLibraries: Record<string, Library> = {};
-    for (let libid in allLibraries) {
+    for (const libid in allLibraries) {
         if (!filterLibIds.has(libid)) continue;
         const lib = {...allLibraries[libid]};
-        for (let versionid in lib.versions) {
+        for (const versionid in lib.versions) {
             for (const filter of filterLibAndVersion) {
                 if (!(!filter.version || filter.version === versionid)) {
                     delete filterLibAndVersion[versionid];

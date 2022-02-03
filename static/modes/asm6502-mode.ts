@@ -24,7 +24,7 @@
 
 'use strict';
 
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
@@ -61,7 +61,7 @@ function definition() {
     };
 }
 
-var def = definition();
+const def = definition();
 monaco.languages.register({ id: 'asm6502' });
 monaco.languages.setMonarchTokensProvider('asm6502', def);
 

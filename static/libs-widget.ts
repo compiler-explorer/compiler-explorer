@@ -61,7 +61,14 @@ export class LibsWidget {
     private readonly availableLibs: AvailableLibs;
 
 
-    constructor(langId: string, compiler: any, dropdownButton: JQuery, state: WidgetState, onChangeCallback: () => void, possibleLibs: CompilerLibs) {
+    constructor(
+        langId: string,
+        compiler: any,
+        dropdownButton: JQuery,
+        state: WidgetState,
+        onChangeCallback: () => void,
+        possibleLibs: CompilerLibs
+    ) {
         this.dropdownButton = dropdownButton;
         if (compiler) {
             this.currentCompilerId = compiler.id;
@@ -107,7 +114,7 @@ export class LibsWidget {
 
     loadState(state: WidgetState) {
         if (!state) return;
-        for (let lib of state.libs ?? []) {
+        for (const lib of state.libs ?? []) {
             if (lib.name && lib.ver) {
                 this.markLibrary(lib.name, lib.ver, true);
             } else {
@@ -205,9 +212,9 @@ export class LibsWidget {
         favoritesDiv.html('');
 
         const faves = this.getFavorites();
-        for (let libId in faves) {
+        for (const libId in faves) {
             const versionArr = faves[libId];
-            for (let versionId of versionArr) {
+            for (const versionId of versionArr) {
                 const lib = this.getLibInfoById(libId);
                 if (lib) {
                     const version = lib.versions[versionId];
@@ -254,7 +261,7 @@ export class LibsWidget {
         if (lib.examples && lib.examples.length > 0) {
             examples.append($('<b>Examples</b>'));
             const examplesList = $('<ul />');
-            for (let exampleId of lib.examples) {
+            for (const exampleId of lib.examples) {
                 const li = $('<li />');
                 examplesList.append(li);
                 const exampleLink = $('<a>Example</a>');
@@ -291,7 +298,7 @@ export class LibsWidget {
         versions.append(noVersionSelectedOption);
         let hasVisibleVersions = false;
 
-        for (let versionId in lib.versions) {
+        for (const versionId in lib.versions) {
             const version = lib.versions[versionId];
             const option = $('<option>');
             if (version.used) {
@@ -380,13 +387,13 @@ export class LibsWidget {
             return;
         }
 
-        for (let libId in currentAvailableLibs) {
+        for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
             if (library.versions && library.versions.autodetect) continue;
 
             if (LibsWidget._libVersionMatchesQuery(library, searchText)) {
-               this.addSearchResult(libId, library);
+                this.addSearchResult(libId, library);
             }
         }
     }
@@ -396,7 +403,7 @@ export class LibsWidget {
         items.html('');
 
         const selectedLibs = this.listUsedLibs();
-        for (let libId in selectedLibs) {
+        for (const libId in selectedLibs) {
             const versionId = selectedLibs[libId];
 
             const lib = this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
@@ -418,7 +425,7 @@ export class LibsWidget {
         }
 
 
-        for (let libId in currentAvailableLibs) {
+        for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
             if (library.versions && library.versions.autodetect) continue;
@@ -431,7 +438,7 @@ export class LibsWidget {
     initLangDefaultLibs() {
         const defaultLibs = options.defaultLibs[this.currentLangId];
         if (!defaultLibs) return;
-        for (let libPair of defaultLibs.split(':')) {
+        for (const libPair of defaultLibs.split(':')) {
             const pairSplits = libPair.split('.');
             if (pairSplits.length === 2) {
                 const lib = pairSplits[0];
@@ -473,7 +480,7 @@ export class LibsWidget {
         // Clear the dom Root so it gets rebuilt with the new language libraries
         this.updateAvailableLibs(possibleLibs);
 
-        for (let libId in libsInUse) {
+        for (const libId in libsInUse) {
             this.markLibrary(libId, libsInUse[libId], true);
         }
 
@@ -489,7 +496,7 @@ export class LibsWidget {
             return versionId;
         } else {
             // Else, look in each version and see if it has the id as an alias
-            for (let verId in lib.versions) {
+            for (const verId in lib.versions) {
                 const version = lib.versions[verId];
                 if (version.alias?.includes(versionId)) {
                     return verId;
@@ -501,7 +508,7 @@ export class LibsWidget {
 
     getLibInfoById(libId: string): Library | null {
         return this.availableLibs[this.currentLangId]?.[this.currentCompilerId]?.[libId];
-    };
+    }
 
     markLibrary(name: string, versionId: string, used: boolean) {
         const actualId = this.getVersionOrAlias(name, versionId);
@@ -511,51 +518,51 @@ export class LibsWidget {
                 v.used = used;
             }
         }
-    };
+    }
 
     selectLibAndVersion(libId: string, versionId: string) {
         const actualId = this.getVersionOrAlias(libId, versionId);
         const libInfo = this.getLibInfoById(libId);
-        for (let v in libInfo?.versions) {
+        for (const v in libInfo?.versions) {
             const version = libInfo.versions[v];
-            version.used = v == actualId;
+            version.used = v === actualId;
         }
-    };
+    }
 
     get(): {name: string, ver: any}[] {
         const result = [];
         const usedLibs = this.listUsedLibs();
-        for (let libId in usedLibs) {
+        for (const libId in usedLibs) {
             result.push({name: libId, ver: usedLibs[libId]});
         }
         return result;
-    };
+    }
 
     listUsedLibs(): Record<string, string> {
         const libs: Record<string, string> = {};
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
-        for (let libId in currentAvailableLibs) {
+        for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
-            for (let verId in library.versions) {
+            for (const verId in library.versions) {
                 if (library.versions[verId].used) {
                     libs[libId] = verId;
                 }
             }
         }
         return libs;
-    };
+    }
 
     getLibsInUse(): LibInUse[] {
         const libs: LibInUse[] = [];
         const currentAvailableLibs = this.availableLibs[this.currentLangId][this.currentCompilerId];
-        for (let libId in currentAvailableLibs) {
+        for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
-            for (let verId in library.versions) {
+            for (const verId in library.versions) {
                 if (library.versions[verId].used) {
                     libs.push({...library.versions[verId], libId: libId, versionId: verId});
                 }
             }
         }
         return libs;
-    };
+    }
 }
