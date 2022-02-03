@@ -51,6 +51,7 @@ var SimpleCook = require('./simplecook').SimpleCook;
 var HistoryWidget = require('./history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
+require('./tests/_all');
 
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
