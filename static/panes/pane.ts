@@ -32,6 +32,8 @@ import { FontScale } from '../fontscale';
 import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
+import { PaneRenaming } from '../pane-renaming';
+
 /**
  * Basic container for a tool pane in Compiler Explorer
  *
@@ -50,6 +52,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     fontScale: FontScale;
     isAwaitingInitialResults: boolean = false;
     settings: SiteSettings | {} = {};
+    paneName: string;
 
     /**
      * Base constructor for any pane. Performs common initialization tasks such
@@ -80,7 +83,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerEditorActions();
-        this.setTitle();
+        this.updateTitle();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -205,6 +208,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.fontScale.on('change', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
+        PaneRenaming.registerCallback(this);
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
         this.eventHub.on('compiler', this.onCompiler.bind(this));
         this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
@@ -213,8 +217,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.eventHub.on('resize', this.resize.bind(this));
     }
 
-    protected setTitle() {
-        this.container.setTitle(this.getPaneName());
+    protected updateTitle() {
+        const name = this.paneName ? this.paneName : this.getPaneName();
+        this.container.setTitle(_.escape(name));
     }
 
     /** Close the pane if the compiler this pane was attached to closes */

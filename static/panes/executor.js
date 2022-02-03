@@ -37,6 +37,7 @@ var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -706,6 +707,7 @@ Executor.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
     }, this);
+    PaneRenaming.registerCallback(this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -943,12 +945,17 @@ Executor.prototype.getPaneName = function () {
     return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
 };
 
+Executor.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
+};
+
 Executor.prototype.updateCompilerName = function () {
+    this.updateTitle();
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
-    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
