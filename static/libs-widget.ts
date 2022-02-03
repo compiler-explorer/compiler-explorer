@@ -514,7 +514,12 @@ export class LibsWidget {
     };
 
     selectLibAndVersion(libId: string, versionId: string) {
-        this.markLibrary(libId, versionId, true);
+        const actualId = this.getVersionOrAlias(libId, versionId);
+        const libInfo = this.getLibInfoById(libId);
+        for (let v in libInfo?.versions) {
+            const version = libInfo.versions[v];
+            version.used = v == actualId;
+        }
     };
 
     get(): {name: string, ver: any}[] {

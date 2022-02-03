@@ -22,34 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface LibraryVersion {
-    alias: string[];
-    hidden: boolean;
-    libId: string;
-    used: boolean;
-    version?: string;
-}
+import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
+import { getAsmOpcode } from './generated/asm-docs-amd64';
 
-export interface Library {
-    dependencies: string[];
-    description?: string;
-    examples: string[];
-    name?: string;
-    url?: string;
-    versions: Record<string, LibraryVersion>;
-}
-
-export type LanguageLibs = Record<string, Library>;
-
-export type Libs = Record<string, LanguageLibs>;
-
-export interface Options {
-    libs: Libs;
-    // TODO: Constraint this type
-    languages: Record<string, any>[];
-    defaultLibs: Record<string, string | null>;
-    defaultFontScale: number;
-    sentryDsn?: string;
-    release?: string;
-    sentryEnvironment?: string
+export class Amd64DocumentationProvider extends BaseAssemblyDocumentationProvider {
+    private static readonly ATT_SUFFIX_REMOVER = /^([a-z]+)[blqw]$/i;
+    public static get key() { return 'amd64'; }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        // Try both raw opcode and with AT&T suffix removed
+        let info = getAsmOpcode(instruction);
+        if (!info) {
+            const alternativeInstruction = Amd64DocumentationProvider.ATT_SUFFIX_REMOVER.exec(instruction);
+            if (alternativeInstruction) {
+                info = getAsmOpcode(alternativeInstruction[1]);
+            }
+        }
+        return info || null;
+    }
 }

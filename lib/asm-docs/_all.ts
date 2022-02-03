@@ -22,34 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface LibraryVersion {
-    alias: string[];
-    hidden: boolean;
-    libId: string;
-    used: boolean;
-    version?: string;
-}
-
-export interface Library {
-    dependencies: string[];
-    description?: string;
-    examples: string[];
-    name?: string;
-    url?: string;
-    versions: Record<string, LibraryVersion>;
-}
-
-export type LanguageLibs = Record<string, Library>;
-
-export type Libs = Record<string, LanguageLibs>;
-
-export interface Options {
-    libs: Libs;
-    // TODO: Constraint this type
-    languages: Record<string, any>[];
-    defaultLibs: Record<string, string | null>;
-    defaultFontScale: number;
-    sentryDsn?: string;
-    release?: string;
-    sentryEnvironment?: string
-}
+export { Amd64DocumentationProvider } from './amd64';
+export { Arm32DocumentationProvider } from './arm32';
+export { AvrDocumentationProvider } from './avr';
+export { JavaDocumentationProvider } from './java';
+export { Mos6502DocumentationProvider } from './mos6502';

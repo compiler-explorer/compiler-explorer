@@ -131,14 +131,13 @@
                 label
                   input.useVim(type="checkbox")
                   | Vim editor mode
-              .checkbox.the-save-option-to-auto-share
+              .the-save-option-to-auto-share
                 label
-                  input.enableCtrlS(type="checkbox")
-                  | Make
                   kbd Ctrl
                   | +
                   kbd S
-                  | &nbsp;save to local file instead of creating a share link
+                  | &nbsp;behaviour
+                select.enableCtrlS
               .checkbox.the-save-option-to-tree-save
                 label
                   input.enableCtrlStree(type="checkbox")
@@ -147,6 +146,14 @@
                   | +
                   kbd S
                   | &nbsp;include and save the file to a Tree if that's added to the UI
+              .checkbox.the-popup-dialog-box-option
+                label
+                  input.enableSharingPopover(type="checkbox")
+                  | Pop up a dialog box when
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp; is set to create a short link.
         .card.mt-1
           .card-header
             .card-title
@@ -222,6 +229,10 @@
                   label
                     input.compileOnChange(type="checkbox")
                     | Compile automatically when source changes
+                .checkbox
+                  label
+                    input.formatOnCompile(type="checkbox")
+                    | Enable formatting on compilation (for supported languages)
                 div
                   label Delay before compiling:&nbsp;
                     span.delay-current-value &nbsp;

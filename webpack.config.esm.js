@@ -64,7 +64,7 @@ const plugins = [
         jQuery: 'jquery',
     }),
     new MiniCssExtractPlugin({
-        filename: isDev ? '[name].css' : '[name].[contenthash].css',
+        filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
         fileName: path.join(distPath, 'manifest.json'),

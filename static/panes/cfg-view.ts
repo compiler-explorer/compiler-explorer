@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import vis from "vis";
+import * as vis from "vis-network";
 import _ from 'underscore';
 import { Toggles } from '../toggles';
 import { ga } from "../analytics";
