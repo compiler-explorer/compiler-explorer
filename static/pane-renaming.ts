@@ -28,7 +28,7 @@ import { Tab } from 'golden-layout';
 
 export class PaneRenaming {
     public static registerCallback(pane: any): void {
-        var addRenameButton = function (parentTab: any) {
+        var addRenameButton = function (parentTab: Tab) {
             return PaneRenaming.addRenameButton.call(this, parentTab, pane);
         };
         pane.container.on('tab', addRenameButton);
@@ -73,8 +73,8 @@ export class PaneRenaming {
         return $('#renamepaneinput').val().toString();
     }
 
-    private static toggleEventListener(element: JQuery, eventName: string, callback: any): void {
-        element.on(eventName, (event) => {
+    private static toggleEventListener(element: JQuery, eventName: string, callback: (event: JQuery.Event) => void): void {
+        element.on(eventName, (event: JQuery.Event) => {
             callback(event);
             // Unsuscribe the event listener so we don´t have more than one.
             element.off(eventName);
