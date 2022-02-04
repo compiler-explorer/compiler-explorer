@@ -52,6 +52,10 @@ var HistoryWidget = require('./history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
 
+if (!window.PRODUCTION) {
+    require('./tests/_all');
+}
+
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
