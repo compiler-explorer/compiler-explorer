@@ -95,6 +95,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-optimization(title="Show optimization output")
             span.dropdown-icon.fas.fa-weight
             | Optimization output
+          button.dropdown-item.btn.btn-sm.btn-light.view-pp(title="Show Preprocessor Output")
+            span.dropdown-icon.fas.fa-bars
+            | Preprocessor output
           button.dropdown-item.btn.btn-sm.btn-light.view-ast(title="Show AST output")
             span.dropdown-icon.fas.fa-leaf
             | AST output
@@ -278,6 +281,11 @@
     .monaco-placeholder
 
   #flags
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
+  #pp
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder

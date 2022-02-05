@@ -240,6 +240,11 @@ Compiler.prototype.initPanerButtons = function () {
         createFlagsView();
     }
 
+    var createPpView = _.bind(function () {
+        return Components.getPpViewWith(this.id, this.source, this.lastResult.ppOutput, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
             this.sourceEditorId);
@@ -342,6 +347,16 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     popularArgumentsMenu.append(this.flagsButton);
+
+    this.container.layoutManager
+        .createDragSource(this.ppButton, createPpView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.ppButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createPpView);
+    }, this));
 
     this.container.layoutManager
         .createDragSource(this.astButton, createAstView)
@@ -720,6 +735,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
     var options = {
         userArguments: this.options,
         compilerOptions: {
+            producePp: this.ppViewOpen,
             produceAst: this.astViewOpen,
             produceGccDump: {
                 opened: this.gccDumpViewOpen,
@@ -1250,16 +1266,31 @@ Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
     }
 };
 
-Compiler.prototype.onAstViewOpened = function (id) {
+Compiler.prototype.onToolSettingsChange = function (id) {
     if (this.id === id) {
-        this.astButton.prop('disabled', true);
-        this.astViewOpen = true;
         this.compile();
     }
 };
 
-Compiler.prototype.onToolSettingsChange = function (id) {
+Compiler.prototype.onPpViewOpened = function (id) {
     if (this.id === id) {
+        this.ppButton.prop('disabled', true);
+        this.ppViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onPpViewClosed = function (id) {
+    if (this.id === id) {
+        this.ppButton.prop('disabled', false);
+        this.ppViewOpen = false;
+    }
+};
+
+Compiler.prototype.onAstViewOpened = function (id) {
+    if (this.id === id) {
+        this.astButton.prop('disabled', true);
+        this.astViewOpen = true;
         this.compile();
     }
 };
@@ -1509,6 +1540,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
     this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
+    this.ppButton = this.domRoot.find('.btn.view-pp');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
@@ -1686,6 +1718,7 @@ Compiler.prototype.enableToolButtons = function () {
     }, this));
 };
 
+// eslint-disable-next-line max-statements
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
     var filters = this.getEffectiveFilters();
@@ -1726,6 +1759,7 @@ Compiler.prototype.updateButtons = function () {
         this.flagsButton.prop('disabled', this.flagsViewOpen);
     }
     this.optButton.prop('disabled', this.optViewOpen);
+    this.ppButton.prop('disabled', this.ppViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
@@ -1740,6 +1774,7 @@ Compiler.prototype.updateButtons = function () {
     // many executors as you want.
 
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
+    this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
@@ -1829,6 +1864,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
     this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
     this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
+    this.eventHub.on('ppViewOpened', this.onPpViewOpened, this);
+    this.eventHub.on('ppViewClosed', this.onPpViewClosed, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
