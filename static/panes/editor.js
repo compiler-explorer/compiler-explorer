@@ -506,7 +506,7 @@ Editor.prototype.handleCtrlS = function (event) {
                 this.showLoadSaver();
             }
         } else if (this.settings.enableCtrlS === 'false') {
-            this.eventHub.emit('displaySharingPopover');
+            this.emitShortLinkEvent();
         } else if (this.settings.enableCtrlS === '2') {
             this.runFormatDocumentAction();
         } else if (this.settings.enableCtrlS === '3') {
@@ -826,6 +826,14 @@ Editor.prototype.initEditorActions = function () {
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, _.bind(function () {
         this.editor.getAction('editor.action.duplicateSelection').run();
     }, this));
+};
+
+Editor.prototype.emitShortLinkEvent = function () {
+    if (this.settings.enableSharingPopover) {
+        this.eventHub.emit('displaySharingPopover');
+    } else {
+        this.eventHub.emit('copyShortLinkToClip');
+    }
 };
 
 Editor.prototype.runFormatDocumentAction = function () {

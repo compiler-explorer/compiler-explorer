@@ -28,7 +28,6 @@ export interface LibraryVersion {
     libId: string;
     used: boolean;
     version?: string;
-    versionId: string;
 }
 
 export interface Library {

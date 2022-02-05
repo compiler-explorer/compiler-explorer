@@ -91,7 +91,7 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
             this.setTitle();
             if (compiler && !compiler.supportsRustHirView) {
                 this.showRustHirResults([{
-                    text: '<Rust HIR output is not supported for this compiler>'
+                    text: '<Rust HIR output is not supported for this compiler>',
                 }]);
             }
         }

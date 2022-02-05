@@ -28,14 +28,12 @@
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
     "bootstrap": "^4.6.1",
-    "bootstrap-slider": "^10.6.2",
     "chart.js": "^3.6.2",
     "clipboard": "^2.0.8",
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
     "cross-env": "^7.0.3",
     "es6-promise": "^4.2.8",
-    "es6-shim": "^0.35.6",
     "eslint-plugin-header": "^3.1.1",
     "esm": "^3.2.25",
     "express": "^4.17.2",
@@ -69,7 +67,6 @@
     "semver": "^7.3.5",
     "serve-favicon": "^2.4.5",
     "shell-quote": "^1.7.3",
-    "simple-get": ">=4.0.1",
     "systemd-socket": "0.0.0",
     "tar-stream": "^2.2.0",
     "temp": "^0.9.4",
@@ -80,7 +77,7 @@
     "tslib": "^2.3.1",
     "underscore": "^1.13.2",
     "url-join": "^4.0.1",
-    "vis": "4.20.1",
+    "vis-network": "^9.1.0",
     "whatwg-fetch": "^3.6.2",
     "which": "^2.0.2",
     "winston": "^3.3.3",
@@ -105,9 +102,9 @@
     "chai-http": "^4.2.1",
     "cheerio": "^1.0.0-rc.10",
     "codecov": "^3.8.3",
-    "copy-webpack-plugin": "^9.1.0",
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.3.1",
+    "cypress": "^9.2.0",
     "deep-equal-in-any-order": "^1.1.15",
     "eslint": "^8.5.0",
     "eslint-config-prettier": "^8.3.0",
@@ -172,7 +169,7 @@
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
-    "*.js": [
+    "*.[jt]s": [
       "npm run ci-lint --",
       "npm run format-fix --"
     ]
