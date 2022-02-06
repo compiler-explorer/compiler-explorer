@@ -28,11 +28,12 @@ import { Sharing } from './sharing';
 
 
 const maxHistoryEntries = 30;
+type Source = {dt: number, source: string};
 type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
 type EditorSource = {lang: string, source: string};
 
 function extractEditorSources(content: any[]): EditorSource[] {
-    const sources = [];
+    const sources: EditorSource[] = [];
     for (const component of content) {
         if (component.content) {
             const subsources = extractEditorSources(component.content);
@@ -112,8 +113,8 @@ export function sortedList() {
     return list().sort((a, b) => b.dt - a.dt);
 }
 
-export function sources(language: string): {dt: number, source: string}[] {
-    const sourcelist = [];
+export function sources(language: string): Source[] {
+    const sourcelist: Source[] = [];
     for (const entry of sortedList()) {
         for (const source of entry.sources) {
             if (source.lang === language) {
