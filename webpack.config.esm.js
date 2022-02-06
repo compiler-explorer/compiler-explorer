@@ -30,7 +30,7 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
@@ -60,6 +60,9 @@ const plugins = [
     new WebpackManifestPlugin({
         fileName: path.join(distPath, 'manifest.json'),
         publicPath: '',
+    }),
+    new DefinePlugin({
+        'window.PRODUCTION': JSON.stringify(!isDev),
     }),
 ];
 
