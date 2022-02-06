@@ -30,28 +30,28 @@ import fs from 'fs-extra';
 import { BaseCompiler } from '../base-compiler';
 
 class DotNetCompiler extends BaseCompiler {
-    private rID: string;
-    private targetFramework: string;
-    private buildConfig: string;
-    private nugetPackagesPath: string;
-    private clrBuildDir: string;
-    private additionalSources: string;
-    private langVersion: string;
+    private coreRoot: string;
+    private crossgen2bin: string;
+    private testAppSrc: string;
+    private testAppName: string;
+    private testAppOutputDir: string;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.rID = this.compilerProps(`compiler.${this.compiler.id}.runtimeId`);
-        this.targetFramework = this.compilerProps(`compiler.${this.compiler.id}.targetFramework`);
-        this.buildConfig = this.compilerProps(`compiler.${this.compiler.id}.buildConfig`);
-        this.nugetPackagesPath = this.compilerProps(`compiler.${this.compiler.id}.nugetPackages`);
-        this.clrBuildDir = this.compilerProps(`compiler.${this.compiler.id}.clrDir`);
-        this.additionalSources = this.compilerProps(`compiler.${this.compiler.id}.additionalSources`);
-        this.langVersion = this.compilerProps(`compiler.${this.compiler.id}.langVersion`);
+        this.coreRoot = this.compilerProps(`compiler.${this.compiler.id}.coreRoot`);
+        this.testAppSrc = this.compilerProps(`compiler.${this.compiler.id}.testAppSrc`);
+        this.testAppName = path.basename(this.testAppSrc);
+        this.crossgen2bin = path.join(this.coreRoot, 'crossgen2', 'crossgen2.dll');
+        this.testAppOutputDir = 'out';
     }
 
     get compilerOptions() {
-        return ['publish', '-c', this.buildConfig, '--self-contained', '--runtime', this.rID, '-v', 'q', '--nologo'];
+        return ['build', this.testAppName + '.csproj', '-c', 'Release', '-o', this.testAppOutputDir, 
+        // Properties:
+        '/p:AllowUnsafeBlocks=true',
+        // Speed up compilation:
+        '--no-restore', '--no-dependencies', '--nologo', '-v', 'q', '--nologo'];
     }
 
     get configurableOptions() {
@@ -72,46 +72,13 @@ class DotNetCompiler extends BaseCompiler {
         const programDir = path.dirname(inputFileName);
         const sourceFile = path.basename(inputFileName);
 
-        const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
-        const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
-
-        const programPublishPath = path.join(
-            programDir,
-            'bin',
-            this.buildConfig,
-            this.targetFramework,
-            this.rID,
-            'publish',
-        );
-
-        const programDllPath = path.join(programPublishPath, 'CompilerExplorer.dll');
-        const projectFileContent =
-            `<Project Sdk="Microsoft.NET.Sdk">
-            <PropertyGroup>
-                <TargetFramework>${this.targetFramework}</TargetFramework>
-                <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-                <Nullable>enable</Nullable>
-                <AssemblyName>CompilerExplorer</AssemblyName>
-                <LangVersion>${this.langVersion}</LangVersion>
-                <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                <EnablePreviewFeatures>${this.langVersion === 'preview' ? 'true' : 'false'}</EnablePreviewFeatures>
-                <RestoreAdditionalProjectSources>
-                  https://api.nuget.org/v3/index.json;${this.additionalSources ? this.additionalSources : ''}
-                </RestoreAdditionalProjectSources>
-            </PropertyGroup>
-            <ItemGroup>
-                <Compile Include="${sourceFile}" />
-            </ItemGroup>
-         </Project>
-        `;
-
+        await fs.copy(this.testAppSrc, programDir);
+        
+        execOptions.env.DOTNET_TC_QuickJitForLoops = 'true';
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
         execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
-        execOptions.env.NUGET_PACKAGES = this.nugetPackagesPath;
         execOptions.env.DOTNET_NOLOGO='true';
-
         execOptions.customCwd = programDir;
-        await fs.writeFile(projectFilePath, projectFileContent);
 
         let crossgen2Options = [];
         const configurableOptions = this.configurableOptions;
@@ -134,7 +101,6 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFileName, execOptions);
-
         if (compilerResult.code !== 0) {
             return compilerResult;
         }
@@ -142,9 +108,9 @@ class DotNetCompiler extends BaseCompiler {
         const crossgen2Result = await this.runCrossgen2(
             compiler,
             execOptions,
-            crossgen2Path,
-            programPublishPath,
-            programDllPath,
+            this.crossgen2bin,
+            this.coreRoot,
+            path.join(this.testAppOutputDir, this.testAppName + '.dll'),
             crossgen2Options,
             this.getOutputFilename(programDir, this.outputFilebase),
         );
@@ -186,9 +152,9 @@ class DotNetCompiler extends BaseCompiler {
         return cleanedAsm;
     }
 
-    async runCrossgen2(compiler, execOptions, crossgen2Path, publishPath, dllPath, options, outputPath) {
+    async runCrossgen2(compiler, execOptions, crossgen2Path, references, dllPath, options, outputPath) {
         const crossgen2Options = [
-            crossgen2Path, '-r', path.join(publishPath, '*'), dllPath, '-o', 'CompilerExplorer.r2r.dll',
+            crossgen2Path, '-r', path.join(references, '*.dll'), dllPath, '-o', 'CompilerExplorer.r2r.dll',
             '--codegenopt', 'NgenDisasm=*', '--codegenopt', 'JitDiffableDasm=1', '--parallelism', '1',
         ].concat(options);
 
