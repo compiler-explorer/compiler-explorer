@@ -168,7 +168,7 @@ class DotNetCompiler extends BaseCompiler {
                 // ; Assembly listing for method ConsoleApplication.Program:Main(System.String[])
                 //                               ^ This character is the 31st character in this string.
                 // `substring` removes the first 30 characters from it and uses the rest as a label.
-                cleanedAsm = cleanedAsm.concat(line.text.substring(30) + ':\n');
+                cleanedAsm = cleanedAsm.concat('Method ' + line.text.substring(30) + ':\n');
                 continue;
             }
 
