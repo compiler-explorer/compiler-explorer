@@ -117,7 +117,7 @@ PP.prototype.onOptionsChange = function () {
 };
 
 PP.prototype.showCompilationLoadingMessage = function () {
-    this.showPpResults([{text: '<Compiling...>'}]);
+    this.showPpResults('<Compiling...>');
 };
 
 PP.prototype.resize = function () {
@@ -134,7 +134,7 @@ PP.prototype.onCompileResult = function (id, compiler, result, lang) {
     if (result.hasPpOutput) {
         this.showPpResults(result.ppOutput);
     } else if (compiler.supportsPpView) {
-        this.showPpResults([{text: '<No output>'}]);
+        this.showPpResults('<No output>');
     }
 
     if (lang && lang.monaco && this.getCurrentEditorLanguage() !== lang.monaco) {
@@ -161,10 +161,7 @@ PP.prototype.getDisplayablePp = function (ppResult) {
 };
 
 PP.prototype.showPpResults = function (results) {
-    var fullText = results.map(function (x) {
-        return x.text;
-    }).join('\n');
-    this.ppEditor.setValue(fullText);
+    this.ppEditor.setValue(results);
     this.ppCode = results;
 
     if (!this.awaitingInitialResults) {
