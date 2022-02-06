@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,58 +26,37 @@ import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
 
+const Alert = require('alert').Alert;
+
 export class PaneRenaming {
     public static registerCallback(pane: any): void {
+        const alertSystem = new Alert();
         var addRenameButton = function (parentTab: Tab) {
-            return PaneRenaming.addRenameButton.call(this, parentTab, pane);
+            return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
         };
         pane.container.on('tab', addRenameButton);
     }
 
-    public static addRenameButton(parent: Tab, pane: any): void {
+    public static addRenameButton(parent: Tab, pane: any, alertSystem: any): void {
         // Add little pencil icon next to close tab
         const btn = $(`<div class="lm_modify_tab_title"></div>`);
         parent.element.prepend(btn);
         parent.titleElement.css('margin-right', '15px');
 
         btn.on('click', () => {
-            const modal = $('#renamepanemodal');
-            modal.modal('show');
-
-            const textField = $('#renamepaneinput');
-            PaneRenaming.toggleEventListener(modal, 'shown.bs.modal', () => {
-                textField.trigger('focus');
+            alertSystem.enterSomething('Rename pane', 'Please enter new pane name', pane.getPaneName(), {
+                yes: (value: string) => {
+                    pane.paneName = value;
+                    pane.updateTitle();
+                },
+                no: () => {
+                    alertSystem.resolve(false);
+                },
+                yesClass: 'btn btn-primary',
+                yesHtml: 'Rename',
+                noClass: 'btn-outline-info',
+                noHtml: 'Cancel'
             });
-
-            textField.on('keyup', (event: JQuery.Event) => {
-                if (event.key === 'Enter') {
-                    PaneRenaming.saveChanges(pane, modal);
-                }
-            });
-
-            const saveChangesBtn = $('#renamepanesubmit');
-            PaneRenaming.toggleEventListener(saveChangesBtn, 'click', () => {
-                PaneRenaming.saveChanges(pane, modal);
-            });
-        });
-    }
-
-    private static saveChanges(pane: any, modal: JQuery): void {
-        pane.paneName = PaneRenaming.getInputData();
-        pane.updateTitle();
-
-        modal.modal('hide');
-    }
-
-    private static getInputData(): string {
-        return $('#renamepaneinput').val().toString();
-    }
-
-    private static toggleEventListener(element: JQuery, eventName: string, callback: (event: JQuery.Event) => void): void {
-        element.on(eventName, (event: JQuery.Event) => {
-            callback(event);
-            // Unsuscribe the event listener so we don´t have more than one.
-            element.off(eventName);
         });
     }
 }
