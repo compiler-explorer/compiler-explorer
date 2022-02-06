@@ -25,6 +25,7 @@
 'use strict';
 
 var FontScale = require('../fontscale').FontScale;
+var Toggles = require('../toggles').Toggles;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
@@ -57,11 +58,21 @@ function PP(hub, container, state) {
     this.ppCode = [];
 
     this.initButtons(state);
+    this.options = new Toggles(this.domRoot.find('.options'), state);
+    this.options.on('change', _.bind(this.onOptionsChange, this));
+
     this.initCallbacks();
+
+    this.onOptionsChange();
+
+    this.initialized = true;
 
     if (state && state.ppOutput) {
         this.showPpResults(state.ppOutput);
+    } else {
+        this.showCompilationLoadingMessage();
     }
+
     this.setTitle();
 
     ga.proxy('send', {
@@ -73,7 +84,6 @@ function PP(hub, container, state) {
 
 PP.prototype.initButtons = function (state) {
     this.fontScale = new FontScale(this.domRoot, state, this.ppEditor);
-
     this.topBar = this.domRoot.find('.top-bar');
 };
 
@@ -95,7 +105,21 @@ PP.prototype.initCallbacks = function () {
     this.container.on('shown', this.resize, this);
 };
 
-// TODO: de-dupe with compiler etc
+PP.prototype.onOptionsChange = function () {
+    var options = this.options.get();
+    this.updateState();
+    // update parameters for the compiler and recompile
+    this.showCompilationLoadingMessage();
+    this.eventHub.emit('ppViewOptionsUpdated', this._compilerid, {
+        'filter-headers': options['filter-headers'],
+        'clang-format': options['clang-format'],
+    }, true);
+};
+
+PP.prototype.showCompilationLoadingMessage = function () {
+    this.showPpResults([{text: '<Compiling...>'}]);
+};
+
 PP.prototype.resize = function () {
     var topBarHeight = this.topBar.outerHeight(true);
     this.ppEditor.layout({
@@ -179,10 +203,13 @@ PP.prototype.updateState = function () {
 };
 
 PP.prototype.currentState = function () {
+    var options = this.options.get();
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
         selection: this.selection,
+        'filter-headers': options['filter-headers'],
+        'clang-format': options['clang-format'],
     };
     this.fontScale.addState(state);
     return state;

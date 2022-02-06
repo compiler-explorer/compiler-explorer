@@ -735,7 +735,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
     var options = {
         userArguments: this.options,
         compilerOptions: {
-            producePp: this.ppViewOpen,
+            producePp: this.ppViewOpen ? this.ppOptions : false,
             produceAst: this.astViewOpen,
             produceGccDump: {
                 opened: this.gccDumpViewOpen,
@@ -1276,7 +1276,8 @@ Compiler.prototype.onPpViewOpened = function (id) {
     if (this.id === id) {
         this.ppButton.prop('disabled', true);
         this.ppViewOpen = true;
-        this.compile();
+        // the pp view will request compilation once it populates its options
+        //this.compile();
     }
 };
 
@@ -1284,6 +1285,15 @@ Compiler.prototype.onPpViewClosed = function (id) {
     if (this.id === id) {
         this.ppButton.prop('disabled', false);
         this.ppViewOpen = false;
+    }
+};
+
+Compiler.prototype.onPpViewOptionsUpdated = function (id, options, reqCompile) {
+    if (this.id === id) {
+        this.ppOptions = options;
+        if (reqCompile) {
+            this.compile();
+        }
     }
 };
 
@@ -1866,6 +1876,7 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
     this.eventHub.on('ppViewOpened', this.onPpViewOpened, this);
     this.eventHub.on('ppViewClosed', this.onPpViewClosed, this);
+    this.eventHub.on('ppViewOptionsUpdated', this.onPpViewOptionsUpdated, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
