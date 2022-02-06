@@ -94,12 +94,13 @@
             | These settings control how Compiler Explorer acts for you. They are not
             | preserved as part of shared URLs, and are persisted locally using browser
             | local storage.
-        .card.mt-2
-          .card-header
-            .card-title
-              h4 Site behaviour
-          .card-body
-            .form-group(role="group")
+            ul.nav.nav-tabs.card-header-tabs(role="tablist")
+              li.nav-item(role="presentation"): a.nav-link.active(href="#site-behaviour" role="tab" data-toggle="tab") Site behaviour
+              li.nav-item(role="presentation"): a.nav-link(href="#keybindings" role="tab" data-toggle="tab") Keybindings
+              li.nav-item(role="presentation"): a.nav-link(href="#editor" role="tab" data-toggle="tab") Editor
+              li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-toggle="tab") Compilation
+          .card-body.tab-content
+            #site-behaviour.tab-pane.active.form-group(role="group")
               label
                 | Default language
                 small(style="margin-left: 3px")
@@ -121,12 +122,7 @@
                 label
                   input.enableCommunityAds(type="checkbox")
                   | Show community events
-        .card.mt-1
-          .card-header
-            .card-title
-              h4 Keybindings
-          .card-body
-            .form-group(role="group")
+            #keybindings.tab-pane.form-group(role="group")
               .checkbox
                 label
                   input.useVim(type="checkbox")
@@ -154,12 +150,7 @@
                   | +
                   kbd S
                   | &nbsp; is set to create a short link.
-        .card.mt-1
-          .card-header
-            .card-title
-              h4 Editor
-          .card-body
-            .form-group(role="group")
+            #editor.tab-pane.form-group(role="group")
               div
                 label
                   | Desired Font Family in editors
@@ -218,12 +209,7 @@
                 label
                   input.enableCodeLens(type="checkbox")
                   | Enable CodeLens features (requires refresh to take effect)
-        .card.mt-1
-          .card-header
-            .card-title
-              h4 Compilation
-          .card-body
-            .form-group(role="group")
+            #compilation.tab-pane.form-group(role="group")
               div
                 .checkbox
                   label
