@@ -31,7 +31,7 @@ const maxHistoryEntries = 30;
 type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
 type EditorSource = {lang: string, source: string};
 
-export function extractEditorSources(content: any[]): EditorSource[] {
+function extractEditorSources(content: any[]): EditorSource[] {
     const sources = [];
     for (const component of content) {
         if (component.content) {
@@ -49,15 +49,15 @@ export function extractEditorSources(content: any[]): EditorSource[] {
     return sources;
 }
 
-export function list(): HistoryEntry[] {
+function list(): HistoryEntry[] {
     return JSON.parse(local.get('history', '[]'));
 }
 
-export function getArrayWithJustTheCode(editorSources: Record<string, any>[]): string[] {
+function getArrayWithJustTheCode(editorSources: Record<string, any>[]): string[] {
     return editorSources.map(s => s.source);
 }
 
-export function getSimilarSourcesIndex(completeHistory: HistoryEntry[], sourcesToCompareTo: any[]): number {
+function getSimilarSourcesIndex(completeHistory: HistoryEntry[], sourcesToCompareTo: any[]): number {
     let duplicateIdx = -1;
 
     for (let i = 0; i < completeHistory.length; i++) {
@@ -71,7 +71,7 @@ export function getSimilarSourcesIndex(completeHistory: HistoryEntry[], sourcesT
     return duplicateIdx;
 }
 
-export function push(stringifiedConfig: string) {
+function push(stringifiedConfig: string) {
     const config = JSON.parse(stringifiedConfig);
     const sources = extractEditorSources(config.content);
     if (sources.length > 0) {
@@ -96,7 +96,6 @@ export function push(stringifiedConfig: string) {
     }
 }
 
-
 export function trackHistory(layout: any) {
     let lastState = null;
     const debouncedPush = _.debounce(push, 500);
@@ -110,11 +109,7 @@ export function trackHistory(layout: any) {
 }
 
 export function sortedList() {
-    const sorted = list();
-
-    sorted.sort((a, b) => b.dt - a.dt);
-
-    return sorted;
+    return list().sort((a, b) => b.dt - a.dt);
 }
 
 export function sources(language: string): {dt: number, source: string}[] {
