@@ -31,7 +31,7 @@ export interface Theme {
     path: string;
     id: string;
     name: string;
-    'main-color': string;
+    mainColor: string;
     monaco: string;
 }
 
@@ -40,14 +40,14 @@ export const themes: Record<Themes, Theme> = {
         path: 'default',
         id: 'default',
         name: 'Light',
-        'main-color': '#f2f2f2',
+        mainColor: '#f2f2f2',
         monaco: 'ce',
     },
     dark: {
         path: 'dark',
         id: 'dark',
         name: 'Dark',
-        'main-color': '#333333',
+        mainColor: '#333333',
         monaco: 'ce-dark',
     },
 };
@@ -86,7 +86,7 @@ export class Themer {
     public setTheme(theme: Theme) {
         if (this.currentTheme === theme) return;
         $('html').attr('data-theme', theme.path);
-        $('#meta-theme').prop('content', theme['main-color']);
+        $('#meta-theme').prop('content', theme.mainColor);
         editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
