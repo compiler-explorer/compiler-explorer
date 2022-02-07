@@ -43,7 +43,7 @@ lang-d:
     - lib/compilers/ldc.js
     - etc/config/d.*.properties
 lang-dotnet:
-    - lib/compilers/dotnet.js
+    - lib/compilers/dotnet.ts
     - etc/config/csharp.*.properties
     - etc/config/fsharp.*.properties
     - etc/config/vb.*.properties
