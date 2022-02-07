@@ -132,8 +132,16 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     showPpResults(results) {
-        this.editor.setValue(results);
-        //this.ppCode = results;
+        if (typeof results === 'object') {
+            if (results.numberOfLinesFiltered > 0) {
+                this.editor.setValue(`/* <${results.numberOfLinesFiltered} lines filtered> */\n\n`
+                                     + results.output.trimStart());
+            } else {
+                this.editor.setValue(results.output.trimStart());
+            }
+        } else {
+            this.editor.setValue(results);
+        }
     
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
