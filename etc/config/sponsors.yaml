@@ -20,6 +20,15 @@ levels:
         topIcon: true
         sideBySide: true
         statsId: intel
+      - name: Backtrace
+        description: Automated Error and Crash Monitoring and Reporting. Sign up today for free.
+        icon: https://static.ce-cdn.net/bt/BT-Saucelabs-Logo-24px height.png
+        img: https://static.ce-cdn.net/bt/BT-Saucelabs-Logo-300x120.png
+        url: https://hubs.la/Q013D7rx0
+        priority: 500
+        topIcon: true
+        sideBySide: true
+        statsId: backtrace
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
