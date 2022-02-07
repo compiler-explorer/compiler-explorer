@@ -25,8 +25,7 @@
 import { options } from './options';
 import * as colour from './colour';
 import * as local from './local';
-
-const themes = require('./themes').themes;
+import { themes, Themes } from './themes';
 
 type ColourScheme =
     | 'rainbow'
@@ -72,7 +71,7 @@ export interface SiteSettings {
     showMinimap: boolean;
     showQuickSuggestions: boolean;
     tabWidth: number;
-    theme: 'default' | 'dark';
+    theme: Themes;
     useCustomContextMenu: boolean;
     useSpaces: boolean;
     useVim: boolean;
@@ -284,7 +283,7 @@ export class Settings {
         });
         addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
 
-        const themesData = Object.keys(themes).map(theme => {
+        const themesData = Object.keys(themes).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         let defaultThemeId = themes.default.id;
