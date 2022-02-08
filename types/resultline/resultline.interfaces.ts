@@ -1,11 +1,11 @@
-export interface IResultLineTag {
+export class ResultLineTag {
     line?: number;
     column?: number;
     file?: string;
     text: string;
 }
 
-export interface IResultLine {
+export class ResultLine {
     text: string;
     tag?: IResultLineTag;
 }
