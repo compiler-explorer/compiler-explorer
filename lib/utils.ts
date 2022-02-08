@@ -30,7 +30,7 @@ import fs from 'fs-extra';
 import quote from 'shell-quote';
 import _ from 'underscore';
 
-import { IResultLine } from '../types/resultline/resultline.interfaces';
+import { ResultLine } from '../types/resultline/resultline.interfaces';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -60,7 +60,7 @@ export function splitLines(text) {
  * @param {eachLineFunc} func
  * @param {*} [context]
  */
-export function eachLine(text: string, func, context?): IResultLine[] {
+export function eachLine(text: string, func, context?): ResultLine[] {
     return _.each(splitLines(text), func, context);
 }
 
@@ -135,7 +135,7 @@ export function parseOutput(lines, inputFilename, pathPrefix) {
             line = maskRootdir(line);
         }
         if (line !== null) {
-            const lineObj: IResultLine = { text: line };
+            const lineObj: ResultLine = { text: line };
             const filteredline = line.replace(ansiColoursRe, '');
             let match = filteredline.match(re);
             if (match) {
@@ -174,7 +174,7 @@ export function parseRustOutput(lines, inputFilename, pathPrefix) {
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
-            const lineObj: IResultLine = { text: line };
+            const lineObj: ResultLine = { text: line };
             const match = line.replace(ansiColoursRe, '').match(re);
 
             if (match) {
