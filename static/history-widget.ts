@@ -39,7 +39,7 @@ export class HistoryDiffState {
         this.result = null;
     }
 
-    update(result) {
+    update(result: HistoryEntry) {
         this.result = result.sources;
         this.refresh();
 
@@ -72,7 +72,8 @@ export class HistoryWidget {
         this.lhs = null;
         this.rhs = null;
         this.currentList = [];
-        this.onLoadCallback = () => {};
+        this.onLoadCallback = () => {
+        };
     }
 
     private initializeIfNeeded() {
@@ -92,7 +93,7 @@ export class HistoryWidget {
 
             this.lhs = new HistoryDiffState(editor.createModel('', 'c++'));
             this.rhs = new HistoryDiffState(editor.createModel('', 'c++'));
-            this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
+            this.diffEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
             this.modal.find('.inline-diff-checkbox').on('click', (event) => {
                 const inline = $(event.target).prop('checked');
