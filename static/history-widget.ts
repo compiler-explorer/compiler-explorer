@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,216 +22,225 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import _ from 'underscore';
+import { ga } from './analytics';
+import { sortedList, HistoryEntry } from './history';
+import { editor } from 'monaco-editor';
 
-var
-    $ = require('jquery'),
-    _ = require('underscore'),
-    monaco = require('monaco-editor'),
-    ga = require('analytics').ga,
-    History = require('./history');
+import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
+import ITextModel = editor.ITextModel;
 
-function HistoryDiffState(model) {
-    this.model = model;
-    this.result = null;
-}
+export class HistoryDiffState {
+    public model;
+    private result;
 
-HistoryDiffState.prototype.update = function (result) {
-    this.result = result.sources;
-    this.refresh();
-
-    return true;
-};
-
-HistoryDiffState.prototype.refresh = function () {
-    var output = this.result || [];
-    var content = '';
-    _.each(output, function (val) {
-        if (content.length > 0) {
-            content += '\n';
-        }
-        content += '/****** ' + val.lang + ' ******/\n';
-        content += val.source;
-    });
-    this.model.setValue(content);
-};
-
-function HistoryWidget() {
-    this.modal = null;
-    this.diffEditor = null;
-    this.lhs = null;
-    this.rhs = null;
-    this.currentList = [];
-}
-
-HistoryWidget.prototype.initializeIfNeeded = function () {
-    if (this.modal === null) {
-        this.modal = $('#history');
-
-        var placeholder = this.modal.find('.monaco-placeholder');
-        this.diffEditor = monaco.editor.createDiffEditor(placeholder[0], {
-            fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
-            scrollBeyondLastLine: true,
-            readOnly: true,
-            language: 'c++',
-            minimap: {
-                enabled: true,
-            },
-        });
-
-        this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
-        this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
-        this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
-
-        this.modal.find('.inline-diff-checkbox').click(_.bind(function (event) {
-            var inline = $(event.target).prop('checked');
-            this.diffEditor.updateOptions({
-                renderSideBySide: !inline,
-            });
-            this.resizeLayout();
-        }, this));
+    constructor(model: ITextModel) {
+        this.model = model;
+        this.result = null;
     }
-};
 
-HistoryWidget.prototype.getLanguagesFromHistoryEntry = function (entry) {
-    return _.pluck(entry.sources, 'lang');
-};
+    update(result) {
+        this.result = result.sources;
+        this.refresh();
 
-HistoryWidget.prototype.populateFromLocalStorage = function () {
-    this.currentList = History.sortedList();
-    this.populate(
-        this.modal.find('.historiccode'),
-        _.map(this.currentList, _.bind(function (data) {
-            var dt = new Date(data.dt);
-            var languages = this.getLanguagesFromHistoryEntry(data).join(', ');
-            return {
-                dt: data.dt,
-                name: dt.toString().replace(/\s\(.*\)/, '').concat(' (' + languages + ')'),
-                load: _.bind(function () {
-                    this.onLoad(data);
-                    this.modal.modal('hide');
-                }, this),
-            };
-        }, this)));
-};
+        return true;
+    }
 
-HistoryWidget.prototype.hideRadiosAndSetDiff = function () {
-    var root = this.modal.find('.historiccode');
-    var items = root.find('li:not(.template)');
+    private refresh() {
+        const output = this.result || [];
+        const content = output
+            .map(val => `/****** ${val.lang} ******/\n${val.source}`)
+            .join('\n');
 
-    var foundbase = false;
-    var foundcomp = false;
+        this.model.setValue(content);
+    }
+}
 
-    items.each(_.bind(function (idx, elem) {
-        var li = $(elem);
-        var dt = li.data('dt');
+type Entry = {dt: number, name: string, load: () => void}
 
-        var base = li.find('.base');
-        var comp = li.find('.comp');
+export class HistoryWidget {
+    private modal: JQuery | null;
+    private diffEditor: IStandaloneDiffEditor | null;
+    private lhs: HistoryDiffState | null;
+    private rhs: HistoryDiffState | null;
+    private currentList: HistoryEntry[];
+    private onLoadCallback: (data: HistoryEntry) => void;
 
-        var baseShouldBeVisible = true;
-        var compShouldBeVisible = true;
+    constructor() {
+        this.modal = null;
+        this.diffEditor = null;
+        this.lhs = null;
+        this.rhs = null;
+        this.currentList = [];
+        this.onLoadCallback = () => {};
+    }
 
-        if (comp.prop('checked')) {
-            foundcomp = true;
-            baseShouldBeVisible = false;
+    private initializeIfNeeded() {
+        if (this.modal === null) {
+            this.modal = $('#history');
 
-            var itemRight = _.find(this.currentList, function (item) {
-                return (item.dt === dt);
+            const placeholder = this.modal.find('.monaco-placeholder');
+            this.diffEditor = editor.createDiffEditor(placeholder[0], {
+                fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+                scrollBeyondLastLine: true,
+                readOnly: true,
+                // language: 'c++',
+                minimap: {
+                    enabled: true,
+                },
             });
 
-            this.rhs.update(itemRight);
-        } else if (base.prop('checked')) {
-            foundbase = true;
+            this.lhs = new HistoryDiffState(editor.createModel('', 'c++'));
+            this.rhs = new HistoryDiffState(editor.createModel('', 'c++'));
+            this.diffEditor.setModel({ original: this.lhs.model, modified: this.rhs.model });
 
-            var itemLeft = _.find(this.currentList, function (item) {
-                return (item.dt === dt);
+            this.modal.find('.inline-diff-checkbox').on('click', (event) => {
+                const inline = $(event.target).prop('checked');
+                this.diffEditor.updateOptions({
+                    renderSideBySide: !inline,
+                });
+                this.resizeLayout();
             });
+        }
+    }
 
-            this.lhs.update(itemLeft);
+    private static getLanguagesFromHistoryEntry(entry: HistoryEntry) {
+        return _.pluck(entry.sources, 'lang');
+    }
+
+    private populateFromLocalStorage() {
+        this.currentList = sortedList();
+        this.populate(
+            this.modal.find('.historiccode'),
+            this.currentList.map((data): Entry => {
+                const dt = new Date(data.dt).toString();
+                const languages = HistoryWidget.getLanguagesFromHistoryEntry(data).join(', ');
+                return {
+                    dt: data.dt,
+                    name: `${dt.replace(/\s\(.*\)/, '')} (${languages})`,
+                    load: () => {
+                        this.onLoad(data);
+                        this.modal.modal('hide');
+                    },
+                };
+            })
+        );
+    }
+
+    private hideRadiosAndSetDiff() {
+        const root = this.modal.find('.historiccode');
+        const items = root.find('li:not(.template)');
+
+        let foundbase = false;
+        let foundcomp = false;
+
+        for (const elem of items) {
+            const li = $(elem);
+            const dt = li.data('dt');
+
+            const base = li.find('.base');
+            const comp = li.find('.comp');
+
+            let baseShouldBeVisible = true;
+            let compShouldBeVisible = true;
+
+            if (comp.prop('checked')) {
+                foundcomp = true;
+                baseShouldBeVisible = false;
+
+                const itemRight = this.currentList.find((item) => item.dt === dt);
+
+                this.rhs.update(itemRight);
+            } else if (base.prop('checked')) {
+                foundbase = true;
+
+                const itemLeft = this.currentList.find((item) => item.dt === dt);
+
+                this.lhs.update(itemLeft);
+            }
+
+            if (foundbase && foundcomp) {
+                compShouldBeVisible = false;
+            } else if (!foundbase && !foundcomp) {
+                baseShouldBeVisible = false;
+            }
+
+            if (compShouldBeVisible) {
+                comp.css('visibility', '');
+            } else {
+                comp.css('visibility', 'hidden');
+            }
+
+            if (baseShouldBeVisible) {
+                base.css('visibility', '');
+            } else {
+                base.css('visibility', 'hidden');
+            }
+        }
+    }
+
+    private populate(root: JQuery, list: Entry[]) {
+        root.find('li:not(.template)').remove();
+        const template = root.find('.template');
+
+        let baseMarked = false;
+        let compMarked = false;
+
+        for (const elem of list) {
+            const li = template
+                .clone()
+                .removeClass('template')
+                .appendTo(root);
+
+            li.data('dt', elem.dt);
+
+            const base = li.find('.base');
+            const comp = li.find('.comp');
+
+            if (!compMarked) {
+                comp.prop('checked', 'checked');
+                compMarked = true;
+            } else if (!baseMarked) {
+                base.prop('checked', 'checked');
+                baseMarked = true;
+            }
+
+            base.on('click', () => this.hideRadiosAndSetDiff());
+            comp.on('click', () => this.hideRadiosAndSetDiff());
+
+            li.find('a')
+                .text(elem.name)
+                .on('click', elem.load);
         }
 
-        if (foundbase && foundcomp) {
-            compShouldBeVisible = false;
-        } else if (!foundbase && !foundcomp) {
-            baseShouldBeVisible = false;
-        }
+        this.hideRadiosAndSetDiff();
+    }
 
-        if (compShouldBeVisible) {
-            comp.css('visibility', '');
-        } else {
-            comp.css('visibility', 'hidden');
-        }
+    private resizeLayout() {
+        const tabcontent = this.modal.find('div.tab-content');
+        this.diffEditor.layout({
+            width: tabcontent.width(),
+            height: tabcontent.height() - 20,
+        });
+    }
 
-        if (baseShouldBeVisible) {
-            base.css('visibility', '');
-        } else {
-            base.css('visibility', 'hidden');
-        }
-    }, this));
-};
+    private onLoad(data: HistoryEntry) {
+        this.onLoadCallback(data);
+    }
 
-HistoryWidget.prototype.populate = function (root, list) {
-    root.find('li:not(.template)').remove();
-    var template = root.find('.template');
+    run(onLoad: (data: HistoryEntry) => void) {
+        this.initializeIfNeeded();
+        this.populateFromLocalStorage();
+        this.onLoadCallback = onLoad;
 
-    var baseMarked = false;
-    var compMarked = false;
+        this.modal.on('shown.bs.modal', () => this.resizeLayout());
 
-    _.each(list, _.bind(function (elem) {
-        var li = template
-            .clone()
-            .removeClass('template')
-            .appendTo(root);
+        this.modal.modal();
 
-        li.data('dt', elem.dt);
-
-        var base = li.find('.base');
-        var comp = li.find('.comp');
-
-        if (!compMarked) {
-            comp.prop('checked', 'checked');
-            compMarked = true;
-        } else if (!baseMarked) {
-            base.prop('checked', 'checked');
-            baseMarked = true;
-        }
-
-        base.click(_.bind(this.hideRadiosAndSetDiff, this));
-        comp.click(_.bind(this.hideRadiosAndSetDiff, this));
-
-        li.find('a').text(elem.name).click(elem.load);
-    }, this));
-
-    this.hideRadiosAndSetDiff();
-};
-
-HistoryWidget.prototype.resizeLayout = function () {
-    var tabcontent = this.modal.find('div.tab-content');
-    this.diffEditor.layout({
-        width: tabcontent.width(),
-        height: tabcontent.height() - 20,
-    });
-};
-
-HistoryWidget.prototype.run = function (onLoad) {
-    this.initializeIfNeeded();
-    this.populateFromLocalStorage();
-    this.onLoad = onLoad;
-
-    this.modal.on('shown.bs.modal', _.bind(function () {
-        this.resizeLayout();
-    }, this));
-
-    this.modal.modal();
-
-    ga.proxy('send', {
-        hitType: 'event',
-        eventCategory: 'OpenModalPane',
-        eventAction: 'History',
-    });
-};
-
-module.exports = {
-    HistoryWidget: HistoryWidget,
-};
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'History',
+        });
+    }
+}
