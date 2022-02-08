@@ -2,7 +2,7 @@ import { ParseFilters } from '../../types/features/filters.interfaces';
 import { ResultLineTag } from '../../types/resultline/resultline.interfaces';
 
 export class ParsedAsmResult {
-    asm: IResultLineTag[];
+    asm: ResultLineTag[];
     labelDefinitions: Map<string, number>;
     parsingTime: string;
     filteredCount: number;
