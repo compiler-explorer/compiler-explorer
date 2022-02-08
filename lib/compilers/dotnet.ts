@@ -27,6 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 /// <reference types="../base-compiler" />
+import { DotNetAsmParser } from '../asm-parser-dotnet';
 import { BaseCompiler } from '../base-compiler';
 
 class DotNetCompiler extends BaseCompiler {
@@ -37,6 +38,7 @@ class DotNetCompiler extends BaseCompiler {
     private clrBuildDir: string;
     private additionalSources: string;
     private langVersion: string;
+    protected asm: DotNetAsmParser;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -48,6 +50,7 @@ class DotNetCompiler extends BaseCompiler {
         this.clrBuildDir = this.compilerProps(`compiler.${this.compiler.id}.clrDir`);
         this.additionalSources = this.compilerProps(`compiler.${this.compiler.id}.additionalSources`);
         this.langVersion = this.compilerProps(`compiler.${this.compiler.id}.langVersion`);
+        this.asm = new DotNetAsmParser();
     }
 
     get compilerOptions() {
@@ -160,32 +163,6 @@ class DotNetCompiler extends BaseCompiler {
         return this.compilerOptions;
     }
 
-    cleanAsm(stdout) {
-        let cleanedAsm = '';
-
-        for (const line of stdout) {
-            if (line.text.startsWith('; Assembly listing for method')) {
-                // ; Assembly listing for method ConsoleApplication.Program:Main(System.String[])
-                //                               ^ This character is the 31st character in this string.
-                // `substring` removes the first 30 characters from it and uses the rest as a label.
-                cleanedAsm = cleanedAsm.concat('Method ' + line.text.substring(30) + ':\n');
-                continue;
-            }
-
-            if (line.text.startsWith('Emitting R2R PE file')) {
-                continue;
-            }
-
-            if (line.text.startsWith(';') && !line.text.startsWith('; Emitting')) {
-                continue;
-            }
-
-            cleanedAsm = cleanedAsm.concat(line.text + '\n');
-        }
-
-        return cleanedAsm;
-    }
-
     async runCrossgen2(compiler, execOptions, crossgen2Path, publishPath, dllPath, options, outputPath) {
         const crossgen2Options = [
             crossgen2Path, '-r', path.join(publishPath, '*'), dllPath, '-o', 'CompilerExplorer.r2r.dll',
@@ -199,7 +176,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            this.cleanAsm(result.stdout),
+            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`),
         );
 
         return result;
