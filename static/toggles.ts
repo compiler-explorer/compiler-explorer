@@ -37,7 +37,6 @@ export class Toggles extends EventEmitter {
     private readonly buttons: JQuery;
     private readonly state: Record<string, boolean>;
 
-
     constructor(root: JQuery, state: Record<string, boolean> ) {
         super();
         this.buttons = root.find('.button-checkbox');
