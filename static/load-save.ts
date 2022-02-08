@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,209 +22,226 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var $ = require('jquery');
-var _ = require('underscore');
-var saveAs = require('file-saver').saveAs;
-var Alert = require('./alert').Alert;
-var local = require('./local');
-var Promise = require('es6-promise').Promise;
-var ga = require('./analytics').ga;
-var history = require('./history');
+import _ from 'underscore';
+import { saveAs } from 'file-saver';
+import { Alert } from './alert';
+import { ga } from './analytics';
+import * as local from './local';
+import { Language } from '../types/languages.interfaces';
 
-function getLocalFiles() {
-    return JSON.parse(local.get('files', '{}'));
-}
+const history = require('./history');
 
-function setLocalFile(name, file) {
-    var files = getLocalFiles();
-    files[name] = file;
-    local.set('files', JSON.stringify(files));
-}
 
-function LoadSave() {
-    this.modal = null;
-    this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Load-Saver: ';
-    this.onLoad = _.identity;
-    this.editorText = '';
-    this.extension = '.txt';
-    this.base = window.httpRoot;
-    this.fetchBuiltins()
-        .then(function () {
-        })
-        .catch(function () {
-            // swallow up errors
+export class LoadSave {
+    private modal: JQuery | null = null;
+    private alertSystem: Alert;
+    private onLoadCallback: (...any) => void = _.identity;
+    private editorText = '';
+    private extension = '.txt';
+    private base: string;
+    private currentLanguage: Language | null;
+
+
+    constructor() {
+        this.alertSystem = new Alert();
+        this.alertSystem.prefixMessage = 'Load-Saver: ';
+        this.base = window.httpRoot;
+        this.fetchBuiltins().then(() => {}).catch(() => {});
+    }
+
+    public static getLocalFiles(): Record<string, string> {
+        return JSON.parse(local.get('files', '{}'));
+    }
+
+    public static setLocalFile(name: string, file: string) {
+        const files = LoadSave.getLocalFiles();
+        files[name] = file;
+        local.set('files', JSON.stringify(files));
+    }
+
+    private async fetchBuiltins(): Promise<Record<string, any>[]> {
+        return new Promise<Record<string, any>[]>((resolve) => {
+            $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
         });
-}
-
-LoadSave.prototype.initializeIfNeeded = function () {
-    if ((this.modal === null) || (this.modal.length === 0)) {
-        this.modal = $('#load-save');
-
-        this.modal.find('.local-file').change(_.bind(this.onLocalFile, this));
-        this.modal.find('.save-button').click(_.bind(this.onSaveToBrowserStorage, this));
-        this.modal.find('.save-file').click(_.bind(this.onSaveToFile, this));
     }
-};
 
-LoadSave.prototype.fetchBuiltins = function () {
-    return new Promise(_.bind(function (resolve) {
-        $.getJSON(window.location.origin + this.base + 'source/builtin/list', function (list) {
-            resolve(list);
-        });
-    }, this));
-};
+    public initializeIfNeeded() {
+        if ((this.modal === null) || (this.modal.length === 0)) {
+            this.modal = $('#load-save');
 
-LoadSave.prototype.populateBuiltins = function () {
-    var isVisible = _.bind(function (entry) {
-        return this.currentLanguage && this.currentLanguage.id === entry.lang;
-    }, this);
-    return this.fetchBuiltins()
-        .then(_.bind(function (builtins) {
-            this.populate(this.modal.find('.examples'),
-                _.map(_.filter(builtins, isVisible), _.bind(function (elem) {
-                    return {
-                        name: elem.name,
-                        load: _.bind(function () {
-                            this.doLoad(elem);
-                        }, this),
-                    };
-                }, this))
-            );
-        }, this));
-};
-
-LoadSave.prototype.populateLocalStorage = function () {
-    this.populate(
-        this.modal.find('.local-storage'),
-        _.map(getLocalFiles(), _.bind(function (data, name) {
-            return {
-                name: name,
-                load: _.bind(function () {
-                    this.onLoad(data);
-                    this.modal.modal('hide');
-                }, this),
-            };
-        }, this)));
-};
-
-LoadSave.prototype.populateLocalHistory = function () {
-    this.populate(
-        this.modal.find('.local-history'),
-        _.map(history.sources(this.currentLanguage.id), _.bind(function (data) {
-            var dt = new Date(data.dt);
-            return {
-                name: dt.toString().replace(/\s\(.*\)/, ''),
-                load: _.bind(function () {
-                    this.onLoad(data.source);
-                    this.modal.modal('hide');
-                }, this),
-            };
-        }, this)));
-};
-
-LoadSave.prototype.populate = function (root, list) {
-    root.find('li:not(.template)').remove();
-    var template = root.find('.template');
-    _.each(list, _.bind(function (elem) {
-        template
-            .clone()
-            .removeClass('template')
-            .appendTo(root)
-            .find('a')
-            .text(elem.name)
-            .click(elem.load);
-    }, this));
-};
-
-LoadSave.prototype.onLocalFile = function (event) {
-    var files = event.target.files;
-    if (files.length !== 0) {
-        var file = files[0];
-        var reader = new FileReader();
-        reader.onload = _.bind(function () {
-            this.onLoad(reader.result, file.name);
-        }, this);
-        reader.readAsText(file);
+            this.modal
+                .find('.local-file')
+                .on('change', (e) => this.onLocalFile(e));
+            this.modal
+                .find('.save-button')
+                .on('click', () => this.onSaveToBrowserStorage());
+            this.modal
+                .find('.save-file')
+                .on('click', () => this.onSaveToFile());
+        }
     }
-    this.modal.modal('hide');
-};
 
-LoadSave.prototype.run = function (onLoad, editorText, currentLanguage) {
-    this.initializeIfNeeded();
-    this.populateLocalStorage();
-    this.setMinimalOptions(editorText, currentLanguage);
-    this.populateLocalHistory();
-    this.onLoad = onLoad;
-    this.modal.find('.local-file').attr('accept', _.map(currentLanguage.extensions, function (extension) {
-        return extension + ', ';
-    }, this));
-    this.populateBuiltins().then(_.bind(function () {
-        this.modal.modal();
-    }, this));
-    ga.proxy('send', {
-        hitType: 'event',
-        eventCategory: 'OpenModalPane',
-        eventAction: 'LoadSave',
-    });
-};
-
-LoadSave.prototype.onSaveToBrowserStorage = function () {
-    var name = this.modal.find('.save-name').val();
-    if (!name) {
-        this.alertSystem.alert('Save name', 'Invalid save name');
-        return;
+    private onLoad(data: string, name?: string) {
+        this.onLoadCallback(data, name);
     }
-    name += ' (' + this.currentLanguage.name + ')';
-    var done = _.bind(function () {
-        setLocalFile(name, this.editorText);
-    }, this);
-    if (getLocalFiles()[name] !== undefined) {
-        this.modal.modal('hide');
-        this.alertSystem.ask(
-            'Replace current?',
-            'Do you want to replace the existing saved file \'' + name + '\'?',
-            {yes: done});
-    } else {
-        done();
+
+    private doLoad(element) {
+        $.getJSON(window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
+            (response) => this.onLoad(response.file));
         this.modal.modal('hide');
     }
-};
 
-LoadSave.prototype.setMinimalOptions = function (editorText, currentLanguage) {
-    this.editorText = editorText;
-    this.currentLanguage = currentLanguage;
-    this.extension = currentLanguage.extensions[0] || '.txt';
-};
-
-LoadSave.prototype.onSaveToFile = function (fileEditor) {
-    try {
-        var fileLang = this.currentLanguage.name;
-        var name = fileLang !== undefined && fileEditor !== undefined ?
-            (fileLang + ' Editor #' + fileEditor + ' ') : '';
-        saveAs(
-            new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
-            'Compiler Explorer ' + name + 'Code' + this.extension);
-        return true;
-    } catch (e) {
-        this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
-            group: 'savelocalerror',
-            alertClass: 'notification-error',
-            dismissTime: 5000,
-        });
-        return false;
+    private static populate(root: JQuery, list: {name: string, load: () => void}[]) {
+        root.find('li:not(.template)').remove();
+        const template = root.find('.template');
+        for (const elem of list) {
+            template
+                .clone()
+                .removeClass('template')
+                .appendTo(root)
+                .find('a')
+                .text(elem.name)
+                .on('click', elem.load);
+        }
     }
-};
 
-LoadSave.prototype.doLoad = function (element) {
-    // TODO: handle errors. consider promises...
-    $.getJSON(window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
-        _.bind(function (response) {
-            this.onLoad(response.file);
-        }, this));
-    this.modal.modal('hide');
-};
+    private async populateBuiltins() {
+        const builtins = (await this.fetchBuiltins()).filter(entry =>
+            this.currentLanguage?.id === entry.lang
+        );
+        return LoadSave.populate(
+            this.modal.find('.examples'),
+            builtins.map(elem => {
+                return {
+                    name: elem.name,
+                    load: () => this.doLoad(elem),
+                };
+            })
+        );
+    }
 
+    private populateLocalStorage() {
+        const files = LoadSave.getLocalFiles();
+        const keys = Object.keys(files);
 
-module.exports = {LoadSave: LoadSave};
+        LoadSave.populate(
+            this.modal.find('.local-storage'),
+            keys.map(name => {
+                const data = files[name];
+                return {
+                    name: name,
+                    load: () => {
+                        this.onLoad(data);
+                        this.modal.modal('hide');
+                    },
+                };
+            })
+        );
+    }
+
+    private populateLocalHistory() {
+        LoadSave.populate(
+            this.modal.find('.local-history'),
+            history.sources(this.currentLanguage.id).map(data => {
+                const dt = new Date(data.dt).toString();
+                return {
+                    name: dt.replace(/\s\(.*\)/, ''),
+                    load: () => {
+                        this.onLoad(data.source);
+                        this.modal.modal('hide');
+                    },
+                };
+            })
+        );
+    }
+
+    // From https://developers.google.com/web/updates/2014/08/Easier-ArrayBuffer-String-conversion-with-the-Encoding-API
+    private static ab2str(buf) {
+        const dataView = new DataView(buf);
+        // The TextDecoder interface is documented at http://encoding.spec.whatwg.org/#interface-textdecoder
+        const decoder = new TextDecoder('utf-8');
+        return decoder.decode(dataView);
+    }
+
+    private onLocalFile(event: JQuery.ChangeEvent) {
+        const files = event.target.files;
+        if (files.length !== 0) {
+            const file = files[0];
+            const reader = new FileReader();
+            reader.onload = () => {
+                let result = '';
+                if (reader.result instanceof ArrayBuffer) {
+                    result = LoadSave.ab2str(reader.result);
+                } else {
+                    result = reader.result;
+                }
+                this.onLoad(result, file.name);
+            };
+            reader.readAsText(file);
+        }
+        this.modal.modal('hide');
+    }
+
+    public run(onLoad, editorText, currentLanguage: Language) {
+        this.initializeIfNeeded();
+        this.populateLocalStorage();
+        this.setMinimalOptions(editorText, currentLanguage);
+        this.populateLocalHistory();
+        this.onLoadCallback = onLoad;
+        this.modal.find('.local-file')
+            .attr('accept', currentLanguage.extensions.join(','));
+        this.populateBuiltins().then(() =>this.modal.modal());
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'LoadSave',
+        });
+    }
+
+    private onSaveToBrowserStorage() {
+        const saveNameValue = this.modal.find('.save-name').val();
+        if (!saveNameValue) {
+            this.alertSystem.alert('Save name', 'Invalid save name');
+            return;
+        }
+        const name = `${saveNameValue} (${this.currentLanguage.name})`;
+        const doneCallback = () => {
+            LoadSave.setLocalFile(name, this.editorText);
+        };
+        if (LoadSave.getLocalFiles()[name] !== undefined) {
+            this.modal.modal('hide');
+            this.alertSystem.ask(
+                'Replace current?',
+                `Do you want to replace the existing saved file '${_.escape(name)}'?`,
+                {yes: doneCallback});
+        } else {
+            doneCallback();
+            this.modal.modal('hide');
+        }
+    }
+
+    private setMinimalOptions(editorText, currentLanguage) {
+        this.editorText = editorText;
+        this.currentLanguage = currentLanguage;
+        this.extension = currentLanguage.extensions[0] || '.txt';
+    }
+
+    private onSaveToFile(fileEditor?: string) {
+        try {
+            const fileLang = this.currentLanguage.name;
+            const name = fileLang !== undefined && fileEditor !== undefined ?
+                (fileLang + ' Editor #' + fileEditor + ' ') : '';
+            saveAs(
+                new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
+                'Compiler Explorer ' + name + 'Code' + this.extension);
+            return true;
+        } catch (e) {
+            this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {
+                group: 'savelocalerror',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+            return false;
+        }
+    }
+}

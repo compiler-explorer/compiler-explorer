@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { Language } from '../types/languages.interfaces';
+
 export interface LibraryVersion {
     alias: string[];
     hidden: boolean;
@@ -45,8 +47,7 @@ export type Libs = Record<string, LanguageLibs>;
 
 export interface Options {
     libs: Libs;
-    // TODO: Constraint this type
-    languages: Record<string, any>[];
+    languages: Record<string, Language>;
     defaultLibs: Record<string, string | null>;
     defaultFontScale: number;
     sentryDsn?: string;
