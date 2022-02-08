@@ -1,7 +1,7 @@
-import { IParseFilters } from '../../types/features/filters.interfaces';
-import { IResultLineTag } from '../../types/resultline/resultline.interfaces';
+import { ParseFilters } from '../../types/features/filters.interfaces';
+import { ResultLineTag } from '../../types/resultline/resultline.interfaces';
 
-export interface IParsedAsmResult {
+export class ParsedAsmResult {
     asm: IResultLineTag[];
     labelDefinitions: Map<string, number>;
     parsingTime: string;
@@ -10,6 +10,6 @@ export interface IParsedAsmResult {
 
 export interface IExternalParser {
     objdumpAndParseAssembly(buildfolder: string, objdumpArgs: string[],
-        filters: IParseFilters): Promise<IParsedAsmResult>;
-    parseAssembly(filepath: string, filters: IParseFilters): Promise<IParsedAsmResult>;
+        filters: ParseFilters): Promise<ParsedAsmResult>;
+    parseAssembly(filepath: string, filters: ParseFilters): Promise<ParsedAsmResult>;
 }
