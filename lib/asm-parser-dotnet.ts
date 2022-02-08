@@ -127,7 +127,7 @@ export class DotNetAsmParser {
             source: Source | null,
             labels: InlineLabel[],
         }[] = [];
-        let labelDefinitions: Record<string, number> = {};
+        let labelDefinitions: [string, number][] = [];
 
         let asmLines: string[] = this.cleanAsm(utils.splitLines(asmResult));
         const startingLineCount = asmLines.length;
@@ -141,12 +141,12 @@ export class DotNetAsmParser {
 
         for (const i in result.labelDef) {
             const label = result.labelDef[i];
-            labelDefinitions[label.name] = parseInt(i);
+            labelDefinitions.push([label.name, parseInt(i)]);
         }
 
         for (const i in result.methodDef) {
             const method = result.methodDef[i];
-            labelDefinitions[method] = parseInt(i);
+            labelDefinitions.push([method, parseInt(i)]);
         }
 
         for (const line in asmLines) {
@@ -167,28 +167,24 @@ export class DotNetAsmParser {
             });
         }
 
-        function sortLabel(labels: Record<string, number>) {
-            return Object.fromEntries(Object.entries(labels).sort((a, b) => a[1] < b[1] ? -1 : 1));
-        }
-
         let lineOffset = 1;
-        labelDefinitions = sortLabel(labelDefinitions);
+        labelDefinitions = labelDefinitions.sort((a, b) => a[1] < b[1] ? -1 : 1);
 
-        for (const label in labelDefinitions) {
-            if (result.labelDef[labelDefinitions[label]]
-                && result.labelDef[labelDefinitions[label]].remove) {
+        for (const index in labelDefinitions) {
+            if (result.labelDef[labelDefinitions[index][1]] &&
+                result.labelDef[labelDefinitions[index][1]].remove) {
+                labelDefinitions[index][1] = -1;
                 lineOffset--;
-                delete labelDefinitions[label];
                 continue;
             }
 
-            labelDefinitions[label] += lineOffset;
+            labelDefinitions[index][1] += lineOffset;
         }
 
         const endTime = process.hrtime.bigint();
         return {
             asm: asm,
-            labelDefinitions: labelDefinitions,
+            labelDefinitions: Object.fromEntries(labelDefinitions.filter(i => i[1] !== -1)),
             parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             filteredCount: startingLineCount - asm.length,
         };
