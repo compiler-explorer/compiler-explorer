@@ -24,7 +24,7 @@
 
 'use strict';
 
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 export function definition() {
     // Ada 2012 Language Definition

@@ -1,5 +1,5 @@
 @import "~@fortawesome/fontawesome-free/css/all.min.css";
-@import "~vis/dist/vis.css";
+@import "~vis-network/styles/vis-network.css";
 
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
@@ -862,7 +862,7 @@ html[data-theme=dark] {
     cursor: pointer;
 }
 
-.currentCursorPosition {
+.currentCursorPosition, .ctrlSNothing {
     font-size: small;
     border: none;
     user-select: text;

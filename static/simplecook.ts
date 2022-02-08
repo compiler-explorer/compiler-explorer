@@ -43,22 +43,22 @@ export class SimpleCook {
 
     public show(): void {
         this.elem.show();
-    };
+    }
 
     public hide(): void {
         this.elem.hide();
         this.onHide();
-    };
+    }
 
     public callDoConsent(): void {
         this.hide();
         this.onDoConsent();
-    };
+    }
 
     public callDontConsent(): void {
         this.hide();
         this.onDontConsent();
-    };
+    }
 
     public setOnDoConsent(callback: SimpleCookieCallback): void {
         this.onDoConsent = callback;

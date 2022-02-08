@@ -25,7 +25,7 @@
 // Originally based on `./d-mode.js` by the Compiler Explorer Authors
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {

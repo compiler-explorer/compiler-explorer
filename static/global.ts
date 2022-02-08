@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { IFrontendTesting } from './tests/frontend-testing.interfaces';
 import { Options } from './options.interfaces';
 
 type CompilerExplorerOptions = Record<string, unknown> & Options
@@ -31,6 +32,7 @@ declare global {
         httpRoot: string | null;
         staticRoot: string | null;
         compilerExplorerOptions: CompilerExplorerOptions;
+        compilerExplorerFrontendTesting: IFrontendTesting;
         ga: any;
         GoogleAnalyticsObject: any;
     }

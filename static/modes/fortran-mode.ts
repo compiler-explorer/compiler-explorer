@@ -26,7 +26,7 @@
 //    vs.language.fortran, Copyright (c) 2015, Thomas E. Dunn
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
@@ -542,7 +542,7 @@ function configuration() {
     };
 }
 
-var def = definition();
+const def = definition();
 
 monaco.languages.register({id: 'fortran'});
 monaco.languages.setMonarchTokensProvider('fortran', def);

@@ -34,7 +34,7 @@ function definition() {
             '<=', '>=', '==', '!=', '=<', '+', '-', '*', '/',
         ],
 
-        symbols: /[=><!+\-\*\/]+/,
+        symbols: /[=><!+\-*/]+/,
 
         escapes: /~(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
@@ -46,7 +46,7 @@ function definition() {
                     cases: {
                         '@commands': 'keyword',
                         '@default': '',
-                    }
+                    },
                 }],
 
                 [/[a-zA-Z-][>\w]*/, {
@@ -56,14 +56,14 @@ function definition() {
                     },
                 }],
 
-                [/[(){}\[\]]/, '@brackets'],
+                [/[(){}[\]]/, '@brackets'],
                 [/<<.*>>/, '@brackets'],
 
                 [/@symbols/, {
                     cases: {
                         '@operators': 'delimiter',
-                        '@default': ''
-                    }
+                        '@default': '',
+                    },
                 }],
 
                 [/^%.*/, 'comment'],
@@ -80,7 +80,7 @@ function definition() {
             ],
 
             whitespace: [
-                [/\s/]
+                [/\s/],
             ],
 
             comment: [
@@ -105,28 +105,28 @@ function definition() {
 function configuration() {
     return {
         comments: {
-            lineComment: "%"
+            lineComment: '%',
         },
         brackets: [
-            ["{", "}"],
-            ["[", "]"],
-            ["(", ")"],
-            ["<<", ">>"]
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')'],
+            ['<<', '>>'],
         ],
         autoClosingPairs: [
-            { open: "{", "close": "}", "notIn": ["string", "comment"] },
-            { open: "[", "close": "]", "notIn": ["string", "comment"] },
-            { open: "(", "close": ")", "notIn": ["string", "comment"] },
-            { open: "<<", "close": ">>", "notIn": ["string", "comment"] },
-            { open: "'", "close": "'", "notIn": ["string", "comment"] },
-            { open: "\"", "close": "\"" }
+            { open: '{', close: '}', notIn: ['string', 'comment'] },
+            { open: '[', close: ']', notIn: ['string', 'comment'] },
+            { open: '(', close: ')', notIn: ['string', 'comment'] },
+            { open: '<<', close: '>>', notIn: ['string', 'comment'] },
+            { open: "'", close: "'", notIn: ['string', 'comment'] },
+            { open: '"', close: '"' },
         ],
         folding: {
             markers: {
-                start: "^\\s*\\%\\%region\\b",
-                end: "^\\s*\\%\\%endregion\\b"
-            }
-        }
+                start: '^\\s*\\%\\%region\\b',
+                end: '^\\s*\\%\\%endregion\\b',
+            },
+        },
     };
 }
 

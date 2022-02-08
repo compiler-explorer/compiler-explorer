@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options'
+import { options } from './options';
 
 const prefix = options.localStoragePrefix ?? '';
 
