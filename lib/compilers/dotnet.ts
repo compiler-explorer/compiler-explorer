@@ -51,7 +51,7 @@ class DotNetCompiler extends BaseCompiler {
         // Properties:
         '/p:AllowUnsafeBlocks=true',
         // Speed up compilation:
-        '--no-restore', '--no-dependencies', '--nologo', '-v', 'q', '--nologo'];
+        '--no-restore', '--no-dependencies', '-v', 'q'];
     }
 
     get configurableOptions() {
