@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Simon Brand
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -50,11 +50,11 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
     }
 
-    getInitialHTML(): string {
+    override getInitialHTML(): string {
         return $('#pp').html();
     }
 
-    createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
+    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
         return monaco.editor.create(editorRoot, monacoConfig.extendConfig({
             language: 'plaintext',
             readOnly: true,
@@ -63,7 +63,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }));
     }
 
-    registerOpeningAnalyticsEvent(): void {
+    override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -71,7 +71,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         });
     }
 
-    registerButtons(state: PPViewState & BasePaneState): void {
+    override registerButtons(state: PPViewState & BasePaneState): void {
         this.options = new Toggles(this.domRoot.find('.options'), state);
         this.options.on('change', _.bind(this.onOptionsChange, this));
     }
@@ -91,7 +91,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         this.showPpResults('<Compiling...>');
     }
 
-    resize() {
+    override resize() {
         const topBarHeight = this.topBar.outerHeight(true);
         this.editor.layout({
             width: this.domRoot.width(),
@@ -99,7 +99,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         });
     }
 
-    onCompileResult(compilerId: number, compiler: any, result: any) {
+    override onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerInfo.compilerId !== compilerId) return;
     
         if (result.hasPpOutput) {
@@ -118,12 +118,12 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         return this.editor.getModel().getLanguageId();
     }
 
-    getPaneName() {
+    override getPaneName() {
         return 'Preprocessor Output ' + this.compilerInfo.compilerName +
             ' (Editor #' + this.compilerInfo.editorId + ', Compiler #' + this.compilerInfo.compilerId + ')';
     }
 
-    setTitle() {
+    override setTitle() {
         this.container.setTitle(this.getPaneName());
     }
 
@@ -153,7 +153,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
     }
 
-    onCompiler(id, compiler, options, editorid) {
+    override onCompiler(id, compiler, options, editorid) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;
@@ -164,7 +164,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
     }
 
-    updateState() {
+    override updateState() {
         this.container.setState(this.currentState());
     }
 
@@ -181,7 +181,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         return state;
     }
 
-    onCompilerClose(id) {
+    override onCompilerClose(id) {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
@@ -192,7 +192,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
     }
 
-    close() {
+    override close() {
         this.eventHub.unsubscribe();
         this.eventHub.emit('ppViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();

@@ -1276,8 +1276,7 @@ Compiler.prototype.onPpViewOpened = function (id) {
     if (this.id === id) {
         this.ppButton.prop('disabled', true);
         this.ppViewOpen = true;
-        // the pp view will request compilation once it populates its options
-        //this.compile();
+        // the pp view will request compilation once it populates its options so this.compile() is not called here
     }
 };
 
