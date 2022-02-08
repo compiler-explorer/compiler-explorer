@@ -1,6 +1,6 @@
 export type FilenameTransformFunc = (filename: string) => string;
 
-export type UnprocessedExecResult {
+export class UnprocessedExecResult {
     code: number;
     okToCache: boolean;
     filenameTransform: FilenameTransformFunc;
