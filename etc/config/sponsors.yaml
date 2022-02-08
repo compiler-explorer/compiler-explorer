@@ -23,7 +23,7 @@ levels:
       - name: Backtrace
         description: We compress error debugging time by automating capture and providing essential context and insight about impact, all on one platform. Get started for free.
         icon: https://static.ce-cdn.net/bt/BT-Saucelabs-Logo-24px height.png
-        img: https://static.ce-cdn.net/bt/Vert_BT_SL_Logo_4c_Bk (3).png
+        img: https://static.ce-cdn.net/bt/BT-Saucelabs-Logo-300x120.png
         url: https://hubs.la/Q013D7rx0
         priority: 500
         topIcon: true
