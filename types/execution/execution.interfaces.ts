@@ -1,6 +1,6 @@
 export type FilenameTransformFunc = (filename: string) => string;
 
-export interface UnprocessedExecResult {
+export type UnprocessedExecResult {
     code: number;
     okToCache: boolean;
     filenameTransform: FilenameTransformFunc;
@@ -9,4 +9,4 @@ export interface UnprocessedExecResult {
     execTime: string;
 }
 
-export type TypicalExecutionFunc = (executable: string, args: string[], execOptions: object) => IUnprocessedExecResult;
+export type TypicalExecutionFunc = (executable: string, args: string[], execOptions: object) => UnprocessedExecResult;
