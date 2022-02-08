@@ -48,8 +48,10 @@ class DotNetCompiler extends BaseCompiler {
 
     get compilerOptions() {
         return ['build', this.testAppName + '.csproj', '-c', 'Release', '-o', this.testAppOutputDir, 
-        // Properties:
+        // Enable unsafe code (raw pointers, etc)
         '/p:AllowUnsafeBlocks=true',
+        // Disable nullability, we don't want to see its attributes in the output
+        '/p:Nullable=disable',
         // Speed up compilation:
         '--no-restore', '--no-dependencies', '-v', 'q'];
     }
