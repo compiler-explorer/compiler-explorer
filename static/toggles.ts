@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,108 +22,94 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var _ = require('underscore');
-var $ = require('jquery');
-var EventEmitter = require('events');
+import { EventEmitter } from 'events';
+
+const settings = {
+    on: {
+        icon: 'far fa-check-square',
+    },
+    off: {
+        icon: 'far fa-square',
+    },
+};
+
+export class Toggles extends EventEmitter {
+    private readonly buttons: JQuery;
+    private readonly state: Record<string, boolean>;
 
 
-function Togglesv2(root, state) {
-    EventEmitter.call(this);
-    var buttons = root.find('.button-checkbox');
-    var self = this;
-    this.buttons = buttons;
-    this.state = _.extend({}, state);
-    // Based on https://bootsnipp.com/snippets/featured/jquery-checkbox-buttons
-    buttons.each(function () {
-        // Settings
-        var $widget = $(this),
-            $button = $widget.find('button'),
-            $checkbox = $widget.find('input:checkbox'),
-            bind = $button.data('bind'),
-            settings = {
-                on: {
-                    icon: 'far fa-check-square',
-                },
-                off: {
-                    icon: 'far fa-square',
-                },
-            };
+    constructor(root: JQuery, state: Record<string, boolean> ) {
+        super();
+        this.buttons = root.find('.button-checkbox');
+        this.state = {...state};
 
-        // Event Handlers
-        $button.on('click', function (e) {
-            $checkbox.prop('checked', !$checkbox.is(':checked'));
-            $checkbox.triggerHandler('change');
-            e.stopPropagation();
-        });
-        $checkbox.on('change', function () {
-            updateDisplay();
-        });
 
-        // Actions
-        function updateDisplay(forcedState) {
-            if (forcedState !== undefined) {
-                $checkbox.prop('checked', forcedState);
-            }
-            var isChecked = $checkbox.is(':checked');
+        for (const element of this.buttons) {
+            const widget = $(element);
+            const button = widget.find('button');
+            const checkbox = widget.find('input:checkbox');
+            const bind = button.data('bind');
 
-            // Set the button's state
-            $button.data('state', (isChecked) ? 'on' : 'off');
 
-            // Set the button's icon
-            $button.find('.state-icon')
-                .removeClass()
-                .addClass('state-icon ' + settings[$button.data('state')].icon);
+            // Event Handlers
+            button.on('click', (e) => {
+                checkbox.prop('checked', !checkbox.is(':checked'));
+                checkbox.triggerHandler('change');
+                e.stopPropagation();
+            });
+            checkbox.on('change', () => {
+                this.updateButtonDisplay(button, checkbox);
+            });
 
-            // Update the button's color
-            $button.toggleClass('active', isChecked);
-            if (forcedState === undefined) {
-                self.set(bind, isChecked);
-            }
-        }
-
-        // Initialization
-        function init() {
-            updateDisplay(self.state[bind]);
+            this.updateButtonDisplay(button, checkbox, this.state[bind]);
 
             // Inject the icon if applicable
-            if ($button.find('.state-icon').length === 0) {
-                $button.prepend('<i class="state-icon ' + settings[$button.data('state')].icon + '"></i> ');
+            if (button.find('.state-icon').length === 0) {
+                button.prepend('<i class="state-icon ' + settings[button.data('state')].icon + '"></i> ');
             }
         }
-        init();
-    });
-}
+    }
 
-_.extend(Togglesv2.prototype, EventEmitter.prototype);
-
-Togglesv2.prototype.get = function () {
-    return _.clone(this.state);
-};
-
-Togglesv2.prototype.set = function (key, value) {
-    this._change(function () {
-        this.state[key] = value;
-    }.bind(this));
-};
-
-Togglesv2.prototype.enableToggle = function (key, enable) {
-    this.buttons.each(function () {
-        var widget = $(this);
-        var button = $(widget.find('button'));
-        var bind = button.data('bind');
-        if (bind === key) {
-            button.prop('disabled', !enable);
+    private updateButtonDisplay(button: JQuery, checkbox: JQuery, forcedState?: boolean) {
+        if (forcedState !== undefined) {
+            checkbox.prop('checked', forcedState);
         }
-    });
-};
+        const isChecked = checkbox.is(':checked');
 
-Togglesv2.prototype._change = function (update) {
-    var before = this.get();
-    update();
-    this.emit('change', before, this.get());
-};
+        // Set the button's state
+        button.data('state', isChecked ? 'on' : 'off');
 
-module.exports = {
-    Toggles: Togglesv2,
-};
+        // Set the button's icon
+        button.find('.state-icon')
+            .removeClass()
+            .addClass(`state-icon ${settings[button.data('state')].icon}`);
+
+        // Update the button's color
+        button.toggleClass('active', isChecked);
+        if (forcedState === undefined) {
+            this.set(button.data('bind'), isChecked);
+        }
+    }
+
+
+    get() {
+        return {...this.state};
+    }
+
+    set(key: string, value: boolean) {
+        const before = this.get();
+        this.state[key] = value;
+        this.emit('change', before, this.get());
+    }
+
+    enableToggle(key: string, enable: boolean) {
+        for (const element of this.buttons) {
+            const widget = $(element);
+            const button = widget.find('button');
+            const bind = button.data('bind');
+            if (bind === key) {
+                button.prop('disabled', !enable);
+            }
+        }
+    }
+}
