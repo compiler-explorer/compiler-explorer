@@ -102,7 +102,9 @@ export class DotNetAsmParser {
         const cleanedAsm = [];
 
         for (const line of asmLines) {
+            if (!line) continue;
             if (line.startsWith('; Assembly listing for method')) {
+                if (cleanedAsm.length > 0) cleanedAsm.push('');
                 // ; Assembly listing for method ConsoleApplication.Program:Main(System.String[])
                 //                               ^ This character is the 31st character in this string.
                 // `substring` removes the first 30 characters from it and uses the rest as a label.
