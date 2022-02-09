@@ -93,7 +93,6 @@ class DotNetCompiler extends BaseCompiler {
             <PropertyGroup>
                 <TargetFramework>${this.targetFramework}</TargetFramework>
                 <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-                <Nullable>enable</Nullable>
                 <AssemblyName>CompilerExplorer</AssemblyName>
                 <LangVersion>${this.langVersion}</LangVersion>
                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
