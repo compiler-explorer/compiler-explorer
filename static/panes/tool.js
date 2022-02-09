@@ -173,6 +173,7 @@ Tool.prototype.onSettingsChange = function (newSettings) {
             enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
+        codeLensFontFamily: newSettings.editorsFFont,
         fontLigatures: newSettings.editorsFLigatures,
     });
 };

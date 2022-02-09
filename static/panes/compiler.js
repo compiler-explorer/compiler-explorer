@@ -2283,6 +2283,7 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
             enabled: this.settings.showMinimap && !options.embedded,
         },
         fontFamily: this.settings.editorsFFont,
+        codeLensFontFamily: this.settings.editorsFFont,
         fontLigatures: this.settings.editorsFLigatures,
     });
 };
