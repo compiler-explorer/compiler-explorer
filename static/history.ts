@@ -30,7 +30,7 @@ import { Sharing } from './sharing';
 const maxHistoryEntries = 30;
 type Source = {dt: number, source: string};
 export type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
-type EditorSource = {lang: string, source: string};
+export type EditorSource = {lang: string, source: string};
 
 function extractEditorSources(content: any[]): EditorSource[] {
     const sources: EditorSource[] = [];
