@@ -31,8 +31,8 @@ import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
 import ITextModel = editor.ITextModel;
 
 export class HistoryDiffState {
-    public model;
-    private result;
+    public model: ITextModel;
+    private result: HistoryEntry;
 
     constructor(model: ITextModel) {
         this.model = model;
