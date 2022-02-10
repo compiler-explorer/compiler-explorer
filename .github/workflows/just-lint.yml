@@ -5,6 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
+  justlint:
     runs-on: ubuntu-20.04
 
     steps:
