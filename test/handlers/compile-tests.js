@@ -340,11 +340,11 @@ describe('Compiler tests', () => {
                     .send(source || ''));
         }
 
-        it("error on empty request body", () => {
+        it('error on empty request body', () => {
             return compileHandler.setCompilers([{
                 compilerType: 'fake-for-test',
                 exe: 'fake',
-                fakeResult: {}
+                fakeResult: {},
             }])
                 .then(() => chai.request(app)
                     .post('/fake-for-test/compile')
