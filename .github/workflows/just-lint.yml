@@ -1,4 +1,4 @@
-name: Compiler Explorer
+name: JustLint
 
 on:
   pull_request:
