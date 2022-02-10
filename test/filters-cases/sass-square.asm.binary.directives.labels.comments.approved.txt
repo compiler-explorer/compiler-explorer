@@ -159,11 +159,7 @@
       "opcodes": [
         "4003ffffe0001de7"
       ],
-      "source": {
-        "file": null,
-        "line": 6,
-        "mainsource": true
-      },
+      "source": null,
       "text": " BRA `(.L_1)"
     },
     {
