@@ -29,7 +29,7 @@ import { Tab } from 'golden-layout';
 //const Alert = require('alert').Alert;
 
 export class PaneRenaming {
-    public static registerCallback(/*pane: any*/): void {
+    public static registerCallback(pane: any): void {
         // const alertSystem = new Alert();
         // const addRenameButton = function (parentTab: Tab) {
         //     return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
