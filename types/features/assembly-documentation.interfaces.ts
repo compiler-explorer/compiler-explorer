@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { AssemblyInstructionInfo } from '../../lib/asm-docs/base';
+
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */
     instructionSet: 'amd64' | 'arm32' | 'java';
@@ -29,11 +31,7 @@ export interface AssemblyDocumentationRequest {
     opcode: string;
 }
 
-export interface AssemblyDocumentationResponse {
-    tooltip: string;
-    html: string;
-    url: string;
-}
+export type AssemblyDocumentationResponse = AssemblyInstructionInfo;
 
 export interface AssemblyDocumentationError {
     /** Explanatory error string */

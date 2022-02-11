@@ -41,7 +41,7 @@ var url = require('./url');
 var clipboard = require('clipboard');
 var Hub = require('./hub').Hub;
 var Sentry = require('@sentry/browser');
-var Settings = require('./settings');
+var Settings = require('./settings').Settings;
 var local = require('./local');
 var Alert = require('./alert').Alert;
 var themer = require('./themes');
@@ -51,6 +51,10 @@ var SimpleCook = require('./simplecook').SimpleCook;
 var HistoryWidget = require('./history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
+
+if (!window.PRODUCTION) {
+    require('./tests/_all');
+}
 
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
@@ -64,19 +68,6 @@ require('./explorer.scss');
 var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
-
-// Polyfill includes for IE11 - From MDN
-if (!String.prototype.includes) {
-    String.prototype.includes = function (search, start) {
-        if (search instanceof RegExp) {
-            throw TypeError('first argument must not be a RegExp');
-        }
-        if (start === undefined) {
-            start = 0;
-        }
-        return this.indexOf(search, start) !== -1;
-    };
-}
 
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
@@ -112,9 +103,9 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
-        setSettings(_.extend(currentSettings, newSettings));
+        SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
     return currentSettings;
 }

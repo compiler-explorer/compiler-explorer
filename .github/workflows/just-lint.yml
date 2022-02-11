@@ -1,0 +1,22 @@
+name: JustLint
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  justlint:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - name: Install eslint
+        run: npm i eslint@8.5.0 eslint-config-prettier@8.3.0 eslint-formatter-github@1.0.11 eslint-import-resolver-typescript@2.5.0 eslint-plugin-import@2.25.3 eslint-plugin-jsdoc@37.4.0 eslint-plugin-node@11.1.0 eslint-plugin-promise@6.0.0 eslint-plugin-requirejs@4.0.1 eslint-plugin-sonarjs@0.11.0 eslint-plugin-unicorn@40.1.0 prettier@2.5.1 typescript@4.5.4 @typescript-eslint/eslint-plugin@5.8.0 @typescript-eslint/parser@5.8.0 @types/bootstrap@5.1.6 @types/jquery@3.5.10 @types/underscore@1.11.4 @typescript-eslint/eslint-plugin@5.8.0 @typescript-eslint/parser@5.8.0
+      - name: Run lint
+        run: npm run lint

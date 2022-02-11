@@ -29,16 +29,20 @@ import * as monaco from 'monaco-editor';
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
 
 import { FontScale } from '../fontscale';
-import { SiteSettings } from '../settings.interfaces';
+import { SiteSettings } from '../settings';
 import * as utils from '../utils';
+
+import { PaneRenaming } from '../pane-renaming';
 
 /**
  * Basic container for a tool pane in Compiler Explorer
  *
  * Type parameter E indicates which monaco editor kind this pane hosts. Common
  * values are monaco.editor.IDiffEditor and monaco.ICodeEditor
+ *
+ * Type parameter S refers to a state interface for the pane
  */
-export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
+export abstract class Pane<E extends monaco.editor.IEditor, S> {
     compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
@@ -48,8 +52,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     selection: monaco.Selection;
     editor: E;
     fontScale: FontScale;
-    isAwaitingInitialResults: boolean = false;
-    settings: SiteSettings | {} = {};
+    isAwaitingInitialResults = false;
+    settings: SiteSettings | Record<string, never> = {};
+    paneName: string;
 
     /**
      * Base constructor for any pane. Performs common initialization tasks such
@@ -80,7 +85,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerEditorActions();
-        this.setTitle();
+        this.updateTitle();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -165,10 +170,10 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * if (this.compilerInfo.compilerId === compilerId) { ... }
      * ```
      *
-     * @param compilerId Id of the compiler that had its version changed
-     * @param compiler The updated compiler object
+     * @param compilerId - Id of the compiler that had its version changed
+     * @param compiler - The updated compiler object
      * @param options
-     * @param editorId The editor id the updated compiler is attached to
+     * @param editorId - The editor id the updated compiler is attached to
      */
     abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number): void;
 
@@ -186,9 +191,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * if (this.compilerInfo.compilerId === compilerId) { ... }
      * ```
      *
-     * @param compilerId Id of the compiler that had a compilation
-     * @param compiler The compiler object
-     * @param result The entire HTTP request response
+     * @param compilerId - Id of the compiler that had a compilation
+     * @param compiler - The compiler object
+     * @param result - The entire HTTP request response
      */
     abstract onCompileResult(compilerId: number, compiler: unknown, result: unknown): void;
 
@@ -205,6 +210,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.fontScale.on('change', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
+        PaneRenaming.registerCallback(this);
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
         this.eventHub.on('compiler', this.onCompiler.bind(this));
         this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
@@ -213,8 +219,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
         this.eventHub.on('resize', this.resize.bind(this));
     }
 
-    protected setTitle() {
-        this.container.setTitle(this.getPaneName());
+    protected updateTitle() {
+        const name = this.paneName ? this.paneName : this.getPaneName();
+        this.container.setTitle(_.escape(name));
     }
 
     /** Close the pane if the compiler this pane was attached to closes */

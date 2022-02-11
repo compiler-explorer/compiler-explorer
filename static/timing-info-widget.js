@@ -25,7 +25,7 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
-var Settings = require('settings');
+var Settings = require('settings').Settings;
 
 // The name of the package itself contains .js, it's not referencing a file
 // eslint-disable-next-line requirejs/no-js-extension

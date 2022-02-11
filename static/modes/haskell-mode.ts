@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
@@ -88,4 +88,4 @@ function definition() {
 monaco.languages.register({id: 'haskell'});
 monaco.languages.setMonarchTokensProvider('haskell', definition());
 
-export {}
+export {};

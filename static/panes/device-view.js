@@ -31,6 +31,7 @@ var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 var TomSelect = require('tom-select');
 
@@ -86,7 +87,7 @@ function DeviceAsm(hub, container, state) {
     if (state && state.irOutput) {
         this.showDeviceAsmResults(state.irOutput);
     }
-    this.setTitle();
+    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -149,6 +150,7 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+    PaneRenaming.registerCallback(this);
 };
 
 // TODO: de-dupe with compiler etc
@@ -221,8 +223,9 @@ DeviceAsm.prototype.getPaneName = function () {
     return this._compilerName + ' Device Viewer (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
 };
 
-DeviceAsm.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+DeviceAsm.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
@@ -245,7 +248,7 @@ DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorId) {
     if (id === this._compilerId) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorId = editorId;
-        this.setTitle();
+        this.updateTitle();
         if (compiler && !compiler.supportsDeviceAsmView) {
             this.deviceEditor.setValue('<Device output is not supported for this compiler>');
         }

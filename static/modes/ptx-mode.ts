@@ -23,11 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
-var asm = require('./asm-mode');
+const monaco = require('monaco-editor');
+const asm = require('./asm-mode');
 
 function definition() {
-    var ptx = $.extend(true, {}, asm); // deep copy
+    const ptx = $.extend(true, {}, asm); // deep copy
 
     // Redefine registers for ptx:
     // Usually ptx registers are in the form "%[pr][0-9]+", but a bunch of magic registers does not follow

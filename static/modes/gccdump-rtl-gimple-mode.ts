@@ -28,7 +28,7 @@
 // this is mostly based on 'mylang' example from https://microsoft.github.io/monaco-editor/monarch.html
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
@@ -293,4 +293,4 @@ function definition() {
 monaco.languages.register({id: 'gccdump-rtl-gimple'});
 monaco.languages.setMonarchTokensProvider('gccdump-rtl-gimple', definition());
 
-export {}
+export {};

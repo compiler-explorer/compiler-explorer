@@ -34,8 +34,10 @@ import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
+import { PaneRenaming } from '../pane-renaming';
+
 export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
-    linkedFadeTimeoutId: number = -1;
+    linkedFadeTimeoutId = -1;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
@@ -107,6 +109,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+
+        PaneRenaming.registerCallback(this);
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
@@ -122,7 +126,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
-        this.setTitle();
+        this.updateTitle();
         if (compiler && !compiler.supportsIrView) {
             this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
@@ -161,8 +165,6 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
         if (e === null || e.target === null || e.target.position === null) return;
-        // TODO(supergrecko): Refactor base class to properly type this.
-        // @ts-expect-error mismatched types on this.settings
         if (this.settings.hoverShowSource === true && this.irCode) {
             this.clearLinkedLines();
             const hoverCode = this.irCode[e.target.position.lineNumber - 1];
@@ -193,7 +195,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         columnBegin: number,
         columnEnd: number,
         revealLinesInEditor: boolean,
-        sender: string,
+        sender: string
     ): void {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const lineNumbers: number[] = [];

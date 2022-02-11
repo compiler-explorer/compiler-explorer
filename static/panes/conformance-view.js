@@ -34,6 +34,7 @@ var LibsWidget = require('../libs-widget').LibsWidget;
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -132,6 +133,7 @@ Conformance.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+    PaneRenaming.registerCallback(this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -147,12 +149,13 @@ Conformance.prototype.getPaneName = function () {
     return 'Conformance Viewer (Editor #' + this.editorId + ')';
 };
 
-Conformance.prototype.setTitle = function (compilerCount) {
+Conformance.prototype.updateTitle = function (compilerCount) {
     var compilerText = '';
     if (compilerCount !== 0) {
         compilerText = ' ' + compilerCount + '/' + this.maxCompilations;
     }
-    this.container.setTitle(this.getPaneName() + compilerText);
+    var name = this.paneName ? this.paneName : this.getPaneName() + compilerText;
+    this.container.setTitle(_.escape(name));
 };
 
 Conformance.prototype.addCompilerPicker = function (config) {
@@ -369,7 +372,7 @@ Conformance.prototype.handleToolbarUI = function () {
     // Only allow new compilers if we allow for more
     this.addCompilerButton.prop('disabled', compilerCount >= this.maxCompilations);
 
-    this.setTitle(compilerCount);
+    this.updateTitle(compilerCount);
 };
 
 Conformance.prototype.handleStatusIcon = function (statusIcon, status) {

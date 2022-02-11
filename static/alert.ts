@@ -25,11 +25,12 @@
 import $ from 'jquery';
 
 import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
+import { toggleEventListener } from './utils';
 
 export class Alert {
     yesHandler: (answer?: string | string[] | number) => void | null = null;
     noHandler: () => void | null = null;
-    prefixMessage: string = '';
+    prefixMessage = '';
 
     constructor() {
         const yesNoModal = $('#yes-no');
@@ -37,15 +38,6 @@ export class Alert {
             this.yesHandler?.();
         });
         yesNoModal.find('button.no').on('click', () => {
-            this.noHandler?.();
-        });
-
-        const enterSomething = $('#enter-something');
-        enterSomething.find('button.yes').on('click', () => {
-            const answer = enterSomething.find('.question-answer');
-            this.yesHandler?.(answer.val());
-        });
-        enterSomething.find('button.no').on('click', () => {
             this.noHandler?.();
         });
     }
@@ -74,7 +66,7 @@ export class Alert {
         this.noHandler = askOptions?.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body')
-            .css("min-height", "inherit")
+            .css('min-height', 'inherit')
             .html(question);
         if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
         if (askOptions.yesClass) {
@@ -100,11 +92,11 @@ export class Alert {
      * Notifes the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
     notify(body: string, {
-        group = "",
+        group = '',
         collapseSimilar = true,
-        alertClass = "",
+        alertClass = '',
         autoDismiss = true,
-        dismissTime = 5000
+        dismissTime = 5000,
     }: AlertNotifyOptions) {
         const container = $('#notifications');
         if (!container) return;
@@ -116,12 +108,12 @@ export class Alert {
                 <span id="msg">${this.prefixMessage}${body}</span>
             </div>
         `);
-        if (group !== "") {
+        if (group !== '') {
             if (collapseSimilar) {
                 // Only collapsing if a group has been specified
                 container.find(`[data-group="${group}"]`).remove();
             }
-            newElement.attr('data-group', group)
+            newElement.attr('data-group', group);
         }
         if (autoDismiss) {
             setTimeout(() => {
@@ -145,7 +137,16 @@ export class Alert {
         modal.find('.modal-body .question').html(question);
 
         const yesButton = modal.find('.modal-footer .yes');
+        toggleEventListener(yesButton, 'click', () => {
+            const answer = modal.find('.question-answer');
+            this.yesHandler?.(answer.val());
+        });
+
         const noButton = modal.find('.modal-footer .no');
+        toggleEventListener(noButton, 'click', () => {
+            this.noHandler?.();
+        });
+
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
         answerEdit.on('keyup', (e) => {

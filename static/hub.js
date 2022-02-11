@@ -37,6 +37,7 @@ var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
 var flagsView = require('./panes/flags-view');
+var ppView = require('./panes/pp-view');
 var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
 var deviceView = require('./panes/device-view');
@@ -130,6 +131,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getFlagsView().componentName,
         function (container, state) {
             return self.flagsViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getPpView().componentName,
+        function (container, state) {
+            return self.ppViewFactory(container, state);
         });
     layout.registerComponent(Components.getAstView().componentName,
         function (container, state) {
@@ -319,6 +324,10 @@ Hub.prototype.optViewFactory = function (container, state) {
 
 Hub.prototype.flagsViewFactory = function (container, state) {
     return new flagsView.Flags(this, container, state);
+};
+
+Hub.prototype.ppViewFactory = function (container, state) {
+    return new ppView.PP(this, container, state);
 };
 
 Hub.prototype.astViewFactory = function (container, state) {
