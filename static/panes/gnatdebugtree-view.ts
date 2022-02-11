@@ -97,7 +97,7 @@ export class GnatDebugTree extends Pane<monaco.editor.IStandaloneCodeEditor, Gna
 
     showGnatDebugTreeResults(result: any[]): void {
         if (!this.editor) return;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No GNAT Debug Tree generated>');
 

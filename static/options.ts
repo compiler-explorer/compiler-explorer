@@ -23,11 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const configElement = document.getElementById('config');
+if (!configElement) {
+    throw new Error('Could not find config element in DOM tree');
+}
 
 window.httpRoot = configElement.getAttribute('httpRoot');
 window.staticRoot = configElement.getAttribute('staticRoot');
 
-const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
+const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions') ?? '"%7B%7D"')); // Encoded {}
 for (const key in extraOptions) {
     window.compilerExplorerOptions[key] = extraOptions[key];
 }

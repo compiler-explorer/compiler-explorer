@@ -1,7 +1,7 @@
 import _ from 'underscore';
 import { MultifileService } from './multifile-service';
 
-class ColouredSourcelineInfo {
+interface ColouredSourcelineInfo {
     sourceLine: number;
     compilerId: number;
     compilerLine: number;
@@ -56,8 +56,8 @@ export class LineColouring {
         }
     }
 
-    private getUniqueLinesForEditor(editorId: number) {
-        const lines = [];
+    private getUniqueLinesForEditor(editorId: number): number[] {
+        const lines: number[] = [];
 
         for (const info of this.colouredSourceLinesByEditor[editorId]) {
             if (!lines.includes(info.sourceLine))

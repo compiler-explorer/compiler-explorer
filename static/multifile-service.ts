@@ -28,7 +28,7 @@ const options = require('./options').options;
 const languages = options.languages;
 const JSZip = require('jszip');
 
-export class MultifileFile {
+export interface MultifileFile {
     fileId: number;
     isIncluded: boolean;
     isOpen: boolean;
@@ -39,12 +39,12 @@ export class MultifileFile {
     langId: string;
 }
 
-export class FiledataPair {
+export interface FiledataPair {
     filename: string;
     contents: string;
 }
 
-export class MultifileServiceState {
+export interface MultifileServiceState {
     isCMakeProject: boolean;
     compilerLanguageId: string;
     files: MultifileFile[];
@@ -216,7 +216,7 @@ export class MultifileService {
         this.isCMakeProject = yes;
     }
 
-    private checkFileEditor(file: MultifileFile) {
+    private checkFileEditor(file?: MultifileFile) {
         if (file && file.editorId > 0) {
             const editor = this.hub.getEditorById(file.editorId);
             if (!editor) {
@@ -245,7 +245,7 @@ export class MultifileService {
         return !!found;
     }
 
-    public getFileByFileId(fileId: number) {
+    public getFileByFileId(fileId: number): MultifileFile | undefined {
         const file = _.find(this.files, (file: MultifileFile) => {
             return file.fileId === fileId;
         });
@@ -261,7 +261,9 @@ export class MultifileService {
         }
 
         const mainfile = this.getFileByFileId(mainFileId);
-        mainfile.isMainSource = true;
+        if (mainfile) {
+            mainfile.isMainSource = true;
+        }
     }
 
     private static isValidFile(file: MultifileFile): boolean {
@@ -465,6 +467,7 @@ export class MultifileService {
 
     public async renameFile(fileId: number): Promise<boolean> {
         const file = this.getFileByFileId(fileId);
+        if (!file) return Promise.reject('File could not be found');
 
         let editor: any = null;
         if (file.isOpen && file.editorId > 0) {

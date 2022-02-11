@@ -98,7 +98,7 @@ function push(stringifiedConfig: string) {
 }
 
 export function trackHistory(layout: any) {
-    let lastState = null;
+    let lastState: string | null = null;
     const debouncedPush = _.debounce(push, 500);
     layout.on('stateChanged', () => {
         const stringifiedConfig = JSON.stringify(Sharing.filterComponentState(layout.toConfig()));

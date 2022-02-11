@@ -77,7 +77,7 @@ export class Sharing {
     private shareFull: JQuery;
     private shareEmbed: JQuery;
 
-    private clippyButton: ClipboardJS;
+    private clippyButton: ClipboardJS | null;
 
     constructor(layout: any) {
         this.layout = layout;
@@ -120,7 +120,7 @@ export class Sharing {
         const stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== this.lastState) {
             if (this.lastState != null && window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, null, window.httpRoot);
+                window.history.replaceState(null, '', window.httpRoot);
             }
             this.lastState = stringifiedConfig;
         }
@@ -359,7 +359,7 @@ export class Sharing {
     }
 
     private static storeCurrentConfig(config: any, extra: string): void {
-        window.history.pushState(null, null, extra);
+        window.history.pushState(null, '', extra);
     }
 
     private static isNavigatorClipboardAvailable(): boolean {

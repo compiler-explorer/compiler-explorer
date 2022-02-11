@@ -38,7 +38,7 @@ const options = require('../options').options;
 const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
 
-export class TreeState extends MultifileServiceState {
+export interface TreeState extends MultifileServiceState {
     id: number;
     cmakeArgs: string;
     customOutputFilename: string;
@@ -68,7 +68,7 @@ export class Tree {
     private selectize: any;
     private languageBtn: any;
     private toggleCMakeButton: any;
-    private debouncedEmitChange: () => void;
+    private debouncedEmitChange: () => void = () => {};
     private hideable: any;
     private readonly topBar: any;
 
@@ -391,17 +391,20 @@ export class Tree {
 
     private editFile(fileId: number) {
         const file = this.multifileService.getFileByFileId(fileId);
-        if (!file.isOpen) {
-            const dragConfig = this.getConfigForNewEditor(file);
-            file.isOpen = true;
+        // TODO: Ensure this is the proper way. Should an exception be thrown?
+        if (file) {
+            if (!file.isOpen) {
+                const dragConfig = this.getConfigForNewEditor(file);
+                file.isOpen = true;
 
-            this.hub.addInEditorStackIfPossible(dragConfig);
-        } else {
-            const editor = this.hub.getEditorById(file.editorId);
-            this.hub.activateTabForContainer(editor.container);
+                this.hub.addInEditorStackIfPossible(dragConfig);
+            } else {
+                const editor = this.hub.getEditorById(file.editorId);
+                this.hub.activateTabForContainer(editor.container);
+            }
+
+            this.sendChangesToAllEditors();
         }
-
-        this.sendChangesToAllEditors();
     }
 
     private async moveToInclude(fileId: number) {

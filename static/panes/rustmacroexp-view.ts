@@ -99,7 +99,7 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
 
     showRustMacroExpResults(result: any[]): void {
         if (!this.editor) return;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust Macro Expansion generated>');
 

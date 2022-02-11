@@ -44,6 +44,7 @@ export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
 type AvailableLibs = Record<string, LangLibs>;
 type LibInUse = {libId: string, versionId: string} & LibraryVersion;
+type Lib = {name: string, ver: string};
 
 type FavLibraries = Record<string, string[]>;
 
@@ -375,8 +376,7 @@ export class LibsWidget {
     }
 
     startSearching() {
-        const searchValue = this.domRoot.find('.lib-search-input').val();
-        const searchText = searchValue.toString();
+        const searchText = this.domRoot.find('.lib-search-input')?.val()?.toString();
 
         this.clearSearchResults();
 
@@ -524,13 +524,14 @@ export class LibsWidget {
         const actualId = this.getVersionOrAlias(libId, versionId);
         const libInfo = this.getLibInfoById(libId);
         for (const v in libInfo?.versions) {
+            // @ts-ignore Sadly the TS type checker is not capable of inferring this can't be null
             const version = libInfo.versions[v];
             version.used = v === actualId;
         }
     }
 
-    get(): {name: string, ver: any}[] {
-        const result = [];
+    get(): Lib[] {
+        const result: Lib[] = [];
         const usedLibs = this.listUsedLibs();
         for (const libId in usedLibs) {
             result.push({name: libId, ver: usedLibs[libId]});

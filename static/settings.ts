@@ -81,8 +81,14 @@ export interface SiteSettings {
 class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
 
+    protected val(): string | number | string[] {
+        //  If it's undefined, something went wrong, so the following exception is helpful
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return this.elem.val()!;
+    }
+
     getUi(): any {
-        return this.elem.val();
+        return this.val();
     }
 
     putUi(value: any): void {
@@ -111,7 +117,7 @@ class Select extends BaseSetting {
     }
 
     override putUi(value: string | number | boolean | null) {
-        this.elem.val(value?.toString());
+        this.elem.val(value?.toString() ?? '');
     }
 }
 
@@ -126,6 +132,8 @@ interface SliderSettings {
 class Slider extends BaseSetting {
     private readonly formatter: (number) => string;
     private display: JQuery;
+    private max: number;
+    private min: number;
 
     constructor(elem: JQuery, name: string, sliderSettings: SliderSettings) {
         super(elem, name);
@@ -133,9 +141,12 @@ class Slider extends BaseSetting {
         this.formatter = sliderSettings.formatter;
         this.display = sliderSettings.display;
 
+        this.max = sliderSettings.max || 100;
+        this.min = sliderSettings.min || 1;
+
         elem
-            .prop('max', sliderSettings.max || 100)
-            .prop('min', sliderSettings.min || 1)
+            .prop('max', this.max)
+            .prop('min', this.min)
             .prop('step', sliderSettings.step || 1);
 
         elem.on('change', this.updateDisplay.bind(this));
@@ -147,7 +158,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.elem.val().toString());
+        return parseInt(this.val().toString());
     }
 
     private updateDisplay() {
@@ -172,7 +183,7 @@ class Numeric extends BaseSetting {
     }
 
     override getUi(): number {
-        return this.clampValue(parseInt(this.elem.val().toString()));
+        return this.clampValue(parseInt(this.val().toString()));
     }
 
     override putUi(value: number) {

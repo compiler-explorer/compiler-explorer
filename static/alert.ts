@@ -27,8 +27,8 @@ import $ from 'jquery';
 import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
 
 export class Alert {
-    yesHandler: (answer?: string | string[] | number) => void | null = null;
-    noHandler: () => void | null = null;
+    yesHandler: ((answer?: string | string[] | number) => void) | null = null;
+    noHandler: (() => void) | null = null;
     prefixMessage = '';
 
     constructor() {
@@ -97,7 +97,7 @@ export class Alert {
     }
 
     /**
-     * Notifes the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
+     * Notifies the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
     notify(body: string, {
         group = '',
