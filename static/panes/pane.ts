@@ -52,7 +52,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     selection: monaco.Selection;
     editor: E;
     fontScale: FontScale;
-    isAwaitingInitialResults: boolean = false;
+    isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
     paneName: string;
 
