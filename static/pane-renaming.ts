@@ -26,15 +26,15 @@ import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
 
-const Alert = require('alert').Alert;
+//const Alert = require('alert').Alert;
 
 export class PaneRenaming {
-    public static registerCallback(pane: any): void {
-        const alertSystem = new Alert();
-        const addRenameButton = function (parentTab: Tab) {
-            return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
-        };
-        pane.container.on('tab', addRenameButton);
+    public static registerCallback(/*pane: any*/): void {
+        // const alertSystem = new Alert();
+        // const addRenameButton = function (parentTab: Tab) {
+        //     return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
+        // };
+        // pane.container.on('tab', addRenameButton);
     }
 
     public static addRenameButton(parent: Tab, pane: any, alertSystem: any): void {
