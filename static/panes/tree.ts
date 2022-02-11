@@ -26,6 +26,7 @@ import {MultifileFile, MultifileService, MultifileServiceState} from '../multifi
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
 import { Settings } from '../settings';
+import { PaneRenaming } from '../pane-renaming';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -71,6 +72,7 @@ export class Tree {
     private debouncedEmitChange: () => void;
     private hideable: any;
     private readonly topBar: any;
+    private paneName: string;
 
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
@@ -197,6 +199,7 @@ export class Tree {
             this.eventHub.emit('treeOpen', this.id);
         });
         this.container.on('destroy', this.close, this);
+        PaneRenaming.registerCallback(this);
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -612,7 +615,8 @@ export class Tree {
     }
 
     private updateTitle() {
-        this.container.setTitle(this.getPaneName());
+        const name = this.paneName ? this.paneName : this.getPaneName();
+        this.container.setTitle(_.escape(name));
     }
 
     private close() {

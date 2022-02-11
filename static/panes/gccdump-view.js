@@ -35,6 +35,7 @@ var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var utils = require('../utils');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 
 function GccDump(hub, container, state) {
@@ -108,7 +109,7 @@ function GccDump(hub, container, state) {
 
     this.updateButtons();
     this.saveState();
-    this.setTitle();
+    this.updateTitle();
 
     // UI is ready, request compilation to get passes list and
     // current output (if any)
@@ -186,6 +187,7 @@ GccDump.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
@@ -326,8 +328,9 @@ GccDump.prototype.getPaneName = function () {
         ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
 };
 
-GccDump.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+GccDump.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 GccDump.prototype.showGccDumpResults = function (results) {
@@ -347,7 +350,7 @@ GccDump.prototype.onCompiler = function (id, compiler, options, editorid) {
     if (id === this.state._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this.state._editorid = editorid;
-        this.setTitle();
+        this.updateTitle();
     }
 };
 

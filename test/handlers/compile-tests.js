@@ -340,6 +340,23 @@ describe('Compiler tests', () => {
                     .send(source || ''));
         }
 
+        it('error on empty request body', () => {
+            return compileHandler.setCompilers([{
+                compilerType: 'fake-for-test',
+                exe: 'fake',
+                fakeResult: {},
+            }])
+                .then(() => chai.request(app)
+                    .post('/fake-for-test/compile')
+                    .set('Accept', 'application/json'))
+                .then(res => {
+                    res.should.have.status(500);
+                })
+                .catch(err => {
+                    throw err;
+                });
+        });
+
         it('handles filters set directly', () => {
             return makeFakeQuery('source', {filters: 'a,b,c'})
                 .then(res => {

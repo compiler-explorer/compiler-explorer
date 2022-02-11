@@ -29,8 +29,8 @@ import { Sharing } from './sharing';
 
 const maxHistoryEntries = 30;
 type Source = {dt: number, source: string};
-type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
-type EditorSource = {lang: string, source: string};
+export type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
+export type EditorSource = {lang: string, source: string};
 
 function extractEditorSources(content: any[]): EditorSource[] {
     const sources: EditorSource[] = [];
@@ -109,7 +109,7 @@ export function trackHistory(layout: any) {
     });
 }
 
-export function sortedList() {
+export function sortedList(): HistoryEntry[] {
     return list().sort((a, b) => b.dt - a.dt);
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,35 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Language } from '../types/languages.interfaces';
+import * as fs from 'fs';
 
-export interface LibraryVersion {
-    alias: string[];
-    hidden: boolean;
-    libId: string;
-    used: boolean;
-    version?: string;
-}
+import { BaseCompiler } from '../lib/base-compiler';
+import * as properties from '../lib/properties';
 
-export interface Library {
-    dependencies: string[];
-    description?: string;
-    examples: string[];
-    name?: string;
-    url?: string;
-    versions: Record<string, LibraryVersion>;
-}
+import * as filterTests from './pp-output-cases/filter-tests';
 
-export type LanguageLibs = Record<string, Library>;
+//const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
+const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
+    return {
+        id: id,
+        exe: '/dev/null',
+        name: id,
+        lang: lang,
+        group: group,
+        isSemVer: isSemver,
+        semver: semver,
+        libsArr: [],
+    };
+};
 
-export type Libs = Record<string, LanguageLibs>;
-
-export interface Options {
-    libs: Libs;
-    languages: Record<string, Language>;
-    defaultLibs: Record<string, string | null>;
-    defaultFontScale: number;
-    sentryDsn?: string;
-    release?: string;
-    sentryEnvironment?: string
-}
+describe('Preprocessor Output Handling', () => {
+    it('correctly filters lines', () => {
+        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
+        const env = {
+            ceProps: properties.fakeProps({}),
+            compilerProps: () => {
+            },
+        };
+        const compiler = new BaseCompiler(compilerInfo, env);
+        for(const testCase of filterTests.cases) {
+            const output = compiler.filterPP(testCase.input)[1];
+            output.trim().should.eql(testCase.output.trim());
+        }
+    });
+});
