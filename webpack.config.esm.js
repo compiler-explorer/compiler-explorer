@@ -47,7 +47,7 @@ const webjackJsHack = '.v5.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 
-            'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb'],
+            'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb', 'dart'],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new ProvidePlugin({

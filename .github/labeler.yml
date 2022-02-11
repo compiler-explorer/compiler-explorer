@@ -48,6 +48,9 @@ lang-dotnet:
     - etc/config/csharp.*.properties
     - etc/config/fsharp.*.properties
     - etc/config/vb.*.properties
+lang-dart:
+    - lib/compilers/dart.js
+    - etc/config/dart.*.properties
 lang-fortran:
     - lib/compilers/fortran.js
     - etc/config/fortran.*.properties
