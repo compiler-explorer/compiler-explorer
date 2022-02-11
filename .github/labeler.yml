@@ -44,6 +44,7 @@ lang-d:
     - etc/config/d.*.properties
 lang-dotnet:
     - lib/compilers/dotnet.ts
+    - lib/asm-parser-dotnet.ts
     - etc/config/csharp.*.properties
     - etc/config/fsharp.*.properties
     - etc/config/vb.*.properties
