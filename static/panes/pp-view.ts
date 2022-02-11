@@ -92,10 +92,10 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     override resize() {
-        const topBarHeight = this.topBar.outerHeight(true);
+        const topBarHeight = this.topBar.outerHeight(true) as number;
         this.editor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight,
+            width: this.domRoot.width() as number,
+            height: this.domRoot.height() as number - topBarHeight,
         });
     }
 
@@ -109,13 +109,14 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
 
         const lang = compiler.lang === 'c' ? 'c' : compiler.lang === 'c++' ? 'cpp' : 'plaintext';
-        if (this.getCurrentEditorLanguage() !== lang) {
-            monaco.editor.setModelLanguage(this.editor.getModel(), lang);
+        const model = this.editor.getModel();
+        if (model != null && this.getCurrentEditorLanguage() !== lang) {
+            monaco.editor.setModelLanguage(model, lang);
         }
     }
 
     getCurrentEditorLanguage() {
-        return this.editor.getModel().getLanguageId();
+        return this.editor.getModel()?.getLanguageId();
     }
 
     override getPaneName() {
@@ -125,10 +126,6 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
 
     override updateTitle() {
         this.container.setTitle(this.getPaneName());
-    }
-
-    getDisplayablePp(ppResult) {
-        return '**' + ppResult.ppType + '** - ' + ppResult.displayString;
     }
 
     showPpResults(results) {

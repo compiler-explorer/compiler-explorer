@@ -88,7 +88,7 @@ export class LoadSave {
     private doLoad(element) {
         $.getJSON(window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
             (response) => this.onLoad(response.file));
-        this.modal.modal('hide');
+        this.modal?.modal('hide');
     }
 
     private static populate(root: JQuery, list: {name: string, load: () => void}[]) {
@@ -110,7 +110,8 @@ export class LoadSave {
             this.currentLanguage?.id === entry.lang
         );
         return LoadSave.populate(
-            this.modal.find('.examples'),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.modal!.find('.examples'),
             builtins.map(elem => {
                 return {
                     name: elem.name,
@@ -125,14 +126,15 @@ export class LoadSave {
         const keys = Object.keys(files);
 
         LoadSave.populate(
-            this.modal.find('.local-storage'),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.modal!.find('.local-storage'),
             keys.map(name => {
                 const data = files[name];
                 return {
                     name: name,
                     load: () => {
                         this.onLoad(data);
-                        this.modal.modal('hide');
+                        this.modal?.modal('hide');
                     },
                 };
             })
@@ -141,14 +143,16 @@ export class LoadSave {
 
     private populateLocalHistory() {
         LoadSave.populate(
-            this.modal.find('.local-history'),
-            history.sources(this.currentLanguage.id).map(data => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.modal!.find('.local-history'),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            history.sources(this.currentLanguage!.id).map(data => {
                 const dt = new Date(data.dt).toString();
                 return {
                     name: dt.replace(/\s\(.*\)/, ''),
                     load: () => {
                         this.onLoad(data.source);
-                        this.modal.modal('hide');
+                        this.modal?.modal('hide');
                     },
                 };
             })
@@ -173,13 +177,13 @@ export class LoadSave {
                 if (reader.result instanceof ArrayBuffer) {
                     result = LoadSave.ab2str(reader.result);
                 } else {
-                    result = reader.result;
+                    result = reader.result ?? '';
                 }
                 this.onLoad(result, file.name);
             };
             reader.readAsText(file);
         }
-        this.modal.modal('hide');
+        this.modal?.modal('hide');
     }
 
     public run(onLoad, editorText, currentLanguage: Language) {
@@ -188,9 +192,10 @@ export class LoadSave {
         this.setMinimalOptions(editorText, currentLanguage);
         this.populateLocalHistory();
         this.onLoadCallback = onLoad;
-        this.modal.find('.local-file')
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.modal!.find('.local-file')
             .attr('accept', currentLanguage.extensions.join(','));
-        this.populateBuiltins().then(() =>this.modal.modal());
+        this.populateBuiltins().then(() =>this.modal?.modal());
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenModalPane',
@@ -199,28 +204,28 @@ export class LoadSave {
     }
 
     private onSaveToBrowserStorage() {
-        const saveNameValue = this.modal.find('.save-name').val();
+        const saveNameValue = this.modal?.find('.save-name').val();
         if (!saveNameValue) {
             this.alertSystem.alert('Save name', 'Invalid save name');
             return;
         }
-        const name = `${saveNameValue} (${this.currentLanguage.name})`;
+        const name = `${saveNameValue} (${this.currentLanguage?.name ?? ''})`;
         const doneCallback = () => {
             LoadSave.setLocalFile(name, this.editorText);
         };
         if (LoadSave.getLocalFiles()[name] !== undefined) {
-            this.modal.modal('hide');
+            this.modal?.modal('hide');
             this.alertSystem.ask(
                 'Replace current?',
                 `Do you want to replace the existing saved file '${_.escape(name)}'?`,
                 {yes: doneCallback});
         } else {
             doneCallback();
-            this.modal.modal('hide');
+            this.modal?.modal('hide');
         }
     }
 
-    private setMinimalOptions(editorText, currentLanguage) {
+    private setMinimalOptions(editorText: string, currentLanguage: Language) {
         this.editorText = editorText;
         this.currentLanguage = currentLanguage;
         this.extension = currentLanguage.extensions[0] || '.txt';
@@ -228,7 +233,7 @@ export class LoadSave {
 
     private onSaveToFile(fileEditor?: string) {
         try {
-            const fileLang = this.currentLanguage.name;
+            const fileLang = this.currentLanguage?.name ?? '';
             const name = fileLang !== undefined && fileEditor !== undefined ?
                 (fileLang + ' Editor #' + fileEditor + ' ') : '';
             saveAs(
