@@ -27,9 +27,9 @@ import _ from 'underscore';
 import { Toggles } from '../toggles';
 import { ga } from '../analytics';
 import TomSelect from 'tom-select';
-import { Container } from "golden-layout";
-import { CfgState } from "./cfg-view.interfaces";
-import { PaneRenaming } from "../pane-renaming";
+import { Container } from 'golden-layout';
+import { CfgState } from './cfg-view.interfaces';
+import { PaneRenaming } from '../pane-renaming';
 
 export class Cfg {
     container: Container;

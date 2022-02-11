@@ -140,12 +140,12 @@ export class Alert {
         toggleEventListener(yesButton, 'click', () => {
             const answer = modal.find('.question-answer');
             this.yesHandler?.(answer.val());
-        })
+        });
 
         const noButton = modal.find('.modal-footer .no');
         toggleEventListener(noButton, 'click', () => {
             this.noHandler?.();
-        })
+        });
 
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
