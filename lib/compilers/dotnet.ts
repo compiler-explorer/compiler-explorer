@@ -27,6 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 /// <reference types="../base-compiler" />
+import { DotNetAsmParser } from '../asm-parser-dotnet';
 import { BaseCompiler } from '../base-compiler';
 
 class DotNetCompiler extends BaseCompiler {
@@ -34,7 +35,8 @@ class DotNetCompiler extends BaseCompiler {
     private crossgen2bin: string;
     private testAppSrc: string;
     private testAppName: string;
-    private testAppOutputDir: string;
+
+    protected asm: DotNetAsmParser;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -43,11 +45,11 @@ class DotNetCompiler extends BaseCompiler {
         this.testAppSrc = this.compilerProps(`compiler.${this.compiler.id}.testAppSrc`);
         this.testAppName = path.basename(this.testAppSrc);
         this.crossgen2bin = path.join(this.coreRoot, 'crossgen2', 'crossgen2.dll');
-        this.testAppOutputDir = 'out';
+        this.asm = new DotNetAsmParser();
     }
 
     get compilerOptions() {
-        return ['build', this.testAppName + '.csproj', '-c', 'Release', '-o', this.testAppOutputDir, 
+        return ['build', this.testAppName + '.csproj', '-c', 'Release', '-o', 'out', 
         // Enable unsafe code (raw pointers, etc)
         '/p:AllowUnsafeBlocks=true',
         // Disable nullability, we don't want to see its attributes in the output
@@ -112,7 +114,7 @@ class DotNetCompiler extends BaseCompiler {
             execOptions,
             this.crossgen2bin,
             this.coreRoot,
-            path.join(this.testAppOutputDir, this.testAppName + '.dll'),
+            path.join('out', this.testAppName + '.dll'),
             crossgen2Options,
             this.getOutputFilename(programDir, this.outputFilebase),
         );
@@ -128,32 +130,6 @@ class DotNetCompiler extends BaseCompiler {
         return this.compilerOptions;
     }
 
-    cleanAsm(stdout) {
-        let cleanedAsm = '';
-
-        for (const line of stdout) {
-            if (line.text.startsWith('; Assembly listing for method')) {
-                // ; Assembly listing for method ConsoleApplication.Program:Main(System.String[])
-                //                               ^ This character is the 31st character in this string.
-                // `substring` removes the first 30 characters from it and uses the rest as a label.
-                cleanedAsm = cleanedAsm.concat(line.text.substring(30) + ':\n');
-                continue;
-            }
-
-            if (line.text.startsWith('Emitting R2R PE file')) {
-                continue;
-            }
-
-            if (line.text.startsWith(';') && !line.text.startsWith('; Emitting')) {
-                continue;
-            }
-
-            cleanedAsm = cleanedAsm.concat(line.text + '\n');
-        }
-
-        return cleanedAsm;
-    }
-
     async runCrossgen2(compiler, execOptions, crossgen2Path, references, dllPath, options, outputPath) {
         const crossgen2Options = [
             crossgen2Path, '-r', path.join(references, '*.dll'), dllPath, '-o', 'CompilerExplorer.r2r.dll',
@@ -167,7 +143,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            this.cleanAsm(result.stdout),
+            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`),
         );
 
         return result;
