@@ -10,9 +10,9 @@ import { IExternalParser, ParsedAsmResult } from './external-parser.interface';
 const starterScriptName = 'dump-and-parse.sh';
 
 export class ExternalParserBase implements IExternalParser {
-    private objdumperPath: string;
-    private parserPath: string;
-    private execFunc: TypicalExecutionFunc;
+    private readonly objdumperPath: string;
+    private readonly parserPath: string;
+    private readonly execFunc: TypicalExecutionFunc;
     private compilerInfo;
     private envInfo;
 
