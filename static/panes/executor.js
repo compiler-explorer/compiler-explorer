@@ -302,7 +302,7 @@ Executor.prototype.sendCMakeCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code || x;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
@@ -332,7 +332,7 @@ Executor.prototype.sendCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
@@ -389,7 +389,7 @@ Executor.prototype.handleOutput = function (output, element, ansiParser) {
 Executor.prototype.getBuildStdoutFromResult = function (result) {
     var arr = [];
 
-    if (result.buildResult) {
+    if (result.buildResult && result.buildResult.stdout !== undefined) {
         arr = arr.concat(result.buildResult.stdout);
     }
 
@@ -405,7 +405,7 @@ Executor.prototype.getBuildStdoutFromResult = function (result) {
 Executor.prototype.getBuildStderrFromResult = function (result) {
     var arr = [];
 
-    if (result.buildResult) {
+    if (result.buildResult && result.buildResult.stderr !== undefined) {
         arr = arr.concat(result.buildResult.stderr);
     }
 
@@ -419,7 +419,7 @@ Executor.prototype.getBuildStderrFromResult = function (result) {
 };
 
 Executor.prototype.getExecutionStdoutfromResult = function (result) {
-    if (result.execResult) {
+    if (result.execResult && result.execResult.stdout !== undefined) {
         return result.execResult.stdout;
     }
 
