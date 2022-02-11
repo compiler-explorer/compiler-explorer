@@ -53,7 +53,7 @@ export interface SiteSettings {
     colourScheme: ColourScheme;
     compileOnChange: boolean;
     // TODO(supergrecko): make this more precise
-    defaultLanguage: string;
+    defaultLanguage?: string;
     delayAfterChange: number;
     enableCodeLens: boolean;
     enableCommunityAds: boolean
@@ -294,7 +294,8 @@ export class Settings {
         });
         addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
 
-        const themesData = Object.keys(themes).map((theme: Themes) => {
+        // keys(themes) is Themes[] but TS does not realize without help
+        const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         let defaultThemeId = themes.default.id;
@@ -367,12 +368,12 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         themeSelect.on('change', () => {
             this.onThemeChange();
-            $.data(themeSelect, 'last-theme', themeSelect.val());
+            $.data(themeSelect, 'last-theme', themeSelect.val() as string);
         });
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
-        $.data(themeSelect, 'last-theme', themeSelect.val());
+        $.data(themeSelect, 'last-theme', themeSelect.val() as string);
     }
 
     private onThemeChange() {
@@ -382,7 +383,7 @@ export class Settings {
 
         const newTheme = themeSelect.val() as colour.AppTheme;
         // Store the scheme of the old theme
-        $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val());
+        $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val() as string);
         // Get the scheme of the new theme
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
         let isStoredUsable = false;
@@ -400,11 +401,12 @@ export class Settings {
         }
         if (colourSchemeSelect.children().length >= 1) {
             colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
-        } else {
+        }else {
             // This should never happen. In case it does, lets use the default one
             colourSchemeSelect.append(
-                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>'));
-            colourSchemeSelect.val(colourSchemeSelect.first().val());
+                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>')
+            );
+            colourSchemeSelect.val(colourSchemeSelect.first().val() as string);
         }
         colourSchemeSelect.trigger('change');
     }

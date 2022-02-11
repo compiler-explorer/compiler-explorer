@@ -174,14 +174,17 @@ export class Sharing {
             });
         };
 
-        this.clippyButton = new ClipboardJS(modal.find('button.clippy').get(0));
-        this.clippyButton.on('success', (e) => {
-            this.displayTooltip(permalink, 'Link copied to clipboard');
-            e.clearSelection();
-        });
-        this.clippyButton.on('error', (e) => {
-            this.displayTooltip(permalink, 'Error copying to clipboard');
-        });
+        const clippyElement = modal.find('button.clippy').get(0);
+        if (clippyElement != null) {
+            this.clippyButton = new ClipboardJS(clippyElement);
+            this.clippyButton.on('success', (e) => {
+                this.displayTooltip(permalink, 'Link copied to clipboard');
+                e.clearSelection();
+            });
+            this.clippyButton.on('error', (e) => {
+                this.displayTooltip(permalink, 'Error copying to clipboard');
+            });
+        }
 
         if (currentBind === LinkType.Embed) {
             embedsettings.show();

@@ -391,7 +391,6 @@ export class Tree {
 
     private editFile(fileId: number) {
         const file = this.multifileService.getFileByFileId(fileId);
-        // TODO: Ensure this is the proper way. Should an exception be thrown?
         if (file) {
             if (!file.isOpen) {
                 const dragConfig = this.getConfigForNewEditor(file);

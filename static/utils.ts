@@ -26,9 +26,9 @@ export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hidea
     let topBarHeight = 0;
     if (!topBar.hasClass('d-none')) {
         hideable.show();
-        const topBarHeightMax = topBar.outerHeight(true);
+        const topBarHeightMax = topBar.outerHeight(true) ?? 0;
         hideable.hide();
-        const topBarHeightMin = topBar.outerHeight(true);
+        const topBarHeightMin = topBar.outerHeight(true) ?? 0;
         topBarHeight = topBarHeightMin;
         if (topBarHeightMin === topBarHeightMax) {
             hideable.show();

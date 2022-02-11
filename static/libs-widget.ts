@@ -118,7 +118,7 @@ export class LibsWidget {
         for (const lib of state.libs ?? []) {
             if (lib.name && lib.ver) {
                 this.markLibrary(lib.name, lib.ver, true);
-            } else {
+            } else if (lib.id && lib.version) {
                 this.markLibrary(lib.id, lib.version, true);
             }
         }
@@ -279,7 +279,7 @@ export class LibsWidget {
         const template = $('#lib-search-result-tpl');
 
         const result = $($(template.children()[0].cloneNode(true)));
-        result.find('.lib-name').html(lib.name);
+        result.find('.lib-name').html(lib.name || libId);
         if (!lib.description) {
             result.find('.lib-description').hide();
         } else {
@@ -312,7 +312,7 @@ export class LibsWidget {
                 faveButton.show();
             }
             option.attr('value', versionId);
-            option.html(version.version);
+            option.html(version.version || versionId);
             if (version.used || !version.hidden) {
                 hasVisibleVersions = true;
                 versions.append(option);
@@ -326,7 +326,7 @@ export class LibsWidget {
 
         faveButton.on('click', () => {
             const option = versions.find('option:selected');
-            const verId = option.attr('value');
+            const verId = option.attr('value') as string;
             if (this.isAFavorite(libId, verId)) {
                 this.removeFromFavorites(libId, verId);
                 faveStar.removeClass('fas').addClass('far');
@@ -339,7 +339,7 @@ export class LibsWidget {
 
         versions.on('change', () => {
             const option = versions.find('option:selected');
-            const verId = option.attr('value');
+            const verId = option.attr('value') as string;
 
             this.selectLibAndVersion(libId, verId);
             this.showSelectedLibs();
@@ -350,7 +350,8 @@ export class LibsWidget {
                 faveStar.removeClass('fas').addClass('far');
             }
 
-            if (verId) {
+            // Is this the "No selection" option?
+            if (verId.length > 0) {
                 faveButton.show();
             } else {
                 faveButton.hide();
@@ -371,12 +372,12 @@ export class LibsWidget {
 
     static _libVersionMatchesQuery(library: Library, searchText: string): boolean {
         const text = searchText.toLowerCase();
-        return library.name?.toLowerCase().includes(text)
-            || library.description?.toLowerCase().includes(text);
+        return library.name?.toLowerCase()?.includes(text)
+            || library.description?.toLowerCase()?.includes(text) || false;
     }
 
     startSearching() {
-        const searchText = this.domRoot.find('.lib-search-input')?.val()?.toString();
+        const searchText = (this.domRoot.find('.lib-search-input').val() as string).toString();
 
         this.clearSearchResults();
 

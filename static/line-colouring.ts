@@ -31,7 +31,7 @@ export class LineColouring {
         for (const asmLine of asm ) {
             if (asmLine.source && asmLine.source.line > 0) {
                 const editorId = this.multifileService.getEditorIdByFilename(asmLine.source.file);
-                if (editorId > 0) {
+                if (editorId != null && editorId > 0) {
                     if (!this.colouredSourceLinesByEditor[editorId]) {
                         this.colouredSourceLinesByEditor[editorId] = [];
                     }
