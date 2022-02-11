@@ -1478,7 +1478,7 @@ Editor.prototype.setFilename = function (name) {
 };
 
 Editor.prototype.updateTitle = function () {
-    var name = this.getPaneName();
+    var name = this.paneName ? this.paneName : this.getPaneName();
     if (name.endsWith('CMakeLists.txt')) {
         this.changeLanguage('cmake');
     }

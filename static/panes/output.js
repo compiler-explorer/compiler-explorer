@@ -30,6 +30,7 @@ var FontScale = require('../fontscale').FontScale;
 var AnsiToHtml = require('../ansi-to-html').Filter;
 var Toggles = require('../toggles').Toggles;
 var ga = require('../analytics').ga;
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -63,7 +64,7 @@ function Output(hub, container, state) {
     this.initCallbacks(state);
 
     this.onOptionsChange();
-    this.updateCompilerName();
+    this.updateTitle();
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -78,6 +79,7 @@ Output.prototype.initCallbacks = function (state) {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
+    PaneRenaming.registerCallback(this);
 
     this.eventHub.on('compiling', this.onCompiling, this);
     this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -185,7 +187,7 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
         }
     }
     this.setCompileStatus(false);
-    this.updateCompilerName();
+    this.updateTitle();
 };
 
 Output.prototype.programOutput = function (msg, color) {
@@ -245,8 +247,9 @@ Output.prototype.getPaneName = function () {
     return name;
 };
 
-Output.prototype.updateCompilerName = function () {
-    this.container.setTitle(this.getPaneName());
+Output.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Output.prototype.onCompilerClose = function (id) {

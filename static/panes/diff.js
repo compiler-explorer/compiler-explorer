@@ -30,6 +30,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var TomSelect = require('tom-select');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 
@@ -220,7 +221,7 @@ function Diff(hub, container, state) {
     this.initButtons(state);
     this.initCallbacks();
 
-    this.updateCompilerNames();
+    this.updateTitle();
     this.updateCompilers();
     ga.proxy('send', {
         hitType: 'event',
@@ -240,7 +241,7 @@ Diff.prototype.resize = function () {
 
 Diff.prototype.onDiffSelect = function (id) {
     this.requestResendResult(id);
-    this.updateCompilerNames();
+    this.updateTitle();
     this.updateState();
 };
 
@@ -250,7 +251,7 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
     var lhsChanged = this.lhs.update(id, compiler, result);
     var rhsChanged = this.rhs.update(id, compiler, result);
     if (lhsChanged || rhsChanged) {
-        this.updateCompilerNames();
+        this.updateTitle();
     }
 };
 
@@ -288,6 +289,7 @@ Diff.prototype.initCallbacks = function () {
     }, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+    PaneRenaming.registerCallback(this);
 
     this.requestResendResult(this.lhs.id);
     this.requestResendResult(this.rhs.id);
@@ -352,8 +354,9 @@ Diff.prototype.onExecutorClose = function (id) {
     this.onCompilerClose(id + '_exec');
 };
 
-Diff.prototype.updateCompilerNames = function () {
-    this.container.setTitle(this.getPaneName());
+Diff.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Diff.prototype.getPaneName = function () {

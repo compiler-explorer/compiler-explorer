@@ -31,6 +31,7 @@ var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 function Ast(hub, container, state) {
     this.container = container;
@@ -66,7 +67,7 @@ function Ast(hub, container, state) {
     if (state && state.astOutput) {
         this.showAstResults(state.astOutput);
     }
-    this.setTitle();
+    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -105,6 +106,7 @@ Ast.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
@@ -146,8 +148,9 @@ Ast.prototype.getPaneName = function () {
         ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
 };
 
-Ast.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+Ast.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
@@ -175,7 +178,7 @@ Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
-        this.setTitle();
+        this.updateTitle();
         if (compiler && !compiler.supportsAstView) {
             this.astEditor.setValue('<AST output is not supported for this compiler>');
         }
