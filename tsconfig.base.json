@@ -7,8 +7,6 @@
     /* Module resolution */
     "esModuleInterop": true,
     /* Other options */
-    "strict": true,
-    "noImplicitAny": false,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   }
