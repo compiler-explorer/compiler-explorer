@@ -157,7 +157,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;
-            this.setTitle();
+            this.updateTitle();
             if (compiler && !compiler.supportsPpView) {
                 this.editor.setValue('<Preprocessor output is not supported for this compiler>');
             }
