@@ -38,6 +38,7 @@ var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 require('../formatter-registry');
 require('../modes/_all');
 
@@ -273,6 +274,7 @@ Editor.prototype.initCallbacks = function () {
         this.eventHub.emit('editorOpen', this.id, this);
     }, this));
     this.container.on('destroy', this.close, this);
+    PaneRenaming.registerCallback(this);
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.
         this.maybeEmitChange();
@@ -1496,7 +1498,7 @@ Editor.prototype.setFilename = function (name) {
 };
 
 Editor.prototype.updateTitle = function () {
-    var name = this.getPaneName();
+    var name = this.paneName ? this.paneName : this.getPaneName();
     if (name.endsWith('CMakeLists.txt')) {
         this.changeLanguage('cmake');
     }
