@@ -283,7 +283,7 @@ function closeTag(stack: string[], style: string): string {
     let last: string | null = null;
 
     if (stack.slice(-1)[0] === style) {
-        last = stack.pop() ?? null;
+        last = stack.pop() || null;
     }
 
     if (last) {
