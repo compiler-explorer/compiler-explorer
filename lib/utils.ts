@@ -27,7 +27,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import fs from 'fs-extra';
-import quote from 'shell-quote';
+import { ComponentConfig, ItemConfigType } from 'golden-layout';
+import { parse as quoteParse } from 'shell-quote';
 import _ from 'underscore';
 
 interface IResultLineTag {
@@ -45,12 +46,7 @@ interface IResultLine {
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
 
-/***
- *
- * @param {string} text
- * @returns {string[]}
- */
-export function splitLines(text) {
+export function splitLines(text: string): string[] {
     if (!text) return [];
     const result = text.split(lineRe);
     if (result.length > 0 && result[result.length - 1] === '')
@@ -58,30 +54,13 @@ export function splitLines(text) {
     return result;
 }
 
-/***
- * @callback eachLineFunc
- * @param {string} line
- * @returns {*}
- */
-
-/***
- *
- * @param {string} text
- * @param {eachLineFunc} func
- * @param {*} [context]
- */
-export function eachLine(text: string, func, context?): IResultLine[] {
-    return _.each(splitLines(text), func, context);
+export function eachLine(text: string, func: (line: string) => (IResultLine | void)): (IResultLine | void)[] {
+    return splitLines(text).map(func);
 }
 
-/***
- *
- * @param {string} line
- * @returns {string}
- */
-export function expandTabs(line) {
+export function expandTabs(line: string): string {
     let extraChars = 0;
-    return line.replace(tabsRe, function (match, offset) {
+    return line.replace(tabsRe, (match, offset) => {
         const total = offset + extraChars;
         const spacesNeeded = (total + 8) & 7;
         extraChars += spacesNeeded - 1;
@@ -89,7 +68,7 @@ export function expandTabs(line) {
     });
 }
 
-export function maskRootdir(filepath) {
+export function maskRootdir(filepath: string): string {
     if (filepath) {
         // todo: make this compatible with local installations and windows etc
         return filepath.replace(/^\/tmp\/compiler-explorer-compiler[\w\d-.]*\//, '/app/').replace(/^\/app\//, '');
@@ -98,23 +77,9 @@ export function maskRootdir(filepath) {
     }
 }
 
-/***
- * @typedef {Object} lineTag
- * @property {string} text
- * @property {number} line
- * @property {number} text
- */
-
-/***
- * @typedef {Object} lineObj
- * @property {string} text
- * @property {lineTag} [tag]
- * @inner
- */
-
 const ansiColoursRe = /\x1B\[[\d;]*[Km]/g;
 
-function _parseOutputLine(line, inputFilename, pathPrefix) {
+function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: string) {
     line = line.split('<stdin>').join('<source>');
     if (pathPrefix) line = line.replace(pathPrefix, '');
     if (inputFilename) {
@@ -128,17 +93,10 @@ function _parseOutputLine(line, inputFilename, pathPrefix) {
     return line;
 }
 
-/***
- *
- * @param lines
- * @param inputFilename
- * @param pathPrefix
- * @returns {lineObj[]}
- */
-export function parseOutput(lines, inputFilename, pathPrefix) {
+export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): IResultLine[] {
     const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result = [];
+    const result: IResultLine[]  = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (!inputFilename) {
@@ -171,16 +129,9 @@ export function parseOutput(lines, inputFilename, pathPrefix) {
     return result;
 }
 
-/***
- *
- * @param lines
- * @param inputFilename
- * @param pathPrefix
- * @returns {lineObj[]}
- */
-export function parseRustOutput(lines, inputFilename, pathPrefix) {
+export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
     const re = /^ --> <source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result = [];
+    const result: IResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
@@ -192,12 +143,14 @@ export function parseRustOutput(lines, inputFilename, pathPrefix) {
                 const column = parseInt(match[3] || '0');
 
                 const previous = result.pop();
-                previous.tag = {
-                    line,
-                    column,
-                    text: previous.text.replace(ansiColoursRe, ''),
-                };
-                result.push(previous);
+                if (previous !== undefined) {
+                    previous.tag = {
+                        line,
+                        column,
+                        text: previous.text.replace(ansiColoursRe, ''),
+                    };
+                    result.push(previous);
+                }
 
                 lineObj.tag = {
                     line,
@@ -211,23 +164,12 @@ export function parseRustOutput(lines, inputFilename, pathPrefix) {
     return result;
 }
 
-/***
- *
- * @param {string} name
- * @param {number} len
- * @returns {string}
- */
-export function padRight(name, len) {
+export function padRight(name: string, len: number): string {
     while (name.length < len) name = name + ' ';
     return name;
 }
 
-/***
- *
- * @param {string} name
- * @returns {string}
- */
-export function trimRight(name) {
+export function trimRight(name: string): string {
     let l = name.length;
     while (l > 0 && name[l - 1] === ' ') l -= 1;
     return name.substr(0, l);
@@ -241,7 +183,7 @@ export function trimRight(name) {
  * @param {string} ip - IP string, of either type (localhost|IPv4|IPv6)
  * @returns {string} Anonymized IP
  */
-export function anonymizeIp(ip) {
+export function anonymizeIp(ip: string): string {
     if (ip.includes('localhost')) {
         return ip;
     } else if (ip.includes(':')) {
@@ -258,7 +200,7 @@ export function anonymizeIp(ip) {
  * @param {*} object
  * @returns {string}
  */
-function objectToHashableString(object) {
+function objectToHashableString(object: any): string {
     // See https://stackoverflow.com/questions/899574/which-is-best-to-use-typeof-or-instanceof/6625960#6625960
     return (typeof (object) === 'string') ? object : JSON.stringify(object);
 }
@@ -273,7 +215,7 @@ const DefaultHash = 'Compiler Explorer Default Version 1';
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {Buffer} - Hash of object
  */
-export function getBinaryHash(object, HashVersion = DefaultHash) {
+export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
     return crypto.createHmac('sha256', HashVersion)
         .update(objectToHashableString(object))
         .digest();
@@ -287,45 +229,48 @@ export function getBinaryHash(object, HashVersion = DefaultHash) {
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {string} - Hash of object
  */
-export function getHash(object, HashVersion = DefaultHash) {
+export function getHash(object: any, HashVersion = DefaultHash): string {
     return crypto.createHmac('sha256', HashVersion)
         .update(objectToHashableString(object))
         .digest('hex');
 }
 
-/***
- * @typedef {Object} glEditorMainContent
- * @property {string} source - Editor content
- * @property {string} language - Editor syntax language
- * @inner
- */
+interface glEditorMainContent {
+    // Editor content
+    source: string;
+    // Editor syntax language
+    language: string;
+}
 
-/***
- * @typedef {Object} glCompilerMainContent
- * @property {string} compiler - Compiler id
- * @inner
- */
+interface glCompilerMainContent {
+    // Compiler id
+    compiler: string;
+}
 
-/***
- * @typedef {Object} glContents
- * @property {glEditorMainContent[]} editors
- * @property {glCompilerMainContent[]} compilers
- * @inner
- */
+interface glContents {
+    editors: glEditorMainContent[];
+    compilers: glCompilerMainContent[];
+}
 
 /***
  * Gets every (source, lang) & (compilerId) available
  * @param {Array} content - GoldenLayout config topmost content field
  * @returns {glContents}
  */
-export function glGetMainContents(content) {
-    const contents = { editors: [], compilers: [] };
+export function glGetMainContents(content: ItemConfigType[] = []): glContents {
+    const contents: glContents = { editors: [], compilers: [] };
     _.each(content, element => {
         if (element.type === 'component') {
-            if (element.componentName === 'codeEditor') {
-                contents.editors.push({ source: element.componentState.source, language: element.componentState.lang });
-            } else if (element.componentName === 'compiler') {
-                contents.compilers.push({ compiler: element.componentState.compiler });
+            const component = element as ComponentConfig;
+            if (component.componentName === 'codeEditor') {
+                contents.editors.push({
+                    source: component.componentState.source,
+                    language: component.componentState.lang,
+                });
+            } else if (component.componentName === 'compiler') {
+                contents.compilers.push({
+                    compiler: component.componentState.compiler,
+                });
             }
         } else {
             const subComponents = glGetMainContents(element.content);
@@ -336,14 +281,7 @@ export function glGetMainContents(content) {
     return contents;
 }
 
-/***
- *
- * @param {string} line
- * @param {boolean} [atStart=true]
- * @returns {string}
- */
-export function squashHorizontalWhitespace(line, atStart) {
-    if (atStart === undefined) atStart = true;
+export function squashHorizontalWhitespace(line: string, atStart = true): string {
     if (line.trim().length === 0) {
         return '';
     }
@@ -356,12 +294,7 @@ export function squashHorizontalWhitespace(line, atStart) {
     return splat.join(' ');
 }
 
-/***
- *
- * @param {string} prop
- * @returns {boolean|number|string}
- */
-export function toProperty(prop) {
+export function toProperty(prop: string): boolean | number | string {
     if (prop === 'true' || prop === 'yes') return true;
     if (prop === 'false' || prop === 'no') return false;
     if (/^-?(0|[1-9]\d*)$/.test(prop)) return parseInt(prop);
@@ -378,7 +311,7 @@ export function toProperty(prop) {
  * @param {string} newValue
  * @returns {string}
  */
-export function replaceAll(line, oldValue, newValue) {
+export function replaceAll(line: string, oldValue: string, newValue: string): string {
     if (oldValue.length === 0) return line;
     let startPoint = 0;
     for (; ;) {
@@ -399,7 +332,7 @@ const BASE32_ALPHABET = '13456789EGKMPTWYabcdefhjnoqrsvxz';
  * @param {Buffer} buffer
  * @returns {string}
  */
-export function base32Encode(buffer) {
+export function base32Encode(buffer: Buffer): string {
     let output = '';
     // This can grow up to 12 bits
     let digest = 0;
@@ -434,9 +367,10 @@ export function base32Encode(buffer) {
     return output;
 }
 
-export function splitArguments(options) {
-    return _.chain(quote.parse(options || '')
-        .map(x => typeof (x) === 'string' ? x : x.pattern))
+export function splitArguments(options?: string): string[] {
+    return _.chain(quoteParse(options || '')
+        // FIXME: x might not contain a .pattern!
+        .map((x: any) => typeof (x) === 'string' ? x : x.pattern as string))
         .compact()
         .value();
 }
@@ -446,11 +380,11 @@ export function splitArguments(options) {
  */
 export const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-export function resolvePathFromAppRoot(...args) {
+export function resolvePathFromAppRoot(...args: string[]) {
     return path.resolve(APP_ROOT, ...args);
 }
 
-export async function fileExists(filename) {
+export async function fileExists(filename: string): Promise<boolean> {
     try {
         const stat = await fs.stat(filename);
         return stat.isFile();
@@ -459,7 +393,7 @@ export async function fileExists(filename) {
     }
 }
 
-export async function dirExists(dir) {
+export async function dirExists(dir: string): Promise<boolean> {
     try {
         const stat = await fs.stat(dir);
         return stat.isDirectory();
@@ -468,7 +402,7 @@ export async function dirExists(dir) {
     }
 }
 
-export function countOccurrences(collection, item) {
+export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     // _.reduce(collection, (total, value) => value === item ? total + 1 : total, 0) would work, but is probably slower
     let result = 0;
     for (const element of collection) {

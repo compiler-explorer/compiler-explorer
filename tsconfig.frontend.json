@@ -5,6 +5,8 @@
     "target": "es5",
     "rootDirs": ["./static", "./types"],
     /* Code generation */
-    "inlineSources": true
+    "inlineSources": true,
+    "strict": false,
+    "strictPropertyInitialization": false
   }
 }
