@@ -40,3 +40,18 @@ export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hidea
 
     return topBarHeight;
 }
+
+/**
+ *  Subscribe and unsuscribe the event listener.
+ *
+ * @param  {JQuery} element
+ * @param  {string} eventName
+ * @param  {(event:JQuery.Event)=>void} callback
+ * @returns void
+ */
+export function toggleEventListener(element: JQuery, eventName: string, callback: (event: JQuery.Event) => void): void {
+    element.on(eventName, (event: JQuery.Event) => {
+        callback(event);
+        element.off(eventName);
+    });
+}

@@ -95,6 +95,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-optimization(title="Show optimization output")
             span.dropdown-icon.fas.fa-weight
             | Optimization output
+          button.dropdown-item.btn.btn-sm.btn-light.view-pp(title="Show Preprocessor Output")
+            span.dropdown-icon.fas.fa-hashtag
+            | Preprocessor output
           button.dropdown-item.btn.btn-sm.btn-light.view-ast(title="Show AST output")
             span.dropdown-icon.fas.fa-leaf
             | AST output
@@ -280,6 +283,22 @@
   #flags
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
+    .monaco-placeholder
+
+  #pp
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+      .btn-group.btn-group-sm.options(role="group" aria-label="Panel options")
+        .input-group.input-group-sm.mb-auto
+          .button-checkbox
+            button.btn.btn-sm.btn-light.filter-headers(type="button" title="Filter header code from #includes" data-bind="filter-headers" aria-pressed="false" aria-label="Filter headers")
+              span Filter headers
+            input.d-none(type="checkbox" checked=true)
+        .input-group.input-group-sm.mb-auto
+          .button-checkbox
+            button.btn.btn-sm.btn-light.clang-format(type="button" title="Apply clang-format to output" data-bind="clang-format" aria-pressed="false" aria-label="Apply clang-format")
+              span Apply clang-format
+            input.d-none(type="checkbox" checked=false)
     .monaco-placeholder
 
   #ast
