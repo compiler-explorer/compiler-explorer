@@ -35,6 +35,7 @@ var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options').options;
 var utils = require('../utils');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
@@ -98,7 +99,7 @@ function Tool(hub, container, state) {
     this.initCallbacks();
 
     this.onOptionsChange();
-    this.updateCompilerName();
+    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -114,6 +115,7 @@ Tool.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
+    PaneRenaming.registerCallback(this);
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -455,7 +457,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             }
 
             this.toolName = toolResult.name;
-            this.updateCompilerName();
+            this.updateTitle();
 
             if (toolResult.sourcechanged && this.editorId) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
@@ -516,8 +518,9 @@ Tool.prototype.getPaneName = function () {
     return name;
 };
 
-Tool.prototype.updateCompilerName = function () {
-    this.container.setTitle(this.getPaneName());
+Tool.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Tool.prototype.onCompilerClose = function (id) {

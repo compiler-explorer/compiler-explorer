@@ -34,6 +34,8 @@ import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
+import { PaneRenaming } from '../pane-renaming';
+
 export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;
     irCode: any[] = [];
@@ -110,6 +112,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+
+        PaneRenaming.registerCallback(this);
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
@@ -125,7 +129,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
-        this.setTitle();
+        this.updateTitle();
         if (compiler && !compiler.supportsIrView) {
             this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }

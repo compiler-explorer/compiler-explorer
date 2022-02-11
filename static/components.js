@@ -186,6 +186,26 @@ module.exports = {
             },
         };
     },
+    getPpView: function () {
+        return {
+            type: 'component',
+            componentName: 'pp',
+            componentState: {},
+        };
+    },
+    getPpViewWith: function (id, source, ppOutput, compilerName, editorid) {
+        return {
+            type: 'component',
+            componentName: 'pp',
+            componentState: {
+                id: id,
+                source: source,
+                ppOutput: ppOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+            },
+        };
+    },
     getAstView: function () {
         return {
             type: 'component',

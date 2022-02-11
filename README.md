@@ -5,8 +5,8 @@
 
 # Compiler Explorer
 
-**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
- or in any of the other [31 supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
+**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
+ or in any of the other [30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
  Multiple compilers are supported for each language, many different tools and visualisations are available, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 

@@ -88,7 +88,7 @@ export class GnatDebugTree extends Pane<monaco.editor.IStandaloneCodeEditor, Gna
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
-            this.setTitle();
+            this.updateTitle();
             if (compiler && !compiler.supportsGnatDebugViews) {
                 this.showGnatDebugTreeResults([{text: '<GNAT Debug Tree output is not supported for this compiler>'}]);
             }
