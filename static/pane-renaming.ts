@@ -31,7 +31,7 @@ const Alert = require('alert').Alert;
 export class PaneRenaming {
     public static registerCallback(pane: any): void {
         const alertSystem = new Alert();
-        var addRenameButton = function (parentTab: Tab) {
+        const addRenameButton = function (parentTab: Tab) {
             return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
         };
         pane.container.on('tab', addRenameButton);
@@ -55,7 +55,7 @@ export class PaneRenaming {
                 yesClass: 'btn btn-primary',
                 yesHtml: 'Rename',
                 noClass: 'btn-outline-info',
-                noHtml: 'Cancel'
+                noHtml: 'Cancel',
             });
         });
     }
