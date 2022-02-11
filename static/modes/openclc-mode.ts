@@ -23,24 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
-var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
-var nc = require('./nc-mode');
+const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+const nc = require('./nc-mode');
 
 // We need to create a new definition for OpenCL C so we can add keywords
 
 function definition() {
-    var openclc = $.extend(true, {}, nc); // deep copy
+    const openclc = $.extend(true, {}, nc); // deep copy
 
     function removeKeyword(keyword) {
-        var index = openclc.keywords.indexOf(keyword);
+        const index = openclc.keywords.indexOf(keyword);
         if (index > -1) {
             openclc.keywords.splice(index, 1);
         }
     }
 
     function removeKeywords(keywords) {
-        for (var i = 0; i < keywords.length; ++i) {
+        for (let i = 0; i < keywords.length; ++i) {
             removeKeyword(keywords[i]);
         }
     }
@@ -48,7 +48,7 @@ function definition() {
     function addKeywords(keywords) {
         // (Ruben) Done one by one as if you just push them all, Monaco complains that they're not strings, but as
         // far as I can tell, they indeed are all strings. This somehow fixes it. If you know how to fix it, plz go
-        for (var i = 0; i < keywords.length; ++i) {
+        for (let i = 0; i < keywords.length; ++i) {
             openclc.keywords.push(keywords[i]);
         }
     }

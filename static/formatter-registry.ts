@@ -49,7 +49,7 @@ const doFormatRequest = async (options: FormattingRequest) => {
     }
     // We had an error (either HTTP request error, or API error)
     // Figure out which it is, show it to the user, and reject the promise
-    const cause = body?.answer ?? res.statusText
+    const cause = body?.answer ?? res.statusText;
     throw new Error(cause);
 };
 
@@ -57,19 +57,19 @@ const doFormatRequest = async (options: FormattingRequest) => {
  * Create a monaco DocumentFormattingEditProvider for a registered monaco
  * language.
  *
- * @param language The monaco-editor registered language to format code for
- * @param formatter The CE format API backend to use
- * @param isOneTrueStyle Whether the CE format API backend has one true style
+ * @param language - The monaco-editor registered language to format code for
+ * @param formatter - The CE format API backend to use
+ * @param isOneTrueStyle - Whether the CE format API backend has one true style
  */
 const getDocumentFormatter = (
     language: string,
     formatter: string,
-    isOneTrueStyle: boolean,
+    isOneTrueStyle: boolean
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
-        token: monaco.CancellationToken,
+        token: monaco.CancellationToken
     ): Promise<monaco.languages.TextEdit[]> {
         const settings = Settings.getStoredSettings();
         // If there is only one style, return __DefaultStyle.
@@ -95,7 +95,7 @@ const getDocumentFormatter = (
 const register = (lang: string, formatter: string, isOneTrueStyle: boolean) => {
     const provider = getDocumentFormatter(lang, formatter, isOneTrueStyle);
     monaco.languages.registerDocumentFormattingEditProvider(lang, provider);
-}
+};
 
 register('cppp', 'clangformat', false);
 register('nc', 'clangformat', false);

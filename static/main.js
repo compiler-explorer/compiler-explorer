@@ -52,6 +52,10 @@ var HistoryWidget = require('./history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
 
+if (!window.PRODUCTION) {
+    require('./tests/_all');
+}
+
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
@@ -64,19 +68,6 @@ require('./explorer.scss');
 var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
-
-// Polyfill includes for IE11 - From MDN
-if (!String.prototype.includes) {
-    String.prototype.includes = function (search, start) {
-        if (search instanceof RegExp) {
-            throw TypeError('first argument must not be a RegExp');
-        }
-        if (start === undefined) {
-            start = 0;
-        }
-        return this.indexOf(search, start) !== -1;
-    };
-}
 
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;

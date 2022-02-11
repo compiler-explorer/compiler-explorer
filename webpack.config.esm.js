@@ -26,12 +26,11 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 /* eslint-disable node/no-unpublished-import */
-import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
@@ -51,24 +50,19 @@ const plugins = [
             'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb'],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
-    new CopyWebpackPlugin({
-        patterns: [
-            {
-                from: 'node_modules/es6-shim/es6-shim.min.js',
-                to: path.join(staticPath, '[name].[contenthash][ext]'),
-            },
-        ],
-    }),
     new ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery',
     }),
     new MiniCssExtractPlugin({
-        filename: isDev ? '[name].css' : '[name].[contenthash].css',
+        filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
         fileName: path.join(distPath, 'manifest.json'),
         publicPath: '',
+    }),
+    new DefinePlugin({
+        'window.PRODUCTION': JSON.stringify(!isDev),
     }),
 ];
 

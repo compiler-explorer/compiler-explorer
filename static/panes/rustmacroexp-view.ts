@@ -91,7 +91,7 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
             this.updateTitle();
             if (compiler && !compiler.supportsRustMacroExpView) {
                 this.showRustMacroExpResults([{
-                    text: '<Rust Macro Expansion output is not supported for this compiler>'
+                    text: '<Rust Macro Expansion output is not supported for this compiler>',
                 }]);
             }
         }

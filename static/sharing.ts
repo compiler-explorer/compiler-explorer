@@ -25,7 +25,7 @@
 import $ from 'jquery';
 import Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
-import _ from 'underscore'
+import _ from 'underscore';
 import ClipboardJS from 'clipboard';
 
 import ClickEvent = JQuery.ClickEvent;
@@ -47,14 +47,23 @@ const shareServices = {
         embedValid: false,
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
-        getLink: (title, url) => `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}&via=CompileExplore`,
+        getLink: (title, url) => {
+            return 'https://twitter.com/intent/tweet' +
+                `?text=${encodeURIComponent(title)}` +
+                `&url=${encodeURIComponent(url)}` +
+                '&via=CompileExplore';
+        },
         text: 'Tweet',
     },
     reddit: {
         embedValid: false,
         logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
-        getLink: (title, url) => `http://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
+        getLink: (title, url) => {
+            return 'http://www.reddit.com/submit' +
+                `?url=${encodeURIComponent(url)}` +
+                `&title=${encodeURIComponent(title)}`;
+        },
         text: 'Share on Reddit',
     },
 };
@@ -87,10 +96,10 @@ export class Sharing {
 
     private initCallbacks(): void {
         this.layout.eventHub.on('displaySharingPopover', () => {
-            this.openShareModalForType(LinkType.Short)
+            this.openShareModalForType(LinkType.Short);
         });
         this.layout.eventHub.on('copyShortLinkToClip', () => {
-            this.copyLinkTypeToClipboard(LinkType.Short)
+            this.copyLinkTypeToClipboard(LinkType.Short);
         });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
@@ -151,7 +160,7 @@ export class Sharing {
                     permalink.val(newUrl);
                     permalink.on('click', () => {
                         permalink.trigger('focus').trigger('select');
-                    })
+                    });
                     if (options.sharingEnabled) {
                         Sharing.updateShares(socialSharingElements, newUrl);
                         // Disable the links for every share item which does not support embed html as links
@@ -163,7 +172,7 @@ export class Sharing {
                     }
                 }
             });
-        }
+        };
 
         this.clippyButton = new ClipboardJS(modal.find('button.clippy').get(0));
         this.clippyButton.on('success', (e) => {
@@ -290,13 +299,14 @@ export class Sharing {
             case LinkType.Full:
                 done(null, window.location.origin + root + '#' + url.serialiseState(config), false);
                 return;
-            case LinkType.Embed:
+            case LinkType.Embed: {
                 const options = {};
                 $('#sharelinkdialog input:checked').each((i, element) => {
                     options[$(element).prop('class')] = true;
                 });
                 done(null, Sharing.getEmbeddedHtml(config, root, false, options), false);
                 return;
+            }
             default:
                 // Hmmm
                 done('Unknown link type', null);
@@ -341,7 +351,7 @@ export class Sharing {
             }
 
             return total + key + '=' + value;
-        }, '')
+        }, '');
 
         const path = (readOnly ? 'embed-ro' : 'e') + parameters + '#';
 
@@ -354,7 +364,7 @@ export class Sharing {
 
     private static isNavigatorClipboardAvailable(): boolean {
         return navigator.clipboard != null;
-    };
+    }
 
     public static filterComponentState(config: any, keysToRemove: [string] = ['selection']): any {
         function filterComponentStateImpl(component: any) {

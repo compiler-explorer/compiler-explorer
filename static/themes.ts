@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,79 +22,80 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var $ = require('jquery');
-var monaco = require('monaco-editor');
+import { editor } from 'monaco-editor';
+import { SiteSettings } from './settings';
 
-var themes = {
+export type Themes = 'default' | 'dark';
+
+export interface Theme {
+    path: string;
+    id: string;
+    name: string;
+    mainColor: string;
+    monaco: string;
+}
+
+export const themes: Record<Themes, Theme> = {
     default: {
         path: 'default',
         id: 'default',
         name: 'Light',
-        'main-color': '#f2f2f2',
+        mainColor: '#f2f2f2',
         monaco: 'ce',
     },
     dark: {
         path: 'dark',
         id: 'dark',
         name: 'Dark',
-        'main-color': '#333333',
+        mainColor: '#333333',
         monaco: 'ce-dark',
     },
 };
 
-monaco.editor.defineTheme('ce', {
+editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
     rules: [
-        { token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold' },
+        {token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold'},
     ],
     colors: {},
 });
 
-monaco.editor.defineTheme('ce-dark', {
+editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-        { token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold' },
+        {token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold'},
     ],
     colors: {},
 });
 
-function Themer(eventHub, initialSettings) {
-    this.currentTheme = null;
-    this.eventHub = eventHub;
+export class Themer {
+    private currentTheme: Theme | null = null;
 
-    this.setTheme = function (theme) {
+    constructor(private eventHub: any, initialSettings: SiteSettings) {
+        this.onSettingsChange(initialSettings);
+
+        this.eventHub.on('settingsChange', this.onSettingsChange, this);
+
+        this.eventHub.on('requestTheme', () => {
+            this.eventHub.emit('themeChange', this.currentTheme);
+        }, this);
+    }
+
+    public setTheme(theme: Theme) {
         if (this.currentTheme === theme) return;
         $('html').attr('data-theme', theme.path);
-        $('#meta-theme').prop('content', theme['main-color']);
-        monaco.editor.setTheme(theme.monaco);
+        $('#meta-theme').prop('content', theme.mainColor);
+        editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
-    };
+    }
 
-    this.onSettingsChange = function (newSettings) {
-        var newTheme = themes[newSettings.theme] || themes.default;
+    private onSettingsChange(newSettings: SiteSettings) {
+        const newTheme = themes[newSettings.theme] || themes.default;
         if (!newTheme.monaco)
             newTheme.monaco = 'vs';
         this.setTheme(newTheme);
-
-        // This line is used to set thet codelens font
-        // Official support using the IEditorOptions.codeLensFontFamily property has landed in vscode
-        // It should be removed once a downstream release of monaco is cut
-        document.querySelector(':root').style.setProperty('--user-selected-font-stack', newSettings.editorsFFont);
-    };
-    this.onSettingsChange(initialSettings);
-
-    this.eventHub.on('settingsChange', this.onSettingsChange, this);
-
-    this.eventHub.on('requestTheme', function () {
-        this.eventHub.emit('themeChange', this.currentTheme);
-    }, this);
+    }
 }
-
-module.exports = {
-    themes: themes,
-    Themer: Themer,
-};

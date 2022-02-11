@@ -1,0 +1,19 @@
+name: Compiler Explorer Frontend Testing
+
+on: [push]
+jobs:
+  cypress-run:
+    if: github.repository_owner == 'compiler-explorer'
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Clean
+        run: make clean
+      - name: Install prerequisites
+        run: make prereqs
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        with:
+          start: npm run dev
+          wait-on: 'http://localhost:10240'

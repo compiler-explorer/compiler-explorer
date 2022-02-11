@@ -24,7 +24,7 @@
 
 'use strict';
 
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function configuration() {
     return {
@@ -194,7 +194,7 @@ function definition() {
     };
 }
 
-var def = definition();
+const def = definition();
 
 monaco.languages.register({ id: 'crystal' });
 monaco.languages.setMonarchTokensProvider('crystal', def);

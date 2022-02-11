@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var
-    local = require('./local'),
-    _ = require('underscore'),
-    filterComponentState = require('./sharing').Sharing.filterComponentState;
+import * as local from './local';
+import _ from 'underscore';
+import { Sharing } from './sharing';
 
-var maxHistoryEntries = 30;
 
-function extractEditorSources(content) {
-    var sources = [];
+const maxHistoryEntries = 30;
+type Source = {dt: number, source: string};
+type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
+type EditorSource = {lang: string, source: string};
 
-    for (var i = 0; i < content.length; i++) {
-        var component = content[i];
+function extractEditorSources(content: any[]): EditorSource[] {
+    const sources: EditorSource[] = [];
+    for (const component of content) {
         if (component.content) {
-            var subsources = extractEditorSources(component.content);
+            const subsources = extractEditorSources(component.content);
             if (subsources.length > 0) {
-                sources = sources.concat(subsources);
+                sources.push(...subsources);
             }
         } else if (component.componentName === 'codeEditor') {
             sources.push({
@@ -47,24 +47,22 @@ function extractEditorSources(content) {
             });
         }
     }
-
     return sources;
 }
 
-function list() {
-    var stringifiedHistory = local.get('history');
-    return JSON.parse(stringifiedHistory ? stringifiedHistory : '[]');
+function list(): HistoryEntry[] {
+    return JSON.parse(local.get('history', '[]'));
 }
 
-function getArrayWithJustTheCode(editorSources) {
-    return _.pluck(editorSources, 'source');
+function getArrayWithJustTheCode(editorSources: Record<string, any>[]): string[] {
+    return editorSources.map(s => s.source);
 }
 
-function getSimilarSourcesIndex(completeHistory, sourcesToCompareTo) {
-    var duplicateIdx = -1;
+function getSimilarSourcesIndex(completeHistory: HistoryEntry[], sourcesToCompareTo: any[]): number {
+    let duplicateIdx = -1;
 
-    for (var i = 0; i < completeHistory.length; i++) {
-        var diff = _.difference(sourcesToCompareTo, getArrayWithJustTheCode(completeHistory[i].sources));
+    for (let i = 0; i < completeHistory.length; i++) {
+        const diff = _.difference(sourcesToCompareTo, getArrayWithJustTheCode(completeHistory[i].sources));
         if (diff.length === 0) {
             duplicateIdx = i;
             break;
@@ -74,12 +72,12 @@ function getSimilarSourcesIndex(completeHistory, sourcesToCompareTo) {
     return duplicateIdx;
 }
 
-function push(stringifiedConfig) {
-    var config = JSON.parse(stringifiedConfig);
-    var sources = extractEditorSources(config.content);
+function push(stringifiedConfig: string) {
+    const config = JSON.parse(stringifiedConfig);
+    const sources = extractEditorSources(config.content);
     if (sources.length > 0) {
-        var completeHistory = list();
-        var duplicateIdx = getSimilarSourcesIndex(completeHistory, getArrayWithJustTheCode(sources));
+        const completeHistory = list();
+        const duplicateIdx = getSimilarSourcesIndex(completeHistory, getArrayWithJustTheCode(sources));
 
         if (duplicateIdx === -1) {
             while (completeHistory.length >= maxHistoryEntries) {
@@ -92,20 +90,18 @@ function push(stringifiedConfig) {
                 config: config,
             });
         } else {
-            var entry = completeHistory[duplicateIdx];
-            entry.dt = Date.now();
+            completeHistory[duplicateIdx].dt = Date.now();
         }
 
         local.set('history', JSON.stringify(completeHistory));
     }
 }
 
-
-function trackHistory(layout) {
-    var lastState = null;
-    var debouncedPush = _.debounce(push, 500);
-    layout.on('stateChanged', function () {
-        var stringifiedConfig = JSON.stringify(filterComponentState(layout.toConfig()));
+export function trackHistory(layout: any) {
+    let lastState = null;
+    const debouncedPush = _.debounce(push, 500);
+    layout.on('stateChanged', () => {
+        const stringifiedConfig = JSON.stringify(Sharing.filterComponentState(layout.toConfig()));
         if (stringifiedConfig !== lastState) {
             lastState = stringifiedConfig;
             debouncedPush(stringifiedConfig);
@@ -113,35 +109,21 @@ function trackHistory(layout) {
     });
 }
 
-function sortedList() {
-    var sorted = list();
-
-    sorted.sort(function (a, b) {
-        return b.dt - a.dt;
-    });
-
-    return sorted;
+export function sortedList() {
+    return list().sort((a, b) => b.dt - a.dt);
 }
 
-function sources(language) {
-    var sourcelist = [];
-    _.each(sortedList(), function (entry) {
-        _.each(entry.sources, function (source) {
+export function sources(language: string): Source[] {
+    const sourcelist: Source[] = [];
+    for (const entry of sortedList()) {
+        for (const source of entry.sources) {
             if (source.lang === language) {
                 sourcelist.push({
                     dt: entry.dt,
                     source: source.source,
                 });
             }
-        });
-    });
-
+        }
+    }
     return sourcelist;
 }
-
-module.exports = {
-    list: list,
-    sortedList: sortedList,
-    sources: sources,
-    trackHistory: trackHistory,
-};

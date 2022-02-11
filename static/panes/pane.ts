@@ -39,8 +39,10 @@ import { PaneRenaming } from '../pane-renaming';
  *
  * Type parameter E indicates which monaco editor kind this pane hosts. Common
  * values are monaco.editor.IDiffEditor and monaco.ICodeEditor
+ *
+ * Type parameter S refers to a state interface for the pane
  */
-export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
+export abstract class Pane<E extends monaco.editor.IEditor, S> {
     compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
@@ -51,7 +53,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
     editor: E;
     fontScale: FontScale;
     isAwaitingInitialResults: boolean = false;
-    settings: SiteSettings | {} = {};
+    settings: SiteSettings | Record<string, never> = {};
     paneName: string;
 
     /**
@@ -168,10 +170,10 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * if (this.compilerInfo.compilerId === compilerId) { ... }
      * ```
      *
-     * @param compilerId Id of the compiler that had its version changed
-     * @param compiler The updated compiler object
+     * @param compilerId - Id of the compiler that had its version changed
+     * @param compiler - The updated compiler object
      * @param options
-     * @param editorId The editor id the updated compiler is attached to
+     * @param editorId - The editor id the updated compiler is attached to
      */
     abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number): void;
 
@@ -189,9 +191,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S extends {}> {
      * if (this.compilerInfo.compilerId === compilerId) { ... }
      * ```
      *
-     * @param compilerId Id of the compiler that had a compilation
-     * @param compiler The compiler object
-     * @param result The entire HTTP request response
+     * @param compilerId - Id of the compiler that had a compilation
+     * @param compiler - The compiler object
+     * @param result - The entire HTTP request response
      */
     abstract onCompileResult(compilerId: number, compiler: unknown, result: unknown): void;
 
