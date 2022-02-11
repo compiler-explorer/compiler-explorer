@@ -45,6 +45,8 @@ var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
+
 
 require('../modes/asm-mode');
 require('../modes/asmruby-mode');
@@ -1808,6 +1810,7 @@ Compiler.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
+    PaneRenaming.registerCallback(this);    
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -2104,12 +2107,17 @@ Compiler.prototype.getPaneName = function () {
     }
 };
 
+Compiler.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
+};
+
 Compiler.prototype.updateCompilerName = function () {
+    this.container.setTitle(_.escape(this.getPaneName()));
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
-    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
