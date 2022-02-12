@@ -141,20 +141,14 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     registerEditorActions(): void {}
 
     /**
-     * Produce a textual title for the pane
-     *
-     * Typical implementation uses the compiler and editor ids in combination
-     * with a name.
-     *
-     * This title is attached to the pane in the UI.
+     * Produce a default name for the pane. Typical implementation
+     * looks like this:
      *
      * ```ts
-     * return `Rust MIR Viewer ${this.compilerInfo.compilerName}` +
-     *     `(Editor #${this.compilerInfo.editorId}, ` +
-     *     `Compiler #${this.compilerInfo.compilerId})`;
+     * return 'Rust MIR Viewer';
      * ```
      */
-    abstract getPaneName(): string;
+    abstract getDefaultPaneName(): string;
 
     /**
      * Handle user selected compiler change.
@@ -221,18 +215,24 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.eventHub.on('resize', this.resize.bind(this));
     }
 
+    /** Generate "(Editor #1, Compiler #1)" tag */
     protected getPaneTag() {
-        if(this.compilerInfo.editorId !== false) {
-            return this.compilerInfo.compilerName
-                 + ` (Editor #${this.compilerInfo.editorId}, Compiler #${this.compilerInfo.compilerId})`;
+        const { compilerName, editorId, treeId, compilerId } = this.compilerInfo;
+        if(editorId !== false) {
+            return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
         } else {
-            return this.compilerInfo.compilerName
-                 + ` (Tree #${this.compilerInfo.treeId}, Compiler #${this.compilerInfo.compilerId})`;
+            return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
         }
     }
 
+    /** A couple panes need unique names for line link events */
+    protected getUniqueName() {
+        return this.getDefaultPaneName() + ' ' + this.getPaneTag();
+    }
+
+    /** Update the pane's title, called when the pane name or compiler info changes */
     protected updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName() + ' ' + this.getPaneTag();
+        const name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
         this.container.setTitle(_.escape(name));
     }
 

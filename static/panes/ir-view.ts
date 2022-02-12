@@ -71,7 +71,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         });
     }
 
-    override getPaneName(): string {
+    override getDefaultPaneName(): string {
         return 'LLVM IR Viewer';
     }
 
@@ -183,7 +183,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
                 this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, sourceColumnBegin,
                     sourceColumnEnd, false);
                 this.eventHub.emit('panesLinkLine', this.compilerInfo.compilerId, sourceLine, sourceColumnBegin,
-                    sourceColumnEnd, false, this.getPaneName());
+                    sourceColumnEnd, false, this.getUniqueName());
             }
         }
     }
@@ -199,7 +199,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const lineNumbers: number[] = [];
         const directlyLinkedLineNumbers: number[] = [];
-        const isSignalFromAnotherPane = sender !== this.getPaneName();
+        const isSignalFromAnotherPane = sender !== this.getUniqueName();
 
         for (const [index, irLine] of this.irCode.entries()) {
             if (irLine.source && irLine.source.file === null && irLine.source.line === lineNumber) {

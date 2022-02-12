@@ -324,7 +324,7 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
     this.saveState();
 };
 
-GccDump.prototype.getPaneName = function () {
+GccDump.prototype.getDefaultPaneName = function () {
     return 'GCC Tree/RTL Viewer';
 };
 
@@ -337,7 +337,7 @@ GccDump.prototype.getPaneTag = function () {
 };
 
 GccDump.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName() + ' ' + this.getPaneTag();
+    var name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
     this.container.setTitle(_.escape(name));
 };
 

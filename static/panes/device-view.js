@@ -228,12 +228,12 @@ DeviceAsm.prototype.getPaneTag = function () {
     }
 };
 
-DeviceAsm.prototype.getPaneName = function () {
+DeviceAsm.prototype.getDefaultPaneName = function () {
     return 'Device Viewer';
 };
 
 DeviceAsm.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName() + ' ' + this.getPaneTag();
+    var name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
     this.container.setTitle(_.escape(name));
 };
 

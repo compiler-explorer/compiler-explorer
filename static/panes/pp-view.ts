@@ -118,7 +118,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         return this.editor.getModel().getLanguageId();
     }
 
-    override getPaneName() {
+    override getDefaultPaneName() {
         return 'Preprocessor Output';
     }
 

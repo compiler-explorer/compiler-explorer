@@ -280,7 +280,7 @@ export class Cfg {
         }
     }
 
-    getPaneName() {
+    getDefaultPaneName() {
         return 'Graph Viewer';
     }
 
@@ -293,7 +293,7 @@ export class Cfg {
     }
 
     updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName() + ' ' + this.getPaneTag();
+        const name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
         this.container.setTitle(_.escape(name));
     }
 

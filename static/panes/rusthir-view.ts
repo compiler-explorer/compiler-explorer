@@ -62,7 +62,7 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
         });
     }
 
-    override getPaneName(): string {
+    override getDefaultPaneName(): string {
         return 'Rust HIR Viewer';
     }
 

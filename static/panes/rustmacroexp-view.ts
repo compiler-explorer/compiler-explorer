@@ -62,7 +62,7 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         });
     }
 
-    override getPaneName(): string {
+    override getDefaultPaneName(): string {
         return 'Rust Macro Expansion Viewer';
     }
 

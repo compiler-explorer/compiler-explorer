@@ -62,7 +62,7 @@ export class GnatDebugTree extends Pane<monaco.editor.IStandaloneCodeEditor, Gna
         });
     }
 
-    override getPaneName(): string {
+    override getDefaultPaneName(): string {
         return 'GNAT Debug Tree Viewer';
     }
 
