@@ -134,6 +134,7 @@ class DotNetCompiler extends BaseCompiler {
         const crossgen2Options = [
             crossgen2Path, '-r', path.join(references, '*.dll'), dllPath, '-o', 'CompilerExplorer.r2r.dll',
             '--codegenopt', 'NgenDisasm=*', '--codegenopt', 'JitDiffableDasm=1', '--parallelism', '1',
+            '--inputbubble', '--compilebubblegenerics',
         ].concat(options);
 
         const result = await this.exec(compiler, crossgen2Options, execOptions);
