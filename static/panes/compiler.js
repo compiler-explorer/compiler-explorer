@@ -127,6 +127,9 @@ function Compiler(hub, container, state) {
 
     this.revealJumpStack = [];
 
+    this.alertSystem = new Alert();
+    this.paneRenaming = new PaneRenaming(this, this.alertSystem);
+
     this.initButtons(state);
 
     var monacoDisassembly = 'asm';
@@ -1860,7 +1863,6 @@ Compiler.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
-    PaneRenaming.registerCallback(this);    
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -2160,13 +2162,12 @@ Compiler.prototype.getPaneName = function () {
     }
 };
 
-Compiler.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
+Compiler.prototype.updateTitle = function (newName) {
+    var name = newName ? newName : this.getPaneName();
     this.container.setTitle(_.escape(name));
 };
 
 Compiler.prototype.updateCompilerName = function () {
-    this.container.setTitle(_.escape(this.getPaneName()));
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;

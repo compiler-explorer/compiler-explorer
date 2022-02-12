@@ -25,32 +25,54 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
-
-//const Alert = require('alert').Alert;
+import { LoadSave } from './load-save';
+const Alert = require('alert').Alert;
 
 export class PaneRenaming {
-    public static registerCallback(pane: any): void {
-        // const alertSystem = new Alert();
-        // const addRenameButton = function (parentTab: Tab) {
-        //     return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
-        // };
-        // pane.container.on('tab', addRenameButton);
+    private pane: any;
+    private alertSystem: any;
+
+    constructor(pane: any, alertSystem: any) {
+        this.pane = pane;
+        this.alertSystem = alertSystem;
+
+        this.registerCallback2();
+        this.restoreSavedPaneState();
     }
 
-    public static addRenameButton(parent: Tab, pane: any, alertSystem: any): void {
+    private restoreSavedPaneState(): void {
+        const saved = LoadSave.getLocalPanes()[this.pane.getPaneName()];
+        this.pane.updateTitle(saved);
+    }
+
+    public registerCallback2(): void {
+        this.pane.container.on('tab', this.addRenameButton.bind(this));
+    }
+
+    public static registerCallback(pane: any): void {
+        const alertSystem = new Alert();
+        const addRenameButton =  (parentTab: Tab) => {
+            // return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
+        };
+        pane.container.on('tab', addRenameButton);
+    }
+
+    private addRenameButton(parent: Tab): void {
         // Add little pencil icon next to close tab
         const btn = $(`<div class="lm_modify_tab_title"></div>`);
         parent.element.prepend(btn);
         parent.titleElement.css('margin-right', '15px');
 
+        // Open modal for entering new pane name
         btn.on('click', () => {
-            alertSystem.enterSomething('Rename pane', 'Please enter new pane name', pane.getPaneName(), {
+            this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', this.pane.getPaneName(), {
                 yes: (value: string) => {
-                    pane.paneName = value;
-                    pane.updateTitle();
+                    // Update title and save to local storage
+                    this.pane.updateTitle(value);
+                    LoadSave.setLocalPane(this.pane.getPaneName(), value);
                 },
                 no: () => {
-                    alertSystem.resolve(false);
+                    this.alertSystem.resolve(false);
                 },
                 yesClass: 'btn btn-primary',
                 yesHtml: 'Rename',

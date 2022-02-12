@@ -59,6 +59,16 @@ export class LoadSave {
         local.set('files', JSON.stringify(files));
     }
 
+    public static getLocalPanes(): Record<string, string> {
+        return JSON.parse(local.get('panes', '{}'));
+    }
+
+    public static setLocalPane(component: string, paneName: string) {
+        const panes = LoadSave.getLocalPanes();
+        panes[component] = paneName;
+        local.set('panes', JSON.stringify(panes));
+    }
+
     private async fetchBuiltins(): Promise<Record<string, any>[]> {
         return new Promise<Record<string, any>[]>((resolve) => {
             $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
@@ -159,6 +169,26 @@ export class LoadSave {
         );
     }
 
+    private populateLocalPanes() {
+        const panes = LoadSave.getLocalPanes();
+        const keys = Object.keys(panes);
+
+        LoadSave.populate(
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.modal!.find('.local-storage'),
+            keys.map(name => {
+                const data = panes[name];
+                return {
+                    name: name,
+                    load: () => {
+                        this.onLoad(data);
+                        this.modal?.modal('hide');
+                    },
+                };
+            })
+        );
+    }
+
     // From https://developers.google.com/web/updates/2014/08/Easier-ArrayBuffer-String-conversion-with-the-Encoding-API
     private static ab2str(buf) {
         const dataView = new DataView(buf);
@@ -191,6 +221,7 @@ export class LoadSave {
         this.populateLocalStorage();
         this.setMinimalOptions(editorText, currentLanguage);
         this.populateLocalHistory();
+        this.populateLocalPanes();
         this.onLoadCallback = onLoad;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.modal!.find('.local-file')
