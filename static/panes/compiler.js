@@ -231,7 +231,7 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
     var createOptView = _.bind(function () {
         return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createFlagsView = _.bind(function () {

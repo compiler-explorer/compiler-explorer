@@ -156,13 +156,12 @@ Ast.prototype.getPaneTag = function () {
     }
 };
 
-Ast.prototype.getUniqueName = function () {
-    return this.getDefaultPaneName() + ' ' + this.getPaneTag();
+Ast.prototype.getPaneName = function () {
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
 Ast.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
@@ -286,7 +285,7 @@ Ast.prototype.onMouseMove = function (e) {
             }
             this.eventHub.emit('editorLinkLine', this._editorid, sourceLine, colBegin, colEnd, false);
             this.eventHub.emit('panesLinkLine', this._compilerid, sourceLine,
-                colBegin, colEnd, false, this.getUniqueName());
+                colBegin, colEnd, false, this.getPaneName());
         }
     }
 };
@@ -312,7 +311,7 @@ Ast.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin, colE
     if (Number(compilerId) === this._compilerid) {
         var lineNums = [];
         var singleNodeLines = [];
-        var signalFromAnotherPane = sender !== this.getUniqueName();
+        var signalFromAnotherPane = sender !== this.getPaneName();
         _.each(this.astCode, function (astLine, i) {
             if (astLine.source
                 && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {

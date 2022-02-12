@@ -292,9 +292,12 @@ export class Cfg {
         }
     }
 
+    getPaneName() {
+        return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+    }
+
     updateTitle() {
-        const name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(_.escape(this.getPaneName()));
     }
 
     assignLevels(data: any) {

@@ -232,9 +232,12 @@ DeviceAsm.prototype.getDefaultPaneName = function () {
     return 'Device Viewer';
 };
 
+DeviceAsm.prototype.getPaneName = function () {
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+};
+
 DeviceAsm.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {

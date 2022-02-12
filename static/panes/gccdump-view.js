@@ -336,9 +336,12 @@ GccDump.prototype.getPaneTag = function () {
     }
 };
 
+GccDump.prototype.getPaneName = function () {
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+};
+
 GccDump.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 GccDump.prototype.showGccDumpResults = function (results) {

@@ -141,16 +141,6 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     registerEditorActions(): void {}
 
     /**
-     * Produce a default name for the pane. Typical implementation
-     * looks like this:
-     *
-     * ```ts
-     * return 'Rust MIR Viewer';
-     * ```
-     */
-    abstract getDefaultPaneName(): string;
-
-    /**
      * Handle user selected compiler change.
      *
      * This event is triggered when the user selects a different compiler in the
@@ -215,6 +205,16 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.eventHub.on('resize', this.resize.bind(this));
     }
 
+    /**
+     * Produce a default name for the pane. Typical implementation
+     * looks like this:
+     *
+     * ```ts
+     * return 'Rust MIR Viewer';
+     * ```
+     */
+    abstract getDefaultPaneName(): string;
+
     /** Generate "(Editor #1, Compiler #1)" tag */
     protected getPaneTag() {
         const { compilerName, editorId, treeId, compilerId } = this.compilerInfo;
@@ -225,15 +225,14 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         }
     }
 
-    /** A couple panes need unique names for line link events */
-    protected getUniqueName() {
-        return this.getDefaultPaneName() + ' ' + this.getPaneTag();
+    /** Get name for the pane */
+    protected getPaneName() {
+        return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
     }
 
     /** Update the pane's title, called when the pane name or compiler info changes */
     protected updateTitle() {
-        const name = this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(_.escape(this.getPaneName()));
     }
 
     /** Close the pane if the compiler this pane was attached to closes */
