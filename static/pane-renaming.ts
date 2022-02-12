@@ -26,6 +26,7 @@ import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
 import { LoadSave } from './load-save';
+
 const Alert = require('alert').Alert;
 
 export class PaneRenaming {
@@ -36,17 +37,13 @@ export class PaneRenaming {
         this.pane = pane;
         this.alertSystem = alertSystem;
 
-        this.registerCallback2();
+        this.registerCallbacks();
         this.restoreSavedPaneState();
     }
 
-    private restoreSavedPaneState(): void {
-        const saved = LoadSave.getLocalPanes()[this.pane.getPaneName()];
-        this.pane.updateTitle(saved);
-    }
-
-    public registerCallback2(): void {
+    public registerCallbacks(): void {
         this.pane.container.on('tab', this.addRenameButton.bind(this));
+        this.pane.container.on('tab', this.cleanLocalStorage.bind(this));
     }
 
     public static registerCallback(pane: any): void {
@@ -55,6 +52,17 @@ export class PaneRenaming {
             // return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
         };
         pane.container.on('tab', addRenameButton);
+    }
+
+    private restoreSavedPaneState(): void {
+        const saved = LoadSave.getLocalPanes()[this.pane.getPaneName()];
+        this.pane.updateTitle(saved);
+    }
+
+    private cleanLocalStorage(parent: Tab): void {
+        parent.closeElement.on('click', () => {
+            LoadSave.delLocalPane(this.pane.getPaneName());
+        });
     }
 
     private addRenameButton(parent: Tab): void {

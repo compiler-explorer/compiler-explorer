@@ -69,6 +69,12 @@ export class LoadSave {
         local.set('panes', JSON.stringify(panes));
     }
 
+    public static delLocalPane(paneName: string) {
+        const panes = LoadSave.getLocalPanes();
+        delete panes[paneName];
+        local.set('panes', JSON.stringify(panes));
+    }
+
     private async fetchBuiltins(): Promise<Record<string, any>[]> {
         return new Promise<Record<string, any>[]>((resolve) => {
             $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
