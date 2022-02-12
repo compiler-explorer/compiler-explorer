@@ -46,7 +46,8 @@ export class Cfg {
     cfgVisualiser: any;
     compilerId: number;
     _compilerName = '';
-    _editorid: number;
+    _editorid: number | boolean;
+    _treeid: number | boolean;
     _binaryFilter: boolean;
     functionPicker: TomSelect;
     supportsCfg = false;
@@ -128,6 +129,7 @@ export class Cfg {
 
         this.compilerId = state.id;
         this._editorid = state.editorid;
+        this._treeid = state.treeid;
         this._binaryFilter = false;
 
         const pickerEl = this.domRoot.find('.function-picker')[0] as HTMLInputElement;
@@ -279,13 +281,19 @@ export class Cfg {
     }
 
     getPaneName() {
-        return `Graph Viewer ${this._compilerName}` +
-            `(Editor #${this._editorid}, ` +
-            `Compiler #${this.compilerId})`;
+        return 'Graph Viewer';
+    }
+
+    getPaneTag() {
+        if(this._editorid !== false) {
+            return `${this._compilerName} (Editor #${this._editorid}, Compiler #${this.compilerId})`;
+        } else {
+            return `${this._compilerName} (Tree #${this._treeid}, Compiler #${this.compilerId})`;
+        }
     }
 
     updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName();
+        const name = this.paneName ? this.paneName : this.getPaneName() + ' ' + this.getPaneTag();
         this.container.setTitle(_.escape(name));
     }
 
@@ -407,6 +415,7 @@ export class Cfg {
         return {
             id: this.compilerId,
             editorid: this._editorid,
+            treeid: this._treeid,
             selectedFn: this.currentFunc,
             pos: this.cfgVisualiser.getViewPosition(),
             scale: this.cfgVisualiser.getScale(),

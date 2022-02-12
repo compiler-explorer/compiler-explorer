@@ -77,6 +77,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
             compilerId: state.id,
             compilerName: state.compilerName,
             editorId: state.editorid,
+            treeId: state.treeid,
         };
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
@@ -175,7 +176,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
      * @param options
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number): void;
+    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number,
+                        treeId: number): void;
 
     /**
      * Handle compilation result.
@@ -219,8 +221,18 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.eventHub.on('resize', this.resize.bind(this));
     }
 
+    protected getPaneTag() {
+        if(this.compilerInfo.editorId !== false) {
+            return this.compilerInfo.compilerName
+                 + ` (Editor #${this.compilerInfo.editorId}, Compiler #${this.compilerInfo.compilerId})`;
+        } else {
+            return this.compilerInfo.compilerName
+                 + ` (Tree #${this.compilerInfo.treeId}, Compiler #${this.compilerInfo.compilerId})`;
+        }
+    }
+
     protected updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName();
+        const name = this.paneName ? this.paneName : this.getPaneName() + ' ' + this.getPaneTag();
         this.container.setTitle(_.escape(name));
     }
 
@@ -254,6 +266,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         const state = {
             id: this.compilerInfo.compilerId,
             editorId: this.compilerInfo.editorId,
+            treeId: this.compilerInfo.treeId,
             selection: this.selection,
         };
         this.fontScale.addState(state);
