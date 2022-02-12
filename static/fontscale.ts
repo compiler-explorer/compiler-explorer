@@ -31,7 +31,7 @@ import IEditor = editor.IEditor;
 import {FontScaleState} from './fontscale.interfaces';
 
 function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQuery) {
-    function onClickEvent() {
+    function onClickEvent(this: JQuery) {
         // Toggle off the selection of the others
         $(this)
             .addClass('active')

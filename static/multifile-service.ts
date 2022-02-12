@@ -24,11 +24,11 @@
 
 import _ from 'underscore';
 import path from 'path';
+import JSZip from 'jszip';
 const options = require('./options').options;
 const languages = options.languages;
-const JSZip = require('jszip');
 
-export class MultifileFile {
+export interface MultifileFile {
     fileId: number;
     isIncluded: boolean;
     isOpen: boolean;
@@ -39,12 +39,12 @@ export class MultifileFile {
     langId: string;
 }
 
-export class FiledataPair {
+export interface FiledataPair {
     filename: string;
     contents: string;
 }
 
-export class MultifileServiceState {
+export interface MultifileServiceState {
     isCMakeProject: boolean;
     compilerLanguageId: string;
     files: MultifileFile[];
@@ -130,7 +130,6 @@ export class MultifileService {
 
         const zipFilename = path.basename(f.name, '.zip');
         const mainSourcefilename = this.getDefaultMainCMakeFilename();
-
         const zip = await JSZip.loadAsync(f);
 
         zip.forEach(async (relativePath, zipEntry) => {
@@ -145,7 +144,8 @@ export class MultifileService {
                     return;
                 }
 
-                let content = await zip.file(zipEntry.name).async('string');
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                let content = await (zip.file(zipEntry.name)!.async('string'));
                 if (content.length > this.maxFilesize) {
                     return;
                 }
@@ -216,7 +216,7 @@ export class MultifileService {
         this.isCMakeProject = yes;
     }
 
-    private checkFileEditor(file: MultifileFile) {
+    private checkFileEditor(file?: MultifileFile) {
         if (file && file.editorId > 0) {
             const editor = this.hub.getEditorById(file.editorId);
             if (!editor) {
@@ -245,7 +245,7 @@ export class MultifileService {
         return !!found;
     }
 
-    public getFileByFileId(fileId: number) {
+    public getFileByFileId(fileId: number): MultifileFile | undefined {
         const file = _.find(this.files, (file: MultifileFile) => {
             return file.fileId === fileId;
         });
@@ -261,7 +261,9 @@ export class MultifileService {
         }
 
         const mainfile = this.getFileByFileId(mainFileId);
-        mainfile.isMainSource = true;
+        if (mainfile) {
+            mainfile.isMainSource = true;
+        }
     }
 
     private static isValidFile(file: MultifileFile): boolean {
@@ -325,22 +327,22 @@ export class MultifileService {
         }
     }
 
-    public getFileByEditorId(editorId: number): MultifileFile {
+    public getFileByEditorId(editorId: number): MultifileFile | undefined {
         return _.find(this.files, (file: MultifileFile) => {
             return file.editorId === editorId;
         });
     }
 
-    public getEditorIdByFilename(filename: string): number {
-        const file: MultifileFile = _.find(this.files, (file: MultifileFile) => {
+    public getEditorIdByFilename(filename: string): number | null {
+        const file = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && (file.filename === filename);
         });
 
         return (file && file.editorId > 0) ? file.editorId : null;
     }
 
-    public getMainSourceEditorId(): number {
-        const file: MultifileFile = _.find(this.files, (file: MultifileFile) => {
+    public getMainSourceEditorId(): number | null {
+        const file = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -369,41 +371,46 @@ export class MultifileService {
         this.addFile(file);
     }
 
-    public removeFileByFileId(fileId: number): MultifileFile {
-        const file: MultifileFile = this.getFileByFileId(fileId);
-
-        this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== fileId);
-
+    public removeFileByFileId(fileId: number): MultifileFile | undefined {
+        const file = this.getFileByFileId(fileId);
+        if (file) {
+            this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== fileId);
+        }
         return file;
     }
 
     public async excludeByFileId(fileId: number): Promise<void> {
-        const file: MultifileFile = this.getFileByFileId(fileId);
-        file.isIncluded = false;
+        const file = this.getFileByFileId(fileId);
+        if (file) {
+            file.isIncluded = false;
+        }
     }
 
     public async includeByFileId(fileId: number): Promise<void> {
-        const file: MultifileFile = this.getFileByFileId(fileId);
-        file.isIncluded = true;
-
-        if (file.filename === '') {
-            const isRenamed = await this.renameFile(fileId);
-            if (isRenamed) {
-                await this.includeByFileId(fileId);
-            } else {
-                file.isIncluded = false;
-            }
-        } else {
+        const file = this.getFileByFileId(fileId);
+        if (file) {
             file.isIncluded = true;
-        }
 
-        
+            if (file.filename === '') {
+                const isRenamed = await this.renameFile(fileId);
+                if (isRenamed) {
+                    await this.includeByFileId(fileId);
+                } else {
+                    file.isIncluded = false;
+                }
+            } else {
+                file.isIncluded = true;
+            }
+        }
     }
 
     public async includeByEditorId(editorId: number): Promise<void> {
-        const file: MultifileFile = this.getFileByEditorId(editorId);
-
-        return this.includeByFileId(file.fileId);
+        const file = this.getFileByEditorId(editorId);
+        if (file) {
+            return this.includeByFileId(file.fileId);
+        } else {
+            return Promise.reject('File not found');
+        }
     }
 
     public forEachOpenFile(callback: (File) => void) {
@@ -465,6 +472,7 @@ export class MultifileService {
 
     public async renameFile(fileId: number): Promise<boolean> {
         const file = this.getFileByFileId(fileId);
+        if (!file) return Promise.reject('File could not be found');
 
         let editor: any = null;
         if (file.isOpen && file.editorId > 0) {
@@ -507,7 +515,10 @@ export class MultifileService {
 
     public async renameFileByEditorId(editorId: number): Promise<boolean> {
         const file = this.getFileByEditorId(editorId);
-
-        return this.renameFile(file.fileId);
+        if (file) {
+            return this.renameFile(file.fileId);
+        } else {
+            return Promise.reject('File not found');
+        }
     }
 }

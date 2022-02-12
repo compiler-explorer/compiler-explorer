@@ -77,7 +77,7 @@ export class Sharing {
     private shareFull: JQuery;
     private shareEmbed: JQuery;
 
-    private clippyButton: ClipboardJS;
+    private clippyButton: ClipboardJS | null;
 
     constructor(layout: any) {
         this.layout = layout;
@@ -120,7 +120,7 @@ export class Sharing {
         const stringifiedConfig = JSON.stringify(config);
         if (stringifiedConfig !== this.lastState) {
             if (this.lastState != null && window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, null, window.httpRoot);
+                window.history.replaceState(null, '', window.httpRoot);
             }
             this.lastState = stringifiedConfig;
         }
@@ -174,14 +174,17 @@ export class Sharing {
             });
         };
 
-        this.clippyButton = new ClipboardJS(modal.find('button.clippy').get(0));
-        this.clippyButton.on('success', (e) => {
-            this.displayTooltip(permalink, 'Link copied to clipboard');
-            e.clearSelection();
-        });
-        this.clippyButton.on('error', (e) => {
-            this.displayTooltip(permalink, 'Error copying to clipboard');
-        });
+        const clippyElement = modal.find('button.clippy').get(0);
+        if (clippyElement != null) {
+            this.clippyButton = new ClipboardJS(clippyElement);
+            this.clippyButton.on('success', (e) => {
+                this.displayTooltip(permalink, 'Link copied to clipboard');
+                e.clearSelection();
+            });
+            this.clippyButton.on('error', (e) => {
+                this.displayTooltip(permalink, 'Error copying to clipboard');
+            });
+        }
 
         if (currentBind === LinkType.Embed) {
             embedsettings.show();
@@ -359,7 +362,7 @@ export class Sharing {
     }
 
     private static storeCurrentConfig(config: any, extra: string): void {
-        window.history.pushState(null, null, extra);
+        window.history.pushState(null, '', extra);
     }
 
     private static isNavigatorClipboardAvailable(): boolean {

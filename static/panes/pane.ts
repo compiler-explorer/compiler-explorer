@@ -269,8 +269,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
             this.topBar, this.hideable);
         if (!this.editor) return;
         this.editor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight,
+            width: this.domRoot.width() as number,
+            height: this.domRoot.height() as number - topBarHeight,
         });
     }
 }

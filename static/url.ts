@@ -33,7 +33,8 @@ const Components = require('./components');
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
     if (!sc) throw new Error('Unable to determine compiler from old state');
-    const content = [];
+    // TODO: Restrict type once Components has been tsfied
+    const content: any[] = [];
     let source;
     if (sc.sourcez) {
         source = lzstring.decompressFromBase64(sc.sourcez);
