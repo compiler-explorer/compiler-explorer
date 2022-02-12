@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
+import { pluck } from 'underscore';
 import { ga } from './analytics';
 import { sortedList, HistoryEntry, EditorSource } from './history';
 import { editor } from 'monaco-editor';
@@ -36,18 +36,18 @@ export class HistoryDiffState {
 
     constructor(model: ITextModel) {
         this.model = model;
-        this.result = null;
+        this.result = [];
     }
 
     update(result: HistoryEntry) {
-        this.result = result.sources;
+        this.result = result.sources ?? [];
         this.refresh();
 
         return true;
     }
 
     private refresh() {
-        const output = this.result || [];
+        const output = this.result;
         const content = output
             .map(val => `/****** ${val.lang} ******/\n${val.source}`)
             .join('\n');
@@ -89,7 +89,7 @@ export class HistoryWidget {
                 minimap: {
                     enabled: true,
                 },
-            });
+            }) ;
 
             this.lhs = new HistoryDiffState(editor.createModel('', 'c++'));
             this.rhs = new HistoryDiffState(editor.createModel('', 'c++'));
@@ -97,7 +97,7 @@ export class HistoryWidget {
 
             this.modal.find('.inline-diff-checkbox').on('click', (event) => {
                 const inline = $(event.target).prop('checked');
-                this.diffEditor.updateOptions({
+                this.diffEditor?.updateOptions({
                     renderSideBySide: !inline,
                 });
                 this.resizeLayout();
@@ -106,13 +106,14 @@ export class HistoryWidget {
     }
 
     private static getLanguagesFromHistoryEntry(entry: HistoryEntry) {
-        return _.pluck(entry.sources, 'lang');
+        return pluck(entry.sources, 'lang');
     }
 
     private populateFromLocalStorage() {
         this.currentList = sortedList();
         this.populate(
-            this.modal.find('.historiccode'),
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            this.modal!.find('.historiccode'),
             this.currentList.map((data): Entry => {
                 const dt = new Date(data.dt).toString();
                 const languages = HistoryWidget.getLanguagesFromHistoryEntry(data).join(', ');
@@ -121,7 +122,7 @@ export class HistoryWidget {
                     name: `${dt.replace(/\s\(.*\)/, '')} (${languages})`,
                     load: () => {
                         this.onLoad(data);
-                        this.modal.modal('hide');
+                        this.modal?.modal('hide');
                     },
                 };
             })
@@ -129,7 +130,8 @@ export class HistoryWidget {
     }
 
     private hideRadiosAndSetDiff() {
-        const root = this.modal.find('.historiccode');
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const root = this.modal!.find('.historiccode');
         const items = root.find('li:not(.template)');
 
         let foundbase = false;
@@ -150,14 +152,18 @@ export class HistoryWidget {
                 baseShouldBeVisible = false;
 
                 const itemRight = this.currentList.find((item) => item.dt === dt);
-
-                this.rhs.update(itemRight);
+                if (itemRight) {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    this.rhs!.update(itemRight);
+                }
             } else if (base.prop('checked')) {
                 foundbase = true;
 
                 const itemLeft = this.currentList.find((item) => item.dt === dt);
-
-                this.lhs.update(itemLeft);
+                if (itemLeft) {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                    this.lhs!.update(itemLeft);
+                }
             }
 
             if (foundbase && foundcomp) {
@@ -218,10 +224,11 @@ export class HistoryWidget {
     }
 
     private resizeLayout() {
-        const tabcontent = this.modal.find('div.tab-content');
-        this.diffEditor.layout({
-            width: tabcontent.width(),
-            height: tabcontent.height() - 20,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const tabcontent = this.modal!.find('div.tab-content');
+        this.diffEditor?.layout({
+            width: tabcontent.width() as number,
+            height: tabcontent?.height() as number - 20,
         });
     }
 
@@ -234,9 +241,11 @@ export class HistoryWidget {
         this.populateFromLocalStorage();
         this.onLoadCallback = onLoad;
 
-        this.modal.on('shown.bs.modal', () => this.resizeLayout());
-
-        this.modal.modal();
+        // It can't tell that we initialize modal on initializeIfNeeded, so it sticks to the possibility of it being null
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.modal!.on('shown.bs.modal', () => this.resizeLayout());
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        this.modal!.modal();
 
         ga.proxy('send', {
             hitType: 'event',

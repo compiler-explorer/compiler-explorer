@@ -31,6 +31,16 @@ import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
 import { PaneRenaming } from '../pane-renaming';
 
+interface NodeInfo {
+    edges: string[],
+    dagEdges: number[],
+    index: string,
+    id: number,
+    level: number,
+    state: number,
+    inCount: number,
+}
+
 export class Cfg {
     container: Container;
     eventHub: any;
@@ -272,7 +282,7 @@ export class Cfg {
 
     resize() {
         if (this.cfgVisualiser.canvas) {
-            const height = this.domRoot.height() - this.topBar.outerHeight(true);
+            const height = this.domRoot.height() as number - (this.topBar.outerHeight(true) ?? 0);
             this.cfgVisualiser.setSize('100%', height.toString());
             this.cfgVisualiser.redraw();
         }
@@ -290,8 +300,8 @@ export class Cfg {
     }
 
     assignLevels(data: any) {
-        const nodes = [];
-        const idToIdx = [];
+        const nodes: NodeInfo[] = [];
+        const idToIdx: string[] = [];
         for (const i in data.nodes) {
             const node = data.nodes[i];
             idToIdx[node.id] = i;

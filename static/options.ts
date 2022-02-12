@@ -23,11 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 const configElement = document.getElementById('config');
+if (!configElement) {
+    throw new Error('Could not find config element in DOM tree');
+}
 
-window.httpRoot = configElement.getAttribute('httpRoot');
-window.staticRoot = configElement.getAttribute('staticRoot');
+// httpRoot & staticRoot are always a string and always set.
+window.httpRoot = configElement.getAttribute('httpRoot') as string;
+window.staticRoot = configElement.getAttribute('staticRoot') as string;
 
-const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions')));
+const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions') ?? '"%7B%7D"')); // Encoded {}
 for (const key in extraOptions) {
     window.compilerExplorerOptions[key] = extraOptions[key];
 }
