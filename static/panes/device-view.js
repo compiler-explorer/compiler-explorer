@@ -80,6 +80,8 @@ function DeviceAsm(hub, container, state) {
         plugins: ['input_autogrow'],
     });
 
+    new PaneRenaming(this);
+
     this.initButtons(state);
     this.initCallbacks();
     this.initEditorActions();
@@ -87,7 +89,6 @@ function DeviceAsm(hub, container, state) {
     if (state && state.irOutput) {
         this.showDeviceAsmResults(state.irOutput);
     }
-    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',

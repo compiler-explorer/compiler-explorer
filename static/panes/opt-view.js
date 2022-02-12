@@ -61,13 +61,14 @@ function Opt(hub, container, state) {
 
     this.isCompilerSupported = false;
 
+    new PaneRenaming(this);
+
     this.initButtons(state);
     this.initCallbacks();
 
     if (state && state.optOutput) {
         this.showOptResults(state.optOutput);
     }
-    this.updateTitle();
     this.eventHub.emit('optViewOpened', this._compilerid);
     ga.proxy('send', {
         hitType: 'event',

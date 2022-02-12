@@ -126,6 +126,8 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
+        new PaneRenaming(this);
+
         this.initInputs(state);
         this.initButtons(state);
         this.initCallbacks();

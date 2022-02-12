@@ -103,6 +103,8 @@ function Executor(hub, container, state) {
         this.compilerIsVisible
     );
 
+    new PaneRenaming(this);
+
     this.initLibraries(state);
     this.initCallbacks();
     // Handle initial settings

@@ -63,10 +63,11 @@ function Flags(hub, container, state) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
+    new PaneRenaming(this);
+
     this.initButtons(state);
     this.initCallbacks();
 
-    this.updateTitle();
     this.onSettingsChange(this.settings);
     this.eventHub.emit('flagsViewOpened', this._compilerid);
     ga.proxy('send', {

@@ -29,16 +29,19 @@ import { LoadSave } from './load-save';
 
 const Alert = require('alert').Alert;
 
+// TODO: Does not quite work for: diff.js, gccdump-view, output.js, pp-view.ts,
+//                                         tool-input-view.js, tool.js
+
 export class PaneRenaming {
     private pane: any;
     private alertSystem: any;
 
-    constructor(pane: any, alertSystem: any) {
+    constructor(pane: any) {
         this.pane = pane;
-        this.alertSystem = alertSystem;
+        this.alertSystem = new Alert();
 
-        this.registerCallbacks();
         this.restoreSavedPaneState();
+        this.registerCallbacks();
     }
 
     public registerCallbacks(): void {
@@ -56,7 +59,8 @@ export class PaneRenaming {
 
     private restoreSavedPaneState(): void {
         const saved = LoadSave.getLocalPanes()[this.pane.getPaneName()];
-        this.pane.updateTitle(saved);
+        this.pane.paneName = saved;
+        this.pane.updateTitle();
     }
 
     private cleanLocalStorage(parent: Tab): void {
@@ -76,7 +80,8 @@ export class PaneRenaming {
             this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', this.pane.getPaneName(), {
                 yes: (value: string) => {
                     // Update title and save to local storage
-                    this.pane.updateTitle(value);
+                    this.pane.paneName = value;
+                    this.pane.updateTitle();
                     LoadSave.setLocalPane(this.pane.getPaneName(), value);
                 },
                 no: () => {

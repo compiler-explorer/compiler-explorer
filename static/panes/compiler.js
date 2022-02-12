@@ -2162,8 +2162,8 @@ Compiler.prototype.getPaneName = function () {
     }
 };
 
-Compiler.prototype.updateTitle = function (newName) {
-    var name = newName ? newName : this.getPaneName();
+Compiler.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
     this.container.setTitle(_.escape(name));
 };
 

@@ -81,6 +81,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
 
+        new PaneRenaming(this);
+
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();

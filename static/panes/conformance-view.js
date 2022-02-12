@@ -58,6 +58,8 @@ function Conformance(hub, container, state) {
     };
     this.stateByLang = {};
 
+    new PaneRenaming(this);
+
     this.initButtons();
     this.initCallbacks();
     this.initFromState(state);
@@ -133,7 +135,6 @@ Conformance.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);

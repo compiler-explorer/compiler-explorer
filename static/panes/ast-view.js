@@ -61,13 +61,15 @@ function Ast(hub, container, state) {
     this.colours = [];
     this.astCode = [];
 
+    new PaneRenaming(this);
+
     this.initButtons(state);
     this.initCallbacks();
 
     if (state && state.astOutput) {
         this.showAstResults(state.astOutput);
     }
-    this.updateTitle();
+    // this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
