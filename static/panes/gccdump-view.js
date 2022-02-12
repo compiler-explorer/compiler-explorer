@@ -329,10 +329,12 @@ GccDump.prototype.getDefaultPaneName = function () {
 };
 
 GccDump.prototype.getPaneTag = function () {
-    if(this._editorid !== false) {
-        return this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    if(this.state._editorid !== false) {
+        return this._compilerName
+                + ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
     } else {
-        return this._compilerName + ' (Tree #' + this._treeid + ', Compiler #' + this._compilerid + ')';
+        return this._compilerName
+                + ' (Tree #' + this.state._treeid + ', Compiler #' + this.state._compilerid + ')';
     }
 };
 
