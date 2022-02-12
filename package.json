@@ -89,7 +89,9 @@
   "devDependencies": {
     "@babel/preset-typescript": "^7.16.5",
     "@types/bootstrap": "^5.1.6",
+    "@types/fs-extra": "^9.0.13",
     "@types/jquery": "^3.5.10",
+    "@types/shell-quote": "^1.7.1",
     "@types/underscore": "^1.11.4",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
     "@typescript-eslint/parser": "^5.8.0",

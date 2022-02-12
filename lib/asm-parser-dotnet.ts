@@ -98,8 +98,8 @@ export class DotNetAsmParser {
         };
     }
 
-    cleanAsm(asmLines: string[]) {
-        const cleanedAsm = [];
+    cleanAsm(asmLines: string[]): string[] {
+        const cleanedAsm: string[] = [];
 
         for (const line of asmLines) {
             if (!line) continue;

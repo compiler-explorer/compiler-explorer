@@ -115,7 +115,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.customCwd = programDir;
         await fs.writeFile(projectFilePath, projectFileContent);
 
-        let crossgen2Options = [];
+        const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
 
         for (const configurableOption of configurableOptions) {
@@ -123,7 +123,7 @@ class DotNetCompiler extends BaseCompiler {
             if (optionIndex === -1 || optionIndex === options.length - 1) {
                 continue;
             }
-            crossgen2Options = crossgen2Options.concat([options[optionIndex], options[optionIndex + 1]]);
+            crossgen2Options.push(options[optionIndex], options[optionIndex + 1]);
         }
 
         const configurableSwitches = this.configurableSwitches;
