@@ -34,7 +34,6 @@ import * as monacoConfig from '../monaco-config';
 import { PPViewState } from './pp-view.interfaces';
 import { Container } from 'golden-layout';
 import { BasePaneState } from './pane.interfaces';
-import { PaneRenaming } from '../pane-renaming';
 
 export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
@@ -176,6 +175,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
             'filter-headers': options['filter-headers'],
             'clang-format': options['clang-format'],
         };
+        this.paneRenaming.addState(state);
         this.fontScale.addState(state);
         return state;
     }

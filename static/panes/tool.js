@@ -95,7 +95,7 @@ function Tool(hub, container, state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
-    new PaneRenaming(this, state.toolId + state.compiler + state.editor);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initArgs(state);
     this.initCallbacks();
@@ -116,6 +116,8 @@ Tool.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
+
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -365,6 +367,7 @@ Tool.prototype.currentState = function () {
         monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
         argsPanelShow: !this.panelArgs.hasClass('d-none'),
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

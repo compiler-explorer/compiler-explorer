@@ -58,7 +58,7 @@ function Conformance(hub, container, state) {
     };
     this.stateByLang = {};
 
-    new PaneRenaming(this, state.componentName + state.editorid);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons();
     this.initCallbacks();
@@ -127,6 +127,8 @@ Conformance.prototype.initCallbacks = function () {
         this.eventHub.unsubscribe();
         this.eventHub.emit('conformanceViewClose', this.editorId);
     }, this);
+
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('open', function () {
@@ -387,12 +389,14 @@ Conformance.prototype.currentState = function () {
             options: compilerEntry.optionsField.val() || '',
         };
     });
-    return {
+    var state = {
         editorid: this.editorId,
         langId: this.langId,
         compilers: compilers,
         libs: this.currentLibs,
     };
+    this.paneRenaming.addState(state);
+    return state;
 };
 
 Conformance.prototype.saveState = function () {

@@ -63,7 +63,7 @@ function Flags(hub, container, state) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
-    new PaneRenaming(this, state.componentName + this._compilerid);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -85,6 +85,7 @@ Flags.prototype.initButtons = function (state) {
 
 Flags.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.eventHub.on('compiler', this.onCompiler, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -149,6 +150,7 @@ Flags.prototype.currentState = function () {
         selection: this.selection,
         compilerFlags: this.getOptions(),
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

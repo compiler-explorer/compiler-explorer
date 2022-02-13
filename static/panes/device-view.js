@@ -80,7 +80,7 @@ function DeviceAsm(hub, container, state) {
         plugins: ['input_autogrow'],
     });
 
-    new PaneRenaming(this, state.componentName + this._compilerId + state.editor);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -140,6 +140,7 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.fontScale.on('change', _.bind(this.updateState, this));
     this.selectize.on('change', _.bind(this.onDeviceSelect, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.container.on('destroy', this.close, this);
 
@@ -294,6 +295,7 @@ DeviceAsm.prototype.currentState = function () {
         selection: this.selection,
         device: this.selectedDevice,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

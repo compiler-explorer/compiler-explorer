@@ -103,7 +103,7 @@ function Executor(hub, container, state) {
         this.compilerIsVisible
     );
 
-    new PaneRenaming(this, state.componentName + state.source);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -701,6 +701,7 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
     this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
@@ -912,6 +913,7 @@ Executor.prototype.currentState = function () {
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
         wrap: this.toggleWrapButton.get().wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

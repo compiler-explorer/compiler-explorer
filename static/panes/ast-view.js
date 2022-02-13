@@ -61,7 +61,7 @@ function Ast(hub, container, state) {
     this.colours = [];
     this.astCode = [];
 
-    new PaneRenaming(this, state.componentName + this._compilerid +  this._editorid);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -91,6 +91,7 @@ Ast.prototype.initCallbacks = function () {
     }, this));
 
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.container.on('destroy', this.close, this);
 
@@ -225,6 +226,7 @@ Ast.prototype.currentState = function () {
         editorid: this._editorid,
         selection: this.selection,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

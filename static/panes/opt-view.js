@@ -61,7 +61,7 @@ function Opt(hub, container, state) {
 
     this.isCompilerSupported = false;
 
-    new PaneRenaming(this, state.componentName + this._compilerid + this._editorid);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -85,6 +85,7 @@ Opt.prototype.initButtons = function (state) {
 
 Opt.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
@@ -212,6 +213,7 @@ Opt.prototype.currentState = function () {
         editorid: this._editorid,
         selection: this.selection,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

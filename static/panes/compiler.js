@@ -127,7 +127,7 @@ function Compiler(hub, container, state) {
 
     this.revealJumpStack = [];
 
-    new PaneRenaming(this, state.componentName + this.id + state.source);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
 
@@ -1855,6 +1855,7 @@ Compiler.prototype.onFontScale = function () {
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
@@ -2107,6 +2108,7 @@ Compiler.prototype.currentState = function () {
         selection: this.selection,
         flagsViewOpen: this.flagsViewOpen,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

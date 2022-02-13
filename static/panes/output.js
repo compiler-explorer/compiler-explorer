@@ -60,7 +60,7 @@ function Output(hub, container, state) {
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
-    new PaneRenaming(this, state.componentName + this.editorId + this.compilerId);
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons();
     this.initCallbacks(state);
@@ -76,6 +76,8 @@ function Output(hub, container, state) {
 Output.prototype.initCallbacks = function (state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
+
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
@@ -116,6 +118,7 @@ Output.prototype.currentState = function () {
         tree: this.treeId,
         wrap: options.wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

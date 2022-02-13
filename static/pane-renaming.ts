@@ -25,38 +25,36 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
-import { LoadSave } from './load-save';
+import { EventEmitter } from 'events';
 
 const Alert = require('alert').Alert;
 
-// TODO: Does not quite work for: tool-input-view.js
-
-export class PaneRenaming {
+export class PaneRenaming extends EventEmitter.EventEmitter{
     private pane: any;
     private alertSystem: any;
-    private key: string;
+    private state: any;
 
-    constructor(pane: any, key?: string) {
+    constructor(pane: any, state: any) {
+        super();
         this.pane = pane;
         this.alertSystem = new Alert();
-        this.key = key ?? this.pane.getPaneName();
+        this.state = state;
 
-        this.restoreSavedPaneState();
+        this.loadSavedPaneName();
         this.registerCallbacks();
+    }
+
+    public addState(state: any) {
+        state.paneName = this.pane.paneName;
+    }
+
+    private loadSavedPaneName() {
+        this.pane.paneName = this.state.paneName;
+        this.pane.updateTitle();
     }
 
     private registerCallbacks(): void {
         this.pane.container.on('tab', this.addRenameButton.bind(this));
-        this.pane.container.on('destroy', this.cleanLocalStorage.bind(this));
-    }
-
-    private restoreSavedPaneState(): void {
-        this.pane.paneName = LoadSave.getLocalPanes()[this.key];
-        this.pane.updateTitle();
-    }
-
-    private cleanLocalStorage(parent: Tab): void {
-        LoadSave.delLocalPane(this.key);
     }
 
     private addRenameButton(parent: Tab): void {
@@ -69,10 +67,10 @@ export class PaneRenaming {
         btn.on('click', () => {
             this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', this.pane.getPaneName(), {
                 yes: (value: string) => {
-                    // Update title and save to local storage
+                    // Update title and emit event to save it into the state
                     this.pane.paneName = value;
                     this.pane.updateTitle();
-                    LoadSave.setLocalPane(this.key, value);
+                    this.emit('renamePane');
                 },
                 no: () => {
                     this.alertSystem.resolve(false);

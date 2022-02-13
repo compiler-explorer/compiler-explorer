@@ -69,6 +69,7 @@ export class Cfg {
     togglePhysicsTitle: string;
     topBar: JQuery;
     paneName: string;
+    paneRenaming: PaneRenaming;
 
     constructor(hub: any, container: Container, state: CfgState) {
         this.container = container;
@@ -169,7 +170,7 @@ export class Cfg {
             // that forces to pass the whole options object. This is a workaround to make it type check
         );
 
-        new PaneRenaming(this, this._componentName + this.compilerId + this._editorid);
+        this.paneRenaming = new PaneRenaming(this, state);
 
         this.initCallbacks();
         this.updateButtons();
@@ -240,6 +241,8 @@ export class Cfg {
     initCallbacks() {
         this.cfgVisualiser.on('dragEnd', this.saveState.bind(this));
         this.cfgVisualiser.on('zoom', this.saveState.bind(this));
+
+        this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -417,7 +420,7 @@ export class Cfg {
     }
 
     currentState(): CfgState {
-        return {
+        const state = {
             id: this.compilerId,
             editorid: this._editorid,
             selectedFn: this.currentFunc,
@@ -426,6 +429,8 @@ export class Cfg {
             options: this.getEffectiveOptions(),
             componentName: this._componentName,
         };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     adaptStructure(names: string[]) {
