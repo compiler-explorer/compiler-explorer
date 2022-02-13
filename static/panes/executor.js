@@ -103,7 +103,7 @@ function Executor(hub, container, state) {
         this.compilerIsVisible
     );
 
-    new PaneRenaming(this);
+    new PaneRenaming(this, state.componentName + state.source);
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -709,7 +709,6 @@ Executor.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
     }, this);
-    PaneRenaming.registerCallback(this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);

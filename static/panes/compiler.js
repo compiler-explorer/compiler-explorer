@@ -127,8 +127,7 @@ function Compiler(hub, container, state) {
 
     this.revealJumpStack = [];
 
-    this.alertSystem = new Alert();
-    this.paneRenaming = new PaneRenaming(this, this.alertSystem);
+    new PaneRenaming(this, state.componentName + this.id + state.source);
 
     this.initButtons(state);
 

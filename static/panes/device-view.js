@@ -80,7 +80,7 @@ function DeviceAsm(hub, container, state) {
         plugins: ['input_autogrow'],
     });
 
-    new PaneRenaming(this);
+    new PaneRenaming(this, state.componentName + this._compilerId + state.editor);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -154,7 +154,6 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 };
 
 // TODO: de-dupe with compiler etc

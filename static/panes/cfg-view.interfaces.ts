@@ -32,4 +32,5 @@ export interface CfgState {
         physics?: boolean;
         navigation?: boolean;
     }
+    componentName: string;
 }

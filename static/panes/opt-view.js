@@ -61,7 +61,7 @@ function Opt(hub, container, state) {
 
     this.isCompilerSupported = false;
 
-    new PaneRenaming(this);
+    new PaneRenaming(this, state.componentName + this._compilerid + this._editorid);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -97,7 +97,6 @@ Opt.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);

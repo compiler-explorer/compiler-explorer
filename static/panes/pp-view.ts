@@ -34,6 +34,7 @@ import * as monacoConfig from '../monaco-config';
 import { PPViewState } from './pp-view.interfaces';
 import { Container } from 'golden-layout';
 import { BasePaneState } from './pane.interfaces';
+import { PaneRenaming } from '../pane-renaming';
 
 export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
@@ -125,7 +126,8 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     override updateTitle() {
-        this.container.setTitle(this.getPaneName());
+        const name = this.paneName ?? this.getPaneName();
+        this.container.setTitle(_.escape(name));
     }
 
     showPpResults(results) {

@@ -76,6 +76,8 @@ function GccDump(hub, container, state) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
+    new PaneRenaming(this, state.componentName + this.state._compilerid + this.state._editorid);
+
     this.initCallbacks();
 
     if (state && state.selectedPass) {
@@ -109,7 +111,6 @@ function GccDump(hub, container, state) {
 
     this.updateButtons();
     this.saveState();
-    this.updateTitle();
 
     // UI is ready, request compilation to get passes list and
     // current output (if any)
@@ -187,7 +188,6 @@ GccDump.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);

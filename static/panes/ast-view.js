@@ -61,7 +61,7 @@ function Ast(hub, container, state) {
     this.colours = [];
     this.astCode = [];
 
-    new PaneRenaming(this);
+    new PaneRenaming(this, state.componentName + this._compilerid +  this._editorid);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -69,7 +69,6 @@ function Ast(hub, container, state) {
     if (state && state.astOutput) {
         this.showAstResults(state.astOutput);
     }
-    // this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -108,7 +107,6 @@ Ast.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);

@@ -63,7 +63,7 @@ function Flags(hub, container, state) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
-    new PaneRenaming(this);
+    new PaneRenaming(this, state.componentName + this._compilerid);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -96,7 +96,6 @@ Flags.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.

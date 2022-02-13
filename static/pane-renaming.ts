@@ -29,44 +29,34 @@ import { LoadSave } from './load-save';
 
 const Alert = require('alert').Alert;
 
-// TODO: Does not quite work for: diff.js, gccdump-view, output.js, pp-view.ts,
-//                                         tool-input-view.js, tool.js
+// TODO: Does not quite work for: tool-input-view.js
 
 export class PaneRenaming {
     private pane: any;
     private alertSystem: any;
+    private key: string;
 
-    constructor(pane: any) {
+    constructor(pane: any, key?: string) {
         this.pane = pane;
         this.alertSystem = new Alert();
+        this.key = key ?? this.pane.getPaneName();
 
         this.restoreSavedPaneState();
         this.registerCallbacks();
     }
 
-    public registerCallbacks(): void {
+    private registerCallbacks(): void {
         this.pane.container.on('tab', this.addRenameButton.bind(this));
-        this.pane.container.on('tab', this.cleanLocalStorage.bind(this));
-    }
-
-    public static registerCallback(pane: any): void {
-        const alertSystem = new Alert();
-        const addRenameButton =  (parentTab: Tab) => {
-            // return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
-        };
-        pane.container.on('tab', addRenameButton);
+        this.pane.container.on('destroy', this.cleanLocalStorage.bind(this));
     }
 
     private restoreSavedPaneState(): void {
-        const saved = LoadSave.getLocalPanes()[this.pane.getPaneName()];
-        this.pane.paneName = saved;
+        this.pane.paneName = LoadSave.getLocalPanes()[this.key];
         this.pane.updateTitle();
     }
 
     private cleanLocalStorage(parent: Tab): void {
-        parent.closeElement.on('click', () => {
-            LoadSave.delLocalPane(this.pane.getPaneName());
-        });
+        LoadSave.delLocalPane(this.key);
     }
 
     private addRenameButton(parent: Tab): void {
@@ -82,7 +72,7 @@ export class PaneRenaming {
                     // Update title and save to local storage
                     this.pane.paneName = value;
                     this.pane.updateTitle();
-                    LoadSave.setLocalPane(this.pane.getPaneName(), value);
+                    LoadSave.setLocalPane(this.key, value);
                 },
                 no: () => {
                     this.alertSystem.resolve(false);

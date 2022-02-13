@@ -58,7 +58,7 @@ function Conformance(hub, container, state) {
     };
     this.stateByLang = {};
 
-    new PaneRenaming(this);
+    new PaneRenaming(this, state.componentName + state.editorid);
 
     this.initButtons();
     this.initCallbacks();

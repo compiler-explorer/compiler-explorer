@@ -113,7 +113,6 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
-        PaneRenaming.registerCallback(this);
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {

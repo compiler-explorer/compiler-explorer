@@ -60,11 +60,12 @@ function Output(hub, container, state) {
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
+    new PaneRenaming(this, state.componentName + this.editorId + this.compilerId);
+
     this.initButtons();
     this.initCallbacks(state);
 
     this.onOptionsChange();
-    this.updateTitle();
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -79,7 +80,6 @@ Output.prototype.initCallbacks = function (state) {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
-    PaneRenaming.registerCallback(this);
 
     this.eventHub.on('compiling', this.onCompiling, this);
     this.eventHub.on('compileResult', this.onCompileResult, this);

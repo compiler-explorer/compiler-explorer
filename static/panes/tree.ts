@@ -43,6 +43,7 @@ export interface TreeState extends MultifileServiceState {
     id: number;
     cmakeArgs: string;
     customOutputFilename: string;
+    componentName: string;
 }
 
 export class Tree {
@@ -73,6 +74,7 @@ export class Tree {
     private hideable: any;
     private readonly topBar: any;
     private paneName: string;
+    private componentName: string;
 
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
@@ -117,6 +119,7 @@ export class Tree {
                 isCMakeProject: false,
                 files: [],
                 newFileId: 1,
+                componentName: this.componentName,
             };
         }
 
@@ -126,7 +129,8 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
-        new PaneRenaming(this);
+        this.componentName = state.componentName;
+        new PaneRenaming(this, this.componentName + this.id);
 
         this.initInputs(state);
         this.initButtons(state);
@@ -145,7 +149,6 @@ export class Tree {
             onChange: this.onLanguageChange.bind(this),
         });
 
-        this.updateTitle();
         this.onLanguageChange(this.multifileService.getLanguageId());
 
         ga.proxy('send', {
@@ -184,6 +187,7 @@ export class Tree {
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
             ...this.multifileService.getState(),
+            componentName: this.componentName,
         };
     }
 
@@ -201,7 +205,6 @@ export class Tree {
             this.eventHub.emit('treeOpen', this.id);
         });
         this.container.on('destroy', this.close, this);
-        PaneRenaming.registerCallback(this);
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);

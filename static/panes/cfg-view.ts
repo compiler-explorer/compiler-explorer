@@ -59,6 +59,7 @@ export class Cfg {
     _compilerName = '';
     _editorid: number;
     _binaryFilter: boolean;
+    _componentName: string;
     functionPicker: TomSelect;
     supportsCfg = false;
     toggles: Toggles;
@@ -140,6 +141,7 @@ export class Cfg {
         this.compilerId = state.id;
         this._editorid = state.editorid;
         this._binaryFilter = false;
+        this._componentName = state.componentName;
 
         const pickerEl = this.domRoot.find('.function-picker')[0] as HTMLInputElement;
         this.functionPicker = new TomSelect(pickerEl, {
@@ -167,7 +169,7 @@ export class Cfg {
             // that forces to pass the whole options object. This is a workaround to make it type check
         );
 
-        new PaneRenaming(this);
+        new PaneRenaming(this, this._componentName + this.compilerId + this._editorid);
 
         this.initCallbacks();
         this.updateButtons();
@@ -247,7 +249,6 @@ export class Cfg {
         this.container.on('destroy', this.close, this);
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
-        PaneRenaming.registerCallback(this);
         this.eventHub.emit('cfgViewOpened', this.compilerId);
         this.eventHub.emit('requestFilters', this.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerId);
@@ -423,6 +424,7 @@ export class Cfg {
             pos: this.cfgVisualiser.getViewPosition(),
             scale: this.cfgVisualiser.getScale(),
             options: this.getEffectiveOptions(),
+            componentName: this._componentName,
         };
     }
 

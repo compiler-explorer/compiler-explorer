@@ -42,5 +42,6 @@ export interface BasePaneState {
     id: number;
     compilerName: string;
     editorid: number;
+    componentName: string;
 }
 

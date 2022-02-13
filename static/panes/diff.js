@@ -217,6 +217,7 @@ function Diff(hub, container, state) {
         }
     }, this));
 
+    new PaneRenaming(this, state.componentName + state.lhs + state.lhsdifftype + state.rhs + state.rhsdifftype);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -289,7 +290,6 @@ Diff.prototype.initCallbacks = function () {
     }, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.requestResendResult(this.lhs.id);
     this.requestResendResult(this.rhs.id);

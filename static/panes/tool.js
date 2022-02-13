@@ -95,11 +95,12 @@ function Tool(hub, container, state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
+    new PaneRenaming(this, state.toolId + state.compiler + state.editor);
+
     this.initArgs(state);
     this.initCallbacks();
 
     this.onOptionsChange();
-    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -115,7 +116,6 @@ Tool.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
-    PaneRenaming.registerCallback(this);
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);

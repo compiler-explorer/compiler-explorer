@@ -81,13 +81,12 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
 
-        new PaneRenaming(this);
+        new PaneRenaming(this, state.componentName + this.compilerInfo.compilerId + this.compilerInfo.editorId);
 
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerEditorActions();
-        this.updateTitle();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -212,7 +211,6 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.fontScale.on('change', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
-        PaneRenaming.registerCallback(this);
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
         this.eventHub.on('compiler', this.onCompiler.bind(this));
         this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
