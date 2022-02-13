@@ -30,6 +30,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 
@@ -66,7 +67,7 @@ function Opt(hub, container, state) {
     if (state && state.optOutput) {
         this.showOptResults(state.optOutput);
     }
-    this.setTitle();
+    this.updateTitle();
     this.eventHub.emit('optViewOpened', this._compilerid);
     ga.proxy('send', {
         hitType: 'event',
@@ -95,6 +96,7 @@ Opt.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
+    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
@@ -133,8 +135,9 @@ Opt.prototype.getPaneName = function () {
     return 'Opt Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
 };
 
-Opt.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+Opt.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -183,7 +186,7 @@ Opt.prototype.showOptResults = function (results) {
 Opt.prototype.onCompiler = function (id, compiler) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
-        this.setTitle();
+        this.updateTitle();
         this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
         if (!this.isCompilerSupported) {
             this.optEditor.setValue('<OPT output is not supported for this compiler>');

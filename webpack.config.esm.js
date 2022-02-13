@@ -30,7 +30,7 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
@@ -47,7 +47,7 @@ const webjackJsHack = '.v5.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 
-            'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb'],
+            'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb', 'dart'],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new ProvidePlugin({
@@ -60,6 +60,9 @@ const plugins = [
     new WebpackManifestPlugin({
         fileName: path.join(distPath, 'manifest.json'),
         publicPath: '',
+    }),
+    new DefinePlugin({
+        'window.PRODUCTION': JSON.stringify(!isDev),
     }),
 ];
 

@@ -72,7 +72,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     override registerButtons(state: PPViewState & BasePaneState): void {
-        this.options = new Toggles(this.domRoot.find('.options'), state);
+        this.options = new Toggles(this.domRoot.find('.options'), ((state as unknown) as Record<string, boolean>));
         this.options.on('change', this.onOptionsChange.bind(this));
     }
 
@@ -123,7 +123,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
             ' (Editor #' + this.compilerInfo.editorId + ', Compiler #' + this.compilerInfo.compilerId + ')';
     }
 
-    override setTitle() {
+    override updateTitle() {
         this.container.setTitle(this.getPaneName());
     }
 
@@ -157,7 +157,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;
-            this.setTitle();
+            this.updateTitle();
             if (compiler && !compiler.supportsPpView) {
                 this.editor.setValue('<Preprocessor output is not supported for this compiler>');
             }

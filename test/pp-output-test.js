@@ -26,6 +26,7 @@ import * as fs from 'fs';
 
 import { BaseCompiler } from '../lib/base-compiler';
 import * as properties from '../lib/properties';
+
 import * as filterTests from './pp-output-cases/filter-tests';
 
 //const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {

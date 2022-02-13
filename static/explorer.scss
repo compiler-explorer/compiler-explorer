@@ -264,6 +264,18 @@ pre.content.wrap * {
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
 }
 
+#enter-something .modal-body {
+    min-height: 90px;
+}
+
+#enter-something .modal-body .question {
+    margin-bottom: 5px;
+}
+
+#enter-something .modal-body .question-answer {
+    width: 300px;
+}
+
 .modal-content .well {
     border: 1px solid;
     border-radius: 3px;

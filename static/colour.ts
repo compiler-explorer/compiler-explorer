@@ -23,8 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
+import { Themes } from './themes';
 
-export type AppTheme = 'default' | 'dark' | 'all';
+export type AppTheme = Themes | 'all';
 
 interface ColourScheme {
     name: string;
