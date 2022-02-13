@@ -47,7 +47,6 @@ def process_file(file: str):
                         listed_groups.add(elem_id[1:])
                     elif '@' not in elem_id:
                         listed_compilers.add(elem_id)
-                continue
             match_group = GROUP_NAME_RE.match(line)
             if match_group:
                 seen_groups.add(match_group.group(1))
