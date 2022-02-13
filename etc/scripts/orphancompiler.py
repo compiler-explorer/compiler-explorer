@@ -22,14 +22,16 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-
+import sys
 from os import listdir
 from os.path import isfile, join
 import re
 
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
+ALIAS_LIST_RE = re.compile(r'compiler.\.*?\.alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
 COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe')
+DISABLED_RE = re.compile(r'^# Disabled:\s*(.*)')
 
 
 def process_file(file: str):
@@ -37,6 +39,7 @@ def process_file(file: str):
     seen_groups = set()
     listed_compilers = set()
     seen_compilers = set()
+    disabled = set()
     with open(file) as f:
         for line in f:
             match_compilers = COMPILERS_LIST_RE.search(line)
@@ -47,6 +50,10 @@ def process_file(file: str):
                         listed_groups.add(elem_id[1:])
                     elif '@' not in elem_id:
                         listed_compilers.add(elem_id)
+            match_aliases = ALIAS_LIST_RE.match(line)
+            if match_aliases:
+                seen_compilers.update(match_aliases.group(1).split(':'))
+                continue
             match_group = GROUP_NAME_RE.match(line)
             if match_group:
                 seen_groups.add(match_group.group(1))
@@ -55,9 +62,12 @@ def process_file(file: str):
             if match_compiler:
                 seen_compilers.add(match_compiler.group(1))
                 continue
+            match_disabled = DISABLED_RE.match(line)
+            if match_disabled:
+                disabled.update(match_disabled.group(1).split(' '))
     bad_compilers = listed_compilers.symmetric_difference(seen_compilers)
     bad_groups = listed_groups.symmetric_difference(seen_groups)
-    return file, bad_compilers, bad_groups
+    return file, bad_compilers - disabled, bad_groups - disabled
 
 
 def process_folder(folder: str):
@@ -73,7 +83,14 @@ def find_orphans(folder: str):
     sep = "\n\t"
     for r in result:
         print(f'{r[0]}\nCOMPILERS:\n\t{sep.join(sorted(r[1]))}\nGROUPS:\n\t{sep.join(sorted(r[2]))}\n')
+    return result
 
 
 if __name__ == '__main__':
-    find_orphans('./etc/config/')
+    if find_orphans('./etc/config/'):
+        print("To suppress this warning on IDs that are temporally disabled, add one or more comments to each listed "
+              "file:")
+        print("# Disabled: id1 id2 ...")
+        sys.exit(1)
+    else:
+        print("No configuration mismatches found")
