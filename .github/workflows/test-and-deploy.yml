@@ -34,7 +34,7 @@ jobs:
         run: npm run codecov
 
   build-dist-and-deploy:
-    if: github.repository_owner == 'compiler-explorer' and github.event_name == 'push'
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     needs: [build-and-test]
     runs-on: ubuntu-20.04
 
