@@ -72,7 +72,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     }
 
     override getPaneName(): string {
-        return `LLVM IR Viewer ${this.compilerInfo.compilerName}` +
+        return `LLVM IR Viewer ${this.compilerInfo.compilerName} ` +
             `(Editor #${this.compilerInfo.editorId}, ` +
             `Compiler #${this.compilerInfo.compilerId})`;
     }
