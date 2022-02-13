@@ -59,7 +59,6 @@ export class Cfg {
     _compilerName = '';
     _editorid: number;
     _binaryFilter: boolean;
-    _componentName: string;
     functionPicker: TomSelect;
     supportsCfg = false;
     toggles: Toggles;
@@ -142,7 +141,6 @@ export class Cfg {
         this.compilerId = state.id;
         this._editorid = state.editorid;
         this._binaryFilter = false;
-        this._componentName = state.componentName;
 
         const pickerEl = this.domRoot.find('.function-picker')[0] as HTMLInputElement;
         this.functionPicker = new TomSelect(pickerEl, {
@@ -427,7 +425,6 @@ export class Cfg {
             pos: this.cfgVisualiser.getViewPosition(),
             scale: this.cfgVisualiser.getScale(),
             options: this.getEffectiveOptions(),
-            componentName: this._componentName,
         };
         this.paneRenaming.addState(state);
         return state;

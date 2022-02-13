@@ -152,12 +152,12 @@ Conformance.prototype.getPaneName = function () {
     return 'Conformance Viewer (Editor #' + this.editorId + ')';
 };
 
-Conformance.prototype.updateTitle = function (compilerCount) {
+Conformance.prototype.updateTitle = function () {
     var compilerText = '';
-    if (compilerCount !== 0) {
-        compilerText = ' ' + compilerCount + '/' + this.maxCompilations;
+    if (this.compilerPickers.length !== 0) {
+        compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
     }
-    var name = this.paneName ? this.paneName : this.getPaneName() + compilerText;
+    var name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
     this.container.setTitle(_.escape(name));
 };
 
@@ -375,7 +375,7 @@ Conformance.prototype.handleToolbarUI = function () {
     // Only allow new compilers if we allow for more
     this.addCompilerButton.prop('disabled', compilerCount >= this.maxCompilations);
 
-    this.updateTitle(compilerCount);
+    this.updateTitle();
 };
 
 Conformance.prototype.handleStatusIcon = function (statusIcon, status) {

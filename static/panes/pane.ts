@@ -222,7 +222,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     }
 
     protected updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName();
+        const name = this.paneName ?? this.getPaneName();
         this.container.setTitle(_.escape(name));
     }
 

@@ -22,12 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
 import { EventEmitter } from 'events';
-
-const Alert = require('alert').Alert;
+import { Alert } from './alert';
 
 export class PaneRenaming extends EventEmitter.EventEmitter{
     private pane: any;
@@ -37,7 +35,7 @@ export class PaneRenaming extends EventEmitter.EventEmitter{
     constructor(pane: any, state: any) {
         super();
         this.pane = pane;
-        this.alertSystem = new Alert();
+        this.alertSystem = this.pane.alertSystem ?? new Alert();
         this.state = state;
 
         this.loadSavedPaneName();

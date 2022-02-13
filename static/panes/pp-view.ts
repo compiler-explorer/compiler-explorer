@@ -124,11 +124,6 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
             ' (Editor #' + this.compilerInfo.editorId + ', Compiler #' + this.compilerInfo.compilerId + ')';
     }
 
-    override updateTitle() {
-        const name = this.paneName ?? this.getPaneName();
-        this.container.setTitle(_.escape(name));
-    }
-
     showPpResults(results) {
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
