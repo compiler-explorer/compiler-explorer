@@ -1482,11 +1482,12 @@ Editor.prototype.setFilename = function (name) {
 };
 
 Editor.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
+    var name = this.getPaneName();
+    var customName = this.paneName ? this.paneName : name;
     if (name.endsWith('CMakeLists.txt')) {
         this.changeLanguage('cmake');
     }
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(customName));
 };
 
 // Called every time we change language, so we get the relevant code
