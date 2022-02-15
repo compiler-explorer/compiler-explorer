@@ -424,6 +424,9 @@ function setupLanguageLogos(languages) {
     _.each(languages, function (lang) {
         try {
             lang.logoData = logos('./' + lang.logoUrl);
+            if (lang.logoUrlDark) {
+                lang.logoDataDark = logos('./' + lang.logoUrlDark);
+            }
         } catch (ignored) {
             console.log(ignored);
         }

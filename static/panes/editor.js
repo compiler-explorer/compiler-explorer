@@ -138,22 +138,8 @@ function Editor(hub, state, container) {
         onChange: _.bind(this.onLanguageChange, this),
         closeAfterSelect: true,
         render: {
-            option: function (data, escape) {
-                return '<div class="d-flex" style="align-items: center">' +
-                    '<div class="mr-1">' +
-                    '<img src="' + data.logoData + '" width="23" style="max-height: 23px"/>' +
-                    '</div>' +
-                    '<div>' + escape(data.name) + '</div>' +
-                    '</div>';
-            },
-            item: function (data, escape) {
-                return '<div class="d-flex" style="align-items: center">' +
-                '<div class="mr-1">' +
-                '<img src="' + data.logoData + '" width="20" style="max-height: 20px"/>' +
-                '</div>' +
-                '<div>' + escape(data.name) + '</div>' +
-                '</div>';
-            },
+            option: this.renderSelectizeOption,
+            item: this.renderSelectizeItem,
         },
     });
 
@@ -1517,6 +1503,28 @@ Editor.prototype.close = function () {
     this.eventHub.emit('editorClose', this.id);
     this.editor.dispose();
     this.hub.removeEditor(this.id);
+};
+
+function getSelectizeRenderHtml(data, escape, width, height) {
+    var result = '<div class="d-flex" style="align-items: center">' +
+        '<div class="mr-1">' +
+        '<img src="' + data.logoData
+        + '" class="' + (data.logoDataDark ? 'theme-light-only' : '')
+        + '" width="' + width + '" style="max-height: ' +  height + 'px"/>';
+    if (data.logoDataDark) {
+        result += '<img src="' + data.logoDataDark
+            + '" class="theme-dark-only" width="' + width + '" style="max-height: ' + height + 'px"/>';
+    }
+    result += '</div><div>' + escape(data.name) + '</div></div>';
+    return result;
+}
+
+Editor.prototype.renderSelectizeOption = function (data, escape) {
+    return getSelectizeRenderHtml(data, escape, 23, 23);
+};
+
+Editor.prototype.renderSelectizeItem = function (data, escape) {
+    return getSelectizeRenderHtml(data, escape, 20, 20);
 };
 
 module.exports = {
