@@ -138,8 +138,8 @@ function Editor(hub, state, container) {
         onChange: _.bind(this.onLanguageChange, this),
         closeAfterSelect: true,
         render: {
-            option: this.renderSelectizeOption,
-            item: this.renderSelectizeItem,
+            option: renderSelectizeOption,
+            item: renderSelectizeItem,
         },
     });
 
@@ -1519,13 +1519,13 @@ function getSelectizeRenderHtml(data, escape, width, height) {
     return result;
 }
 
-Editor.prototype.renderSelectizeOption = function (data, escape) {
+function renderSelectizeOption(data, escape) {
     return getSelectizeRenderHtml(data, escape, 23, 23);
-};
+}
 
-Editor.prototype.renderSelectizeItem = function (data, escape) {
+function renderSelectizeItem(data, escape) {
     return getSelectizeRenderHtml(data, escape, 20, 20);
-};
+}
 
 module.exports = {
     Editor: Editor,
