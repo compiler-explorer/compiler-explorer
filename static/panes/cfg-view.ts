@@ -29,6 +29,17 @@ import { ga } from '../analytics';
 import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
+import { PaneRenaming } from '../pane-renaming';
+
+interface NodeInfo {
+    edges: string[],
+    dagEdges: number[],
+    index: string,
+    id: number,
+    level: number,
+    state: number,
+    inCount: number,
+}
 
 export class Cfg {
     container: Container;
@@ -55,6 +66,7 @@ export class Cfg {
     togglePhysicsButton: JQuery;
     togglePhysicsTitle: string;
     topBar: JQuery;
+    paneName: string;
 
     constructor(hub: any, container: Container, state: CfgState) {
         this.container = container;
@@ -156,7 +168,7 @@ export class Cfg {
 
         this.initCallbacks();
         this.updateButtons();
-        this.setTitle();
+        this.updateTitle();
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -199,7 +211,7 @@ export class Cfg {
         if (compilerId === this.compilerId) {
             this._compilerName = compiler ? compiler.name : '';
             this.supportsCfg = compiler.supportsCfg;
-            this.setTitle();
+            this.updateTitle();
         }
     }
 
@@ -233,6 +245,7 @@ export class Cfg {
         this.container.on('destroy', this.close, this);
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
+        PaneRenaming.registerCallback(this);
         this.eventHub.emit('cfgViewOpened', this.compilerId);
         this.eventHub.emit('requestFilters', this.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerId);
@@ -269,7 +282,7 @@ export class Cfg {
 
     resize() {
         if (this.cfgVisualiser.canvas) {
-            const height = this.domRoot.height() - this.topBar.outerHeight(true);
+            const height = this.domRoot.height() as number - (this.topBar.outerHeight(true) ?? 0);
             this.cfgVisualiser.setSize('100%', height.toString());
             this.cfgVisualiser.redraw();
         }
@@ -281,13 +294,14 @@ export class Cfg {
             `Compiler #${this.compilerId})`;
     }
 
-    setTitle() {
-        this.container.setTitle(this.getPaneName());
+    updateTitle() {
+        const name = this.paneName ? this.paneName : this.getPaneName();
+        this.container.setTitle(_.escape(name));
     }
 
     assignLevels(data: any) {
-        const nodes = [];
-        const idToIdx = [];
+        const nodes: NodeInfo[] = [];
+        const idToIdx: string[] = [];
         for (const i in data.nodes) {
             const node = data.nodes[i];
             idToIdx[node.id] = i;

@@ -25,10 +25,11 @@
 import $ from 'jquery';
 
 import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
+import { toggleEventListener } from './utils';
 
 export class Alert {
-    yesHandler: (answer?: string | string[] | number) => void | null = null;
-    noHandler: () => void | null = null;
+    yesHandler: ((answer?: string | string[] | number) => void) | null = null;
+    noHandler: (() => void) | null = null;
     prefixMessage = '';
 
     constructor() {
@@ -37,15 +38,6 @@ export class Alert {
             this.yesHandler?.();
         });
         yesNoModal.find('button.no').on('click', () => {
-            this.noHandler?.();
-        });
-
-        const enterSomething = $('#enter-something');
-        enterSomething.find('button.yes').on('click', () => {
-            const answer = enterSomething.find('.question-answer');
-            this.yesHandler?.(answer.val());
-        });
-        enterSomething.find('button.no').on('click', () => {
             this.noHandler?.();
         });
     }
@@ -97,7 +89,7 @@ export class Alert {
     }
 
     /**
-     * Notifes the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
+     * Notifies the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
     notify(body: string, {
         group = '',
@@ -145,7 +137,16 @@ export class Alert {
         modal.find('.modal-body .question').html(question);
 
         const yesButton = modal.find('.modal-footer .yes');
+        toggleEventListener(yesButton, 'click', () => {
+            const answer = modal.find('.question-answer');
+            this.yesHandler?.(answer.val());
+        });
+
         const noButton = modal.find('.modal-footer .no');
+        toggleEventListener(noButton, 'click', () => {
+            this.noHandler?.();
+        });
+
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
         answerEdit.on('keyup', (e) => {

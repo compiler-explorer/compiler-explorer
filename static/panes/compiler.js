@@ -45,6 +45,8 @@ var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
+var PaneRenaming = require('../pane-renaming').PaneRenaming;
+
 
 require('../modes/asm-mode');
 require('../modes/asmruby-mode');
@@ -240,6 +242,11 @@ Compiler.prototype.initPanerButtons = function () {
         createFlagsView();
     }
 
+    var createPpView = _.bind(function () {
+        return Components.getPpViewWith(this.id, this.source, this.lastResult.ppOutput, this.getCompilerName(),
+            this.sourceEditorId);
+    }, this);
+
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
             this.sourceEditorId);
@@ -342,6 +349,16 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     popularArgumentsMenu.append(this.flagsButton);
+
+    this.container.layoutManager
+        .createDragSource(this.ppButton, createPpView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.ppButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createPpView);
+    }, this));
 
     this.container.layoutManager
         .createDragSource(this.astButton, createAstView)
@@ -545,7 +562,10 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            this.jumpToLabel(ed.getPosition());
+            var position = ed.getPosition();
+            if (position != null) {
+                this.jumpToLabel(position);
+            }
         }, this),
     });
 
@@ -596,13 +616,16 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            var desiredLine = ed.getPosition().lineNumber - 1;
-            var source = this.assembly[desiredLine].source;
-            if (source && source.line > 0) {
-                var editorId = this.getEditorIdBySourcefile(source);
-                if (editorId) {
-                    // a null file means it was the user's source
-                    this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+            var position = ed.getPosition();
+            if (position != null) {
+                var desiredLine = position.lineNumber - 1;
+                var source = this.assembly[desiredLine].source;
+                if (source && source.line > 0) {
+                    var editorId = this.getEditorIdBySourcefile(source);
+                    if (editorId) {
+                        // a null file means it was the user's source
+                        this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+                    }
                 }
             }
         }, this),
@@ -720,6 +743,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
     var options = {
         userArguments: this.options,
         compilerOptions: {
+            producePp: this.ppViewOpen ? this.ppOptions : false,
             produceAst: this.astViewOpen,
             produceGccDump: {
                 opened: this.gccDumpViewOpen,
@@ -1250,16 +1274,40 @@ Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
     }
 };
 
-Compiler.prototype.onAstViewOpened = function (id) {
+Compiler.prototype.onToolSettingsChange = function (id) {
     if (this.id === id) {
-        this.astButton.prop('disabled', true);
-        this.astViewOpen = true;
         this.compile();
     }
 };
 
-Compiler.prototype.onToolSettingsChange = function (id) {
+Compiler.prototype.onPpViewOpened = function (id) {
     if (this.id === id) {
+        this.ppButton.prop('disabled', true);
+        this.ppViewOpen = true;
+        // the pp view will request compilation once it populates its options so this.compile() is not called here
+    }
+};
+
+Compiler.prototype.onPpViewClosed = function (id) {
+    if (this.id === id) {
+        this.ppButton.prop('disabled', false);
+        this.ppViewOpen = false;
+    }
+};
+
+Compiler.prototype.onPpViewOptionsUpdated = function (id, options, reqCompile) {
+    if (this.id === id) {
+        this.ppOptions = options;
+        if (reqCompile) {
+            this.compile();
+        }
+    }
+};
+
+Compiler.prototype.onAstViewOpened = function (id) {
+    if (this.id === id) {
+        this.astButton.prop('disabled', true);
+        this.astViewOpen = true;
         this.compile();
     }
 };
@@ -1509,6 +1557,7 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
     this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
+    this.ppButton = this.domRoot.find('.btn.view-pp');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
@@ -1686,6 +1735,7 @@ Compiler.prototype.enableToolButtons = function () {
     }, this));
 };
 
+// eslint-disable-next-line max-statements
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
     var filters = this.getEffectiveFilters();
@@ -1726,6 +1776,7 @@ Compiler.prototype.updateButtons = function () {
         this.flagsButton.prop('disabled', this.flagsViewOpen);
     }
     this.optButton.prop('disabled', this.optViewOpen);
+    this.ppButton.prop('disabled', this.ppViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
@@ -1740,6 +1791,7 @@ Compiler.prototype.updateButtons = function () {
     // many executors as you want.
 
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
+    this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
@@ -1808,6 +1860,7 @@ Compiler.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
+    PaneRenaming.registerCallback(this);    
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -1829,6 +1882,9 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
     this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
     this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
+    this.eventHub.on('ppViewOpened', this.onPpViewOpened, this);
+    this.eventHub.on('ppViewClosed', this.onPpViewClosed, this);
+    this.eventHub.on('ppViewOptionsUpdated', this.onPpViewOptionsUpdated, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
@@ -2104,12 +2160,17 @@ Compiler.prototype.getPaneName = function () {
     }
 };
 
+Compiler.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
+};
+
 Compiler.prototype.updateCompilerName = function () {
+    this.container.setTitle(_.escape(this.getPaneName()));
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
-    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
@@ -2283,6 +2344,7 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
             enabled: this.settings.showMinimap && !options.embedded,
         },
         fontFamily: this.settings.editorsFFont,
+        codeLensFontFamily: this.settings.editorsFFont,
         fontLigatures: this.settings.editorsFLigatures,
     });
 };
@@ -2471,6 +2533,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     });
     if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var opcode = word.word.toUpperCase();

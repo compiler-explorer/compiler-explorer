@@ -1,6 +1,6 @@
 name: Compiler Explorer
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build-and-test:
@@ -34,7 +34,7 @@ jobs:
         run: npm run codecov
 
   build-dist-and-deploy:
-    if: github.repository_owner == 'compiler-explorer'
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     needs: [build-and-test]
     runs-on: ubuntu-20.04
 
