@@ -5,4 +5,8 @@
         img.ces-icon(src=icon.icon alt=icon.name data-statsid=icon.statsId)
       span &nbsp;
     else
-      img.ces-icon(src=icon.icon alt=icon.name data-statsid=icon.statsId)
+      if !icon.icon_dark || icon.icon === icon.icon_dark
+        img.ces-icon(src=icon.icon alt=icon.name data-statsid=icon.statsId)
+      else
+        img.ces-icon.theme-light-only(src=icon.icon alt=icon.name data-statsid=icon.statsId)
+        img.ces-icon.theme-dark-only(src=icon.icon_dark alt=icon.name data-statsid=icon.statsId)

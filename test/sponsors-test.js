@@ -123,6 +123,23 @@ levels:
         ]);
     });
 
+    it('should pick up dark icon if set', () => {
+        const things = loadSponsorsFromString(`
+---
+levels:
+  - name: a
+    description: d
+    sponsors:
+    - name: batman
+      img: not_an_icon
+      icon: icon
+      icon_dark: dark
+        `).levels[0].sponsors;
+        things.should.deep.equalInAnyOrder([
+            {name: 'batman', icon: 'icon', icon_dark: 'dark', img: 'not_an_icon'},
+        ]);
+    });
+
     it('should pick out the top level icons', () => {
         const icons = loadSponsorsFromString(`
 ---
