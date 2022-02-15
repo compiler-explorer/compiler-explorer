@@ -77,20 +77,30 @@ def process_folder(folder: str):
             and not (f.endswith('.defaults.properties') or f.endswith('.local.properties'))
             and f.endswith('.properties')]
 
+def problems_found(file_result):
+    return len(file_result[1]) > 0 or len(file_result[2]) > 0
+
 
 def find_orphans(folder: str):
-    result = sorted([r for r in process_folder(folder) if len(r[1]) > 0 or len(r[2]) > 0], key=lambda x: x[0])
-    sep = "\n\t"
-    for r in result:
-        print(f'{r[0]}\nCOMPILERS:\n\t{sep.join(sorted(r[1]))}\nGROUPS:\n\t{sep.join(sorted(r[2]))}\n')
+    result = sorted([r for r in process_folder(folder) if problems_found(r)], key=lambda x: x[0])
+    if result:
+        print(f"Found {len(result)} property file(s) with mismatching ids:")
+        sep = "\n\t"
+        for r in result:
+            print(r[0])
+            if len(r[1]) > 0:
+                print(f"COMPILERS:\n\t{sep.join(sorted(r[1]))}")
+            if len(r[2]) > 0:
+                print(f"GROUPS:\n\t{sep.join(sorted(r[2]))}")
+            print("")
+        print("To suppress this warning on IDs that are temporally disabled, "
+              "add one or more comments to each listed file:")
+        print("# Disabled: id1 id2 ...")
+    else:
+        print("No configuration mismatches found")
     return result
 
 
 if __name__ == '__main__':
     if find_orphans('./etc/config/'):
-        print("To suppress this warning on IDs that are temporally disabled, add one or more comments to each listed "
-              "file:")
-        print("# Disabled: id1 id2 ...")
         sys.exit(1)
-    else:
-        print("No configuration mismatches found")
