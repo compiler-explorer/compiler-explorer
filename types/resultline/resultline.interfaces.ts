@@ -7,5 +7,5 @@ export class ResultLineTag {
 
 export class ResultLine {
     text: string;
-    tag?: IResultLineTag;
+    tag?: ResultLineTag;
 }
