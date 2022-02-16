@@ -787,7 +787,9 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
             var pos = ed.getPosition();
-            this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
+            if (pos != null) {
+                this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
+            }
         }, this),
     });
 
@@ -842,6 +844,7 @@ Editor.prototype.runFormatDocumentAction = function () {
 
 Editor.prototype.searchOnCppreference = function (ed) {
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var preferredLanguage = this.getPreferredLanguageTag();
@@ -861,6 +864,7 @@ Editor.prototype.searchOnCppreference = function (ed) {
 
 Editor.prototype.searchOnCloogle = function (ed) {
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var url = 'https://cloogle.org/#' + encodeURIComponent(word.word);

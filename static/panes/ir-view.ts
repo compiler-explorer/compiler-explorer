@@ -72,7 +72,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     }
 
     override getPaneName(): string {
-        return `LLVM IR Viewer ${this.compilerInfo.compilerName}` +
+        return `LLVM IR Viewer ${this.compilerInfo.compilerName} ` +
             `(Editor #${this.compilerInfo.editorId}, ` +
             `Compiler #${this.compilerInfo.compilerId})`;
     }
@@ -85,10 +85,13 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: (editor) => {
-                const desiredLine = editor.getPosition().lineNumber - 1;
-                const source = this.irCode[desiredLine].source;
-                if (source !== null && source.file !== null) {
-                    this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
+                const position = editor.getPosition();
+                if (position != null) {
+                    const desiredLine = position.lineNumber - 1;
+                    const source = this.irCode[desiredLine].source;
+                    if (source !== null && source.file !== null) {
+                        this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
+                    }
                 }
             },
         });
@@ -135,7 +138,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     showIrResults(result: any[]): void {
         if (!this.editor) return;
         this.irCode = result;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No LLVM IR generated>');
 

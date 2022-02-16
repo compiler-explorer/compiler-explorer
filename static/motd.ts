@@ -42,7 +42,7 @@ function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: b
             return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
         });
 
-        if (applicableAds !== null && applicableAds.length > 0) {
+        if (applicableAds != null && applicableAds.length > 0) {
             const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];
             motdNode.find('.content').html(randomAd.html);
             motdNode.find('.close').on('click', () => {

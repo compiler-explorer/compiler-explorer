@@ -562,7 +562,10 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            this.jumpToLabel(ed.getPosition());
+            var position = ed.getPosition();
+            if (position != null) {
+                this.jumpToLabel(position);
+            }
         }, this),
     });
 
@@ -613,13 +616,16 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            var desiredLine = ed.getPosition().lineNumber - 1;
-            var source = this.assembly[desiredLine].source;
-            if (source && source.line > 0) {
-                var editorId = this.getEditorIdBySourcefile(source);
-                if (editorId) {
-                    // a null file means it was the user's source
-                    this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+            var position = ed.getPosition();
+            if (position != null) {
+                var desiredLine = position.lineNumber - 1;
+                var source = this.assembly[desiredLine].source;
+                if (source && source.line > 0) {
+                    var editorId = this.getEditorIdBySourcefile(source);
+                    if (editorId) {
+                        // a null file means it was the user's source
+                        this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+                    }
                 }
             }
         }, this),
@@ -2527,6 +2533,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     });
     if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var opcode = word.word.toUpperCase();

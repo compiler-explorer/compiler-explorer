@@ -105,11 +105,14 @@ DeviceAsm.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            var desiredLine = ed.getPosition().lineNumber - 1;
-            var source = this.deviceCode[desiredLine].source;
-            if (source !== null && source.file === null) {
-                // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this._editorId, source.line, -1, true);
+            var position = ed.getPosition();
+            if (position != null) {
+                var desiredLine = position.lineNumber - 1;
+                var source = this.deviceCode[desiredLine].source;
+                if (source !== null && source.file === null) {
+                    // a null file means it was the user's source
+                    this.eventHub.emit('editorLinkLine', this._editorId, source.line, -1, true);
+                }
             }
         }, this),
     });
