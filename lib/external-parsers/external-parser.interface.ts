@@ -1,12 +1,5 @@
+import { ParsedAsmResult } from '../../types/asmresult/asmresult.interfaces';
 import { ParseFilters } from '../../types/features/filters.interfaces';
-import { ResultLineTag } from '../../types/resultline/resultline.interfaces';
-
-export class ParsedAsmResult {
-    asm: ResultLineTag[];
-    labelDefinitions: Map<string, number>;
-    parsingTime: string;
-    filteredCount: number;
-}
 
 export interface IExternalParser {
     objdumpAndParseAssembly(buildfolder: string, objdumpArgs: string[],

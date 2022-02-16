@@ -1,11 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
+import { ParsedAsmResult } from '../../types/asmresult/asmresult.interfaces';
 import { TypicalExecutionFunc, UnprocessedExecResult } from '../../types/execution/execution.interfaces';
 import { ParseFilters } from '../../types/features/filters.interfaces';
 import { maskRootdir } from '../utils';
 
-import { IExternalParser, ParsedAsmResult } from './external-parser.interface';
+import { IExternalParser } from './external-parser.interface';
 
 const starterScriptName = 'dump-and-parse.sh';
 
