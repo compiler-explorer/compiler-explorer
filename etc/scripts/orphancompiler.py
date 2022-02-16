@@ -31,7 +31,24 @@ COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'compiler.\.*?\.alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
 COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe')
+FORMATTERS_LIST_RE = re.compile(r'formatters=(.*)')
+FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe')
+EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions)=.*::.*')
 DISABLED_RE = re.compile(r'^# Disabled:\s*(.*)')
+
+
+def match_and_add(line, expr, s):
+    match = expr.match(line)
+    if match:
+        s.add(match.group(1))
+    return match
+
+
+def match_and_update(line, expr, s, split=':'):
+    match = expr.match(line)
+    if match:
+        s.update(match.group(1).split(split))
+    return match
 
 
 def process_file(file: str):
@@ -39,6 +56,9 @@ def process_file(file: str):
     seen_groups = set()
     listed_compilers = set()
     seen_compilers = set()
+    listed_formatters = set()
+    seen_formatters = set()
+    empty_separators = set()
     disabled = set()
     with open(file) as f:
         for line in f:
@@ -50,24 +70,24 @@ def process_file(file: str):
                         listed_groups.add(elem_id[1:])
                     elif '@' not in elem_id:
                         listed_compilers.add(elem_id)
-            match_aliases = ALIAS_LIST_RE.match(line)
-            if match_aliases:
-                seen_compilers.update(match_aliases.group(1).split(':'))
+
+            match_empty = EMPTY_LIST_RE.match(line)
+            if match_empty:
+                empty_separators.add(f"{line}")
+
+            if(
+                    match_and_add(line, GROUP_NAME_RE, seen_groups) or
+                    match_and_add(line, COMPILER_EXE_RE, seen_compilers) or
+                    match_and_add(line, FORMATTER_EXE_RE, seen_formatters) or
+                    match_and_update(line, ALIAS_LIST_RE, seen_compilers) or
+                    match_and_update(line, FORMATTERS_LIST_RE, listed_formatters) or
+                    match_and_update(line, DISABLED_RE, disabled, ' ')
+            ):
                 continue
-            match_group = GROUP_NAME_RE.match(line)
-            if match_group:
-                seen_groups.add(match_group.group(1))
-                continue
-            match_compiler = COMPILER_EXE_RE.match(line)
-            if match_compiler:
-                seen_compilers.add(match_compiler.group(1))
-                continue
-            match_disabled = DISABLED_RE.match(line)
-            if match_disabled:
-                disabled.update(match_disabled.group(1).split(' '))
     bad_compilers = listed_compilers.symmetric_difference(seen_compilers)
     bad_groups = listed_groups.symmetric_difference(seen_groups)
-    return file, bad_compilers - disabled, bad_groups - disabled
+    bad_formatters = listed_formatters.symmetric_difference(seen_formatters)
+    return file, bad_compilers - disabled, bad_groups - disabled, bad_formatters - disabled, empty_separators
 
 
 def process_folder(folder: str):
@@ -77,21 +97,25 @@ def process_folder(folder: str):
             and not (f.endswith('.defaults.properties') or f.endswith('.local.properties'))
             and f.endswith('.properties')]
 
-def problems_found(file_result):
-    return len(file_result[1]) > 0 or len(file_result[2]) > 0
 
+def problems_found(file_result):
+    return any([len(r) for r in file_result[1:]])
+
+def print_issue(name, result):
+    if len(result) > 0:
+        sep = "\n\t"
+        print(f"{name}:\n\t{sep.join(sorted(result))}")
 
 def find_orphans(folder: str):
     result = sorted([r for r in process_folder(folder) if problems_found(r)], key=lambda x: x[0])
     if result:
         print(f"Found {len(result)} property file(s) with mismatching ids:")
-        sep = "\n\t"
         for r in result:
             print(r[0])
-            if len(r[1]) > 0:
-                print(f"COMPILERS:\n\t{sep.join(sorted(r[1]))}")
-            if len(r[2]) > 0:
-                print(f"GROUPS:\n\t{sep.join(sorted(r[2]))}")
+            print_issue("COMPILERS", r[1])
+            print_issue("GROUPS", r[2])
+            print_issue("FORMATTERS", r[3])
+            print_issue("EMPTY LISTINGS", r[4])
             print("")
         print("To suppress this warning on IDs that are temporally disabled, "
               "add one or more comments to each listed file:")
