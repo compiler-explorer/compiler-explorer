@@ -5,4 +5,5 @@ export class ParsedAsmResult {
     labelDefinitions: Map<string, number>;
     parsingTime: string;
     filteredCount: number;
+    externalParserUsed?: boolean;
 }

@@ -67,6 +67,7 @@ export class ExternalParserBase implements IExternalParser {
         const result = Object.assign({}, execResult, JSON.parse(execResult.stdout));
         delete result.stdout;
         delete result.stderr;
+        result.externalParserUsed = true;
         return result;
     }
 
