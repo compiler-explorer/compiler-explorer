@@ -55,7 +55,7 @@ class DotNetCompiler extends BaseCompiler {
         // Disable nullability, we don't want to see its attributes in the output
         '/p:Nullable=disable',
         // Speed up compilation:
-        '--no-restore', '--no-dependencies', '-v', 'q'];
+        '--no-dependencies', '-v', 'q'];
     }
 
     get configurableOptions() {
