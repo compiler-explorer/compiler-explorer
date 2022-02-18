@@ -31,6 +31,7 @@ COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
 COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe')
+DEFAULT_COMPILER_RE = re.compile(r'defaultCompiler=(.*)')
 FORMATTERS_LIST_RE = re.compile(r'formatters=(.*)')
 FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe')
 LIBS_LIST_RE = re.compile(r'libs=(.+)')
@@ -57,6 +58,7 @@ def match_and_update(line, expr, s, split=':'):
 
 
 def process_file(file: str):
+    default_compiler = set()
     listed_groups = set()
     seen_groups = set()
     listed_compilers = set()
@@ -100,6 +102,7 @@ def process_file(file: str):
                 seen_libs_versions.add(f"{lib_id} {version}")
 
             if(
+                    match_and_add(line, DEFAULT_COMPILER_RE, default_compiler) or
                     match_and_add(line, GROUP_NAME_RE, seen_groups) or
                     match_and_add(line, COMPILER_EXE_RE, seen_compilers) or
                     match_and_add(line, FORMATTER_EXE_RE, seen_formatters) or
@@ -117,6 +120,7 @@ def process_file(file: str):
     bad_libs_ids = listed_libs_ids.symmetric_difference(seen_libs_ids)
     bad_libs_versions = listed_libs_versions.symmetric_difference(seen_libs_versions)
     bad_tools = listed_tools.symmetric_difference(seen_tools)
+    bad_default = default_compiler - listed_compilers
     return (file,
             bad_compilers - disabled,
             bad_groups - disabled,
@@ -124,6 +128,7 @@ def process_file(file: str):
             bad_libs_ids - disabled,
             bad_libs_versions - disabled,
             bad_tools - disabled,
+            bad_default,
             empty_separators)
 
 
@@ -157,7 +162,8 @@ def find_orphans(folder: str):
             print_issue("LIB IDS", r[4])
             print_issue("LIB VERSIONS", r[5])
             print_issue("TOOLS", r[6])
-            print_issue("EMPTY LISTINGS", r[7])
+            print_issue("UNKNOWN DEFAULT COMPILER", r[7])
+            print_issue("EMPTY LISTINGS", r[8])
             print("")
         print("To suppress this warning on IDs that are temporally disabled, "
               "add one or more comments to each listed file:")
