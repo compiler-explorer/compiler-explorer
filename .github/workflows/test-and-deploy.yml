@@ -3,7 +3,7 @@ name: Compiler Explorer
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-20.04
 
     steps:
@@ -26,16 +26,17 @@ jobs:
             ${{ runner.os }}-node-
       - name: Install prerequisites
         run: make prereqs
-      - name: Build and test
+      - name: Run checks
         run: |
           npm run lint
           npm run ci-test
+          python3 ./etc/scripts/orphancompiler.py
       - name: Code coverage
         run: npm run codecov
 
   build-dist-and-deploy:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    needs: [build-and-test]
+    needs: [test]
     runs-on: ubuntu-20.04
 
     steps:
