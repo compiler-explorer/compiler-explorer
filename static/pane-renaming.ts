@@ -63,7 +63,8 @@ export class PaneRenaming extends EventEmitter.EventEmitter{
 
         // Open modal for entering new pane name
         btn.on('click', () => {
-            this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', this.pane.getPaneName(), {
+            const modalTextPlaceholder = this.pane.paneName || this.pane.getPaneName();
+            this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', modalTextPlaceholder, {
                 yes: (value: string) => {
                     // Update title and emit event to save it into the state
                     this.pane.paneName = value;

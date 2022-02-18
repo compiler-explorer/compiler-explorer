@@ -30,7 +30,6 @@ import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
 import { PaneRenaming } from '../pane-renaming';
-const Alert = require('../alert').Alert;
 
 interface NodeInfo {
     edges: string[],
