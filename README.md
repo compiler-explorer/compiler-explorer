@@ -18,7 +18,7 @@ Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](
 **Compiler Explorer** was started in 2012 to show how C++ constructs translated to assembly code. It started out as a
  `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
-Since then, it has become a public website serving around [2,250,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+Since then, it has become a public website serving around [3,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/), [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url), or by
