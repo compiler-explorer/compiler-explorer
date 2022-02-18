@@ -38,7 +38,7 @@ LIB_VERSIONS_LIST_RE = re.compile(r'libs\.(.*?)\.versions=(.*)')
 LIB_VERSION_RE = re.compile(r'libs\.(.*?)\.versions\.(.*?)\.version')
 TOOLS_LIST_RE = re.compile(r'tools=(.+)')
 TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe')
-EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias)=.*::.*')
+EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias|exclude)=.*::.*')
 DISABLED_RE = re.compile(r'^# Disabled:\s*(.*)')
 
 
