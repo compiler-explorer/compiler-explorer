@@ -339,6 +339,11 @@ pre.content.wrap * {
     max-width: 100% !important;
 }
 
+.toast-header .close {
+    float: left;
+    margin-right: 5px;
+}
+
 .font-size-list {
     min-width: 43px !important;
     max-height: 70% !important;
