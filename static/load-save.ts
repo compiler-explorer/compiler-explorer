@@ -44,7 +44,7 @@ export class LoadSave {
 
     constructor() {
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = 'Load-Saver: ';
+        this.alertSystem.prefixMessage = 'Load-Saver';
         this.base = window.httpRoot;
         this.fetchBuiltins().then(() => {}).catch(() => {});
     }

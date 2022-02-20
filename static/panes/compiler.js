@@ -117,7 +117,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.labelDefinitions = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Compiler #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Compiler #' + this.id;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;

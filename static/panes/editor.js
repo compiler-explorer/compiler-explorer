@@ -72,7 +72,7 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
     this.filename = state.filename || false;
 
