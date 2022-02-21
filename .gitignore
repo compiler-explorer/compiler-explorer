@@ -27,10 +27,3 @@ newrelic_agent.log
 
 # approval tests
 *.received.*
-
-# cypress
-/cypress/fixtures
-/cypress/plugins
-/cypress/screenshots
-/cypress/support
-/cypress/videos
