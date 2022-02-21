@@ -34,7 +34,7 @@ var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function Conformance(hub, container, state) {
     this.hub = hub;

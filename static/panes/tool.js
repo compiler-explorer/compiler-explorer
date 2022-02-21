@@ -35,7 +35,7 @@ var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options').options;
 var utils = require('../utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {

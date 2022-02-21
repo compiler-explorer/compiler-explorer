@@ -37,7 +37,7 @@ var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');

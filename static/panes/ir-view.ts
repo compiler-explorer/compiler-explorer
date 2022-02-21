@@ -34,7 +34,7 @@ import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;

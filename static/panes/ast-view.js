@@ -31,7 +31,7 @@ var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function Ast(hub, container, state) {
     this.container = container;

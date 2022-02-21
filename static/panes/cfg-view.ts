@@ -29,7 +29,7 @@ import { ga } from '../analytics';
 import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 interface NodeInfo {
     edges: string[],

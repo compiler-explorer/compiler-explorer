@@ -26,7 +26,7 @@ import {MultifileFile, MultifileService, MultifileServiceState} from '../multifi
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
 import { Settings } from '../settings';
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 const _ = require('underscore');
 const $ = require('jquery');

@@ -30,7 +30,7 @@ var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 

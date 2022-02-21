@@ -45,7 +45,7 @@ var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 
 require('../modes/asm-mode');

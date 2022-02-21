@@ -30,7 +30,7 @@ var FontScale = require('../widgets/fontscale').FontScale;
 var AnsiToHtml = require('../ansi-to-html').Filter;
 var Toggles = require('../widgets/toggles').Toggles;
 var ga = require('../analytics').ga;
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({

@@ -35,7 +35,7 @@ var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var utils = require('../utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 
 function GccDump(hub, container, state) {
