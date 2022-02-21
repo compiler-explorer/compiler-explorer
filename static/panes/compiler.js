@@ -117,7 +117,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.labelDefinitions = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Compiler #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Compiler #' + this.id;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -126,6 +126,8 @@ function Compiler(hub, container, state) {
     this.toolsMenu = null;
 
     this.revealJumpStack = [];
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
 
@@ -1853,6 +1855,7 @@ Compiler.prototype.onFontScale = function () {
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
@@ -1860,7 +1863,6 @@ Compiler.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
-    PaneRenaming.registerCallback(this);    
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -2014,7 +2016,10 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     }
 
     if (unwiseOptions.length > 0) {
-        this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
+        this.alertSystem.notify(msg, {
+            group: 'unwiseOption',
+            collapseSimilar: true,
+        });
     }
 };
 
@@ -2025,7 +2030,7 @@ Compiler.prototype.updateCompilerInfo = function () {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
                 alertClass: 'notification-info',
-                dismissTime: 5000,
+                dismissTime: 7000,
             });
         }
         this.prependOptions.data('content', this.compiler.options);
@@ -2106,6 +2111,7 @@ Compiler.prototype.currentState = function () {
         selection: this.selection,
         flagsViewOpen: this.flagsViewOpen,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -2166,7 +2172,6 @@ Compiler.prototype.updateTitle = function () {
 };
 
 Compiler.prototype.updateCompilerName = function () {
-    this.container.setTitle(_.escape(this.getPaneName()));
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
@@ -2564,7 +2569,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000,
+                dismissTime: 5000,
             });
         }
     }, this), _.bind(function (rejection) {
@@ -2572,7 +2577,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             .notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000,
+                dismissTime: 5000,
             });
     }, this));
 };

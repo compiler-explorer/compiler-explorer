@@ -326,16 +326,22 @@ pre.content.wrap * {
 }
 
 #notifications {
-    max-width: 33%;
+    padding: 5px;
+    border-radius: 0.5rem;
+    background-color: rgba(49, 54, 60, 0.85);
     position: fixed;
     bottom: 3px;
     right: 5px;
+    max-width: 40%;
 }
 
-.notification {
-    padding: 5px;
-    border-radius: 5px;
-    color: black;
+.toast {
+    max-width: 100% !important;
+}
+
+.toast-header .close {
+    float: left;
+    margin-right: 5px;
 }
 
 .font-size-list {

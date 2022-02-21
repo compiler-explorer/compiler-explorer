@@ -103,6 +103,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours.bind(this),
             this.onCompileResult.bind(this));
 
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+
         this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
         this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine.bind(this));
@@ -113,7 +115,6 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
-        PaneRenaming.registerCallback(this);
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
