@@ -86,7 +86,7 @@ export class Tree {
         this.httpRoot = window.httpRoot;
 
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = 'Tree #' + this.id + ': ';
+        this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
         this.root = this.domRoot.find('.tree');
         this.rowTemplate = $('#tree-editor-tpl');

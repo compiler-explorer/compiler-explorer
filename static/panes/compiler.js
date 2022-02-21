@@ -117,7 +117,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.labelDefinitions = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Compiler #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Compiler #' + this.id;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -2014,7 +2014,10 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     }
 
     if (unwiseOptions.length > 0) {
-        this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
+        this.alertSystem.notify(msg, {
+            group: 'unwiseOption',
+            collapseSimilar: true,
+        });
     }
 };
 
@@ -2025,7 +2028,7 @@ Compiler.prototype.updateCompilerInfo = function () {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
                 alertClass: 'notification-info',
-                dismissTime: 5000,
+                dismissTime: 7000,
             });
         }
         this.prependOptions.data('content', this.compiler.options);
@@ -2564,7 +2567,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000,
+                dismissTime: 5000,
             });
         }
     }, this), _.bind(function (rejection) {
@@ -2572,7 +2575,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             .notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000,
+                dismissTime: 5000,
             });
     }, this));
 };

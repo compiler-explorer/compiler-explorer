@@ -101,29 +101,33 @@ export class Alert {
         const container = $('#notifications');
         if (!container) return;
         const newElement = $(`
-            <div class="alert notification ${alertClass}" tabindex="-1" role="dialog">
-                <button type="button" class="close" style="float: left; margin-right: 5px;" data-dismiss="alert">
-                    &times;
-                </button>
-                <span id="msg">${this.prefixMessage}${body}</span>
+            <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header ${alertClass}">
+                    <strong class="mr-auto">${this.prefixMessage}</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body ${alertClass}">
+                    <span id="msg">${body}</span>
+               </div>
             </div>
         `);
+        container.append(newElement);
+        newElement.toast({
+            autohide: autoDismiss,
+            delay: dismissTime,
+        });
         if (group !== '') {
             if (collapseSimilar) {
                 // Only collapsing if a group has been specified
-                container.find(`[data-group="${group}"]`).remove();
+                const old = container.find(`[data-group="${group}"]`);
+                old.toast('hide');
+                old.remove();
             }
             newElement.attr('data-group', group);
         }
-        if (autoDismiss) {
-            setTimeout(() => {
-                newElement.fadeOut('slow', () => {
-                    newElement.remove();
-                });
-            }, dismissTime);
-        }
-        // Append the newly created element to the container
-        container.append(newElement);
+        newElement.toast('show');
     }
 
     /**

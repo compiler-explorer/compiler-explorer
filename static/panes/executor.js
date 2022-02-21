@@ -86,7 +86,7 @@ function Executor(hub, container, state) {
     this.nextCMakeRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
