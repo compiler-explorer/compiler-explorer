@@ -103,6 +103,8 @@ function Executor(hub, container, state) {
         this.compilerIsVisible
     );
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initLibraries(state);
     this.initCallbacks();
     // Handle initial settings
@@ -699,6 +701,7 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
     this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
@@ -707,7 +710,6 @@ Executor.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
     }, this);
-    PaneRenaming.registerCallback(this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -911,6 +913,7 @@ Executor.prototype.currentState = function () {
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
         wrap: this.toggleWrapButton.get().wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
