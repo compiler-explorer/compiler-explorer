@@ -26,15 +26,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPane } from './pane';
+import { MonacoPaneState } from './pane.interfaces';
 import { RustMirState } from './rustmir-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirState> {
-    constructor(hub: any, container: Container, state: RustMirState & BasePaneState) {
+export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMirState> {
+    constructor(hub: any, container: Container, state: RustMirState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustMirOutput) {
             this.showRustMirResults(state.rustMirOutput);

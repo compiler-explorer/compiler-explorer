@@ -26,15 +26,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPane } from './pane';
+import { MonacoPaneState } from './pane.interfaces';
 import { RustMacroExpState } from './rustmacroexp-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
-    constructor(hub: any, container: Container, state: RustMacroExpState & BasePaneState) {
+export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
+    constructor(hub: any, container: Container, state: RustMacroExpState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustMacroExpOutput) {
             this.showRustMacroExpResults(state.rustMacroExpOutput);

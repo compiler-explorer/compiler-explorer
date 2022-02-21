@@ -24,23 +24,24 @@
 
 import * as monaco from 'monaco-editor';
 
-export interface PaneCompilerState {
-    compilerId: number;
-    compilerName: string;
-    editorId: number;
-}
-
+/**
+ * The base state of a pane as encoded in the URL.
+ *
+ * Be aware this state, and any derived state is part of the public API of
+ * Compiler Explorer, so don't rename or add anything without careful thought.
+ */
 export interface PaneState {
-    id: number;
-    editorId: number;
-    selection: monaco.Selection;
-}
-
-// TODO(supergrecko): get the full type
-export interface BasePaneState {
-    selection: monaco.Selection;
     id: number;
     compilerName: string;
     editorid: number;
 }
 
+// TODO(supergrecko): get the full type
+/**
+ * The state of a pane that includes basic Monaco editor support.
+ *
+ * See MonacoPane.
+ */
+export interface MonacoPaneState extends PaneState {
+    selection: monaco.Selection;
+}

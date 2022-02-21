@@ -26,15 +26,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
+import { MonacoPane } from './pane';
 import { GnatDebugState } from './gnatdebug-view.interfaces';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPaneState } from './pane.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export class GnatDebug extends Pane<monaco.editor.IStandaloneCodeEditor, GnatDebugState> {
-    constructor(hub: any, container: Container, state: GnatDebugState & BasePaneState) {
+export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugState> {
+    constructor(hub: any, container: Container, state: GnatDebugState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.gnatDebugOutput) {
             this.showGnatDebugResults(state.gnatDebugOutput);
