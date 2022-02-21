@@ -115,7 +115,7 @@ export class Alert {
         `);
         container.append(newElement);
         newElement.toast({
-            autohide: false,
+            autohide: autoDismiss,
             delay: dismissTime,
         });
         if (group !== '') {
