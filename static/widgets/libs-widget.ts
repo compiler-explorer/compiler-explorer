@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
-import * as local from './local';
-import { Library, LibraryVersion } from './options.interfaces';
+import { options } from '../options';
+import * as local from '../local';
+import { Library, LibraryVersion } from '../options.interfaces';
 
 
 const FAV_LIBS_STORE_KEY = 'favlibs';

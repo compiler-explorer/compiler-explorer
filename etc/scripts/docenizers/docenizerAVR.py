@@ -36,7 +36,7 @@ def main():
 def get_arguments():
     parser = argparse.ArgumentParser()
     help_text = "the location to which the script will be written"
-    relative_path = "/../../lib/handlers/asm-docs-avr.js"
+    relative_path = "/../../../lib/handlers/asm-docs-avr.js"
     script_path = os.path.realpath(__file__)
     script_dir = os.path.dirname(script_path)
     default_path = os.path.normpath(script_dir + relative_path)

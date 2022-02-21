@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { pluck } from 'underscore';
-import { ga } from './analytics';
-import { sortedList, HistoryEntry, EditorSource } from './history';
+import { ga } from '../analytics';
+import { sortedList, HistoryEntry, EditorSource } from '../history';
 import { editor } from 'monaco-editor';
 
 import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;

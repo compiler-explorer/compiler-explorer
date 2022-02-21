@@ -24,7 +24,7 @@
 
 import * as vis from 'vis-network';
 import _ from 'underscore';
-import { Toggles } from '../toggles';
+import { Toggles } from '../widgets/toggles';
 import { ga } from '../analytics';
 import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
