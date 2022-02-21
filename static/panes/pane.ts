@@ -28,11 +28,11 @@ import * as monaco from 'monaco-editor';
 
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
 
-import { FontScale } from '../fontscale';
+import { FontScale } from '../widgets/fontscale';
 import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 /**
  * Basic container for a tool pane in Compiler Explorer

@@ -25,9 +25,9 @@
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
 import { EventEmitter } from 'events';
-import { Alert } from './alert';
+import { Alert } from '../alert';
 
-export class PaneRenaming extends EventEmitter.EventEmitter{
+export class PaneRenaming extends EventEmitter.EventEmitter {
     private pane: any;
     private alertSystem: any;
     private state: any;

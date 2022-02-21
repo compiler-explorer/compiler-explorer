@@ -24,7 +24,7 @@
 
 import EventEmitter from 'events';
 import $ from 'jquery';
-import {options} from './options';
+import {options} from '../options';
 import {editor} from 'monaco-editor';
 import IEditor = editor.IEditor;
 

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as utils from './utils';
+import * as utils from '../utils';
 
 type InlineLabel = { name: string, range: { startCol: number, endCol: number } };
 type Source = { file: string, line: number };

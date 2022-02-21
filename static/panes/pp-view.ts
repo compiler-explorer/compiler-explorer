@@ -24,7 +24,7 @@
 
 'use strict';
 
-import { Toggles } from '../toggles';
+import { Toggles } from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
