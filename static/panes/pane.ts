@@ -84,7 +84,6 @@ export abstract class Pane<S> {
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
-        this.registerEditorActions();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -120,13 +119,6 @@ export abstract class Pane<S> {
 
     /** Optionally overridable code for initializing event callbacks */
     registerCallbacks(): void {
-    }
-
-    /**
-     * Optionally overridable code for initializing monaco actions on the
-     * editor instance
-     */
-    registerEditorActions(): void {
     }
 
     /**
@@ -261,6 +253,8 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         this.editor = this.createEditor(editorRoot);
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.selection = state.selection;
+
+        this.registerEditorActions();
     }
 
 
@@ -319,5 +313,12 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     protected registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
         this.fontScale.on('change', this.updateState.bind(this));
+    }
+
+    /**
+     * Optionally overridable code for initializing monaco actions on the
+     * editor instance
+     */
+    registerEditorActions(): void {
     }
 }
