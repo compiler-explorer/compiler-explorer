@@ -25,9 +25,9 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
-var Toggles = require('../toggles').Toggles;
+var Toggles = require('../widgets/toggles').Toggles;
 require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
@@ -35,7 +35,7 @@ var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var utils = require('../utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 
 function GccDump(hub, container, state) {
@@ -76,6 +76,8 @@ function GccDump(hub, container, state) {
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initCallbacks();
 
     if (state && state.selectedPass) {
@@ -109,7 +111,6 @@ function GccDump(hub, container, state) {
 
     this.updateButtons();
     this.saveState();
-    this.updateTitle();
 
     // UI is ready, request compilation to get passes list and
     // current output (if any)
@@ -175,6 +176,7 @@ GccDump.prototype.initCallbacks = function () {
     this.selectize.on('change', _.bind(this.onPassSelect, this));
 
     this.fontScale.on('change', _.bind(this.saveState, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
@@ -187,7 +189,6 @@ GccDump.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.cursorSelectionThrottledFunction =
         _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
@@ -386,7 +387,7 @@ GccDump.prototype.saveState = function () {
 
 GccDump.prototype.currentState = function () {
     var filters = this.getEffectiveFilters();
-    return {
+    var state =  {
         _compilerid: this.state._compilerid,
         _editorid: this.state._editorid,
         selectedPass: this.state.selectedPass,
@@ -405,6 +406,8 @@ GccDump.prototype.currentState = function () {
         allOption: filters.allOption,
         selection: this.selection,
     };
+    this.paneRenaming.addState(state);
+    return state;
 };
 
 GccDump.prototype.onSettingsChange = function (newSettings) {

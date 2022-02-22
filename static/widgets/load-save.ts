@@ -24,12 +24,12 @@
 
 import _ from 'underscore';
 import { saveAs } from 'file-saver';
-import { Alert } from './alert';
-import { ga } from './analytics';
-import * as local from './local';
-import { Language } from '../types/languages.interfaces';
+import { Alert } from '../alert';
+import { ga } from '../analytics';
+import * as local from '../local';
+import { Language } from '../../types/languages.interfaces';
 
-const history = require('./history');
+const history = require('../history');
 
 
 export class LoadSave {
@@ -44,7 +44,7 @@ export class LoadSave {
 
     constructor() {
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = 'Load-Saver: ';
+        this.alertSystem.prefixMessage = 'Load-Saver';
         this.base = window.httpRoot;
         this.fetchBuiltins().then(() => {}).catch(() => {});
     }

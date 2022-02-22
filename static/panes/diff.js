@@ -24,13 +24,13 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var TomSelect = require('tom-select');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 
@@ -217,6 +217,7 @@ function Diff(hub, container, state) {
         }
     }, this));
 
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -274,6 +275,7 @@ Diff.prototype.initButtons = function (state) {
 
 Diff.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('executeResult', this.onExecuteResult, this);
@@ -289,7 +291,6 @@ Diff.prototype.initCallbacks = function () {
     }, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 
     this.requestResendResult(this.lhs.id);
     this.requestResendResult(this.rhs.id);
@@ -392,6 +393,7 @@ Diff.prototype.updateState = function () {
         lhsdifftype: this.lhs.difftype,
         rhsdifftype: this.rhs.difftype,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     this.container.setState(state);
 };

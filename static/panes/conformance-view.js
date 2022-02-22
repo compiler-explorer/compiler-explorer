@@ -30,11 +30,11 @@ var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
 var ga = require('../analytics').ga;
 var Components = require('../components');
-var LibsWidget = require('../libs-widget').LibsWidget;
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -57,6 +57,8 @@ function Conformance(hub, container, state) {
         allowAdd: true,
     };
     this.stateByLang = {};
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons();
     this.initCallbacks();
@@ -126,6 +128,8 @@ Conformance.prototype.initCallbacks = function () {
         this.eventHub.emit('conformanceViewClose', this.editorId);
     }, this);
 
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
+
     this.container.on('destroy', this.close, this);
     this.container.on('open', function () {
         this.eventHub.emit('conformanceViewOpen', this.editorId);
@@ -133,7 +137,6 @@ Conformance.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -149,12 +152,12 @@ Conformance.prototype.getPaneName = function () {
     return 'Conformance Viewer (Editor #' + this.editorId + ')';
 };
 
-Conformance.prototype.updateTitle = function (compilerCount) {
+Conformance.prototype.updateTitle = function () {
     var compilerText = '';
-    if (compilerCount !== 0) {
-        compilerText = ' ' + compilerCount + '/' + this.maxCompilations;
+    if (this.compilerPickers.length !== 0) {
+        compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
     }
-    var name = this.paneName ? this.paneName : this.getPaneName() + compilerText;
+    var name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
     this.container.setTitle(_.escape(name));
 };
 
@@ -372,7 +375,7 @@ Conformance.prototype.handleToolbarUI = function () {
     // Only allow new compilers if we allow for more
     this.addCompilerButton.prop('disabled', compilerCount >= this.maxCompilations);
 
-    this.updateTitle(compilerCount);
+    this.updateTitle();
 };
 
 Conformance.prototype.handleStatusIcon = function (statusIcon, status) {
@@ -386,12 +389,14 @@ Conformance.prototype.currentState = function () {
             options: compilerEntry.optionsField.val() || '',
         };
     });
-    return {
+    var state = {
         editorid: this.editorId,
         langId: this.langId,
         compilers: compilers,
         libs: this.currentLibs,
     };
+    this.paneRenaming.addState(state);
+    return state;
 };
 
 Conformance.prototype.saveState = function () {

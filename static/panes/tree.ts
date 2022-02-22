@@ -26,7 +26,7 @@ import {MultifileFile, MultifileService, MultifileServiceState} from '../multifi
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
 import { Settings } from '../settings';
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -34,7 +34,7 @@ const Alert = require('../alert').Alert;
 const Components = require('../components');
 const ga = require('../analytics').ga;
 const TomSelect = require('tom-select');
-const Toggles = require('../toggles').Toggles;
+const Toggles = require('../widgets/toggles').Toggles;
 const options = require('../options').options;
 const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
@@ -73,6 +73,7 @@ export class Tree {
     private hideable: any;
     private readonly topBar: any;
     private paneName: string;
+    private paneRenaming: PaneRenaming;
 
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
@@ -86,7 +87,7 @@ export class Tree {
         this.httpRoot = window.httpRoot;
 
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = 'Tree #' + this.id + ': ';
+        this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
         this.root = this.domRoot.find('.tree');
         this.rowTemplate = $('#tree-editor-tpl');
@@ -126,6 +127,8 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
+        this.paneRenaming = new PaneRenaming(this, state);
+
         this.initInputs(state);
         this.initButtons(state);
         this.initCallbacks();
@@ -143,7 +146,6 @@ export class Tree {
             onChange: this.onLanguageChange.bind(this),
         });
 
-        this.updateTitle();
         this.onLanguageChange(this.multifileService.getLanguageId());
 
         ga.proxy('send', {
@@ -177,12 +179,14 @@ export class Tree {
     }
 
     public currentState(): TreeState {
-        return {
+        const state = {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
             ...this.multifileService.getState(),
         };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     private updateState() {
@@ -199,7 +203,8 @@ export class Tree {
             this.eventHub.emit('treeOpen', this.id);
         });
         this.container.on('destroy', this.close, this);
-        PaneRenaming.registerCallback(this);
+
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);

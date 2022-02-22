@@ -24,7 +24,7 @@
 
 'use strict';
 
-import { Toggles } from '../toggles';
+import { Toggles } from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
@@ -124,10 +124,6 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
             ' (Editor #' + this.compilerInfo.editorId + ', Compiler #' + this.compilerInfo.compilerId + ')';
     }
 
-    override updateTitle() {
-        this.container.setTitle(this.getPaneName());
-    }
-
     showPpResults(results) {
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
@@ -174,6 +170,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
             'filter-headers': options['filter-headers'],
             'clang-format': options['clang-format'],
         };
+        this.paneRenaming.addState(state);
         this.fontScale.addState(state);
         return state;
     }

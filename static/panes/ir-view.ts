@@ -34,7 +34,7 @@ import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;
@@ -103,6 +103,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours.bind(this),
             this.onCompileResult.bind(this));
 
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+
         this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
         this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine.bind(this));
@@ -113,7 +115,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
-        PaneRenaming.registerCallback(this);
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {

@@ -53,6 +53,8 @@ levels:
       - Kade Phillips
       - Brendan Bellows
       - Daniel Williams
+      - name: Paul Williams
+        url: https://pcwilliams.design/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -135,7 +137,6 @@ levels:
       - Reiner Eiteljoerge
       - Johnathan Roatch
       - John Biesnecker
-      - Paul Williams
       - CB Bailey
       - Joe Doyle
       - Jason Rice

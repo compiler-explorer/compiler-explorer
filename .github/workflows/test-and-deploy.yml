@@ -30,7 +30,7 @@ jobs:
         run: |
           npm run lint
           npm run ci-test
-          python3 ./etc/scripts/orphancompiler.py
+          python3 ./etc/scripts/util/orphancompiler.py
       - name: Code coverage
         run: npm run codecov
 

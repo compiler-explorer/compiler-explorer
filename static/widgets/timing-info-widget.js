@@ -138,7 +138,7 @@ function displayData(data) {
 
     var settings = Settings.getStoredSettings();
     var fontColour = Chart.defaults.color;
-    if (settings != null && settings.theme === 'dark') {
+    if (settings != null && settings.theme !== 'default') {
         fontColour = '#ffffff';
     }
 

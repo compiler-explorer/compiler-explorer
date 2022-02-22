@@ -28,11 +28,11 @@ import * as monaco from 'monaco-editor';
 
 import { MonacoPaneState, PaneState } from './pane.interfaces';
 
-import { FontScale } from '../fontscale';
+import { FontScale } from '../widgets/fontscale';
 import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 
 interface PaneCompilerState {
@@ -56,6 +56,7 @@ export abstract class Pane<S> {
     isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
     paneName: string;
+    paneRenaming: PaneRenaming;
 
     /**
      * Base constructor for any pane. Performs common initialization tasks such
@@ -78,11 +79,12 @@ export abstract class Pane<S> {
         };
         this.topBar = this.domRoot.find('.top-bar');
 
+        this.paneRenaming = new PaneRenaming(this, state);
+
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerEditorActions();
-        this.updateTitle();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -195,9 +197,9 @@ export abstract class Pane<S> {
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
-        PaneRenaming.registerCallback(this);
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
         this.eventHub.on('compiler', this.onCompiler.bind(this));
         this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
@@ -207,7 +209,7 @@ export abstract class Pane<S> {
     }
 
     protected updateTitle() {
-        const name = this.paneName ? this.paneName : this.getPaneName();
+        const name = this.paneName ?? this.getPaneName();
         this.container.setTitle(_.escape(name));
     }
 
@@ -223,11 +225,13 @@ export abstract class Pane<S> {
     }
 
     getCurrentState(): PaneState {
-        return {
+        const state = {
             id: this.compilerInfo.compilerId,
             compilerName: this.compilerInfo.compilerName,
             editorid: this.compilerInfo.editorId,
         };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     updateState() {

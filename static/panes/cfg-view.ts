@@ -24,12 +24,12 @@
 
 import * as vis from 'vis-network';
 import _ from 'underscore';
-import { Toggles } from '../toggles';
+import { Toggles } from '../widgets/toggles';
 import { ga } from '../analytics';
 import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 interface NodeInfo {
     edges: string[],
@@ -67,6 +67,7 @@ export class Cfg {
     togglePhysicsTitle: string;
     topBar: JQuery;
     paneName: string;
+    paneRenaming: PaneRenaming;
 
     constructor(hub: any, container: Container, state: CfgState) {
         this.container = container;
@@ -166,9 +167,10 @@ export class Cfg {
             // that forces to pass the whole options object. This is a workaround to make it type check
         );
 
+        this.paneRenaming = new PaneRenaming(this, state);
+
         this.initCallbacks();
         this.updateButtons();
-        this.updateTitle();
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -237,6 +239,8 @@ export class Cfg {
         this.cfgVisualiser.on('dragEnd', this.saveState.bind(this));
         this.cfgVisualiser.on('zoom', this.saveState.bind(this));
 
+        this.paneRenaming.on('renamePane', this.saveState.bind(this));
+
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('compiler', this.onCompiler, this);
@@ -245,7 +249,6 @@ export class Cfg {
         this.container.on('destroy', this.close, this);
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
-        PaneRenaming.registerCallback(this);
         this.eventHub.emit('cfgViewOpened', this.compilerId);
         this.eventHub.emit('requestFilters', this.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerId);
@@ -414,7 +417,7 @@ export class Cfg {
     }
 
     currentState(): CfgState {
-        return {
+        const state = {
             id: this.compilerId,
             editorid: this._editorid,
             selectedFn: this.currentFunc,
@@ -422,6 +425,8 @@ export class Cfg {
             scale: this.cfgVisualiser.getScale(),
             options: this.getEffectiveOptions(),
         };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     adaptStructure(names: string[]) {
