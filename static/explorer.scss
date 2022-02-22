@@ -884,17 +884,10 @@ html[data-theme=dark] {
     font-size: small;
     border: none;
     user-select: text;
-    position: relative;
 }
 
 .currentCursorPosition .invisiblePlaceholder {
-    opacity: 0;
+    height: 0px;
+    overflow: hidden;
     cursor: default;
-}
-
-.currentCursorPosition .currentCursorPositionContent {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
