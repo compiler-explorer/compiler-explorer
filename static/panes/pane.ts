@@ -35,7 +35,7 @@ import * as utils from '../utils';
 import { PaneRenaming } from '../widgets/pane-renaming';
 
 
-interface PaneCompilerState {
+class PaneCompilerState {
     compilerId: number;
     compilerName: string;
     editorId: number;
@@ -265,8 +265,11 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
 
 
     getCurrentState(): MonacoPaneState {
-        const state = super.getCurrentState() as MonacoPaneState;
-        state.selection = this.selection;
+        const parent = super.getCurrentState();
+        const state: MonacoPaneState = {
+            selection: this.selection,
+            ...parent,
+        };
         this.fontScale.addState(state);
         return state;
     }
