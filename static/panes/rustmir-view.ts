@@ -97,7 +97,7 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirSt
 
     showRustMirResults(result: any[]): void {
         if (!this.editor) return;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust MIR generated>');
 

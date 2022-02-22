@@ -47,8 +47,8 @@ var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
-var SimpleCook = require('./simplecook').SimpleCook;
-var HistoryWidget = require('./history-widget').HistoryWidget;
+var SimpleCook = require('./widgets/simplecook').SimpleCook;
+var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
 var presentation = require('./presentation');
 

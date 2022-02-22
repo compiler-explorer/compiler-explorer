@@ -26,11 +26,11 @@
 
 var _ = require('underscore');
 var $ = require('jquery');
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var AnsiToHtml = require('../ansi-to-html').Filter;
-var Toggles = require('../toggles').Toggles;
+var Toggles = require('../widgets/toggles').Toggles;
 var ga = require('../analytics').ga;
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -60,11 +60,12 @@ function Output(hub, container, state) {
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initButtons();
     this.initCallbacks(state);
 
     this.onOptionsChange();
-    this.updateTitle();
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -76,10 +77,11 @@ Output.prototype.initCallbacks = function (state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
+
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
-    PaneRenaming.registerCallback(this);
 
     this.eventHub.on('compiling', this.onCompiling, this);
     this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -116,6 +118,7 @@ Output.prototype.currentState = function () {
         tree: this.treeId,
         wrap: options.wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

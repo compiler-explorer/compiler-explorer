@@ -24,7 +24,7 @@
 
 'use strict';
 
-import { Toggles } from '../toggles';
+import { Toggles } from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
@@ -92,10 +92,10 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     override resize() {
-        const topBarHeight = this.topBar.outerHeight(true);
+        const topBarHeight = this.topBar.outerHeight(true) as number;
         this.editor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight,
+            width: this.domRoot.width() as number,
+            height: this.domRoot.height() as number - topBarHeight,
         });
     }
 
@@ -109,21 +109,18 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
 
         const lang = compiler.lang === 'c' ? 'c' : compiler.lang === 'c++' ? 'cpp' : 'plaintext';
-        if (this.getCurrentEditorLanguage() !== lang) {
-            monaco.editor.setModelLanguage(this.editor.getModel(), lang);
+        const model = this.editor.getModel();
+        if (model != null && this.getCurrentEditorLanguage() !== lang) {
+            monaco.editor.setModelLanguage(model, lang);
         }
     }
 
     getCurrentEditorLanguage() {
-        return this.editor.getModel().getLanguageId();
+        return this.editor.getModel()?.getLanguageId();
     }
 
     override getDefaultPaneName() {
         return 'Preprocessor Output';
-    }
-
-    getDisplayablePp(ppResult) {
-        return '**' + ppResult.ppType + '** - ' + ppResult.displayString;
     }
 
     showPpResults(results) {
@@ -174,6 +171,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
             'filter-headers': options['filter-headers'],
             'clang-format': options['clang-format'],
         };
+        this.paneRenaming.addState(state);
         this.fontScale.addState(state);
         return state;
     }

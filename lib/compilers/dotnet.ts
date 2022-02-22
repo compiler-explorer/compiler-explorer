@@ -27,8 +27,8 @@ import path from 'path';
 import fs from 'fs-extra';
 
 /// <reference types="../base-compiler" />
-import { DotNetAsmParser } from '../asm-parser-dotnet';
 import { BaseCompiler } from '../base-compiler';
+import { DotNetAsmParser } from '../parsers/asm-parser-dotnet';
 
 class DotNetCompiler extends BaseCompiler {
     private rID: string;
@@ -115,7 +115,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.customCwd = programDir;
         await fs.writeFile(projectFilePath, projectFileContent);
 
-        let crossgen2Options = [];
+        const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
 
         for (const configurableOption of configurableOptions) {
@@ -123,7 +123,7 @@ class DotNetCompiler extends BaseCompiler {
             if (optionIndex === -1 || optionIndex === options.length - 1) {
                 continue;
             }
-            crossgen2Options = crossgen2Options.concat([options[optionIndex], options[optionIndex + 1]]);
+            crossgen2Options.push(options[optionIndex], options[optionIndex + 1]);
         }
 
         const configurableSwitches = this.configurableSwitches;

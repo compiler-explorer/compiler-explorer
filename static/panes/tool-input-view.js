@@ -24,14 +24,13 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 var Settings = require('../settings').Settings;
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 
@@ -90,7 +89,6 @@ ToolInputView.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
-    PaneRenaming.registerCallback(this);
 
     this.container.layoutManager.on('initialised', function () {
         // Once initialized, let everyone know what text we have.

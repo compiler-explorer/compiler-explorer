@@ -28,11 +28,11 @@ import * as monaco from 'monaco-editor';
 
 import { BasePaneState, PaneCompilerState } from './pane.interfaces';
 
-import { FontScale } from '../fontscale';
+import { FontScale } from '../widgets/fontscale';
 import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
-import { PaneRenaming } from '../pane-renaming';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 /**
  * Basic container for a tool pane in Compiler Explorer
@@ -55,6 +55,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
     paneName: string;
+    paneRenaming: PaneRenaming;
 
     /**
      * Base constructor for any pane. Performs common initialization tasks such
@@ -82,11 +83,12 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
 
+        this.paneRenaming = new PaneRenaming(this, state);
+
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerEditorActions();
-        this.updateTitle();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -194,9 +196,9 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
         this.fontScale.on('change', this.updateState.bind(this));
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
-        PaneRenaming.registerCallback(this);
         this.eventHub.on('compileResult', this.onCompileResult.bind(this));
         this.eventHub.on('compiler', this.onCompiler.bind(this));
         this.eventHub.on('compilerClose', this.onCompilerClose.bind(this));
@@ -227,7 +229,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
 
     /** Get name for the pane */
     protected getPaneName() {
-        return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+        return this.paneName ?? this.getDefaultPaneName() + ' ' + this.getPaneTag();
     }
 
     /** Update the pane's title, called when the pane name or compiler info changes */
@@ -268,6 +270,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
             treeId: this.compilerInfo.treeId,
             selection: this.selection,
         };
+        this.paneRenaming.addState(state);
         this.fontScale.addState(state);
         return state;
     }
@@ -281,8 +284,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
             this.topBar, this.hideable);
         if (!this.editor) return;
         this.editor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight,
+            width: this.domRoot.width() as number,
+            height: this.domRoot.height() as number - topBarHeight,
         });
     }
 }

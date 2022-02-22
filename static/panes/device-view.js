@@ -24,14 +24,14 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 var TomSelect = require('tom-select');
 
@@ -81,6 +81,8 @@ function DeviceAsm(hub, container, state) {
         plugins: ['input_autogrow'],
     });
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initButtons(state);
     this.initCallbacks();
     this.initEditorActions();
@@ -88,7 +90,6 @@ function DeviceAsm(hub, container, state) {
     if (state && state.irOutput) {
         this.showDeviceAsmResults(state.irOutput);
     }
-    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -106,11 +107,14 @@ DeviceAsm.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            var desiredLine = ed.getPosition().lineNumber - 1;
-            var source = this.deviceCode[desiredLine].source;
-            if (source !== null && source.file === null) {
-                // a null file means it was the user's source
-                this.eventHub.emit('editorLinkLine', this._editorId, source.line, -1, true);
+            var position = ed.getPosition();
+            if (position != null) {
+                var desiredLine = position.lineNumber - 1;
+                var source = this.deviceCode[desiredLine].source;
+                if (source !== null && source.file === null) {
+                    // a null file means it was the user's source
+                    this.eventHub.emit('editorLinkLine', this._editorId, source.line, -1, true);
+                }
             }
         }, this),
     });
@@ -137,6 +141,7 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.fontScale.on('change', _.bind(this.updateState, this));
     this.selectize.on('change', _.bind(this.onDeviceSelect, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.container.on('destroy', this.close, this);
 
@@ -151,7 +156,6 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 };
 
 // TODO: de-dupe with compiler etc
@@ -305,6 +309,7 @@ DeviceAsm.prototype.currentState = function () {
         selection: this.selection,
         device: this.selectedDevice,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

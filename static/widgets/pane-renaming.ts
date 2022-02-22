@@ -22,35 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import _ from 'underscore';
 import { Tab } from 'golden-layout';
+import { EventEmitter } from 'events';
+import { Alert } from '../alert';
 
-//const Alert = require('alert').Alert;
+export class PaneRenaming extends EventEmitter.EventEmitter {
+    private pane: any;
+    private alertSystem: any;
+    private state: any;
 
-export class PaneRenaming {
-    public static registerCallback(pane: any): void {
-        // const alertSystem = new Alert();
-        // const addRenameButton = function (parentTab: Tab) {
-        //     return PaneRenaming.addRenameButton.call(this, parentTab, pane, alertSystem);
-        // };
-        // pane.container.on('tab', addRenameButton);
+    constructor(pane: any, state: any) {
+        super();
+        this.pane = pane;
+        this.alertSystem = this.pane.alertSystem ?? new Alert();
+        this.state = state;
+
+        this.loadSavedPaneName();
+        this.registerCallbacks();
     }
 
-    public static addRenameButton(parent: Tab, pane: any, alertSystem: any): void {
+    public addState(state: any) {
+        state.paneName = this.pane.paneName;
+    }
+
+    private loadSavedPaneName() {
+        this.pane.paneName = this.state.paneName;
+        this.pane.updateTitle();
+    }
+
+    private registerCallbacks(): void {
+        this.pane.container.on('tab', this.addRenameButton.bind(this));
+    }
+
+    private addRenameButton(parent: Tab): void {
         // Add little pencil icon next to close tab
         const btn = $(`<div class="lm_modify_tab_title"></div>`);
         parent.element.prepend(btn);
         parent.titleElement.css('margin-right', '15px');
 
+        // Open modal for entering new pane name
         btn.on('click', () => {
-            alertSystem.enterSomething('Rename pane', 'Please enter new pane name', pane.getPaneName(), {
+            const modalTextPlaceholder = this.pane.paneName || this.pane.getPaneName();
+            this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', modalTextPlaceholder, {
                 yes: (value: string) => {
-                    pane.paneName = value;
-                    pane.updateTitle();
+                    // Update title and emit event to save it into the state
+                    this.pane.paneName = value;
+                    this.pane.updateTitle();
+                    this.emit('renamePane');
                 },
                 no: () => {
-                    alertSystem.resolve(false);
+                    this.alertSystem.resolve(false);
                 },
                 yesClass: 'btn btn-primary',
                 yesHtml: 'Rename',

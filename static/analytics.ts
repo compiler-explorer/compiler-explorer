@@ -51,10 +51,15 @@ class GAProxy {
                         (i[r].q = i[r].q || []).push(arguments);
                     };
                     i[r].l = Date.now();
+                    // @ts-ignore
                     a = s.createElement(o);
+                    // @ts-ignore
                     m = s.getElementsByTagName(o)[0];
+                    // @ts-ignore
                     a.async = 1;
+                    // @ts-ignore
                     a.src = g;
+                    // @ts-ignore
                     m.parentNode.insertBefore(a, m);
                 })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
                 window.ga('set', 'anonymizeIp', true);

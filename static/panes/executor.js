@@ -26,18 +26,18 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var ga = require('../analytics').ga;
-var Toggles = require('../toggles').Toggles;
-var FontScale = require('../fontscale').FontScale;
+var Toggles = require('../widgets/toggles').Toggles;
+var FontScale = require('../widgets/fontscale').FontScale;
 var options = require('../options').options;
 var Alert = require('../alert').Alert;
-var LibsWidget = require('../libs-widget').LibsWidget;
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var AnsiToHtml = require('../ansi-to-html').Filter;
-var TimingWidget = require('../timing-info-widget');
+var TimingWidget = require('../widgets/timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -86,7 +86,7 @@ function Executor(hub, container, state) {
     this.nextCMakeRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -102,6 +102,8 @@ function Executor(hub, container, state) {
         _.bind(this.onCompilerChange, this),
         this.compilerIsVisible
     );
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -699,6 +701,7 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
     this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
@@ -707,7 +710,6 @@ Executor.prototype.initListeners = function () {
     this.container.on('open', function () {
         this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
     }, this);
-    PaneRenaming.registerCallback(this);
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -911,6 +913,7 @@ Executor.prototype.currentState = function () {
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
         wrap: this.toggleWrapButton.get().wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
