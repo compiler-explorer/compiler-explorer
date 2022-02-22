@@ -346,17 +346,17 @@ Editor.prototype.onDidChangeCursorSelection = function (e) {
 
 Editor.prototype.onDidChangeCursorPosition = function (e) {
     if (e.position) {
-        this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
+        this.currentCursorPositionContent.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
     }
 };
 
 Editor.prototype.onDidFocusEditorText = function () {
-    this.currentCursorPosition.show();
+    var position = this.editor.getPosition();
+    this.currentCursorPositionContent.text('(' + position.lineNumber + ', ' + position.column + ')');
 };
 
 Editor.prototype.onDidBlurEditorText = function () {
-    this.currentCursorPosition.text('');
-    this.currentCursorPosition.hide();
+    this.currentCursorPositionContent.text('');
 };
 
 Editor.prototype.onEscapeKey = function () {
@@ -485,8 +485,7 @@ Editor.prototype.initButtons = function (state) {
         }, this));
     }
 
-    this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
-    this.currentCursorPosition.hide();
+    this.currentCursorPositionContent = this.domRoot.find('.currentCursorPositionContent');
 };
 
 Editor.prototype.handleCtrlS = function (event) {
