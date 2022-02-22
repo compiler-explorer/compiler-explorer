@@ -789,8 +789,22 @@ if (opts.version) {
     process.exit(0);
 }
 
+process.on('uncaughtException', terminationHandler('uncaughtException', 1));
+process.on('SIGINT', terminationHandler('SIGINT', 0));
+process.on('SIGTERM', terminationHandler('SIGTERM', 0));
+process.on('SIGQUIT', terminationHandler('SIGQUIT', 0));
+
+function terminationHandler(name, code) {
+  return (error) => {
+    logger.info(`stopping process: ${name}`);
+    if (error && error instanceof Error) {
+      logger.error(error);
+    }
+    process.exit(code);
+  };
+}
+
 main()
-    .then(() => null)
     .catch(err => {
         logger.error('Top-level error (shutting down):', err);
         process.exit(1);
