@@ -50,7 +50,7 @@ var jsCookie = require('js-cookie');
 var SimpleCook = require('./widgets/simplecook').SimpleCook;
 var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
-var presentation = require('./presentation');
+var Presentation = require('./presentation').Presentation;
 
 if (!window.PRODUCTION) {
     require('./tests/_all');
@@ -207,14 +207,6 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
-
-    if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
-        $('#share').remove();
-        $('.ui-presentation-control').removeClass('d-none');
-        $('.ui-presentation-first').click(presentation.first);
-        $('.ui-presentation-prev').click(presentation.prev);
-        $('.ui-presentation-next').click(presentation.next);
-    }
 }
 
 function configFromEmbedded(embeddedUrl) {
@@ -262,13 +254,22 @@ function findConfig(defaultConfig, options) {
     var config;
     if (!options.embedded) {
         if (options.slides) {
-            presentation.init(window.compilerExplorerOptions.slides.length);
-            var currentSlide = presentation.getCurrentSlide();
+            var presentation = new Presentation(window.compilerExplorerOptions.slides.length);
+            var currentSlide = presentation.currentSlide;
             if (currentSlide < options.slides.length) {
                 config = options.slides[currentSlide];
             } else {
-                presentation.setCurrentSlide(0);
+                presentation.currentSlide = 0;
                 config = options.slides[0];
+            }
+            if (isMobileViewer()
+                && window.compilerExplorerOptions.slides
+                && window.compilerExplorerOptions.slides.length > 1) {
+                $('#share').remove();
+                $('.ui-presentation-control').removeClass('d-none');
+                $('.ui-presentation-first').on('click', presentation.first.bind(presentation));
+                $('.ui-presentation-prev').on('click', presentation.previous.bind(presentation));
+                $('.ui-presentation-next').on('click', presentation.next.bind(presentation));
             }
         } else {
             if (options.config) {
