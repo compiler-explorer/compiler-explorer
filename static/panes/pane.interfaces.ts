@@ -33,7 +33,8 @@ import * as monaco from 'monaco-editor';
 export class PaneState {
     id: number;
     compilerName: string;
-    editorid: number;
+    editorid?: number;
+    treeid?: number;
 }
 
 // TODO(supergrecko): get the full type

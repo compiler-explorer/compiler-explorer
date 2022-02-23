@@ -882,7 +882,7 @@ Executor.prototype.onToggleWrapChange = function () {
 };
 
 Executor.prototype.sendExecutor = function () {
-    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId);
+    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId, this.sourceTreeId);
 };
 
 Executor.prototype.onEditorClose = function (editor) {
