@@ -462,7 +462,7 @@ function start() {
         }],
     };
 
-    $(window).bind('hashchange', function () {
+    $(window).on('hashchange', function () {
         // punt on hash events and just reload the page if there's a hash
         if (window.location.hash.substr(1)) window.location.reload();
     });
@@ -507,7 +507,7 @@ function start() {
     }
 
     $(window)
-        .resize(sizeRoot)
+        .on('resize', sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
             var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
@@ -533,7 +533,7 @@ function start() {
                 addDropdown.dropdown('toggle');
             });
 
-        thing.click(function () {
+        thing.on('click', function () {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());
             } else {
@@ -555,7 +555,7 @@ function start() {
 
     if (hashPart) {
         var element = $(hashPart);
-        if (element) element.click();
+        if (element) element.trigger('click');
     }
     initPolicies(options);
 

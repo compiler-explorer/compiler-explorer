@@ -1079,7 +1079,7 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
     });
 
     // Delete trailing empty lines
-    if ($.isArray(result.asm)) {
+    if (Array.isArray(result.asm)) {
         var indexToDiscard = _.findLastIndex(result.asm, function (line) {
             return !_.isEmpty(line.text);
         });
@@ -1828,7 +1828,7 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
                 '<span class=\'argdescription\'>' + arg.description + '</span>' +
                 '</div>');
 
-            argumentButton.click(_.bind(function () {
+            argumentButton.on('click', _.bind(function () {
                 var button = argumentButton;
                 var curOptions = this.optionsField.val();
                 if (curOptions.length > 0) {

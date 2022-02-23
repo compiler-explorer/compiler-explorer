@@ -63,6 +63,6 @@ function initMenus() {
     new Toggles($('.filters'));
 }
 
-$(document).ready(function () {
+$(document).on('ready', function () {
     initMenus();
 });
