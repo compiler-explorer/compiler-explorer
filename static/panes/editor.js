@@ -352,7 +352,9 @@ Editor.prototype.onDidChangeCursorPosition = function (e) {
 
 Editor.prototype.onDidFocusEditorText = function () {
     var position = this.editor.getPosition();
-    this.currentCursorPosition.text('(' + position.lineNumber + ', ' + position.column + ')');
+    if (position) {
+        this.currentCursorPosition.text('(' + position.lineNumber + ', ' + position.column + ')');
+    }
     this.currentCursorPosition.show();
 };
 
