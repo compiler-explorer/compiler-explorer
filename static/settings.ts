@@ -79,7 +79,7 @@ export interface SiteSettings {
     wordWrap: boolean;
 }
 
-class BaseSetting<T> {
+class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
 
     protected val(): string | number | string[] {
@@ -88,16 +88,16 @@ class BaseSetting<T> {
         return this.elem.val()!;
     }
 
-    getUi(): T {
+    getUi(): any {
         return this.val();
     }
 
-    putUi(value: T): void {
+    putUi(value: any): void {
         this.elem.val(value);
     }
 }
 
-class Checkbox extends BaseSetting<boolean> {
+class Checkbox extends BaseSetting {
     override getUi(): boolean {
         return !!this.elem.prop('checked');
     }
@@ -107,7 +107,7 @@ class Checkbox extends BaseSetting<boolean> {
     }
 }
 
-class Select extends BaseSetting<string> {
+class Select extends BaseSetting {
     constructor(elem: JQuery, name: string, populate: {label: string, desc: string}[]) {
         super(elem, name);
 
@@ -130,7 +130,7 @@ interface SliderSettings {
     formatter: (number) => string;
 }
 
-class Slider extends BaseSetting<number> {
+class Slider extends BaseSetting {
     private readonly formatter: (number) => string;
     private display: JQuery;
     private max: number;
@@ -167,9 +167,9 @@ class Slider extends BaseSetting<number> {
     }
 }
 
-class Textbox extends BaseSetting<string> {}
+class Textbox extends BaseSetting {}
 
-class Numeric extends BaseSetting<number> {
+class Numeric extends BaseSetting {
     private readonly min: number;
     private readonly max: number;
 
@@ -196,10 +196,8 @@ class Numeric extends BaseSetting<number> {
     }
 }
 
-type Setting = Numeric | Textbox | Slider | Select | Checkbox
-
 export class Settings {
-    private readonly settingsObjs: Setting[];
+    private readonly settingsObjs: BaseSetting[];
 
     constructor(private root: JQuery,
                 private settings: SiteSettings,
@@ -243,7 +241,7 @@ export class Settings {
         }
     }
 
-    private add(setting: Setting, defaultValue: any) {
+    private add(setting: BaseSetting, defaultValue: any) {
         const key = setting.name;
         if (this.settings[key] === undefined) this.settings[key] = defaultValue;
         this.settingsObjs.push(setting);
