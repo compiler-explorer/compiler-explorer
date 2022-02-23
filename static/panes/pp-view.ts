@@ -119,9 +119,8 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         return this.editor.getModel()?.getLanguageId();
     }
 
-    override getPaneName() {
-        return 'Preprocessor Output ' + this.compilerInfo.compilerName +
-            ' (Editor #' + this.compilerInfo.editorId + ', Compiler #' + this.compilerInfo.compilerId + ')';
+    override getDefaultPaneName() {
+        return 'Preprocessor Output';
     }
 
     showPpResults(results) {
@@ -146,10 +145,11 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         }
     }
 
-    override onCompiler(id, compiler, options, editorid) {
+    override onCompiler(id, compiler, options, editorid, treeid) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;
+            this.compilerInfo.treeId = treeid;
             this.updateTitle();
             if (compiler && !compiler.supportsPpView) {
                 this.editor.setValue('<Preprocessor output is not supported for this compiler>');
@@ -166,6 +166,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         const state = {
             id: this.compilerInfo.compilerId,
             editorid: this.compilerInfo.editorId,
+            treeid: this.compilerInfo.treeId,
             selection: this.selection,
             'filter-headers': options['filter-headers'],
             'clang-format': options['clang-format'],

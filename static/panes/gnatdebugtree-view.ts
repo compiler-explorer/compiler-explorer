@@ -62,10 +62,8 @@ export class GnatDebugTree extends Pane<monaco.editor.IStandaloneCodeEditor, Gna
         });
     }
 
-    override getPaneName(): string {
-        return `GNAT Debug Tree Viewer ${this.compilerInfo.compilerName}` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'GNAT Debug Tree Viewer';
     }
 
     override registerCallbacks(): void {
@@ -84,10 +82,12 @@ export class GnatDebugTree extends Pane<monaco.editor.IStandaloneCodeEditor, Gna
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
+        treeId: number | boolean): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
+            this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsGnatDebugViews) {
                 this.showGnatDebugTreeResults([{text: '<GNAT Debug Tree output is not supported for this compiler>'}]);

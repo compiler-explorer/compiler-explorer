@@ -71,6 +71,7 @@ function GccDump(hub, container, state) {
 
     this.state._compilerid = state._compilerid;
     this.state._editorid = state._editorid;
+    this.state._treeid = state._treeid;
     this._compilerName = state._compilerName;
 
     this.awaitingInitialResults = false;
@@ -324,14 +325,26 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
     this.saveState();
 };
 
+GccDump.prototype.getDefaultPaneName = function () {
+    return 'GCC Tree/RTL Viewer';
+};
+
+GccDump.prototype.getPaneTag = function () {
+    if(this.state._editorid !== false) {
+        return this._compilerName
+                + ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
+    } else {
+        return this._compilerName
+                + ' (Tree #' + this.state._treeid + ', Compiler #' + this.state._compilerid + ')';
+    }
+};
+
 GccDump.prototype.getPaneName = function () {
-    return 'GCC Tree/RTL Viewer ' + (this._compilerName || '') +
-        ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
 GccDump.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 GccDump.prototype.showGccDumpResults = function (results) {
@@ -347,10 +360,11 @@ GccDump.prototype.showGccDumpResults = function (results) {
     }
 };
 
-GccDump.prototype.onCompiler = function (id, compiler, options, editorid) {
+GccDump.prototype.onCompiler = function (id, compiler, options, editorid, treeid) {
     if (id === this.state._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this.state._editorid = editorid;
+        this.state._treeid = treeid;
         this.updateTitle();
     }
 };
@@ -390,6 +404,7 @@ GccDump.prototype.currentState = function () {
     var state =  {
         _compilerid: this.state._compilerid,
         _editorid: this.state._editorid,
+        _treeid: this.state._treeid,
         selectedPass: this.state.selectedPass,
         treeDump: filters.treeDump,
         rtlDump: filters.rtlDump,

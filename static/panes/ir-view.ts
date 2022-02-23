@@ -71,10 +71,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         });
     }
 
-    override getPaneName(): string {
-        return `LLVM IR Viewer ${this.compilerInfo.compilerName} ` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'LLVM IR Viewer';
     }
 
     override registerEditorActions(): void {
@@ -126,10 +124,11 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
+        this.compilerInfo.treeId = treeId;
         this.updateTitle();
         if (compiler && !compiler.supportsIrView) {
             this.editor.setValue('<LLVM IR output is not supported for this compiler>');

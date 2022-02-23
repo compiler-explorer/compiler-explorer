@@ -78,6 +78,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
             compilerId: state.id,
             compilerName: state.compilerName,
             editorId: state.editorid,
+            treeId: state.treeid,
         };
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
@@ -142,22 +143,6 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     registerEditorActions(): void {}
 
     /**
-     * Produce a textual title for the pane
-     *
-     * Typical implementation uses the compiler and editor ids in combination
-     * with a name.
-     *
-     * This title is attached to the pane in the UI.
-     *
-     * ```ts
-     * return `Rust MIR Viewer ${this.compilerInfo.compilerName}` +
-     *     `(Editor #${this.compilerInfo.editorId}, ` +
-     *     `Compiler #${this.compilerInfo.compilerId})`;
-     * ```
-     */
-    abstract getPaneName(): string;
-
-    /**
      * Handle user selected compiler change.
      *
      * This event is triggered when the user selects a different compiler in the
@@ -177,7 +162,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
      * @param options
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number): void;
+    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number,
+                        treeId: number): void;
 
     /**
      * Handle compilation result.
@@ -221,9 +207,34 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         this.eventHub.on('resize', this.resize.bind(this));
     }
 
+    /**
+     * Produce a default name for the pane. Typical implementation
+     * looks like this:
+     *
+     * ```ts
+     * return 'Rust MIR Viewer';
+     * ```
+     */
+    abstract getDefaultPaneName(): string;
+
+    /** Generate "(Editor #1, Compiler #1)" tag */
+    protected getPaneTag() {
+        const { compilerName, editorId, treeId, compilerId } = this.compilerInfo;
+        if(editorId !== false) {
+            return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
+        } else {
+            return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
+        }
+    }
+
+    /** Get name for the pane */
+    protected getPaneName() {
+        return this.paneName ?? this.getDefaultPaneName() + ' ' + this.getPaneTag();
+    }
+
+    /** Update the pane's title, called when the pane name or compiler info changes */
     protected updateTitle() {
-        const name = this.paneName ?? this.getPaneName();
-        this.container.setTitle(_.escape(name));
+        this.container.setTitle(_.escape(this.getPaneName()));
     }
 
     /** Close the pane if the compiler this pane was attached to closes */
@@ -256,6 +267,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         const state = {
             id: this.compilerInfo.compilerId,
             editorId: this.compilerInfo.editorId,
+            treeId: this.compilerInfo.treeId,
             selection: this.selection,
         };
         this.paneRenaming.addState(state);

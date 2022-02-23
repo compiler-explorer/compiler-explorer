@@ -55,6 +55,7 @@ function Opt(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+    this._treeid = state.treeid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -132,13 +133,24 @@ Opt.prototype.getCurrentEditorLanguage = function () {
     return this.optEditor.getModel().getLanguageId();
 };
 
+Opt.prototype.getDefaultPaneName = function () {
+    return 'Opt Viewer';
+};
+
+Opt.prototype.getPaneTag = function () {
+    if(this._editorid !== false) {
+        return this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    } else {
+        return this._compilerName + ' (Tree #' + this._treeid + ', Compiler #' + this._compilerid + ')';
+    }
+};
+
 Opt.prototype.getPaneName = function () {
-    return 'Opt Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
 Opt.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -211,6 +223,7 @@ Opt.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
+        treeid: this._treeid,
         selection: this.selection,
     };
     this.paneRenaming.addState(state);

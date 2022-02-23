@@ -52,6 +52,7 @@ function Ast(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+    this._treeid = state.treeid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -144,14 +145,24 @@ Ast.prototype.getCurrentEditorLanguage = function () {
     return this.astEditor.getModel().getLanguageId();
 };
 
+Ast.prototype.getDefaultPaneName = function () {
+    return 'Ast Viewer';
+};
+
+Ast.prototype.getPaneTag = function () {
+    if(this._editorid !== false) {
+        return this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    } else {
+        return this._compilerName + ' (Tree #' + this._treeid + ', Compiler #' + this._compilerid + ')';
+    }
+};
+
 Ast.prototype.getPaneName = function () {
-    return 'Ast Viewer ' + this._compilerName +
-        ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
 Ast.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
@@ -175,10 +186,11 @@ Ast.prototype.showAstResults = function (results) {
     }
 };
 
-Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
+Ast.prototype.onCompiler = function (id, compiler, options, editorid, treeid) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
+        this._treeid = treeid;
         this.updateTitle();
         if (compiler && !compiler.supportsAstView) {
             this.astEditor.setValue('<AST output is not supported for this compiler>');
@@ -224,6 +236,7 @@ Ast.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
+        treeid: this._treeid,
         selection: this.selection,
     };
     this.paneRenaming.addState(state);

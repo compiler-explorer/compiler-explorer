@@ -184,11 +184,12 @@ function Diff(hub, container, state) {
             items: [],
             render: {
                 option: function (item, escape) {
+                    var origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
                     return '<div>' +
                         '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
                         '<span class="options">' + escape(item.options) + '</span>' +
                         '<ul class="meta">' +
-                        '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
+                        '<li class="editor">' + escape(origin) + '</li>' +
                         '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
                         '</ul></div>';
                 },
@@ -314,7 +315,7 @@ Diff.prototype.requestResendResult = function (id) {
     }
 };
 
-Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
+Diff.prototype.onCompiler = function (id, compiler, options, editorId, treeId) {
     if (!compiler) return;
     options = options || '';
     var name = compiler.name + ' ' + options;
@@ -328,6 +329,7 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
         name: name,
         options: options,
         editorId: editorId,
+        treeId: treeId,
         compiler: compiler,
     };
     if (!this.lhs.id) {
@@ -342,8 +344,8 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     this.updateCompilers();
 };
 
-Diff.prototype.onExecutor = function (id, compiler, options, editorId) {
-    this.onCompiler(id + '_exec', compiler, options, editorId);
+Diff.prototype.onExecutor = function (id, compiler, options, editorId, treeId) {
+    this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
 };
 
 Diff.prototype.onCompilerClose = function (id) {

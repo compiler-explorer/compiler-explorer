@@ -233,7 +233,7 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
     var createOptView = _.bind(function () {
         return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createFlagsView = _.bind(function () {
@@ -246,56 +246,56 @@ Compiler.prototype.initPanerButtons = function () {
 
     var createPpView = _.bind(function () {
         return Components.getPpViewWith(this.id, this.source, this.lastResult.ppOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createIrView = _.bind(function () {
         return Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createDeviceView = _.bind(function () {
         return Components.getDeviceViewWith(this.id, this.source, this.lastResult.devices, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createRustMirView = _.bind(function () {
         return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createRustMacroExpView = _.bind(function () {
         return Components.getRustMacroExpViewWith(this.id, this.source, this.lastResult.rustMacroExpOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createRustHirView = _.bind(function () {
         return Components.getRustHirViewWith(this.id, this.source, this.lastResult.rustHirOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.lastResult.gccDumpOutput);
+            this.sourceTreeId, this.lastResult.gccDumpOutput);
     }, this);
 
     var createGnatDebugTreeView = _.bind(function () {
         return Components.getGnatDebugTreeViewWith(this.id, this.source, this.lastResult.gnatDebugTreeOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createGnatDebugView = _.bind(function () {
         return Components.getGnatDebugViewWith(this.id, this.source, this.lastResult.gnatDebugOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createCfgView = _.bind(function () {
-        return Components.getCfgViewWith(this.id, this.sourceEditorId);
+        return Components.getCfgViewWith(this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createExecutor = _.bind(function () {

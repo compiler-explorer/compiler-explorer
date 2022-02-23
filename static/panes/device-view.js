@@ -54,7 +54,8 @@ function DeviceAsm(hub, container, state) {
 
     this._compilerId = state.id;
     this._compilerName = state.compilerName;
-    this._editorId = state.editor;
+    this._editorId = state.editorid;
+    this._treeId = state.treeid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -223,13 +224,24 @@ DeviceAsm.prototype.updateDeviceAsm = function () {
         this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
 };
 
+DeviceAsm.prototype.getPaneTag = function () {
+    if(this._editorId !== false) {
+        return this._compilerName + ' (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
+    } else {
+        return this._compilerName + ' (Tree #' + this._treeId + ', Compiler #' + this._compilerId + ')';
+    }
+};
+
+DeviceAsm.prototype.getDefaultPaneName = function () {
+    return 'Device Viewer';
+};
+
 DeviceAsm.prototype.getPaneName = function () {
-    return this._compilerName + ' Device Viewer (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
 DeviceAsm.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
@@ -248,10 +260,11 @@ DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
     }
 };
 
-DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorId) {
+DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorId, treeId) {
     if (id === this._compilerId) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorId = editorId;
+        this._treeId = treeId;
         this.updateTitle();
         if (compiler && !compiler.supportsDeviceAsmView) {
             this.deviceEditor.setValue('<Device output is not supported for this compiler>');
@@ -291,7 +304,8 @@ DeviceAsm.prototype.updateState = function () {
 DeviceAsm.prototype.currentState = function () {
     var state = {
         id: this._compilerId,
-        editor: this._editorId,
+        editorid: this._editorId,
+        treeid: this._treeId,
         selection: this.selection,
         device: this.selectedDevice,
     };

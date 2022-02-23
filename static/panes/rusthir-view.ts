@@ -62,10 +62,8 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
         });
     }
 
-    override getPaneName(): string {
-        return `Rust HIR Viewer ${this.compilerInfo.compilerName}` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'Rust HIR Viewer';
     }
 
     override registerCallbacks(): void {
@@ -84,10 +82,12 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
+        treeId: number | boolean): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
+            this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsRustHirView) {
                 this.showRustHirResults([{
