@@ -80,7 +80,7 @@ export interface SiteSettings {
 }
 
 class BaseSetting<T> {
-    constructor(public elem: JQuery, public name: string, public defaultValue?: T ) {}
+    constructor(public elem: JQuery, public name: string) {}
 
     protected val(): string | number | string[] {
         //  If it's undefined, something went wrong, so the following exception is helpful
@@ -413,7 +413,6 @@ export class Settings {
 
         const oldScheme = colourSchemeSelect.val() as string;
         const newTheme = themeSelect.val() as colour.AppTheme;
-        //const lastTheme = $.data(themeSelect, 'last-theme') as colour.AppTheme | undefined;
 
         colourSchemeSelect.empty();
         this.fillThemeSelector(colourSchemeSelect, newTheme);
