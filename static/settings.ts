@@ -386,7 +386,7 @@ export class Settings {
     private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
         for (const scheme of colour.schemes) {
             if (this.isSchemeUsable(scheme, newTheme)) {
-                colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
+                colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
             }
         }
     }
