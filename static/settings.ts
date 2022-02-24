@@ -159,7 +159,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val() ? this.val.toString() : '0');
+        return parseInt(this.val()?.toString() ?? '0');
     }
 
     private updateDisplay() {
@@ -241,7 +241,7 @@ export class Settings {
         }
     }
 
-    private add(setting: BaseSetting, defaultValue: any) {
+    private add<T extends BaseSetting>(setting: T, defaultValue: any) {
         const key = setting.name;
         if (this.settings[key] === undefined) this.settings[key] = defaultValue;
         this.settingsObjs.push(setting);
