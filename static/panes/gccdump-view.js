@@ -330,7 +330,7 @@ GccDump.prototype.getDefaultPaneName = function () {
 };
 
 GccDump.prototype.getPaneTag = function () {
-    if(this.state._editorid !== undefined) {
+    if(this.state._editorid) {
         return this._compilerName
                 + ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
     } else {

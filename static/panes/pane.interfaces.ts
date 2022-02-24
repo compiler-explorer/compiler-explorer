@@ -33,6 +33,9 @@ import * as monaco from 'monaco-editor';
 export class PaneState {
     id: number;
     compilerName: string;
+    // editorid and treeid are truthy numbers: if they are truthy, then they
+    // reprsent the positive integer id associated with them. If not truthy
+    // there is no editor or tree view associated with this pane.
     editorid?: number;
     treeid?: number;
 }

@@ -200,7 +200,7 @@ export abstract class Pane<S> {
     /** Generate "(Editor #1, Compiler #1)" tag */
     protected getPaneTag() {
         const { compilerName, editorId, treeId, compilerId } = this.compilerInfo;
-        if(editorId !== undefined) {
+        if(editorId) {
             return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
         } else {
             return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
