@@ -159,7 +159,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val().toString());
+        return parseInt(this.val() ? this.val.toString() : "0");
     }
 
     private updateDisplay() {
