@@ -26,6 +26,7 @@ import { options } from './options';
 import * as colour from './colour';
 import * as local from './local';
 import { themes, Themes } from './themes';
+import { AppTheme, ColourSchemeInfo } from './colour';
 
 type ColourScheme =
     | 'rainbow'
@@ -158,7 +159,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val().toString());
+        return parseInt(this.val()?.toString() ?? '0');
     }
 
     private updateDisplay() {
@@ -196,7 +197,7 @@ class Numeric extends BaseSetting {
 }
 
 export class Settings {
-    private settingsObjs: BaseSetting[];
+    private readonly settingsObjs: BaseSetting[];
 
     constructor(private root: JQuery,
                 private settings: SiteSettings,
@@ -240,7 +241,7 @@ export class Settings {
         }
     }
 
-    private add<Type extends BaseSetting>(setting: Type, defaultValue: any) {
+    private add<T extends BaseSetting>(setting: T, defaultValue: any) {
         const key = setting.name;
         if (this.settings[key] === undefined) this.settings[key] = defaultValue;
         this.settingsObjs.push(setting);
@@ -364,50 +365,68 @@ export class Settings {
     }
 
     private handleThemes() {
-        this.onThemeChange();
         const themeSelect = this.root.find('.theme');
         themeSelect.on('change', () => {
             this.onThemeChange();
             $.data(themeSelect, 'last-theme', themeSelect.val() as string);
         });
+
+        const colourSchemeSelect = this.root.find('.colourScheme');
+        colourSchemeSelect.on('change', (e) => {
+            const currentTheme = this.settings.theme;
+            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
+        });
+
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
         $.data(themeSelect, 'last-theme', themeSelect.val() as string);
     }
 
+    private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+        for (const scheme of colour.schemes) {
+            if (this.isSchemeUsable(scheme, newTheme)) {
+                colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
+            }
+        }
+    }
+
+    private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
+        return this.settings.alwaysEnableAllSchemes
+            || !scheme.themes || scheme.themes.length === 0
+            || (newTheme && scheme.themes.includes(newTheme)) || scheme.themes.includes('all');
+    }
+
+    private selectorHasOption(selector: JQuery, option: string): boolean {
+        return selector.children(`[value=${option}]`).length > 0;
+    }
+
     private onThemeChange() {
+        // We can be called when:
+        // Site is initializing (settings and dropdowns are already done)
+        // "Make all colour schemes available" changes
+        // Selected theme changes
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-
+        const oldScheme = colourSchemeSelect.val() as string;
         const newTheme = themeSelect.val() as colour.AppTheme;
-        // Store the scheme of the old theme
-        $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val() as string);
-        // Get the scheme of the new theme
-        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
-        let isStoredUsable = false;
-        colourSchemeSelect.empty();
-        for (const scheme of colour.schemes) {
-            if (this.settings.alwaysEnableAllSchemes
-                || !scheme.themes || scheme.themes.length === 0
-                || scheme.themes.includes(newTheme) || scheme.themes.includes('all')) {
 
-                colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
-                if (newThemeStoredScheme === scheme.name) {
-                    isStoredUsable = true;
-                }
-            }
+        colourSchemeSelect.empty();
+        this.fillThemeSelector(colourSchemeSelect, newTheme);
+        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
+
+        // If nothing else, set the new scheme to the first of the available ones
+        let newScheme = colourSchemeSelect.first().val() as string;
+        // If we have one old one stored, check if it's still valid and set it if so
+        if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
+            newScheme = newThemeStoredScheme;
+        } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
+            newScheme = oldScheme;
         }
-        if (colourSchemeSelect.children().length >= 1) {
-            colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
-        }else {
-            // This should never happen. In case it does, lets use the default one
-            colourSchemeSelect.append(
-                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>')
-            );
-            colourSchemeSelect.val(colourSchemeSelect.first().val() as string);
-        }
+
+        colourSchemeSelect.val(newScheme);
+
         colourSchemeSelect.trigger('change');
     }
 }
