@@ -41,16 +41,20 @@ var url = require('./url');
 var clipboard = require('clipboard');
 var Hub = require('./hub').Hub;
 var Sentry = require('@sentry/browser');
-var Settings = require('./settings');
+var Settings = require('./settings').Settings;
 var local = require('./local');
 var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
-var SimpleCook = require('./simplecook').SimpleCook;
-var HistoryWidget = require('./history-widget').HistoryWidget;
+var SimpleCook = require('./widgets/simplecook').SimpleCook;
+var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
-var presentation = require('./presentation');
+var Presentation = require('./presentation').Presentation;
+
+if (!window.PRODUCTION) {
+    require('./tests/_all');
+}
 
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
@@ -64,19 +68,6 @@ require('./explorer.scss');
 var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
-
-// Polyfill includes for IE11 - From MDN
-if (!String.prototype.includes) {
-    String.prototype.includes = function (search, start) {
-        if (search instanceof RegExp) {
-            throw TypeError('first argument must not be a RegExp');
-        }
-        if (start === undefined) {
-            start = 0;
-        }
-        return this.indexOf(search, start) !== -1;
-    };
-}
 
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
@@ -112,9 +103,9 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = Settings.init($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
-        setSettings(_.extend(currentSettings, newSettings));
+        SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
     return currentSettings;
 }
@@ -141,7 +132,7 @@ function setupButtons(options) {
         $('#privacy').on('click', function (event, data) {
             var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                require('./policies/privacy.html')
+                require('./policies/privacy.html').default
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -160,7 +151,7 @@ function setupButtons(options) {
                 (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
         };
         $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+            var modal = alertSystem.ask(getCookieTitle(), require('./policies/cookies.html').default, {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -186,7 +177,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./changelog.html')));
+        alertSystem.alert('Changelog', $(require('./changelog.html').default));
     });
 
     $('#ces').on('click', function () {
@@ -216,14 +207,6 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
-
-    if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
-        $('#share').remove();
-        $('.ui-presentation-control').removeClass('d-none');
-        $('.ui-presentation-first').click(presentation.first);
-        $('.ui-presentation-prev').click(presentation.prev);
-        $('.ui-presentation-next').click(presentation.next);
-    }
 }
 
 function configFromEmbedded(embeddedUrl) {
@@ -271,13 +254,22 @@ function findConfig(defaultConfig, options) {
     var config;
     if (!options.embedded) {
         if (options.slides) {
-            presentation.init(window.compilerExplorerOptions.slides.length);
-            var currentSlide = presentation.getCurrentSlide();
+            var presentation = new Presentation(window.compilerExplorerOptions.slides.length);
+            var currentSlide = presentation.currentSlide;
             if (currentSlide < options.slides.length) {
                 config = options.slides[currentSlide];
             } else {
-                presentation.setCurrentSlide(0);
+                presentation.currentSlide = 0;
                 config = options.slides[0];
+            }
+            if (isMobileViewer()
+                && window.compilerExplorerOptions.slides
+                && window.compilerExplorerOptions.slides.length > 1) {
+                $('#share').remove();
+                $('.ui-presentation-control').removeClass('d-none');
+                $('.ui-presentation-first').on('click', presentation.first.bind(presentation));
+                $('.ui-presentation-prev').on('click', presentation.previous.bind(presentation));
+                $('.ui-presentation-next').on('click', presentation.next.bind(presentation));
             }
         } else {
             if (options.config) {
@@ -456,8 +448,7 @@ function start() {
     // share the same cookie domain for some settings.
     var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {
-        cookieDomain = cookieDomain[0];
-        jsCookie.defaults.domain = cookieDomain;
+        jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
     var defaultConfig = {
@@ -471,7 +462,7 @@ function start() {
         }],
     };
 
-    $(window).bind('hashchange', function () {
+    $(window).on('hashchange', function () {
         // punt on hash events and just reload the page if there's a hash
         if (window.location.hash.substr(1)) window.location.reload();
     });
@@ -516,7 +507,7 @@ function start() {
     }
 
     $(window)
-        .resize(sizeRoot)
+        .on('resize', sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
             var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
@@ -542,7 +533,7 @@ function start() {
                 addDropdown.dropdown('toggle');
             });
 
-        thing.click(function () {
+        thing.on('click', function () {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());
             } else {
@@ -564,7 +555,7 @@ function start() {
 
     if (hashPart) {
         var element = $(hashPart);
-        if (element) element.click();
+        if (element) element.trigger('click');
     }
     initPolicies(options);
 

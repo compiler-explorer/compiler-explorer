@@ -20,11 +20,8 @@ If there is something you would like to do yourself, it might help to make an is
 
 
 ## Node version
-**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 14.18.0,
+**Compiler Explorer** currently targets [Node.js](https://nodejs.org/) LTS version 16
  so it's better if you do so as well when testing your changes locally.
-
-We're aware of [an issue](https://github.com/compiler-explorer/compiler-explorer/issues/3047#issuecomment-948032360) that
-makes **Compiler Explorer** not runnable in anything newer than Node LTS 14.18.0
 
 ## In brief
 * Make your changes, trying to stick to the style and format where possible.

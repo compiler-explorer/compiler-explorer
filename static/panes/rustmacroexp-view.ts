@@ -62,10 +62,8 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         });
     }
 
-    override getPaneName(): string {
-        return `Rust Macro Expansion Viewer ${this.compilerInfo.compilerName}` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'Rust Macro Expansion Viewer';
     }
 
     override registerCallbacks(): void {
@@ -84,14 +82,16 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
+        treeId: number | boolean): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
-            this.setTitle();
+            this.compilerInfo.treeId = treeId;
+            this.updateTitle();
             if (compiler && !compiler.supportsRustMacroExpView) {
                 this.showRustMacroExpResults([{
-                    text: '<Rust Macro Expansion output is not supported for this compiler>'
+                    text: '<Rust Macro Expansion output is not supported for this compiler>',
                 }]);
             }
         }
@@ -99,7 +99,7 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
 
     showRustMacroExpResults(result: any[]): void {
         if (!this.editor) return;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust Macro Expansion generated>');
 

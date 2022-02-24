@@ -37,12 +37,15 @@ var Components = require('components');
 var diff = require('./panes/diff');
 var optView = require('./panes/opt-view');
 var flagsView = require('./panes/flags-view');
+var ppView = require('./panes/pp-view');
 var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
 var deviceView = require('./panes/device-view');
 var rustMirView = require('./panes/rustmir-view');
 var gnatDebugView = require('./panes/gnatdebug-view');
+var gnatDebugTreeView = require('./panes/gnatdebugtree-view');
 var rustMacroExpView = require('./panes/rustmacroexp-view');
+var rustHirView = require('./panes/rusthir-view');
 var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
@@ -129,6 +132,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.flagsViewFactory(container, state);
         });
+    layout.registerComponent(Components.getPpView().componentName,
+        function (container, state) {
+            return self.ppViewFactory(container, state);
+        });
     layout.registerComponent(Components.getAstView().componentName,
         function (container, state) {
             return self.astViewFactory(container, state);
@@ -145,6 +152,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.rustMirViewFactory(container, state);
         });
+    layout.registerComponent(Components.getGnatDebugTreeView().componentName,
+        function (container, state) {
+            return self.gnatDebugTreeViewFactory(container, state);
+        });
     layout.registerComponent(Components.getGnatDebugView().componentName,
         function (container, state) {
             return self.gnatDebugViewFactory(container, state);
@@ -152,6 +163,10 @@ function Hub(layout, subLangId, defaultLangId) {
     layout.registerComponent(Components.getRustMacroExpView().componentName,
         function (container, state) {
             return self.rustMacroExpViewFactory(container, state);
+        });
+    layout.registerComponent(Components.getRustHirView().componentName,
+        function (container, state) {
+            return self.rustHirViewFactory(container, state);
         });
     layout.registerComponent(Components.getGccDumpView().componentName,
         function (container, state) {
@@ -311,6 +326,10 @@ Hub.prototype.flagsViewFactory = function (container, state) {
     return new flagsView.Flags(this, container, state);
 };
 
+Hub.prototype.ppViewFactory = function (container, state) {
+    return new ppView.PP(this, container, state);
+};
+
 Hub.prototype.astViewFactory = function (container, state) {
     return new astView.Ast(this, container, state);
 };
@@ -323,6 +342,10 @@ Hub.prototype.deviceViewFactory = function (container, state) {
     return new deviceView.DeviceAsm(this, container, state);
 };
 
+Hub.prototype.gnatDebugTreeViewFactory = function (container, state) {
+    return new gnatDebugTreeView.GnatDebugTree(this, container, state);
+};
+
 Hub.prototype.gnatDebugViewFactory = function (container, state) {
     return new gnatDebugView.GnatDebug(this, container, state);
 };
@@ -333,6 +356,10 @@ Hub.prototype.rustMirViewFactory = function (container, state) {
 
 Hub.prototype.rustMacroExpViewFactory = function (container, state) {
     return new rustMacroExpView.RustMacroExp(this, container, state);
+};
+
+Hub.prototype.rustHirViewFactory = function (container, state) {
+    return new rustHirView.RustHir(this, container, state);
 };
 
 Hub.prototype.gccDumpViewFactory = function (container, state) {

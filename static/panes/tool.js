@@ -26,15 +26,16 @@
 
 var _ = require('underscore');
 var $ = require('jquery');
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var AnsiToHtml = require('../ansi-to-html').Filter;
-var Toggles = require('../toggles').Toggles;
+var Toggles = require('../widgets/toggles').Toggles;
 var ga = require('../analytics').ga;
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options').options;
 var utils = require('../utils');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 require('../modes/asm6502-mode');
 
 function makeAnsiToHtml(color) {
@@ -78,7 +79,7 @@ function Tool(hub, container, state) {
         language: 'text',
         fontFamily: 'courier new',
         lineNumbersMinChars: 5,
-        renderIndentGuides: false,
+        guides: false,
     }));
 
     this.fontScale = new FontScale(this.domRoot, state, '.content');
@@ -94,11 +95,12 @@ function Tool(hub, container, state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initArgs(state);
     this.initCallbacks();
 
     this.onOptionsChange();
-    this.updateCompilerName();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -114,6 +116,8 @@ Tool.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
     this.container.on('destroy', this.close, this);
+
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
@@ -173,6 +177,7 @@ Tool.prototype.onSettingsChange = function (newSettings) {
             enabled: newSettings.showMinimap,
         },
         fontFamily: newSettings.editorsFFont,
+        codeLensFontFamily: newSettings.editorsFFont,
         fontLigatures: newSettings.editorsFLigatures,
     });
 };
@@ -362,6 +367,7 @@ Tool.prototype.currentState = function () {
         monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
         argsPanelShow: !this.panelArgs.hasClass('d-none'),
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -454,7 +460,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             }
 
             this.toolName = toolResult.name;
-            this.updateCompilerName();
+            this.updateTitle();
 
             if (toolResult.sourcechanged && this.editorId) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
@@ -515,8 +521,9 @@ Tool.prototype.getPaneName = function () {
     return name;
 };
 
-Tool.prototype.updateCompilerName = function () {
-    this.container.setTitle(this.getPaneName());
+Tool.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Tool.prototype.onCompilerClose = function (id) {

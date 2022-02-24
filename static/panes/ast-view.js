@@ -24,13 +24,14 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function Ast(hub, container, state) {
     this.container = container;
@@ -51,6 +52,7 @@ function Ast(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+    this._treeid = state.treeid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -60,13 +62,14 @@ function Ast(hub, container, state) {
     this.colours = [];
     this.astCode = [];
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initButtons(state);
     this.initCallbacks();
 
     if (state && state.astOutput) {
         this.showAstResults(state.astOutput);
     }
-    this.setTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -89,6 +92,7 @@ Ast.prototype.initCallbacks = function () {
     }, this));
 
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.container.on('destroy', this.close, this);
 
@@ -138,16 +142,27 @@ Ast.prototype.onCompileResult = function (id, compiler, result, lang) {
 
 // Monaco language id of the current editor
 Ast.prototype.getCurrentEditorLanguage = function () {
-    return this.astEditor.getModel().getModeId();
+    return this.astEditor.getModel().getLanguageId();
+};
+
+Ast.prototype.getDefaultPaneName = function () {
+    return 'Ast Viewer';
+};
+
+Ast.prototype.getPaneTag = function () {
+    if(this._editorid !== false) {
+        return this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    } else {
+        return this._compilerName + ' (Tree #' + this._treeid + ', Compiler #' + this._compilerid + ')';
+    }
 };
 
 Ast.prototype.getPaneName = function () {
-    return 'Ast Viewer ' + this._compilerName +
-        ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
-Ast.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+Ast.prototype.updateTitle = function () {
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 Ast.prototype.getDisplayableAst = function (astResult) {
@@ -171,11 +186,12 @@ Ast.prototype.showAstResults = function (results) {
     }
 };
 
-Ast.prototype.onCompiler = function (id, compiler, options, editorid) {
+Ast.prototype.onCompiler = function (id, compiler, options, editorid, treeid) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorid = editorid;
-        this.setTitle();
+        this._treeid = treeid;
+        this.updateTitle();
         if (compiler && !compiler.supportsAstView) {
             this.astEditor.setValue('<AST output is not supported for this compiler>');
         }
@@ -220,8 +236,10 @@ Ast.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
+        treeid: this._treeid,
         selection: this.selection,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

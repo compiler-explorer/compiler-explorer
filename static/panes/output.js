@@ -26,10 +26,11 @@
 
 var _ = require('underscore');
 var $ = require('jquery');
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var AnsiToHtml = require('../ansi-to-html').Filter;
-var Toggles = require('../toggles').Toggles;
+var Toggles = require('../widgets/toggles').Toggles;
 var ga = require('../analytics').ga;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -59,11 +60,12 @@ function Output(hub, container, state) {
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initButtons();
     this.initCallbacks(state);
 
     this.onOptionsChange();
-    this.updateCompilerName();
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'OpenViewPane',
@@ -74,6 +76,8 @@ function Output(hub, container, state) {
 Output.prototype.initCallbacks = function (state) {
     this.options = new Toggles(this.domRoot.find('.options'), state);
     this.options.on('change', _.bind(this.onOptionsChange, this));
+
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
@@ -114,6 +118,7 @@ Output.prototype.currentState = function () {
         tree: this.treeId,
         wrap: options.wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -185,7 +190,7 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
         }
     }
     this.setCompileStatus(false);
-    this.updateCompilerName();
+    this.updateTitle();
 };
 
 Output.prototype.programOutput = function (msg, color) {
@@ -245,8 +250,9 @@ Output.prototype.getPaneName = function () {
     return name;
 };
 
-Output.prototype.updateCompilerName = function () {
-    this.container.setTitle(this.getPaneName());
+Output.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Output.prototype.onCompilerClose = function (id) {

@@ -25,20 +25,21 @@
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
+import { Settings } from '../settings';
+import { PaneRenaming } from '../widgets/pane-renaming';
 
 const _ = require('underscore');
 const $ = require('jquery');
 const Alert = require('../alert').Alert;
 const Components = require('../components');
-const local = require('../local');
 const ga = require('../analytics').ga;
 const TomSelect = require('tom-select');
-const Toggles = require('../toggles').Toggles;
+const Toggles = require('../widgets/toggles').Toggles;
 const options = require('../options').options;
 const languages = options.languages;
 const saveAs = require('file-saver').saveAs;
 
-export class TreeState extends MultifileServiceState {
+export interface TreeState extends MultifileServiceState {
     id: number;
     cmakeArgs: string;
     customOutputFilename: string;
@@ -62,15 +63,17 @@ export class Tree {
     private customOutputFilenameInput: any;
     public multifileService: MultifileService;
     private lineColouring: LineColouring;
-    private readonly ourCompilers: {};
-    private readonly busyCompilers: {};
-    private readonly asmByCompiler: {};
+    private readonly ourCompilers: Record<number, boolean>;
+    private readonly busyCompilers: Record<number, boolean>;
+    private readonly asmByCompiler: Record<number, any>;
     private selectize: any;
     private languageBtn: any;
     private toggleCMakeButton: any;
-    private debouncedEmitChange: () => void;
+    private debouncedEmitChange: () => void = () => {};
     private hideable: any;
     private readonly topBar: any;
+    private paneName: string;
+    private paneRenaming: PaneRenaming;
 
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
@@ -79,12 +82,12 @@ export class Tree {
         this.domRoot.html($('#tree').html());
         this.hub = hub;
         this.eventHub = hub.createEventHub();
-        this.settings = JSON.parse(local.get('settings', '{}'));
+        this.settings = Settings.getStoredSettings();
 
         this.httpRoot = window.httpRoot;
 
         this.alertSystem = new Alert();
-        this.alertSystem.prefixMessage = 'Tree #' + this.id + ': ';
+        this.alertSystem.prefixMessage = 'Tree #' + this.id;
 
         this.root = this.domRoot.find('.tree');
         this.rowTemplate = $('#tree-editor-tpl');
@@ -124,6 +127,8 @@ export class Tree {
         this.busyCompilers = {};
         this.asmByCompiler = {};
 
+        this.paneRenaming = new PaneRenaming(this, state);
+
         this.initInputs(state);
         this.initButtons(state);
         this.initCallbacks();
@@ -141,7 +146,6 @@ export class Tree {
             onChange: this.onLanguageChange.bind(this),
         });
 
-        this.updateTitle();
         this.onLanguageChange(this.multifileService.getLanguageId());
 
         ga.proxy('send', {
@@ -175,13 +179,15 @@ export class Tree {
     }
 
     public currentState(): TreeState {
-        return {
+        const state = {
             id: this.id,
             cmakeArgs: this.getCmakeArgs(),
             customOutputFilename: this.getCustomOutputFilename(),
             ...this.multifileService.getState(),
         };
-    };
+        this.paneRenaming.addState(state);
+        return state;
+    }
 
     private updateState() {
         const state = this.currentState();
@@ -197,6 +203,8 @@ export class Tree {
             this.eventHub.emit('treeOpen', this.id);
         });
         this.container.on('destroy', this.close, this);
+
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
         this.eventHub.on('editorOpen', this.onEditorOpen, this);
         this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -352,15 +360,18 @@ export class Tree {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
-                this.alertSystem.ask('Delete file', `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
-                    yes: () => {
-                        this.removeFile(fileId);
-                    },
-                    yesClass: 'btn-danger',
-                    yesHtml: 'Delete',
-                    noClass: 'btn-primary',
-                    noHtml: 'Cancel'
-                });
+                this.alertSystem.ask(
+                    'Delete file',
+                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
+                        yes: () => {
+                            this.removeFile(fileId);
+                        },
+                        yesClass: 'btn-danger',
+                        yesHtml: 'Delete',
+                        noClass: 'btn-primary',
+                        noHtml: 'Cancel',
+                    }
+                );
             }
         });
 
@@ -388,17 +399,19 @@ export class Tree {
 
     private editFile(fileId: number) {
         const file = this.multifileService.getFileByFileId(fileId);
-        if (!file.isOpen) {
-            const dragConfig = this.getConfigForNewEditor(file);
-            file.isOpen = true;
+        if (file) {
+            if (!file.isOpen) {
+                const dragConfig = this.getConfigForNewEditor(file);
+                file.isOpen = true;
 
-            this.hub.addInEditorStackIfPossible(dragConfig);
-        } else {
-            const editor = this.hub.getEditorById(file.editorId);
-            this.hub.activateTabForContainer(editor.container);
+                this.hub.addInEditorStackIfPossible(dragConfig);
+            } else {
+                const editor = this.hub.getEditorById(file.editorId);
+                this.hub.activateTabForContainer(editor.container);
+            }
+
+            this.sendChangesToAllEditors();
         }
-
-        this.sendChangesToAllEditors();
     }
 
     private async moveToInclude(fileId: number) {
@@ -609,7 +622,8 @@ export class Tree {
     }
 
     private updateTitle() {
-        this.container.setTitle(this.getPaneName());
+        const name = this.paneName ? this.paneName : this.getPaneName();
+        this.container.setTitle(_.escape(name));
     }
 
     private close() {

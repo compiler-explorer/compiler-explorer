@@ -1,5 +1,5 @@
 @import "~@fortawesome/fontawesome-free/css/all.min.css";
-@import "~vis/dist/vis.css";
+@import "~vis-network/styles/vis-network.css";
 
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
@@ -264,6 +264,18 @@ pre.content.wrap * {
     overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
 }
 
+#enter-something .modal-body {
+    min-height: 90px;
+}
+
+#enter-something .modal-body .question {
+    margin-bottom: 5px;
+}
+
+#enter-something .modal-body .question-answer {
+    width: 300px;
+}
+
 .modal-content .well {
     border: 1px solid;
     border-radius: 3px;
@@ -314,16 +326,21 @@ pre.content.wrap * {
 }
 
 #notifications {
-    max-width: 33%;
+    padding: 5px;
+    border-radius: 0.5rem;
     position: fixed;
     bottom: 3px;
     right: 5px;
+    max-width: 40%;
 }
 
-.notification {
-    padding: 5px;
-    border-radius: 5px;
-    color: black;
+.toast {
+    max-width: 100% !important;
+}
+
+.toast-header .close {
+    float: left;
+    margin-right: 5px;
 }
 
 .font-size-list {
@@ -372,7 +389,7 @@ pre.content.wrap * {
 
 .change-language {
     line-height: 14px;
-    min-width: 150px !important;
+    min-width: 200px !important;
 }
 
 .change-language .ts-input {
@@ -862,8 +879,20 @@ html[data-theme=dark] {
     cursor: pointer;
 }
 
-.currentCursorPosition {
+.ctrlSNothing {
     font-size: small;
     border: none;
     user-select: text;
+}
+
+.currentCursorPosition {
+    position: absolute;
+    bottom: 0;
+    right: 14px; // width of monaco scrollbar
+    font-size: small;
+    color: #17a2b8;
+    border-radius: 0.5rem;
+    background-color: rgba(49, 54, 60, 0.85);
+    z-index: 1;
+    padding: 5px;
 }

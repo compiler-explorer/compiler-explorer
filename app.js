@@ -1,7 +1,3 @@
-#!/usr/bin/env node
-// shebang interferes with license header plugin
-/* eslint-disable header/header */
-
 // Copyright (c) 2012, Compiler Explorer Authors
 // All rights reserved.
 //
@@ -54,7 +50,6 @@ import { CompilationQueue } from './lib/compilation-queue';
 import { CompilerFinder } from './lib/compiler-finder';
 // import { policy as csp } from './lib/csp';
 import { initialiseWine } from './lib/exec';
-import { ShortLinkResolver } from './lib/google';
 import { CompileHandler } from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
 import { NoScriptHandler } from './lib/handlers/noscript';
@@ -64,6 +59,7 @@ import { languages as allLanguages } from './lib/languages';
 import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
+import { ShortLinkResolver } from './lib/shortener/google';
 import { sources } from './lib/sources';
 import { loadSponsorsFromString } from './lib/sponsors';
 import { getStorageTypeByKey } from './lib/storage';
@@ -96,6 +92,7 @@ const opts = nopt({
     loki: [String],
     discoveryonly: [String],
     prediscovered: [String],
+    version: [Boolean],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -286,16 +283,15 @@ let pugRequireHandler = () => {
 async function setupWebPackDevMiddleware(router) {
     logger.info('  using webpack dev middleware');
 
-    /* eslint-disable node/no-unpublished-import,import/extensions */
-    const webpackDevMiddleware = (await import('webpack-dev-middleware')).default;
-    const webpackConfig = (await import('./webpack.config.esm.js')).default;
-    const webpack = (await import('webpack')).default;
+    /* eslint-disable node/no-unpublished-import,import/extensions, */
+    const {default: webpackDevMiddleware} = await import('webpack-dev-middleware');
+    const {default: webpackConfig} = await import('./webpack.config.esm.js');
+    const {default: webpack} = await import('webpack');
     /* eslint-enable */
 
     const webpackCompiler = webpack(webpackConfig);
     router.use(webpackDevMiddleware(webpackCompiler, {
         publicPath: '/static',
-        logger: logger,
         stats: 'errors-only',
     }));
 
@@ -557,7 +553,7 @@ async function main() {
         metricsServer.get('/metrics', async (req, res) => {
             try {
                 res.set('Content-Type', PromClient.register.contentType);
-                res.end(PromClient.register.metrics());
+                res.end(await PromClient.register.metrics());
             } catch (ex) {
                 res.status(500).end(ex);
             }
@@ -783,6 +779,14 @@ async function main() {
     }
     setupEventLoopLagLogging();
     startListening(webServer);
+}
+
+if (opts.version) {
+    logger.info('Compiler Explorer version info:');
+    logger.info(`  git release ${gitReleaseName}`);
+    logger.info(`  release build ${releaseBuildNumber}`);
+    logger.info('Exiting');
+    process.exit(0);
 }
 
 main()

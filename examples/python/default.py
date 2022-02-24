@@ -1,2 +1,2 @@
-def main():
-    pass
+def square(num):
+    return num * num

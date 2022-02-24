@@ -25,9 +25,9 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
-var Toggles = require('../toggles').Toggles;
+var Toggles = require('../widgets/toggles').Toggles;
 require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
@@ -35,6 +35,7 @@ var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
 var utils = require('../utils');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 
 function GccDump(hub, container, state) {
@@ -70,10 +71,13 @@ function GccDump(hub, container, state) {
 
     this.state._compilerid = state._compilerid;
     this.state._editorid = state._editorid;
+    this.state._treeid = state._treeid;
     this._compilerName = state._compilerName;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initCallbacks();
 
@@ -108,7 +112,6 @@ function GccDump(hub, container, state) {
 
     this.updateButtons();
     this.saveState();
-    this.setTitle();
 
     // UI is ready, request compilation to get passes list and
     // current output (if any)
@@ -174,6 +177,7 @@ GccDump.prototype.initCallbacks = function () {
     this.selectize.on('change', _.bind(this.onPassSelect, this));
 
     this.fontScale.on('change', _.bind(this.saveState, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
@@ -321,13 +325,26 @@ GccDump.prototype.onCompileResult = function (id, compiler, result) {
     this.saveState();
 };
 
-GccDump.prototype.getPaneName = function () {
-    return 'GCC Tree/RTL Viewer ' + (this._compilerName || '') +
-        ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
+GccDump.prototype.getDefaultPaneName = function () {
+    return 'GCC Tree/RTL Viewer';
 };
 
-GccDump.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+GccDump.prototype.getPaneTag = function () {
+    if(this.state._editorid !== false) {
+        return this._compilerName
+                + ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
+    } else {
+        return this._compilerName
+                + ' (Tree #' + this.state._treeid + ', Compiler #' + this.state._compilerid + ')';
+    }
+};
+
+GccDump.prototype.getPaneName = function () {
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+};
+
+GccDump.prototype.updateTitle = function () {
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 GccDump.prototype.showGccDumpResults = function (results) {
@@ -343,11 +360,12 @@ GccDump.prototype.showGccDumpResults = function (results) {
     }
 };
 
-GccDump.prototype.onCompiler = function (id, compiler, options, editorid) {
+GccDump.prototype.onCompiler = function (id, compiler, options, editorid, treeid) {
     if (id === this.state._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
         this.state._editorid = editorid;
-        this.setTitle();
+        this.state._treeid = treeid;
+        this.updateTitle();
     }
 };
 
@@ -383,9 +401,10 @@ GccDump.prototype.saveState = function () {
 
 GccDump.prototype.currentState = function () {
     var filters = this.getEffectiveFilters();
-    return {
+    var state =  {
         _compilerid: this.state._compilerid,
         _editorid: this.state._editorid,
+        _treeid: this.state._treeid,
         selectedPass: this.state.selectedPass,
         treeDump: filters.treeDump,
         rtlDump: filters.rtlDump,
@@ -402,6 +421,8 @@ GccDump.prototype.currentState = function () {
         allOption: filters.allOption,
         selection: this.selection,
     };
+    this.paneRenaming.addState(state);
+    return state;
 };
 
 GccDump.prototype.onSettingsChange = function (newSettings) {

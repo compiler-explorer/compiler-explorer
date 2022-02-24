@@ -26,7 +26,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import chai from 'chai';
-import fs from 'fs-extra';
 
 import { CompilationEnvironment } from '../lib/compilation-env';
 import { CompilationQueue } from '../lib/compilation-queue';
@@ -49,8 +48,6 @@ export function resolvePathFromTestRoot(...args) {
     return path.resolve(TEST_ROOT, ...args);
 }
 
-export {
-    fs,
-    chai,
-    path,
-};
+export {default as fs} from 'fs-extra';
+export {default as chai} from 'chai';
+export {default as path} from 'path';

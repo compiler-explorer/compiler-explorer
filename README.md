@@ -5,8 +5,8 @@
 
 # Compiler Explorer
 
-**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
- or in any of the other [31 supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
+**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
+ or in any of the other [30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
  Multiple compilers are supported for each language, many different tools and visualisations are available, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
@@ -18,7 +18,7 @@ Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](
 **Compiler Explorer** was started in 2012 to show how C++ constructs translated to assembly code. It started out as a
  `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
-Since then, it has become a public website serving around [2,250,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+Since then, it has become a public website serving around [3,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/), [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url), or by
@@ -39,6 +39,7 @@ There are a number of videos that showcase some features of Compiler Explorer:
 * [Presentation for CppCon 2019 about the project](https://www.youtube.com/watch?v=kIoZDUd5DKw)
 * [Older 2 part series of videos](https://www.youtube.com/watch?v=4_HL3PH4wDg) which go into a bit more detail
  into the more obscure features.
+* [Just Enough Assembly for Compiler Explorer](https://youtu.be/QLolzolunJ4): Practical introduction to Assembly with a focus on usage on Compiler Explorer, from CppCon 2021.
 * [Playlist: Compiler Explorer](https://www.youtube.com/playlist?list=PL2HVqYf7If8dNYVN6ayjB06FPyhHCcnhG): A collection of videos discussing Compiler Explorer; using it, installing it, what it's for, etc.
 
 A [Road map](docs/Roadmap.md) is available which gives a little insight into
@@ -53,7 +54,7 @@ Assuming you have a compatible version of `node` installed, on Linux simply runn
  on your local machine: [http://localhost:10240/](http://localhost:10240/). If this doesn't work for you, please contact
  us, as we consider it important you can quickly and easily get running.
  Currently, **Compiler Explorer**
- requires [`node` 14 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR`
+ requires [`node` 16 _(LTS version)_](CONTRIBUTING.md#node-version) installed, either on the path or at `NODE_DIR`
  (an environment variable or `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load

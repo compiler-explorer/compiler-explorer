@@ -30,10 +30,11 @@ var $ = require('jquery');
 var Promise = require('es6-promise').Promise;
 var ga = require('../analytics').ga;
 var Components = require('../components');
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -57,10 +58,12 @@ function Conformance(hub, container, state) {
     };
     this.stateByLang = {};
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initButtons();
-    this.initLibraries(state);
     this.initCallbacks();
     this.initFromState(state);
+    this.initLibraries(state);
     this.handleToolbarUI();
     ga.proxy('send', {
         hitType: 'event',
@@ -96,7 +99,15 @@ Conformance.prototype.onLibsChanged = function () {
 };
 
 Conformance.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.langId, null, this.libsButton, state, _.bind(this.onLibsChanged, this));
+    var compilerIds = this.getCurrentCompilersIds();
+    this.libsWidget = new LibsWidget(
+        this.langId,
+        compilerIds.join('|'),
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        this.getOverlappingLibraries(compilerIds)
+    );
     // No callback is done on initialization, so make sure we store the current libs
     this.currentLibs = this.libsWidget.get();
 };
@@ -116,6 +127,8 @@ Conformance.prototype.initCallbacks = function () {
         this.eventHub.unsubscribe();
         this.eventHub.emit('conformanceViewClose', this.editorId);
     }, this);
+
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('open', function () {
@@ -139,12 +152,13 @@ Conformance.prototype.getPaneName = function () {
     return 'Conformance Viewer (Editor #' + this.editorId + ')';
 };
 
-Conformance.prototype.setTitle = function (compilerCount) {
+Conformance.prototype.updateTitle = function () {
     var compilerText = '';
-    if (compilerCount !== 0) {
-        compilerText = ' ' + compilerCount + '/' + this.maxCompilations;
+    if (this.compilerPickers.length !== 0) {
+        compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
     }
-    this.container.setTitle(this.getPaneName() + compilerText);
+    var name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
+    this.container.setTitle(_.escape(name));
 };
 
 Conformance.prototype.addCompilerPicker = function (config) {
@@ -361,7 +375,7 @@ Conformance.prototype.handleToolbarUI = function () {
     // Only allow new compilers if we allow for more
     this.addCompilerButton.prop('disabled', compilerCount >= this.maxCompilations);
 
-    this.setTitle(compilerCount);
+    this.updateTitle();
 };
 
 Conformance.prototype.handleStatusIcon = function (statusIcon, status) {
@@ -375,12 +389,14 @@ Conformance.prototype.currentState = function () {
             options: compilerEntry.optionsField.val() || '',
         };
     });
-    return {
+    var state = {
         editorid: this.editorId,
         langId: this.langId,
         compilers: compilers,
         libs: this.currentLibs,
     };
+    this.paneRenaming.addState(state);
+    return state;
 };
 
 Conformance.prototype.saveState = function () {
@@ -400,15 +416,13 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
         return this.compilerService.findCompiler(this.langId, compilerId);
     }, this));
 
-    var libUtils = new LibUtils();
-
     var langId = this.langId;
 
     var libraries = {};
     var first = true;
     _.forEach(compilers, function (compiler) {
         if (compiler) {
-            var filteredLibraries = libUtils.getSupportedLibraries(compiler.libsArr, langId);
+            var filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId);
 
             if (first) {
                 libraries = _.extend({}, filteredLibraries);
@@ -441,8 +455,8 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
     return libraries;
 };
 
-Conformance.prototype.updateLibraries = function () {
-    var compilerIds = _.uniq(
+Conformance.prototype.getCurrentCompilersIds = function () {
+    return _.uniq(
         _.filter(
             _.map(this.compilerPickers, function (compilerEntry) {
                 return getCompilerId(compilerEntry);
@@ -451,10 +465,15 @@ Conformance.prototype.updateLibraries = function () {
                 return compilerId !== '';
             })
     );
+};
 
-    var libraries = this.getOverlappingLibraries(compilerIds);
-
-    this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), libraries);
+Conformance.prototype.updateLibraries = function () {
+    var compilerIds = this.getCurrentCompilersIds();
+    this.libsWidget.setNewLangId(
+        this.langId,
+        compilerIds.join('|'),
+        this.getOverlappingLibraries(compilerIds)
+    );
 };
 
 Conformance.prototype.onLanguageChange = function (editorId, newLangId) {

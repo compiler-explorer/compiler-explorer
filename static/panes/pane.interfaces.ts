@@ -27,7 +27,8 @@ import * as monaco from 'monaco-editor';
 export interface PaneCompilerState {
     compilerId: number;
     compilerName: string;
-    editorId: number;
+    editorId: number | boolean;
+    treeId: number | boolean;
 }
 
 export interface PaneState {
@@ -42,5 +43,6 @@ export interface BasePaneState {
     id: number;
     compilerName: string;
     editorid: number;
+    treeid: number;
 }
 

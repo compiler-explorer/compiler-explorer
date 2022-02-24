@@ -1,18 +1,42 @@
+// Copyright (c) 2021, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
 import _ from 'underscore';
 import { MultifileService } from './multifile-service';
 
-class ColouredSourcelineInfo {
+interface ColouredSourcelineInfo {
     sourceLine: number;
     compilerId: number;
     compilerLine: number;
     colourIdx: number;
-};
+}
 
 export class LineColouring {
-    private colouredSourceLinesByEditor: Object;
+    private colouredSourceLinesByEditor: ColouredSourcelineInfo[][];
     private multifileService: MultifileService;
-    private linesAndColourByCompiler: Object;
-    private linesAndColourByEditor: Object;
+    private linesAndColourByCompiler: Record<number, Record<number, number>>;
+    private linesAndColourByEditor: Record<number, Record<number, number>>;
 
     constructor(multifileService: MultifileService) {
         this.multifileService = multifileService;
@@ -31,9 +55,9 @@ export class LineColouring {
         for (const asmLine of asm ) {
             if (asmLine.source && asmLine.source.line > 0) {
                 const editorId = this.multifileService.getEditorIdByFilename(asmLine.source.file);
-                if (editorId > 0) {
+                if (editorId != null && editorId > 0) {
                     if (!this.colouredSourceLinesByEditor[editorId]) {
-                        this.colouredSourceLinesByEditor[editorId] = new Array<ColouredSourcelineInfo>();
+                        this.colouredSourceLinesByEditor[editorId] = [];
                     }
 
                     if (!this.linesAndColourByCompiler[compilerId]) {
@@ -56,8 +80,8 @@ export class LineColouring {
         }
     }
 
-    private getUniqueLinesForEditor(editorId: number) {
-        const lines = [];
+    private getUniqueLinesForEditor(editorId: number): number[] {
+        const lines: number[] = [];
 
         for (const info of this.colouredSourceLinesByEditor[editorId]) {
             if (!lines.includes(info.sourceLine))
@@ -111,7 +135,7 @@ export class LineColouring {
         }
     }
 
-    public getColoursForCompiler(compilerId: number): Object {
+    public getColoursForCompiler(compilerId: number): Record<number, number> {
         if (this.linesAndColourByCompiler[compilerId]) {
             return this.linesAndColourByCompiler[compilerId];
         } else {
@@ -119,11 +143,11 @@ export class LineColouring {
         }
     }
 
-    public getColoursForEditor(editorId: number): Object {
+    public getColoursForEditor(editorId: number): Record<number, number> {
         if (this.linesAndColourByEditor[editorId]) {
             return this.linesAndColourByEditor[editorId];
         } else {
             return {};
         }
     }
-};
+}

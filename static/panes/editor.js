@@ -26,8 +26,8 @@
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
-var loadSaveLib = require('../load-save');
-var FontScale = require('../fontscale').FontScale;
+var loadSaveLib = require('../widgets/load-save');
+var FontScale = require('../widgets/fontscale').FontScale;
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var options = require('../options').options;
@@ -36,7 +36,7 @@ var ga = require('../analytics').ga;
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
 var TomSelect = require('tom-select');
-var Settings = require('../settings');
+var Settings = require('../settings').Settings;
 var utils = require('../utils');
 require('../formatter-registry');
 require('../modes/_all');
@@ -72,7 +72,7 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
     this.filename = state.filename || false;
 
@@ -130,11 +130,13 @@ function Editor(hub, state, container) {
         valueField: 'id',
         labelField: 'name',
         searchField: ['name'],
+        placeholder: '🔍 Select a language...',
         options: _.map(usableLanguages, _.identity),
         items: [this.currentLanguage.id],
         dropdownParent: 'body',
-        plugins: ['input_autogrow'],
+        plugins: ['dropdown_input'],
         onChange: _.bind(this.onLanguageChange, this),
+        closeAfterSelect: true,
     });
 
 
@@ -349,6 +351,10 @@ Editor.prototype.onDidChangeCursorPosition = function (e) {
 };
 
 Editor.prototype.onDidFocusEditorText = function () {
+    var position = this.editor.getPosition();
+    if (position) {
+        this.currentCursorPosition.text('(' + position.lineNumber + ', ' + position.column + ')');
+    }
     this.currentCursorPosition.show();
 };
 
@@ -467,23 +473,7 @@ Editor.prototype.initButtons = function (state) {
     this.initLoadSaver();
     $(this.domRoot).on('keydown', _.bind(function (event) {
         if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-            event.preventDefault();
-            if (this.settings.enableCtrlStree && this.hub.hasTree()) {
-                var trees = this.hub.trees;
-                // todo: change when multiple trees are used
-                if (trees && trees.length > 0) {
-                    trees[0].multifileService.includeByEditorId(this.id).then(_.bind(function () {
-                        trees[0].refresh();
-                    }, this));
-                }
-            } else if (this.settings.enableCtrlS) {
-                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
-                if (!loadSave.onSaveToFile(this.id)) {
-                    this.showLoadSaver();
-                }
-            } else {
-                this.eventHub.emit('displaySharingPopover');
-            }
+            this.handleCtrlS(event);
         }
     }, this));
 
@@ -501,6 +491,52 @@ Editor.prototype.initButtons = function (state) {
 
     this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
     this.currentCursorPosition.hide();
+};
+
+Editor.prototype.handleCtrlS = function (event) {
+    event.preventDefault();
+    if (this.settings.enableCtrlStree && this.hub.hasTree()) {
+        var trees = this.hub.trees;
+        // todo: change when multiple trees are used
+        if (trees && trees.length > 0) {
+            trees[0].multifileService.includeByEditorId(this.id).then(_.bind(function () {
+                trees[0].refresh();
+            }, this));
+        }
+    } else {
+        if (this.settings.enableCtrlS === 'true') {
+            loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
+            if (!loadSave.onSaveToFile(this.id)) {
+                this.showLoadSaver();
+            }
+        } else if (this.settings.enableCtrlS === 'false') {
+            this.emitShortLinkEvent();
+        } else if (this.settings.enableCtrlS === '2') {
+            this.runFormatDocumentAction();
+        } else if (this.settings.enableCtrlS === '3') {
+            this.handleCtrlSDoNothing();
+        }
+    }
+};
+
+Editor.prototype.handleCtrlSDoNothing = function () {
+    if (this.nothingCtrlSTimes === undefined) {
+        this.nothingCtrlSTimes = 0;
+        this.nothingCtrlSSince = Date.now();
+    } else {
+        if (Date.now() - this.nothingCtrlSSince > 5000) {
+            this.nothingCtrlSTimes = undefined;
+        } else if (this.nothingCtrlSTimes === 4) {
+            var element = this.domRoot.find('.ctrlSNothing');
+            element.show(100);
+            setTimeout(function () {
+                element.hide();
+            }, 2000);
+            this.nothingCtrlSTimes = undefined;
+        } else {
+            this.nothingCtrlSTimes++;
+        }
+    }
 };
 
 Editor.prototype.updateButtons = function () {
@@ -676,6 +712,9 @@ Editor.prototype.tryPanesLinkLine = function (thisLineNumber, column, reveal) {
 
 Editor.prototype.requestCompilation = function () {
     this.eventHub.emit('requestCompilation', this.id);
+    if (this.settings.formatOnCompile) {
+        this.runFormatDocumentAction();
+    }
 
     _.each(this.hub.trees, _.bind(function (tree) {
         if (tree.multifileService.isEditorPartOfProject(this.id)) {
@@ -752,7 +791,9 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
             var pos = ed.getPosition();
-            this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
+            if (pos != null) {
+                this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
+            }
         }, this),
     });
 
@@ -785,16 +826,29 @@ Editor.prototype.initEditorActions = function () {
     });
 
     this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, _.bind(function () {
-        this.editor.getAction('editor.action.formatDocument').run();
+        this.runFormatDocumentAction();
     }, this));
 
-    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_D, _.bind(function () {
+    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, _.bind(function () {
         this.editor.getAction('editor.action.duplicateSelection').run();
     }, this));
 };
 
+Editor.prototype.emitShortLinkEvent = function () {
+    if (this.settings.enableSharingPopover) {
+        this.eventHub.emit('displaySharingPopover');
+    } else {
+        this.eventHub.emit('copyShortLinkToClip');
+    }
+};
+
+Editor.prototype.runFormatDocumentAction = function () {
+    this.editor.getAction('editor.action.formatDocument').run();
+};
+
 Editor.prototype.searchOnCppreference = function (ed) {
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var preferredLanguage = this.getPreferredLanguageTag();
@@ -814,6 +868,7 @@ Editor.prototype.searchOnCppreference = function (ed) {
 
 Editor.prototype.searchOnCloogle = function (ed) {
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
@@ -1253,7 +1308,7 @@ Editor.prototype.getTokenSpan = function (lineNum, column) {
     if (lineNum <= model.getLineCount()) {
         var line = model.getLineContent(lineNum);
         if (0 < column && column < line.length) {
-            var tokens = monaco.editor.tokenize(line, model.getModeId());
+            var tokens = monaco.editor.tokenize(line, model.getLanguageId());
             if (tokens.length > 0) {
                 var lastOffset = 0;
                 var lastWasString = false;
@@ -1432,10 +1487,11 @@ Editor.prototype.setFilename = function (name) {
 
 Editor.prototype.updateTitle = function () {
     var name = this.getPaneName();
+    var customName = this.paneName ? this.paneName : name;
     if (name.endsWith('CMakeLists.txt')) {
         this.changeLanguage('cmake');
     }
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(customName));
 };
 
 // Called every time we change language, so we get the relevant code

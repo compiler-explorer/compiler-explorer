@@ -24,12 +24,13 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var TomSelect = require('tom-select');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 
@@ -40,7 +41,9 @@ var
     DiffType_CompilerStdOut = 1,
     DiffType_CompilerStdErr = 2,
     DiffType_ExecStdOut = 3,
-    DiffType_ExecStdErr = 4;
+    DiffType_ExecStdErr = 4,
+    DiffType_GNAT_ExpandedCode = 5,
+    DiffType_GNAT_Tree = 6;
 
 function State(id, model, difftype) {
     this.id = id;
@@ -80,6 +83,15 @@ State.prototype.refresh = function () {
                 if (this.result.execResult)
                     output = this.result.execResult.stderr || [];
                 break;
+            case DiffType_GNAT_ExpandedCode:
+                if (this.result.hasGnatDebugOutput)
+                    output = this.result.gnatDebugOutput || [];
+                break;
+            case DiffType_GNAT_Tree:
+                if (this.result.hasGnatDebugTreeOutput)
+                    output = this.result.gnatDebugTreeOutput || [];
+                break;
+
         }
     }
     this.model.setValue(_.pluck(output, 'text').join('\n'));
@@ -130,6 +142,8 @@ function Diff(hub, container, state) {
                 {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
                 {id: DiffType_ExecStdOut, name: 'Execution stdout'},
                 {id: DiffType_ExecStdErr, name: 'Execution stderr'},
+                {id: DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
+                {id: DiffType_GNAT_Tree, name: 'GNAT Tree Code'},
             ],
             items: [],
             render: {
@@ -170,11 +184,12 @@ function Diff(hub, container, state) {
             items: [],
             render: {
                 option: function (item, escape) {
+                    var origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
                     return '<div>' +
                         '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
                         '<span class="options">' + escape(item.options) + '</span>' +
                         '<ul class="meta">' +
-                        '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
+                        '<li class="editor">' + escape(origin) + '</li>' +
                         '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
                         '</ul></div>';
                 },
@@ -203,11 +218,12 @@ function Diff(hub, container, state) {
         }
     }, this));
 
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
 
-    this.updateCompilerNames();
+    this.updateTitle();
     this.updateCompilers();
     ga.proxy('send', {
         hitType: 'event',
@@ -227,7 +243,7 @@ Diff.prototype.resize = function () {
 
 Diff.prototype.onDiffSelect = function (id) {
     this.requestResendResult(id);
-    this.updateCompilerNames();
+    this.updateTitle();
     this.updateState();
 };
 
@@ -237,7 +253,7 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
     var lhsChanged = this.lhs.update(id, compiler, result);
     var rhsChanged = this.rhs.update(id, compiler, result);
     if (lhsChanged || rhsChanged) {
-        this.updateCompilerNames();
+        this.updateTitle();
     }
 };
 
@@ -260,6 +276,7 @@ Diff.prototype.initButtons = function (state) {
 
 Diff.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('executeResult', this.onExecuteResult, this);
@@ -298,7 +315,7 @@ Diff.prototype.requestResendResult = function (id) {
     }
 };
 
-Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
+Diff.prototype.onCompiler = function (id, compiler, options, editorId, treeId) {
     if (!compiler) return;
     options = options || '';
     var name = compiler.name + ' ' + options;
@@ -312,6 +329,7 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
         name: name,
         options: options,
         editorId: editorId,
+        treeId: treeId,
         compiler: compiler,
     };
     if (!this.lhs.id) {
@@ -326,8 +344,8 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     this.updateCompilers();
 };
 
-Diff.prototype.onExecutor = function (id, compiler, options, editorId) {
-    this.onCompiler(id + '_exec', compiler, options, editorId);
+Diff.prototype.onExecutor = function (id, compiler, options, editorId, treeId) {
+    this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
 };
 
 Diff.prototype.onCompilerClose = function (id) {
@@ -339,8 +357,9 @@ Diff.prototype.onExecutorClose = function (id) {
     this.onCompilerClose(id + '_exec');
 };
 
-Diff.prototype.updateCompilerNames = function () {
-    this.container.setTitle(this.getPaneName());
+Diff.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Diff.prototype.getPaneName = function () {
@@ -376,6 +395,7 @@ Diff.prototype.updateState = function () {
         lhsdifftype: this.lhs.difftype,
         rhsdifftype: this.rhs.difftype,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     this.container.setState(state);
 };

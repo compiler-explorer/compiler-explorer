@@ -22,13 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-type CompilerExplorerOptions = Record<string, unknown>;
+import { IFrontendTesting } from './tests/frontend-testing.interfaces';
+import { Options } from './options.interfaces';
+
+type CompilerExplorerOptions = Record<string, unknown> & Options
 
 declare global {
     export interface Window {
-        httpRoot: string | null;
-        staticRoot: string | null;
+        httpRoot: string;
+        staticRoot: string;
         compilerExplorerOptions: CompilerExplorerOptions;
+        compilerExplorerFrontendTesting: IFrontendTesting;
+        ga: any;
+        GoogleAnalyticsObject: any;
+        hasUIBeenReset: boolean;
     }
 }
 

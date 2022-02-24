@@ -62,10 +62,8 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirSt
         });
     }
 
-    override getPaneName(): string {
-        return `Rust MIR Viewer ${this.compilerInfo.compilerName}` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'Rust MIR Viewer';
     }
 
     override registerCallbacks(): void {
@@ -84,11 +82,13 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirSt
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
+        treeId: number | boolean): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
-            this.setTitle();
+            this.compilerInfo.treeId = treeId;
+            this.updateTitle();
             if (compiler && !compiler.supportsRustMirView) {
                 this.showRustMirResults([{text: '<Rust MIR output is not supported for this compiler>'}]);
             }
@@ -97,7 +97,7 @@ export class RustMir extends Pane<monaco.editor.IStandaloneCodeEditor, RustMirSt
 
     showRustMirResults(result: any[]): void {
         if (!this.editor) return;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust MIR generated>');
 

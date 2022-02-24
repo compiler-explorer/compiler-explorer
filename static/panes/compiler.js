@@ -27,8 +27,8 @@ var $ = require('jquery');
 var _ = require('underscore');
 var ga = require('../analytics').ga;
 var colour = require('../colour');
-var Toggles = require('../toggles').Toggles;
-var FontScale = require('../fontscale').FontScale;
+var Toggles = require('../widgets/toggles').Toggles;
+var FontScale = require('../widgets/fontscale').FontScale;
 var Promise = require('es6-promise').Promise;
 var Components = require('../components');
 var LruCache = require('lru-cache');
@@ -36,14 +36,17 @@ var options = require('../options').options;
 var monaco = require('monaco-editor');
 var Alert = require('../alert').Alert;
 var bigInt = require('big-integer');
-var Libraries = require('../libs-widget-ext');
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
-var TimingWidget = require('../timing-info-widget');
+var TimingWidget = require('../widgets/timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
-var Settings = require('../settings');
+var Settings = require('../settings').Settings;
 var utils = require('../utils');
-var LibUtils = require('../lib-utils').LibUtils;
+var LibUtils = require('../lib-utils');
+var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+
 
 require('../modes/asm-mode');
 require('../modes/asmruby-mode');
@@ -114,7 +117,7 @@ function Compiler(hub, container, state) {
     this.prevDecorations = [];
     this.labelDefinitions = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Compiler #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Compiler #' + this.id;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -123,6 +126,8 @@ function Compiler(hub, container, state) {
     this.toolsMenu = null;
 
     this.revealJumpStack = [];
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
 
@@ -136,7 +141,7 @@ function Compiler(hub, container, state) {
         readOnly: true,
         language: monacoDisassembly,
         glyphMargin: !options.embedded,
-        renderIndentGuides: false,
+        guides: false,
         vimInUse: false,
     }, this.settings));
 
@@ -203,6 +208,7 @@ Compiler.prototype.close = function () {
     this.outputEditor.dispose();
 };
 
+// eslint-disable-next-line max-statements
 Compiler.prototype.initPanerButtons = function () {
     var outputConfig = _.bind(function () {
         return Components.getOutput(this.id, this.sourceEditorId, this.sourceTreeId);
@@ -227,7 +233,7 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
     var createOptView = _.bind(function () {
         return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createFlagsView = _.bind(function () {
@@ -238,43 +244,58 @@ Compiler.prototype.initPanerButtons = function () {
         createFlagsView();
     }
 
+    var createPpView = _.bind(function () {
+        return Components.getPpViewWith(this.id, this.source, this.lastResult.ppOutput, this.getCompilerName(),
+            this.sourceEditorId, this.sourceTreeId);
+    }, this);
+
     var createAstView = _.bind(function () {
         return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createIrView = _.bind(function () {
         return Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createDeviceView = _.bind(function () {
         return Components.getDeviceViewWith(this.id, this.source, this.lastResult.devices, this.getCompilerName(),
-            this.sourceEditorId);
+            this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createRustMirView = _.bind(function () {
         return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createRustMacroExpView = _.bind(function () {
         return Components.getRustMacroExpViewWith(this.id, this.source, this.lastResult.rustMacroExpOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
+    }, this);
+
+    var createRustHirView = _.bind(function () {
+        return Components.getRustHirViewWith(this.id, this.source, this.lastResult.rustHirOutput,
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createGccDumpView = _.bind(function () {
         return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.lastResult.gccDumpOutput);
+            this.sourceTreeId, this.lastResult.gccDumpOutput);
+    }, this);
+
+    var createGnatDebugTreeView = _.bind(function () {
+        return Components.getGnatDebugTreeViewWith(this.id, this.source, this.lastResult.gnatDebugTreeOutput,
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createGnatDebugView = _.bind(function () {
         return Components.getGnatDebugViewWith(this.id, this.source, this.lastResult.gnatDebugOutput,
-            this.getCompilerName(), this.sourceEditorId);
+            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createCfgView = _.bind(function () {
-        return Components.getCfgViewWith(this.id, this.sourceEditorId);
+        return Components.getCfgViewWith(this.id, this.sourceEditorId, this.sourceTreeId);
     }, this);
 
     var createExecutor = _.bind(function () {
@@ -332,6 +353,16 @@ Compiler.prototype.initPanerButtons = function () {
     popularArgumentsMenu.append(this.flagsButton);
 
     this.container.layoutManager
+        .createDragSource(this.ppButton, createPpView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.ppButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createPpView);
+    }, this));
+
+    this.container.layoutManager
         .createDragSource(this.astButton, createAstView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -382,6 +413,16 @@ Compiler.prototype.initPanerButtons = function () {
     }, this));
 
     this.container.layoutManager
+        .createDragSource(this.rustHirButton, createRustHirView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.rustHirButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createRustHirView);
+    }, this));
+
+    this.container.layoutManager
         .createDragSource(this.gccDumpButton, createGccDumpView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -389,6 +430,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createGccDumpView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.gnatDebugTreeButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createGnatDebugTreeView);
     }, this));
 
     this.container.layoutManager
@@ -513,7 +564,10 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            this.jumpToLabel(ed.getPosition());
+            var position = ed.getPosition();
+            if (position != null) {
+                this.jumpToLabel(position);
+            }
         }, this),
     });
 
@@ -564,13 +618,16 @@ Compiler.prototype.initEditorActions = function () {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
-            var desiredLine = ed.getPosition().lineNumber - 1;
-            var source = this.assembly[desiredLine].source;
-            if (source && source.line > 0) {
-                var editorId = this.getEditorIdBySourcefile(source);
-                if (editorId) {
-                    // a null file means it was the user's source
-                    this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+            var position = ed.getPosition();
+            if (position != null) {
+                var desiredLine = position.lineNumber - 1;
+                var source = this.assembly[desiredLine].source;
+                if (source && source.line > 0) {
+                    var editorId = this.getEditorIdBySourcefile(source);
+                    if (editorId) {
+                        // a null file means it was the user's source
+                        this.eventHub.emit('editorLinkLine', editorId, source.line, -1, -1, true);
+                    }
                 }
             }
         }, this),
@@ -688,6 +745,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
     var options = {
         userArguments: this.options,
         compilerOptions: {
+            producePp: this.ppViewOpen ? this.ppOptions : false,
             produceAst: this.astViewOpen,
             produceGccDump: {
                 opened: this.gccDumpViewOpen,
@@ -699,11 +757,13 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             },
             produceOptInfo: this.wantOptInfo,
             produceCfg: this.cfgViewOpen,
+            produceGnatDebugTree: this.gnatDebugTreeViewOpen,
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
             produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
             produceRustMacroExp: this.rustMacroExpViewOpen,
+            produceRustHir: this.rustHirViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
@@ -845,7 +905,10 @@ Compiler.prototype.sendCompile = function (request) {
                 message = e;
             } else if (e) {
                 message = e.error || e.code || e.message;
-                if (e.stack) console.log(e);
+                if (e.stack) {
+                    // eslint-disable-next-line no-console
+                    console.log(e);
+                }
             }
             onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
@@ -952,10 +1015,15 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
         this.setNormalMargin();
     }
 
-    codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
+    if (this.settings.enableCodeLens) {
+        codeLensHandler.registerLensesForCompiler(this.id, editorModel, codeLenses);
 
-    var currentAsmLang = editorModel.getModeId();
-    codeLensHandler.registerProviderForLanguage(currentAsmLang);
+        var currentAsmLang = editorModel.getLanguageId();
+        codeLensHandler.registerProviderForLanguage(currentAsmLang);
+    } else {
+        // Make sure the codelens is disabled
+        codeLensHandler.unregister(this.id);
+    }
 };
 
 function errorResult(text) {
@@ -1011,7 +1079,7 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
     });
 
     // Delete trailing empty lines
-    if ($.isArray(result.asm)) {
+    if (Array.isArray(result.asm)) {
         var indexToDiscard = _.findLastIndex(result.asm, function (line) {
             return !_.isEmpty(line.text);
         });
@@ -1208,16 +1276,40 @@ Compiler.prototype.onFlagsViewClosed = function (id, compilerFlags) {
     }
 };
 
-Compiler.prototype.onAstViewOpened = function (id) {
+Compiler.prototype.onToolSettingsChange = function (id) {
     if (this.id === id) {
-        this.astButton.prop('disabled', true);
-        this.astViewOpen = true;
         this.compile();
     }
 };
 
-Compiler.prototype.onToolSettingsChange = function (id) {
+Compiler.prototype.onPpViewOpened = function (id) {
     if (this.id === id) {
+        this.ppButton.prop('disabled', true);
+        this.ppViewOpen = true;
+        // the pp view will request compilation once it populates its options so this.compile() is not called here
+    }
+};
+
+Compiler.prototype.onPpViewClosed = function (id) {
+    if (this.id === id) {
+        this.ppButton.prop('disabled', false);
+        this.ppViewOpen = false;
+    }
+};
+
+Compiler.prototype.onPpViewOptionsUpdated = function (id, options, reqCompile) {
+    if (this.id === id) {
+        this.ppOptions = options;
+        if (reqCompile) {
+            this.compile();
+        }
+    }
+};
+
+Compiler.prototype.onAstViewOpened = function (id) {
+    if (this.id === id) {
+        this.astButton.prop('disabled', true);
+        this.astViewOpen = true;
         this.compile();
     }
 };
@@ -1274,6 +1366,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onGnatDebugTreeViewOpened = function (id) {
+    if (this.id === id) {
+        this.gnatDebugTreeButton.prop('disabled', true);
+        this.gnatDebugTreeViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onGnatDebugTreeViewClosed = function (id) {
+    if (this.id === id) {
+        this.gnatDebugTreeButton.prop('disabled', false);
+        this.gnatDebugTreeViewOpen = false;
+    }
+};
+
 Compiler.prototype.onGnatDebugViewOpened = function (id) {
     if (this.id === id) {
         this.gnatDebugButton.prop('disabled', true);
@@ -1301,6 +1408,21 @@ Compiler.prototype.onRustMacroExpViewClosed = function (id) {
     if (this.id === id) {
         this.rustMacroExpButton.prop('disabled', false);
         this.rustMacroExpViewOpen = false;
+    }
+};
+
+Compiler.prototype.onRustHirViewOpened = function (id) {
+    if (this.id === id) {
+        this.rustHirButton.prop('disabled', true);
+        this.rustHirViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onRustHirViewClosed = function (id) {
+    if (this.id === id) {
+        this.rustHirButton.prop('disabled', false);
+        this.rustHirViewOpen = false;
     }
 };
 
@@ -1437,14 +1559,16 @@ Compiler.prototype.initButtons = function (state) {
 
     this.optButton = this.domRoot.find('.btn.view-optimization');
     this.flagsButton = this.domRoot.find('div.populararguments div.dropdown-menu button');
+    this.ppButton = this.domRoot.find('.btn.view-pp');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
     this.deviceButton = this.domRoot.find('.btn.view-device');
+    this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
+    this.rustHirButton = this.domRoot.find('.btn.view-rusthir');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
-    this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -1504,20 +1628,21 @@ Compiler.prototype.onLibsChanged = function () {
 };
 
 Compiler.prototype.initLibraries = function (state) {
-    var libUtils = new LibUtils();
-
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler, this.libsButton,
-        state, _.bind(this.onLibsChanged, this),
-        libUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [], this.currentLangId)
+    );
 };
 
 Compiler.prototype.updateLibraries = function () {
     if (this.libsWidget) {
-        var libUtils = new LibUtils();
-
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = libUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
         }
 
         this.libsWidget.setNewLangId(this.currentLangId,
@@ -1612,6 +1737,7 @@ Compiler.prototype.enableToolButtons = function () {
     }, this));
 };
 
+// eslint-disable-next-line max-statements
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
     var filters = this.getEffectiveFilters();
@@ -1652,26 +1778,32 @@ Compiler.prototype.updateButtons = function () {
         this.flagsButton.prop('disabled', this.flagsViewOpen);
     }
     this.optButton.prop('disabled', this.optViewOpen);
+    this.ppButton.prop('disabled', this.ppViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
     this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
+    this.rustHirButton.prop('disabled', this.rustHirViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
+    this.gnatDebugTreeButton.prop('disabled', this.gnatDebugTreeViewOpen);
     this.gnatDebugButton.prop('disabled', this.gnatDebugViewOpen);
     // The executorButton does not need to be changed here, because you can create however
     // many executors as you want.
 
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
+    this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
+    this.rustHirButton.toggle(!!this.compiler.supportsRustHirView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
-    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugView);
+    this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
+    this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
 
     this.enableToolButtons();
@@ -1696,7 +1828,7 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
                 '<span class=\'argdescription\'>' + arg.description + '</span>' +
                 '</div>');
 
-            argumentButton.click(_.bind(function () {
+            argumentButton.on('click', _.bind(function () {
                 var button = argumentButton;
                 var curOptions = this.optionsField.val();
                 if (curOptions.length > 0) {
@@ -1723,6 +1855,7 @@ Compiler.prototype.onFontScale = function () {
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
@@ -1751,6 +1884,9 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('optViewClosed', this.onOptViewClosed, this);
     this.eventHub.on('flagsViewOpened', this.onFlagsViewOpened, this);
     this.eventHub.on('flagsViewClosed', this.onFlagsViewClosed, this);
+    this.eventHub.on('ppViewOpened', this.onPpViewOpened, this);
+    this.eventHub.on('ppViewClosed', this.onPpViewClosed, this);
+    this.eventHub.on('ppViewOptionsUpdated', this.onPpViewOptionsUpdated, this);
     this.eventHub.on('astViewOpened', this.onAstViewOpened, this);
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
@@ -1761,6 +1897,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
     this.eventHub.on('rustMacroExpViewOpened', this.onRustMacroExpViewOpened, this);
     this.eventHub.on('rustMacroExpViewClosed', this.onRustMacroExpViewClosed, this);
+    this.eventHub.on('rustHirViewOpened', this.onRustHirViewOpened, this);
+    this.eventHub.on('rustHirViewClosed', this.onRustHirViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
     this.eventHub.on('outputClosed', this.onOutputClosed, this);
 
@@ -1770,6 +1908,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('gccDumpViewClosed', this.onGccDumpViewClosed, this);
     this.eventHub.on('gccDumpUIInit', this.onGccDumpUIInit, this);
 
+    this.eventHub.on('gnatDebugTreeViewOpened', this.onGnatDebugTreeViewOpened, this);
+    this.eventHub.on('gnatDebugTreeViewClosed', this.onGnatDebugTreeViewClosed, this);
     this.eventHub.on('gnatDebugViewOpened', this.onGnatDebugViewOpened, this);
     this.eventHub.on('gnatDebugViewClosed', this.onGnatDebugViewClosed, this);
 
@@ -1868,8 +2008,18 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     var are = unwiseOptions.length === 1 ? ' is ' : ' are ';
     var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
+    if (_.contains(optionsArray, '-flto')) {
+        this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
+            group: 'unwiseOption',
+            collapseSimilar: true,
+        });
+    }
+
     if (unwiseOptions.length > 0) {
-        this.alertSystem.notify(msg, {group: 'unwiseOption', collapseSimilar: true});
+        this.alertSystem.notify(msg, {
+            group: 'unwiseOption',
+            collapseSimilar: true,
+        });
     }
 };
 
@@ -1880,7 +2030,7 @@ Compiler.prototype.updateCompilerInfo = function () {
             this.alertSystem.notify(this.compiler.notification, {
                 group: 'compilerwarning',
                 alertClass: 'notification-info',
-                dismissTime: 5000,
+                dismissTime: 7000,
             });
         }
         this.prependOptions.data('content', this.compiler.options);
@@ -1961,6 +2111,7 @@ Compiler.prototype.currentState = function () {
         selection: this.selection,
         flagsViewOpen: this.flagsViewOpen,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -2015,12 +2166,16 @@ Compiler.prototype.getPaneName = function () {
     }
 };
 
+Compiler.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
+};
+
 Compiler.prototype.updateCompilerName = function () {
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
-    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
@@ -2194,6 +2349,7 @@ Compiler.prototype.onSettingsChange = function (newSettings) {
             enabled: this.settings.showMinimap && !options.embedded,
         },
         fontFamily: this.settings.editorsFFont,
+        codeLensFontFamily: this.settings.editorsFFont,
         fontLigatures: this.settings.editorsFLigatures,
     });
 };
@@ -2202,45 +2358,67 @@ var hexLike = /^(#?[$]|0x)([0-9a-fA-F]+)$/;
 var hexLike2 = /^(#?)([0-9a-fA-F]+)H$/;
 var decimalLike = /^(#?)(-?[0-9]+)$/;
 
-function getNumericToolTip(value) {
-    var match = hexLike.exec(value) || hexLike2.exec(value);
-    if (match) {
-        return value + ' = ' + bigInt(match[2], 16).toString(10);
-    }
-    match = decimalLike.exec(value);
-    if (match) {
-        var asBig = bigInt(match[2]);
-        if (asBig.isNegative()) {
-            asBig = bigInt('ffffffffffffffff', 16).and(asBig);
-        }
-        return value + ' = 0x' + asBig.toString(16).toUpperCase();
-    }
+function parseNumericValue(value) {
+    var hexMatch = hexLike.exec(value) || hexLike2.exec(value);
+    if (hexMatch)
+        return bigInt(hexMatch[2], 16);
+
+    var decMatch = decimalLike.exec(value);
+    if (decMatch)
+        return bigInt(decMatch[2]);
 
     return null;
+}
+
+function getNumericToolTip(value) {
+    var numericValue = parseNumericValue(value);
+    if (numericValue === null)
+        return null;
+
+    // Decimal representation.
+    var result = numericValue.toString(10);
+
+    // Hexadecimal representation.
+    if (numericValue.isNegative()) {
+        var masked = bigInt('ffffffffffffffff', 16).and(numericValue);
+        result += ' = 0x' + masked.toString(16).toUpperCase();
+    } else {
+        result += ' = 0x' + numericValue.toString(16).toUpperCase();
+    }
+
+    // Printable ASCII character.
+    if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7E)) {
+        var char = String.fromCharCode(numericValue.valueOf());
+        result += ' = \'' + char + '\'';
+    }
+
+    return result;
 }
 
 function getAsmInfo(opcode, instructionSet) {
     var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
-        return Promise.resolve(cached.found ? cached.result : null);
+        if (cached.found) {
+            return Promise.resolve(cached.data);
+        }
+        return Promise.reject(cached.data);
     }
-    var base = window.httpRoot;
     return new Promise(function (resolve, reject) {
-        $.ajax({
-            type: 'GET',
-            url: window.location.origin + base + 'api/asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode,
-            dataType: 'json',  // Expected,
-            contentType: 'text/plain',  // Sent
-            success: function (result) {
-                OpcodeCache.set(cacheName, result);
-                resolve(result.found ? result.result : null);
-            },
-            error: function (result) {
-                reject(result);
-            },
-            cache: true,
-        });
+        getAssemblyDocumentation({ opcode: opcode, instructionSet: instructionSet })
+            .then(function (response) {
+                response.json().then(function (body) {
+                    if (response.status === 200) {
+                        OpcodeCache.set(cacheName, { found: true, data: body });
+                        resolve(body);
+                    } else {
+                        OpcodeCache.set(cacheName, { found: false, data: body.error });
+                        reject(body.error);
+                    }
+                });
+            }).catch(function (error) {
+                reject('Fetch error: ' + error);
+            });
     });
 }
 
@@ -2311,7 +2489,8 @@ Compiler.prototype.onMouseMove = function (e) {
                 range: currentWord.range,
                 options: {
                     isWholeLine: false, hoverMessage: [{
-                        value: '`' + numericToolTip + '`',
+                        // We use double `` as numericToolTip may include a single ` character.
+                        value: '``' + numericToolTip + '``',
                     }],
                 },
             };
@@ -2340,7 +2519,7 @@ Compiler.prototype.onMouseMove = function (e) {
 Compiler.prototype.getLineTokens = function (line) {
     var model = this.outputEditor.getModel();
     if (!model || line > model.getLineCount()) return [];
-    var flavour = model.getModeId();
+    var flavour = model.getLanguageId();
     var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
     return tokens.length > 0 ? tokens[0] : [];
 };
@@ -2359,6 +2538,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     });
     if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var opcode = word.word.toUpperCase();
@@ -2389,7 +2569,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000,
+                dismissTime: 5000,
             });
         }
     }, this), _.bind(function (rejection) {
@@ -2397,7 +2577,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
             .notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
                 group: 'notokenindocs',
                 alertClass: 'notification-error',
-                dismissTime: 3000,
+                dismissTime: 5000,
             });
     }, this));
 };
@@ -2422,7 +2602,7 @@ Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {
         this.updateCompilersSelector(info);
         this.saveState();
         this.updateCompilerUI();
-
+        this.setAssembly(fakeAsm(''));
         // this is a workaround to delay compilation further until the Editor sends a compile request
         this.needsCompile = false;
 

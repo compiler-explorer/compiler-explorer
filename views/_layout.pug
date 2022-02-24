@@ -51,12 +51,6 @@ html(lang="en")
     block scripts
         script(src=`${httpRoot}client-options.js?hash=${optionsHash}`)
         div#config(extraOptions=encodeURIComponent(compilerExplorerOptions), httpRoot=httpRoot, staticRoot=staticRoot)
-        script
-          | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
-          |   var s = document.createElement("script");
-          |   s.src = "!{require("es6-shim.min.js")}";
-          |   document.head.appendChild(s);
-          | }
         script(src=require("runtime.js"))
         script(src=require("vendor.js"))
         script(src=require("main.js"))

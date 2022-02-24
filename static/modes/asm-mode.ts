@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
@@ -85,6 +85,7 @@ function definition() {
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 
                 // characters
                 [/'[^\\']'/, 'string'],
@@ -112,6 +113,13 @@ function definition() {
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
             ],
 
+            sstring: [
+                [/[^\\']+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/'/, {token: 'string.singlequote', bracket: '@close', next: '@pop'}],
+            ],
+
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],
                 [/\/\*/, 'comment', '@comment'],
@@ -122,7 +130,7 @@ function definition() {
     };
 }
 
-var def = definition();
+const def = definition();
 monaco.languages.register({id: 'asm'});
 monaco.languages.setMonarchTokensProvider('asm', def);
 
