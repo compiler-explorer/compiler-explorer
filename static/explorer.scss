@@ -880,8 +880,20 @@ html[data-theme=dark] {
     cursor: pointer;
 }
 
-.currentCursorPosition, .ctrlSNothing {
+.ctrlSNothing {
     font-size: small;
     border: none;
     user-select: text;
+}
+
+.currentCursorPosition {
+    position: absolute;
+    bottom: 0;
+    right: 14px; // width of monaco scrollbar
+    font-size: small;
+    color: #17a2b8;
+    border-radius: 0.5rem;
+    background-color: rgba(49, 54, 60, 0.85);
+    z-index: 1;
+    padding: 5px;
 }
