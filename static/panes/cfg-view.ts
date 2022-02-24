@@ -298,7 +298,7 @@ export class Cfg {
     }
 
     getPaneTag() {
-        if(this._editorid !== false) {
+        if(this._editorid !== undefined) {
             return `${this._compilerName} (Editor #${this._editorid}, Compiler #${this.compilerId})`;
         } else {
             return `${this._compilerName} (Tree #${this._treeid}, Compiler #${this.compilerId})`;
