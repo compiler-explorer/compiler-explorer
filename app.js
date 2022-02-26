@@ -57,6 +57,7 @@ import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
 import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { setupMetricsServer } from './lib/metrics-server';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
 import { ShortLinkResolver } from './lib/shortener/google';
@@ -547,19 +548,7 @@ async function main() {
 
     if (opts.metricsPort) {
         logger.info(`Running metrics server on port ${opts.metricsPort}`);
-        PromClient.collectDefaultMetrics();
-        const metricsServer = express();
-
-        metricsServer.get('/metrics', async (req, res) => {
-            try {
-                res.set('Content-Type', PromClient.register.contentType);
-                res.end(await PromClient.register.metrics());
-            } catch (ex) {
-                res.status(500).end(ex);
-            }
-        });
-
-        metricsServer.listen(opts.metricsPort, defArgs.hostname);
+        setupMetricsServer(opts.metricsPort, defArgs.hostname);
     }
 
     webServer
