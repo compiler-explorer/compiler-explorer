@@ -261,15 +261,16 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
 
     protected constructor(hub: any /* Hub */, container: Container, state: S & MonacoPaneState) {
         super(hub, container, state);
-
-        const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
-        this.editor = this.createEditor(editorRoot);
-        this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.selection = state.selection;
 
         this.registerEditorActions();
     }
 
+    registerButtons(state: S): void {
+        const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
+        this.editor = this.createEditor(editorRoot);
+        this.fontScale = new FontScale(this.domRoot, state, this.editor);
+    }
 
     getCurrentState(): MonacoPaneState {
         const parent = super.getCurrentState();

@@ -72,6 +72,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     }
 
     override registerButtons(state: PPViewState & MonacoPaneState): void {
+        super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), ((state as unknown) as Record<string, boolean>));
         this.options.on('change', this.onOptionsChange.bind(this));
     }
