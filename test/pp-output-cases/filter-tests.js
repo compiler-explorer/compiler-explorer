@@ -49,6 +49,10 @@ foo
 # 2 "<source>" 2
 bar
 # 66 "/usr/include/assert.h" 3 4
+baz
+# 2 "<stdin>"
+biz
+# 66 "/usr/include/assert.h" 3 4
 
 
 # 3 "/app/example.cpp"
@@ -72,6 +76,7 @@ int main() {
                 ;
 }`,
         output: `bar
+biz
 int main() {
 
 #pragma foo bar
