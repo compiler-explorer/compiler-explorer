@@ -26,9 +26,9 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
+import { MonacoPane } from './pane';
 import { IrState } from './ir-view.interfaces';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPaneState } from './pane.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
@@ -36,14 +36,14 @@ import { applyColours } from '../colour';
 
 import { PaneRenaming } from '../widgets/pane-renaming';
 
-export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
+export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
     previousDecorations: string[] = [];
 
-    constructor(hub: any, container: Container, state: IrState & BasePaneState) {
+    constructor(hub: any, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.irOutput) {
             this.showIrResults(state.irOutput);

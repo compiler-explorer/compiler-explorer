@@ -225,7 +225,7 @@ DeviceAsm.prototype.updateDeviceAsm = function () {
 };
 
 DeviceAsm.prototype.getPaneTag = function () {
-    if(this._editorId !== false) {
+    if(this._editorId) {
         return this._compilerName + ' (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
     } else {
         return this._compilerName + ' (Tree #' + this._treeId + ', Compiler #' + this._compilerId + ')';

@@ -24,8 +24,8 @@
 
 export interface CfgState {
     id: number;
-    editorid: number | boolean;
-    treeid: number | boolean;
+    editorid?: number;
+    treeid?: number;
     selectedFn?: string;
     pos: any; // vis.Network.Position
     scale: number;

@@ -1120,7 +1120,7 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
         infoLabelText = ' - ' + timeTaken + 'ms';
     }
 
-    if (result.asmSize !== undefined) {
+    if (result.asmSize) {
         infoLabelText += ' (' + result.asmSize + 'B)';
     }
 

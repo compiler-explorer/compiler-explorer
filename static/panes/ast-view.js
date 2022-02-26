@@ -150,7 +150,7 @@ Ast.prototype.getDefaultPaneName = function () {
 };
 
 Ast.prototype.getPaneTag = function () {
-    if(this._editorid !== false) {
+    if(this._editorid) {
         return this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
     } else {
         return this._compilerName + ' (Tree #' + this._treeid + ', Compiler #' + this._compilerid + ')';

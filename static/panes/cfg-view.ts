@@ -56,8 +56,8 @@ export class Cfg {
     cfgVisualiser: any;
     compilerId: number;
     _compilerName = '';
-    _editorid: number | boolean;
-    _treeid: number | boolean;
+    _editorid?: number;
+    _treeid?: number;
     _binaryFilter: boolean;
     functionPicker: TomSelect;
     supportsCfg = false;
@@ -298,7 +298,7 @@ export class Cfg {
     }
 
     getPaneTag() {
-        if(this._editorid !== false) {
+        if(this._editorid) {
             return `${this._compilerName} (Editor #${this._editorid}, Compiler #${this.compilerId})`;
         } else {
             return `${this._compilerName} (Tree #${this._treeid}, Compiler #${this.compilerId})`;

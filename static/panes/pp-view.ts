@@ -28,17 +28,17 @@ import { Toggles } from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
-import { Pane } from './pane';
+import { MonacoPane } from './pane';
 import { ga } from '../analytics';
 import * as monacoConfig from '../monaco-config';
 import { PPViewState } from './pp-view.interfaces';
 import { Container } from 'golden-layout';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPaneState } from './pane.interfaces';
 
-export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
+export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
 
-    constructor(hub: any, container: Container, state: PPViewState & BasePaneState) {
+    constructor(hub: any, container: Container, state: PPViewState & MonacoPaneState) {
         super(hub, container, state);
         this.eventHub.emit('ppViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
@@ -71,7 +71,7 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         });
     }
 
-    override registerButtons(state: PPViewState & BasePaneState): void {
+    override registerButtons(state: PPViewState & MonacoPaneState): void {
         this.options = new Toggles(this.domRoot.find('.options'), ((state as unknown) as Record<string, boolean>));
         this.options.on('change', this.onOptionsChange.bind(this));
     }

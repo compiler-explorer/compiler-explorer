@@ -26,15 +26,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPane } from './pane';
+import { MonacoPaneState } from './pane.interfaces';
 import { RustMacroExpState } from './rustmacroexp-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
-    constructor(hub: any, container: Container, state: RustMacroExpState & BasePaneState) {
+export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
+    constructor(hub: any, container: Container, state: RustMacroExpState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustMacroExpOutput) {
             this.showRustMacroExpResults(state.rustMacroExpOutput);
@@ -82,8 +82,8 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
-        treeId: number | boolean): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number,
+        treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
