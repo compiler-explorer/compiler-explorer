@@ -1,5 +1,11 @@
-export function getAsmOpcode(opcode) {
-    if (!opcode) return;
+/* eslint-disable max-len, no-duplicate-case, quotes, quote-props, comma-dangle */
+import type { AssemblyInstructionInfo } from '../base';
+export function getAsmOpcode(opcode: string): AssemblyInstructionInfo | undefined {
+    if (!opcode) return {
+      tooltip: "",
+      html: "",
+      url: "",
+    };
     switch (opcode) {
         case "ADC":
         case "ADCS":

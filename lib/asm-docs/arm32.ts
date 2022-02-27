@@ -57,7 +57,7 @@ export class Arm32DocumentationProvider extends BaseAssemblyDocumentationProvide
         if (!isConditionalOpcode) {
             return null;
         }
-        const information = getAsmOpcode(isConditionalOpcode[1]);
+        const information = getAsmOpcode(isConditionalOpcode[1]) as AssemblyInstructionInfo;
         const text = Arm32DocumentationProvider.CONDITIONAL_OPCODE_TAGS[isConditionalOpcode[2]] || '';
         return {
             ...information,
