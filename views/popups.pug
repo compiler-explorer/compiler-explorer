@@ -22,7 +22,10 @@
             #load-browser-local.tab-pane(role="tabpanel")
               h4.card-title Load from browser-local storage:
               ul.local-storage.small-v-scrollable
-                li.template: a(href="javascript:;")
+                li.template
+                  a(href="javascript:;")
+                  button.btn.btn-sm.ml-5
+                    span.fa.fa-trash
               .input-group
                 input.save-name(type="text" size="20" placeholder="Set name of state")
                 .input-group-append

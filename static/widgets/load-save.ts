@@ -59,6 +59,14 @@ export class LoadSave {
         local.set('files', JSON.stringify(files));
     }
 
+    public static removeLocalFile(name: string) {
+        const files = LoadSave.getLocalFiles();
+        if (files[name] !== undefined) {
+            delete files[name];
+        }
+        local.set('files', JSON.stringify(files));
+    }
+
     private async fetchBuiltins(): Promise<Record<string, any>[]> {
         return new Promise<Record<string, any>[]>((resolve) => {
             $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
@@ -91,17 +99,20 @@ export class LoadSave {
         this.modal?.modal('hide');
     }
 
-    private static populate(root: JQuery, list: {name: string, load: () => void}[]) {
+    private static populate(root: JQuery, list: {name: string, load: () => void, delete?: () => void }[]) {
         root.find('li:not(.template)').remove();
         const template = root.find('.template');
         for (const elem of list) {
-            template
-                .clone()
-                .removeClass('template')
+            const clone = template.clone();
+            clone.removeClass('template')
                 .appendTo(root)
                 .find('a')
                 .text(elem.name)
                 .on('click', elem.load);
+            const deleteButton = clone.find('button');
+            if (deleteButton && elem.delete !== undefined) {
+                deleteButton.on('click', () => elem.delete?.());
+            }
         }
     }
 
@@ -135,6 +146,17 @@ export class LoadSave {
                     load: () => {
                         this.onLoad(data);
                         this.modal?.modal('hide');
+                    },
+                    delete: () => {
+                        this.alertSystem.ask(
+                            `Delete ${_.escape(name)}?`,
+                            `Do you want to delete '${_.escape(name)}'?`,
+                            {
+                                yes: () => {
+                                    LoadSave.removeLocalFile(name);
+                                    this.populateLocalStorage();
+                                },
+                            });
                     },
                 };
             })
