@@ -387,6 +387,11 @@ function startListening(server) {
         _port = defArgs.port;
     }
 
+    const startupGauge = new PromClient.Gauge({
+        name: 'ce_startup_seconds',
+        help: 'Time taken from process start to serving requests',
+    });
+    startupGauge.set(process.uptime());
     const startupDurationMs = Math.floor(process.uptime() * 1000);
     if (isNaN(parseInt(_port))) {
         // unix socket, not a port number...
