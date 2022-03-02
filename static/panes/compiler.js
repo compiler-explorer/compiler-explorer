@@ -2178,6 +2178,7 @@ Compiler.prototype.updateCompilerName = function () {
     var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
+    this.updateTitle();
 };
 
 Compiler.prototype.resendResult = function () {
