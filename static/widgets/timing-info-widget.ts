@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { Settings } from '../settings';
-import { Chart, ChartData, Color, defaults } from 'chart.js';
+import { Chart, ChartData, defaults } from 'chart.js';
 import 'chart.js/auto';
 
 type Data = ChartData<'bar', number[], string> & {steps: number}
