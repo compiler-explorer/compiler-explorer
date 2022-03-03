@@ -85,6 +85,8 @@ function definition() {
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                // `msvc does this, sometimes'
+                [/`/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
                 [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 
                 // characters
@@ -111,6 +113,14 @@ function definition() {
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+
+            msvcstring: [
+                [/[^\\']+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/''/, 'string.escape'], // ` isn't escaped but ' is escaped as ''
+                [/\\./, 'string.escape.invalid'],
+                [/'/, {token: 'string.backtick', bracket: '@close', next: '@pop'}],
             ],
 
             sstring: [
