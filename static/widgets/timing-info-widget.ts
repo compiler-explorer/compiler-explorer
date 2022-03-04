@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,29 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-var $ = require('jquery');
-var _ = require('underscore');
-var Settings = require('settings').Settings;
+import { Settings } from '../settings';
+import { Chart, ChartData, defaults } from 'chart.js';
+import 'chart.js/auto';
 
-// The name of the package itself contains .js, it's not referencing a file
-// eslint-disable-next-line requirejs/no-js-extension
-var Chart = require('chart.js');
-require('chart.js/auto');
+type Data = ChartData<'bar', number[], string> & {steps: number}
 
-function pushTimingInfo(data, step, time) {
-    data.labels.push(step);
+function pushTimingInfo(data: Data, step: string, time: number | string) {
+    if (typeof time === 'string') {
+        time = parseInt(time, 10);
+    }
+    data.labels?.push(`${step} (${time}ms)`);
     data.datasets[0].data.push(time);
-    data.steps += parseInt(time, 10);
+    data.steps += time;
 }
 
-function concatTimings(data, timings) {
-    _.forEach(timings, function (timing) {
+function concatTimings(data: Data, timings: {step: string, time: number}[]) {
+    for (const timing of timings) {
         pushTimingInfo(data, timing.step, timing.time);
-    });
+    }
 }
 
-function addBuildResultToTimings(data, buildResult) {
+function addBuildResultToTimings(data: Data, buildResult: any) {
     if (buildResult.packageDownloadAndUnzipTime) {
         pushTimingInfo(data, 'Download binary from cache', buildResult.packageDownloadAndUnzipTime);
     } else {
@@ -53,17 +52,17 @@ function addBuildResultToTimings(data, buildResult) {
         }
 
         if (buildResult.buildsteps) {
-            _.forEach(buildResult.buildsteps, function (step) {
+            for (const step of buildResult.buildsteps) {
                 pushTimingInfo(data, step.step, step.execTime);
-            });
+            }
         } else if (buildResult.execTime) {
             pushTimingInfo(data, 'Compilation', buildResult.execTime);
         }
     }
 }
 
-function initializeChartDataFromResult(compileResult, totalTime) {
-    var data = {
+function initializeChartDataFromResult(compileResult: any, totalTime: number): Data {
+    const data: Data = {
         steps: 0,
         labels: [],
         datasets: [{
@@ -114,8 +113,7 @@ function initializeChartDataFromResult(compileResult, totalTime) {
             pushTimingInfo(data, 'Execution', compileResult.execTime);
         }
     }
-
-    var stepsTotal = data.steps;
+    const stepsTotal = data.steps;
     pushTimingInfo(data, 'Network, JS, waiting, etc.', totalTime - stepsTotal);
 
     if (totalTime - stepsTotal < 0) {
@@ -123,66 +121,60 @@ function initializeChartDataFromResult(compileResult, totalTime) {
         data.labels = ['Browser cache'];
     }
 
-    delete data.steps;
     return data;
 }
 
-function displayData(data) {
-    var modal = $('#timing-info');
+function displayData(data: Data) {
+    const modal = $('#timing-info');
 
-    var chartDiv = modal.find('#chart');
+    const chartDiv = modal.find('#chart');
     chartDiv.html('');
 
-    var canvas = $('<canvas id="timing-chart" width="400" height="400"></canvas>');
+    const canvas = $('<canvas id="timing-chart" width="400" height="400"></canvas>') as JQuery<HTMLCanvasElement>;
     chartDiv.append(canvas);
 
-    var settings = Settings.getStoredSettings();
-    var fontColour = Chart.defaults.color;
+    const settings = Settings.getStoredSettings();
+    let fontColour = defaults.color.toString();
     if (settings != null && settings.theme !== 'default') {
         fontColour = '#ffffff';
     }
 
-    var ctx = canvas[0].getContext('2d');
-    new Chart.Chart(ctx, {
+    new Chart(canvas, {
         type: 'bar',
         data: data,
         options: {
-            legend: {
-                labels: {
-                    fontColor: fontColour,
-                    fontSize: 18,
+            scales: {
+                xAxis: {
+                    beginAtZero: true,
+                    grid: {
+                        color: fontColour,
+                        tickColor: fontColour,
+                    },
+                    ticks: {color: fontColour},
+                },
+                yAxis: {
+                    beginAtZero: true,
+                    grid: {
+                        color: fontColour,
+                        tickColor: fontColour,
+                    },
+                    ticks: {color: fontColour},
                 },
             },
-            scales: {
-                xAxes: [{
-                    gridLines: {
+            plugins: {
+                legend: {
+                    labels: {
                         color: fontColour,
+                        font: {size: 18},
                     },
-                    ticks: {
-                        fontColor: fontColour,
-                        beginAtZero: true,
-                    },
-                }],
-                yAxes: [{
-                    gridLines: {
-                        color: fontColour,
-                    },
-                    ticks: {
-                        fontColor: fontColour,
-                        beginAtZero: true,
-                    },
-                }],
+                },
             },
         },
     });
     modal.modal('show');
 }
 
-function displayCompilationTiming(compileResult, totalTime) {
-    var data = initializeChartDataFromResult(compileResult, totalTime);
+export function displayCompilationTiming(compileResult: any, totalTime: number) {
+    const data = initializeChartDataFromResult(compileResult, totalTime);
     displayData(data);
 }
-
-module.exports = {
-    displayCompilationTiming: displayCompilationTiming,
-};
