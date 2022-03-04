@@ -75,7 +75,7 @@ export default {
     mode: isDev ? 'development' : 'production',
     entry: {
         main: './static/main.js',
-        noscript: './static/noscript.js',
+        noscript: './static/noscript.ts',
     },
     output: {
         filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,

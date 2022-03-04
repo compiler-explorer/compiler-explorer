@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-require('./noscript.scss');
+import $ from 'jquery';
+import 'bootstrap';
+import 'popper.js';
 
-var $ = require('jquery');
+import { Toggles } from './widgets/toggles';
+import './noscript.scss';
 
-// eslint-disable-next-line requirejs/no-js-extension
-require('popper.js');
-require('bootstrap');
-
-var Toggles = require('./widgets/toggles').Toggles;
-
-function initMenus() {
+$(document).on('ready', () => {
     $('.button-checkbox').each(function () {
-        var container = $(this);
-
-        var span = container.find('span');
+        const container = $(this);
+        const span = container.find('span');
         span.remove();
-
-        var option = container.find('input');
+        const option = container.find('input');
         option.addClass('d-none');
-
-        var button = $('<button />');
-        button.addClass('dropdown-item btn btn-sm btn-light');
-        button.attr('type', 'button');
-        button.attr('title', option.attr('title'));
-        button.data('bind', option.attr('name'));
-        button.attr('aria-pressed', option.attr('checked') === 'checked' ? 'true' : 'false');
+        const button = $(`
+          <button
+            title="${option.attr('title')}"
+            aria-pressed=${option.attr('checked') === 'checked' ? 'true' : 'false'}
+            data-bind="${option.attr('name')}"
+            type="button"
+            class="dropdown-item btn btn-sm btn-light">
+          </button>`
+        );
         button.append(span);
         container.prepend(button);
-
-        var parent = container.parent();
+        const parent = container.parent();
         parent.removeClass('noscriptdropdown');
         parent.addClass('dropdown-menu');
     });
@@ -59,10 +55,6 @@ function initMenus() {
     $('.noscriptdropdown').removeClass('noscriptdropdown').addClass('dropdown-menu');
     $('.nodropdown-toggle').removeClass('nodropdown-toggle').addClass('dropdown-toggle');
 
-    new Toggles($('.output'));
-    new Toggles($('.filters'));
-}
-
-$(document).on('ready', function () {
-    initMenus();
+    new Toggles($('.output'), {});
+    new Toggles($('.filters'), {});
 });
