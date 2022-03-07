@@ -55,6 +55,8 @@ function definition() {
                 [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
                 // braces and parentheses at the start of the line (e.g. nvcc output)
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
+                // msvc can have strings at the start of a line in a inSegDirList
+                [/`/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
 
                 // whitespace
                 {include: '@whitespace'},
@@ -85,6 +87,8 @@ function definition() {
                 // strings
                 [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                // `msvc does this, sometimes'
+                [/`/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
                 [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 
                 // characters
@@ -111,6 +115,23 @@ function definition() {
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+
+            msvcstringCommon: [
+                [/[^\\']+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/''/, 'string.escape'], // ` isn't escaped but ' is escaped as ''
+                [/\\./, 'string.escape.invalid'],
+            ],
+
+            msvcstring: [
+                {include: '@msvcstringCommon'},
+                [/'/, {token: 'string.backtick', bracket: '@close', next: '@pop'}],
+            ],
+
+            segDirMsvcstring: [
+                {include: '@msvcstringCommon'},
+                [/'/, {token: 'string.backtick', bracket: '@close', switchTo: '@rest'}],
             ],
 
             sstring: [
