@@ -123,7 +123,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent) {
-        if (e === null || e.target === null || e.target.position === null) return;
+        if (e?.target?.position === null) return;
         if (this.settings.hoverShowSource === true && this.astCode) {
             this.clearLinkedLines();
             const hoverCode = this.astCode[e.target.position.lineNumber - 1];
