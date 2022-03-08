@@ -33,38 +33,35 @@ import { Container } from 'golden-layout';
 import { MonacoPane } from './pane';
 import { AstState } from './ast-view.interfaces';
 import { MonacoPaneState } from './pane.interfaces';
-
-import { ga } from '../analytics';
-import { extendConfig } from '../monaco-config';
-import { applyColours } from '../colour';
-
-import { PaneRenaming } from '../widgets/pane-renaming';
-
 import * as colour from '../colour';
 import * as monacoConfig from '../monaco-config';
 
-type decorationEntry = {
+import { ga } from '../analytics';
+
+type DecorationEntry = {
     linkedCode: any[];
 }
 
-type sourceLocation = {
+type SourceLocation = {
     line: number;
     col: number;
 };
 
-type astCodeEntry = {
-    source: {
-        from: sourceLocation,
-        to: sourceLocation,
-    }
+type AstCodeEntry = {
+    text: string;
+    source?: {
+        from: SourceLocation,
+        to: SourceLocation,
+    };
 };
 
 export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstState> {
-    decorations: decorationEntry = { linkedCode: [] };
+    decorations: DecorationEntry = { linkedCode: [] };
     prevDecorations: any[] = [];
     colours: string[] = [];
-    astCode: astCodeEntry[] = [];
-    linkedFadeTimeoutId: -1 | NodeJS.Timeout;
+    astCode: AstCodeEntry[] = [];
+    linkedFadeTimeoutId?: NodeJS.Timeout = undefined;
+
     constructor(hub: any, container: Container, state: AstState & MonacoPaneState) {
         super(hub, container, state);
 
@@ -86,11 +83,10 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     override registerCallbacks(): void {
-        this.linkedFadeTimeoutId = -1;
         const mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
         this.editor.onMouseMove(e => mouseMoveThrottledFunction(e));
 
-        this.fontScale.on('change', _.bind(this.updateState, this));
+        this.fontScale.on('change', this.updateState.bind(this));
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
         this.container.on('destroy', this.close, this);
@@ -110,9 +106,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         this.container.on('shown', this.resize, this);
 
         const cursorSelectionThrottledFunction = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        this.editor.onDidChangeCursorSelection(_.bind(function (e) {
-            cursorSelectionThrottledFunction(e);
-        }, this));
+        this.editor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
@@ -123,17 +117,9 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             lineNumbersMinChars: 3,
         }));
     }
-
-    getCurrentEditorLanguage() {
-        return this.editor.getModel()?.getLanguageId();
-    }
     
     override getDefaultPaneName() {
         return 'Ast Viewer';
-    }
-    
-    getDisplayableAst(astResult) {
-        return '**' + astResult.astType + '** - ' + astResult.displayString;
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent) {
@@ -161,7 +147,11 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    override onCompileResult(id, compiler, result) {
+    getCurrentEditorLanguage() {
+        return this.editor.getModel()?.getLanguageId();
+    }
+
+    override onCompileResult(id: number, compiler, result) {
         if (this.compilerInfo.compilerId !== id) return;
     
         if (result.hasAstOutput) {
@@ -179,10 +169,8 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    showAstResults(results) {
-        const fullText = results.map(function (x) {
-            return x.text;
-        }).join('\n');
+    showAstResults(results: AstCodeEntry[]) {
+        const fullText = results.map(x => x.text).join('\n');
         this.editor.setValue(fullText);
         this.astCode = results;
     
@@ -196,7 +184,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    onCompiler(id, compiler, options, editorid, treeid) {
+    override onCompiler(id: number, compiler, options, editorid: number, treeid: number) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorid;
@@ -208,7 +196,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
     
-    onColours(id, colours, scheme) {
+    onColours(id: number, colours, scheme) {
         if (id === this.compilerInfo.compilerId) {
             const astColours = {};
             _.each(this.astCode, function (x, index) {
@@ -226,37 +214,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             this.colours = colour.applyColours(this.editor, astColours, scheme, this.colours);
         }
     }
-    
-    onCompilerClose(id) {
-        if (id === this.compilerInfo.compilerId) {
-            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
-            // the hierarchy. We can't modify while it's being iterated over.
-            this.close();
-            _.defer(function (self) {
-                self.container.close();
-            }, this);
-        }
-    }
-    
-    onSettingsChange(newSettings) {
-        this.settings = newSettings;
-        this.editor.updateOptions({
-            contextmenu: newSettings.useCustomContextMenu,
-            minimap: {
-                enabled: newSettings.showMinimap,
-            },
-            fontFamily: newSettings.editorsFFont,
-            fontLigatures: newSettings.editorsFLigatures,
-        });
-    }
 
-    onDidChangeCursorSelection(e: monaco.editor.ICursorSelectionChangedEvent) {
-        if (this.isAwaitingInitialResults) {
-            this.selection = e.selection;
-            this.updateState();
-        }
-    }
-    
     updateDecorations() {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations, _.flatten(_.values(this.decorations)));
@@ -267,7 +225,8 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         this.updateDecorations();
     }
     
-    onPanesLinkLine(compilerId, lineNumber, colBegin, colEnd, revealLine, sender) {
+    onPanesLinkLine(compilerId: number, lineNumber: number, colBegin: number, colEnd: number, revealLine: boolean,
+        sender: string) {
         if (Number(compilerId) === this.compilerInfo.compilerId) {
             const lineNums: number[] = [];
             const singleNodeLines: number[] = [];
@@ -306,18 +265,18 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 };
             });
             this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
-            if (this.linkedFadeTimeoutId !== -1) {
-                clearTimeout(this.linkedFadeTimeoutId as NodeJS.Timeout);
+            if (this.linkedFadeTimeoutId) {
+                clearTimeout(this.linkedFadeTimeoutId);
             }
             this.linkedFadeTimeoutId = setTimeout(() => {
                 this.clearLinkedLines();
-                this.linkedFadeTimeoutId = -1;
+                this.linkedFadeTimeoutId = undefined;
             }, 5000);
             this.updateDecorations();
         }
     }
     
-    close() {
+    override close() {
         this.eventHub.unsubscribe();
         this.eventHub.emit('astViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
