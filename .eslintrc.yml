@@ -83,6 +83,9 @@ rules:
     - anonymous: always
       asyncArrow: always
       named: never
+  keyword-spacing:
+    - error
+    - after: true
   yoda:
     - error
     - never
