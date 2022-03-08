@@ -22,11 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
 import _ from 'underscore';
-import $ from 'jquery';
-
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
@@ -199,18 +195,18 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     onColours(id: number, colours, scheme) {
         if (id === this.compilerInfo.compilerId) {
             const astColours = {};
-            _.each(this.astCode, function (x, index) {
-                if (x.source && x.source.from.line && x.source.to.line &&
-                    x.source.from.line <= x.source.to.line && x.source.to.line < x.source.from.line + 100) {
-                    let i;
-                    for (i = x.source.from.line; i <= x.source.to.line; ++i) {
+            for (const [index, code] of this.astCode.entries()) {
+                if (code.source && code.source.from.line && code.source.to.line &&
+                    code.source.from.line <= code.source.to.line &&
+                    code.source.to.line < code.source.from.line + 100) {
+                    for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
                         if (colours[i - 1] !== undefined) {
                             astColours[index] = colours[i - 1];
                             break;
                         }
                     }
                 }
-            });
+            }
             this.colours = colour.applyColours(this.editor, astColours, scheme, this.colours);
         }
     }
@@ -231,7 +227,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             const lineNums: number[] = [];
             const singleNodeLines: number[] = [];
             const signalFromAnotherPane = sender !== this.getPaneName();
-            _.each(this.astCode, function (astLine, i) {
+            for (const [i, astLine] of this.astCode.entries()) {
                 if (astLine.source
                     && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
                     const line = i + 1;
@@ -242,28 +238,24 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                         singleNodeLines.push(line);
                     }
                 }
-            });
+            }
             if (revealLine && lineNums[0]) this.editor.revealLineInCenter(lineNums[0]);
             const lineClass = signalFromAnotherPane ? 'linked-code-decoration-line' : '';
-            const linkedLineDecorations = _.map(lineNums, function (line) {
-                return {
-                    range: new monaco.Range(line, 1, line, 1),
-                    options: {
-                        isWholeLine: true,
-                        linesDecorationsClassName: 'linked-code-decoration-margin',
-                        className: lineClass,
-                    },
-                };
-            });
-            const directlyLinkedLineDecorations = _.map(singleNodeLines, function (line) {
-                return {
-                    range: new monaco.Range(line, 1, line, 1),
-                    options: {
-                        isWholeLine: true,
-                        inlineClassName: 'linked-code-decoration-column',
-                    },
-                };
-            });
+            const linkedLineDecorations = lineNums.map(line => ({
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    className: lineClass,
+                },
+            }));
+            const directlyLinkedLineDecorations = singleNodeLines.map(line => ({
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    inlineClassName: 'linked-code-decoration-column',
+                },
+            }));
             this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
             if (this.linkedFadeTimeoutId) {
                 clearTimeout(this.linkedFadeTimeoutId);
