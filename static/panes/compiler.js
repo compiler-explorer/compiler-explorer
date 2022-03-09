@@ -2537,7 +2537,6 @@ Compiler.prototype.onAsmToolTip = function (ed) {
         eventCategory: 'OpenModalPane',
         eventAction: 'AsmDocs',
     });
-    if (!this.getEffectiveFilters().intel) return;
     var pos = ed.getPosition();
     if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
