@@ -179,12 +179,29 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
                 }
             }, this);
 
+            var html_block = [];
+            var in_block = false;
             _.each(result.execResult.stdout, function (obj) {
-                // Conserve empty lines as they are discarded by ansiToHtml
-                if (obj.text === '') {
-                    this.programOutput('<br/>');
+                if (obj.text.indexOf('<html>') !== -1) {
+                    in_block = true;
+                }
+                if (in_block) {
+                    html_block.push(obj.text);
+
+                    if (obj.text.indexOf('</html>') !== -1) {
+                        in_block = false;
+                        this.programOutput(html_block.join('').replaceAll('<html>', '<div>')
+                            .replaceAll('</html>', '</div>'));
+                        html_block = [];
+                    }
                 } else {
-                    this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
+
+                    // Conserve empty lines as they are discarded by ansiToHtml
+                    if (obj.text === '') {
+                        this.programOutput('<br/>');
+                    } else {
+                        this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
+                    }
                 }
             }, this);
         }
