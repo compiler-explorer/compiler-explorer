@@ -145,6 +145,7 @@ Output.prototype.onCompiling = function (compilerId) {
     }
 };
 
+
 Output.prototype.onCompileResult = function (id, compiler, result) {
     if (id !== this.compilerId) return;
     if (compiler) this.compilerName = compiler.name;
@@ -167,6 +168,8 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
         }
     }
 
+
+
     if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
         this.add('Program returned: ' + result.execResult.code);
         if (result.execResult.stderr.length || result.execResult.stdout.length) {
@@ -179,31 +182,59 @@ Output.prototype.onCompileResult = function (id, compiler, result) {
                 }
             }, this);
 
-            var html_block = [];
-            var in_block = false;
+
+            var cur_html_block = [];
+
             _.each(result.execResult.stdout, function (obj) {
-                if (obj.text.indexOf('<html>') !== -1) {
-                    in_block = true;
-                }
-                if (in_block) {
-                    html_block.push(obj.text);
 
-                    if (obj.text.indexOf('</html>') !== -1) {
-                        in_block = false;
-                        this.programOutput(html_block.join('').replaceAll('<html>', '<div>')
-                            .replaceAll('</html>', '</div>'));
-                        html_block = [];
-                    }
-                } else {
+                var obj_text = obj.text;
+                var end;
 
-                    // Conserve empty lines as they are discarded by ansiToHtml
-                    if (obj.text === '') {
-                        this.programOutput('<br/>');
+                if (cur_html_block.length > 0) {
+                    end = obj_text.indexOf('</html>');
+                    if (end !== -1) {
+                        cur_html_block.push(obj_text.substr(0, end));
+                        this.htmlBlockOutput(cur_html_block);
+                        obj_text = obj_text.substring(end + 7);
+                        cur_html_block = [];
                     } else {
-                        this.programOutput(this.normalAnsiToHtml.toHtml(obj.text));
+                        cur_html_block.push(obj_text);
+                    }
+                }
+
+                if (cur_html_block.length === 0) {
+
+                    var start = obj_text.indexOf('<html>');
+                    if (start === -1) {
+                        // Conserve empty lines as they are discarded by ansiToHtml
+                        if (obj_text === '') {
+                            this.programOutput('<br/>');
+                        } else {
+                            this.programOutput(this.normalAnsiToHtml.toHtml(obj_text));
+                        }
+                    } else {
+                        while (start !== -1) {
+                            if (start > 0) {
+                                this.programOutput(this.normalAnsiToHtml.toHtml(obj_text.substr(0, start)));
+                            }
+                            obj_text = obj_text.substring(start + 6);
+                            end = obj_text.indexOf('</html>');
+                            if (end !== -1) {
+                                cur_html_block.push(obj_text.substr(0, end));
+                                this.htmlBlockOutput(cur_html_block);
+                                obj_text = obj_text.substring(end + 7);
+                                cur_html_block = [];
+
+                            } else {
+                                cur_html_block.push(obj_text);
+                            }
+
+                            start = obj_text.indexOf('<html>');
+                        }
                     }
                 }
             }, this);
+
         }
     }
     this.setCompileStatus(false);
@@ -217,6 +248,14 @@ Output.prototype.programOutput = function (msg, color) {
 
     if (color)
         elem.css('color', color);
+};
+
+Output.prototype.htmlBlockOutput = function (html_block) {
+    $('<div/>').appendTo(this.contentRoot)
+        .html(html_block.join('\n'))
+        .addClass('program-exec-output')
+        .addClass('program-exec-output-html-block')
+        .css({border: '1px solid black', 'background-color': 'white'});
 };
 
 Output.prototype.getEditorIdByFilename = function (filename) {
