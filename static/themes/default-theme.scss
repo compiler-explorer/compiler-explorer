@@ -331,4 +331,10 @@ div.argmenuitem span.argdescription {
 
 .ts-dropdown .optgroup-header {
     background-color: #f6f6f6;
- }
+}
+
+.currentCursorPosition {
+    color: #15a3b9;
+    background-color: darken(rgba(248, 249, 250, 0.85), 3%);
+    border: 1px solid #d2d3d4;
+}
