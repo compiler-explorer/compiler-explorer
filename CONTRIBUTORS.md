@@ -113,3 +113,4 @@ From oldest to newest contributor, we would like to thank:
 - [Marcus Geelnard](https://github.com/mbitsnbites)
 - [Haneef Mubarak](https://github.com/haneefmubarak)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
+- [Ankur Saini](https://github.com/Arsenic-ATG)
