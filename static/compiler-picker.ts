@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,22 +28,26 @@ import TomSelect from 'tom-select';
 import { ga } from './analytics';
 import * as local from './local';
 
+type Favourites = {
+    [compilerId: string]: boolean
+};
+
 export class CompilerPicker {
     static readonly favoriteGroupName = '__favorites__';
     static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
     domRoot: JQuery;
     domNode: HTMLElement;
-    eventHub: any /* typeof hub.createEventHub() */;
+    eventHub: any /* ReturnType<typeof hub.createEventHub> */;
     id: number;
     compilerService: any;
-    onCompilerChange: (any) => any;
+    onCompilerChange: (x: string) => any;
     tomSelect: TomSelect | null;
     lastLangId: string;
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
     constructor(domRoot: JQuery, hub: any /* Hub */, langId: string, compilerId: string,
-        onCompilerChange: (any) => any, compilerIsVisible?: (any) => any) {
+        onCompilerChange: (x: string) => any, compilerIsVisible?: (x: any) => any) {
         this.eventHub = hub.createEventHub();
         this.id = CompilerPicker.nextSelectorId++;
         this.domNode = domRoot.find('.compiler-picker')[0];
@@ -96,8 +100,9 @@ export class CompilerPicker {
                         eventCategory: 'SelectCompiler',
                         eventAction: val,
                     });
-                    this.onCompilerChange(val);
-                    this.lastCompilerId = val as any; // TODO
+                    const str = val as any as string;
+                    this.onCompilerChange(str);
+                    this.lastCompilerId = str;
                 }
             },
             duplicates: true,
@@ -118,7 +123,7 @@ export class CompilerPicker {
             evt.preventDefault();
             evt.stopPropagation();
 
-            if(this.tomSelect) {
+            if (this.tomSelect) {
                 let optionElement = evt.currentTarget.closest('.option');
                 const clickedGroup = optionElement.parentElement.dataset.group;
                 const value = optionElement.dataset.value;
@@ -181,11 +186,11 @@ export class CompilerPicker {
         }
     }
 
-    getFavorites(): {[compilerId: string]: boolean} {
+    getFavorites(): Favourites {
         return JSON.parse(local.get(CompilerPicker.favoriteStoreKey, '{}'));
     }
 
-    setFavorites(faves: {[compilerId: string]: boolean}) {
+    setFavorites(faves: Favourites) {
         local.set(CompilerPicker.favoriteStoreKey, JSON.stringify(faves));
     }
 
