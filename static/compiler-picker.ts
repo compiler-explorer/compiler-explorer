@@ -29,8 +29,8 @@ import { ga } from './analytics';
 import * as local from './local';
 
 export class CompilerPicker {
-    static /*const*/ favoriteGroupName = '__favorites__';
-    static /*const*/ favoriteStoreKey = 'favCompilerIds';
+    static readonly favoriteGroupName = '__favorites__';
+    static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
     domRoot: JQuery;
     domNode: HTMLElement;
