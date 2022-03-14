@@ -37,7 +37,7 @@ export class CompilerPicker {
     static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
     domRoot: JQuery;
-    domNode: HTMLElement;
+    domNode: HTMLSelectElement;
     eventHub: any /* ReturnType<typeof hub.createEventHub> */;
     id: number;
     compilerService: any;
@@ -50,7 +50,11 @@ export class CompilerPicker {
         onCompilerChange: (x: string) => any, compilerIsVisible?: (x: any) => any) {
         this.eventHub = hub.createEventHub();
         this.id = CompilerPicker.nextSelectorId++;
-        this.domNode = domRoot.find('.compiler-picker')[0];
+        const compilerPicker = domRoot.find('.compiler-picker')[0];
+        if (!(compilerPicker instanceof HTMLSelectElement)) {
+            throw new Error('.compiler-picker is not an HTMLSelectElement');
+        }
+        this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
         this.onCompilerChange = onCompilerChange;
         this.eventHub.on('compilerFavoriteChange', this.onCompilerFavoriteChange, this);
@@ -78,7 +82,7 @@ export class CompilerPicker {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
 
-        this.tomSelect = new TomSelect(this.domNode as any /*TODO*/, {
+        this.tomSelect = new TomSelect(this.domNode, {
             sortField: this.compilerService.getSelectizerOrder(),
             valueField: 'id',
             labelField: 'name',
