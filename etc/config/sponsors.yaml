@@ -55,6 +55,8 @@ levels:
       - Daniel Williams
       - name: Paul Williams
         url: https://pcwilliams.design/
+      - name: Molecular Matters GmbH
+        url: https://www.molecular-matters.com/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -351,3 +353,5 @@ levels:
       - Joshua
       - Vladimir Motyka
       - Gerasimos Chourdakis
+      - Dusan Jovanovic
+      - Geoff Evans
