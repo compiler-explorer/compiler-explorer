@@ -24,12 +24,13 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 
@@ -54,11 +55,14 @@ function Opt(hub, container, state) {
     this._compilerid = state.id;
     this._compilerName = state.compilerName;
     this._editorid = state.editorid;
+    this._treeid = state.treeid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
 
     this.isCompilerSupported = false;
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
@@ -66,7 +70,6 @@ function Opt(hub, container, state) {
     if (state && state.optOutput) {
         this.showOptResults(state.optOutput);
     }
-    this.setTitle();
     this.eventHub.emit('optViewOpened', this._compilerid);
     ga.proxy('send', {
         hitType: 'event',
@@ -83,6 +86,7 @@ Opt.prototype.initButtons = function (state) {
 
 Opt.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('compiler', this.onCompiler, this);
@@ -129,12 +133,24 @@ Opt.prototype.getCurrentEditorLanguage = function () {
     return this.optEditor.getModel().getLanguageId();
 };
 
-Opt.prototype.getPaneName = function () {
-    return 'Opt Viewer ' + this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+Opt.prototype.getDefaultPaneName = function () {
+    return 'Opt Viewer';
 };
 
-Opt.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+Opt.prototype.getPaneTag = function () {
+    if(this._editorid) {
+        return this._compilerName + ' (Editor #' + this._editorid + ', Compiler #' + this._compilerid + ')';
+    } else {
+        return this._compilerName + ' (Tree #' + this._treeid + ', Compiler #' + this._compilerid + ')';
+    }
+};
+
+Opt.prototype.getPaneName = function () {
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+};
+
+Opt.prototype.updateTitle = function () {
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 Opt.prototype.getDisplayableOpt = function (optResult) {
@@ -183,7 +199,7 @@ Opt.prototype.showOptResults = function (results) {
 Opt.prototype.onCompiler = function (id, compiler) {
     if (id === this._compilerid) {
         this._compilerName = compiler ? compiler.name : '';
-        this.setTitle();
+        this.updateTitle();
         this.isCompilerSupported = compiler ? compiler.supportsOptOutput : false;
         if (!this.isCompilerSupported) {
             this.optEditor.setValue('<OPT output is not supported for this compiler>');
@@ -207,8 +223,10 @@ Opt.prototype.currentState = function () {
     var state = {
         id: this._compilerid,
         editorid: this._editorid,
+        treeid: this._treeid,
         selection: this.selection,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

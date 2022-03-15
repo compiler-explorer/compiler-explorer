@@ -24,7 +24,7 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
@@ -61,7 +61,7 @@ function ToolInputView(hub, container, state) {
     this.initButtons(state);
     this.initCallbacks();
 
-    this.setTitle();
+    this.updateTitle();
     this.onSettingsChange(this.settings);
     this.eventHub.emit('toolInputViewOpened', this._toolid);
     ga.proxy('send', {
@@ -112,8 +112,9 @@ ToolInputView.prototype.getPaneName =  function () {
     return 'Tool Input ' + this._toolName + ' (Compiler #' + this._compilerId + ')';
 };
 
-ToolInputView.prototype.setTitle = function () {
-    this.container.setTitle(this.getPaneName());
+ToolInputView.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 ToolInputView.prototype.resize = function () {

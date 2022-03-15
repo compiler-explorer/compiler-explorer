@@ -50,7 +50,6 @@ import { CompilationQueue } from './lib/compilation-queue';
 import { CompilerFinder } from './lib/compiler-finder';
 // import { policy as csp } from './lib/csp';
 import { initialiseWine } from './lib/exec';
-import { ShortLinkResolver } from './lib/google';
 import { CompileHandler } from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
 import { NoScriptHandler } from './lib/handlers/noscript';
@@ -58,8 +57,10 @@ import { RouteAPI } from './lib/handlers/route-api';
 import { SourceHandler } from './lib/handlers/source';
 import { languages as allLanguages } from './lib/languages';
 import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
+import { setupMetricsServer } from './lib/metrics-server';
 import { ClientOptionsHandler } from './lib/options-handler';
 import * as props from './lib/properties';
+import { ShortLinkResolver } from './lib/shortener/google';
 import { sources } from './lib/sources';
 import { loadSponsorsFromString } from './lib/sponsors';
 import { getStorageTypeByKey } from './lib/storage';
@@ -386,6 +387,11 @@ function startListening(server) {
         _port = defArgs.port;
     }
 
+    const startupGauge = new PromClient.Gauge({
+        name: 'ce_startup_seconds',
+        help: 'Time taken from process start to serving requests',
+    });
+    startupGauge.set(process.uptime());
     const startupDurationMs = Math.floor(process.uptime() * 1000);
     if (isNaN(parseInt(_port))) {
         // unix socket, not a port number...
@@ -547,19 +553,7 @@ async function main() {
 
     if (opts.metricsPort) {
         logger.info(`Running metrics server on port ${opts.metricsPort}`);
-        PromClient.collectDefaultMetrics();
-        const metricsServer = express();
-
-        metricsServer.get('/metrics', async (req, res) => {
-            try {
-                res.set('Content-Type', PromClient.register.contentType);
-                res.end(await PromClient.register.metrics());
-            } catch (ex) {
-                res.status(500).end(ex);
-            }
-        });
-
-        metricsServer.listen(opts.metricsPort, defArgs.hostname);
+        setupMetricsServer(opts.metricsPort, defArgs.hostname);
     }
 
     webServer
@@ -789,8 +783,22 @@ if (opts.version) {
     process.exit(0);
 }
 
+process.on('uncaughtException', terminationHandler('uncaughtException', 1));
+process.on('SIGINT', terminationHandler('SIGINT', 0));
+process.on('SIGTERM', terminationHandler('SIGTERM', 0));
+process.on('SIGQUIT', terminationHandler('SIGQUIT', 0));
+
+function terminationHandler(name, code) {
+  return (error) => {
+    logger.info(`stopping process: ${name}`);
+    if (error && error instanceof Error) {
+      logger.error(error);
+    }
+    process.exit(code);
+  };
+}
+
 main()
-    .then(() => null)
     .catch(err => {
         logger.error('Top-level error (shutting down):', err);
         process.exit(1);

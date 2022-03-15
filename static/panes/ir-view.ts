@@ -26,22 +26,24 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
+import { MonacoPane } from './pane';
 import { IrState } from './ir-view.interfaces';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPaneState } from './pane.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
-export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
+import { PaneRenaming } from '../widgets/pane-renaming';
+
+export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
     previousDecorations: string[] = [];
 
-    constructor(hub: any, container: Container, state: IrState & BasePaneState) {
+    constructor(hub: any, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.irOutput) {
             this.showIrResults(state.irOutput);
@@ -69,10 +71,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         });
     }
 
-    override getPaneName(): string {
-        return `LLVM IR Viewer ${this.compilerInfo.compilerName}` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'LLVM IR Viewer';
     }
 
     override registerEditorActions(): void {
@@ -83,10 +83,13 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
             run: (editor) => {
-                const desiredLine = editor.getPosition().lineNumber - 1;
-                const source = this.irCode[desiredLine].source;
-                if (source !== null && source.file !== null) {
-                    this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
+                const position = editor.getPosition();
+                if (position != null) {
+                    const desiredLine = position.lineNumber - 1;
+                    const source = this.irCode[desiredLine].source;
+                    if (source !== null && source.file !== null) {
+                        this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
+                    }
                 }
             },
         });
@@ -98,6 +101,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours.bind(this),
             this.onCompileResult.bind(this));
 
+        this.paneRenaming.on('renamePane', this.updateState.bind(this));
+
         this.eventHub.on('compileResult', onColoursOnCompile.dependencyProxy, this);
         this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine.bind(this));
@@ -107,6 +112,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
@@ -118,11 +124,12 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;
-        this.setTitle();
+        this.compilerInfo.treeId = treeId;
+        this.updateTitle();
         if (compiler && !compiler.supportsIrView) {
             this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
@@ -131,7 +138,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     showIrResults(result: any[]): void {
         if (!this.editor) return;
         this.irCode = result;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No LLVM IR generated>');
 

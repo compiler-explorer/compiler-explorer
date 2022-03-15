@@ -47,10 +47,10 @@ var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
-var SimpleCook = require('./simplecook').SimpleCook;
-var HistoryWidget = require('./history-widget').HistoryWidget;
+var SimpleCook = require('./widgets/simplecook').SimpleCook;
+var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
-var presentation = require('./presentation');
+var Presentation = require('./presentation').Presentation;
 
 if (!window.PRODUCTION) {
     require('./tests/_all');
@@ -207,14 +207,6 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
-
-    if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
-        $('#share').remove();
-        $('.ui-presentation-control').removeClass('d-none');
-        $('.ui-presentation-first').click(presentation.first);
-        $('.ui-presentation-prev').click(presentation.prev);
-        $('.ui-presentation-next').click(presentation.next);
-    }
 }
 
 function configFromEmbedded(embeddedUrl) {
@@ -262,13 +254,22 @@ function findConfig(defaultConfig, options) {
     var config;
     if (!options.embedded) {
         if (options.slides) {
-            presentation.init(window.compilerExplorerOptions.slides.length);
-            var currentSlide = presentation.getCurrentSlide();
+            var presentation = new Presentation(window.compilerExplorerOptions.slides.length);
+            var currentSlide = presentation.currentSlide;
             if (currentSlide < options.slides.length) {
                 config = options.slides[currentSlide];
             } else {
-                presentation.setCurrentSlide(0);
+                presentation.currentSlide = 0;
                 config = options.slides[0];
+            }
+            if (isMobileViewer()
+                && window.compilerExplorerOptions.slides
+                && window.compilerExplorerOptions.slides.length > 1) {
+                $('#share').remove();
+                $('.ui-presentation-control').removeClass('d-none');
+                $('.ui-presentation-first').on('click', presentation.first.bind(presentation));
+                $('.ui-presentation-prev').on('click', presentation.previous.bind(presentation));
+                $('.ui-presentation-next').on('click', presentation.next.bind(presentation));
             }
         } else {
             if (options.config) {
@@ -461,7 +462,7 @@ function start() {
         }],
     };
 
-    $(window).bind('hashchange', function () {
+    $(window).on('hashchange', function () {
         // punt on hash events and just reload the page if there's a hash
         if (window.location.hash.substr(1)) window.location.reload();
     });
@@ -506,7 +507,7 @@ function start() {
     }
 
     $(window)
-        .resize(sizeRoot)
+        .on('resize', sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
             var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
@@ -532,7 +533,7 @@ function start() {
                 addDropdown.dropdown('toggle');
             });
 
-        thing.click(function () {
+        thing.on('click', function () {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());
             } else {
@@ -554,7 +555,7 @@ function start() {
 
     if (hashPart) {
         var element = $(hashPart);
-        if (element) element.click();
+        if (element) element.trigger('click');
     }
     initPolicies(options);
 

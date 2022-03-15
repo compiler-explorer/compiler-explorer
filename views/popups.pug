@@ -22,7 +22,10 @@
             #load-browser-local.tab-pane(role="tabpanel")
               h4.card-title Load from browser-local storage:
               ul.local-storage.small-v-scrollable
-                li.template: a(href="javascript:;")
+                li.template
+                  a(href="javascript:;")
+                  button.btn.btn-sm.ml-5
+                    span.fa.fa-trash
               .input-group
                 input.save-name(type="text" size="20" placeholder="Set name of state")
                 .input-group-append
@@ -257,7 +260,7 @@
         span.fas.fa-thumbs-up
         | &nbsp;Consent
 
-#notifications
+#notifications(aria-live="polite" aria-atomic="true")
 
 #sharelinkdialog.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg
@@ -287,6 +290,24 @@
                     | Hide Editor Toolbars
               if sharingEnabled
                 .socialsharing.mt-2
+
+#renamepanemodal.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Rename Pane
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .input-group
+                input#renamepaneinput.form-control.panename(type="text" placeholder="New pane name" size="1024")
+      .modal-footer
+        button.btn.btn-outline-secondary(type="button" data-dismiss="modal") Close
+        button#renamepanesubmit.btn.btn-outline-primary(type="submit" data-dismiss="modal" value="Save Changes") Save Changes
 
 #history.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg

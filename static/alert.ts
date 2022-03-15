@@ -25,10 +25,11 @@
 import $ from 'jquery';
 
 import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
+import { toggleEventListener } from './utils';
 
 export class Alert {
-    yesHandler: (answer?: string | string[] | number) => void | null = null;
-    noHandler: () => void | null = null;
+    yesHandler: ((answer?: string | string[] | number) => void) | null = null;
+    noHandler: (() => void) | null = null;
     prefixMessage = '';
 
     constructor() {
@@ -37,15 +38,6 @@ export class Alert {
             this.yesHandler?.();
         });
         yesNoModal.find('button.no').on('click', () => {
-            this.noHandler?.();
-        });
-
-        const enterSomething = $('#enter-something');
-        enterSomething.find('button.yes').on('click', () => {
-            const answer = enterSomething.find('.question-answer');
-            this.yesHandler?.(answer.val());
-        });
-        enterSomething.find('button.no').on('click', () => {
             this.noHandler?.();
         });
     }
@@ -97,7 +89,7 @@ export class Alert {
     }
 
     /**
-     * Notifes the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
+     * Notifies the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
     notify(body: string, {
         group = '',
@@ -109,29 +101,33 @@ export class Alert {
         const container = $('#notifications');
         if (!container) return;
         const newElement = $(`
-            <div class="alert notification ${alertClass}" tabindex="-1" role="dialog">
-                <button type="button" class="close" style="float: left; margin-right: 5px;" data-dismiss="alert">
-                    &times;
-                </button>
-                <span id="msg">${this.prefixMessage}${body}</span>
+            <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header ${alertClass}">
+                    <strong class="mr-auto">${this.prefixMessage}</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body ${alertClass}">
+                    <span id="msg">${body}</span>
+               </div>
             </div>
         `);
+        container.append(newElement);
+        newElement.toast({
+            autohide: autoDismiss,
+            delay: dismissTime,
+        });
         if (group !== '') {
             if (collapseSimilar) {
                 // Only collapsing if a group has been specified
-                container.find(`[data-group="${group}"]`).remove();
+                const old = container.find(`[data-group="${group}"]`);
+                old.toast('hide');
+                old.remove();
             }
             newElement.attr('data-group', group);
         }
-        if (autoDismiss) {
-            setTimeout(() => {
-                newElement.fadeOut('slow', () => {
-                    newElement.remove();
-                });
-            }, dismissTime);
-        }
-        // Append the newly created element to the container
-        container.append(newElement);
+        newElement.toast('show');
     }
 
     /**
@@ -145,7 +141,16 @@ export class Alert {
         modal.find('.modal-body .question').html(question);
 
         const yesButton = modal.find('.modal-footer .yes');
+        toggleEventListener(yesButton, 'click', () => {
+            const answer = modal.find('.question-answer');
+            this.yesHandler?.(answer.val());
+        });
+
         const noButton = modal.find('.modal-footer .no');
+        toggleEventListener(noButton, 'click', () => {
+            this.noHandler?.();
+        });
+
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
         answerEdit.on('keyup', (e) => {

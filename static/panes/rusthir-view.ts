@@ -26,15 +26,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import { Container } from 'golden-layout';
 
-import { Pane } from './pane';
-import { BasePaneState } from './pane.interfaces';
+import { MonacoPane } from './pane';
+import { MonacoPaneState } from './pane.interfaces';
 import { RustHirState } from './rusthir-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
 
-export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
-    constructor(hub: any, container: Container, state: RustHirState & BasePaneState) {
+export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
+    constructor(hub: any, container: Container, state: RustHirState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustHirOutput) {
             this.showRustHirResults(state.rustHirOutput);
@@ -62,10 +62,8 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
         });
     }
 
-    override getPaneName(): string {
-        return `Rust HIR Viewer ${this.compilerInfo.compilerName}` +
-            `(Editor #${this.compilerInfo.editorId}, ` +
-            `Compiler #${this.compilerInfo.compilerId})`;
+    override getDefaultPaneName(): string {
+        return 'Rust HIR Viewer';
     }
 
     override registerCallbacks(): void {
@@ -84,11 +82,13 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number,
+        treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
-            this.setTitle();
+            this.compilerInfo.treeId = treeId;
+            this.updateTitle();
             if (compiler && !compiler.supportsRustHirView) {
                 this.showRustHirResults([{
                     text: '<Rust HIR output is not supported for this compiler>',
@@ -99,7 +99,7 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
 
     showRustHirResults(result: any[]): void {
         if (!this.editor) return;
-        this.editor.getModel().setValue(result.length
+        this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust HIR generated>');
 

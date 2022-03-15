@@ -26,8 +26,8 @@
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
-var loadSaveLib = require('../load-save');
-var FontScale = require('../fontscale').FontScale;
+var loadSaveLib = require('../widgets/load-save');
+var FontScale = require('../widgets/fontscale').FontScale;
 var Components = require('../components');
 var monaco = require('monaco-editor');
 var options = require('../options').options;
@@ -72,7 +72,7 @@ function Editor(hub, state, container) {
 
     this.editorSourceByLang = {};
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Editor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
     this.filename = state.filename || false;
 
@@ -351,6 +351,10 @@ Editor.prototype.onDidChangeCursorPosition = function (e) {
 };
 
 Editor.prototype.onDidFocusEditorText = function () {
+    var position = this.editor.getPosition();
+    if (position) {
+        this.currentCursorPosition.text('(' + position.lineNumber + ', ' + position.column + ')');
+    }
     this.currentCursorPosition.show();
 };
 
@@ -787,7 +791,9 @@ Editor.prototype.initEditorActions = function () {
         contextMenuOrder: 1.5,
         run: _.bind(function (ed) {
             var pos = ed.getPosition();
-            this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
+            if (pos != null) {
+                this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
+            }
         }, this),
     });
 
@@ -842,6 +848,7 @@ Editor.prototype.runFormatDocumentAction = function () {
 
 Editor.prototype.searchOnCppreference = function (ed) {
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var preferredLanguage = this.getPreferredLanguageTag();
@@ -861,6 +868,7 @@ Editor.prototype.searchOnCppreference = function (ed) {
 
 Editor.prototype.searchOnCloogle = function (ed) {
     var pos = ed.getPosition();
+    if (!pos || !ed.getModel()) return;
     var word = ed.getModel().getWordAtPosition(pos);
     if (!word || !word.word) return;
     var url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
@@ -1479,10 +1487,11 @@ Editor.prototype.setFilename = function (name) {
 
 Editor.prototype.updateTitle = function () {
     var name = this.getPaneName();
+    var customName = this.paneName ? this.paneName : name;
     if (name.endsWith('CMakeLists.txt')) {
         this.changeLanguage('cmake');
     }
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(customName));
 };
 
 // Called every time we change language, so we get the relevant code

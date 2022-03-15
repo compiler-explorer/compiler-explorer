@@ -26,17 +26,18 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var ga = require('../analytics').ga;
-var Toggles = require('../toggles').Toggles;
-var FontScale = require('../fontscale').FontScale;
+var Toggles = require('../widgets/toggles').Toggles;
+var FontScale = require('../widgets/fontscale').FontScale;
 var options = require('../options').options;
 var Alert = require('../alert').Alert;
-var LibsWidget = require('../libs-widget').LibsWidget;
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var AnsiToHtml = require('../ansi-to-html').Filter;
-var TimingWidget = require('../timing-info-widget');
+var TimingWidget = require('../widgets/timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 require('../modes/asm-mode');
 require('../modes/ptx-mode');
@@ -85,7 +86,7 @@ function Executor(hub, container, state) {
     this.nextCMakeRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -101,6 +102,8 @@ function Executor(hub, container, state) {
         _.bind(this.onCompilerChange, this),
         this.compilerIsVisible
     );
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -302,7 +305,7 @@ Executor.prototype.sendCMakeCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code || x;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
@@ -332,7 +335,7 @@ Executor.prototype.sendCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
@@ -389,7 +392,7 @@ Executor.prototype.handleOutput = function (output, element, ansiParser) {
 Executor.prototype.getBuildStdoutFromResult = function (result) {
     var arr = [];
 
-    if (result.buildResult) {
+    if (result.buildResult && result.buildResult.stdout !== undefined) {
         arr = arr.concat(result.buildResult.stdout);
     }
 
@@ -405,7 +408,7 @@ Executor.prototype.getBuildStdoutFromResult = function (result) {
 Executor.prototype.getBuildStderrFromResult = function (result) {
     var arr = [];
 
-    if (result.buildResult) {
+    if (result.buildResult && result.buildResult.stderr !== undefined) {
         arr = arr.concat(result.buildResult.stderr);
     }
 
@@ -419,7 +422,7 @@ Executor.prototype.getBuildStderrFromResult = function (result) {
 };
 
 Executor.prototype.getExecutionStdoutfromResult = function (result) {
-    if (result.execResult) {
+    if (result.execResult && result.execResult.stdout !== undefined) {
         return result.execResult.stdout;
     }
 
@@ -698,6 +701,7 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
     this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
@@ -878,7 +882,7 @@ Executor.prototype.onToggleWrapChange = function () {
 };
 
 Executor.prototype.sendExecutor = function () {
-    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId);
+    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId, this.sourceTreeId);
 };
 
 Executor.prototype.onEditorClose = function (editor) {
@@ -909,6 +913,7 @@ Executor.prototype.currentState = function () {
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
         wrap: this.toggleWrapButton.get().wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -943,12 +948,17 @@ Executor.prototype.getPaneName = function () {
     return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
 };
 
+Executor.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
+};
+
 Executor.prototype.updateCompilerName = function () {
+    this.updateTitle();
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
-    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };

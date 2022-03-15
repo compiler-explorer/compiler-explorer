@@ -24,11 +24,22 @@
 
 import * as vis from 'vis-network';
 import _ from 'underscore';
-import { Toggles } from '../toggles';
+import { Toggles } from '../widgets/toggles';
 import { ga } from '../analytics';
 import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
+import { PaneRenaming } from '../widgets/pane-renaming';
+
+interface NodeInfo {
+    edges: string[],
+    dagEdges: number[],
+    index: string,
+    id: number,
+    level: number,
+    state: number,
+    inCount: number,
+}
 
 export class Cfg {
     container: Container;
@@ -45,7 +56,8 @@ export class Cfg {
     cfgVisualiser: any;
     compilerId: number;
     _compilerName = '';
-    _editorid: number;
+    _editorid?: number;
+    _treeid?: number;
     _binaryFilter: boolean;
     functionPicker: TomSelect;
     supportsCfg = false;
@@ -55,6 +67,8 @@ export class Cfg {
     togglePhysicsButton: JQuery;
     togglePhysicsTitle: string;
     topBar: JQuery;
+    paneName: string;
+    paneRenaming: PaneRenaming;
 
     constructor(hub: any, container: Container, state: CfgState) {
         this.container = container;
@@ -126,6 +140,7 @@ export class Cfg {
 
         this.compilerId = state.id;
         this._editorid = state.editorid;
+        this._treeid = state.treeid;
         this._binaryFilter = false;
 
         const pickerEl = this.domRoot.find('.function-picker')[0] as HTMLInputElement;
@@ -154,9 +169,10 @@ export class Cfg {
             // that forces to pass the whole options object. This is a workaround to make it type check
         );
 
+        this.paneRenaming = new PaneRenaming(this, state);
+
         this.initCallbacks();
         this.updateButtons();
-        this.setTitle();
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -199,7 +215,7 @@ export class Cfg {
         if (compilerId === this.compilerId) {
             this._compilerName = compiler ? compiler.name : '';
             this.supportsCfg = compiler.supportsCfg;
-            this.setTitle();
+            this.updateTitle();
         }
     }
 
@@ -224,6 +240,8 @@ export class Cfg {
     initCallbacks() {
         this.cfgVisualiser.on('dragEnd', this.saveState.bind(this));
         this.cfgVisualiser.on('zoom', this.saveState.bind(this));
+
+        this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compileResult', this.onCompileResult, this);
@@ -269,25 +287,35 @@ export class Cfg {
 
     resize() {
         if (this.cfgVisualiser.canvas) {
-            const height = this.domRoot.height() - this.topBar.outerHeight(true);
+            const height = this.domRoot.height() as number - (this.topBar.outerHeight(true) ?? 0);
             this.cfgVisualiser.setSize('100%', height.toString());
             this.cfgVisualiser.redraw();
         }
     }
 
-    getPaneName() {
-        return `Graph Viewer ${this._compilerName}` +
-            `(Editor #${this._editorid}, ` +
-            `Compiler #${this.compilerId})`;
+    getDefaultPaneName() {
+        return 'Graph Viewer';
     }
 
-    setTitle() {
-        this.container.setTitle(this.getPaneName());
+    getPaneTag() {
+        if(this._editorid) {
+            return `${this._compilerName} (Editor #${this._editorid}, Compiler #${this.compilerId})`;
+        } else {
+            return `${this._compilerName} (Tree #${this._treeid}, Compiler #${this.compilerId})`;
+        }
+    }
+
+    getPaneName() {
+        return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
+    }
+
+    updateTitle() {
+        this.container.setTitle(_.escape(this.getPaneName()));
     }
 
     assignLevels(data: any) {
-        const nodes = [];
-        const idToIdx = [];
+        const nodes: NodeInfo[] = [];
+        const idToIdx: string[] = [];
         for (const i in data.nodes) {
             const node = data.nodes[i];
             idToIdx[node.id] = i;
@@ -400,14 +428,17 @@ export class Cfg {
     }
 
     currentState(): CfgState {
-        return {
+        const state = {
             id: this.compilerId,
             editorid: this._editorid,
+            treeid: this._treeid,
             selectedFn: this.currentFunc,
             pos: this.cfgVisualiser.getViewPosition(),
             scale: this.cfgVisualiser.getScale(),
             options: this.getEffectiveOptions(),
         };
+        this.paneRenaming.addState(state);
+        return state;
     }
 
     adaptStructure(names: string[]) {

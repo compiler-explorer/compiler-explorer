@@ -29,12 +29,13 @@ type CompilerExplorerOptions = Record<string, unknown> & Options
 
 declare global {
     export interface Window {
-        httpRoot: string | null;
-        staticRoot: string | null;
+        httpRoot: string;
+        staticRoot: string;
         compilerExplorerOptions: CompilerExplorerOptions;
         compilerExplorerFrontendTesting: IFrontendTesting;
         ga: any;
         GoogleAnalyticsObject: any;
+        hasUIBeenReset: boolean;
     }
 }
 

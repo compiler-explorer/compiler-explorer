@@ -5,8 +5,8 @@
 
 # Compiler Explorer
 
-**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
- or in any of the other [31 supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
+**Compiler Explorer** is an interactive compiler exploration website. Edit code in C, C++, C#, F#, Rust, Go, D, Haskell, Swift, Pascal, [ispc](https://ispc.github.io/), Python, Java
+ or in any of the other [30+ supported languages](https://godbolt.org/api/languages), and see how that code looks after being compiled in real time.
  Multiple compilers are supported for each language, many different tools and visualisations are available, and the UI layout
  is configurable (thanks to [GoldenLayout](https://www.golden-layout.com/)).
 
@@ -18,7 +18,7 @@ Try out at [godbolt.org](https://godbolt.org), or [run your own local instance](
 **Compiler Explorer** was started in 2012 to show how C++ constructs translated to assembly code. It started out as a
  `tmux` session with `vi` running in one pane and `watch gcc -S foo.cc -o -` running in the other.
 
-Since then, it has become a public website serving around [2,250,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
+Since then, it has become a public website serving around [3,000,000 compilations per week](https://www.stathat.com/cards/Tk5csAWI0O7x).
 
 You can financially support [this project on Patreon](https://patreon.com/mattgodbolt),
 [GitHub](https://github.com/sponsors/mattgodbolt/), [Paypal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=KQWQZ7GPY2GZ6&item_name=Compiler+Explorer+development&currency_code=USD&source=url), or by

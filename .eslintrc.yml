@@ -83,6 +83,9 @@ rules:
     - anonymous: always
       asyncArrow: always
       named: never
+  keyword-spacing:
+    - error
+    - after: true
   yoda:
     - error
     - never
@@ -147,6 +150,7 @@ rules:
   unicorn/no-process-exit: off
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
+  '@typescript-eslint/no-explicit-any': off
 parserOptions:
   sourceType: module
   ecmaVersion: 2020
