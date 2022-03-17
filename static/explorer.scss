@@ -775,13 +775,19 @@ span.badge.badge-pill {
     margin-left: 2pt;
 }
 
+.theme-light-only, .theme-dark-only {
+    display: none;
+}
+
 html[data-theme=default] {
     @import "themes/default-theme";
+    .theme-light-only { display: inline }
 }
 
 html[data-theme=dark] {
     @import "themes/dark-theme";
     background-color: #333 !important;
+    .theme-dark-only { display: inline }
 }
 
 .socialsharing {
