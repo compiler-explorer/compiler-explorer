@@ -36,16 +36,15 @@ $(document).on('ready', () => {
         span.remove();
         const option = container.find('input');
         option.addClass('d-none');
-        const button = $(`
-          <button
-            title="${option.attr('title')}"
-            aria-pressed=${option.attr('checked') === 'checked' ? 'true' : 'false'}
-            data-bind="${option.attr('name')}"
-            type="button"
-            class="dropdown-item btn btn-sm btn-light">
-          </button>`
-        );
+
+        const button = $('<button />');
+        button.addClass('dropdown-item btn btn-sm btn-light');
+        button.attr('type', 'button');
+        button.attr('title', option.attr('title') ?? '');
+        button.data('bind', option.attr('name') ?? '');
+        button.attr('aria-pressed', option.attr('checked') === 'checked' ? 'true' : 'false');
         button.append(span);
+
         container.prepend(button);
         const parent = container.parent();
         parent.removeClass('noscriptdropdown');
