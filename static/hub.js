@@ -50,35 +50,14 @@ var gccDumpView = require('./panes/gccdump-view');
 var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
 var CompilerService = require('compiler-service').CompilerService;
-
-function Ids() {
-    this.used = {};
-}
-
-Ids.prototype.add = function (id) {
-    this.used[id] = true;
-};
-
-Ids.prototype.remove = function (id) {
-    delete this.used[id];
-};
-
-Ids.prototype.next = function () {
-    for (var i = 1; i < 100000; ++i) {
-        if (!this.used[i]) {
-            this.used[i] = true;
-            return i;
-        }
-    }
-    throw 'Ran out of ids!?';
-};
+var IdentifierSet = require('./identifier-set').IdentifierSet;
 
 function Hub(layout, subLangId, defaultLangId) {
     this.layout = layout;
-    this.editorIds = new Ids();
-    this.compilerIds = new Ids();
-    this.executorIds = new Ids();
-    this.treeIds = new Ids();
+    this.editorIds = new IdentifierSet();
+    this.compilerIds = new IdentifierSet();
+    this.executorIds = new IdentifierSet();
+    this.treeIds = new IdentifierSet();
     this.trees = [];
     this.editors = [];
     this.compilerService = new CompilerService(layout.eventHub);

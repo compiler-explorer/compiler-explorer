@@ -8,6 +8,7 @@
     "inlineSources": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "lib": ["dom", "es5"]
   }
 }
