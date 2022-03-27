@@ -25,14 +25,14 @@
 import GoldenLayout from 'golden-layout';
 import Sentry from '@sentry/browser';
 
-export type EventHubCallback<T> = (...args: T[]) => void;
+export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
-export interface DependencyProxies<T1, T2 = T1> {
+export interface DependencyProxies<T1 extends unknown[], T2 extends unknown[] = T1> {
     dependencyProxy: EventHubCallback<T1>;
     dependentProxy: EventHubCallback<T2>;
 }
 
-export interface Event<T, C = any> {
+export interface Event<T extends unknown[], C = any> {
     evt: string;
     fn: EventHubCallback<T>;
     ctx: C;
@@ -68,13 +68,13 @@ export class EventHub {
     }
 
     /** Attach a listener to the layout event hub. */
-    public on<T, C = any>(event: string, callback: EventHubCallback<T>, context: C): void {
+    public on<T extends unknown[], C = any>(event: string, callback: EventHubCallback<T>, context: C): void {
         this.layoutEventHub.on(event, callback, context);
         this.subscriptions.push({ evt: event, fn: callback, ctx: context });
     }
 
     /** Remove all listeners from the layout event hub. */
-    public unsubscribe<T, C = any>(): void {
+    public unsubscribe(): void {
         for (const subscription of this.subscriptions) {
             try {
                 this.layoutEventHub.off(subscription.evt, subscription.fn, subscription.ctx);
@@ -86,7 +86,10 @@ export class EventHub {
         this.subscriptions = [];
     }
 
-    public mediateDependentCalls<T1, T2 = T1>(dependent, dependency): DependencyProxies<T1, T2>  {
+    public mediateDependentCalls<T1 extends unknown[], T2 extends unknown[]= T1>(
+        dependent: EventHubCallback<any>,
+        dependency: EventHubCallback<any>
+    ): DependencyProxies<T1, T2>  {
         let hasDependencyExecuted = false;
         let lastDependentArguments: unknown[] | null = null;
         const dependencyProxy = function (this: unknown, ...args: unknown[]) {
