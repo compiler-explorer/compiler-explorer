@@ -25,7 +25,6 @@
 'use strict';
 
 var _ = require('underscore');
-var Sentry = require('@sentry/browser');
 var editor = require('./panes/editor');
 var compiler = require('./panes/compiler');
 var tree = require('./panes/tree');
@@ -51,6 +50,7 @@ var cfgView = require('./panes/cfg-view');
 var conformanceView = require('./panes/conformance-view');
 var CompilerService = require('compiler-service').CompilerService;
 var IdentifierSet = require('./identifier-set').IdentifierSet;
+var EventHub = require('./event-hub').EventHub;
 
 function Hub(layout, subLangId, defaultLangId) {
     this.layout = layout;
@@ -353,63 +353,8 @@ Hub.prototype.confomanceFactory = function (container, state) {
     return new conformanceView.Conformance(this, container, state);
 };
 
-function WrappedEventHub(hub, eventHub) {
-    this.hub = hub;
-    this.eventHub = eventHub;
-    this.subscriptions = [];
-}
-
-WrappedEventHub.prototype.emit = function () {
-    // Events are deferred during initialisation to allow all the components to install their listeners before
-    // all the emits are done. This fixes some ordering issues.
-    if (this.hub.deferred) {
-        this.hub.deferredEmissions.push(arguments);
-    } else {
-        this.eventHub.emit.apply(this.eventHub, arguments);
-    }
-};
-
-WrappedEventHub.prototype.on = function (event, callback, context) {
-    this.eventHub.on(event, callback, context);
-    this.subscriptions.push({evt: event, fn: callback, ctx: context});
-};
-
-WrappedEventHub.prototype.unsubscribe = function () {
-    _.each(this.subscriptions, _.bind(function (obj) {
-        try {
-            this.eventHub.off(obj.evt, obj.fn, obj.ctx);
-        } catch (e) {
-            Sentry.captureMessage('Can not unsubscribe from ' + obj.evt.toString());
-            Sentry.captureException(e);
-        }
-    }, this));
-    this.subscriptions = [];
-};
-
-WrappedEventHub.prototype.mediateDependentCalls = function (dependent, dependency) {
-    var dependencyExecuted = false;
-    var lastDependentArgs = null;
-    var dependencyProxy = function () {
-        dependency.apply(this, arguments);
-        dependencyExecuted = true;
-        if (lastDependentArgs) {
-            dependent.apply(this, lastDependentArgs);
-            lastDependentArgs = null;
-        }
-    };
-    var dependentProxy = function () {
-        if (dependencyExecuted) {
-            dependent.apply(this, arguments);
-        } else {
-            lastDependentArgs = arguments;
-        }
-    };
-    return {dependencyProxy: dependencyProxy,
-        dependentProxy: dependentProxy};
-};
-
 Hub.prototype.createEventHub = function () {
-    return new WrappedEventHub(this, this.layout.eventHub);
+    return new EventHub(this, this.layout.eventHub);
 };
 
 Hub.prototype.findParentRowOrColumn = function (elem) {
