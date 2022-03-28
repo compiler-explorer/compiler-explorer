@@ -61,7 +61,7 @@ export class EventHub {
      */
     public emit(event: string, ...args: unknown[]): void {
         if (this.hub.deferred) {
-            this.hub.deferredEmissions.push(event, args);
+            this.hub.deferredEmissions.push([event, ...args]);
         } else {
             this.layoutEventHub.emit(event, ...args);
         }
