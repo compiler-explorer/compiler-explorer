@@ -46,6 +46,7 @@ export class Cfg {
     eventHub: any;
     domRoot: JQuery;
     defaultCfgOutput: object;
+    llvmCfgPlaceholder: object;
     binaryModeSupport: object;
     savedPos: any;
     savedScale: any;
@@ -76,6 +77,9 @@ export class Cfg {
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
         this.defaultCfgOutput = { nodes: [{ id: 0, shape: 'box', label: 'No Output' }], edges: [] };
+        this.llvmCfgPlaceholder = { nodes: [{
+            id: 0, shape: 'box', label: '-emit-llvm currently not supported',
+        }], edges: [] };
         this.binaryModeSupport = {
             nodes: [{
                 id: 0,
@@ -197,7 +201,11 @@ export class Cfg {
             } else {
                 // We don't reset the current function here as we would lose the saved one if this happened at the beginning
                 // (Hint: It *does* happen)
-                this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
+                if(result.compilationOptions.indexOf('-emit-llvm') === -1) {
+                    this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
+                } else {
+                    this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.llvmCfgPlaceholder);
+                }
             }
 
             this.functionPicker.clearOptions();
