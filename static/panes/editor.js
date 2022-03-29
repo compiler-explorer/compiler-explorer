@@ -608,8 +608,14 @@ Editor.prototype.updateOpenInCppInsights = function () {
             }
         }, this));
 
-        var link = 'https://cppinsights.io/lnk?code='
-            + this.b64UTFEncode(this.getSource()) + '&std=' + cppStd + '&rev=1.0';
+        var maxURL = 8177; // apache's default maximum url length
+        var maxCode = maxURL - ('/lnk?code=&std=' + cppStd + '&rev=1.0').length;
+        var codeData = this.b64UTFEncode(this.getSource());
+        if (codeData.length > maxCode) {
+            codeData = this.b64UTFEncode('/** Source too long to fit in a URL */\n');
+        }
+
+        var link = 'https://cppinsights.io/lnk?code=' + codeData + '&std=' + cppStd + '&rev=1.0';
 
         this.cppInsightsButton.attr('href', link);
     }
