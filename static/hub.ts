@@ -152,11 +152,11 @@ export class Hub {
         const compilerEmissions: string[][] = [];
         const nonCompilerEmissions: string[][] = [];
 
-        for (const [first, ...rest] of this.deferredEmissions) {
-            if (first === 'compiler') {
-                compilerEmissions.push([first, ...rest]);
+        for (const [eventName, ...args] of this.deferredEmissions) {
+            if (eventName === 'compiler') {
+                compilerEmissions.push([eventName, ...args]);
             } else {
-                nonCompilerEmissions.push([first, ...rest]);
+                nonCompilerEmissions.push([eventName, ...args]);
             }
         }
 
@@ -226,8 +226,9 @@ export class Hub {
         let index = 0;
         while (index < count) {
             const child = elem.contentItems[index];
-            // @ts-expect-error -- GoldenLayout's types are messed up here?, this is
-            // valid, and componentName will be present on all registered Components
+            // @ts-expect-error -- GoldenLayout's types are messed up here. This
+            // is a ContentItem, which can be a Component which has a componentName
+            // property
             if (child.componentName === 'codeEditor') {
                 return this.findParentRowOrColumnOrStack(child);
             } else {
@@ -241,13 +242,15 @@ export class Hub {
         return false;
     }
 
-    public findEditorParentRowOrColumn(): GoldenLayout.ContentItem {
-        return this.findParentRowOrColumn(this.layout.root);
+    public findEditorParentRowOrColumn(): GoldenLayout.ContentItem | boolean {
+        return this.findEditorInChildren(this.layout.root);
     }
 
     public addInEditorStackIfPossible(elem: GoldenLayout.ContentItem): void {
         const insertionPoint = this.findEditorParentRowOrColumn();
-        if (insertionPoint) {
+        // required not-true check because findEditorParentRowOrColumn returns
+        // false if there is no editor parent
+        if (insertionPoint && insertionPoint !== true) {
             insertionPoint.addChild(elem);
         } else {
             this.addAtRoot(elem);
@@ -257,7 +260,7 @@ export class Hub {
     public addAtRoot(elem: GoldenLayout.ContentItem): void {
         const rootFirstItem = this.layout.root.contentItems[0];
         if (rootFirstItem) {
-            if (rootFirstItem.isRoot || rootFirstItem.isColumn) {
+            if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {
                 // @ts-expect-error -- GoldenLayout's types are messed up here?
