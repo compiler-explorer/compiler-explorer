@@ -39,5 +39,6 @@ interface Ad {
 export interface Motd {
     ads?: Ad[];
     motd?: string;
+    update?: string;
     decorations?: Decoration[];
 }
