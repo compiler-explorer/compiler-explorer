@@ -247,6 +247,10 @@ input {
     border: 0 !important;
 }
 
+.form-control:disabled {
+    background-color: darken(#474747, 10%);
+}
+
 input:focus {
     color: #eee !important;
     background-color: #474747;
