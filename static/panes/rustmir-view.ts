@@ -32,9 +32,10 @@ import { RustMirState } from './rustmir-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
+import { Hub } from '../hub';
 
 export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMirState> {
-    constructor(hub: any, container: Container, state: RustMirState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: RustMirState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustMirOutput) {
             this.showRustMirResults(state.rustMirOutput);
