@@ -64,7 +64,7 @@ export class Hub {
     public readonly compilerService: any; // typeof CompilerService
 
     public deferred = true;
-    public deferredEmissions: string[][] = [];
+    public deferredEmissions: unknown[][] = [];
 
     public lastOpenedLangId: string | null;
     public subdomainLangId: string | undefined;
@@ -149,8 +149,8 @@ export class Hub {
     public undefer(): void {
         this.deferred = false;
         const eventHub = this.layout.eventHub;
-        const compilerEmissions: string[][] = [];
-        const nonCompilerEmissions: string[][] = [];
+        const compilerEmissions: unknown[][] = [];
+        const nonCompilerEmissions: unknown[][] = [];
 
         for (const [eventName, ...args] of this.deferredEmissions) {
             if (eventName === 'compiler') {

@@ -35,6 +35,7 @@ import { extendConfig } from '../monaco-config';
 import { applyColours } from '../colour';
 
 import { PaneRenaming } from '../widgets/pane-renaming';
+import { Hub } from '../hub';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;
@@ -43,7 +44,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     decorations: any = {};
     previousDecorations: string[] = [];
 
-    constructor(hub: any, container: Container, state: IrState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.irOutput) {
             this.showIrResults(state.irOutput);

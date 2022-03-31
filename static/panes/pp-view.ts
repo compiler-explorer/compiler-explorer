@@ -34,11 +34,12 @@ import * as monacoConfig from '../monaco-config';
 import { PPViewState } from './pp-view.interfaces';
 import { Container } from 'golden-layout';
 import { MonacoPaneState } from './pane.interfaces';
+import { Hub } from '../hub';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
 
-    constructor(hub: any, container: Container, state: PPViewState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: PPViewState & MonacoPaneState) {
         super(hub, container, state);
         this.eventHub.emit('ppViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');

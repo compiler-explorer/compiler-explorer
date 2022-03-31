@@ -25,6 +25,8 @@
 import GoldenLayout from 'golden-layout';
 import Sentry from '@sentry/browser';
 
+import { Hub } from './hub';
+
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
 export interface DependencyProxies<T1 extends unknown[], T2 extends unknown[] = T1> {
@@ -35,7 +37,7 @@ export interface DependencyProxies<T1 extends unknown[], T2 extends unknown[] = 
 export interface Event<T extends unknown[], C = any> {
     evt: string;
     fn: EventHubCallback<T>;
-    ctx: C;
+    ctx?: C;
 }
 
 /**
@@ -43,7 +45,7 @@ export interface Event<T extends unknown[], C = any> {
  * deferred execution based on the parent Hub.
  */
 export class EventHub {
-    private readonly hub: any; /* typeof Hub */
+    private readonly hub: Hub;
     private readonly layoutEventHub: GoldenLayout.EventEmitter;
     private subscriptions: Event<any>[] = [];
 
@@ -68,7 +70,7 @@ export class EventHub {
     }
 
     /** Attach a listener to the layout event hub. */
-    public on<T extends unknown[], C = any>(event: string, callback: EventHubCallback<T>, context: C): void {
+    public on<T extends unknown[], C = any>(event: string, callback: EventHubCallback<T>, context?: C): void {
         this.layoutEventHub.on(event, callback, context);
         this.subscriptions.push({ evt: event, fn: callback, ctx: context });
     }

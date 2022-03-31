@@ -32,9 +32,10 @@ import { MonacoPaneState } from './pane.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
+import { Hub } from '../hub';
 
 export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugTreeState> {
-    constructor(hub: any, container: Container, state: GnatDebugTreeState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: GnatDebugTreeState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.gnatDebugTreeOutput) {
             this.showGnatDebugTreeResults(state.gnatDebugTreeOutput);

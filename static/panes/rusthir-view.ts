@@ -32,9 +32,10 @@ import { RustHirState } from './rusthir-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
+import { Hub } from '../hub';
 
 export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
-    constructor(hub: any, container: Container, state: RustHirState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: RustHirState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustHirOutput) {
             this.showRustHirResults(state.rustHirOutput);
