@@ -153,11 +153,17 @@ a.navbar-brand img.logo.normal {
 .notification-error {
     background-color: indianred;
     color: white;
+    .close {
+        color: white;
+    }
 }
 
 .notification-on {
     background-color: green;
     color: #fff;
+    .close {
+        color: white;
+    }
 }
 
 .notification-off {
