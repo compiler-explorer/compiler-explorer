@@ -31,12 +31,13 @@ import { FlagsViewState } from './flags-view.interfaces';
 import { Container } from 'golden-layout';
 import { MonacoPaneState } from './pane.interfaces';
 import { Settings, SiteSettings } from '../settings';
+import { Hub } from '../hub';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: ((e: boolean) => void) & Cancelable = (() => {}) as any;
     cursorSelectionThrottledFunction: ((e: any) => void) & Cancelable;
     lastChangeEmitted: string;
-    constructor(hub: any, container: Container, state: FlagsViewState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: FlagsViewState & MonacoPaneState) {
         super(hub, container, state);
 
         let value = '';
