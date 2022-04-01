@@ -208,6 +208,9 @@ a.navbar-brand img.logo.normal {
 .notification-error {
     background-color: #aa3333 !important;
     color: #fff;
+    .close {
+        color: #fff;
+    }
 }
 
 .notification-on {
@@ -218,6 +221,9 @@ a.navbar-brand img.logo.normal {
 .notification-off {
     background-color: #222 !important;
     color: #fff;
+    .close {
+        color: #fff;
+    }
 }
 
 pre {
@@ -480,10 +486,6 @@ a {
 }
 
 .fa, .fas {
-    color: white;
-}
-
-.close:hover {
     color: white;
 }
 
