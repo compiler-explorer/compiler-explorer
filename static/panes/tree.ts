@@ -46,7 +46,7 @@ export interface TreeState extends MultifileServiceState {
 }
 
 export class Tree {
-    private readonly id: number;
+    public readonly id: number;
     private container: any;
     private domRoot: any;
     private readonly hub: any;
@@ -75,6 +75,7 @@ export class Tree {
     private paneName: string;
     private paneRenaming: PaneRenaming;
 
+    // TODO(supergrecko): swap argument order of state and container
     constructor(hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
         this.container = container;
