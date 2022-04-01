@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Tom Ritter
+// Copyright (c) 2022, Tom Ritter and Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
