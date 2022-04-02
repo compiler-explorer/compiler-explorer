@@ -32,6 +32,7 @@ import { MonacoPaneState } from './pane.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
+import { Hub } from '../hub';
 
 type SourceLocation = {
     File: string;
@@ -55,7 +56,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;
 
-    constructor(hub: any, container: Container, state: OptState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.optOutput) {
             this.showOptResults(state.optOutput);

@@ -30,6 +30,7 @@ import TomSelect from 'tom-select';
 import { Container } from 'golden-layout';
 import { CfgState } from './cfg-view.interfaces';
 import { PaneRenaming } from '../widgets/pane-renaming';
+import { Hub } from '../hub';
 
 interface NodeInfo {
     edges: string[],
@@ -71,7 +72,7 @@ export class Cfg {
     paneName: string;
     paneRenaming: PaneRenaming;
 
-    constructor(hub: any, container: Container, state: CfgState) {
+    constructor(hub: Hub, container: Container, state: CfgState) {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();

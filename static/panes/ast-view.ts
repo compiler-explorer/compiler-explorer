@@ -33,6 +33,7 @@ import * as colour from '../colour';
 import * as monacoConfig from '../monaco-config';
 
 import { ga } from '../analytics';
+import { Hub } from '../hub';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -58,7 +59,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     astCode: AstCodeEntry[] = [];
     linkedFadeTimeoutId?: NodeJS.Timeout = undefined;
 
-    constructor(hub: any, container: Container, state: AstState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: AstState & MonacoPaneState) {
         super(hub, container, state);
 
         if (state && state.astOutput) {

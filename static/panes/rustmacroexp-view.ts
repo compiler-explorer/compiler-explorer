@@ -32,9 +32,10 @@ import { RustMacroExpState } from './rustmacroexp-view.interfaces';
 
 import { ga } from '../analytics';
 import { extendConfig } from '../monaco-config';
+import { Hub } from '../hub';
 
 export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
-    constructor(hub: any, container: Container, state: RustMacroExpState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: RustMacroExpState & MonacoPaneState) {
         super(hub, container, state);
         if (state && state.rustMacroExpOutput) {
             this.showRustMacroExpResults(state.rustMacroExpOutput);

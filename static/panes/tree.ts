@@ -27,6 +27,8 @@ import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
 import { Settings } from '../settings';
 import { PaneRenaming } from '../widgets/pane-renaming';
+import { Hub } from '../hub';
+import { EventHub } from '../event-hub';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -49,8 +51,8 @@ export class Tree {
     public readonly id: number;
     private container: any;
     private domRoot: any;
-    private readonly hub: any;
-    private eventHub: any;
+    private readonly hub: Hub;
+    private eventHub: EventHub;
     private readonly settings: any;
     private httpRoot: any;
     private readonly alertSystem: any;
@@ -76,7 +78,7 @@ export class Tree {
     private paneRenaming: PaneRenaming;
 
     // TODO(supergrecko): swap argument order of state and container
-    constructor(hub, state: TreeState, container) {
+    constructor(hub: Hub, state: TreeState, container) {
         this.id = state.id || hub.nextTreeId();
         this.container = container;
         this.domRoot = container.getElement();

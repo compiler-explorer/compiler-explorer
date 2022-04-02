@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import TomSelect from 'tom-select';
 
 import { ga } from './analytics';
 import * as local from './local';
+import { EventHub } from './event-hub';
+import { Hub } from './hub';
 
 type Favourites = {
     [compilerId: string]: boolean
@@ -38,7 +39,7 @@ export class CompilerPicker {
     static nextSelectorId = 1;
     domRoot: JQuery;
     domNode: HTMLSelectElement;
-    eventHub: any /* ReturnType<typeof hub.createEventHub> */;
+    eventHub: EventHub;
     id: number;
     compilerService: any;
     onCompilerChange: (x: string) => any;
@@ -46,8 +47,14 @@ export class CompilerPicker {
     lastLangId: string;
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
-    constructor(domRoot: JQuery, hub: any /* Hub */, langId: string, compilerId: string,
-        onCompilerChange: (x: string) => any, compilerIsVisible?: (x: any) => any) {
+    constructor(
+        domRoot: JQuery,
+        hub: Hub,
+        langId: string,
+        compilerId: string,
+        onCompilerChange: (x: string) => any,
+        compilerIsVisible?: (x: any) => any
+    ) {
         this.eventHub = hub.createEventHub();
         this.id = CompilerPicker.nextSelectorId++;
         const compilerPicker = domRoot.find('.compiler-picker')[0];

@@ -25,6 +25,7 @@
 import _ from 'underscore';
 import path from 'path';
 import JSZip from 'jszip';
+import { Hub } from './hub';
 const options = require('./options').options;
 const languages = options.languages;
 
@@ -55,7 +56,7 @@ export class MultifileService {
     private files: Array<MultifileFile>;
     private compilerLanguageId: string;
     private isCMakeProject: boolean;
-    private hub: any;
+    private hub: Hub;
     private newFileId: number;
     private alertSystem: any;
     private validExtraFilenameExtensions: string[];
@@ -64,7 +65,7 @@ export class MultifileService {
     private readonly cmakeMainSourceFilename: string;
     private readonly maxFilesize: number;
 
-    constructor(hub, alertSystem, state: MultifileServiceState) {
+    constructor(hub: Hub, alertSystem, state: MultifileServiceState) {
         this.hub = hub;
         this.alertSystem = alertSystem;
 

@@ -33,6 +33,8 @@ import { SiteSettings } from '../settings';
 import * as utils from '../utils';
 
 import { PaneRenaming } from '../widgets/pane-renaming';
+import { EventHub } from '../event-hub';
+import { Hub } from '../hub';
 
 
 class PaneCompilerState {
@@ -53,7 +55,7 @@ export abstract class Pane<S> {
     domRoot: JQuery;
     topBar: JQuery;
     hideable: JQuery;
-    eventHub: any /* typeof hub.createEventHub() */;
+    eventHub: EventHub;
     isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
     paneName: string;
@@ -65,7 +67,7 @@ export abstract class Pane<S> {
      *
      * Overridable for implementors
      */
-    protected constructor(hub: any /* Hub */, container: Container, state: S & PaneState) {
+    protected constructor(hub: Hub, container: Container, state: S & PaneState) {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
