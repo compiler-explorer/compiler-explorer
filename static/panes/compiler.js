@@ -2008,7 +2008,7 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     var are = unwiseOptions.length === 1 ? ' is ' : ' are ';
     var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
-    if (_.contains(optionsArray, '-flto')) {
+    if (_.contains(optionsArray, '-flto') && !this.filters.state.binary) {
         this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
             group: 'unwiseOption',
             collapseSimilar: true,
