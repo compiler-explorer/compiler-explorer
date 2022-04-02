@@ -114,3 +114,4 @@ From oldest to newest contributor, we would like to thank:
 - [Haneef Mubarak](https://github.com/haneefmubarak)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
 - [Ankur Saini](https://github.com/Arsenic-ATG)
+- [m8mble](https://github.com/m8mble)
