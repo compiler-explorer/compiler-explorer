@@ -24,7 +24,6 @@
 
 import { Toggles } from '../widgets/toggles';
 import _ from 'underscore';
-import $ from 'jquery';
 import { Pane } from './pane';
 import { ga } from '../analytics';
 import { Container } from 'golden-layout';
