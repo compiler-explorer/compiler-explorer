@@ -152,7 +152,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         }
     }
     
-    onCompilerClose(id) {
+    override onCompilerClose(id) {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
@@ -163,14 +163,14 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         }
     }
     
-    onSettingsChange(newSettings) {
+    override onSettingsChange(newSettings) {
         super.onSettingsChange(newSettings);
         this.debouncedEmitChange = _.debounce(() => {
             this.maybeEmitChange(false);
         }, newSettings.delayAfterChange);
     }
     
-    onDidChangeCursorSelection(e) {
+    override onDidChangeCursorSelection(e) {
         // On initialization this callback fires with the default selection
         // overwriting any selection from state. If we are awaiting initial
         // selection setting then don't update our selection.
