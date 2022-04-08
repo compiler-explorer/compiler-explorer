@@ -524,7 +524,7 @@ async function main() {
     const noscriptHandler = new NoScriptHandler(router, handlerConfig);
     const routeApi = new RouteAPI(router, handlerConfig, noscriptHandler.renderNoScriptLayout);
 
-    function onCompilerChange(compilers) {
+    async function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
             return;
         }
@@ -534,13 +534,13 @@ async function main() {
             logger.error('#### No compilers found: no compilation will be done!');
         }
         prevCompilers = compilers;
-        clientOptionsHandler.setCompilers(compilers);
+        await clientOptionsHandler.setCompilers(compilers);
         routeApi.apiHandler.setCompilers(compilers);
         routeApi.apiHandler.setLanguages(languages);
         routeApi.apiHandler.setOptions(clientOptionsHandler);
     }
 
-    onCompilerChange(initialCompilers);
+    await onCompilerChange(initialCompilers);
 
     const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
     if (rescanCompilerSecs && !opts.prediscovered) {

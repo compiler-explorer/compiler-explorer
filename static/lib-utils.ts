@@ -23,25 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { options } from './options';
-import { LanguageLibs, Library, Libs, LibsPerRemote } from './options.interfaces';
+import { LanguageLibs, Library, Libs } from './options.interfaces';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
-const remoteLibs: LibsPerRemote = {};
-
-function getRemoteId(remoteUrl: string, language: string): string {
+function getRemoteId(language: string, remoteUrl: string): string {
     const url: URL = new URL(remoteUrl);
     return url.host.replace(/\./g, '_') + '_' + language;
 }
 
-function getRemoteLibraries(language: string, remoteUrl: string): Libs {
-    const remoteId = getRemoteId(remoteUrl, language);
-    if (!remoteLibs[remoteId]) {
-        $.get(remoteUrl + '/api/libraries/' + language, (data) => {
-            remoteLibs[remoteId] = data;
-        });
-    }
-    return remoteLibs[remoteId];
+function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
+    const remoteId = getRemoteId(language, remoteUrl);
+    return options.remoteLibs[remoteId];
 }
 
 function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
@@ -73,16 +66,16 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
 }
 
 export function getSupportedLibraries(supportedLibrariesArr: string[], langId: string,
-    remoteUrl: string): LanguageLibs {
-    if (!remoteUrl) {
+    remote): LanguageLibs {
+    if (!remote) {
         const allLibs = options.libs[langId];
         if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
         return allLibs;
     } else {
-        const allRemotes = getRemoteLibraries(langId, remoteUrl);
-        const allLibs = allRemotes[langId];
+        const allRemotes = getRemoteLibraries(langId, remote.target);
+        const allLibs = allRemotes;
         if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }
