@@ -23,11 +23,28 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { options } from './options';
-import {LanguageLibs, Library} from './options.interfaces';
+import { LanguageLibs, Library, Libs, LibsPerRemote } from './options.interfaces';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
-export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
+const remoteLibs: LibsPerRemote = {};
+
+function getRemoteId(remoteUrl: string, language: string): string {
+    const url: URL = new URL(remoteUrl);
+    return url.host.replace(/\./g, '_') + '_' + language;
+}
+
+function getRemoteLibraries(language: string, remoteUrl: string): Libs {
+    const remoteId = getRemoteId(remoteUrl, language);
+    if (!remoteLibs[remoteId]) {
+        $.get(remoteUrl + '/api/libraries/' + language, (data) => {
+            remoteLibs[remoteId] = data;
+        });
+    }
+    return remoteLibs[remoteId];
+}
+
+function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     const filterLibAndVersion = filter.map(lib => {
         const match = lib.match(LIB_MATCH_RE);
         return {
@@ -41,7 +58,7 @@ export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: strin
     const copiedLibraries: Record<string, Library> = {};
     for (const libid in allLibraries) {
         if (!filterLibIds.has(libid)) continue;
-        const lib = {...allLibraries[libid]};
+        const lib = { ...allLibraries[libid] };
         for (const versionid in lib.versions) {
             for (const filter of filterLibAndVersion) {
                 if (!(!filter.version || filter.version === versionid)) {
@@ -55,10 +72,20 @@ export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: strin
     return copiedLibraries;
 }
 
-export function getSupportedLibraries(supportedLibrariesArr: string[], langId: string) {
-    const allLibs = options.libs[langId];
-    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+export function getSupportedLibraries(supportedLibrariesArr: string[], langId: string,
+    remoteUrl: string): LanguageLibs {
+    if (!remoteUrl) {
+        const allLibs = options.libs[langId];
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
+    } else {
+        const allRemotes = getRemoteLibraries(langId, remoteUrl);
+        const allLibs = allRemotes[langId];
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
     }
-    return allLibs;
 }

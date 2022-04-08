@@ -45,6 +45,8 @@ export type LanguageLibs = Record<string, Library>;
 
 export type Libs = Record<string, LanguageLibs>;
 
+export type LibsPerRemote = Record<string, Libs>;
+
 export interface Options {
     libs: Libs;
     languages: Record<string, Language>;
