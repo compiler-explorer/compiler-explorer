@@ -45,8 +45,11 @@ export type LanguageLibs = Record<string, Library>;
 
 export type Libs = Record<string, LanguageLibs>;
 
+export type LibsPerRemote = Record<string, LanguageLibs>;
+
 export interface Options {
     libs: Libs;
+    remoteLibs: LibsPerRemote;
     languages: Record<string, Language>;
     defaultLibs: Record<string, string | null>;
     defaultFontScale: number;

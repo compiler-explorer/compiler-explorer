@@ -23,11 +23,21 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import { options } from './options';
-import {LanguageLibs, Library} from './options.interfaces';
+import { LanguageLibs, Library, Libs } from './options.interfaces';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
-export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
+function getRemoteId(language: string, remoteUrl: string): string {
+    const url: URL = new URL(remoteUrl);
+    return url.host.replace(/\./g, '_') + '_' + language;
+}
+
+function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
+    const remoteId = getRemoteId(language, remoteUrl);
+    return options.remoteLibs[remoteId];
+}
+
+function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     const filterLibAndVersion = filter.map(lib => {
         const match = lib.match(LIB_MATCH_RE);
         return {
@@ -41,7 +51,7 @@ export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: strin
     const copiedLibraries: Record<string, Library> = {};
     for (const libid in allLibraries) {
         if (!filterLibIds.has(libid)) continue;
-        const lib = {...allLibraries[libid]};
+        const lib = { ...allLibraries[libid] };
         for (const versionid in lib.versions) {
             for (const filter of filterLibAndVersion) {
                 if (!(!filter.version || filter.version === versionid)) {
@@ -55,10 +65,20 @@ export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: strin
     return copiedLibraries;
 }
 
-export function getSupportedLibraries(supportedLibrariesArr: string[], langId: string) {
-    const allLibs = options.libs[langId];
-    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+export function getSupportedLibraries(supportedLibrariesArr: string[], langId: string,
+    remote): LanguageLibs {
+    if (!remote) {
+        const allLibs = options.libs[langId];
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
+    } else {
+        const allRemotes = getRemoteLibraries(langId, remote.target);
+        const allLibs = allRemotes;
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
     }
-    return allLibs;
 }
