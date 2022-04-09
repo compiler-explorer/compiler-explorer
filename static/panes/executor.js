@@ -690,7 +690,8 @@ Executor.prototype.initLibraries = function (state) {
         this.libsButton,
         state,
         _.bind(this.onLibsChanged, this),
-        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr : [], this.currentLangId)
+        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr : [], this.currentLangId,
+            this.compiler ? this.compiler.remote : null)
     );
 };
 
@@ -1054,7 +1055,8 @@ Executor.prototype.updateLibraries = function () {
     if (this.libsWidget) {
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId,
+                this.compiler ? this.compiler.remote : null);
         }
 
         this.libsWidget.setNewLangId(this.currentLangId,

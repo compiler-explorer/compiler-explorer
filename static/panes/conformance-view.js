@@ -422,8 +422,9 @@ Conformance.prototype.getOverlappingLibraries = function (compilerIds) {
     var first = true;
     _.forEach(compilers, function (compiler) {
         if (compiler) {
-            var filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId);
-
+            var filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId,
+                compiler.remote);
+            
             if (first) {
                 libraries = _.extend({}, filteredLibraries);
                 first = false;
