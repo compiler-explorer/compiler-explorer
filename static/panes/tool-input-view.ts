@@ -34,7 +34,6 @@ import { ToolInputViewState } from './tool-input-view.interfaces';
 import { Settings } from '../settings';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
-    source: string;
     _toolId: number;
     _toolName: string;
     shouldSetSelectionInitially: boolean;
@@ -42,10 +41,8 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     lastChangeEmitted: string | undefined;
     constructor(hub: Hub, container: Container, state: ToolInputViewState & MonacoPaneState) {
-        state = state || {}; // TODO according to TS typing this will be a no-op
         if((state as any).compilerId) state.id = (state as any).compilerId;
         super(hub, container, state);
-        this.source = state.source || '';
     
         this.settings = Settings.getStoredSettings();
     
