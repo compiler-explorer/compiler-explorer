@@ -124,7 +124,9 @@ export class Output extends Pane<OutputState> {
     }
 
     addOutputLines(result) {
-        for(const obj of (result.stdout || []).concat(result.stderr || [])) {
+        const stdout = result.stdout || [];
+        const stderr = result.stderr || [];
+        for(const obj of stdout.concat(stderr)) {
             const lineNumber = obj.tag ? obj.tag.line : obj.line;
             const columnNumber = obj.tag ? obj.tag.column : -1;
             if (obj.text === '') {
