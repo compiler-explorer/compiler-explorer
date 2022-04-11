@@ -8,7 +8,7 @@ For CE we use a lot of different compilers and environments that need to be sepa
 
 Including header files or equivalent is usually the easy part. If there are binaries involved, things get complicated.
 
-We have a couple of seperate stages where we use and mix different techniques to be able to produce the right assembly or executables.
+We have a couple of separate stages where we use and mix different techniques to be able to produce the right assembly or executables.
 
 * Compilation without linking
   * The `LD_LIBRARY_PATH` environment variable is used here to enable the compiler to find the `.so` files that they need to run.
@@ -17,7 +17,7 @@ We have a couple of seperate stages where we use and mix different techniques to
 * Building an executable or binary
   * We use `-Wl,-rpath=` (or equivalent `rpathFlag`) to force library paths into the executable so that they will always find the same `.so` files no matter where they are run. Usually this also includes lib64 and lib folders that the compiler offers for standard libraries that the toolchain offers.
   * Library paths supplied through `-Wl,-rpath=` for shared libraries will be able to dynamically link to the right architecture's `.so` even if multiple paths are given that contain the same `.so` file.
-  * We use `-L` (or equivalent `libpathFlag`) to enable the compiler to find both static (`.a`) and shared (`.so`) libraries.
+  * We use `-L` (or equivalent `libpathFlag`) to enable the compiler to seperatefind both static (`.a`) and shared (`.so`) libraries.
   * We always add '.' as a path as well because that's where we put libraries that are downloaded from our Conan server.
   * We use `-l` (or equivalent `linkFlag`) to say we want to statically or dynamically link to a named library binary (the compiler and linker decide if it's gonna be static or dynamic).
 * Running the executable
