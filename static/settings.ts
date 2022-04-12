@@ -159,7 +159,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val()?.toString() ?? '0');
+        return parseInt(this.val().toString());
     }
 
     private updateDisplay() {
@@ -205,7 +205,6 @@ export class Settings {
                 private subLangId: string | null) {
 
         this.settings = settings;
-        this.settings.defaultLanguage = this.settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
         this.settingsObjs = [];
 
         this.addCheckboxes();
@@ -300,7 +299,7 @@ export class Settings {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         let defaultThemeId = themes.default.id;
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultThemeId = themes.dark.id;
         }
         addSelector('.theme', 'theme', themesData, defaultThemeId);
@@ -392,8 +391,7 @@ export class Settings {
     }
 
     private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
-        return this.settings.alwaysEnableAllSchemes
-            || !scheme.themes || scheme.themes.length === 0
+        return this.settings.alwaysEnableAllSchemes || scheme.themes.length === 0
             || (newTheme && scheme.themes.includes(newTheme)) || scheme.themes.includes('all');
     }
 
