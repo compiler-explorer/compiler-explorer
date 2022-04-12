@@ -25,4 +25,4 @@ You don't need to install an entire X server to actually run cypress (just xfvb)
 
 You can find a complete list at https://docs.cypress.io/guides/getting-started/installing-cypress#System-requirements
 
-If you have the prerequisites installed, you should be able to run `npx cypress run` - however, you will need to start the CE website seperately in another terminal before that.
+If you have the prerequisites installed, you should be able to run `npx cypress run` - however, you will need to start the CE website separately in another terminal before that.
