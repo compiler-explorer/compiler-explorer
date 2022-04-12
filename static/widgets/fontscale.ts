@@ -79,10 +79,10 @@ export class FontScale extends EventEmitter.EventEmitter {
     private domRoot: JQuery;
     public scale: number;
     private readonly usePxUnits: boolean;
-    private fontSelectorOrEditor: JQuery | IEditor;
+    private fontSelectorOrEditor: JQuery | string | IEditor;
     private isFontOfStr: boolean;
 
-    constructor(domRoot: JQuery, state: FontScaleState & any, fontSelectorOrEditor: JQuery | IEditor) {
+    constructor(domRoot: JQuery, state: FontScaleState & any, fontSelectorOrEditor: JQuery | string | IEditor) {
         super();
         this.domRoot = domRoot;
         // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
@@ -125,7 +125,7 @@ export class FontScale extends EventEmitter.EventEmitter {
         this.apply();
     }
 
-    setTarget(target: JQuery | IEditor) {
+    setTarget(target: JQuery | string | IEditor) {
         this.fontSelectorOrEditor = target;
         this.isFontOfStr = typeof (this.fontSelectorOrEditor) === 'string';
     }
