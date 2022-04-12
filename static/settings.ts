@@ -82,10 +82,9 @@ export interface SiteSettings {
 class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
 
-    protected val(): string | number | string[] {
-        //  If it's undefined, something went wrong, so the following exception is helpful
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this.elem.val()!;
+    // Can be undefined if the element doesn't exist which is the case in embed mode
+    protected val(): string | number | string[] | undefined {
+        return this.elem.val();
     }
 
     getUi(): any {
@@ -159,7 +158,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val().toString());
+        return parseInt(this.val()?.toString() ?? '0');
     }
 
     private updateDisplay() {
@@ -184,7 +183,7 @@ class Numeric extends BaseSetting {
     }
 
     override getUi(): number {
-        return this.clampValue(parseInt(this.val().toString()));
+        return this.clampValue(parseInt(this.val()?.toString() ?? '0'));
     }
 
     override putUi(value: number) {
