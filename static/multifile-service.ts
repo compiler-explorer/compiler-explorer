@@ -71,7 +71,7 @@ export class MultifileService {
 
         this.isCMakeProject = state.isCMakeProject || false;
         this.compilerLanguageId = state.compilerLanguageId || '';
-        this.files = state.files || [];
+        this.files = state.files;
         this.newFileId = state.newFileId || 1;
 
         this.validExtraFilenameExtensions = ['.txt', '.md', '.rst', '.sh', '.cmake', '.in'];
