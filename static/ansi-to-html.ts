@@ -163,7 +163,7 @@ function handleDisplay(stack: string[], _code: string | number, options: AnsiToH
         49: () => pushBackgroundColor(stack, options.bg as string),
     };
 
-    if (codeMap[code]) {
+    if (code in codeMap) {
         return codeMap[code]();
     } else if (4 < code && code < 7) {
         return pushTag(stack, 'blink');
@@ -216,7 +216,7 @@ function range(low: number, high: number): number[] {
  */
 function notCategory(category: string): (e: StickyStackElement) => boolean {
     return (e: StickyStackElement): boolean => {
-        return (category === null || e.category !== category) && category !== 'all';
+        return e.category !== category && category !== 'all';
     };
 }
 
@@ -440,8 +440,6 @@ export class Filter {
     private stickyStack: StickyStackElement[];
 
     public constructor(options: AnsiToHtmlOptions) {
-        options = options || {};
-
         if (options.colors) {
             options.colors = _.extend(defaults.colors, options.colors);
         }
