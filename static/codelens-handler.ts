@@ -82,7 +82,7 @@ export function unregister(compilerId: number): void {
 }
 
 export function registerProviderForLanguage(language: string): void {
-    if (!providersPerLanguage[language]) {
+    if (!(language in providersPerLanguage)) {
         providersPerLanguage[language] = monaco.languages.registerCodeLensProvider(language, {
             provideCodeLenses: provide,
         });
