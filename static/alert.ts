@@ -26,6 +26,7 @@ import $ from 'jquery';
 
 import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
 import { toggleEventListener } from './utils';
+import Sentry from '@sentry/browser';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
@@ -98,9 +99,11 @@ export class Alert {
         autoDismiss = true,
         dismissTime = 5000,
     }: AlertNotifyOptions) {
-        // JQuery<HTMLElement> | null is the correct type, @types/jquery has the wrong typing here
-        const container = $('#notifications') as JQuery<HTMLElement> | null;
-        if (!container) return;
+        const container = $('#notifications');
+        if (container.length === 0) {
+            Sentry.captureMessage('#notifications not found');
+            return;
+        }
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
