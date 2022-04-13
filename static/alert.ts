@@ -62,8 +62,8 @@ export class Alert {
      */
     ask(title: string, question: string, askOptions: AlertAskOptions) {
         const modal = $('#yes-no');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body')
             .css('min-height', 'inherit')
@@ -98,7 +98,8 @@ export class Alert {
         autoDismiss = true,
         dismissTime = 5000,
     }: AlertNotifyOptions) {
-        const container = $('#notifications');
+        // JQuery<HTMLElement> | null is the correct type, @types/jquery has the wrong typing here
+        const container = $('#notifications') as JQuery<HTMLElement> | null;
         if (!container) return;
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
@@ -135,8 +136,8 @@ export class Alert {
      */
     enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body .question').html(question);
 
