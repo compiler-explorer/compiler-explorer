@@ -275,7 +275,11 @@ function findConfig(defaultConfig, options) {
             if (options.config) {
                 config = options.config;
             } else {
-                config = url.deserialiseState(window.location.hash.substr(1));
+                try {
+                    config = url.deserialiseState(window.location.hash.substring(1));
+                } catch (e) {
+                    // Ignore so we at least load the site, but it would be good to notify the user
+                }
             }
 
             if (config) {
