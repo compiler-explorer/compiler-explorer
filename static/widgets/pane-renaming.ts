@@ -22,15 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
 import { Tab } from 'golden-layout';
 import { EventEmitter } from 'events';
 import { Alert } from '../alert';
+import { MonacoPane } from '../panes/pane';
+import { PaneState } from '../panes/pane.interfaces';
 
 export class PaneRenaming extends EventEmitter.EventEmitter {
-    private pane: any;
-    private alertSystem: any;
-    private state: any;
+    private pane: MonacoPane<any, any> & {alertSystem?: Alert};
+    private alertSystem: Alert;
+    private state: PaneState & {paneName: string};
 
     constructor(pane: any, state: any) {
         super();

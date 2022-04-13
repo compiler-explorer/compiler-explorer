@@ -210,12 +210,12 @@ export abstract class Pane<S> {
     }
 
     /** Get name for the pane */
-    protected getPaneName() {
+    getPaneName() {
         return this.paneName ?? this.getDefaultPaneName() + ' ' + this.getPaneTag();
     }
 
     /** Update the pane's title, called when the pane name or compiler info changes */
-    protected updateTitle() {
+    public updateTitle() {
         this.container.setTitle(_.escape(this.getPaneName()));
     }
 
