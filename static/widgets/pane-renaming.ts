@@ -74,9 +74,6 @@ export class PaneRenaming extends EventEmitter.EventEmitter {
                         this.emit('renamePane');
                     }
                 },
-                no: () => {
-                    this.alertSystem.resolve(false);
-                },
                 yesClass: 'btn btn-primary',
                 yesHtml: 'Rename',
                 noClass: 'btn-outline-info',
