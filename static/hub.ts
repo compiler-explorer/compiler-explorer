@@ -51,6 +51,7 @@ import { Cfg as CfgView } from './panes/cfg-view';
 import { Conformance as ConformanceView } from './panes/conformance-view';
 import { GnatDebugTree as GnatDebugTreeView } from './panes/gnatdebugtree-view';
 import { RustMacroExp as RustMacroExpView } from './panes/rustmacroexp-view';
+import { assert } from 'chai';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();
@@ -206,19 +207,21 @@ export class Hub {
     // Layout getters
 
     public findParentRowOrColumn(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
-        while (elem) {
-            if (elem.isRow || elem.isColumn) return elem;
-            elem = elem.parent;
+        let currentElem: GoldenLayout.ContentItem | null = elem;
+        while (currentElem) {
+            if (currentElem.isRow || currentElem.isColumn) return currentElem;
+            currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        return elem;
+        assert(false); // TODO
     }
 
     public findParentRowOrColumnOrStack(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
-        while (elem) {
-            if (elem.isRow || elem.isColumn || elem.isStack) return elem;
-            elem = elem.parent;
+        let currentElem: GoldenLayout.ContentItem | null = elem;
+        while (currentElem) {
+            if (currentElem.isRow || currentElem.isColumn || currentElem.isStack) return currentElem;
+            currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        return elem;
+        assert(false); // TODO
     }
 
     public findEditorInChildren(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | boolean {
@@ -258,7 +261,7 @@ export class Hub {
     }
 
     public addAtRoot(elem: GoldenLayout.ContentItem): void {
-        const rootFirstItem = this.layout.root.contentItems[0];
+        const rootFirstItem = this.layout.root.contentItems[0] as typeof this.layout.root.contentItems[0] | undefined;
         if (rootFirstItem) {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
@@ -280,7 +283,7 @@ export class Hub {
     }
 
     public activateTabForContainer(container?: GoldenLayout.Container) {
-        if (container && container.tab) {
+        if (container && container.tab as typeof container.tab | null) {
             container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
         }
     }
