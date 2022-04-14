@@ -49,7 +49,7 @@ const doFormatRequest = async (options: FormattingRequest) => {
     }
     // We had an error (either HTTP request error, or API error)
     // Figure out which it is, show it to the user, and reject the promise
-    const cause = body?.answer ?? res.statusText;
+    const cause = body.answer;
     throw new Error(cause);
 };
 
