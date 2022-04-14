@@ -66,10 +66,11 @@ export class PaneRenaming extends EventEmitter.EventEmitter {
         btn.on('click', () => {
             const modalTextPlaceholder = this.pane.paneName || this.pane.getPaneName();
             this.alertSystem.enterSomething('Rename pane', 'Please enter new pane name', modalTextPlaceholder, {
-                yes: (value?: string) => {
+                // TS does not know we have a text input, so it thinks it might be also a number
+                yes: (value?: string | string[] | number) => {
                     // Update title and emit event to save it into the state
                     if (value) {
-                        this.pane.paneName = value;
+                        this.pane.paneName = value.toString();
                         this.pane.updateTitle();
                         this.emit('renamePane');
                     }
