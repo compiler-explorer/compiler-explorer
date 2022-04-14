@@ -82,10 +82,9 @@ export interface SiteSettings {
 class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
 
-    protected val(): string | number | string[] {
-        //  If it's undefined, something went wrong, so the following exception is helpful
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this.elem.val()!;
+    // Can be undefined if the element doesn't exist which is the case in embed mode
+    protected val(): string | number | string[] | undefined {
+        return this.elem.val();
     }
 
     getUi(): any {
@@ -184,7 +183,7 @@ class Numeric extends BaseSetting {
     }
 
     override getUi(): number {
-        return this.clampValue(parseInt(this.val().toString()));
+        return this.clampValue(parseInt(this.val()?.toString() ?? '0'));
     }
 
     override putUi(value: number) {
@@ -205,7 +204,6 @@ export class Settings {
                 private subLangId: string | null) {
 
         this.settings = settings;
-        this.settings.defaultLanguage = this.settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
         this.settingsObjs = [];
 
         this.addCheckboxes();
@@ -300,7 +298,7 @@ export class Settings {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         let defaultThemeId = themes.default.id;
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultThemeId = themes.dark.id;
         }
         addSelector('.theme', 'theme', themesData, defaultThemeId);
@@ -392,8 +390,7 @@ export class Settings {
     }
 
     private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
-        return this.settings.alwaysEnableAllSchemes
-            || !scheme.themes || scheme.themes.length === 0
+        return this.settings.alwaysEnableAllSchemes || scheme.themes.length === 0
             || (newTheme && scheme.themes.includes(newTheme)) || scheme.themes.includes('all');
     }
 
