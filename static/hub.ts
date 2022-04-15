@@ -51,7 +51,7 @@ import { Cfg as CfgView } from './panes/cfg-view';
 import { Conformance as ConformanceView } from './panes/conformance-view';
 import { GnatDebugTree as GnatDebugTreeView } from './panes/gnatdebugtree-view';
 import { RustMacroExp as RustMacroExpView } from './panes/rustmacroexp-view';
-import { assert } from 'chai';
+import Sentry from '@sentry/browser';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();
@@ -212,7 +212,8 @@ export class Hub {
             if (currentElem.isRow || currentElem.isColumn) return currentElem;
             currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        assert(false); // TODO
+        Sentry.captureMessage('findParentRowOrColumn: Unable to find parent row or column');
+        return null as any;
     }
 
     public findParentRowOrColumnOrStack(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
@@ -221,7 +222,8 @@ export class Hub {
             if (currentElem.isRow || currentElem.isColumn || currentElem.isStack) return currentElem;
             currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        assert(false); // TODO
+        Sentry.captureMessage('#findParentRowOrColumnOrStack: Unable to find parent row, column, or stack');
+        return null as any;
     }
 
     public findEditorInChildren(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | boolean {
