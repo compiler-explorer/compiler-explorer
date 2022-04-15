@@ -60,11 +60,11 @@ export class LineColouring {
                         this.colouredSourceLinesByEditor[editorId] = [];
                     }
 
-                    if (!this.linesAndColourByCompiler[compilerId]) {
+                    if (!(compilerId in this.linesAndColourByCompiler)) {
                         this.linesAndColourByCompiler[compilerId] = {};
                     }
 
-                    if (!this.linesAndColourByEditor[editorId]) {
+                    if (!(editorId in this.linesAndColourByEditor)) {
                         this.linesAndColourByEditor[editorId] = {};
                     }
 
@@ -136,7 +136,7 @@ export class LineColouring {
     }
 
     public getColoursForCompiler(compilerId: number): Record<number, number> {
-        if (this.linesAndColourByCompiler[compilerId]) {
+        if (compilerId in this.linesAndColourByCompiler) {
             return this.linesAndColourByCompiler[compilerId];
         } else {
             return {};
@@ -144,7 +144,7 @@ export class LineColouring {
     }
 
     public getColoursForEditor(editorId: number): Record<number, number> {
-        if (this.linesAndColourByEditor[editorId]) {
+        if (editorId in this.linesAndColourByEditor) {
             return this.linesAndColourByEditor[editorId];
         } else {
             return {};

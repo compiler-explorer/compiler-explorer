@@ -366,7 +366,7 @@ export class Sharing {
     }
 
     private static isNavigatorClipboardAvailable(): boolean {
-        return navigator.clipboard != null;
+        return (navigator.clipboard as Clipboard | undefined) !== undefined;
     }
 
     public static filterComponentState(config: any, keysToRemove: [string] = ['selection']): any {

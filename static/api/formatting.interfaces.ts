@@ -38,7 +38,7 @@ export interface FormattingRequest {
 }
 
 export interface FormattingResponse {
-    answer: string;
+    answer?: string;
     exit: number;
     throw?: true;
 }

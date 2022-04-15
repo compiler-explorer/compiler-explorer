@@ -105,6 +105,9 @@ export class CompilerPicker {
             plugins: ['dropdown_input'],
             maxOptions: 1000,
             onChange: (val) => {
+                // TODO(jeremy-rifkin) I don't think this can be undefined.
+                // Typing here needs improvement later anyway.
+                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
                 if (val) {
                     ga.proxy('send', {
                         hitType: 'event',

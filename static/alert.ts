@@ -26,6 +26,7 @@ import $ from 'jquery';
 
 import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
 import { toggleEventListener } from './utils';
+import Sentry from '@sentry/browser';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
@@ -62,8 +63,8 @@ export class Alert {
      */
     ask(title: string, question: string, askOptions: AlertAskOptions) {
         const modal = $('#yes-no');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body')
             .css('min-height', 'inherit')
@@ -99,7 +100,10 @@ export class Alert {
         dismissTime = 5000,
     }: AlertNotifyOptions) {
         const container = $('#notifications');
-        if (!container) return;
+        if (container.length === 0) {
+            Sentry.captureMessage('#notifications not found');
+            return;
+        }
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
@@ -135,8 +139,8 @@ export class Alert {
      */
     enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body .question').html(question);
 
