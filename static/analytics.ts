@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from './options';
+import { options } from './options';
 import * as Sentry from '@sentry/browser';
 
 if (options.statusTrackingEnabled && options.sentryDsn) {
@@ -36,20 +36,25 @@ if (options.statusTrackingEnabled && options.sentryDsn) {
 class GAProxy {
     private hasBeenEnabled = false;
     private isEnabled = false;
-    private _proxy: (...args) => void = () => {
-    };
+    private _proxy: (...args) => void = () => {};
 
     initialise() {
-        if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
+        if (
+            !this.isEnabled &&
+            options.statusTrackingEnabled &&
+            options.googleAnalyticsEnabled
+        ) {
             // Check if this is a re-enable, as the script is already there in this case
             if (!this.hasBeenEnabled) {
                 (function (i, s, o, g, r, a, m) {
                     i.GoogleAnalyticsObject = r;
-                    i[r] = i[r] || function () {
-                        // We could push the unexpanded args, but better might have some unintended side-effects
-                        // eslint-disable-next-line prefer-rest-params
-                        (i[r].q = i[r].q || []).push(arguments);
-                    };
+                    i[r] =
+                        i[r] ||
+                        function () {
+                            // We could push the unexpanded args, but better might have some unintended side-effects
+                            // eslint-disable-next-line prefer-rest-params
+                            (i[r].q = i[r].q || []).push(arguments);
+                        };
                     i[r].l = Date.now();
                     // @ts-ignore
                     a = s.createElement(o);
@@ -61,7 +66,13 @@ class GAProxy {
                     a.src = g;
                     // @ts-ignore
                     m.parentNode.insertBefore(a, m);
-                })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+                })(
+                    window,
+                    document,
+                    'script',
+                    '//www.google-analytics.com/analytics.js',
+                    'ga',
+                );
                 window.ga('set', 'anonymizeIp', true);
                 window.ga('create', options.googleAnalyticsAccount, {
                     cookieDomain: 'auto',
@@ -74,8 +85,7 @@ class GAProxy {
             this.hasBeenEnabled = true;
         } else {
             this.isEnabled = false;
-            this._proxy = () => {
-            };
+            this._proxy = () => {};
         }
     }
 
@@ -84,8 +94,7 @@ class GAProxy {
             if (!this.isEnabled) this.initialise();
         } else {
             this.isEnabled = false;
-            this._proxy = () => {
-            };
+            this._proxy = () => {};
         }
     }
 
@@ -95,6 +104,4 @@ class GAProxy {
 }
 
 const ga = new GAProxy();
-export {
-    ga,
-};
+export { ga };

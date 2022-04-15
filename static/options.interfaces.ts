@@ -55,5 +55,5 @@ export interface Options {
     defaultFontScale: number;
     sentryDsn?: string;
     release?: string;
-    sentryEnvironment?: string
+    sentryEnvironment?: string;
 }

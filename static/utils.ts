@@ -22,7 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
+export function updateAndCalcTopBarHeight(
+    domRoot: JQuery,
+    topBar: JQuery,
+    hideable: JQuery,
+): number {
     let topBarHeight = 0;
     if (!topBar.hasClass('d-none')) {
         hideable.show();
@@ -45,7 +49,11 @@ export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hidea
  * @param  {(event:JQuery.Event)=>void} callback
  * @returns void
  */
-export function toggleEventListener(element: JQuery, eventName: string, callback: (event: JQuery.Event) => void): void {
+export function toggleEventListener(
+    element: JQuery,
+    eventName: string,
+    callback: (event: JQuery.Event) => void,
+): void {
     element.on(eventName, (event: JQuery.Event) => {
         callback(event);
         element.off(eventName);
