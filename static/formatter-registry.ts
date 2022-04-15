@@ -33,10 +33,13 @@ import { getFormattedCode } from './api/api';
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {
     const alertSystem = new Alert();
-    alertSystem.notify(`We encountered an error formatting your code: ${cause}`, {
-        group: 'formatting',
-        alertClass: 'notification-error',
-    });
+    alertSystem.notify(
+        `We encountered an error formatting your code: ${cause}`,
+        {
+            group: 'formatting',
+            alertClass: 'notification-error',
+        },
+    );
     return source;
 };
 
@@ -64,12 +67,12 @@ const doFormatRequest = async (options: FormattingRequest) => {
 const getDocumentFormatter = (
     language: string,
     formatter: string,
-    isOneTrueStyle: boolean
+    isOneTrueStyle: boolean,
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
-        token: monaco.CancellationToken
+        token: monaco.CancellationToken,
     ): Promise<monaco.languages.TextEdit[]> {
         const settings = Settings.getStoredSettings();
         // If there is only one style, return __DefaultStyle.
@@ -84,10 +87,12 @@ const getDocumentFormatter = (
             source,
             base,
         }).catch(err => onFormatError(err, source));
-        return [{
-            range: model.getFullModelRange(),
-            text: formattedSource,
-        }];
+        return [
+            {
+                range: model.getFullModelRange(),
+                text: formattedSource,
+            },
+        ];
     },
 });
 

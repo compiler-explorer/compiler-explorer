@@ -63,7 +63,11 @@ editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
     rules: [
-        {token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold'},
+        {
+            token: 'identifier.definition.cppx-blue',
+            foreground: '008a00',
+            fontStyle: 'bold',
+        },
     ],
     colors: {},
 });
@@ -72,7 +76,11 @@ editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-        {token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold'},
+        {
+            token: 'identifier.definition.cppx-blue',
+            foreground: '7c9c7c',
+            fontStyle: 'bold',
+        },
     ],
     colors: {},
 });
@@ -81,22 +89,26 @@ editor.defineTheme('ce-dark-plus', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-        {token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold'},
-        {token: 'keyword.if.cpp', foreground: 'c586c0'},
-        {token: 'keyword.else.cpp', foreground: 'c586c0'},
-        {token: 'keyword.while.cpp', foreground: 'c586c0'},
-        {token: 'keyword.for.cpp', foreground: 'c586c0'},
-        {token: 'keyword.return.cpp', foreground: 'c586c0'},
-        {token: 'keyword.break.cpp', foreground: 'c586c0'},
-        {token: 'keyword.continue.cpp', foreground: 'c586c0'},
-        {token: 'keyword.goto.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.include.cpp', foreground: 'c586c0'},
-        {token: 'keyword.directive.include.begin.cpp', foreground: 'ce9178'},
-        {token: 'keyword.directive.include.end.cpp', foreground: 'ce9178'},
-        {token: 'keyword.new.cpp', foreground: 'c586c0'},
-        {token: 'keyword.using.cpp', foreground: 'c586c0'},
-        {token: 'string.escape.cpp', foreground: 'd7ba7d'},
+        {
+            token: 'identifier.definition.cppx-blue',
+            foreground: '7c9c7c',
+            fontStyle: 'bold',
+        },
+        { token: 'keyword.if.cpp', foreground: 'c586c0' },
+        { token: 'keyword.else.cpp', foreground: 'c586c0' },
+        { token: 'keyword.while.cpp', foreground: 'c586c0' },
+        { token: 'keyword.for.cpp', foreground: 'c586c0' },
+        { token: 'keyword.return.cpp', foreground: 'c586c0' },
+        { token: 'keyword.break.cpp', foreground: 'c586c0' },
+        { token: 'keyword.continue.cpp', foreground: 'c586c0' },
+        { token: 'keyword.goto.cpp', foreground: 'c586c0' },
+        { token: 'keyword.directive.cpp', foreground: 'c586c0' },
+        { token: 'keyword.directive.include.cpp', foreground: 'c586c0' },
+        { token: 'keyword.directive.include.begin.cpp', foreground: 'ce9178' },
+        { token: 'keyword.directive.include.end.cpp', foreground: 'ce9178' },
+        { token: 'keyword.new.cpp', foreground: 'c586c0' },
+        { token: 'keyword.using.cpp', foreground: 'c586c0' },
+        { token: 'string.escape.cpp', foreground: 'd7ba7d' },
     ],
     colors: {},
 });
@@ -109,9 +121,13 @@ export class Themer {
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
-        this.eventHub.on('requestTheme', () => {
-            this.eventHub.emit('themeChange', this.currentTheme);
-        }, this);
+        this.eventHub.on(
+            'requestTheme',
+            () => {
+                this.eventHub.emit('themeChange', this.currentTheme);
+            },
+            this,
+        );
     }
 
     public setTheme(theme: Theme) {
@@ -125,8 +141,7 @@ export class Themer {
 
     private onSettingsChange(newSettings: SiteSettings) {
         const newTheme = themes[newSettings.theme] || themes.default;
-        if (!newTheme.monaco)
-            newTheme.monaco = 'vs';
+        if (!newTheme.monaco) newTheme.monaco = 'vs';
         this.setTheme(newTheme);
     }
 }

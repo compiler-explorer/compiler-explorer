@@ -59,15 +59,15 @@ function getDefaultColors(): ColorCodes {
         15: '#FFF',
     };
 
-    range(0, 5).forEach((red) => {
-        range(0, 5).forEach((green) => {
-            range(0, 5).forEach((blue) => {
+    range(0, 5).forEach(red => {
+        range(0, 5).forEach(green => {
+            range(0, 5).forEach(blue => {
                 setStyleColor(red, green, blue, colors);
             });
         });
     });
 
-    range(0, 23).forEach((gray) => {
+    range(0, 23).forEach(gray => {
         const c = gray + 232;
         const l = toHexString(gray * 10 + 8);
 
@@ -77,7 +77,12 @@ function getDefaultColors(): ColorCodes {
     return colors;
 }
 
-function setStyleColor(red: number, green: number, blue: number, colors: ColorCodes): void {
+function setStyleColor(
+    red: number,
+    green: number,
+    blue: number,
+    colors: ColorCodes,
+): void {
     const c = 16 + red * 36 + green * 6 + blue;
     const r = red > 0 ? red * 40 + 55 : 0;
     const g = green > 0 ? green * 40 + 55 : 0;
@@ -118,7 +123,12 @@ function toColorHexString(ref: number[]): string {
     return '#' + results.join('');
 }
 
-function generateOutput(stack: string[], token: string, data: string | number, options: AnsiToHtmlOptions): string {
+function generateOutput(
+    stack: string[],
+    token: string,
+    data: string | number,
+    options: AnsiToHtmlOptions,
+): string {
     if (token === 'text') {
         // Note: Param 'data' must be a string at this point
         return pushText(data as string, options);
@@ -131,7 +141,11 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     return '';
 }
 
-function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
+function handleXterm256(
+    stack: string[],
+    data: string,
+    options: AnsiToHtmlOptions,
+): string {
     data = data.substring(2).slice(0, -1);
     const operation = +data.substr(0, 2);
     const color = +data.substr(5);
@@ -144,7 +158,11 @@ function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOption
     }
 }
 
-function handleDisplay(stack: string[], _code: string | number, options: AnsiToHtmlOptions): string {
+function handleDisplay(
+    stack: string[],
+    _code: string | number,
+    options: AnsiToHtmlOptions,
+): string {
     const code: number = parseInt(_code as string, 10);
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
@@ -190,7 +208,10 @@ function resetStyles(stack: string[]): string {
     const stackClone = stack.slice(0);
     stack.length = 0;
 
-    return stackClone.reverse().map((tag) => `</${tag}>`).join('');
+    return stackClone
+        .reverse()
+        .map(tag => `</${tag}>`)
+        .join('');
 }
 
 /**
@@ -216,7 +237,9 @@ function range(low: number, high: number): number[] {
  */
 function notCategory(category: string): (e: StickyStackElement) => boolean {
     return (e: StickyStackElement): boolean => {
-        return (category === null || e.category !== category) && category !== 'all';
+        return (
+            (category === null || e.category !== category) && category !== 'all'
+        );
     };
 }
 
@@ -241,9 +264,17 @@ function categoryForCode(_code: string | number): string {
         return 'hide';
     } else if (code === 9) {
         return 'strike';
-    } else if (29 < code && code < 38 || code === 39 || 89 < code && code < 98) {
+    } else if (
+        (29 < code && code < 38) ||
+        code === 39 ||
+        (89 < code && code < 98)
+    ) {
         return 'foreground-color';
-    } else if (39 < code && code < 48 || code === 49 || 99 < code && code < 108) {
+    } else if (
+        (39 < code && code < 48) ||
+        code === 49 ||
+        (99 < code && code < 108)
+    ) {
         return 'background-color';
     }
     return '';
@@ -251,7 +282,10 @@ function categoryForCode(_code: string | number): string {
 
 function pushText(text: string, options: AnsiToHtmlOptions): string {
     if (options.escapeXML) {
-        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 
     return text;
@@ -299,7 +333,11 @@ interface Token {
     sub: (m: string, ...args: any[]) => string;
 }
 
-function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
+function tokenize(
+    text: string,
+    options: AnsiToHtmlOptions,
+    callback: TokenizeCallback,
+) {
     let ansiMatch = false;
     const ansiHandler = 3;
 
@@ -344,28 +382,36 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
     }
 
     /* eslint no-control-regex:0 */
-    const tokens: Token[] = [{
-        pattern: /^\x08+/,
-        sub: remove,
-    }, {
-        pattern: /^\x1b\[[012]?K/,
-        sub: remove,
-    }, {
-        pattern: /^\x1b\[[34]8;5;(\d+)m/,
-        sub: removeXterm256,
-    }, {
-        pattern: /^\n/,
-        sub: newline,
-    }, {
-        pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
-        sub: ansiMess,
-    }, {
-        pattern: /^\x1b\[?[\d;]{0,3}/,
-        sub: remove,
-    }, {
-        pattern: /^([^\x1b\x08\n]+)/,
-        sub: realText,
-    }];
+    const tokens: Token[] = [
+        {
+            pattern: /^\x08+/,
+            sub: remove,
+        },
+        {
+            pattern: /^\x1b\[[012]?K/,
+            sub: remove,
+        },
+        {
+            pattern: /^\x1b\[[34]8;5;(\d+)m/,
+            sub: removeXterm256,
+        },
+        {
+            pattern: /^\n/,
+            sub: newline,
+        },
+        {
+            pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
+            sub: ansiMess,
+        },
+        {
+            pattern: /^\x1b\[?[\d;]{0,3}/,
+            sub: remove,
+        },
+        {
+            pattern: /^([^\x1b\x08\n]+)/,
+            sub: realText,
+        },
+    ];
 
     function process(handler: Token, i: number): void {
         if (i > ansiHandler && ansiMatch) {
@@ -421,7 +467,8 @@ interface StickyStackElement {
 function updateStickyStack(
     stickyStack: StickyStackElement[],
     token: string,
-    data: string | number): StickyStackElement[] {
+    data: string | number,
+): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
         stickyStack.push({
@@ -458,7 +505,12 @@ export class Filter {
         const buf: string[] = [];
 
         this.stickyStack.forEach((element: StickyStackElement) => {
-            const output: string = generateOutput(stack, element.token, element.data, options);
+            const output: string = generateOutput(
+                stack,
+                element.token,
+                element.data,
+                options,
+            );
 
             if (output) {
                 buf.push(output);
@@ -473,7 +525,11 @@ export class Filter {
             }
 
             if (options.stream) {
-                this.stickyStack = updateStickyStack(this.stickyStack, token, data);
+                this.stickyStack = updateStickyStack(
+                    this.stickyStack,
+                    token,
+                    data,
+                );
             }
         });
 

@@ -52,9 +52,11 @@ export class LineColouring {
 
     public addFromAssembly(compilerId, asm) {
         let asmLineIdx = 0;
-        for (const asmLine of asm ) {
+        for (const asmLine of asm) {
             if (asmLine.source && asmLine.source.line > 0) {
-                const editorId = this.multifileService.getEditorIdByFilename(asmLine.source.file);
+                const editorId = this.multifileService.getEditorIdByFilename(
+                    asmLine.source.file,
+                );
                 if (editorId != null && editorId > 0) {
                     if (!this.colouredSourceLinesByEditor[editorId]) {
                         this.colouredSourceLinesByEditor[editorId] = [];
@@ -84,14 +86,17 @@ export class LineColouring {
         const lines: number[] = [];
 
         for (const info of this.colouredSourceLinesByEditor[editorId]) {
-            if (!lines.includes(info.sourceLine))
-                lines.push(info.sourceLine);
+            if (!lines.includes(info.sourceLine)) lines.push(info.sourceLine);
         }
 
         return lines;
     }
 
-    private setColourBySourceline(editorId: number, line: number, colourIdx: number) {
+    private setColourBySourceline(
+        editorId: number,
+        line: number,
+        colourIdx: number,
+    ) {
         for (const info of this.colouredSourceLinesByEditor[editorId]) {
             if (info.sourceLine === line) {
                 info.colourIdx = colourIdx;
@@ -120,7 +125,9 @@ export class LineColouring {
             for (const editorId of _.keys(this.colouredSourceLinesByEditor)) {
                 for (const info of this.colouredSourceLinesByEditor[editorId]) {
                     if (info.compilerId === compilerId && info.colourIdx >= 0) {
-                        this.linesAndColourByCompiler[compilerId][info.compilerLine] = info.colourIdx;
+                        this.linesAndColourByCompiler[compilerId][
+                            info.compilerLine
+                        ] = info.colourIdx;
                     }
                 }
             }
@@ -129,7 +136,8 @@ export class LineColouring {
         for (const editorId of editorIds) {
             for (const info of this.colouredSourceLinesByEditor[editorId]) {
                 if (info.colourIdx >= 0) {
-                    this.linesAndColourByEditor[editorId][info.sourceLine] = info.colourIdx;
+                    this.linesAndColourByEditor[editorId][info.sourceLine] =
+                        info.colourIdx;
                 }
             }
         }

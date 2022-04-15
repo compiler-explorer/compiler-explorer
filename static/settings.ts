@@ -57,11 +57,11 @@ export interface SiteSettings {
     defaultLanguage?: string;
     delayAfterChange: number;
     enableCodeLens: boolean;
-    enableCommunityAds: boolean
+    enableCommunityAds: boolean;
     enableCtrlS: string;
     enableSharingPopover: boolean;
     enableCtrlStree: boolean;
-    editorsFFont: string
+    editorsFFont: string;
     editorsFLigatures: boolean;
     formatBase: FormatBase;
     formatOnCompile: boolean;
@@ -107,7 +107,11 @@ class Checkbox extends BaseSetting {
 }
 
 class Select extends BaseSetting {
-    constructor(elem: JQuery, name: string, populate: {label: string, desc: string}[]) {
+    constructor(
+        elem: JQuery,
+        name: string,
+        populate: { label: string; desc: string }[],
+    ) {
         super(elem, name);
 
         elem.empty();
@@ -144,8 +148,7 @@ class Slider extends BaseSetting {
         this.max = sliderSettings.max || 100;
         this.min = sliderSettings.min || 1;
 
-        elem
-            .prop('max', this.max)
+        elem.prop('max', this.max)
             .prop('min', this.min)
             .prop('step', sliderSettings.step || 1);
 
@@ -172,14 +175,17 @@ class Numeric extends BaseSetting {
     private readonly min: number;
     private readonly max: number;
 
-    constructor(elem: JQuery, name: string, params: Record<'min' | 'max', number>) {
+    constructor(
+        elem: JQuery,
+        name: string,
+        params: Record<'min' | 'max', number>,
+    ) {
         super(elem, name);
 
         this.min = params.min;
         this.max = params.max;
 
-        elem.attr('min', this.min)
-            .attr('max', this.max);
+        elem.attr('min', this.min).attr('max', this.max);
     }
 
     override getUi(): number {
@@ -198,11 +204,12 @@ class Numeric extends BaseSetting {
 export class Settings {
     private readonly settingsObjs: BaseSetting[];
 
-    constructor(private root: JQuery,
-                private settings: SiteSettings,
-                private onChange: (SiteSettings) => void,
-                private subLangId: string | null) {
-
+    constructor(
+        private root: JQuery,
+        private settings: SiteSettings,
+        private onChange: (SiteSettings) => void,
+        private subLangId: string | null,
+    ) {
         this.settings = settings;
         this.settingsObjs = [];
 
@@ -248,7 +255,7 @@ export class Settings {
 
     private addCheckboxes() {
         // Known checkbox options in order [selector, key, defaultValue]
-        const checkboxes: [string, keyof SiteSettings, boolean][]= [
+        const checkboxes: [string, keyof SiteSettings, boolean][] = [
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
             ['.autoCloseBrackets', 'autoCloseBrackets', true],
@@ -274,7 +281,10 @@ export class Settings {
         ];
 
         for (const [selector, name, defaultValue] of checkboxes) {
-            this.add(new Checkbox(this.root.find(selector), name), defaultValue);
+            this.add(
+                new Checkbox(this.root.find(selector), name),
+                defaultValue,
+            );
         }
     }
 
@@ -282,21 +292,31 @@ export class Settings {
         const addSelector = (
             selector: string,
             name: keyof SiteSettings,
-            populate: {label: string, desc: string}[],
-            defaultValue: string
+            populate: { label: string; desc: string }[],
+            defaultValue: string,
         ) => {
-            this.add(new Select(this.root.find(selector), name, populate), defaultValue);
+            this.add(
+                new Select(this.root.find(selector), name, populate),
+                defaultValue,
+            );
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
-            return {label: scheme.name, desc: scheme.desc};
+            return { label: scheme.name, desc: scheme.desc };
         });
-        addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
+        addSelector(
+            '.colourScheme',
+            'colourScheme',
+            colourSchemesData,
+            colour.schemes[0].name,
+        );
 
         // keys(themes) is Themes[] but TS does not realize without help
-        const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
-            return {label: themes[theme].id, desc: themes[theme].name};
-        });
+        const themesData = (Object.keys(themes) as Themes[]).map(
+            (theme: Themes) => {
+                return { label: themes[theme].id, desc: themes[theme].name };
+            },
+        );
         let defaultThemeId = themes.default.id;
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultThemeId = themes.dark.id;
@@ -305,12 +325,18 @@ export class Settings {
 
         const langs = options.languages;
         const defaultLanguageSelector = this.root.find('.defaultLanguage');
-        const defLang = this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
+        const defLang =
+            this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
 
         const defaultLanguageData = Object.keys(langs).map(lang => {
-            return {label: langs[lang].id, desc: langs[lang].name};
+            return { label: langs[lang].id, desc: langs[lang].name };
         });
-        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang);
+        addSelector(
+            '.defaultLanguage',
+            'defaultLanguage',
+            defaultLanguageData,
+            defLang,
+        );
 
         if (this.subLangId) {
             defaultLanguageSelector
@@ -319,17 +345,25 @@ export class Settings {
                 .css('cursor', 'not-allowed');
         }
 
-        const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
+        const formats: FormatBase[] = [
+            'Google',
+            'LLVM',
+            'Mozilla',
+            'Chromium',
+            'WebKit',
+            'Microsoft',
+            'GNU',
+        ];
         const formatsData = formats.map(format => {
-            return {label: format, desc: format};
+            return { label: format, desc: format };
         });
         addSelector('.formatBase', 'formatBase', formatsData, formats[0]);
 
         const enableCtrlSData = [
-            {label: 'true', desc: 'Save To Local File'},
-            {label: 'false', desc: 'Create Short Link'},
-            {label: '2', desc: 'Reformat code'},
-            {label: '3', desc: 'Do nothing'},
+            { label: 'true', desc: 'Save To Local File' },
+            { label: 'false', desc: 'Create Short Link' },
+            { label: '2', desc: 'Reformat code' },
+            { label: '3', desc: 'Do nothing' },
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
     }
@@ -348,17 +382,30 @@ export class Settings {
             display: this.root.find('.delay-current-value'),
             formatter: x => (x / 1000.0).toFixed(2) + 's',
         };
-        this.add(new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings), 750);
+        this.add(
+            new Slider(
+                this.root.find('.delay'),
+                'delayAfterChange',
+                delayAfterChangeSettings,
+            ),
+            750,
+        );
     }
 
     private addNumerics() {
-        this.add(new Numeric(this.root.find('.tabWidth'), 'tabWidth', {min: 1, max: 80}), 4);
+        this.add(
+            new Numeric(this.root.find('.tabWidth'), 'tabWidth', {
+                min: 1,
+                max: 80,
+            }),
+            4,
+        );
     }
 
     private addTextBoxes() {
         this.add(
             new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'),
-            'Consolas, "Liberation Mono", Courier, monospace'
+            'Consolas, "Liberation Mono", Courier, monospace',
         );
     }
 
@@ -370,12 +417,18 @@ export class Settings {
         });
 
         const colourSchemeSelect = this.root.find('.colourScheme');
-        colourSchemeSelect.on('change', (e) => {
+        colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
+            $.data(
+                themeSelect,
+                'theme-' + currentTheme,
+                colourSchemeSelect.val() as ColourScheme,
+            );
         });
 
-        const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
+        const enableAllSchemesCheckbox = this.root.find(
+            '.alwaysEnableAllSchemes',
+        );
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
         $.data(themeSelect, 'last-theme', themeSelect.val() as string);
@@ -384,14 +437,23 @@ export class Settings {
     private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
         for (const scheme of colour.schemes) {
             if (this.isSchemeUsable(scheme, newTheme)) {
-                colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
+                colourSchemeSelect.append(
+                    $(`<option value="${scheme.name}">${scheme.desc}</option>`),
+                );
             }
         }
     }
 
-    private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
-        return this.settings.alwaysEnableAllSchemes || scheme.themes.length === 0
-            || (newTheme && scheme.themes.includes(newTheme)) || scheme.themes.includes('all');
+    private isSchemeUsable(
+        scheme: ColourSchemeInfo,
+        newTheme?: AppTheme,
+    ): boolean {
+        return (
+            this.settings.alwaysEnableAllSchemes ||
+            scheme.themes.length === 0 ||
+            (newTheme && scheme.themes.includes(newTheme)) ||
+            scheme.themes.includes('all')
+        );
     }
 
     private selectorHasOption(selector: JQuery, option: string): boolean {
@@ -411,12 +473,18 @@ export class Settings {
 
         colourSchemeSelect.empty();
         this.fillThemeSelector(colourSchemeSelect, newTheme);
-        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
+        const newThemeStoredScheme = $.data(
+            themeSelect,
+            'theme-' + newTheme,
+        ) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
         let newScheme = colourSchemeSelect.first().val() as string;
         // If we have one old one stored, check if it's still valid and set it if so
-        if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
+        if (
+            newThemeStoredScheme &&
+            this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)
+        ) {
             newScheme = newThemeStoredScheme;
         } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
             newScheme = oldScheme;
