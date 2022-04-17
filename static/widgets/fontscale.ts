@@ -56,18 +56,16 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
         }
     }
 
-    if (buttonDropdown) {
-        buttonDropdown.on('wheel', (e: any) => {
-            e.preventDefault();
-            let selectedId = elem.find('.active').index();
-            if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
-                selectedId++;
-            } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
-                selectedId--;
-            }
-            elem.children().eq(selectedId).trigger('click');
-        });
-    }
+    buttonDropdown.on('wheel', (e: any) => {
+        e.preventDefault();
+        let selectedId = elem.find('.active').index();
+        if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
+            selectedId++;
+        } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
+            selectedId--;
+        }
+        elem.children().eq(selectedId).trigger('click');
+    });
 }
 
 function convertOldScale(oldScale: number): number {
