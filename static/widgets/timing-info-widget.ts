@@ -135,7 +135,7 @@ function displayData(data: Data) {
 
     const settings = Settings.getStoredSettings();
     let fontColour = defaults.color.toString();
-    if (settings != null && settings.theme !== 'default') {
+    if (settings.theme !== 'default') {
         fontColour = '#ffffff';
     }
 
