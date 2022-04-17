@@ -81,7 +81,7 @@ function setStyleColor(
     red: number,
     green: number,
     blue: number,
-    colors: ColorCodes,
+    colors: ColorCodes
 ): void {
     const c = 16 + red * 36 + green * 6 + blue;
     const r = red > 0 ? red * 40 + 55 : 0;
@@ -127,7 +127,7 @@ function generateOutput(
     stack: string[],
     token: string,
     data: string | number,
-    options: AnsiToHtmlOptions,
+    options: AnsiToHtmlOptions
 ): string {
     if (token === 'text') {
         // Note: Param 'data' must be a string at this point
@@ -144,7 +144,7 @@ function generateOutput(
 function handleXterm256(
     stack: string[],
     data: string,
-    options: AnsiToHtmlOptions,
+    options: AnsiToHtmlOptions
 ): string {
     data = data.substring(2).slice(0, -1);
     const operation = +data.substr(0, 2);
@@ -161,7 +161,7 @@ function handleXterm256(
 function handleDisplay(
     stack: string[],
     _code: string | number,
-    options: AnsiToHtmlOptions,
+    options: AnsiToHtmlOptions
 ): string {
     const code: number = parseInt(_code as string, 10);
     const codeMap: Record<number, () => string> = {
@@ -336,7 +336,7 @@ interface Token {
 function tokenize(
     text: string,
     options: AnsiToHtmlOptions,
-    callback: TokenizeCallback,
+    callback: TokenizeCallback
 ) {
     let ansiMatch = false;
     const ansiHandler = 3;
@@ -467,7 +467,7 @@ interface StickyStackElement {
 function updateStickyStack(
     stickyStack: StickyStackElement[],
     token: string,
-    data: string | number,
+    data: string | number
 ): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
@@ -509,7 +509,7 @@ export class Filter {
                 stack,
                 element.token,
                 element.data,
-                options,
+                options
             );
 
             if (output) {
@@ -528,7 +528,7 @@ export class Filter {
                 this.stickyStack = updateStickyStack(
                     this.stickyStack,
                     token,
-                    data,
+                    data
                 );
             }
         });

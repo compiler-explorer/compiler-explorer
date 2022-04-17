@@ -48,7 +48,7 @@ export function convertOldState(state: any): any {
     delete filters.colouriseAsm;
     content.push(Components.getEditorWith(1, source, options));
     content.push(
-        Components.getCompilerWith(1, filters, sc.options, sc.compiler),
+        Components.getCompilerWith(1, filters, sc.options, sc.compiler)
     );
     return {version: 4, content: [{type: 'row', content: content}]};
 }

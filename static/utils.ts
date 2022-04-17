@@ -25,7 +25,7 @@
 export function updateAndCalcTopBarHeight(
     domRoot: JQuery,
     topBar: JQuery,
-    hideable: JQuery,
+    hideable: JQuery
 ): number {
     let topBarHeight = 0;
     if (!topBar.hasClass('d-none')) {
@@ -52,7 +52,7 @@ export function updateAndCalcTopBarHeight(
 export function toggleEventListener(
     element: JQuery,
     eventName: string,
-    callback: (event: JQuery.Event) => void,
+    callback: (event: JQuery.Event) => void
 ): void {
     element.on(eventName, (event: JQuery.Event) => {
         callback(event);

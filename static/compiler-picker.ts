@@ -53,7 +53,7 @@ export class CompilerPicker {
         langId: string,
         compilerId: string,
         onCompilerChange: (x: string) => any,
-        compilerIsVisible?: (x: any) => any,
+        compilerIsVisible?: (x: any) => any
     ) {
         this.eventHub = hub.createEventHub();
         this.id = CompilerPicker.nextSelectorId++;
@@ -67,7 +67,7 @@ export class CompilerPicker {
         this.eventHub.on(
             'compilerFavoriteChange',
             this.onCompilerFavoriteChange,
-            this,
+            this
         );
         this.tomSelect = null;
         if (compilerIsVisible) {
@@ -124,7 +124,7 @@ export class CompilerPicker {
                 option: (data, escape) => {
                     const isFavoriteGroup =
                         data.$groups.indexOf(
-                            CompilerPicker.favoriteGroupName,
+                            CompilerPicker.favoriteGroupName
                         ) !== -1;
                     const extraClasses = isFavoriteGroup
                         ? 'fas fa-star fav'
@@ -164,7 +164,7 @@ export class CompilerPicker {
                 } else {
                     data.$groups.splice(
                         data.group.indexOf(CompilerPicker.favoriteGroupName),
-                        1,
+                        1
                     );
                     this.removeFromFavorites(data.id);
                 }
@@ -194,13 +194,13 @@ export class CompilerPicker {
         const favorites = this.getFavorites();
         return (
             Object.values(
-                this.compilerService.getCompilersForLang(langId),
+                this.compilerService.getCompilersForLang(langId)
             ) as any[]
         )
             .filter(
                 e =>
                     (this.compilerIsVisible(e) && !e.hidden) ||
-                    e.id === compilerId,
+                    e.id === compilerId
             )
             .map(e => {
                 e.$groups = [e.group];

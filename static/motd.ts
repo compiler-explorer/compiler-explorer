@@ -43,7 +43,7 @@ function handleMotd(
     motdNode: JQuery,
     subLang: string,
     adsEnabled: boolean,
-    onHide: () => void,
+    onHide: () => void
 ) {
     if (motd.update) {
         ensureShownMessage(motd.update, motdNode);
@@ -92,7 +92,7 @@ export function initialise(
     defaultLanguage: string,
     adsEnabled: boolean,
     onMotd: (res?: Motd) => void,
-    onHide: () => void,
+    onHide: () => void
 ) {
     if (!url) return;
     $.getJSON(url)

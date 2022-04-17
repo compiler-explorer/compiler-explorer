@@ -193,7 +193,7 @@ export class MultifileService {
             },
             err => {
                 throw err;
-            },
+            }
         );
     }
 
@@ -286,7 +286,7 @@ export class MultifileService {
 
     private filterOutNonsense() {
         this.files = _.filter(this.files, (file: MultifileFile) =>
-            MultifileService.isValidFile(file),
+            MultifileService.isValidFile(file)
         );
     }
 
@@ -323,7 +323,7 @@ export class MultifileService {
                 if (
                     file.filename ===
                     MultifileService.getDefaultMainSourceFilename(
-                        this.compilerLanguageId,
+                        this.compilerLanguageId
                     )
                 ) {
                     this.setAsMainSource(file.fileId);
@@ -396,7 +396,7 @@ export class MultifileService {
         const file = this.getFileByFileId(fileId);
         if (file) {
             this.files = this.files.filter(
-                (obj: MultifileFile) => obj.fileId !== fileId,
+                (obj: MultifileFile) => obj.fileId !== fileId
             );
         }
         return file;
@@ -524,14 +524,14 @@ export class MultifileService {
                             } else {
                                 this.alertSystem.alert(
                                     'Rename file',
-                                    'Filename already exists',
+                                    'Filename already exists'
                                 );
                                 resolve(false);
                             }
                         } else {
                             this.alertSystem.alert(
                                 'Rename file',
-                                'Filename cannot be empty or start with a "/"',
+                                'Filename cannot be empty or start with a "/"'
                             );
                             resolve(false);
                         }
@@ -543,7 +543,7 @@ export class MultifileService {
                     yesHtml: 'Rename',
                     noClass: 'btn-outline-info',
                     noHtml: 'Cancel',
-                },
+                }
             );
         });
     }

@@ -105,7 +105,7 @@ export class Alert {
             alertClass = '',
             autoDismiss = true,
             dismissTime = 5000,
-        }: AlertNotifyOptions,
+        }: AlertNotifyOptions
     ) {
         const container = $('#notifications');
         if (!container) return;
@@ -146,7 +146,7 @@ export class Alert {
         title: string,
         question: string,
         defaultValue: string,
-        askOptions: AlertEnterTextOptions,
+        askOptions: AlertEnterTextOptions
     ) {
         const modal = $('#enter-something');
         this.yesHandler = askOptions?.yes ?? (() => undefined);

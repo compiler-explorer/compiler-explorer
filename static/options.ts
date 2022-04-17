@@ -32,9 +32,7 @@ window.httpRoot = configElement.getAttribute('httpRoot') as string;
 window.staticRoot = configElement.getAttribute('staticRoot') as string;
 
 const extraOptions: object = JSON.parse(
-    decodeURIComponent(
-        configElement.getAttribute('extraOptions') ?? '"%7B%7D"',
-    ),
+    decodeURIComponent(configElement.getAttribute('extraOptions') ?? '"%7B%7D"')
 ); // Encoded {}
 for (const key in extraOptions) {
     window.compilerExplorerOptions[key] = extraOptions[key];

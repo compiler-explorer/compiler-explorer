@@ -44,7 +44,7 @@ $(document).on('ready', () => {
         button.data('bind', option.attr('name') ?? '');
         button.attr(
             'aria-pressed',
-            option.attr('checked') === 'checked' ? 'true' : 'false',
+            option.attr('checked') === 'checked' ? 'true' : 'false'
         );
         button.append(span);
 

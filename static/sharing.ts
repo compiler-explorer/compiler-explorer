@@ -118,11 +118,11 @@ export class Sharing {
         if (options.embedded) {
             const strippedToLast = window.location.pathname.substr(
                 0,
-                window.location.pathname.lastIndexOf('/') + 1,
+                window.location.pathname.lastIndexOf('/') + 1
             );
             $('a.link').prop(
                 'href',
-                strippedToLast + '#' + url.serialiseState(config),
+                strippedToLast + '#' + url.serialiseState(config)
             );
         }
     }
@@ -154,7 +154,7 @@ export class Sharing {
     }
 
     private onOpenModalPane(
-        event: TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>,
+        event: TriggeredEvent<HTMLElement, undefined, HTMLElement, HTMLElement>
     ): void {
         // @ts-ignore The property is added by bootstrap
         const button = $(event.relatedTarget);
@@ -174,7 +174,7 @@ export class Sharing {
                     error: any,
                     newUrl: string,
                     extra: string,
-                    updateState: boolean,
+                    updateState: boolean
                 ) => {
                     permalink.off('click');
                     if (error || !newUrl) {
@@ -200,7 +200,7 @@ export class Sharing {
                             }
                         }
                     }
-                },
+                }
             );
         };
 
@@ -249,19 +249,19 @@ export class Sharing {
         const shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
 
         shareShortCopyToClipBtn.on('click', e =>
-            this.onClipButtonPressed(e, LinkType.Short),
+            this.onClipButtonPressed(e, LinkType.Short)
         );
         shareFullCopyToClipBtn.on('click', e =>
-            this.onClipButtonPressed(e, LinkType.Full),
+            this.onClipButtonPressed(e, LinkType.Full)
         );
         shareEmbedCopyToClipBtn.on('click', e =>
-            this.onClipButtonPressed(e, LinkType.Embed),
+            this.onClipButtonPressed(e, LinkType.Embed)
         );
 
         if (options.sharingEnabled) {
             Sharing.updateShares(
                 $('#socialshare'),
-                window.location.protocol + '//' + window.location.hostname,
+                window.location.protocol + '//' + window.location.hostname
             );
         }
     }
@@ -286,12 +286,12 @@ export class Sharing {
                 error: any,
                 newUrl: string,
                 extra: string,
-                updateState: boolean,
+                updateState: boolean
             ) => {
                 if (error || !newUrl) {
                     this.displayTooltip(
                         this.share,
-                        'Oops, something went wrong',
+                        'Oops, something went wrong'
                     );
                     Sentry.captureException(error);
                 } else {
@@ -300,7 +300,7 @@ export class Sharing {
                     }
                     this.doLinkCopyToClipboard(type, newUrl);
                 }
-            },
+            }
         );
     }
 
@@ -335,7 +335,7 @@ export class Sharing {
             navigator.clipboard
                 .writeText(link)
                 .then(() =>
-                    this.displayTooltip(this.share, 'Link copied to clipboard'),
+                    this.displayTooltip(this.share, 'Link copied to clipboard')
                 )
                 .catch(() => this.openShareModalForType(type));
         } else {
@@ -346,7 +346,7 @@ export class Sharing {
     public static getLinks(
         config: any,
         currentBind: LinkType,
-        done: CallableFunction,
+        done: CallableFunction
     ): void {
         const root = window.httpRoot;
         ga.proxy('send', {
@@ -365,7 +365,7 @@ export class Sharing {
                         root +
                         '#' +
                         url.serialiseState(config),
-                    false,
+                    false
                 );
                 return;
             case LinkType.Embed: {
@@ -376,7 +376,7 @@ export class Sharing {
                 done(
                     null,
                     Sharing.getEmbeddedHtml(config, root, false, options),
-                    false,
+                    false
                 );
                 return;
             }
@@ -389,7 +389,7 @@ export class Sharing {
     private static getShortLink(
         config: any,
         root: string,
-        done: CallableFunction,
+        done: CallableFunction
     ): void {
         const useExternalShortener = options.urlShortenService !== 'default';
         const data = JSON.stringify({
@@ -417,13 +417,13 @@ export class Sharing {
         config,
         root,
         isReadOnly,
-        extraOptions,
+        extraOptions
     ): string {
         const embedUrl = Sharing.getEmbeddedUrl(
             config,
             root,
             isReadOnly,
-            extraOptions,
+            extraOptions
         );
         return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;
     }
@@ -432,7 +432,7 @@ export class Sharing {
         config: any,
         root: string,
         readOnly: boolean,
-        extraOptions: object,
+        extraOptions: object
     ): string {
         const location = window.location.origin + root;
         const parameters = _.reduce(
@@ -446,7 +446,7 @@ export class Sharing {
 
                 return total + key + '=' + value;
             },
-            '',
+            ''
         );
 
         const path = (readOnly ? 'embed-ro' : 'e') + parameters + '#';
@@ -464,7 +464,7 @@ export class Sharing {
 
     public static filterComponentState(
         config: any,
-        keysToRemove: [string] = ['selection'],
+        keysToRemove: [string] = ['selection']
     ): any {
         function filterComponentStateImpl(component: any) {
             if (component.content) {
@@ -494,7 +494,7 @@ export class Sharing {
                     $('<span>')
                         .addClass('dropdown-icon mr-1')
                         .addClass(service.logoClass)
-                        .prop('title', serviceName),
+                        .prop('title', serviceName)
                 );
             }
             if (service.text) {

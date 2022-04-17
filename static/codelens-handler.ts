@@ -37,13 +37,13 @@ const providersPerLanguage: Record<string, monaco.IDisposable> = {};
 export function registerLensesForCompiler(
     compilerId: number,
     editorModel: monaco.editor.ITextModel,
-    lenses: monaco.languages.CodeLens[],
+    lenses: monaco.languages.CodeLens[]
 ): void {
     const item = _.find(
         registeredCodelenses,
         (item: RegisteredCodeLens): boolean => {
             return item.compilerId === compilerId;
-        },
+        }
     );
 
     if (item) {
@@ -58,13 +58,13 @@ export function registerLensesForCompiler(
 }
 
 function provide(
-    model: monaco.editor.ITextModel,
+    model: monaco.editor.ITextModel
 ): monaco.languages.CodeLensList {
     const item = _.find(
         registeredCodelenses,
         (item: RegisteredCodeLens): boolean => {
             return item.editorModel === model;
-        },
+        }
     );
 
     if (item) {
@@ -85,7 +85,7 @@ export function unregister(compilerId: number): void {
         registeredCodelenses,
         (item: RegisteredCodeLens): boolean => {
             return item.compilerId === compilerId;
-        },
+        }
     );
 
     if (item) {

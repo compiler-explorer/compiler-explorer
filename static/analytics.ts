@@ -71,7 +71,7 @@ class GAProxy {
                     document,
                     'script',
                     '//www.google-analytics.com/analytics.js',
-                    'ga',
+                    'ga'
                 );
                 window.ga('set', 'anonymizeIp', true);
                 window.ga('create', options.googleAnalyticsAccount, {

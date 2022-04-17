@@ -1,4 +1,4 @@
-trailingComma: all
+trailingComma: es5
 printWidth: 80
 singleQuote: true
 arrowParens: avoid
