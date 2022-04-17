@@ -22,6 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import type { Source, SourceEntry } from './index';
+
 // This is a fake plugin. All of the functionality is in the browser code.
+export const browser: Source = {
+    name: 'Browser',
+    urlpart: 'browser',
+    save: undefined,
+    list(): Promise<Omit<SourceEntry, 'path'>[]> {
+        return Promise.resolve([]);
+    },
+    load(language: string, filename: string): Promise<{file: string}> {
+        return Promise.resolve({file: ''});
+    },
+};
+
 export const name = 'Browser';
 export const urlpart = 'browser';
