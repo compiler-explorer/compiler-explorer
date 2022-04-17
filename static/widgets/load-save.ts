@@ -61,7 +61,7 @@ export class LoadSave {
 
     public static removeLocalFile(name: string) {
         const files = LoadSave.getLocalFiles();
-        if (files[name] !== undefined) {
+        if (name in files) {
             delete files[name];
         }
         local.set('files', JSON.stringify(files));
@@ -110,7 +110,7 @@ export class LoadSave {
                 .text(elem.name)
                 .on('click', elem.load);
             const deleteButton = clone.find('button');
-            if (deleteButton && elem.delete !== undefined) {
+            if (elem.delete !== undefined) {
                 deleteButton.on('click', () => elem.delete?.());
             }
         }
@@ -235,7 +235,7 @@ export class LoadSave {
         const doneCallback = () => {
             LoadSave.setLocalFile(name, this.editorText);
         };
-        if (LoadSave.getLocalFiles()[name] !== undefined) {
+        if (name in LoadSave.getLocalFiles()) {
             this.modal?.modal('hide');
             this.alertSystem.ask(
                 'Replace current?',
@@ -256,8 +256,7 @@ export class LoadSave {
     private onSaveToFile(fileEditor?: string) {
         try {
             const fileLang = this.currentLanguage?.name ?? '';
-            const name = fileLang !== undefined && fileEditor !== undefined ?
-                (fileLang + ' Editor #' + fileEditor + ' ') : '';
+            const name = fileLang && fileEditor !== undefined ? (fileLang + ' Editor #' + fileEditor + ' ') : '';
             saveAs(
                 new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
                 'Compiler Explorer ' + name + 'Code' + this.extension);

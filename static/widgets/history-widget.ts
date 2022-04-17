@@ -40,7 +40,7 @@ export class HistoryDiffState {
     }
 
     update(result: HistoryEntry) {
-        this.result = result.sources ?? [];
+        this.result = result.sources;
         this.refresh();
 
         return true;
@@ -228,7 +228,7 @@ export class HistoryWidget {
         const tabcontent = this.modal!.find('div.tab-content');
         this.diffEditor?.layout({
             width: tabcontent.width() as number,
-            height: tabcontent?.height() as number - 20,
+            height: tabcontent.height() as number - 20,
         });
     }
 
