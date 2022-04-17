@@ -114,7 +114,6 @@ export class LibsWidget {
     }
 
     loadState(state: WidgetState) {
-        if (!state) return;
         for (const lib of state.libs ?? []) {
             if (lib.name && lib.ver) {
                 this.markLibrary(lib.name, lib.ver, true);
@@ -164,7 +163,7 @@ export class LibsWidget {
 
     isAFavorite(libId: string, versionId: string): boolean {
         const faves = this.getFavorites();
-        if (faves[libId]) {
+        if (libId in faves) {
             return faves[libId].includes(versionId);
         }
 
@@ -173,7 +172,7 @@ export class LibsWidget {
 
     addToFavorites(libId: string, versionId: string) {
         const faves = this.getFavorites();
-        if (faves[libId]) {
+        if (libId in faves) {
             faves[libId].push(versionId);
         } else {
             faves[libId] = [];
@@ -185,7 +184,7 @@ export class LibsWidget {
 
     removeFromFavorites(libId: string, versionId: string) {
         const faves = this.getFavorites();
-        if (faves[libId]) {
+        if (libId in faves) {
             faves[libId] = faves[libId].filter(v => v !== versionId);
         }
 
@@ -218,8 +217,8 @@ export class LibsWidget {
             for (const versionId of versionArr) {
                 const lib = this.getLibInfoById(libId);
                 if (lib) {
-                    const version = lib.versions[versionId];
-                    if (version) {
+                    if (versionId in lib.versions) {
+                        const version = lib.versions[versionId];
                         const div: any = this.newFavoriteLibDiv(libId, versionId, lib, version);
                         favoritesDiv.append(div);
                     }
@@ -259,7 +258,7 @@ export class LibsWidget {
 
     conjureUpExamples(result: JQuery<Node>, lib: Library) {
         const examples = result.find('.lib-examples');
-        if (lib.examples && lib.examples.length > 0) {
+        if (lib.examples.length > 0) {
             examples.append($('<b>Examples</b>'));
             const examplesList = $('<ul />');
             for (const exampleId of lib.examples) {
@@ -391,7 +390,7 @@ export class LibsWidget {
         for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
-            if (library.versions && library.versions.autodetect) continue;
+            if ('autodetect' in library.versions) continue;
 
             if (LibsWidget._libVersionMatchesQuery(library, searchText)) {
                 this.addSearchResult(libId, library);
@@ -429,7 +428,7 @@ export class LibsWidget {
         for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
-            if (library.versions && library.versions.autodetect) continue;
+            if ('autodetect' in library.versions) continue;
 
             const card: any = this.newSearchResult(libId, library);
             this.searchResults.append(card);
@@ -450,11 +449,11 @@ export class LibsWidget {
     }
 
     updateAvailableLibs(possibleLibs: CompilerLibs) {
-        if (!this.availableLibs[this.currentLangId]) {
+        if (!(this.currentLangId in this.availableLibs)) {
             this.availableLibs[this.currentLangId] = {};
         }
 
-        if (!this.availableLibs[this.currentLangId][this.currentCompilerId]) {
+        if (!(this.currentCompilerId in this.availableLibs[this.currentLangId])) {
             if (this.currentCompilerId === '_default_') {
                 this.availableLibs[this.currentLangId][this.currentCompilerId] =
                     $.extend(true, {}, options.libs[this.currentLangId]);
@@ -493,13 +492,13 @@ export class LibsWidget {
         const lib = this.getLibInfoById(name);
         if (!lib) return null;
         // If it's already a key, return it directly
-        if (lib.versions[versionId] != null) {
+        if (versionId in lib.versions) {
             return versionId;
         } else {
             // Else, look in each version and see if it has the id as an alias
             for (const verId in lib.versions) {
                 const version = lib.versions[verId];
-                if (version.alias?.includes(versionId)) {
+                if (version.alias.includes(versionId)) {
                     return verId;
                 }
             }
@@ -507,8 +506,14 @@ export class LibsWidget {
         }
     }
 
-    getLibInfoById(libId: string): Library | null {
-        return this.availableLibs[this.currentLangId]?.[this.currentCompilerId]?.[libId];
+    getLibInfoById(libId: string): Library | undefined {
+        if(this.currentLangId in this.availableLibs
+            && this.currentCompilerId in this.availableLibs[this.currentLangId]
+            && libId in this.availableLibs[this.currentLangId][this.currentCompilerId]) {
+            return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
+        } else {
+            return undefined;
+        }
     }
 
     markLibrary(name: string, versionId: string, used: boolean) {
