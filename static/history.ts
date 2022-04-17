@@ -24,12 +24,12 @@
 
 import * as local from './local';
 import _ from 'underscore';
-import { Sharing } from './sharing';
+import {Sharing} from './sharing';
 
 const maxHistoryEntries = 30;
-type Source = { dt: number; source: string };
-export type HistoryEntry = { dt: number; sources: EditorSource[]; config: any };
-export type EditorSource = { lang: string; source: string };
+type Source = {dt: number; source: string};
+export type HistoryEntry = {dt: number; sources: EditorSource[]; config: any};
+export type EditorSource = {lang: string; source: string};
 
 function extractEditorSources(content: any[]): EditorSource[] {
     const sources: EditorSource[] = [];
@@ -54,21 +54,21 @@ function list(): HistoryEntry[] {
 }
 
 function getArrayWithJustTheCode(
-    editorSources: Record<string, any>[],
+    editorSources: Record<string, any>[]
 ): string[] {
     return editorSources.map(s => s.source);
 }
 
 function getSimilarSourcesIndex(
     completeHistory: HistoryEntry[],
-    sourcesToCompareTo: any[],
+    sourcesToCompareTo: any[]
 ): number {
     let duplicateIdx = -1;
 
     for (let i = 0; i < completeHistory.length; i++) {
         const diff = _.difference(
             sourcesToCompareTo,
-            getArrayWithJustTheCode(completeHistory[i].sources),
+            getArrayWithJustTheCode(completeHistory[i].sources)
         );
         if (diff.length === 0) {
             duplicateIdx = i;
@@ -86,7 +86,7 @@ function push(stringifiedConfig: string) {
         const completeHistory = list();
         const duplicateIdx = getSimilarSourcesIndex(
             completeHistory,
-            getArrayWithJustTheCode(sources),
+            getArrayWithJustTheCode(sources)
         );
 
         if (duplicateIdx === -1) {
@@ -112,7 +112,7 @@ export function trackHistory(layout: any) {
     const debouncedPush = _.debounce(push, 500);
     layout.on('stateChanged', () => {
         const stringifiedConfig = JSON.stringify(
-            Sharing.filterComponentState(layout.toConfig()),
+            Sharing.filterComponentState(layout.toConfig())
         );
         if (stringifiedConfig !== lastState) {
             lastState = stringifiedConfig;

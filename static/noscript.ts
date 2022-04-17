@@ -26,7 +26,7 @@ import $ from 'jquery';
 import 'bootstrap';
 import 'popper.js';
 
-import { Toggles } from './widgets/toggles';
+import {Toggles} from './widgets/toggles';
 import './noscript.scss';
 
 $(document).on('ready', () => {
@@ -44,7 +44,7 @@ $(document).on('ready', () => {
         button.data('bind', option.attr('name') ?? '');
         button.attr(
             'aria-pressed',
-            option.attr('checked') === 'checked' ? 'true' : 'false',
+            option.attr('checked') === 'checked' ? 'true' : 'false'
         );
         button.append(span);
 

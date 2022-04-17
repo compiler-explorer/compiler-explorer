@@ -1,9 +1,9 @@
-trailingComma: all
+trailingComma: es5
 printWidth: 80
 singleQuote: true
 arrowParens: avoid
 tabWidth: 4
-bracketSpacing: true
+bracketSpacing: false
 overrides:
   - files: '*.{yml,json}'
     options:

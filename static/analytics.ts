@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
+import {options} from './options';
 import * as Sentry from '@sentry/browser';
 
 if (options.statusTrackingEnabled && options.sentryDsn) {
@@ -71,7 +71,7 @@ class GAProxy {
                     document,
                     'script',
                     '//www.google-analytics.com/analytics.js',
-                    'ga',
+                    'ga'
                 );
                 window.ga('set', 'anonymizeIp', true);
                 window.ga('create', options.googleAnalyticsAccount, {
@@ -104,4 +104,4 @@ class GAProxy {
 }
 
 const ga = new GAProxy();
-export { ga };
+export {ga};

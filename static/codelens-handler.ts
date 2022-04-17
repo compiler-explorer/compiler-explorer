@@ -37,10 +37,14 @@ const providersPerLanguage: Record<string, monaco.IDisposable> = {};
 export function registerLensesForCompiler(
     compilerId: number,
     editorModel: monaco.editor.ITextModel,
-    lenses: monaco.languages.CodeLens[]): void {
-    const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
-        return item.compilerId === compilerId;
-    });
+    lenses: monaco.languages.CodeLens[]
+): void {
+    const item = _.find(
+        registeredCodelenses,
+        (item: RegisteredCodeLens): boolean => {
+            return item.compilerId === compilerId;
+        }
+    );
 
     if (item) {
         item.lenses = lenses;
@@ -53,10 +57,15 @@ export function registerLensesForCompiler(
     }
 }
 
-function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList {
-    const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
-        return item.editorModel === model;
-    });
+function provide(
+    model: monaco.editor.ITextModel
+): monaco.languages.CodeLensList {
+    const item = _.find(
+        registeredCodelenses,
+        (item: RegisteredCodeLens): boolean => {
+            return item.editorModel === model;
+        }
+    );
 
     if (item) {
         return {
@@ -72,9 +81,12 @@ function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList
 }
 
 export function unregister(compilerId: number): void {
-    const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
-        return item.compilerId === compilerId;
-    });
+    const item = _.find(
+        registeredCodelenses,
+        (item: RegisteredCodeLens): boolean => {
+            return item.compilerId === compilerId;
+        }
+    );
 
     if (item) {
         registeredCodelenses = _.without(registeredCodelenses, item);
@@ -83,8 +95,9 @@ export function unregister(compilerId: number): void {
 
 export function registerProviderForLanguage(language: string): void {
     if (!(language in providersPerLanguage)) {
-        providersPerLanguage[language] = monaco.languages.registerCodeLensProvider(language, {
-            provideCodeLenses: provide,
-        });
+        providersPerLanguage[language] =
+            monaco.languages.registerCodeLensProvider(language, {
+                provideCodeLenses: provide,
+            });
     }
 }

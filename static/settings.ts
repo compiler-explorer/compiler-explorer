@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
+import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
-import { themes, Themes } from './themes';
-import { AppTheme, ColourSchemeInfo } from './colour';
+import {themes, Themes} from './themes';
+import {AppTheme, ColourSchemeInfo} from './colour';
 
 type ColourScheme =
     | 'rainbow'
@@ -110,7 +110,7 @@ class Select extends BaseSetting {
     constructor(
         elem: JQuery,
         name: string,
-        populate: { label: string; desc: string }[],
+        populate: {label: string; desc: string}[]
     ) {
         super(elem, name);
 
@@ -178,7 +178,7 @@ class Numeric extends BaseSetting {
     constructor(
         elem: JQuery,
         name: string,
-        params: Record<'min' | 'max', number>,
+        params: Record<'min' | 'max', number>
     ) {
         super(elem, name);
 
@@ -208,7 +208,7 @@ export class Settings {
         private root: JQuery,
         private settings: SiteSettings,
         private onChange: (SiteSettings) => void,
-        private subLangId: string | null,
+        private subLangId: string | null
     ) {
         this.settings = settings;
         this.settingsObjs = [];
@@ -283,7 +283,7 @@ export class Settings {
         for (const [selector, name, defaultValue] of checkboxes) {
             this.add(
                 new Checkbox(this.root.find(selector), name),
-                defaultValue,
+                defaultValue
             );
         }
     }
@@ -292,30 +292,30 @@ export class Settings {
         const addSelector = (
             selector: string,
             name: keyof SiteSettings,
-            populate: { label: string; desc: string }[],
-            defaultValue: string,
+            populate: {label: string; desc: string}[],
+            defaultValue: string
         ) => {
             this.add(
                 new Select(this.root.find(selector), name, populate),
-                defaultValue,
+                defaultValue
             );
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
-            return { label: scheme.name, desc: scheme.desc };
+            return {label: scheme.name, desc: scheme.desc};
         });
         addSelector(
             '.colourScheme',
             'colourScheme',
             colourSchemesData,
-            colour.schemes[0].name,
+            colour.schemes[0].name
         );
 
         // keys(themes) is Themes[] but TS does not realize without help
         const themesData = (Object.keys(themes) as Themes[]).map(
             (theme: Themes) => {
-                return { label: themes[theme].id, desc: themes[theme].name };
-            },
+                return {label: themes[theme].id, desc: themes[theme].name};
+            }
         );
         let defaultThemeId = themes.default.id;
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -329,13 +329,13 @@ export class Settings {
             this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
 
         const defaultLanguageData = Object.keys(langs).map(lang => {
-            return { label: langs[lang].id, desc: langs[lang].name };
+            return {label: langs[lang].id, desc: langs[lang].name};
         });
         addSelector(
             '.defaultLanguage',
             'defaultLanguage',
             defaultLanguageData,
-            defLang,
+            defLang
         );
 
         if (this.subLangId) {
@@ -355,15 +355,15 @@ export class Settings {
             'GNU',
         ];
         const formatsData = formats.map(format => {
-            return { label: format, desc: format };
+            return {label: format, desc: format};
         });
         addSelector('.formatBase', 'formatBase', formatsData, formats[0]);
 
         const enableCtrlSData = [
-            { label: 'true', desc: 'Save To Local File' },
-            { label: 'false', desc: 'Create Short Link' },
-            { label: '2', desc: 'Reformat code' },
-            { label: '3', desc: 'Do nothing' },
+            {label: 'true', desc: 'Save To Local File'},
+            {label: 'false', desc: 'Create Short Link'},
+            {label: '2', desc: 'Reformat code'},
+            {label: '3', desc: 'Do nothing'},
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
     }
@@ -386,9 +386,9 @@ export class Settings {
             new Slider(
                 this.root.find('.delay'),
                 'delayAfterChange',
-                delayAfterChangeSettings,
+                delayAfterChangeSettings
             ),
-            750,
+            750
         );
     }
 
@@ -398,14 +398,14 @@ export class Settings {
                 min: 1,
                 max: 80,
             }),
-            4,
+            4
         );
     }
 
     private addTextBoxes() {
         this.add(
             new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'),
-            'Consolas, "Liberation Mono", Courier, monospace',
+            'Consolas, "Liberation Mono", Courier, monospace'
         );
     }
 
@@ -422,12 +422,12 @@ export class Settings {
             $.data(
                 themeSelect,
                 'theme-' + currentTheme,
-                colourSchemeSelect.val() as ColourScheme,
+                colourSchemeSelect.val() as ColourScheme
             );
         });
 
         const enableAllSchemesCheckbox = this.root.find(
-            '.alwaysEnableAllSchemes',
+            '.alwaysEnableAllSchemes'
         );
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
@@ -438,7 +438,7 @@ export class Settings {
         for (const scheme of colour.schemes) {
             if (this.isSchemeUsable(scheme, newTheme)) {
                 colourSchemeSelect.append(
-                    $(`<option value="${scheme.name}">${scheme.desc}</option>`),
+                    $(`<option value="${scheme.name}">${scheme.desc}</option>`)
                 );
             }
         }
@@ -446,7 +446,7 @@ export class Settings {
 
     private isSchemeUsable(
         scheme: ColourSchemeInfo,
-        newTheme?: AppTheme,
+        newTheme?: AppTheme
     ): boolean {
         return (
             this.settings.alwaysEnableAllSchemes ||
@@ -475,7 +475,7 @@ export class Settings {
         this.fillThemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(
             themeSelect,
-            'theme-' + newTheme,
+            'theme-' + newTheme
         ) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones

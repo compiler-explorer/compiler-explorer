@@ -24,11 +24,11 @@
 
 import * as monaco from 'monaco-editor';
 
-import { Alert } from './alert';
-import { Settings } from './settings';
-import { SiteSettings } from './settings';
-import { FormattingRequest } from './api/formatting.interfaces';
-import { getFormattedCode } from './api/api';
+import {Alert} from './alert';
+import {Settings} from './settings';
+import {SiteSettings} from './settings';
+import {FormattingRequest} from './api/formatting.interfaces';
+import {getFormattedCode} from './api/api';
 
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {
@@ -38,7 +38,7 @@ const onFormatError = (cause: string, source: string) => {
         {
             group: 'formatting',
             alertClass: 'notification-error',
-        },
+        }
     );
     return source;
 };
@@ -67,12 +67,12 @@ const doFormatRequest = async (options: FormattingRequest) => {
 const getDocumentFormatter = (
     language: string,
     formatter: string,
-    isOneTrueStyle: boolean,
+    isOneTrueStyle: boolean
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
-        token: monaco.CancellationToken,
+        token: monaco.CancellationToken
     ): Promise<monaco.languages.TextEdit[]> {
         const settings = Settings.getStoredSettings();
         // If there is only one style, return __DefaultStyle.
