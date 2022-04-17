@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
+import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
-import { themes, Themes } from './themes';
-import { AppTheme, ColourSchemeInfo } from './colour';
+import {themes, Themes} from './themes';
+import {AppTheme, ColourSchemeInfo} from './colour';
 
 type ColourScheme =
     | 'rainbow'
@@ -110,7 +110,7 @@ class Select extends BaseSetting {
     constructor(
         elem: JQuery,
         name: string,
-        populate: { label: string; desc: string }[],
+        populate: {label: string; desc: string}[],
     ) {
         super(elem, name);
 
@@ -292,7 +292,7 @@ export class Settings {
         const addSelector = (
             selector: string,
             name: keyof SiteSettings,
-            populate: { label: string; desc: string }[],
+            populate: {label: string; desc: string}[],
             defaultValue: string,
         ) => {
             this.add(
@@ -302,7 +302,7 @@ export class Settings {
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
-            return { label: scheme.name, desc: scheme.desc };
+            return {label: scheme.name, desc: scheme.desc};
         });
         addSelector(
             '.colourScheme',
@@ -314,7 +314,7 @@ export class Settings {
         // keys(themes) is Themes[] but TS does not realize without help
         const themesData = (Object.keys(themes) as Themes[]).map(
             (theme: Themes) => {
-                return { label: themes[theme].id, desc: themes[theme].name };
+                return {label: themes[theme].id, desc: themes[theme].name};
             },
         );
         let defaultThemeId = themes.default.id;
@@ -329,7 +329,7 @@ export class Settings {
             this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
 
         const defaultLanguageData = Object.keys(langs).map(lang => {
-            return { label: langs[lang].id, desc: langs[lang].name };
+            return {label: langs[lang].id, desc: langs[lang].name};
         });
         addSelector(
             '.defaultLanguage',
@@ -355,15 +355,15 @@ export class Settings {
             'GNU',
         ];
         const formatsData = formats.map(format => {
-            return { label: format, desc: format };
+            return {label: format, desc: format};
         });
         addSelector('.formatBase', 'formatBase', formatsData, formats[0]);
 
         const enableCtrlSData = [
-            { label: 'true', desc: 'Save To Local File' },
-            { label: 'false', desc: 'Create Short Link' },
-            { label: '2', desc: 'Reformat code' },
-            { label: '3', desc: 'Do nothing' },
+            {label: 'true', desc: 'Save To Local File'},
+            {label: 'false', desc: 'Create Short Link'},
+            {label: '2', desc: 'Reformat code'},
+            {label: '3', desc: 'Do nothing'},
         ];
         addSelector('.enableCtrlS', 'enableCtrlS', enableCtrlSData, 'true');
     }

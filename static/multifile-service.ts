@@ -25,7 +25,7 @@
 import _ from 'underscore';
 import path from 'path';
 import JSZip from 'jszip';
-import { Hub } from './hub';
+import {Hub} from './hub';
 const options = require('./options').options;
 const languages = options.languages;
 
@@ -187,7 +187,7 @@ export class MultifileService {
             }
         });
 
-        zip.generateAsync({ type: 'blob' }).then(
+        zip.generateAsync({type: 'blob'}).then(
             blob => {
                 callback(blob);
             },

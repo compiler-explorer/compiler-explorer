@@ -24,11 +24,11 @@
 
 import * as monaco from 'monaco-editor';
 
-import { Alert } from './alert';
-import { Settings } from './settings';
-import { SiteSettings } from './settings';
-import { FormattingRequest } from './api/formatting.interfaces';
-import { getFormattedCode } from './api/api';
+import {Alert} from './alert';
+import {Settings} from './settings';
+import {SiteSettings} from './settings';
+import {FormattingRequest} from './api/formatting.interfaces';
+import {getFormattedCode} from './api/api';
 
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {

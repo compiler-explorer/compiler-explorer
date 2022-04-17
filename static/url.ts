@@ -50,7 +50,7 @@ export function convertOldState(state: any): any {
     content.push(
         Components.getCompilerWith(1, filters, sc.options, sc.compiler),
     );
-    return { version: 4, content: [{ type: 'row', content: content }] };
+    return {version: 4, content: [{type: 'row', content: content}]};
 }
 
 export function loadState(state: any): any {
@@ -108,10 +108,10 @@ export function deserialiseState(stateText: string): any {
 }
 
 export function serialiseState(stateText: any): string {
-    const ctx = GoldenLayout.minifyConfig({ content: stateText.content });
+    const ctx = GoldenLayout.minifyConfig({content: stateText.content});
     ctx.version = 4;
     const uncompressed = risonify(ctx);
-    const compressed = risonify({ z: lzstring.compressToBase64(uncompressed) });
+    const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
     const MinimalSavings = 0.2; // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;

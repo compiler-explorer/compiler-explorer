@@ -28,7 +28,7 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
-import { AnsiToHtmlOptions, ColorCodes } from './ansi-to-html.interfaces';
+import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',

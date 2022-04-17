@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
-import { Themes } from './themes';
+import {Themes} from './themes';
 
 export type AppTheme = Themes | 'all';
 
@@ -36,8 +36,8 @@ export interface ColourSchemeInfo {
 
 // If you want to use a scheme in every theme, set `theme: ['all']`
 export const schemes: ColourSchemeInfo[] = [
-    { name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default'] },
-    { name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default'] },
+    {name: 'rainbow', desc: 'Rainbow 1', count: 12, themes: ['default']},
+    {name: 'rainbow2', desc: 'Rainbow 2', count: 12, themes: ['default']},
     {
         name: 'earth',
         desc: 'Earth tones (colourblind safe)',

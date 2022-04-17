@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { editor } from 'monaco-editor';
-import { SiteSettings } from './settings';
+import {editor} from 'monaco-editor';
+import {SiteSettings} from './settings';
 
 export type Themes = 'default' | 'dark' | 'darkplus';
 
@@ -94,21 +94,21 @@ editor.defineTheme('ce-dark-plus', {
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
-        { token: 'keyword.if.cpp', foreground: 'c586c0' },
-        { token: 'keyword.else.cpp', foreground: 'c586c0' },
-        { token: 'keyword.while.cpp', foreground: 'c586c0' },
-        { token: 'keyword.for.cpp', foreground: 'c586c0' },
-        { token: 'keyword.return.cpp', foreground: 'c586c0' },
-        { token: 'keyword.break.cpp', foreground: 'c586c0' },
-        { token: 'keyword.continue.cpp', foreground: 'c586c0' },
-        { token: 'keyword.goto.cpp', foreground: 'c586c0' },
-        { token: 'keyword.directive.cpp', foreground: 'c586c0' },
-        { token: 'keyword.directive.include.cpp', foreground: 'c586c0' },
-        { token: 'keyword.directive.include.begin.cpp', foreground: 'ce9178' },
-        { token: 'keyword.directive.include.end.cpp', foreground: 'ce9178' },
-        { token: 'keyword.new.cpp', foreground: 'c586c0' },
-        { token: 'keyword.using.cpp', foreground: 'c586c0' },
-        { token: 'string.escape.cpp', foreground: 'd7ba7d' },
+        {token: 'keyword.if.cpp', foreground: 'c586c0'},
+        {token: 'keyword.else.cpp', foreground: 'c586c0'},
+        {token: 'keyword.while.cpp', foreground: 'c586c0'},
+        {token: 'keyword.for.cpp', foreground: 'c586c0'},
+        {token: 'keyword.return.cpp', foreground: 'c586c0'},
+        {token: 'keyword.break.cpp', foreground: 'c586c0'},
+        {token: 'keyword.continue.cpp', foreground: 'c586c0'},
+        {token: 'keyword.goto.cpp', foreground: 'c586c0'},
+        {token: 'keyword.directive.cpp', foreground: 'c586c0'},
+        {token: 'keyword.directive.include.cpp', foreground: 'c586c0'},
+        {token: 'keyword.directive.include.begin.cpp', foreground: 'ce9178'},
+        {token: 'keyword.directive.include.end.cpp', foreground: 'ce9178'},
+        {token: 'keyword.new.cpp', foreground: 'c586c0'},
+        {token: 'keyword.using.cpp', foreground: 'c586c0'},
+        {token: 'string.escape.cpp', foreground: 'd7ba7d'},
     ],
     colors: {},
 });

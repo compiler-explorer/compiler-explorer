@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import { ga } from './analytics';
+import {ga} from './analytics';
 
-import { Motd } from './motd.interfaces';
+import {Motd} from './motd.interfaces';
 
 function ensureShownMessage(message: string, motdNode: JQuery) {
     motdNode.find('.content').html(message);

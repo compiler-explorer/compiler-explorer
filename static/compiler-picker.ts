@@ -24,10 +24,10 @@
 
 import TomSelect from 'tom-select';
 
-import { ga } from './analytics';
+import {ga} from './analytics';
 import * as local from './local';
-import { EventHub } from './event-hub';
-import { Hub } from './hub';
+import {EventHub} from './event-hub';
+import {Hub} from './hub';
 
 type Favourites = {
     [compilerId: string]: boolean;

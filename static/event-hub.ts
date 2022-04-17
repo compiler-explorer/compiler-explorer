@@ -25,7 +25,7 @@
 import GoldenLayout from 'golden-layout';
 import Sentry from '@sentry/browser';
 
-import { Hub } from './hub';
+import {Hub} from './hub';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
@@ -79,7 +79,7 @@ export class EventHub {
         context?: C,
     ): void {
         this.layoutEventHub.on(event, callback, context);
-        this.subscriptions.push({ evt: event, fn: callback, ctx: context });
+        this.subscriptions.push({evt: event, fn: callback, ctx: context});
     }
 
     /** Remove all listeners from the layout event hub. */
@@ -125,6 +125,6 @@ export class EventHub {
                 lastDependentArguments = args;
             }
         };
-        return { dependencyProxy, dependentProxy };
+        return {dependencyProxy, dependentProxy};
     }
 }

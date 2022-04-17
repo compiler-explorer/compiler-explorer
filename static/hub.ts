@@ -22,35 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import GoldenLayout, { ContentItem } from 'golden-layout';
+import GoldenLayout, {ContentItem} from 'golden-layout';
 
-import { CompilerService } from './compiler-service';
-import { IdentifierSet } from './identifier-set';
-import { EventHub } from './event-hub';
+import {CompilerService} from './compiler-service';
+import {IdentifierSet} from './identifier-set';
+import {EventHub} from './event-hub';
 import * as Components from './components';
 
-import { Tree } from './panes/tree';
-import { Editor } from './panes/editor';
-import { Compiler } from './panes/compiler';
-import { Executor } from './panes/executor';
-import { Output } from './panes/output';
-import { Tool } from './panes/tool';
-import { Diff, getComponent as getDiffComponent } from './panes/diff';
-import { ToolInputView } from './panes/tool-input-view';
-import { Opt as OptView } from './panes/opt-view';
-import { Flags as FlagsView } from './panes/flags-view';
-import { PP as PreProcessorView } from './panes/pp-view';
-import { Ast as AstView } from './panes/ast-view';
-import { Ir as IrView } from './panes/ir-view';
-import { DeviceAsm as DeviceView } from './panes/device-view';
-import { GnatDebug as GnatDebugView } from './panes/gnatdebug-view';
-import { RustMir as RustMirView } from './panes/rustmir-view';
-import { RustHir as RustHirView } from './panes/rusthir-view';
-import { GccDump as GCCDumpView } from './panes/gccdump-view';
-import { Cfg as CfgView } from './panes/cfg-view';
-import { Conformance as ConformanceView } from './panes/conformance-view';
-import { GnatDebugTree as GnatDebugTreeView } from './panes/gnatdebugtree-view';
-import { RustMacroExp as RustMacroExpView } from './panes/rustmacroexp-view';
+import {Tree} from './panes/tree';
+import {Editor} from './panes/editor';
+import {Compiler} from './panes/compiler';
+import {Executor} from './panes/executor';
+import {Output} from './panes/output';
+import {Tool} from './panes/tool';
+import {Diff, getComponent as getDiffComponent} from './panes/diff';
+import {ToolInputView} from './panes/tool-input-view';
+import {Opt as OptView} from './panes/opt-view';
+import {Flags as FlagsView} from './panes/flags-view';
+import {PP as PreProcessorView} from './panes/pp-view';
+import {Ast as AstView} from './panes/ast-view';
+import {Ir as IrView} from './panes/ir-view';
+import {DeviceAsm as DeviceView} from './panes/device-view';
+import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
+import {RustMir as RustMirView} from './panes/rustmir-view';
+import {RustHir as RustHirView} from './panes/rusthir-view';
+import {GccDump as GCCDumpView} from './panes/gccdump-view';
+import {Cfg as CfgView} from './panes/cfg-view';
+import {Conformance as ConformanceView} from './panes/conformance-view';
+import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view';
+import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();

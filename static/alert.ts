@@ -29,7 +29,7 @@ import {
     AlertEnterTextOptions,
     AlertNotifyOptions,
 } from './alert.interfaces';
-import { toggleEventListener } from './utils';
+import {toggleEventListener} from './utils';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
