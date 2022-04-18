@@ -22,8 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as browser from './browser';
-import * as builtin from './builtin';
+import { browser } from './browser';
+import { builtin } from './builtin';
+
+export interface SourceEntry {
+    /** The file name of the source file */
+    file: string;
+    /** The programming language the source file is written in */
+    lang: string;
+    /** The "nice" name of the source file, replacing _ with spaces */
+    name: string;
+    /** The path to the source file */
+    path: string;
+}
+
+export interface Source {
+    name: string;
+    urlpart: string;
+    list(): Promise<Omit<SourceEntry, 'path'>[]>;
+    load(language: string, filename: string): Promise<{file: string}>;
+    /** Appears to be unused? */
+    save: unknown;
+}
 
 export const sources = [
     browser,
