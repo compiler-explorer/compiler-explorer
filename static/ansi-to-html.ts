@@ -77,12 +77,7 @@ function getDefaultColors(): ColorCodes {
     return colors;
 }
 
-function setStyleColor(
-    red: number,
-    green: number,
-    blue: number,
-    colors: ColorCodes
-): void {
+function setStyleColor(red: number, green: number, blue: number, colors: ColorCodes): void {
     const c = 16 + red * 36 + green * 6 + blue;
     const r = red > 0 ? red * 40 + 55 : 0;
     const g = green > 0 ? green * 40 + 55 : 0;
@@ -123,12 +118,7 @@ function toColorHexString(ref: number[]): string {
     return '#' + results.join('');
 }
 
-function generateOutput(
-    stack: string[],
-    token: string,
-    data: string | number,
-    options: AnsiToHtmlOptions
-): string {
+function generateOutput(stack: string[], token: string, data: string | number, options: AnsiToHtmlOptions): string {
     if (token === 'text') {
         // Note: Param 'data' must be a string at this point
         return pushText(data as string, options);
@@ -141,11 +131,7 @@ function generateOutput(
     return '';
 }
 
-function handleXterm256(
-    stack: string[],
-    data: string,
-    options: AnsiToHtmlOptions
-): string {
+function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
     data = data.substring(2).slice(0, -1);
     const operation = +data.substr(0, 2);
     const color = +data.substr(5);
@@ -158,11 +144,7 @@ function handleXterm256(
     }
 }
 
-function handleDisplay(
-    stack: string[],
-    _code: string | number,
-    options: AnsiToHtmlOptions
-): string {
+function handleDisplay(stack: string[], _code: string | number, options: AnsiToHtmlOptions): string {
     const code: number = parseInt(_code as string, 10);
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
@@ -262,17 +244,9 @@ function categoryForCode(_code: string | number): string {
         return 'hide';
     } else if (code === 9) {
         return 'strike';
-    } else if (
-        (29 < code && code < 38) ||
-        code === 39 ||
-        (89 < code && code < 98)
-    ) {
+    } else if ((29 < code && code < 38) || code === 39 || (89 < code && code < 98)) {
         return 'foreground-color';
-    } else if (
-        (39 < code && code < 48) ||
-        code === 49 ||
-        (99 < code && code < 108)
-    ) {
+    } else if ((39 < code && code < 48) || code === 49 || (99 < code && code < 108)) {
         return 'background-color';
     }
     return '';
@@ -280,10 +254,7 @@ function categoryForCode(_code: string | number): string {
 
 function pushText(text: string, options: AnsiToHtmlOptions): string {
     if (options.escapeXML) {
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
+        return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     return text;
@@ -331,11 +302,7 @@ interface Token {
     sub: (m: string, ...args: any[]) => string;
 }
 
-function tokenize(
-    text: string,
-    options: AnsiToHtmlOptions,
-    callback: TokenizeCallback
-) {
+function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCallback) {
     let ansiMatch = false;
     const ansiHandler = 3;
 
@@ -501,12 +468,7 @@ export class Filter {
         const buf: string[] = [];
 
         this.stickyStack.forEach((element: StickyStackElement) => {
-            const output: string = generateOutput(
-                stack,
-                element.token,
-                element.data,
-                options
-            );
+            const output: string = generateOutput(stack, element.token, element.data, options);
 
             if (output) {
                 buf.push(output);
@@ -521,11 +483,7 @@ export class Filter {
             }
 
             if (options.stream) {
-                this.stickyStack = updateStickyStack(
-                    this.stickyStack,
-                    token,
-                    data
-                );
+                this.stickyStack = updateStickyStack(this.stickyStack, token, data);
             }
         });
 

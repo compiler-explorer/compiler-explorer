@@ -38,30 +38,18 @@ function ensureShownMessage(message: string, motdNode: JQuery) {
         .prop('title', 'Hide message');
 }
 
-function handleMotd(
-    motd: Motd,
-    motdNode: JQuery,
-    subLang: string,
-    adsEnabled: boolean,
-    onHide: () => void
-) {
+function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: boolean, onHide: () => void) {
     if (motd.update) {
         ensureShownMessage(motd.update, motdNode);
     } else if (motd.motd) {
         ensureShownMessage(motd.motd, motdNode);
     } else if (adsEnabled) {
         const applicableAds = motd.ads?.filter(ad => {
-            return (
-                !subLang ||
-                !ad.filter ||
-                ad.filter.length === 0 ||
-                ad.filter.indexOf(subLang) >= 0
-            );
+            return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
         });
 
         if (applicableAds != null && applicableAds.length > 0) {
-            const randomAd =
-                applicableAds[Math.floor(Math.random() * applicableAds.length)];
+            const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];
             motdNode.find('.content').html(randomAd.html);
             motdNode.find('.close').on('click', () => {
                 ga.proxy('send', {

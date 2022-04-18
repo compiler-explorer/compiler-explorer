@@ -29,10 +29,7 @@ import {Hub} from './hub';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
-export interface DependencyProxies<
-    T1 extends unknown[],
-    T2 extends unknown[] = T1
-> {
+export interface DependencyProxies<T1 extends unknown[], T2 extends unknown[] = T1> {
     dependencyProxy: EventHubCallback<T1>;
     dependentProxy: EventHubCallback<T2>;
 }
@@ -73,11 +70,7 @@ export class EventHub {
     }
 
     /** Attach a listener to the layout event hub. */
-    public on<T extends unknown[], C = any>(
-        event: string,
-        callback: EventHubCallback<T>,
-        context?: C
-    ): void {
+    public on<T extends unknown[], C = any>(event: string, callback: EventHubCallback<T>, context?: C): void {
         this.layoutEventHub.on(event, callback, context);
         this.subscriptions.push({evt: event, fn: callback, ctx: context});
     }
@@ -86,25 +79,16 @@ export class EventHub {
     public unsubscribe(): void {
         for (const subscription of this.subscriptions) {
             try {
-                this.layoutEventHub.off(
-                    subscription.evt,
-                    subscription.fn,
-                    subscription.ctx
-                );
+                this.layoutEventHub.off(subscription.evt, subscription.fn, subscription.ctx);
             } catch (e) {
-                Sentry.captureMessage(
-                    `Can not unsubscribe from ${subscription.evt.toString()}`
-                );
+                Sentry.captureMessage(`Can not unsubscribe from ${subscription.evt.toString()}`);
                 Sentry.captureException(e);
             }
         }
         this.subscriptions = [];
     }
 
-    public mediateDependentCalls<
-        T1 extends unknown[],
-        T2 extends unknown[] = T1
-    >(
+    public mediateDependentCalls<T1 extends unknown[], T2 extends unknown[] = T1>(
         dependent: EventHubCallback<any>,
         dependency: EventHubCallback<any>
     ): DependencyProxies<T1, T2> {

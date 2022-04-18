@@ -42,10 +42,7 @@ $(document).on('ready', () => {
         button.attr('type', 'button');
         button.attr('title', option.attr('title') ?? '');
         button.data('bind', option.attr('name') ?? '');
-        button.attr(
-            'aria-pressed',
-            option.attr('checked') === 'checked' ? 'true' : 'false'
-        );
+        button.attr('aria-pressed', option.attr('checked') === 'checked' ? 'true' : 'false');
         button.append(span);
 
         container.prepend(button);
@@ -54,12 +51,8 @@ $(document).on('ready', () => {
         parent.addClass('dropdown-menu');
     });
 
-    $('.noscriptdropdown')
-        .removeClass('noscriptdropdown')
-        .addClass('dropdown-menu');
-    $('.nodropdown-toggle')
-        .removeClass('nodropdown-toggle')
-        .addClass('dropdown-toggle');
+    $('.noscriptdropdown').removeClass('noscriptdropdown').addClass('dropdown-menu');
+    $('.nodropdown-toggle').removeClass('nodropdown-toggle').addClass('dropdown-toggle');
 
     new Toggles($('.output'), {});
     new Toggles($('.filters'), {});

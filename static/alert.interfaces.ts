@@ -42,12 +42,7 @@ export interface AlertAskOptions {
 export type AlertEnterTextOptions = {
     /** The enter-text action returns a value which is captured here */
     yes?: (answer?: string | number | string[]) => void;
-} & Partial<
-    Pick<
-        AlertAskOptions,
-        'no' | 'yesHtml' | 'yesClass' | 'noHtml' | 'noClass' | 'onClose'
-    >
->;
+} & Partial<Pick<AlertAskOptions, 'no' | 'yesHtml' | 'yesClass' | 'noHtml' | 'noClass' | 'onClose'>>;
 
 export interface AlertNotifyOptions {
     /**

@@ -33,13 +33,10 @@ import {getFormattedCode} from './api/api';
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {
     const alertSystem = new Alert();
-    alertSystem.notify(
-        `We encountered an error formatting your code: ${cause}`,
-        {
-            group: 'formatting',
-            alertClass: 'notification-error',
-        }
-    );
+    alertSystem.notify(`We encountered an error formatting your code: ${cause}`, {
+        group: 'formatting',
+        alertClass: 'notification-error',
+    });
     return source;
 };
 

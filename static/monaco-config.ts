@@ -40,15 +40,12 @@ const DEFAULT_MONACO_CONFIG = {
     emptySelectionClipboard: true,
 };
 
-type EditorKinds =
-    | monaco.editor.IStandaloneDiffEditor
-    | monaco.editor.IStandaloneCodeEditor;
+type EditorKinds = monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
 
 /** Pick consturction options based on editor kind */
-type EditorConstructionType<E extends EditorKinds> =
-    E extends monaco.editor.IStandaloneDiffEditor
-        ? monaco.editor.IDiffEditorConstructionOptions
-        : monaco.editor.IStandaloneEditorConstructionOptions;
+type EditorConstructionType<E extends EditorKinds> = E extends monaco.editor.IStandaloneDiffEditor
+    ? monaco.editor.IDiffEditorConstructionOptions
+    : monaco.editor.IStandaloneEditorConstructionOptions;
 
 /**
  * Extend the default monaco editor construction options.
@@ -63,13 +60,7 @@ type EditorConstructionType<E extends EditorKinds> =
 export function extendConfig<
     E extends EditorKinds = monaco.editor.IStandaloneCodeEditor,
     T = EditorConstructionType<E>
->(
-    overrides: T,
-    settings?: Pick<
-        SiteSettings,
-        'editorsFFont' | 'autoIndent' | 'useVim' | 'editorsFLigatures'
-    >
-): T {
+>(overrides: T, settings?: Pick<SiteSettings, 'editorsFFont' | 'autoIndent' | 'useVim' | 'editorsFLigatures'>): T {
     if (settings !== undefined) {
         return _.extend(
             {},

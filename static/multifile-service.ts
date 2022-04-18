@@ -74,14 +74,7 @@ export class MultifileService {
         this.files = state.files;
         this.newFileId = state.newFileId || 1;
 
-        this.validExtraFilenameExtensions = [
-            '.txt',
-            '.md',
-            '.rst',
-            '.sh',
-            '.cmake',
-            '.in',
-        ];
+        this.validExtraFilenameExtensions = ['.txt', '.md', '.rst', '.sh', '.cmake', '.in'];
         this.defaultLangIdUnknownExt = 'c++';
         this.cmakeLangId = 'cmake';
         this.cmakeMainSourceFilename = 'CMakeLists.txt';
@@ -285,9 +278,7 @@ export class MultifileService {
     }
 
     private filterOutNonsense() {
-        this.files = _.filter(this.files, (file: MultifileFile) =>
-            MultifileService.isValidFile(file)
-        );
+        this.files = _.filter(this.files, (file: MultifileFile) => MultifileService.isValidFile(file));
     }
 
     public getFiles(): Array<FiledataPair> {
@@ -320,12 +311,7 @@ export class MultifileService {
                     return false;
                 }
             } else {
-                if (
-                    file.filename ===
-                    MultifileService.getDefaultMainSourceFilename(
-                        this.compilerLanguageId
-                    )
-                ) {
+                if (file.filename === MultifileService.getDefaultMainSourceFilename(this.compilerLanguageId)) {
                     this.setAsMainSource(file.fileId);
                 } else {
                     return false;
@@ -395,9 +381,7 @@ export class MultifileService {
     public removeFileByFileId(fileId: number): MultifileFile | undefined {
         const file = this.getFileByFileId(fileId);
         if (file) {
-            this.files = this.files.filter(
-                (obj: MultifileFile) => obj.fileId !== fileId
-            );
+            this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== fileId);
         }
         return file;
     }
@@ -479,8 +463,7 @@ export class MultifileService {
                 if (langId === this.cmakeLangId) {
                     suggestedFilename = this.getDefaultMainCMakeFilename();
                 } else {
-                    suggestedFilename =
-                        MultifileService.getDefaultMainSourceFilename(langId);
+                    suggestedFilename = MultifileService.getDefaultMainSourceFilename(langId);
                 }
             }
         }
@@ -506,45 +489,34 @@ export class MultifileService {
         const suggestedFilename = this.getSuggestedFilename(file, editor);
 
         return new Promise(resolve => {
-            this.alertSystem.enterSomething(
-                'Rename file',
-                'Please enter new filename',
-                suggestedFilename,
-                {
-                    yes: (value: string) => {
-                        if (value !== '' && value[0] !== '/') {
-                            if (!this.fileExists(value, file)) {
-                                file.filename = value;
+            this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
+                yes: (value: string) => {
+                    if (value !== '' && value[0] !== '/') {
+                        if (!this.fileExists(value, file)) {
+                            file.filename = value;
 
-                                if (editor) {
-                                    editor.setFilename(file.filename);
-                                }
-
-                                resolve(true);
-                            } else {
-                                this.alertSystem.alert(
-                                    'Rename file',
-                                    'Filename already exists'
-                                );
-                                resolve(false);
+                            if (editor) {
+                                editor.setFilename(file.filename);
                             }
+
+                            resolve(true);
                         } else {
-                            this.alertSystem.alert(
-                                'Rename file',
-                                'Filename cannot be empty or start with a "/"'
-                            );
+                            this.alertSystem.alert('Rename file', 'Filename already exists');
                             resolve(false);
                         }
-                    },
-                    no: () => {
+                    } else {
+                        this.alertSystem.alert('Rename file', 'Filename cannot be empty or start with a "/"');
                         resolve(false);
-                    },
-                    yesClass: 'btn btn-primary',
-                    yesHtml: 'Rename',
-                    noClass: 'btn-outline-info',
-                    noHtml: 'Cancel',
-                }
-            );
+                    }
+                },
+                no: () => {
+                    resolve(false);
+                },
+                yesClass: 'btn btn-primary',
+                yesHtml: 'Rename',
+                noClass: 'btn-outline-info',
+                noHtml: 'Cancel',
+            });
         });
     }
 

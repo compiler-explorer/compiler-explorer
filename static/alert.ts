@@ -24,11 +24,7 @@
 
 import $ from 'jquery';
 
-import {
-    AlertAskOptions,
-    AlertEnterTextOptions,
-    AlertNotifyOptions,
-} from './alert.interfaces';
+import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
 import {toggleEventListener} from './utils';
 import Sentry from '@sentry/browser';
 
@@ -71,21 +67,13 @@ export class Alert {
         this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body').css('min-height', 'inherit').html(question);
-        if (askOptions.yesHtml)
-            modal.find('.modal-footer .yes').html(askOptions.yesHtml);
+        if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
         if (askOptions.yesClass) {
-            modal
-                .find('.modal-footer .yes')
-                .removeClass('btn-link')
-                .addClass(askOptions.yesClass);
+            modal.find('.modal-footer .yes').removeClass('btn-link').addClass(askOptions.yesClass);
         }
-        if (askOptions.noHtml)
-            modal.find('.modal-footer .no').html(askOptions.noHtml);
+        if (askOptions.noHtml) modal.find('.modal-footer .no').html(askOptions.noHtml);
         if (askOptions.noClass) {
-            modal
-                .find('.modal-footer .no')
-                .removeClass('btn-link')
-                .addClass(askOptions.noClass);
+            modal.find('.modal-footer .no').removeClass('btn-link').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
             modal.off('hidden.bs.modal');
@@ -146,12 +134,7 @@ export class Alert {
     /**
      * Asks the user a two choice question, where the title, content and buttons are customizable
      */
-    enterSomething(
-        title: string,
-        question: string,
-        defaultValue: string,
-        askOptions: AlertEnterTextOptions
-    ) {
+    enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
         this.yesHandler = askOptions.yes ?? (() => undefined);
         this.noHandler = askOptions.no ?? (() => undefined);

@@ -39,11 +39,7 @@ class GAProxy {
     private _proxy: (...args) => void = () => {};
 
     initialise() {
-        if (
-            !this.isEnabled &&
-            options.statusTrackingEnabled &&
-            options.googleAnalyticsEnabled
-        ) {
+        if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
             // Check if this is a re-enable, as the script is already there in this case
             if (!this.hasBeenEnabled) {
                 (function (i, s, o, g, r, a, m) {
@@ -66,13 +62,7 @@ class GAProxy {
                     a.src = g;
                     // @ts-ignore
                     m.parentNode.insertBefore(a, m);
-                })(
-                    window,
-                    document,
-                    'script',
-                    '//www.google-analytics.com/analytics.js',
-                    'ga'
-                );
+                })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
                 window.ga('set', 'anonymizeIp', true);
                 window.ga('create', options.googleAnalyticsAccount, {
                     cookieDomain: 'auto',

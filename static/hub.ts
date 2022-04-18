@@ -71,102 +71,48 @@ export class Hub {
     public subdomainLangId: string | undefined;
     public defaultLangId: string;
 
-    public constructor(
-        public readonly layout: GoldenLayout,
-        subLangId: string,
-        defaultLangId: string
-    ) {
+    public constructor(public readonly layout: GoldenLayout, subLangId: string, defaultLangId: string) {
         this.lastOpenedLangId = null;
         this.subdomainLangId = subLangId || undefined;
         this.defaultLangId = defaultLangId;
         this.compilerService = new CompilerService(this.layout.eventHub);
 
-        layout.registerComponent(Components.getEditor().componentName, (c, s) =>
-            this.codeEditorFactory(c, s)
+        layout.registerComponent(Components.getEditor().componentName, (c, s) => this.codeEditorFactory(c, s));
+        layout.registerComponent(Components.getCompiler().componentName, (c, s) => this.compilerFactory(c, s));
+        layout.registerComponent(Components.getTree().componentName, (c, s) => this.treeFactory(c, s));
+        layout.registerComponent(Components.getExecutor().componentName, (c, s) => this.executorFactory(c, s));
+        layout.registerComponent(Components.getOutput().componentName, (c, s) => this.outputFactory(c, s));
+        layout.registerComponent(Components.getToolViewWith().componentName, (c, s) => this.toolFactory(c, s));
+        // eslint-disable-next-line max-len
+        layout.registerComponent(Components.getToolInputView().componentName, (c, s) =>
+            this.toolInputViewFactory(c, s)
         );
-        layout.registerComponent(
-            Components.getCompiler().componentName,
-            (c, s) => this.compilerFactory(c, s)
-        );
-        layout.registerComponent(Components.getTree().componentName, (c, s) =>
-            this.treeFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getExecutor().componentName,
-            (c, s) => this.executorFactory(c, s)
-        );
-        layout.registerComponent(Components.getOutput().componentName, (c, s) =>
-            this.outputFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getToolViewWith().componentName,
-            (c, s) => this.toolFactory(c, s)
+        layout.registerComponent(getDiffComponent().componentName, (c, s) => this.diffFactory(c, s));
+        layout.registerComponent(Components.getOptView().componentName, (c, s) => this.optViewFactory(c, s));
+        layout.registerComponent(Components.getFlagsView().componentName, (c, s) => this.flagsViewFactory(c, s));
+        layout.registerComponent(Components.getPpView().componentName, (c, s) => this.ppViewFactory(c, s));
+        layout.registerComponent(Components.getAstView().componentName, (c, s) => this.astViewFactory(c, s));
+        layout.registerComponent(Components.getIrView().componentName, (c, s) => this.irViewFactory(c, s));
+        layout.registerComponent(Components.getDeviceView().componentName, (c, s) => this.deviceViewFactory(c, s));
+        layout.registerComponent(Components.getRustMirView().componentName, (c, s) => this.rustMirViewFactory(c, s));
+        // eslint-disable-next-line max-len
+        layout.registerComponent(Components.getGnatDebugTreeView().componentName, (c, s) =>
+            this.gnatDebugTreeViewFactory(c, s)
         );
         // eslint-disable-next-line max-len
-        layout.registerComponent(
-            Components.getToolInputView().componentName,
-            (c, s) => this.toolInputViewFactory(c, s)
-        );
-        layout.registerComponent(getDiffComponent().componentName, (c, s) =>
-            this.diffFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getOptView().componentName,
-            (c, s) => this.optViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getFlagsView().componentName,
-            (c, s) => this.flagsViewFactory(c, s)
-        );
-        layout.registerComponent(Components.getPpView().componentName, (c, s) =>
-            this.ppViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getAstView().componentName,
-            (c, s) => this.astViewFactory(c, s)
-        );
-        layout.registerComponent(Components.getIrView().componentName, (c, s) =>
-            this.irViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getDeviceView().componentName,
-            (c, s) => this.deviceViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getRustMirView().componentName,
-            (c, s) => this.rustMirViewFactory(c, s)
+        layout.registerComponent(Components.getGnatDebugView().componentName, (c, s) =>
+            this.gnatDebugViewFactory(c, s)
         );
         // eslint-disable-next-line max-len
-        layout.registerComponent(
-            Components.getGnatDebugTreeView().componentName,
-            (c, s) => this.gnatDebugTreeViewFactory(c, s)
+        layout.registerComponent(Components.getRustMacroExpView().componentName, (c, s) =>
+            this.rustMacroExpViewFactory(c, s)
         );
+        layout.registerComponent(Components.getRustHirView().componentName, (c, s) => this.rustHirViewFactory(c, s));
+        layout.registerComponent(Components.getGccDumpView().componentName, (c, s) => this.gccDumpViewFactory(c, s));
+        layout.registerComponent(Components.getCfgView().componentName, (c, s) => this.cfgViewFactory(c, s));
         // eslint-disable-next-line max-len
-        layout.registerComponent(
-            Components.getGnatDebugView().componentName,
-            (c, s) => this.gnatDebugViewFactory(c, s)
-        );
-        // eslint-disable-next-line max-len
-        layout.registerComponent(
-            Components.getRustMacroExpView().componentName,
-            (c, s) => this.rustMacroExpViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getRustHirView().componentName,
-            (c, s) => this.rustHirViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getGccDumpView().componentName,
-            (c, s) => this.gccDumpViewFactory(c, s)
-        );
-        layout.registerComponent(
-            Components.getCfgView().componentName,
-            (c, s) => this.cfgViewFactory(c, s)
-        );
-        // eslint-disable-next-line max-len
-        layout.registerComponent(
-            Components.getConformanceView().componentName,
-            (c, s) => this.conformanceViewFactory(c, s)
+        layout.registerComponent(Components.getConformanceView().componentName, (c, s) =>
+            this.conformanceViewFactory(c, s)
         );
 
         layout.eventHub.on(
@@ -297,9 +243,7 @@ export class Hub {
     }
 
     public getTreesWithEditorId(editorId: number) {
-        return this.trees.filter(tree =>
-            tree.multifileService.isEditorPartOfProject(editorId)
-        );
+        return this.trees.filter(tree => tree.multifileService.isEditorPartOfProject(editorId));
     }
 
     public getTrees(): Tree[] {
@@ -316,42 +260,27 @@ export class Hub {
 
     // Layout getters
 
-    public findParentRowOrColumn(
-        elem: GoldenLayout.ContentItem
-    ): GoldenLayout.ContentItem {
+    public findParentRowOrColumn(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
         let currentElem: GoldenLayout.ContentItem | null = elem;
         while (currentElem) {
             if (currentElem.isRow || currentElem.isColumn) return currentElem;
             currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        Sentry.captureMessage(
-            'findParentRowOrColumn: Unable to find parent row or column'
-        );
+        Sentry.captureMessage('findParentRowOrColumn: Unable to find parent row or column');
         return null as any;
     }
 
-    public findParentRowOrColumnOrStack(
-        elem: GoldenLayout.ContentItem
-    ): GoldenLayout.ContentItem {
+    public findParentRowOrColumnOrStack(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
         let currentElem: GoldenLayout.ContentItem | null = elem;
         while (currentElem) {
-            if (
-                currentElem.isRow ||
-                currentElem.isColumn ||
-                currentElem.isStack
-            )
-                return currentElem;
+            if (currentElem.isRow || currentElem.isColumn || currentElem.isStack) return currentElem;
             currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        Sentry.captureMessage(
-            '#findParentRowOrColumnOrStack: Unable to find parent row, column, or stack'
-        );
+        Sentry.captureMessage('#findParentRowOrColumnOrStack: Unable to find parent row, column, or stack');
         return null as any;
     }
 
-    public findEditorInChildren(
-        elem: GoldenLayout.ContentItem
-    ): GoldenLayout.ContentItem | boolean {
+    public findEditorInChildren(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | boolean {
         const count = elem.contentItems.length;
         let index = 0;
         while (index < count) {
@@ -388,9 +317,7 @@ export class Hub {
     }
 
     public addAtRoot(elem: GoldenLayout.ContentItem): void {
-        const rootFirstItem = this.layout.root.contentItems[0] as
-            | typeof this.layout.root.contentItems[0]
-            | undefined;
+        const rootFirstItem = this.layout.root.contentItems[0] as typeof this.layout.root.contentItems[0] | undefined;
         if (rootFirstItem) {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
@@ -416,18 +343,13 @@ export class Hub {
 
     public activateTabForContainer(container?: GoldenLayout.Container) {
         if (container && (container.tab as typeof container.tab | null)) {
-            container.tab.header.parent.setActiveContentItem(
-                container.tab.contentItem
-            );
+            container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
         }
     }
 
     // Component Factories
 
-    private codeEditorFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): void {
+    private codeEditorFactory(container: GoldenLayout.Container, state: any): void {
         // Ensure editors are closable: some older versions had 'isClosable' false.
         // NB there doesn't seem to be a better way to do this than reach into the config and rely on the fact nothing
         // has used it yet.
@@ -442,143 +364,83 @@ export class Hub {
         return tree;
     }
 
-    public compilerFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof Compiler */ {
+    public compilerFactory(container: GoldenLayout.Container, state: any): any /* typeof Compiler */ {
         return new Compiler(this, container, state);
     }
 
-    public executorFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof Executor */ {
+    public executorFactory(container: GoldenLayout.Container, state: any): any /* typeof Executor */ {
         return new Executor(this, container, state);
     }
 
-    public outputFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof Output */ {
+    public outputFactory(container: GoldenLayout.Container, state: any): any /* typeof Output */ {
         return new Output(this, container, state);
     }
 
-    public toolFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof Tool */ {
+    public toolFactory(container: GoldenLayout.Container, state: any): any /* typeof Tool */ {
         return new Tool(this, container, state);
     }
 
-    public diffFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof Diff */ {
+    public diffFactory(container: GoldenLayout.Container, state: any): any /* typeof Diff */ {
         return new Diff(this, container, state);
     }
 
-    public toolInputViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof ToolInputView */ {
+    public toolInputViewFactory(container: GoldenLayout.Container, state: any): any /* typeof ToolInputView */ {
         return new ToolInputView(this, container, state);
     }
 
-    public optViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): OptView {
+    public optViewFactory(container: GoldenLayout.Container, state: any): OptView {
         return new OptView(this, container, state);
     }
 
-    public flagsViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof FlagsView */ {
+    public flagsViewFactory(container: GoldenLayout.Container, state: any): any /* typeof FlagsView */ {
         return new FlagsView(this, container, state);
     }
 
-    public ppViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): PreProcessorView {
+    public ppViewFactory(container: GoldenLayout.Container, state: any): PreProcessorView {
         return new PreProcessorView(this, container, state);
     }
 
-    public astViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): AstView {
+    public astViewFactory(container: GoldenLayout.Container, state: any): AstView {
         return new AstView(this, container, state);
     }
 
-    public irViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): IrView {
+    public irViewFactory(container: GoldenLayout.Container, state: any): IrView {
         return new IrView(this, container, state);
     }
 
-    public deviceViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof DeviceView */ {
+    public deviceViewFactory(container: GoldenLayout.Container, state: any): any /* typeof DeviceView */ {
         return new DeviceView(this, container, state);
     }
 
-    public gnatDebugTreeViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): GnatDebugTreeView {
+    public gnatDebugTreeViewFactory(container: GoldenLayout.Container, state: any): GnatDebugTreeView {
         return new GnatDebugTreeView(this, container, state);
     }
 
-    public gnatDebugViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): GnatDebugView {
+    public gnatDebugViewFactory(container: GoldenLayout.Container, state: any): GnatDebugView {
         return new GnatDebugView(this, container, state);
     }
 
-    public rustMirViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): RustMirView {
+    public rustMirViewFactory(container: GoldenLayout.Container, state: any): RustMirView {
         return new RustMirView(this, container, state);
     }
 
-    public rustMacroExpViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): RustMacroExpView {
+    public rustMacroExpViewFactory(container: GoldenLayout.Container, state: any): RustMacroExpView {
         return new RustMacroExpView(this, container, state);
     }
 
-    public rustHirViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): RustHirView {
+    public rustHirViewFactory(container: GoldenLayout.Container, state: any): RustHirView {
         return new RustHirView(this, container, state);
     }
 
-    public gccDumpViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof GccDumpView */ {
+    public gccDumpViewFactory(container: GoldenLayout.Container, state: any): any /* typeof GccDumpView */ {
         return new GCCDumpView(this, container, state);
     }
 
-    public cfgViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof CfgView */ {
+    public cfgViewFactory(container: GoldenLayout.Container, state: any): any /* typeof CfgView */ {
         return new CfgView(this, container, state);
     }
 
-    public conformanceViewFactory(
-        container: GoldenLayout.Container,
-        state: any
-    ): any /* typeof ConformanceView */ {
+    public conformanceViewFactory(container: GoldenLayout.Container, state: any): any /* typeof ConformanceView */ {
         return new ConformanceView(this, container, state);
     }
 }

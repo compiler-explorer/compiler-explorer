@@ -64,11 +64,7 @@ export class CompilerPicker {
         this.domNode = compilerPicker;
         this.compilerService = hub.compilerService;
         this.onCompilerChange = onCompilerChange;
-        this.eventHub.on(
-            'compilerFavoriteChange',
-            this.onCompilerFavoriteChange,
-            this
-        );
+        this.eventHub.on('compilerFavoriteChange', this.onCompilerFavoriteChange, this);
         this.tomSelect = null;
         if (compilerIsVisible) {
             this.compilerIsVisible = compilerIsVisible;
@@ -125,13 +121,8 @@ export class CompilerPicker {
             duplicates: true,
             render: {
                 option: (data, escape) => {
-                    const isFavoriteGroup =
-                        data.$groups.indexOf(
-                            CompilerPicker.favoriteGroupName
-                        ) !== -1;
-                    const extraClasses = isFavoriteGroup
-                        ? 'fas fa-star fav'
-                        : 'far fa-star';
+                    const isFavoriteGroup = data.$groups.indexOf(CompilerPicker.favoriteGroupName) !== -1;
+                    const extraClasses = isFavoriteGroup ? 'fas fa-star fav' : 'far fa-star';
                     return (
                         '<div class="d-flex"><div>' +
                         escape(data.name) +
@@ -156,19 +147,14 @@ export class CompilerPicker {
                 const clickedGroup = optionElement.parentElement.dataset.group;
                 const value = optionElement.dataset.value;
                 const data = this.tomSelect.options[value];
-                const isAddingNewFavorite =
-                    data.$groups.indexOf(CompilerPicker.favoriteGroupName) ===
-                    -1;
+                const isAddingNewFavorite = data.$groups.indexOf(CompilerPicker.favoriteGroupName) === -1;
                 const elemTop = optionElement.offsetTop;
 
                 if (isAddingNewFavorite) {
                     data.$groups.push(CompilerPicker.favoriteGroupName);
                     this.addToFavorites(data.id);
                 } else {
-                    data.$groups.splice(
-                        data.group.indexOf(CompilerPicker.favoriteGroupName),
-                        1
-                    );
+                    data.$groups.splice(data.group.indexOf(CompilerPicker.favoriteGroupName), 1);
                     this.removeFromFavorites(data.id);
                 }
 
@@ -180,14 +166,10 @@ export class CompilerPicker {
                     // or removed a bunch of controls way up in the list. Find the new element top and adjust the scroll
                     // so the element that was just clicked is back under the mouse.
                     optionElement = this.tomSelect.getOption(value);
-                    const previousSmooth =
-                        this.tomSelect.dropdown_content.style.scrollBehavior;
-                    this.tomSelect.dropdown_content.style.scrollBehavior =
-                        'auto';
-                    this.tomSelect.dropdown_content.scrollTop +=
-                        optionElement.offsetTop - elemTop;
-                    this.tomSelect.dropdown_content.style.scrollBehavior =
-                        previousSmooth;
+                    const previousSmooth = this.tomSelect.dropdown_content.style.scrollBehavior;
+                    this.tomSelect.dropdown_content.style.scrollBehavior = 'auto';
+                    this.tomSelect.dropdown_content.scrollTop += optionElement.offsetTop - elemTop;
+                    this.tomSelect.dropdown_content.style.scrollBehavior = previousSmooth;
                 }
             }
         });
@@ -195,20 +177,11 @@ export class CompilerPicker {
 
     getOptions(langId: string, compilerId: string) {
         const favorites = this.getFavorites();
-        return (
-            Object.values(
-                this.compilerService.getCompilersForLang(langId)
-            ) as any[]
-        )
-            .filter(
-                e =>
-                    (this.compilerIsVisible(e) && !e.hidden) ||
-                    e.id === compilerId
-            )
+        return (Object.values(this.compilerService.getCompilersForLang(langId)) as any[])
+            .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
                 e.$groups = [e.group];
-                if (favorites[e.id])
-                    e.$groups.unshift(CompilerPicker.favoriteGroupName);
+                if (favorites[e.id]) e.$groups.unshift(CompilerPicker.favoriteGroupName);
                 return e;
             });
     }

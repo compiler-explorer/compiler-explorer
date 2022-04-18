@@ -28,22 +28,9 @@ import * as local from './local';
 import {themes, Themes} from './themes';
 import {AppTheme, ColourSchemeInfo} from './colour';
 
-type ColourScheme =
-    | 'rainbow'
-    | 'rainbow2'
-    | 'earth'
-    | 'green-blue'
-    | 'gray-shade'
-    | 'rainbow-dark';
+type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
 
-export type FormatBase =
-    | 'Google'
-    | 'LLVM'
-    | 'Mozilla'
-    | 'Chromium'
-    | 'WebKit'
-    | 'Microsoft'
-    | 'GNU';
+export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
@@ -107,11 +94,7 @@ class Checkbox extends BaseSetting {
 }
 
 class Select extends BaseSetting {
-    constructor(
-        elem: JQuery,
-        name: string,
-        populate: {label: string; desc: string}[]
-    ) {
+    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
         super(elem, name);
 
         elem.empty();
@@ -175,11 +158,7 @@ class Numeric extends BaseSetting {
     private readonly min: number;
     private readonly max: number;
 
-    constructor(
-        elem: JQuery,
-        name: string,
-        params: Record<'min' | 'max', number>
-    ) {
+    constructor(elem: JQuery, name: string, params: Record<'min' | 'max', number>) {
         super(elem, name);
 
         this.min = params.min;
@@ -281,10 +260,7 @@ export class Settings {
         ];
 
         for (const [selector, name, defaultValue] of checkboxes) {
-            this.add(
-                new Checkbox(this.root.find(selector), name),
-                defaultValue
-            );
+            this.add(new Checkbox(this.root.find(selector), name), defaultValue);
         }
     }
 
@@ -295,28 +271,18 @@ export class Settings {
             populate: {label: string; desc: string}[],
             defaultValue: string
         ) => {
-            this.add(
-                new Select(this.root.find(selector), name, populate),
-                defaultValue
-            );
+            this.add(new Select(this.root.find(selector), name, populate), defaultValue);
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
             return {label: scheme.name, desc: scheme.desc};
         });
-        addSelector(
-            '.colourScheme',
-            'colourScheme',
-            colourSchemesData,
-            colour.schemes[0].name
-        );
+        addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
 
         // keys(themes) is Themes[] but TS does not realize without help
-        const themesData = (Object.keys(themes) as Themes[]).map(
-            (theme: Themes) => {
-                return {label: themes[theme].id, desc: themes[theme].name};
-            }
-        );
+        const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
+            return {label: themes[theme].id, desc: themes[theme].name};
+        });
         let defaultThemeId = themes.default.id;
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultThemeId = themes.dark.id;
@@ -325,18 +291,12 @@ export class Settings {
 
         const langs = options.languages;
         const defaultLanguageSelector = this.root.find('.defaultLanguage');
-        const defLang =
-            this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
+        const defLang = this.settings.defaultLanguage || Object.keys(langs)[0] || 'c++';
 
         const defaultLanguageData = Object.keys(langs).map(lang => {
             return {label: langs[lang].id, desc: langs[lang].name};
         });
-        addSelector(
-            '.defaultLanguage',
-            'defaultLanguage',
-            defaultLanguageData,
-            defLang
-        );
+        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang);
 
         if (this.subLangId) {
             defaultLanguageSelector
@@ -345,15 +305,7 @@ export class Settings {
                 .css('cursor', 'not-allowed');
         }
 
-        const formats: FormatBase[] = [
-            'Google',
-            'LLVM',
-            'Mozilla',
-            'Chromium',
-            'WebKit',
-            'Microsoft',
-            'GNU',
-        ];
+        const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {
             return {label: format, desc: format};
         });
@@ -382,14 +334,7 @@ export class Settings {
             display: this.root.find('.delay-current-value'),
             formatter: x => (x / 1000.0).toFixed(2) + 's',
         };
-        this.add(
-            new Slider(
-                this.root.find('.delay'),
-                'delayAfterChange',
-                delayAfterChangeSettings
-            ),
-            750
-        );
+        this.add(new Slider(this.root.find('.delay'), 'delayAfterChange', delayAfterChangeSettings), 750);
     }
 
     private addNumerics() {
@@ -419,16 +364,10 @@ export class Settings {
         const colourSchemeSelect = this.root.find('.colourScheme');
         colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(
-                themeSelect,
-                'theme-' + currentTheme,
-                colourSchemeSelect.val() as ColourScheme
-            );
+            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
         });
 
-        const enableAllSchemesCheckbox = this.root.find(
-            '.alwaysEnableAllSchemes'
-        );
+        const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
         $.data(themeSelect, 'last-theme', themeSelect.val() as string);
@@ -437,17 +376,12 @@ export class Settings {
     private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
         for (const scheme of colour.schemes) {
             if (this.isSchemeUsable(scheme, newTheme)) {
-                colourSchemeSelect.append(
-                    $(`<option value="${scheme.name}">${scheme.desc}</option>`)
-                );
+                colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
             }
         }
     }
 
-    private isSchemeUsable(
-        scheme: ColourSchemeInfo,
-        newTheme?: AppTheme
-    ): boolean {
+    private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
         return (
             this.settings.alwaysEnableAllSchemes ||
             scheme.themes.length === 0 ||
@@ -473,18 +407,12 @@ export class Settings {
 
         colourSchemeSelect.empty();
         this.fillThemeSelector(colourSchemeSelect, newTheme);
-        const newThemeStoredScheme = $.data(
-            themeSelect,
-            'theme-' + newTheme
-        ) as colour.AppTheme | undefined;
+        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
         let newScheme = colourSchemeSelect.first().val() as string;
         // If we have one old one stored, check if it's still valid and set it if so
-        if (
-            newThemeStoredScheme &&
-            this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)
-        ) {
+        if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;
         } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
             newScheme = oldScheme;
