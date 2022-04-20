@@ -36,8 +36,7 @@ if (options.statusTrackingEnabled && options.sentryDsn) {
 class GAProxy {
     private hasBeenEnabled = false;
     private isEnabled = false;
-    private _proxy: (...args) => void = () => {
-    };
+    private _proxy: (...args) => void = () => {};
 
     initialise() {
         if (!this.isEnabled && options.statusTrackingEnabled && options.googleAnalyticsEnabled) {
@@ -45,11 +44,13 @@ class GAProxy {
             if (!this.hasBeenEnabled) {
                 (function (i, s, o, g, r, a, m) {
                     i.GoogleAnalyticsObject = r;
-                    i[r] = i[r] || function () {
-                        // We could push the unexpanded args, but better might have some unintended side-effects
-                        // eslint-disable-next-line prefer-rest-params
-                        (i[r].q = i[r].q || []).push(arguments);
-                    };
+                    i[r] =
+                        i[r] ||
+                        function () {
+                            // We could push the unexpanded args, but better might have some unintended side-effects
+                            // eslint-disable-next-line prefer-rest-params
+                            (i[r].q = i[r].q || []).push(arguments);
+                        };
                     i[r].l = Date.now();
                     // @ts-ignore
                     a = s.createElement(o);
@@ -74,8 +75,7 @@ class GAProxy {
             this.hasBeenEnabled = true;
         } else {
             this.isEnabled = false;
-            this._proxy = () => {
-            };
+            this._proxy = () => {};
         }
     }
 
@@ -84,8 +84,7 @@ class GAProxy {
             if (!this.isEnabled) this.initialise();
         } else {
             this.isEnabled = false;
-            this._proxy = () => {
-            };
+            this._proxy = () => {};
         }
     }
 
@@ -95,6 +94,4 @@ class GAProxy {
 }
 
 const ga = new GAProxy();
-export {
-    ga,
-};
+export {ga};

@@ -26,7 +26,7 @@ import $ from 'jquery';
 import 'bootstrap';
 import 'popper.js';
 
-import { Toggles } from './widgets/toggles';
+import {Toggles} from './widgets/toggles';
 import './noscript.scss';
 
 $(document).on('ready', () => {

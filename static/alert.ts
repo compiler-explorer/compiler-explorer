@@ -24,8 +24,8 @@
 
 import $ from 'jquery';
 
-import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
-import { toggleEventListener } from './utils';
+import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
+import {toggleEventListener} from './utils';
 import Sentry from '@sentry/browser';
 
 export class Alert {
@@ -66,20 +66,14 @@ export class Alert {
         this.yesHandler = askOptions.yes ?? (() => undefined);
         this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
-        modal.find('.modal-body')
-            .css('min-height', 'inherit')
-            .html(question);
+        modal.find('.modal-body').css('min-height', 'inherit').html(question);
         if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
         if (askOptions.yesClass) {
-            modal.find('.modal-footer .yes')
-                .removeClass('btn-link')
-                .addClass(askOptions.yesClass);
+            modal.find('.modal-footer .yes').removeClass('btn-link').addClass(askOptions.yesClass);
         }
         if (askOptions.noHtml) modal.find('.modal-footer .no').html(askOptions.noHtml);
         if (askOptions.noClass) {
-            modal.find('.modal-footer .no')
-                .removeClass('btn-link')
-                .addClass(askOptions.noClass);
+            modal.find('.modal-footer .no').removeClass('btn-link').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
             modal.off('hidden.bs.modal');
@@ -92,13 +86,16 @@ export class Alert {
     /**
      * Notifies the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
-    notify(body: string, {
-        group = '',
-        collapseSimilar = true,
-        alertClass = '',
-        autoDismiss = true,
-        dismissTime = 5000,
-    }: AlertNotifyOptions) {
+    notify(
+        body: string,
+        {
+            group = '',
+            collapseSimilar = true,
+            alertClass = '',
+            autoDismiss = true,
+            dismissTime = 5000,
+        }: AlertNotifyOptions
+    ) {
         const container = $('#notifications');
         if (container.length === 0) {
             Sentry.captureMessage('#notifications not found');
@@ -157,7 +154,7 @@ export class Alert {
 
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
-        answerEdit.on('keyup', (e) => {
+        answerEdit.on('keyup', e => {
             if (e.keyCode === 13 || e.which === 13) {
                 yesButton.trigger('click');
             }

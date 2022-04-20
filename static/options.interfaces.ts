@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Language } from '../types/languages.interfaces';
+import {Language} from '../types/languages.interfaces';
 
 export interface LibraryVersion {
     alias: string[];
@@ -55,5 +55,5 @@ export interface Options {
     defaultFontScale: number;
     sentryDsn?: string;
     release?: string;
-    sentryEnvironment?: string
+    sentryEnvironment?: string;
 }

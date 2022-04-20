@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { MultifileService } from './multifile-service';
+import {MultifileService} from './multifile-service';
 
 interface ColouredSourcelineInfo {
     sourceLine: number;
@@ -52,7 +52,7 @@ export class LineColouring {
 
     public addFromAssembly(compilerId, asm) {
         let asmLineIdx = 0;
-        for (const asmLine of asm ) {
+        for (const asmLine of asm) {
             if (asmLine.source && asmLine.source.line > 0) {
                 const editorId = this.multifileService.getEditorIdByFilename(asmLine.source.file);
                 if (editorId != null && editorId > 0) {
@@ -84,8 +84,7 @@ export class LineColouring {
         const lines: number[] = [];
 
         for (const info of this.colouredSourceLinesByEditor[editorId]) {
-            if (!lines.includes(info.sourceLine))
-                lines.push(info.sourceLine);
+            if (!lines.includes(info.sourceLine)) lines.push(info.sourceLine);
         }
 
         return lines;

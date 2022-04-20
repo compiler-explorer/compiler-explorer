@@ -24,13 +24,13 @@
 
 import TomSelect from 'tom-select';
 
-import { ga } from './analytics';
+import {ga} from './analytics';
 import * as local from './local';
-import { EventHub } from './event-hub';
-import { Hub } from './hub';
+import {EventHub} from './event-hub';
+import {Hub} from './hub';
 
 type Favourites = {
-    [compilerId: string]: boolean
+    [compilerId: string]: boolean;
 };
 
 export class CompilerPicker {
@@ -80,8 +80,7 @@ export class CompilerPicker {
         // bypasses this function and does compilerEntry.picker.tomSelect.close(); manually. This function is the
         // only time this.tomSelect can be null, might be nice if we can get rid of that.
         this.eventHub.unsubscribe();
-        if (this.tomSelect)
-            this.tomSelect.destroy();
+        if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
     }
 
@@ -104,7 +103,7 @@ export class CompilerPicker {
             closeAfterSelect: true,
             plugins: ['dropdown_input'],
             maxOptions: 1000,
-            onChange: (val) => {
+            onChange: val => {
                 // TODO(jeremy-rifkin) I don't think this can be undefined.
                 // Typing here needs improvement later anyway.
                 /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
@@ -124,11 +123,17 @@ export class CompilerPicker {
                 option: (data, escape) => {
                     const isFavoriteGroup = data.$groups.indexOf(CompilerPicker.favoriteGroupName) !== -1;
                     const extraClasses = isFavoriteGroup ? 'fas fa-star fav' : 'far fa-star';
-                    return '<div class="d-flex"><div>' + escape(data.name) + '</div>' +
-                        '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
-                        '<i class="' + extraClasses + '"></i>' +
+                    return (
+                        '<div class="d-flex"><div>' +
+                        escape(data.name) +
                         '</div>' +
-                        '</div>';
+                        '<div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">' +
+                        '<i class="' +
+                        extraClasses +
+                        '"></i>' +
+                        '</div>' +
+                        '</div>'
+                    );
                 },
             },
         });
@@ -163,7 +168,7 @@ export class CompilerPicker {
                     optionElement = this.tomSelect.getOption(value);
                     const previousSmooth = this.tomSelect.dropdown_content.style.scrollBehavior;
                     this.tomSelect.dropdown_content.style.scrollBehavior = 'auto';
-                    this.tomSelect.dropdown_content.scrollTop += (optionElement.offsetTop - elemTop);
+                    this.tomSelect.dropdown_content.scrollTop += optionElement.offsetTop - elemTop;
                     this.tomSelect.dropdown_content.style.scrollBehavior = previousSmooth;
                 }
             }
@@ -176,15 +181,17 @@ export class CompilerPicker {
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
                 e.$groups = [e.group];
-                if (favorites[e.id])
-                    e.$groups.unshift(CompilerPicker.favoriteGroupName);
+                if (favorites[e.id]) e.$groups.unshift(CompilerPicker.favoriteGroupName);
                 return e;
             });
     }
 
     getGroups(langId: string) {
         const optgroups = this.compilerService.getGroupsInUse(langId);
-        optgroups.unshift({value: CompilerPicker.favoriteGroupName, label: 'Favorites'});
+        optgroups.unshift({
+            value: CompilerPicker.favoriteGroupName,
+            label: 'Favorites',
+        });
         return optgroups;
     }
 

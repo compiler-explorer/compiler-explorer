@@ -37,7 +37,8 @@ const providersPerLanguage: Record<string, monaco.IDisposable> = {};
 export function registerLensesForCompiler(
     compilerId: number,
     editorModel: monaco.editor.ITextModel,
-    lenses: monaco.languages.CodeLens[]): void {
+    lenses: monaco.languages.CodeLens[]
+): void {
     const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
         return item.compilerId === compilerId;
     });

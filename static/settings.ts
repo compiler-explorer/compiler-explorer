@@ -22,28 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
+import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
-import { themes, Themes } from './themes';
-import { AppTheme, ColourSchemeInfo } from './colour';
+import {themes, Themes} from './themes';
+import {AppTheme, ColourSchemeInfo} from './colour';
 
-type ColourScheme =
-    | 'rainbow'
-    | 'rainbow2'
-    | 'earth'
-    | 'green-blue'
-    | 'gray-shade'
-    | 'rainbow-dark';
+type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
 
-export type FormatBase =
-    | 'Google'
-    | 'LLVM'
-    | 'Mozilla'
-    | 'Chromium'
-    | 'WebKit'
-    | 'Microsoft'
-    | 'GNU';
+export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
@@ -57,11 +44,11 @@ export interface SiteSettings {
     defaultLanguage?: string;
     delayAfterChange: number;
     enableCodeLens: boolean;
-    enableCommunityAds: boolean
+    enableCommunityAds: boolean;
     enableCtrlS: string;
     enableSharingPopover: boolean;
     enableCtrlStree: boolean;
-    editorsFFont: string
+    editorsFFont: string;
     editorsFLigatures: boolean;
     formatBase: FormatBase;
     formatOnCompile: boolean;
@@ -107,7 +94,7 @@ class Checkbox extends BaseSetting {
 }
 
 class Select extends BaseSetting {
-    constructor(elem: JQuery, name: string, populate: {label: string, desc: string}[]) {
+    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
         super(elem, name);
 
         elem.empty();
@@ -144,8 +131,7 @@ class Slider extends BaseSetting {
         this.max = sliderSettings.max || 100;
         this.min = sliderSettings.min || 1;
 
-        elem
-            .prop('max', this.max)
+        elem.prop('max', this.max)
             .prop('min', this.min)
             .prop('step', sliderSettings.step || 1);
 
@@ -178,8 +164,7 @@ class Numeric extends BaseSetting {
         this.min = params.min;
         this.max = params.max;
 
-        elem.attr('min', this.min)
-            .attr('max', this.max);
+        elem.attr('min', this.min).attr('max', this.max);
     }
 
     override getUi(): number {
@@ -198,11 +183,12 @@ class Numeric extends BaseSetting {
 export class Settings {
     private readonly settingsObjs: BaseSetting[];
 
-    constructor(private root: JQuery,
-                private settings: SiteSettings,
-                private onChange: (SiteSettings) => void,
-                private subLangId: string | null) {
-
+    constructor(
+        private root: JQuery,
+        private settings: SiteSettings,
+        private onChange: (SiteSettings) => void,
+        private subLangId: string | null
+    ) {
         this.settings = settings;
         this.settingsObjs = [];
 
@@ -248,7 +234,7 @@ export class Settings {
 
     private addCheckboxes() {
         // Known checkbox options in order [selector, key, defaultValue]
-        const checkboxes: [string, keyof SiteSettings, boolean][]= [
+        const checkboxes: [string, keyof SiteSettings, boolean][] = [
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
             ['.autoCloseBrackets', 'autoCloseBrackets', true],
@@ -282,7 +268,7 @@ export class Settings {
         const addSelector = (
             selector: string,
             name: keyof SiteSettings,
-            populate: {label: string, desc: string}[],
+            populate: {label: string; desc: string}[],
             defaultValue: string
         ) => {
             this.add(new Select(this.root.find(selector), name, populate), defaultValue);
@@ -352,7 +338,13 @@ export class Settings {
     }
 
     private addNumerics() {
-        this.add(new Numeric(this.root.find('.tabWidth'), 'tabWidth', {min: 1, max: 80}), 4);
+        this.add(
+            new Numeric(this.root.find('.tabWidth'), 'tabWidth', {
+                min: 1,
+                max: 80,
+            }),
+            4
+        );
     }
 
     private addTextBoxes() {
@@ -370,7 +362,7 @@ export class Settings {
         });
 
         const colourSchemeSelect = this.root.find('.colourScheme');
-        colourSchemeSelect.on('change', (e) => {
+        colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
             $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
         });
@@ -390,8 +382,12 @@ export class Settings {
     }
 
     private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
-        return this.settings.alwaysEnableAllSchemes || scheme.themes.length === 0
-            || (newTheme && scheme.themes.includes(newTheme)) || scheme.themes.includes('all');
+        return (
+            this.settings.alwaysEnableAllSchemes ||
+            scheme.themes.length === 0 ||
+            (newTheme && scheme.themes.includes(newTheme)) ||
+            scheme.themes.includes('all')
+        );
     }
 
     private selectorHasOption(selector: JQuery, option: string): boolean {

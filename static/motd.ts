@@ -27,11 +27,11 @@ import {ga} from './analytics';
 
 import {Motd} from './motd.interfaces';
 
-
 function ensureShownMessage(message: string, motdNode: JQuery) {
     motdNode.find('.content').html(message);
     motdNode.removeClass('d-none');
-    motdNode.find('.close')
+    motdNode
+        .find('.close')
         .on('click', () => {
             motdNode.addClass('d-none');
         })
@@ -44,7 +44,7 @@ function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: b
     } else if (motd.motd) {
         ensureShownMessage(motd.motd, motdNode);
     } else if (adsEnabled) {
-        const applicableAds = motd.ads?.filter((ad) => {
+        const applicableAds = motd.ads?.filter(ad => {
             return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
         });
 
@@ -80,8 +80,8 @@ export function initialise(
     defaultLanguage: string,
     adsEnabled: boolean,
     onMotd: (res?: Motd) => void,
-    onHide: () => void)
-{
+    onHide: () => void
+) {
     if (!url) return;
     $.getJSON(url)
         .then((res: Motd) => {

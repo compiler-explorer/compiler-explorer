@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
-import { LanguageLibs, Library, Libs } from './options.interfaces';
+import {options} from './options';
+import {LanguageLibs, Library, Libs} from './options.interfaces';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
@@ -51,7 +51,7 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     const copiedLibraries: Record<string, Library> = {};
     for (const libid in allLibraries) {
         if (!filterLibIds.has(libid)) continue;
-        const lib = { ...allLibraries[libid] };
+        const lib = {...allLibraries[libid]};
         for (const versionid in lib.versions) {
             for (const filter of filterLibAndVersion) {
                 if (!(!filter.version || filter.version === versionid)) {
@@ -65,8 +65,11 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     return copiedLibraries;
 }
 
-export function getSupportedLibraries(supportedLibrariesArr: string[] | undefined, langId: string,
-    remote): LanguageLibs {
+export function getSupportedLibraries(
+    supportedLibrariesArr: string[] | undefined,
+    langId: string,
+    remote
+): LanguageLibs {
     if (!remote) {
         const allLibs = options.libs[langId];
         if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {

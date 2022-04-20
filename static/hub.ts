@@ -22,35 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import GoldenLayout, { ContentItem } from 'golden-layout';
+import GoldenLayout, {ContentItem} from 'golden-layout';
 
-import { CompilerService } from './compiler-service';
-import { IdentifierSet } from './identifier-set';
-import { EventHub } from './event-hub';
+import {CompilerService} from './compiler-service';
+import {IdentifierSet} from './identifier-set';
+import {EventHub} from './event-hub';
 import * as Components from './components';
 
-import { Tree } from './panes/tree';
-import { Editor } from './panes/editor';
-import { Compiler } from './panes/compiler';
-import { Executor } from './panes/executor';
-import { Output } from './panes/output';
-import { Tool } from './panes/tool';
-import { Diff, getComponent as getDiffComponent } from './panes/diff';
-import { ToolInputView } from './panes/tool-input-view';
-import { Opt as OptView } from './panes/opt-view';
-import { Flags as FlagsView } from './panes/flags-view';
-import { PP as PreProcessorView } from './panes/pp-view';
-import { Ast as AstView } from './panes/ast-view';
-import { Ir as IrView } from './panes/ir-view';
-import { DeviceAsm as DeviceView } from './panes/device-view';
-import { GnatDebug as GnatDebugView } from './panes/gnatdebug-view';
-import { RustMir as RustMirView } from './panes/rustmir-view';
-import { RustHir as RustHirView } from './panes/rusthir-view';
-import { GccDump as GCCDumpView } from './panes/gccdump-view';
-import { Cfg as CfgView } from './panes/cfg-view';
-import { Conformance as ConformanceView } from './panes/conformance-view';
-import { GnatDebugTree as GnatDebugTreeView } from './panes/gnatdebugtree-view';
-import { RustMacroExp as RustMacroExpView } from './panes/rustmacroexp-view';
+import {Tree} from './panes/tree';
+import {Editor} from './panes/editor';
+import {Compiler} from './panes/compiler';
+import {Executor} from './panes/executor';
+import {Output} from './panes/output';
+import {Tool} from './panes/tool';
+import {Diff, getComponent as getDiffComponent} from './panes/diff';
+import {ToolInputView} from './panes/tool-input-view';
+import {Opt as OptView} from './panes/opt-view';
+import {Flags as FlagsView} from './panes/flags-view';
+import {PP as PreProcessorView} from './panes/pp-view';
+import {Ast as AstView} from './panes/ast-view';
+import {Ir as IrView} from './panes/ir-view';
+import {DeviceAsm as DeviceView} from './panes/device-view';
+import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
+import {RustMir as RustMirView} from './panes/rustmir-view';
+import {RustHir as RustHirView} from './panes/rusthir-view';
+import {GccDump as GCCDumpView} from './panes/gccdump-view';
+import {Cfg as CfgView} from './panes/cfg-view';
+import {Conformance as ConformanceView} from './panes/conformance-view';
+import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view';
+import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view';
 import Sentry from '@sentry/browser';
 
 export class Hub {
@@ -84,7 +84,9 @@ export class Hub {
         layout.registerComponent(Components.getOutput().componentName, (c, s) => this.outputFactory(c, s));
         layout.registerComponent(Components.getToolViewWith().componentName, (c, s) => this.toolFactory(c, s));
         // eslint-disable-next-line max-len
-        layout.registerComponent(Components.getToolInputView().componentName, (c, s) => this.toolInputViewFactory(c, s));
+        layout.registerComponent(Components.getToolInputView().componentName, (c, s) =>
+            this.toolInputViewFactory(c, s)
+        );
         layout.registerComponent(getDiffComponent().componentName, (c, s) => this.diffFactory(c, s));
         layout.registerComponent(Components.getOptView().componentName, (c, s) => this.optViewFactory(c, s));
         layout.registerComponent(Components.getFlagsView().componentName, (c, s) => this.flagsViewFactory(c, s));
@@ -94,54 +96,106 @@ export class Hub {
         layout.registerComponent(Components.getDeviceView().componentName, (c, s) => this.deviceViewFactory(c, s));
         layout.registerComponent(Components.getRustMirView().componentName, (c, s) => this.rustMirViewFactory(c, s));
         // eslint-disable-next-line max-len
-        layout.registerComponent(Components.getGnatDebugTreeView().componentName, (c, s) => this.gnatDebugTreeViewFactory(c, s));
+        layout.registerComponent(Components.getGnatDebugTreeView().componentName, (c, s) =>
+            this.gnatDebugTreeViewFactory(c, s)
+        );
         // eslint-disable-next-line max-len
-        layout.registerComponent(Components.getGnatDebugView().componentName, (c, s) => this.gnatDebugViewFactory(c, s));
+        layout.registerComponent(Components.getGnatDebugView().componentName, (c, s) =>
+            this.gnatDebugViewFactory(c, s)
+        );
         // eslint-disable-next-line max-len
-        layout.registerComponent(Components.getRustMacroExpView().componentName, (c, s) => this.rustMacroExpViewFactory(c, s));
+        layout.registerComponent(Components.getRustMacroExpView().componentName, (c, s) =>
+            this.rustMacroExpViewFactory(c, s)
+        );
         layout.registerComponent(Components.getRustHirView().componentName, (c, s) => this.rustHirViewFactory(c, s));
         layout.registerComponent(Components.getGccDumpView().componentName, (c, s) => this.gccDumpViewFactory(c, s));
         layout.registerComponent(Components.getCfgView().componentName, (c, s) => this.cfgViewFactory(c, s));
         // eslint-disable-next-line max-len
-        layout.registerComponent(Components.getConformanceView().componentName, (c, s) => this.conformanceViewFactory(c, s));
+        layout.registerComponent(Components.getConformanceView().componentName, (c, s) =>
+            this.conformanceViewFactory(c, s)
+        );
 
-        layout.eventHub.on('editorOpen', function (this: Hub, id: number) {
-            this.editorIds.add(id);
-        }, this);
-        layout.eventHub.on('editorClose', function (this: Hub, id: number) {
-            this.editorIds.remove(id);
-        }, this);
-        layout.eventHub.on('compilerOpen', function (this: Hub, id: number) {
-            this.compilerIds.add(id);
-        }, this);
-        layout.eventHub.on('compilerClose', function (this: Hub, id: number) {
-            this.compilerIds.remove(id);
-        }, this);
-        layout.eventHub.on('treeOpen', function (this: Hub, id: number) {
-            this.treeIds.add(id);
-        }, this);
-        layout.eventHub.on('treeClose', function (this: Hub, id: number) {
-            this.treeIds.remove(id);
-        }, this);
-        layout.eventHub.on('executorOpen', function (this: Hub, id: number) {
-            this.executorIds.add(id);
-        }, this);
-        layout.eventHub.on('executorClose', function (this: Hub, id: number) {
-            this.executorIds.remove(id);
-        }, this);
-        layout.eventHub.on('languageChange', function (this: Hub, editorId: number, langId: string) {
-            this.lastOpenedLangId = langId;
-        }, this);
+        layout.eventHub.on(
+            'editorOpen',
+            function (this: Hub, id: number) {
+                this.editorIds.add(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'editorClose',
+            function (this: Hub, id: number) {
+                this.editorIds.remove(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'compilerOpen',
+            function (this: Hub, id: number) {
+                this.compilerIds.add(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'compilerClose',
+            function (this: Hub, id: number) {
+                this.compilerIds.remove(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'treeOpen',
+            function (this: Hub, id: number) {
+                this.treeIds.add(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'treeClose',
+            function (this: Hub, id: number) {
+                this.treeIds.remove(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'executorOpen',
+            function (this: Hub, id: number) {
+                this.executorIds.add(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'executorClose',
+            function (this: Hub, id: number) {
+                this.executorIds.remove(id);
+            },
+            this
+        );
+        layout.eventHub.on(
+            'languageChange',
+            function (this: Hub, editorId: number, langId: string) {
+                this.lastOpenedLangId = langId;
+            },
+            this
+        );
 
         layout.init();
         this.undefer();
         layout.eventHub.emit('initialised');
     }
 
-    public nextTreeId(): number { return this.treeIds.next(); }
-    public nextEditorId(): number { return this.editorIds.next(); }
-    public nextCompilerId(): number { return this.compilerIds.next(); }
-    public nextExecutorId(): number { return this.executorIds.next(); }
+    public nextTreeId(): number {
+        return this.treeIds.next();
+    }
+    public nextEditorId(): number {
+        return this.editorIds.next();
+    }
+    public nextCompilerId(): number {
+        return this.compilerIds.next();
+    }
+    public nextExecutorId(): number {
+        return this.executorIds.next();
+    }
 
     public createEventHub(): EventHub {
         return new EventHub(this, this.layout.eventHub);
@@ -189,7 +243,7 @@ export class Hub {
     }
 
     public getTreesWithEditorId(editorId: number) {
-        return this.trees.filter((tree) => tree.multifileService.isEditorPartOfProject(editorId));
+        return this.trees.filter(tree => tree.multifileService.isEditorPartOfProject(editorId));
     }
 
     public getTrees(): Tree[] {
@@ -269,9 +323,12 @@ export class Hub {
                 rootFirstItem.addChild(elem);
             } else {
                 // @ts-expect-error -- GoldenLayout's types are messed up here?
-                const newRow: ContentItem = this.layout.createContentItem({
-                    type: 'row',
-                }, this.layout.root);
+                const newRow: ContentItem = this.layout.createContentItem(
+                    {
+                        type: 'row',
+                    },
+                    this.layout.root
+                );
                 this.layout.root.replaceChild(rootFirstItem, newRow);
                 newRow.addChild(rootFirstItem);
                 newRow.addChild(elem);
@@ -285,7 +342,7 @@ export class Hub {
     }
 
     public activateTabForContainer(container?: GoldenLayout.Container) {
-        if (container && container.tab as typeof container.tab | null) {
+        if (container && (container.tab as typeof container.tab | null)) {
             container.tab.header.parent.setActiveContentItem(container.tab.contentItem);
         }
     }

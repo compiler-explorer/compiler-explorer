@@ -24,13 +24,12 @@
 
 import * as local from './local';
 import _ from 'underscore';
-import { Sharing } from './sharing';
-
+import {Sharing} from './sharing';
 
 const maxHistoryEntries = 30;
-type Source = {dt: number, source: string};
-export type HistoryEntry = {dt: number, sources: EditorSource[], config: any};
-export type EditorSource = {lang: string, source: string};
+type Source = {dt: number; source: string};
+export type HistoryEntry = {dt: number; sources: EditorSource[]; config: any};
+export type EditorSource = {lang: string; source: string};
 
 function extractEditorSources(content: any[]): EditorSource[] {
     const sources: EditorSource[] = [];

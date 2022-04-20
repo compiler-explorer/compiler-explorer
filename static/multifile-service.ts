@@ -25,7 +25,7 @@
 import _ from 'underscore';
 import path from 'path';
 import JSZip from 'jszip';
-import { Hub } from './hub';
+import {Hub} from './hub';
 const options = require('./options').options;
 const languages = options.languages;
 
@@ -82,7 +82,7 @@ export class MultifileService {
     }
 
     private static isHiddenFile(filename: string): boolean {
-        return (filename.length > 0 && filename[0] === '.');
+        return filename.length > 0 && filename[0] === '.';
     }
 
     private isValidFilename(filename: string): boolean {
@@ -93,7 +93,7 @@ export class MultifileService {
             return true;
         }
 
-        return _.any(languages, (lang) => {
+        return _.any(languages, lang => {
             return lang.extensions.includes(filenameExt);
         });
     }
@@ -110,7 +110,7 @@ export class MultifileService {
     private getLanguageIdFromFilename(filename: string): string {
         const filenameExt = path.extname(filename);
 
-        const possibleLang = _.filter(languages, (lang) => {
+        const possibleLang = _.filter(languages, lang => {
             return lang.extensions.includes(filenameExt);
         });
 
@@ -146,7 +146,7 @@ export class MultifileService {
                 }
 
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                let content = await (zip.file(zipEntry.name)!.async('string'));
+                let content = await zip.file(zipEntry.name)!.async('string');
                 if (content.length > this.maxFilesize) {
                     return;
                 }
@@ -180,11 +180,14 @@ export class MultifileService {
             }
         });
 
-        zip.generateAsync({type:'blob'}).then((blob) => {
-            callback(blob);
-        }, (err) => {
-            throw err;
-        });
+        zip.generateAsync({type: 'blob'}).then(
+            blob => {
+                callback(blob);
+            },
+            err => {
+                throw err;
+            }
+        );
     }
 
     public getState(): MultifileServiceState {
@@ -201,8 +204,11 @@ export class MultifileService {
     }
 
     public isCompatibleWithCMake(): boolean {
-        return this.compilerLanguageId === 'c++' || this.compilerLanguageId === 'c' ||
-            this.compilerLanguageId === 'fortran';
+        return (
+            this.compilerLanguageId === 'c++' ||
+            this.compilerLanguageId === 'c' ||
+            this.compilerLanguageId === 'fortran'
+        );
     }
 
     public setLanguageId(id: string) {
@@ -240,7 +246,7 @@ export class MultifileService {
 
     public isEditorPartOfProject(editorId: number) {
         const found = _.find(this.files, (file: MultifileFile) => {
-            return (file.isIncluded) && file.isOpen && (editorId === file.editorId);
+            return file.isIncluded && file.isOpen && editorId === file.editorId;
         });
 
         return !!found;
@@ -268,7 +274,7 @@ export class MultifileService {
     }
 
     private static isValidFile(file: MultifileFile): boolean {
-        return (file.editorId > 0) || !!file.filename;
+        return file.editorId > 0 || !!file.filename;
     }
 
     private filterOutNonsense() {
@@ -336,10 +342,10 @@ export class MultifileService {
 
     public getEditorIdByFilename(filename: string): number | null {
         const file = _.find(this.files, (file: MultifileFile) => {
-            return file.isIncluded && (file.filename === filename);
+            return file.isIncluded && file.filename === filename;
         });
 
-        return (file && file.editorId > 0) ? file.editorId : null;
+        return file && file.editorId > 0 ? file.editorId : null;
     }
 
     public getMainSourceEditorId(): number | null {
@@ -349,7 +355,7 @@ export class MultifileService {
 
         this.checkFileEditor(file);
 
-        return (file && file.editorId > 0) ? file.editorId : null;
+        return file && file.editorId > 0 ? file.editorId : null;
     }
 
     private addFile(file: MultifileFile) {
@@ -467,7 +473,7 @@ export class MultifileService {
 
     private fileExists(filename: string, excludeFile: MultifileFile): boolean {
         return !!_.find(this.files, (file: MultifileFile) => {
-            return (file !== excludeFile) && (file.filename === filename);
+            return file !== excludeFile && file.filename === filename;
         });
     }
 
@@ -482,7 +488,7 @@ export class MultifileService {
 
         const suggestedFilename = this.getSuggestedFilename(file, editor);
 
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             this.alertSystem.enterSomething('Rename file', 'Please enter new filename', suggestedFilename, {
                 yes: (value: string) => {
                     if (value !== '' && value[0] !== '/') {

@@ -39,7 +39,7 @@ const cloneDeep = require('lodash.clonedeep');
 enum LinkType {
     Short,
     Full,
-    Embed
+    Embed,
 }
 
 const shareServices = {
@@ -48,10 +48,12 @@ const shareServices = {
         logoClass: 'fab fa-twitter',
         cssClass: 'share-twitter',
         getLink: (title, url) => {
-            return 'https://twitter.com/intent/tweet' +
+            return (
+                'https://twitter.com/intent/tweet' +
                 `?text=${encodeURIComponent(title)}` +
                 `&url=${encodeURIComponent(url)}` +
-                '&via=CompileExplore';
+                '&via=CompileExplore'
+            );
         },
         text: 'Tweet',
     },
@@ -60,9 +62,11 @@ const shareServices = {
         logoClass: 'fab fa-reddit',
         cssClass: 'share-reddit',
         getLink: (title, url) => {
-            return 'http://www.reddit.com/submit' +
+            return (
+                'http://www.reddit.com/submit' +
                 `?url=${encodeURIComponent(url)}` +
-                `&title=${encodeURIComponent(title)}`;
+                `&title=${encodeURIComponent(title)}`
+            );
         },
         text: 'Share on Reddit',
     },
@@ -103,7 +107,8 @@ export class Sharing {
         });
         this.layout.on('stateChanged', this.onStateChanged.bind(this));
 
-        $('#sharelinkdialog').on('show.bs.modal', this.onOpenModalPane.bind(this))
+        $('#sharelinkdialog')
+            .on('show.bs.modal', this.onOpenModalPane.bind(this))
             .on('hidden.bs.modal', this.onCloseModalPane.bind(this));
     }
 
@@ -128,10 +133,14 @@ export class Sharing {
 
     private static bindToLinkType(bind: string): LinkType {
         switch (bind) {
-            case 'Full': return LinkType.Full;
-            case 'Short': return LinkType.Short;
-            case 'Embed': return LinkType.Embed;
-            default: return LinkType.Full;
+            case 'Full':
+                return LinkType.Full;
+            case 'Short':
+                return LinkType.Short;
+            case 'Embed':
+                return LinkType.Embed;
+            default:
+                return LinkType.Full;
         }
     }
 
@@ -165,9 +174,7 @@ export class Sharing {
                         Sharing.updateShares(socialSharingElements, newUrl);
                         // Disable the links for every share item which does not support embed html as links
                         if (currentBind === LinkType.Embed) {
-                            socialSharingElements.children('.share-no-embeddable')
-                                .hide()
-                                .on('click', false);
+                            socialSharingElements.children('.share-no-embeddable').hide().on('click', false);
                         }
                     }
                 }
@@ -177,18 +184,19 @@ export class Sharing {
         const clippyElement = modal.find('button.clippy').get(0);
         if (clippyElement != null) {
             this.clippyButton = new ClipboardJS(clippyElement);
-            this.clippyButton.on('success', (e) => {
+            this.clippyButton.on('success', e => {
                 this.displayTooltip(permalink, 'Link copied to clipboard');
                 e.clearSelection();
             });
-            this.clippyButton.on('error', (e) => {
+            this.clippyButton.on('error', e => {
                 this.displayTooltip(permalink, 'Error copying to clipboard');
             });
         }
 
         if (currentBind === LinkType.Embed) {
             embedsettings.show();
-            embedsettings.find('input')
+            embedsettings
+                .find('input')
                 // Off any prev click handlers to avoid multiple events triggering after opening the modal more than once
                 .off('click')
                 .on('click', () => updatePermaLink());
@@ -217,9 +225,9 @@ export class Sharing {
         const shareFullCopyToClipBtn = this.shareFull.find('.clip-icon');
         const shareEmbedCopyToClipBtn = this.shareEmbed.find('.clip-icon');
 
-        shareShortCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Short));
-        shareFullCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Full));
-        shareEmbedCopyToClipBtn.on('click', (e) => this.onClipButtonPressed(e, LinkType.Embed));
+        shareShortCopyToClipBtn.on('click', e => this.onClipButtonPressed(e, LinkType.Short));
+        shareFullCopyToClipBtn.on('click', e => this.onClipButtonPressed(e, LinkType.Full));
+        shareEmbedCopyToClipBtn.on('click', e => this.onClipButtonPressed(e, LinkType.Embed));
 
         if (options.sharingEnabled) {
             Sharing.updateShares($('#socialshare'), window.location.protocol + '//' + window.location.hostname);
@@ -280,7 +288,8 @@ export class Sharing {
 
     private doLinkCopyToClipboard(type: LinkType, link: string): void {
         if (Sharing.isNavigatorClipboardAvailable()) {
-            navigator.clipboard.writeText(link)
+            navigator.clipboard
+                .writeText(link)
                 .then(() => this.displayTooltip(this.share, 'Link copied to clipboard'))
                 .catch(() => this.openShareModalForType(type));
         } else {
@@ -324,14 +333,14 @@ export class Sharing {
         $.ajax({
             type: 'POST',
             url: window.location.origin + root + 'api/shortener',
-            dataType: 'json',  // Expected
-            contentType: 'application/json',  // Sent
+            dataType: 'json', // Expected
+            contentType: 'application/json', // Sent
             data: data,
             success: (result: any) => {
                 const pushState = useExternalShortener ? null : result.url;
                 done(null, result.url, pushState, true);
             },
-            error: (err) => {
+            error: err => {
                 // Notify the user that we ran into trouble?
                 done(err.statusText, null, false);
             },
@@ -346,15 +355,19 @@ export class Sharing {
 
     private static getEmbeddedUrl(config: any, root: string, readOnly: boolean, extraOptions: object): string {
         const location = window.location.origin + root;
-        const parameters = _.reduce(extraOptions, (total, value, key): string => {
-            if (total === '') {
-                total = '?';
-            } else {
-                total += '&';
-            }
+        const parameters = _.reduce(
+            extraOptions,
+            (total, value, key): string => {
+                if (total === '') {
+                    total = '?';
+                } else {
+                    total += '&';
+                }
 
-            return total + key + '=' + value;
-        }, '');
+                return total + key + '=' + value;
+            },
+            ''
+        );
 
         const path = (readOnly ? 'embed-ro' : 'e') + parameters + '#';
 
@@ -379,8 +392,8 @@ export class Sharing {
 
             if (component.componentState) {
                 Object.keys(component.componentState)
-                    .filter((e) => keysToRemove.includes(e))
-                    .forEach((key) => delete component.componentState[key]);
+                    .filter(e => keysToRemove.includes(e))
+                    .forEach(key => delete component.componentState[key]);
             }
         }
 
@@ -394,15 +407,12 @@ export class Sharing {
         _.each(shareServices, (service, serviceName) => {
             const newElement = baseTemplate.children('a.share-item').clone();
             if (service.logoClass) {
-                newElement.prepend($('<span>')
-                    .addClass('dropdown-icon mr-1')
-                    .addClass(service.logoClass)
-                    .prop('title', serviceName)
+                newElement.prepend(
+                    $('<span>').addClass('dropdown-icon mr-1').addClass(service.logoClass).prop('title', serviceName)
                 );
             }
             if (service.text) {
-                newElement.children('span.share-item-text')
-                    .text(service.text);
+                newElement.children('span.share-item-text').text(service.text);
             }
             newElement
                 .prop('href', service.getLink('Compiler Explorer', url))
