@@ -33,9 +33,7 @@ import {FontScaleState} from './fontscale.interfaces';
 function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQuery) {
     function onClickEvent(this: JQuery) {
         // Toggle off the selection of the others
-        $(this)
-            .addClass('active')
-            .siblings().removeClass('active');
+        $(this).addClass('active').siblings().removeClass('active');
         // Send the data
         obj.scale = $(this).data('value');
         obj.apply();
@@ -66,11 +64,26 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
         }
         elem.children().eq(selectedId).trigger('click');
     });
+
+    // ctrl+click handler
+    buttonDropdown.on('click', e => {
+        if (e.ctrlKey) {
+            // This is a hack. It prevents bootstrap's click listener from opening the dropdown
+            e.stopImmediatePropagation();
+            // Set the correct scale as active
+            elem.find('.active').removeClass('active');
+            elem.find(`[data-value=${options.defaultFontScale}]`).addClass('active');
+            // Set the scale
+            obj.scale = options.defaultFontScale;
+            obj.apply();
+            obj.emit('change');
+        }
+    });
 }
 
 function convertOldScale(oldScale: number): number {
     // New low + ((new max - new low) * (oldScale - old low) / (old max - old low))
-    return Math.floor(8 + (22 * (oldScale - 0.3) / 2.7));
+    return Math.floor(8 + (22 * (oldScale - 0.3)) / 2.7);
 }
 
 export class FontScale extends EventEmitter.EventEmitter {
@@ -94,11 +107,7 @@ export class FontScale extends EventEmitter.EventEmitter {
         }
         this.setTarget(fontSelectorOrEditor);
         this.apply();
-        makeFontSizeDropdown(
-            this.domRoot.find('.font-size-list'),
-            this,
-            this.domRoot.find('.fs-button')
-        );
+        makeFontSizeDropdown(this.domRoot.find('.font-size-list'), this, this.domRoot.find('.fs-button'));
     }
 
     apply() {
@@ -125,6 +134,6 @@ export class FontScale extends EventEmitter.EventEmitter {
 
     setTarget(target: JQuery | string | IEditor) {
         this.fontSelectorOrEditor = target;
-        this.isFontOfStr = typeof (this.fontSelectorOrEditor) === 'string';
+        this.isFontOfStr = typeof this.fontSelectorOrEditor === 'string';
     }
 }
