@@ -187,12 +187,15 @@ export class Hub {
     public nextTreeId(): number {
         return this.treeIds.next();
     }
+
     public nextEditorId(): number {
         return this.editorIds.next();
     }
+
     public nextCompilerId(): number {
         return this.compilerIds.next();
     }
+
     public nextExecutorId(): number {
         return this.executorIds.next();
     }
@@ -358,7 +361,7 @@ export class Hub {
         this.editors.push(editor);
     }
 
-    private treeFactory(container: GoldenLayout.Container, state: any): Tree {
+    private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[1]): Tree {
         const tree = new Tree(this, state, container);
         this.trees.push(tree);
         return tree;
@@ -368,11 +371,11 @@ export class Hub {
         return new Compiler(this, container, state);
     }
 
-    public executorFactory(container: GoldenLayout.Container, state: any): any /* typeof Executor */ {
+    public executorFactory(container: GoldenLayout.Container, state: any): any /*typeof Executor */ {
         return new Executor(this, container, state);
     }
 
-    public outputFactory(container: GoldenLayout.Container, state: any): any /* typeof Output */ {
+    public outputFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Output>[2]): Output {
         return new Output(this, container, state);
     }
 
@@ -384,51 +387,78 @@ export class Hub {
         return new Diff(this, container, state);
     }
 
-    public toolInputViewFactory(container: GoldenLayout.Container, state: any): any /* typeof ToolInputView */ {
+    public toolInputViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof ToolInputView>[2]
+    ): ToolInputView {
         return new ToolInputView(this, container, state);
     }
 
-    public optViewFactory(container: GoldenLayout.Container, state: any): OptView {
+    public optViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof OptView>[2]): OptView {
         return new OptView(this, container, state);
     }
 
-    public flagsViewFactory(container: GoldenLayout.Container, state: any): any /* typeof FlagsView */ {
+    public flagsViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof FlagsView>[2]
+    ): FlagsView {
         return new FlagsView(this, container, state);
     }
 
-    public ppViewFactory(container: GoldenLayout.Container, state: any): PreProcessorView {
+    public ppViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof PreProcessorView>[2]
+    ): PreProcessorView {
         return new PreProcessorView(this, container, state);
     }
 
-    public astViewFactory(container: GoldenLayout.Container, state: any): AstView {
+    public astViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof AstView>[2]): AstView {
         return new AstView(this, container, state);
     }
 
-    public irViewFactory(container: GoldenLayout.Container, state: any): IrView {
+    public irViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof IrView>[2]): IrView {
         return new IrView(this, container, state);
     }
 
-    public deviceViewFactory(container: GoldenLayout.Container, state: any): any /* typeof DeviceView */ {
+    public deviceViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof DeviceView>[2]
+    ): DeviceView {
         return new DeviceView(this, container, state);
     }
 
-    public gnatDebugTreeViewFactory(container: GoldenLayout.Container, state: any): GnatDebugTreeView {
+    public gnatDebugTreeViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof GnatDebugTreeView>[2]
+    ): GnatDebugTreeView {
         return new GnatDebugTreeView(this, container, state);
     }
 
-    public gnatDebugViewFactory(container: GoldenLayout.Container, state: any): GnatDebugView {
+    public gnatDebugViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof GnatDebugView>[2]
+    ): GnatDebugView {
         return new GnatDebugView(this, container, state);
     }
 
-    public rustMirViewFactory(container: GoldenLayout.Container, state: any): RustMirView {
+    public rustMirViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof RustMirView>[2]
+    ): RustMirView {
         return new RustMirView(this, container, state);
     }
 
-    public rustMacroExpViewFactory(container: GoldenLayout.Container, state: any): RustMacroExpView {
+    public rustMacroExpViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof RustMacroExpView>[2]
+    ): RustMacroExpView {
         return new RustMacroExpView(this, container, state);
     }
 
-    public rustHirViewFactory(container: GoldenLayout.Container, state: any): RustHirView {
+    public rustHirViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof RustHirView>[2]
+    ): RustHirView {
         return new RustHirView(this, container, state);
     }
 
@@ -436,7 +466,7 @@ export class Hub {
         return new GCCDumpView(this, container, state);
     }
 
-    public cfgViewFactory(container: GoldenLayout.Container, state: any): any /* typeof CfgView */ {
+    public cfgViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof CfgView>[2]): CfgView {
         return new CfgView(this, container, state);
     }
 
