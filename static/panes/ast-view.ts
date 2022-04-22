@@ -62,7 +62,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     constructor(hub: Hub, container: Container, state: AstState & MonacoPaneState) {
         super(hub, container, state);
 
-        if (state && state.astOutput) {
+        if (state.astOutput) {
             this.showAstResults(state.astOutput);
         }
     }
@@ -120,18 +120,20 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent) {
-        if (e?.target?.position === null) return;
-        if (this.settings.hoverShowSource === true && this.astCode) {
+        if (e.target.position === null) return;
+        if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            const hoverCode = this.astCode[e.target.position.lineNumber - 1];
-            if (hoverCode) {
+            if (e.target.position.lineNumber - 1 in this.astCode) {
+                const hoverCode = this.astCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let colBegin = -1;
                 let colEnd = -1;
                 // We check that we actually have something to show at this point!
+                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
                 if (hoverCode.source && hoverCode.source.from) {
                     sourceLine = hoverCode.source.from.line;
                     // Highlight part of a line corresponding to the node if it fits on one line
+                    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
                     if (hoverCode.source.to && hoverCode.source.from.line === hoverCode.source.to.line) {
                         colBegin = hoverCode.source.from.col;
                         colEnd = hoverCode.source.to.col;
