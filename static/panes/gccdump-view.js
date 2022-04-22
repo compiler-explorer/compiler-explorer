@@ -28,7 +28,6 @@
 var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var Toggles = require('../widgets/toggles').Toggles;
-require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
@@ -37,7 +36,6 @@ var TomSelect = require('tom-select');
 var utils = require('../utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
-
 function GccDump(hub, container, state) {
     this.container = container;
     this.eventHub = hub.createEventHub();
@@ -45,12 +43,15 @@ function GccDump(hub, container, state) {
     this.domRoot.html($('#gccdump').html());
     var root = this.domRoot.find('.monaco-placeholder');
 
-    this.gccDumpEditor = monaco.editor.create(root[0], monacoConfig.extendConfig({
-        readOnly: true,
-        glyphMargin: true,
-        lineNumbersMinChars: 3,
-        dropdownParent: 'body',
-    }));
+    this.gccDumpEditor = monaco.editor.create(
+        root[0],
+        monacoConfig.extendConfig({
+            readOnly: true,
+            glyphMargin: true,
+            lineNumbersMinChars: 3,
+            dropdownParent: 'body',
+        })
+    );
 
     this.initButtons(state);
 
@@ -130,43 +131,43 @@ GccDump.prototype.initButtons = function (state) {
     this.topBar = this.domRoot.find('.top-bar');
     this.dumpFiltersButtons = this.domRoot.find('.dump-filters .btn');
 
-    this.dumpTreesButton = this.domRoot.find('[data-bind=\'treeDump\']');
+    this.dumpTreesButton = this.domRoot.find("[data-bind='treeDump']");
     this.dumpTreesTitle = this.dumpTreesButton.prop('title');
 
-    this.dumpRtlButton = this.domRoot.find('[data-bind=\'rtlDump\']');
+    this.dumpRtlButton = this.domRoot.find("[data-bind='rtlDump']");
     this.dumpRtlTitle = this.dumpRtlButton.prop('title');
 
-    this.dumpIpaButton = this.domRoot.find('[data-bind=\'ipaDump\']');
+    this.dumpIpaButton = this.domRoot.find("[data-bind='ipaDump']");
     this.dumpIpaTitle = this.dumpIpaButton.prop('title');
 
-    this.optionAddressButton = this.domRoot.find('[data-bind=\'addressOption\']');
+    this.optionAddressButton = this.domRoot.find("[data-bind='addressOption']");
     this.optionAddressTitle = this.optionAddressButton.prop('title');
 
-    this.optionSlimButton = this.domRoot.find('[data-bind=\'slimOption\']');
+    this.optionSlimButton = this.domRoot.find("[data-bind='slimOption']");
     this.optionSlimTitle = this.optionSlimButton.prop('title');
 
-    this.optionRawButton = this.domRoot.find('[data-bind=\'rawOption\']');
+    this.optionRawButton = this.domRoot.find("[data-bind='rawOption']");
     this.optionRawTitle = this.optionRawButton.prop('title');
 
-    this.optionDetailsButton = this.domRoot.find('[data-bind=\'detailsOption\']');
+    this.optionDetailsButton = this.domRoot.find("[data-bind='detailsOption']");
     this.optionDetailsTitle = this.optionDetailsButton.prop('title');
 
-    this.optionStatsButton = this.domRoot.find('[data-bind=\'statsOption\']');
+    this.optionStatsButton = this.domRoot.find("[data-bind='statsOption']");
     this.optionStatsTitle = this.optionStatsButton.prop('title');
 
-    this.optionBlocksButton = this.domRoot.find('[data-bind=\'blocksOption\']');
+    this.optionBlocksButton = this.domRoot.find("[data-bind='blocksOption']");
     this.optionBlocksTitle = this.optionBlocksButton.prop('title');
 
-    this.optionVopsButton = this.domRoot.find('[data-bind=\'vopsOption\']');
+    this.optionVopsButton = this.domRoot.find("[data-bind='vopsOption']");
     this.optionVopsTitle = this.optionVopsButton.prop('title');
 
-    this.optionLinenoButton = this.domRoot.find('[data-bind=\'linenoOption\']');
+    this.optionLinenoButton = this.domRoot.find("[data-bind='linenoOption']");
     this.optionLinenoTitle = this.optionLinenoButton.prop('title');
 
-    this.optionUidButton = this.domRoot.find('[data-bind=\'uidOption\']');
+    this.optionUidButton = this.domRoot.find("[data-bind='uidOption']");
     this.optionUidTitle = this.optionUidButton.prop('title');
 
-    this.optionAllButton = this.domRoot.find('[data-bind=\'allOption\']');
+    this.optionAllButton = this.domRoot.find("[data-bind='allOption']");
     this.optionAllTitle = this.optionAllButton.prop('title');
 
     this.hideable = this.domRoot.find('.hideable');
@@ -191,11 +192,12 @@ GccDump.prototype.initCallbacks = function () {
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
-    this.cursorSelectionThrottledFunction =
-        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-    this.gccDumpEditor.onDidChangeCursorSelection(_.bind(function (e) {
-        this.cursorSelectionThrottledFunction(e);
-    }, this));
+    this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.gccDumpEditor.onDidChangeCursorSelection(
+        _.bind(function (e) {
+            this.cursorSelectionThrottledFunction(e);
+        }, this)
+    );
 };
 
 GccDump.prototype.updateButtons = function () {
@@ -271,14 +273,16 @@ GccDump.prototype.updatePass = function (filters, selectize, gccDumpOutput) {
     selectize.clear(true);
     selectize.clearOptions(true);
 
-    _.each(passes, function (p) {
-        selectize.addOption(p);
-    }, this);
+    _.each(
+        passes,
+        function (p) {
+            selectize.addOption(p);
+        },
+        this
+    );
 
-    if (gccDumpOutput.selectedPass)
-        selectize.addItem(gccDumpOutput.selectedPass.name, true);
-    else
-        selectize.clear(true);
+    if (gccDumpOutput.selectedPass) selectize.addItem(gccDumpOutput.selectedPass.name, true);
+    else selectize.clear(true);
 
     this.eventHub.emit('gccDumpPassSelected', this.state._compilerid, gccDumpOutput.selectedPass, false);
 
@@ -330,12 +334,10 @@ GccDump.prototype.getDefaultPaneName = function () {
 };
 
 GccDump.prototype.getPaneTag = function () {
-    if(this.state._editorid) {
-        return this._compilerName
-                + ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
+    if (this.state._editorid) {
+        return this._compilerName + ' (Editor #' + this.state._editorid + ', Compiler #' + this.state._compilerid + ')';
     } else {
-        return this._compilerName
-                + ' (Tree #' + this.state._treeid + ', Compiler #' + this.state._compilerid + ')';
+        return this._compilerName + ' (Tree #' + this.state._treeid + ', Compiler #' + this.state._compilerid + ')';
     }
 };
 
@@ -353,8 +355,7 @@ GccDump.prototype.showGccDumpResults = function (results) {
     if (!this.awaitingInitialResults) {
         if (this.selection) {
             this.gccDumpEditor.setSelection(this.selection);
-            this.gccDumpEditor.revealLinesInCenter(this.selection.startLineNumber,
-                this.selection.endLineNumber);
+            this.gccDumpEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
         }
         this.awaitingInitialResults = true;
     }
@@ -401,7 +402,7 @@ GccDump.prototype.saveState = function () {
 
 GccDump.prototype.currentState = function () {
     var filters = this.getEffectiveFilters();
-    var state =  {
+    var state = {
         _compilerid: this.state._compilerid,
         _editorid: this.state._editorid,
         _treeid: this.state._treeid,
