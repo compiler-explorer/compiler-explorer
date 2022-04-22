@@ -46,7 +46,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.irOutput) {
+        if (state.irOutput) {
             this.showIrResults(state.irOutput);
         }
     }
@@ -137,7 +137,6 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     }
 
     showIrResults(result: any[]): void {
-        if (!this.editor) return;
         this.irCode = result;
         this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
@@ -168,11 +167,11 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
-        if (e === null || e.target === null || e.target.position === null) return;
-        if (this.settings.hoverShowSource === true && this.irCode) {
+        if (e.target.position === null) return;
+        if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            const hoverCode = this.irCode[e.target.position.lineNumber - 1];
-            if (hoverCode) {
+            if (e.target.position.lineNumber - 1 in this.irCode) {
+                const hoverCode = this.irCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let sourceColumnBegin = -1;
                 let sourceColumnEnd = -1;
