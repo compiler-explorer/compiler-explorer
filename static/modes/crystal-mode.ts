@@ -39,29 +39,30 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '"', close: '"' },
-            { open: "'", close: "'" },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
         ],
 
         surroundingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '"', close: '"' },
-            { open: "'", close: "'" },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
         ],
 
         indentationRules: {
             /* TODO(supergrecko): Investigate inefficient regex
-            *   original regexp was: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?$/
-            *   truncated piece in fixed regex is: \b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?
-            *
-            * See https://github.com/github/codeql/blob/06b36f742e88b610e0c2b75e2668603fc3a0f359/javascript/ql/src/Performance/ReDoS.ql for reference
-            */
-            increaseIndentPattern: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))$/,
+             *   original regexp was: /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))\b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?$/
+             *   truncated piece in fixed regex is: \b([^#{;]|(["'\\/]).*\4|{{.*?}}|{.*?})*(#.*)?
+             *
+             * See https://github.com/github/codeql/blob/06b36f742e88b610e0c2b75e2668603fc3a0f359/javascript/ql/src/Performance/ReDoS.ql for reference
+             */
+            increaseIndentPattern:
+                /^\s*((begin|class|module|struct|union|annotation|lib|(private|protected)\s+(def|macro)|def|macro|else|elsif|ensure|if|rescue|unless|until|when|while|case)|([^#]*\sdo\b)|([^#]*=\s*(case|if|unless|while|until|begin)))$/,
             decreaseIndentPattern: /^\s*([}\]]([,)]?\s*(#|$)|\.[a-zA-Z_]\w*\b)|(end|rescue|ensure|else|elsif|when)\b)/,
         },
     };
@@ -125,21 +126,61 @@ function definition() {
         ],
 
         operators: [
-            '+', '&+', '-', '&-', '!', '~',
-            '**', '&**',
-            '*', '&*', '/', '//', '%',
-            '<<', '>>',
+            '+',
+            '&+',
+            '-',
+            '&-',
+            '!',
+            '~',
+            '**',
+            '&**',
+            '*',
+            '&*',
+            '/',
+            '//',
+            '%',
+            '<<',
+            '>>',
             '&',
-            '|', '^',
-            '==', '!=', '=~', '!~', '===',
-            '<', '<=', '>', '>=', '<=>',
+            '|',
+            '^',
+            '==',
+            '!=',
+            '=~',
+            '!~',
+            '===',
+            '<',
+            '<=',
+            '>',
+            '>=',
+            '<=>',
             '&&',
             '||',
-            '..', '...',
-            '?', ':',
-            '=', '[]=', '+=', '&+=', '-=', '&-=', '*=', '&*=', '/=', '//=', '%=', '|=',
-            '&=', '^=', '**=', '<<=', '>>=', '||=', '&&=',
-            '[]', '[]?',
+            '..',
+            '...',
+            '?',
+            ':',
+            '=',
+            '[]=',
+            '+=',
+            '&+=',
+            '-=',
+            '&-=',
+            '*=',
+            '&*=',
+            '/=',
+            '//=',
+            '%=',
+            '|=',
+            '&=',
+            '^=',
+            '**=',
+            '<<=',
+            '>>=',
+            '||=',
+            '&&=',
+            '[]',
+            '[]?',
             '&.',
         ],
 
@@ -151,24 +192,30 @@ function definition() {
             root: [
                 [/__(DIR|END_LINE|FILE|LINE)__/, 'keyword'],
 
-                [/[a-z_][a-z0-9_]*[!?=]?/, {
-                    cases: {
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-z_][a-z0-9_]*[!?=]?/,
+                    {
+                        cases: {
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
+                ],
 
                 [/[A-Z][A-Za-z0-9_]*/, 'type.identifier'],
 
                 [/[;,.]/, 'delimiter'],
                 [/::/, 'delimiter'],
 
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'operator',
-                        '@default': '',
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 [/[{}()[\]]/, '@brackets'],
 
@@ -196,7 +243,7 @@ function definition() {
 
 const def = definition();
 
-monaco.languages.register({ id: 'crystal' });
+monaco.languages.register({id: 'crystal'});
 monaco.languages.setMonarchTokensProvider('crystal', def);
 monaco.languages.setLanguageConfiguration('crystal', configuration());
 

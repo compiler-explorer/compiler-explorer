@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { Tab } from 'golden-layout';
-import { EventEmitter } from 'events';
-import { Alert } from '../alert';
+import {Tab} from 'golden-layout';
+import {EventEmitter} from 'events';
+import {Alert} from '../alert';
 
 export class PaneRenaming extends EventEmitter.EventEmitter {
     private pane: any;

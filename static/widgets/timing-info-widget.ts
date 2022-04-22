@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Settings } from '../settings';
-import { Chart, ChartData, defaults } from 'chart.js';
+import {Settings} from '../settings';
+import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
 
-type Data = ChartData<'bar', number[], string> & {steps: number}
+type Data = ChartData<'bar', number[], string> & {steps: number};
 
 function pushTimingInfo(data: Data, step: string, time: number | string) {
     if (typeof time === 'string') {
@@ -37,7 +37,7 @@ function pushTimingInfo(data: Data, step: string, time: number | string) {
     data.steps += time;
 }
 
-function concatTimings(data: Data, timings: {step: string, time: number}[]) {
+function concatTimings(data: Data, timings: {step: string; time: number}[]) {
     for (const timing of timings) {
         pushTimingInfo(data, timing.step, timing.time);
     }
@@ -65,21 +65,15 @@ function initializeChartDataFromResult(compileResult: any, totalTime: number): D
     const data: Data = {
         steps: 0,
         labels: [],
-        datasets: [{
-            label: 'time in ms',
-            data: [],
-            borderWidth: 1,
-            barThickness: 20,
-            backgroundColor: [
-                'red',
-                'orange',
-                'yellow',
-                'green',
-                'blue',
-                'indigo',
-                'violet',
-            ],
-        }],
+        datasets: [
+            {
+                label: 'time in ms',
+                data: [],
+                borderWidth: 1,
+                barThickness: 20,
+                backgroundColor: ['red', 'orange', 'yellow', 'green', 'blue', 'indigo', 'violet'],
+            },
+        ],
     };
 
     if (compileResult.retreivedFromCache) {

@@ -24,14 +24,14 @@
 
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import { MonacoPane } from './pane';
-import { ga } from '../analytics';
+import {MonacoPane} from './pane';
+import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';
-import { Container } from 'golden-layout';
-import { MonacoPaneState } from './pane.interfaces';
-import { Hub } from '../hub';
-import { ToolInputViewState } from './tool-input-view.interfaces';
-import { Settings } from '../settings';
+import {Container} from 'golden-layout';
+import {MonacoPaneState} from './pane.interfaces';
+import {Hub} from '../hub';
+import {ToolInputViewState} from './tool-input-view.interfaces';
+import {Settings} from '../settings';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
     _toolId: number;
@@ -41,32 +41,35 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     cursorSelectionThrottledFunction: ((e: any) => void) & _.Cancelable;
     lastChangeEmitted: string | undefined;
     constructor(hub: Hub, container: Container, state: ToolInputViewState & MonacoPaneState) {
-        if((state as any).compilerId) state.id = (state as any).compilerId;
+        if ((state as any).compilerId) state.id = (state as any).compilerId;
         super(hub, container, state);
-    
+
         this.settings = Settings.getStoredSettings();
-    
+
         this._toolId = state.toolId;
         this._toolName = state.toolName;
         // TODO according to TS typing this should always be true
         this.shouldSetSelectionInitially = !!this.selection;
-    
+
         this.updateTitle();
         this.onSettingsChange(this.settings);
         this.eventHub.emit('toolInputViewOpened', this._toolId);
     }
-    
+
     override getInitialHTML() {
         return $('#tool-input').html();
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(editorRoot, monacoConfig.extendConfig({
-            value: '',
-            language: 'plaintext',
-            readOnly: false,
-            glyphMargin: true,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            monacoConfig.extendConfig({
+                value: '',
+                language: 'plaintext',
+                readOnly: false,
+                glyphMargin: true,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -87,12 +90,12 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             this.maybeEmitChange(false);
         });
         this.eventHub.on('initialised', this.maybeEmitChange, this);
-    
+
         this.editor.getModel()?.onDidChangeContent(() => {
             this.debouncedEmitChange();
             this.updateState();
         });
-    
+
         this.cursorSelectionThrottledFunction = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
         this.editor.onDidChangeCursorSelection(e => {
             this.cursorSelectionThrottledFunction(e);
@@ -106,7 +109,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
     override getPaneName() {
         return `Tool Input ${this._toolName} (Compiler #${this.compilerInfo.compilerId})`;
     }
-    
+
     override getCurrentState() {
         const parent = super.getCurrentState();
         return {
@@ -117,9 +120,8 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             selection: this.selection,
         };
     }
-    
-    override onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number,
-        treeId: number) {}
+
+    override onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number, treeId: number) {}
 
     override onCompileResult(compilerId: number, compiler: unknown, result: unknown) {}
 
@@ -128,7 +130,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         this.eventHub.emit('toolInputViewClosed', this.compilerInfo.compilerId, this._toolId, this.getInput());
         this.editor.dispose();
     }
-    
+
     onToolClose(compilerId, toolSettings) {
         if (this.compilerInfo.compilerId === compilerId && this._toolId === toolSettings.toolId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
@@ -139,7 +141,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             }, this);
         }
     }
-    
+
     onToolInputViewCloseRequest(compilerId, toolId) {
         if (this.compilerInfo.compilerId === compilerId && this._toolId === toolId) {
             this.close();
@@ -148,7 +150,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             }, this);
         }
     }
-    
+
     override onCompilerClose(id) {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
@@ -159,14 +161,14 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             }, this);
         }
     }
-    
+
     override onSettingsChange(newSettings) {
         super.onSettingsChange(newSettings);
         this.debouncedEmitChange = _.debounce(() => {
             this.maybeEmitChange(false);
         }, newSettings.delayAfterChange);
     }
-    
+
     override onDidChangeCursorSelection(e) {
         // On initialization this callback fires with the default selection
         // overwriting any selection from state. If we are awaiting initial
@@ -182,25 +184,24 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             const ret = this.editor.getModel()?.setValue(value);
             if (this.shouldSetSelectionInitially && this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(
-                    this.selection.startLineNumber, this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
                 this.shouldSetSelectionInitially = false;
             }
             return ret;
         }
     }
-    
+
     getInput() {
         if (!this.editor.getModel()) {
             return '';
         }
         return this.editor.getModel()?.getValue();
     }
-    
+
     maybeEmitChange(force) {
         const input = this.getInput();
         if (!force && input === this.lastChangeEmitted) return;
-    
+
         this.lastChangeEmitted = input;
         this.eventHub.emit('toolInputChange', this.compilerInfo.compilerId, this._toolId, this.lastChangeEmitted);
     }

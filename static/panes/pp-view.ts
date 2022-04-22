@@ -24,17 +24,17 @@
 
 'use strict';
 
-import { Toggles } from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
-import { MonacoPane } from './pane';
-import { ga } from '../analytics';
+import {MonacoPane} from './pane';
+import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';
-import { PPViewState } from './pp-view.interfaces';
-import { Container } from 'golden-layout';
-import { MonacoPaneState } from './pane.interfaces';
-import { Hub } from '../hub';
+import {PPViewState} from './pp-view.interfaces';
+import {Container} from 'golden-layout';
+import {MonacoPaneState} from './pane.interfaces';
+import {Hub} from '../hub';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
@@ -56,12 +56,15 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, monacoConfig.extendConfig({
-            language: 'plaintext',
-            readOnly: true,
-            glyphMargin: true,
-            lineNumbersMinChars: 3,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            monacoConfig.extendConfig({
+                language: 'plaintext',
+                readOnly: true,
+                glyphMargin: true,
+                lineNumbersMinChars: 3,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -74,7 +77,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
 
     override registerButtons(state: PPViewState & MonacoPaneState): void {
         super.registerButtons(state);
-        this.options = new Toggles(this.domRoot.find('.options'), ((state as unknown) as Record<string, boolean>));
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
     }
 
@@ -83,10 +86,15 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         this.updateState();
         // update parameters for the compiler and recompile
         this.showCompilationLoadingMessage();
-        this.eventHub.emit('ppViewOptionsUpdated', this.compilerInfo.compilerId, {
-            'filter-headers': options['filter-headers'],
-            'clang-format': options['clang-format'],
-        }, true);
+        this.eventHub.emit(
+            'ppViewOptionsUpdated',
+            this.compilerInfo.compilerId,
+            {
+                'filter-headers': options['filter-headers'],
+                'clang-format': options['clang-format'],
+            },
+            true
+        );
     }
 
     showCompilationLoadingMessage() {
@@ -97,13 +105,13 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         const topBarHeight = this.topBar.outerHeight(true) as number;
         this.editor.layout({
             width: this.domRoot.width() as number,
-            height: this.domRoot.height() as number - topBarHeight,
+            height: (this.domRoot.height() as number) - topBarHeight,
         });
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerInfo.compilerId !== compilerId) return;
-    
+
         if (result.hasPpOutput) {
             this.showPpResults(result.ppOutput);
         } else if (compiler.supportsPpView) {
@@ -128,20 +136,20 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     showPpResults(results) {
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
-                this.editor.setValue(`/* <${results.numberOfLinesFiltered} lines filtered> */\n\n`
-                                     + results.output.trimStart());
+                this.editor.setValue(
+                    `/* <${results.numberOfLinesFiltered} lines filtered> */\n\n` + results.output.trimStart()
+                );
             } else {
                 this.editor.setValue(results.output.trimStart());
             }
         } else {
             this.editor.setValue(results);
         }
-    
+
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }

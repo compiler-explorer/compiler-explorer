@@ -32,5 +32,5 @@ export interface CfgState {
     options?: {
         physics?: boolean;
         navigation?: boolean;
-    }
+    };
 }

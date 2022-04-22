@@ -165,9 +165,9 @@
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
-    "format": "prettier --ignore-unknown ./static/*.ts",
-    "format-fix": "prettier --write --ignore-unknown ./static/*.ts",
-    "format-check": "prettier --ignore-unknown --check ./static/*.ts",
+    "format": "prettier --ignore-unknown ./static/**/*.ts",
+    "format-fix": "prettier --write --ignore-unknown ./static/**/*.ts",
+    "format-check": "prettier --ignore-unknown --check ./static/**/*.ts",
     "ts-compile": "tsc",
     "webpack": "webpack --node-env=production"
   },

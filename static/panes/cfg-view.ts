@@ -24,22 +24,22 @@
 
 import * as vis from 'vis-network';
 import _ from 'underscore';
-import { Toggles } from '../widgets/toggles';
-import { ga } from '../analytics';
+import {Toggles} from '../widgets/toggles';
+import {ga} from '../analytics';
 import TomSelect from 'tom-select';
-import { Container } from 'golden-layout';
-import { CfgState } from './cfg-view.interfaces';
-import { PaneRenaming } from '../widgets/pane-renaming';
-import { Hub } from '../hub';
+import {Container} from 'golden-layout';
+import {CfgState} from './cfg-view.interfaces';
+import {PaneRenaming} from '../widgets/pane-renaming';
+import {Hub} from '../hub';
 
 interface NodeInfo {
-    edges: string[],
-    dagEdges: number[],
-    index: string,
-    id: number,
-    level: number,
-    state: number,
-    inCount: number,
+    edges: string[];
+    dagEdges: number[];
+    index: string;
+    id: number;
+    level: number;
+    state: number;
+    inCount: number;
 }
 
 export class Cfg {
@@ -53,7 +53,7 @@ export class Cfg {
     savedScale: any;
     needsMove: boolean;
     currentFunc: string;
-    functions: { [key: string]: any };
+    functions: {[key: string]: any};
     networkOpts: any;
     cfgVisualiser: any;
     compilerId: number;
@@ -77,16 +77,26 @@ export class Cfg {
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html($('#cfg').html());
-        this.defaultCfgOutput = { nodes: [{ id: 0, shape: 'box', label: 'No Output' }], edges: [] };
-        this.llvmCfgPlaceholder = { nodes: [{
-            id: 0, shape: 'box', label: '-emit-llvm currently not supported',
-        }], edges: [] };
+        this.defaultCfgOutput = {nodes: [{id: 0, shape: 'box', label: 'No Output'}], edges: []};
+        this.llvmCfgPlaceholder = {
+            nodes: [
+                {
+                    id: 0,
+                    shape: 'box',
+                    label: '-emit-llvm currently not supported',
+                },
+            ],
+            edges: [],
+        };
         this.binaryModeSupport = {
-            nodes: [{
-                id: 0,
-                shape: 'box',
-                label: 'Cfg mode cannot be used when the binary filter is set',
-            }], edges: [],
+            nodes: [
+                {
+                    id: 0,
+                    shape: 'box',
+                    label: 'Cfg mode cannot be used when the binary filter is set',
+                },
+            ],
+            edges: [],
         };
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
@@ -102,7 +112,7 @@ export class Cfg {
             autoResize: true,
             locale: 'en',
             edges: {
-                arrows: { to: { enabled: true } },
+                arrows: {to: {enabled: true}},
                 smooth: {
                     enabled: true,
                     type: 'dynamic',
@@ -111,7 +121,7 @@ export class Cfg {
                 physics: true,
             },
             nodes: {
-                font: { face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left' },
+                font: {face: 'Consolas, "Liberation Mono", Courier, monospace', align: 'left'},
             },
             layout: {
                 hierarchical: {
@@ -131,15 +141,17 @@ export class Cfg {
                 navigationButtons: !!state.options.navigation,
                 keyboard: {
                     enabled: true,
-                    speed: { x: 10, y: 10, zoom: 0.03 },
+                    speed: {x: 10, y: 10, zoom: 0.03},
                     bindToWindow: false,
                 },
             },
         };
 
-        this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
-            this.defaultCfgOutput, this.networkOpts);
-
+        this.cfgVisualiser = new vis.Network(
+            this.domRoot.find('.graph-placeholder')[0],
+            this.defaultCfgOutput,
+            this.networkOpts
+        );
 
         this.initButtons(state);
 
@@ -149,27 +161,29 @@ export class Cfg {
         this._binaryFilter = false;
 
         const pickerEl = this.domRoot.find('.function-picker')[0] as HTMLInputElement;
-        this.functionPicker = new TomSelect(pickerEl, {
-            sortField: 'name',
-            valueField: 'name',
-            labelField: 'name',
-            searchField: ['name'],
-            dropdownParent: 'body',
-            plugins: ['input_autogrow'],
-            onChange: (val: string) => {
-                const selectedFn = this.functions[val];
-                if (selectedFn) {
-                    this.currentFunc = val;
-                    this.showCfgResults({
-                        nodes: selectedFn.nodes,
-                        edges: selectedFn.edges,
-                    });
-                    this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
-                    this.resize();
-                    this.saveState();
-                }
-            },
-        } as any
+        this.functionPicker = new TomSelect(
+            pickerEl,
+            {
+                sortField: 'name',
+                valueField: 'name',
+                labelField: 'name',
+                searchField: ['name'],
+                dropdownParent: 'body',
+                plugins: ['input_autogrow'],
+                onChange: (val: string) => {
+                    const selectedFn = this.functions[val];
+                    if (selectedFn) {
+                        this.currentFunc = val;
+                        this.showCfgResults({
+                            nodes: selectedFn.nodes,
+                            edges: selectedFn.edges,
+                        });
+                        this.cfgVisualiser.selectNodes([selectedFn.nodes[0].id]);
+                        this.resize();
+                        this.saveState();
+                    }
+                },
+            } as any
             // The current version of tom-select has a very restrictive type definition
             // that forces to pass the whole options object. This is a workaround to make it type check
         );
@@ -202,7 +216,7 @@ export class Cfg {
             } else {
                 // We don't reset the current function here as we would lose the saved one if this happened at the beginning
                 // (Hint: It *does* happen)
-                if(result.compilationOptions.indexOf('-emit-llvm') === -1) {
+                if (result.compilationOptions.indexOf('-emit-llvm') === -1) {
                     this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.defaultCfgOutput);
                 } else {
                     this.showCfgResults(this._binaryFilter ? this.binaryModeSupport : this.llvmCfgPlaceholder);
@@ -210,13 +224,18 @@ export class Cfg {
             }
 
             this.functionPicker.clearOptions();
-            this.functionPicker.addOption(functionNames.length ?
-                this.adaptStructure(functionNames) : { name: 'The input does not contain functions' });
+            this.functionPicker.addOption(
+                functionNames.length
+                    ? this.adaptStructure(functionNames)
+                    : {name: 'The input does not contain functions'}
+            );
             this.functionPicker.refreshOptions(false);
 
             this.functionPicker.clear();
-            this.functionPicker.addItem(functionNames.length ?
-                this.currentFunc : 'The input does not contain any function', true);
+            this.functionPicker.addItem(
+                functionNames.length ? this.currentFunc : 'The input does not contain any function',
+                true
+            );
             this.saveState();
         }
     }
@@ -268,7 +287,7 @@ export class Cfg {
             this.networkOpts.physics.enabled = this.togglePhysicsButton.hasClass('active');
             // change only physics.enabled option to preserve current node locations
             this.cfgVisualiser.setOptions({
-                physics: { enabled: this.networkOpts.physics.enabled },
+                physics: {enabled: this.networkOpts.physics.enabled},
             });
         });
 
@@ -296,7 +315,7 @@ export class Cfg {
 
     resize() {
         if (this.cfgVisualiser.canvas) {
-            const height = this.domRoot.height() as number - (this.topBar.outerHeight(true) ?? 0);
+            const height = (this.domRoot.height() as number) - (this.topBar.outerHeight(true) ?? 0);
             this.cfgVisualiser.setSize('100%', height.toString());
             this.cfgVisualiser.redraw();
         }
@@ -307,7 +326,7 @@ export class Cfg {
     }
 
     getPaneTag() {
-        if(this._editorid) {
+        if (this._editorid) {
             return `${this._compilerName} (Editor #${this._editorid}, Compiler #${this.compilerId})`;
         } else {
             return `${this._compilerName} (Tree #${this._treeid}, Compiler #${this.compilerId})`;
@@ -345,7 +364,8 @@ export class Cfg {
             }
         });
 
-        const dfs = (node: any) => { // choose which edges will be back-edges
+        const dfs = (node: any) => {
+            // choose which edges will be back-edges
             node.state = 1;
             node.edges.forEach((targetIndex: number) => {
                 const target = nodes[targetIndex];
@@ -386,8 +406,8 @@ export class Cfg {
                     edge.physics = false;
                 } else {
                     edge.physics = true;
-                    const diff = (nodeB.level - nodeA.level);
-                    edge.length = diff * (200 - 5 * (Math.min(5, diff)));
+                    const diff = nodeB.level - nodeA.level;
+                    edge.length = diff * (200 - 5 * Math.min(5, diff));
                 }
             } else {
                 edge.physics = false;
@@ -399,8 +419,8 @@ export class Cfg {
         this.assignLevels(data);
         this.cfgVisualiser.setData(data);
         /* FIXME: This does not work. It's here because I suspected that not having content in the constructor was
-        * breaking the move, but it does not seem like it
-        */
+         * breaking the move, but it does not seem like it
+         */
         if (this.needsMove) {
             this.cfgVisualiser.moveTo({
                 position: this.savedPos,
@@ -452,8 +472,7 @@ export class Cfg {
 
     adaptStructure(names: string[]) {
         return _.map(names, name => {
-            return { name };
+            return {name};
         });
     }
 }
-

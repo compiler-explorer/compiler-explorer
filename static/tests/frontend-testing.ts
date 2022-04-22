@@ -1,4 +1,4 @@
-import { IFrontendTesting, ITestable } from './frontend-testing.interfaces';
+import {IFrontendTesting, ITestable} from './frontend-testing.interfaces';
 
 class FrontendTesting implements IFrontendTesting {
     private testSuites: Array<ITestable> = [];
@@ -8,12 +8,12 @@ class FrontendTesting implements IFrontendTesting {
     }
 
     public getAllTestNames(): string[] {
-        return this.testSuites.map((val) => val.description);
+        return this.testSuites.map(val => val.description);
     }
 
     private findTest(name: string) {
         for (const suite of this.testSuites) {
-            if (suite.description === name) { 
+            if (suite.description === name) {
                 return suite;
             }
         }
