@@ -43,12 +43,27 @@ const staticPath = path.join(distPath, 'static');
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v6.';
+const webjackJsHack = '.v7.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 
-            'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb', 'dart',
-            'typescript', 'solidity'],
+        languages: [
+            'cpp',
+            'go',
+            'pascal',
+            'python',
+            'rust',
+            'swift',
+            'java',
+            'kotlin',
+            'scala',
+            'ruby',
+            'csharp',
+            'fsharp',
+            'vb',
+            'dart',
+            'typescript',
+            'solidity',
+        ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new ProvidePlugin({
@@ -112,8 +127,8 @@ export default {
             new TerserPlugin({
                 parallel: true,
                 terserOptions: {
-                    ecma: 5, sourceMap: true,
-
+                    ecma: 5,
+                    sourceMap: true,
                 },
             }),
         ],
