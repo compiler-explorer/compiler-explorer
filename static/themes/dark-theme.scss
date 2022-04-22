@@ -103,6 +103,9 @@ a.navbar-brand img.logo.normal {
 .modal-header {
     color: #eee !important;
     background-color: #333 !important;
+    .close {
+        color: #fff;
+    }
 }
 
 .modal-body {
