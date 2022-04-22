@@ -44,7 +44,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         this.eventHub.emit('ppViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.onOptionsChange();
-        if (state && state.ppOutput) {
+        if (state.ppOutput) {
             this.showPpResults(state.ppOutput);
         } else {
             this.showCompilationLoadingMessage();
