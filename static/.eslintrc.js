@@ -44,7 +44,7 @@ module.exports = {
             '@typescript-eslint/no-var-requires': 'off', // Needed for now, can't move some
             '@typescript-eslint/no-explicit-any': 'off', // Too much js code still exists
             '@typescript-eslint/ban-ts-comment': 'off', // We need some @ts-ignore at some points
-            '@typescript-eslint/no-unnecessary-condition': 'warn', // for now just warn
+            '@typescript-eslint/no-unnecessary-condition': 'error',
         },
     }],
 };
