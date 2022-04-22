@@ -28,7 +28,7 @@ import {
     AssemblyDocumentationResponse,
     AssemblyDocumentationRequest,
 } from '../../types/features/assembly-documentation.interfaces';
-import { FormattingRequest, FormattingResponse } from './formatting.interfaces';
+import {FormattingRequest, FormattingResponse} from './formatting.interfaces';
 
 /** Type wrapper allowing .json() to resolve to a concrete type */
 interface TypedResponse<T> extends Response {
@@ -36,30 +36,26 @@ interface TypedResponse<T> extends Response {
 }
 
 /** Lightweight fetch() wrapper for CE API urls */
-const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResponse<R>> => fetch(
-    `${window.location.origin}${window.httpRoot}api${uri}`,
-    {
+const request = async <R>(uri: string, options?: RequestInit): Promise<TypedResponse<R>> =>
+    fetch(`${window.location.origin}${window.httpRoot}api${uri}`, {
         ...options,
         credentials: 'include',
         headers: {
             ...options?.headers,
             Accept: 'application/json',
         },
-    }
-);
+    });
 
 /** GET /api/asm/:arch/:instruction */
-export const getAssemblyDocumentation = async (
-    options: AssemblyDocumentationRequest
-) => await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`);
+export const getAssemblyDocumentation = async (options: AssemblyDocumentationRequest) =>
+    await request<AssemblyDocumentationResponse>(`/asm/${options.instructionSet}/${options.opcode}`);
 
 /** POST /api/format/:formatter */
-export const getFormattedCode = async (
-    options: FormattingRequest
-) => await request<FormattingResponse>(`/format/${options.formatterId}`, {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(_.pick(options, 'source', 'base', 'tabWidth', 'useSpaces')),
-});
+export const getFormattedCode = async (options: FormattingRequest) =>
+    await request<FormattingResponse>(`/format/${options.formatterId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(_.pick(options, 'source', 'base', 'tabWidth', 'useSpaces')),
+    });

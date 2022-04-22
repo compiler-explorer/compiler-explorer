@@ -23,15 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
-import _, { Cancelable } from 'underscore';
-import { MonacoPane } from './pane';
-import { ga } from '../analytics';
+import _, {Cancelable} from 'underscore';
+import {MonacoPane} from './pane';
+import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';
-import { FlagsViewState } from './flags-view.interfaces';
-import { Container } from 'golden-layout';
-import { MonacoPaneState } from './pane.interfaces';
-import { Settings, SiteSettings } from '../settings';
-import { Hub } from '../hub';
+import {FlagsViewState} from './flags-view.interfaces';
+import {Container} from 'golden-layout';
+import {MonacoPaneState} from './pane.interfaces';
+import {Settings, SiteSettings} from '../settings';
+import {Hub} from '../hub';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: ((e: boolean) => void) & Cancelable = (() => {}) as any;
@@ -55,11 +55,14 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        return monaco.editor.create(editorRoot, monacoConfig.extendConfig({
-            language: 'plaintext',
-            readOnly: false,
-            glyphMargin: true,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            monacoConfig.extendConfig({
+                language: 'plaintext',
+                readOnly: false,
+                glyphMargin: true,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -69,7 +72,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
             eventAction: 'detailedCompilerFlags',
         });
     }
-    
+
     override registerCallbacks() {
         this.eventHub.emit('requestSettings');
         this.eventHub.emit('findCompilers');
@@ -86,15 +89,15 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         });
 
         this.cursorSelectionThrottledFunction = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        this.editor.onDidChangeCursorSelection((e) => {
+        this.editor.onDidChangeCursorSelection(e => {
             this.cursorSelectionThrottledFunction(e);
         });
     }
-    
+
     override getDefaultPaneName() {
         return 'Detailed Compiler Flags';
     }
-    
+
     override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number) {
         if (compilerId === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
@@ -122,12 +125,12 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
             });
         }
     }
-    
+
     override onSettingsChange(newSettings: SiteSettings) {
         super.onSettingsChange(newSettings);
         this.debouncedEmitChange = _.debounce(this.maybeEmitChange.bind(this), newSettings.delayAfterChange);
     }
-    
+
     getOptions() {
         const lines = this.editor.getModel()?.getValue();
         return lines ? lines.replace(/\n/g, ' ') : ''; // TODO
@@ -149,7 +152,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
     maybeEmitChange(force) {
         const options = this.getOptions();
         if (!force && options === this.lastChangeEmitted) return;
-    
+
         this.lastChangeEmitted = options;
         this.eventHub.emit('compilerFlagsChange', this.compilerInfo.compilerId, this.lastChangeEmitted);
     }

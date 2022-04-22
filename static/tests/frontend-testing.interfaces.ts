@@ -1,4 +1,3 @@
-
 export interface ITestable {
     readonly description: string;
     run(): Promise<void>;

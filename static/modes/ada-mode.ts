@@ -104,10 +104,10 @@ export function definition() {
             'or',
             'xor',
         ],
-        standardTypes :[
+        standardTypes: [
             // Defined in the package Standard
             // See: http://www.adaic.org/resources/add_content/standards/12rm/html/RM-A-1.html
-            'Boolean', 
+            'Boolean',
             'Integer',
             'Natural',
             'Positive ',
@@ -127,10 +127,28 @@ export function definition() {
         ],
 
         operators: [
-            '+', '-', '*', '/', 'div', 'mod',
-            'shl', 'shr', 'and', 'or', 'xor', 'not',
-            '<', '>', '<=', '>=', '==', '<>',
-            '+=', '-=', '*=', '/=',
+            '+',
+            '-',
+            '*',
+            '/',
+            'div',
+            'mod',
+            'shl',
+            'shr',
+            'and',
+            'or',
+            'xor',
+            'not',
+            '<',
+            '>',
+            '<=',
+            '>=',
+            '==',
+            '<>',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
         ],
         brackets: [
             ['(', ')', 'delimiter.parenthesis'],
@@ -139,38 +157,44 @@ export function definition() {
         symbols: /[=><!~&|+\-*/^]+/,
         delimiters: /[;=.:,`]/,
         escapes: /\\(?:[abfnrtv\\'\n\r]|x[0-9A-Fa-f]{2}|[0-7]{3}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{\w+\})/,
-        
+
         // The main tokenizer for our languages
         tokenizer: {
             root: [
-                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
-                    cases: {
-                        '@standardTypes': 'type',
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-zA-Z_][a-zA-Z0-9_]*/,
+                    {
+                        cases: {
+                            '@standardTypes': 'type',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
+                ],
                 // Whitespace
                 {include: '@whitespace'},
 
                 [/[()[\]]/, '@brackets'],
 
                 // Numbers
-                // See https://regex101.com/r/dflfeQ/2 for examples from the 
+                // See https://regex101.com/r/dflfeQ/2 for examples from the
                 // 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-1.html#S0009)
                 [/[0-9_.]+(E[+-]?\d+)?/, 'number.float'],
                 // See https://regex101.com/r/dSSADT/3 for examples from the
                 // 2012 ARM (http://www.ada-auth.org/standards/12rm/html/RM-2-4-2.html#S0011)
                 [/[0-9]+#[0-9A-Fa-f_.]+#(E[+-]?\d+)?/, 'number.hex'],
 
-                [/@delimiters/, {
-                    cases: {
-                        '@keywords': 'keyword',
-                        '@default': 'delimiter',
+                [
+                    /@delimiters/,
+                    {
+                        cases: {
+                            '@keywords': 'keyword',
+                            '@default': 'delimiter',
+                        },
                     },
-                }],
+                ],
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
                 [/"/, 'string', '@string'],
 
                 // characters
@@ -178,7 +202,7 @@ export function definition() {
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid'],
             ],
-            
+
             // Whitespace and comments
             whitespace: [
                 [/[ \t\r\n]+/, 'white'],

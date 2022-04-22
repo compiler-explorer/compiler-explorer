@@ -85,7 +85,7 @@ function definition() {
                 [/[-+,*/!:&{}()]/, 'operator'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
                 // `msvc does this, sometimes'
                 [/`/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
@@ -105,7 +105,7 @@ function definition() {
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'],    // nested comment
+                [/\/\*/, 'comment', '@push'], // nested comment
                 ['\\*/', 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
