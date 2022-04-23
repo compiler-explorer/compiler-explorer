@@ -24,36 +24,36 @@
 
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 
-import { MonacoPane } from './pane';
-import { AstState } from './ast-view.interfaces';
-import { MonacoPaneState } from './pane.interfaces';
+import {MonacoPane} from './pane';
+import {AstState} from './ast-view.interfaces';
+import {MonacoPaneState} from './pane.interfaces';
 import * as colour from '../colour';
 import * as monacoConfig from '../monaco-config';
 
-import { ga } from '../analytics';
-import { Hub } from '../hub';
+import {ga} from '../analytics';
+import {Hub} from '../hub';
 
 type DecorationEntry = {
     linkedCode: any[];
-}
+};
 
 type SourceLocation = {
-    line: number;
-    col: number;
+    line: number | null; // Null only for malformed strings
+    col: number | null; // Ditto
 };
 
 type AstCodeEntry = {
     text: string;
     source?: {
-        from: SourceLocation,
-        to: SourceLocation,
+        from: SourceLocation | null;
+        to: SourceLocation | null;
     };
 };
 
 export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstState> {
-    decorations: DecorationEntry = { linkedCode: [] };
+    decorations: DecorationEntry = {linkedCode: []};
     prevDecorations: any[] = [];
     colours: string[] = [];
     astCode: AstCodeEntry[] = [];
@@ -107,14 +107,17 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, monacoConfig.extendConfig({
-            language: 'plaintext',
-            readOnly: true,
-            glyphMargin: true,
-            lineNumbersMinChars: 3,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            monacoConfig.extendConfig({
+                language: 'plaintext',
+                readOnly: true,
+                glyphMargin: true,
+                lineNumbersMinChars: 3,
+            })
+        );
     }
-    
+
     override getDefaultPaneName() {
         return 'Ast Viewer';
     }
@@ -129,19 +132,29 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 let colBegin = -1;
                 let colEnd = -1;
                 // We check that we actually have something to show at this point!
-                /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-                if (hoverCode.source && hoverCode.source.from) {
+                if (hoverCode.source?.from?.line) {
                     sourceLine = hoverCode.source.from.line;
                     // Highlight part of a line corresponding to the node if it fits on one line
-                    /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-                    if (hoverCode.source.to && hoverCode.source.from.line === hoverCode.source.to.line) {
+                    if (
+                        hoverCode.source.to &&
+                        hoverCode.source.from.line === hoverCode.source.to.line &&
+                        hoverCode.source.from.col &&
+                        hoverCode.source.to.col
+                    ) {
                         colBegin = hoverCode.source.from.col;
                         colEnd = hoverCode.source.to.col;
                     }
                 }
                 this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, colBegin, colEnd, false);
-                this.eventHub.emit('panesLinkLine', this.compilerInfo.compilerId, sourceLine,
-                    colBegin, colEnd, false, this.getPaneName());
+                this.eventHub.emit(
+                    'panesLinkLine',
+                    this.compilerInfo.compilerId,
+                    sourceLine,
+                    colBegin,
+                    colEnd,
+                    false,
+                    this.getPaneName()
+                );
             }
         }
     }
@@ -152,13 +165,13 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
     override onCompileResult(id: number, compiler, result) {
         if (this.compilerInfo.compilerId !== id) return;
-    
+
         if (result.hasAstOutput) {
             this.showAstResults(result.astOutput);
         } else if (compiler.supportsAstView) {
             this.showAstResults([{text: '<No output>'}]);
         }
-    
+
         // TODO: This is unelegant. Previously took advantage of fourth argument for the compileResult event.
         // I'm guessing it's not part of the TS rewrite because it's not always passed by the emitter.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
@@ -172,12 +185,11 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         const fullText = results.map(x => x.text).join('\n');
         this.editor.setValue(fullText);
         this.astCode = results;
-    
+
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }
@@ -194,14 +206,18 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             }
         }
     }
-    
+
     onColours(id: number, colours, scheme) {
         if (id === this.compilerInfo.compilerId) {
             const astColours = {};
             for (const [index, code] of this.astCode.entries()) {
-                if (code.source && code.source.from.line && code.source.to.line &&
+                if (
+                    code.source &&
+                    code.source.from?.line &&
+                    code.source.to?.line &&
                     code.source.from.line <= code.source.to.line &&
-                    code.source.to.line < code.source.from.line + 100) {
+                    code.source.to.line < code.source.from.line + 100
+                ) {
                     for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
                         if (colours[i - 1] !== undefined) {
                             astColours[index] = colours[i - 1];
@@ -216,28 +232,46 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
 
     updateDecorations() {
         this.prevDecorations = this.editor.deltaDecorations(
-            this.prevDecorations, _.flatten(_.values(this.decorations)));
+            this.prevDecorations,
+            _.flatten(_.values(this.decorations))
+        );
     }
-    
+
     clearLinkedLines() {
         this.decorations.linkedCode = [];
         this.updateDecorations();
     }
-    
-    onPanesLinkLine(compilerId: number, lineNumber: number, colBegin: number, colEnd: number, revealLine: boolean,
-        sender: string) {
+
+    onPanesLinkLine(
+        compilerId: number,
+        lineNumber: number,
+        colBegin: number,
+        colEnd: number,
+        revealLine: boolean,
+        sender: string
+    ) {
         if (Number(compilerId) === this.compilerInfo.compilerId) {
             const lineNums: number[] = [];
             const singleNodeLines: number[] = [];
             const signalFromAnotherPane = sender !== this.getPaneName();
             for (const [i, astLine] of this.astCode.entries()) {
-                if (astLine.source
-                    && astLine.source.from.line <= lineNumber && lineNumber <= astLine.source.to.line) {
+                if (
+                    astLine.source?.from?.line &&
+                    astLine.source.to?.line &&
+                    astLine.source.from.line <= lineNumber &&
+                    lineNumber <= astLine.source.to.line
+                ) {
                     const line = i + 1;
                     lineNums.push(line);
-                    if (signalFromAnotherPane &&
-                        astLine.source.from.line === lineNumber && astLine.source.to.line === lineNumber &&
-                        astLine.source.from.col <= colEnd && colBegin <= astLine.source.to.col) {
+                    if (
+                        signalFromAnotherPane &&
+                        astLine.source.from.line === lineNumber &&
+                        astLine.source.to.line === lineNumber &&
+                        astLine.source.from.col &&
+                        astLine.source.to.col &&
+                        astLine.source.from.col <= colEnd &&
+                        colBegin <= astLine.source.to.col
+                    ) {
                         singleNodeLines.push(line);
                     }
                 }
@@ -270,7 +304,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             this.updateDecorations();
         }
     }
-    
+
     override close() {
         this.eventHub.unsubscribe();
         this.eventHub.emit('astViewClosed', this.compilerInfo.compilerId);
