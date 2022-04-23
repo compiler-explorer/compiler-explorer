@@ -92,6 +92,9 @@ lang-rust:
 lang-scala:
     - lib/compilers/scala.js
     - etc/config/scala.*.properties
+lang-solidity:
+    - lib/compilers/solidity.js
+    - etc/config/solidity.*.properties
 lang-swift:
     - lib/compilers/swift.js
     - etc/config/swift.*.properties
