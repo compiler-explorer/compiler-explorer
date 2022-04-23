@@ -35,7 +35,7 @@ export interface LibraryVersion {
 export interface Library {
     dependencies: string[];
     description?: string;
-    examples: string[];
+    examples?: string[];
     name?: string;
     url?: string;
     versions: Record<string, LibraryVersion>;
