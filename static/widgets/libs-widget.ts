@@ -22,10 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from '../options';
+import {options} from '../options';
 import * as local from '../local';
-import { Library, LibraryVersion } from '../options.interfaces';
-
+import {Library, LibraryVersion} from '../options.interfaces';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -43,8 +42,8 @@ interface WidgetState {
 export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
 type AvailableLibs = Record<string, LangLibs>;
-type LibInUse = {libId: string, versionId: string} & LibraryVersion;
-type Lib = {name: string, ver: string};
+type LibInUse = {libId: string; versionId: string} & LibraryVersion;
+type Lib = {name: string; ver: string};
 
 type FavLibraries = Record<string, string[]>;
 
@@ -60,7 +59,6 @@ export class LibsWidget {
     private readonly onChangeCallback: () => void;
 
     private readonly availableLibs: AvailableLibs;
-
 
     constructor(
         langId: string,
@@ -98,8 +96,7 @@ export class LibsWidget {
 
         searchInput.on('input', this.startSearching.bind(this));
 
-        this.domRoot.find('.lib-search-button')
-            .on('click', this.startSearching.bind(this));
+        this.domRoot.find('.lib-search-button').on('click', this.startSearching.bind(this));
 
         this.dropdownButton.on('click', () => {
             this.domRoot.modal({});
@@ -140,14 +137,10 @@ export class LibsWidget {
             this.dropdownButton
                 .addClass('btn-success')
                 .removeClass('btn-light')
-                .prop('title', 'Current libraries:\n' +
-                    selectedLibs.map(lib => '- ' + lib.name).join('\n'));
+                .prop('title', 'Current libraries:\n' + selectedLibs.map(lib => '- ' + lib.name).join('\n'));
             text += ' (' + selectedLibs.length + ')';
         } else {
-            this.dropdownButton
-                .removeClass('btn-success')
-                .addClass('btn-light')
-                .prop('title', 'Include libs');
+            this.dropdownButton.removeClass('btn-success').addClass('btn-light').prop('title', 'Include libs');
         }
 
         this.dropdownButton.find('.dp-text').text(text);
@@ -258,7 +251,7 @@ export class LibsWidget {
 
     conjureUpExamples(result: JQuery<Node>, lib: Library) {
         const examples = result.find('.lib-examples');
-        if (lib.examples.length > 0) {
+        if (lib.examples && lib.examples.length > 0) {
             examples.append($('<b>Examples</b>'));
             const examplesList = $('<ul />');
             for (const exampleId of lib.examples) {
@@ -371,8 +364,9 @@ export class LibsWidget {
 
     static _libVersionMatchesQuery(library: Library, searchText: string): boolean {
         const text = searchText.toLowerCase();
-        return library.name?.toLowerCase()?.includes(text)
-            || library.description?.toLowerCase()?.includes(text) || false;
+        return (
+            library.name?.toLowerCase()?.includes(text) || library.description?.toLowerCase()?.includes(text) || false
+        );
     }
 
     startSearching() {
@@ -424,7 +418,6 @@ export class LibsWidget {
             return;
         }
 
-
         for (const libId in currentAvailableLibs) {
             const library = currentAvailableLibs[libId];
 
@@ -455,11 +448,13 @@ export class LibsWidget {
 
         if (!(this.currentCompilerId in this.availableLibs[this.currentLangId])) {
             if (this.currentCompilerId === '_default_') {
-                this.availableLibs[this.currentLangId][this.currentCompilerId] =
-                    $.extend(true, {}, options.libs[this.currentLangId]);
+                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
+                    true,
+                    {},
+                    options.libs[this.currentLangId]
+                );
             } else {
-                this.availableLibs[this.currentLangId][this.currentCompilerId] =
-                    $.extend(true, {}, possibleLibs);
+                this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);
             }
         }
 
@@ -507,9 +502,11 @@ export class LibsWidget {
     }
 
     getLibInfoById(libId: string): Library | undefined {
-        if(this.currentLangId in this.availableLibs
-            && this.currentCompilerId in this.availableLibs[this.currentLangId]
-            && libId in this.availableLibs[this.currentLangId][this.currentCompilerId]) {
+        if (
+            this.currentLangId in this.availableLibs &&
+            this.currentCompilerId in this.availableLibs[this.currentLangId] &&
+            libId in this.availableLibs[this.currentLangId][this.currentCompilerId]
+        ) {
             return this.availableLibs[this.currentLangId][this.currentCompilerId][libId];
         } else {
             return undefined;
