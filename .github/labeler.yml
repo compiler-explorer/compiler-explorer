@@ -98,6 +98,9 @@ lang-solidity:
 lang-swift:
     - lib/compilers/swift.js
     - etc/config/swift.*.properties
+lang-typescript:
+    - lib/compilers/typescript.js
+    - etc/config/typescript.*.properties
 lang-zig:
     - lib/compilers/zig.js
     - etc/config/zig.*.properties
