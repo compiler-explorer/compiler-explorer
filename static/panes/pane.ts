@@ -58,7 +58,7 @@ export abstract class Pane<S> {
     eventHub: EventHub;
     isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
-    paneName: string;
+    paneName: string | undefined = undefined;
     paneRenaming: PaneRenaming;
 
     /**
@@ -258,7 +258,7 @@ export abstract class Pane<S> {
  */
 export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pane<S> {
     editor: E;
-    selection: monaco.Selection;
+    selection: monaco.Selection | undefined = undefined;
     fontScale: FontScale;
 
     protected constructor(hub: any /* Hub */, container: Container, state: S & MonacoPaneState) {
@@ -285,9 +285,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     }
 
     resize() {
-        const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot,
-            this.topBar, this.hideable);
-        if (!this.editor) return;
+        const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
         this.editor.layout({
             width: this.domRoot.width() as number,
             height: this.domRoot.height() as number - topBarHeight,

@@ -37,7 +37,7 @@ import { Hub } from '../hub';
 export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
     constructor(hub: Hub, container: Container, state: RustMacroExpState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.rustMacroExpOutput) {
+        if (state.rustMacroExpOutput) {
             this.showRustMacroExpResults(state.rustMacroExpOutput);
         }
     }
@@ -99,7 +99,6 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
     }
 
     showRustMacroExpResults(result: any[]): void {
-        if (!this.editor) return;
         this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust Macro Expansion generated>');

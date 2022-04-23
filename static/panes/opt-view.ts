@@ -58,7 +58,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
 
     constructor(hub: Hub, container: Container, state: OptState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.optOutput) {
+        if (state.optOutput) {
             this.showOptResults(state.optOutput);
         }
         this.eventHub.emit('optViewOpened', this.compilerInfo.compilerId);
@@ -138,6 +138,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     showOptResults(results: OptCodeEntry[]) {
         const opt: monaco.editor.IModelDeltaDecoration[] = [];
 
+        /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
         const groupedResults = _.groupBy(results.filter(x => x.DebugLoc !== undefined), x => x.DebugLoc.Line);
 
         for(const [key, value] of Object.entries(groupedResults)) {

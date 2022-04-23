@@ -37,7 +37,7 @@ import { Hub } from '../hub';
 export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugState> {
     constructor(hub: Hub, container: Container, state: GnatDebugState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.gnatDebugOutput) {
+        if (state.gnatDebugOutput) {
             this.showGnatDebugResults(state.gnatDebugOutput);
         }
     }
@@ -97,7 +97,6 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
     }
 
     showGnatDebugResults(result: any[]): void {
-        if (!this.editor) return;
         this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No GNAT Debug generated>');

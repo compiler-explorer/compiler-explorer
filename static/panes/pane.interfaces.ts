@@ -47,5 +47,5 @@ export class PaneState {
  * See MonacoPane.
  */
 export class MonacoPaneState extends PaneState {
-    selection: monaco.Selection;
+    selection: monaco.Selection | undefined;
 }

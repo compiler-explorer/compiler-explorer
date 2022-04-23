@@ -108,20 +108,8 @@ export class Tree {
             return hub.compilerService.compilersByLang[language.id];
         });
 
-        if (state) {
-            if (!state.compilerLanguageId) {
-                state.compilerLanguageId = this.settings.defaultLanguage;
-            }
-        } else {
-            state = {
-                id: this.id,
-                customOutputFilename: '',
-                cmakeArgs: '',
-                compilerLanguageId: this.settings.defaultLanguage,
-                isCMakeProject: false,
-                files: [],
-                newFileId: 1,
-            };
+        if (!state.compilerLanguageId) {
+            state.compilerLanguageId = this.settings.defaultLanguage;
         }
 
         this.multifileService = new MultifileService(this.hub, this.alertSystem, state);
@@ -162,14 +150,12 @@ export class Tree {
     }
 
     private initInputs(state: TreeState) {
-        if (state) {
-            if (state.cmakeArgs) {
-                this.cmakeArgsInput.val(state.cmakeArgs);
-            }
+        if (state.cmakeArgs) {
+            this.cmakeArgsInput.val(state.cmakeArgs);
+        }
 
-            if (state.customOutputFilename) {
-                this.customOutputFilenameInput.val(state.customOutputFilename);
-            }
+        if (state.customOutputFilename) {
+            this.customOutputFilenameInput.val(state.customOutputFilename);
         }
     }
 
@@ -450,7 +436,7 @@ export class Tree {
         return Components.getExecutorForTree(this.id, this.currentState().compilerLanguageId);
     }
 
-    private getConfigForNewEditor(file: MultifileFile) {
+    private getConfigForNewEditor(file: MultifileFile | undefined) {
         let editor;
         const editorId = this.hub.nextEditorId();
 

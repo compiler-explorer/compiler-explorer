@@ -37,7 +37,7 @@ import { Hub } from '../hub';
 export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMirState> {
     constructor(hub: Hub, container: Container, state: RustMirState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.rustMirOutput) {
+        if (state.rustMirOutput) {
             this.showRustMirResults(state.rustMirOutput);
         }
     }
@@ -97,7 +97,6 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
     }
 
     showRustMirResults(result: any[]): void {
-        if (!this.editor) return;
         this.editor.getModel()?.setValue(result.length
             ? _.pluck(result, 'text').join('\n')
             : '<No Rust MIR generated>');
