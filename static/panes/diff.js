@@ -32,9 +32,6 @@ var ga = require('../analytics').ga;
 var TomSelect = require('tom-select');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
-require('../modes/asm-mode');
-
-
 // note that these variables are saved to state, so don't change, only add to it
 var
     DiffType_ASM = 0,

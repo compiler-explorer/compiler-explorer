@@ -47,11 +47,6 @@ var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
-
-require('../modes/asm-mode');
-require('../modes/asmruby-mode');
-require('../modes/ptx-mode');
-
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
     length: function (n) {
