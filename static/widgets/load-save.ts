@@ -23,14 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { saveAs } from 'file-saver';
-import { Alert } from '../alert';
-import { ga } from '../analytics';
+import {saveAs} from 'file-saver';
+import {Alert} from '../alert';
+import {ga} from '../analytics';
 import * as local from '../local';
-import { Language } from '../../types/languages.interfaces';
+import {Language} from '../../types/languages.interfaces';
 
 const history = require('../history');
-
 
 export class LoadSave {
     private modal: JQuery | null = null;
@@ -41,12 +40,13 @@ export class LoadSave {
     private base: string;
     private currentLanguage: Language | null;
 
-
     constructor() {
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Load-Saver';
         this.base = window.httpRoot;
-        this.fetchBuiltins().then(() => {}).catch(() => {});
+        this.fetchBuiltins()
+            .then(() => {})
+            .catch(() => {});
     }
 
     public static getLocalFiles(): Record<string, string> {
@@ -68,24 +68,18 @@ export class LoadSave {
     }
 
     private async fetchBuiltins(): Promise<Record<string, any>[]> {
-        return new Promise<Record<string, any>[]>((resolve) => {
+        return new Promise<Record<string, any>[]>(resolve => {
             $.getJSON(window.location.origin + this.base + 'source/builtin/list', resolve);
         });
     }
 
     public initializeIfNeeded() {
-        if ((this.modal === null) || (this.modal.length === 0)) {
+        if (this.modal === null || this.modal.length === 0) {
             this.modal = $('#load-save');
 
-            this.modal
-                .find('.local-file')
-                .on('change', (e) => this.onLocalFile(e));
-            this.modal
-                .find('.save-button')
-                .on('click', () => this.onSaveToBrowserStorage());
-            this.modal
-                .find('.save-file')
-                .on('click', () => this.onSaveToFile());
+            this.modal.find('.local-file').on('change', e => this.onLocalFile(e));
+            this.modal.find('.save-button').on('click', () => this.onSaveToBrowserStorage());
+            this.modal.find('.save-file').on('click', () => this.onSaveToFile());
         }
     }
 
@@ -94,21 +88,19 @@ export class LoadSave {
     }
 
     private doLoad(element) {
-        $.getJSON(window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
-            (response) => this.onLoad(response.file));
+        $.getJSON(
+            window.location.origin + this.base + 'source/builtin/load/' + element.lang + '/' + element.file,
+            response => this.onLoad(response.file)
+        );
         this.modal?.modal('hide');
     }
 
-    private static populate(root: JQuery, list: {name: string, load: () => void, delete?: () => void }[]) {
+    private static populate(root: JQuery, list: {name: string; load: () => void; delete?: () => void}[]) {
         root.find('li:not(.template)').remove();
         const template = root.find('.template');
         for (const elem of list) {
             const clone = template.clone();
-            clone.removeClass('template')
-                .appendTo(root)
-                .find('a')
-                .text(elem.name)
-                .on('click', elem.load);
+            clone.removeClass('template').appendTo(root).find('a').text(elem.name).on('click', elem.load);
             const deleteButton = clone.find('button');
             if (elem.delete !== undefined) {
                 deleteButton.on('click', () => elem.delete?.());
@@ -117,9 +109,7 @@ export class LoadSave {
     }
 
     private async populateBuiltins() {
-        const builtins = (await this.fetchBuiltins()).filter(entry =>
-            this.currentLanguage?.id === entry.lang
-        );
+        const builtins = (await this.fetchBuiltins()).filter(entry => this.currentLanguage?.id === entry.lang);
         return LoadSave.populate(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.modal!.find('.examples'),
@@ -156,7 +146,8 @@ export class LoadSave {
                                     LoadSave.removeLocalFile(name);
                                     this.populateLocalStorage();
                                 },
-                            });
+                            }
+                        );
                     },
                 };
             })
@@ -215,9 +206,8 @@ export class LoadSave {
         this.populateLocalHistory();
         this.onLoadCallback = onLoad;
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.modal!.find('.local-file')
-            .attr('accept', currentLanguage.extensions.join(','));
-        this.populateBuiltins().then(() =>this.modal?.modal());
+        this.modal!.find('.local-file').attr('accept', currentLanguage.extensions.join(','));
+        this.populateBuiltins().then(() => this.modal?.modal());
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenModalPane',
@@ -240,7 +230,8 @@ export class LoadSave {
             this.alertSystem.ask(
                 'Replace current?',
                 `Do you want to replace the existing saved file '${_.escape(name)}'?`,
-                {yes: doneCallback});
+                {yes: doneCallback}
+            );
         } else {
             doneCallback();
             this.modal?.modal('hide');
@@ -256,10 +247,11 @@ export class LoadSave {
     private onSaveToFile(fileEditor?: string) {
         try {
             const fileLang = this.currentLanguage?.name ?? '';
-            const name = fileLang && fileEditor !== undefined ? (fileLang + ' Editor #' + fileEditor + ' ') : '';
+            const name = fileLang && fileEditor !== undefined ? fileLang + ' Editor #' + fileEditor + ' ' : '';
             saveAs(
                 new Blob([this.editorText], {type: 'text/plain;charset=utf-8'}),
-                'Compiler Explorer ' + name + 'Code' + this.extension);
+                'Compiler Explorer ' + name + 'Code' + this.extension
+            );
             return true;
         } catch (e) {
             this.alertSystem.notify('Error while saving your code. Use the clipboard instead.', {

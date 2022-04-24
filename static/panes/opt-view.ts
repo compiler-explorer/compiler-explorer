@@ -24,15 +24,15 @@
 
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 
-import { MonacoPane } from './pane';
-import { OptState } from './opt-view.interfaces';
-import { MonacoPaneState } from './pane.interfaces';
+import {MonacoPane} from './pane';
+import {OptState} from './opt-view.interfaces';
+import {MonacoPaneState} from './pane.interfaces';
 
-import { ga } from '../analytics';
-import { extendConfig } from '../monaco-config';
-import { Hub } from '../hub';
+import {ga} from '../analytics';
+import {extendConfig} from '../monaco-config';
+import {Hub} from '../hub';
 
 type SourceLocation = {
     File: string;
@@ -40,7 +40,8 @@ type SourceLocation = {
     Column: number;
 };
 
-type OptCodeEntry = { // TODO: Not fully correct type yet, will do for now
+type OptCodeEntry = {
+    // TODO: Not fully correct type yet, will do for now
     DebugLoc: SourceLocation;
     Function: string;
     Pass: string;
@@ -69,11 +70,14 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, extendConfig({
-            language: 'plaintext',
-            readOnly: true,
-            glyphMargin: true,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            extendConfig({
+                language: 'plaintext',
+                readOnly: true,
+                glyphMargin: true,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent() {
@@ -112,8 +116,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }
@@ -138,10 +141,13 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     showOptResults(results: OptCodeEntry[]) {
         const opt: monaco.editor.IModelDeltaDecoration[] = [];
 
-        /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
-        const groupedResults = _.groupBy(results.filter(x => x.DebugLoc !== undefined), x => x.DebugLoc.Line);
+        const groupedResults = _.groupBy(
+            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
+            results.filter(x => x.DebugLoc !== undefined),
+            x => x.DebugLoc.Line
+        );
 
-        for(const [key, value] of Object.entries(groupedResults)) {
+        for (const [key, value] of Object.entries(groupedResults)) {
             const linenumber = Number(key);
             const className = value.reduce((acc, x) => {
                 if (x.optType === 'Missed' || acc === 'Missed') {

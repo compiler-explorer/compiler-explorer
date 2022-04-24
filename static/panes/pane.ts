@@ -23,19 +23,18 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import { MonacoPaneState, PaneState } from './pane.interfaces';
+import {MonacoPaneState, PaneState} from './pane.interfaces';
 
-import { FontScale } from '../widgets/fontscale';
-import { SiteSettings } from '../settings';
+import {FontScale} from '../widgets/fontscale';
+import {SiteSettings} from '../settings';
 import * as utils from '../utils';
 
-import { PaneRenaming } from '../widgets/pane-renaming';
-import { EventHub } from '../event-hub';
-import { Hub } from '../hub';
-
+import {PaneRenaming} from '../widgets/pane-renaming';
+import {EventHub} from '../event-hub';
+import {Hub} from '../hub';
 
 class PaneCompilerState {
     compilerId: number;
@@ -115,15 +114,13 @@ export abstract class Pane<S> {
      * });
      * ```
      */
-    abstract registerOpeningAnalyticsEvent(): void
+    abstract registerOpeningAnalyticsEvent(): void;
 
     /** Optionally overridable code for initializing pane buttons */
-    registerButtons(state: S): void {
-    }
+    registerButtons(state: S): void {}
 
     /** Optionally overridable code for initializing event callbacks */
-    registerCallbacks(): void {
-    }
+    registerCallbacks(): void {}
 
     /**
      * Handle user selected compiler change.
@@ -145,8 +142,13 @@ export abstract class Pane<S> {
      * @param options
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number,
-                        treeId: number): void;
+    abstract onCompiler(
+        compilerId: number,
+        compiler: unknown,
+        options: unknown,
+        editorId: number,
+        treeId: number
+    ): void;
 
     /**
      * Handle compilation result.
@@ -201,8 +203,8 @@ export abstract class Pane<S> {
 
     /** Generate "(Editor #1, Compiler #1)" tag */
     protected getPaneTag() {
-        const { compilerName, editorId, treeId, compilerId } = this.compilerInfo;
-        if(editorId) {
+        const {compilerName, editorId, treeId, compilerId} = this.compilerInfo;
+        if (editorId) {
             return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
         } else {
             return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
@@ -288,7 +290,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
         this.editor.layout({
             width: this.domRoot.width() as number,
-            height: this.domRoot.height() as number - topBarHeight,
+            height: (this.domRoot.height() as number) - topBarHeight,
         });
     }
 
@@ -333,6 +335,5 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
      * Optionally overridable code for initializing monaco actions on the
      * editor instance
      */
-    registerEditorActions(): void {
-    }
+    registerEditorActions(): void {}
 }

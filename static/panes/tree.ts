@@ -25,10 +25,10 @@
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
-import { Settings } from '../settings';
-import { PaneRenaming } from '../widgets/pane-renaming';
-import { Hub } from '../hub';
-import { EventHub } from '../event-hub';
+import {Settings} from '../settings';
+import {PaneRenaming} from '../widgets/pane-renaming';
+import {Hub} from '../hub';
+import {EventHub} from '../event-hub';
 
 const _ = require('underscore');
 const $ = require('jquery');
@@ -104,7 +104,7 @@ export class Tree {
         this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
-        const usableLanguages = _.filter(languages, (language) => {
+        const usableLanguages = _.filter(languages, language => {
             return hub.compilerService.compilersByLang[language.id];
         });
 
@@ -224,8 +224,7 @@ export class Tree {
         const isOn = this.toggleCMakeButton.state.isCMakeProject;
         this.multifileService.setAsCMakeProject(isOn);
 
-        this.domRoot.find('.cmake-project').prop('title',
-            '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
+        this.domRoot.find('.cmake-project').prop('title', '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
         this.updateState();
     }
 
@@ -334,24 +333,25 @@ export class Tree {
             item.find('.filename').text('Unknown file');
         }
 
-        item.on('click', (e) => {
+        item.on('click', e => {
             const fileId = $(e.currentTarget).data('fileId');
             this.editFile(fileId);
         });
 
-        renameButton.on('click', async (e) => {
+        renameButton.on('click', async e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.multifileService.renameFile(fileId);
             this.refresh();
         });
 
-        deleteButton.on('click', (e) => {
+        deleteButton.on('click', e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
                 this.alertSystem.ask(
                     'Delete file',
-                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
+                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?`,
+                    {
                         yes: () => {
                             this.removeFile(fileId);
                         },
@@ -364,11 +364,11 @@ export class Tree {
             }
         });
 
-        stageButton.on('click', async (e) => {
+        stageButton.on('click', async e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.moveToInclude(fileId);
         });
-        unstageButton.on('click', async (e) => {
+        unstageButton.on('click', async e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.moveToExclude(fileId);
         });
@@ -442,18 +442,14 @@ export class Tree {
 
         if (file) {
             file.editorId = editorId;
-            editor = Components.getEditor(
-                editorId,
-                file.langId);
+            editor = Components.getEditor(editorId, file.langId);
 
             editor.componentState.source = file.content;
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
         } else {
-            editor = Components.getEditor(
-                editorId,
-                this.multifileService.getLanguageId());
+            editor = Components.getEditor(editorId, this.multifileService.getLanguageId());
         }
 
         return editor;
@@ -462,12 +458,9 @@ export class Tree {
     private static getFormattedDateTime() {
         const d = new Date();
 
-        let datestring = d.getFullYear() +
-            ('0' + (d.getMonth() + 1)).slice(-2) +
-            ('0' + d.getDate()).slice(-2);
-        datestring += ('0' + d.getHours()).slice(-2) +
-            ('0' + d.getMinutes()).slice(-2) +
-            ('0' + d.getSeconds()).slice(-2);
+        let datestring = d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+        datestring +=
+            ('0' + d.getHours()).slice(-2) + ('0' + d.getMinutes()).slice(-2) + ('0' + d.getSeconds()).slice(-2);
 
         return datestring;
     }
@@ -488,7 +481,7 @@ export class Tree {
         });
 
         const loadProjectFromFile = this.domRoot.find('.load-project-from-file');
-        loadProjectFromFile.on('change', async (e) => {
+        loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
             if (files.length > 0) {
                 this.multifileService.forEachFile((file: MultifileFile) => {
@@ -540,13 +533,21 @@ export class Tree {
     private updateColours() {
         _.each(this.ourCompilers, (unused, compilerId: string) => {
             const id: number = parseInt(compilerId);
-            this.eventHub.emit('coloursForCompiler', id,
-                this.lineColouring.getColoursForCompiler(id), this.settings.colourScheme);
+            this.eventHub.emit(
+                'coloursForCompiler',
+                id,
+                this.lineColouring.getColoursForCompiler(id),
+                this.settings.colourScheme
+            );
         });
 
         this.multifileService.forEachOpenFile((file: MultifileFile) => {
-            this.eventHub.emit('coloursForEditor', file.editorId,
-                this.lineColouring.getColoursForEditor(file.editorId), this.settings.colourScheme);
+            this.eventHub.emit(
+                'coloursForEditor',
+                file.editorId,
+                this.lineColouring.getColoursForEditor(file.editorId),
+                this.settings.colourScheme
+            );
         });
     }
 

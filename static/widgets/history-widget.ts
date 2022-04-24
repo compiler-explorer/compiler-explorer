@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { pluck } from 'underscore';
-import { ga } from '../analytics';
-import { sortedList, HistoryEntry, EditorSource } from '../history';
-import { editor } from 'monaco-editor';
+import {pluck} from 'underscore';
+import {ga} from '../analytics';
+import {sortedList, HistoryEntry, EditorSource} from '../history';
+import {editor} from 'monaco-editor';
 
 import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
 import ITextModel = editor.ITextModel;
@@ -48,15 +48,13 @@ export class HistoryDiffState {
 
     private refresh() {
         const output = this.result;
-        const content = output
-            .map(val => `/****** ${val.lang} ******/\n${val.source}`)
-            .join('\n');
+        const content = output.map(val => `/****** ${val.lang} ******/\n${val.source}`).join('\n');
 
         this.model.setValue(content);
     }
 }
 
-type Entry = {dt: number, name: string, load: () => void}
+type Entry = {dt: number; name: string; load: () => void};
 
 export class HistoryWidget {
     private modal: JQuery | null;
@@ -72,8 +70,7 @@ export class HistoryWidget {
         this.lhs = null;
         this.rhs = null;
         this.currentList = [];
-        this.onLoadCallback = () => {
-        };
+        this.onLoadCallback = () => {};
     }
 
     private initializeIfNeeded() {
@@ -89,13 +86,13 @@ export class HistoryWidget {
                 minimap: {
                     enabled: true,
                 },
-            }) ;
+            });
 
             this.lhs = new HistoryDiffState(editor.createModel('', 'c++'));
             this.rhs = new HistoryDiffState(editor.createModel('', 'c++'));
             this.diffEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
-            this.modal.find('.inline-diff-checkbox').on('click', (event) => {
+            this.modal.find('.inline-diff-checkbox').on('click', event => {
                 const inline = $(event.target).prop('checked');
                 this.diffEditor?.updateOptions({
                     renderSideBySide: !inline,
@@ -151,7 +148,7 @@ export class HistoryWidget {
                 foundcomp = true;
                 baseShouldBeVisible = false;
 
-                const itemRight = this.currentList.find((item) => item.dt === dt);
+                const itemRight = this.currentList.find(item => item.dt === dt);
                 if (itemRight) {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     this.rhs!.update(itemRight);
@@ -159,7 +156,7 @@ export class HistoryWidget {
             } else if (base.prop('checked')) {
                 foundbase = true;
 
-                const itemLeft = this.currentList.find((item) => item.dt === dt);
+                const itemLeft = this.currentList.find(item => item.dt === dt);
                 if (itemLeft) {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     this.lhs!.update(itemLeft);
@@ -194,10 +191,7 @@ export class HistoryWidget {
         let compMarked = false;
 
         for (const elem of list) {
-            const li = template
-                .clone()
-                .removeClass('template')
-                .appendTo(root);
+            const li = template.clone().removeClass('template').appendTo(root);
 
             li.data('dt', elem.dt);
 
@@ -215,9 +209,7 @@ export class HistoryWidget {
             base.on('click', () => this.hideRadiosAndSetDiff());
             comp.on('click', () => this.hideRadiosAndSetDiff());
 
-            li.find('a')
-                .text(elem.name)
-                .on('click', elem.load);
+            li.find('a').text(elem.name).on('click', elem.load);
         }
 
         this.hideRadiosAndSetDiff();
@@ -228,7 +220,7 @@ export class HistoryWidget {
         const tabcontent = this.modal!.find('div.tab-content');
         this.diffEditor?.layout({
             width: tabcontent.width() as number,
-            height: tabcontent.height() as number - 20,
+            height: (tabcontent.height() as number) - 20,
         });
     }
 

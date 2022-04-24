@@ -22,16 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Toggles } from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles';
 import _ from 'underscore';
-import { Pane } from './pane';
-import { ga } from '../analytics';
-import { Container } from 'golden-layout';
-import { PaneState } from './pane.interfaces';
-import { Hub } from '../hub';
+import {Pane} from './pane';
+import {ga} from '../analytics';
+import {Container} from 'golden-layout';
+import {PaneState} from './pane.interfaces';
+import {Hub} from '../hub';
 import * as AnsiToHtml from '../ansi-to-html';
-import { OutputState } from './output.interfaces';
-import { FontScale } from '../widgets/fontscale';
+import {OutputState} from './output.interfaces';
+import {FontScale} from '../widgets/fontscale';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({
@@ -54,9 +54,9 @@ export class Output extends Pane<OutputState> {
     options: Toggles;
     constructor(hub: Hub, container: Container, state: OutputState & PaneState) {
         // canonicalize state
-        if((state as any).compiler) state.id = (state as any).compiler;
-        if((state as any).editor) state.editorid = (state as any).editor;
-        if((state as any).tree) state.treeid = (state as any).tree;
+        if ((state as any).compiler) state.id = (state as any).compiler;
+        if ((state as any).editor) state.editorid = (state as any).editor;
+        if ((state as any).tree) state.treeid = (state as any).tree;
         super(hub, container, state);
         this.hub = hub;
         this.contentRoot = this.domRoot.find('.content');
@@ -107,7 +107,7 @@ export class Output extends Pane<OutputState> {
     override resize() {
         const rootHeight = this.domRoot.height();
         const toolbarHeight = this.optionsToolbar.height();
-        if(rootHeight && toolbarHeight) {
+        if (rootHeight && toolbarHeight) {
             this.contentRoot.height(rootHeight - toolbarHeight - 5);
         }
     }
@@ -126,14 +126,18 @@ export class Output extends Pane<OutputState> {
     addOutputLines(result) {
         const stdout = result.stdout || [];
         const stderr = result.stderr || [];
-        for(const obj of stdout.concat(stderr)) {
+        for (const obj of stdout.concat(stderr)) {
             const lineNumber = obj.tag ? obj.tag.line : obj.line;
             const columnNumber = obj.tag ? obj.tag.column : -1;
             if (obj.text === '') {
                 this.add('<br/>');
             } else {
-                this.add(this.normalAnsiToHtml.toHtml(obj.text),
-                    lineNumber, columnNumber, obj.tag ? obj.tag.file : false);
+                this.add(
+                    this.normalAnsiToHtml.toHtml(obj.text),
+                    lineNumber,
+                    columnNumber,
+                    obj.tag ? obj.tag.file : false
+                );
             }
         }
     }
@@ -151,7 +155,7 @@ export class Output extends Pane<OutputState> {
         this.contentRoot.empty();
 
         if (result.buildsteps) {
-            for(const step of result.buildsteps) {
+            for (const step of result.buildsteps) {
                 this.add('Step ' + step.step + ' returned: ' + step.code);
                 this.addOutputLines(step);
             }
@@ -169,7 +173,7 @@ export class Output extends Pane<OutputState> {
         if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
             this.add('Program returned: ' + result.execResult.code);
             if (result.execResult.stderr.length || result.execResult.stdout.length) {
-                for(const obj of result.execResult.stderr) {
+                for (const obj of result.execResult.stderr) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');
@@ -178,7 +182,7 @@ export class Output extends Pane<OutputState> {
                     }
                 }
 
-                for(const obj of result.execResult.stdout) {
+                for (const obj of result.execResult.stdout) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');
@@ -192,20 +196,16 @@ export class Output extends Pane<OutputState> {
         this.updateTitle();
     }
 
-    override onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number,
-        treeId: number) {}
+    override onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number, treeId: number) {}
 
     programOutput(msg: string, color?: string) {
-        const elem = $('<div/>').appendTo(this.contentRoot)
-            .html(msg)
-            .addClass('program-exec-output');
-    
-        if (color)
-            elem.css('color', color);
+        const elem = $('<div/>').appendTo(this.contentRoot).html(msg).addClass('program-exec-output');
+
+        if (color) elem.css('color', color);
     }
-    
+
     getEditorIdByFilename(filename) {
-        if(this.compilerInfo.treeId) {
+        if (this.compilerInfo.treeId) {
             const tree = this.hub.getTreeById(this.compilerInfo.treeId);
             if (tree) {
                 return tree.multifileService.getEditorIdByFilename(filename);
@@ -213,7 +213,7 @@ export class Output extends Pane<OutputState> {
             return false;
         }
     }
-    
+
     emitEditorLinkLine(lineNum, column, filename, goto) {
         if (this.compilerInfo.editorId) {
             this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, lineNum, column, column + 1, goto);
@@ -224,14 +224,14 @@ export class Output extends Pane<OutputState> {
             }
         }
     }
-    
+
     add(msg: string, lineNum?: number, column?: number, filename?: string) {
         const elem = $('<div/>').appendTo(this.contentRoot);
         if (lineNum) {
             elem.html(
                 $('<span class="linked-compiler-output-line"></span>')
                     .html(msg)
-                    .on('click', (e) => {
+                    .on('click', e => {
                         this.emitEditorLinkLine(lineNum, column, filename, true);
                         // do not bring user to the top of index.html
                         // http://stackoverflow.com/questions/3252730
@@ -246,7 +246,7 @@ export class Output extends Pane<OutputState> {
             elem.html(msg);
         }
     }
-    
+
     override getDefaultPaneName() {
         return `Output of ${this.compilerInfo.compilerName}`;
     }
@@ -254,21 +254,23 @@ export class Output extends Pane<OutputState> {
     override getPaneTag() {
         return `(Compiler #${this.compilerInfo.compilerId})`;
     }
-    
+
     override onCompilerClose(id) {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer(() => { this.container.close(); });
+            _.defer(() => {
+                this.container.close();
+            });
         }
     }
-    
+
     override close() {
         this.eventHub.emit('outputClosed', this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
     }
-    
+
     setCompileStatus(isCompiling) {
         this.contentRoot.toggleClass('compiling', isCompiling);
     }
