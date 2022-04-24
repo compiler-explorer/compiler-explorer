@@ -28,7 +28,6 @@
 var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var Toggles = require('../widgets/toggles').Toggles;
-require('../modes/gccdump-rtl-gimple-mode');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;

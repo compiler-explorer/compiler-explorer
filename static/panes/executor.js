@@ -39,9 +39,6 @@ var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
-require('../modes/asm-mode');
-require('../modes/ptx-mode');
-
 var languages = options.languages;
 
 function makeAnsiToHtml(color) {
