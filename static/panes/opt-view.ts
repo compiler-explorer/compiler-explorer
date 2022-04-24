@@ -141,8 +141,8 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
     showOptResults(results: OptCodeEntry[]) {
         const opt: monaco.editor.IModelDeltaDecoration[] = [];
 
-        /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
         const groupedResults = _.groupBy(
+            /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
             results.filter(x => x.DebugLoc !== undefined),
             x => x.DebugLoc.Line
         );
