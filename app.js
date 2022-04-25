@@ -38,6 +38,7 @@ import morgan from 'morgan';
 import nopt from 'nopt';
 import PromClient from 'prom-client';
 import responseTime from 'response-time';
+import sanitize from 'sanitize-filename';
 import sFavicon from 'serve-favicon';
 import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
@@ -754,7 +755,7 @@ async function main() {
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('bits/' + req.params.bits, renderConfig({
+            res.render(`bits/${sanitize(req.params.bits)}`, renderConfig({
                 embedded: false,
                 mobileViewer: isMobileViewer(req),
             }, req.query));
