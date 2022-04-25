@@ -22,15 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface CfgState {
-    id: number;
-    editorid?: number;
-    treeid?: number;
+import {PaneState} from './pane.interfaces';
+import * as vis from 'vis-network';
+
+export interface CfgOptions {
+    physics?: boolean;
+    navigation?: boolean;
+}
+
+export interface CfgState extends PaneState {
     selectedFn?: string;
-    pos: any; // vis.Network.Position
+    pos: vis.Position;
     scale: number;
-    options?: {
-        physics?: boolean;
-        navigation?: boolean;
-    };
+    options?: CfgOptions;
 }
