@@ -64,6 +64,7 @@
     "pug": "^3.0.2",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
+    "sanitize-filename": "^1.6.3",
     "semver": "^7.3.5",
     "serve-favicon": "^2.4.5",
     "shell-quote": "^1.7.3",
