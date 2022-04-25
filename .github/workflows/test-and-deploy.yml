@@ -78,7 +78,7 @@ jobs:
       - name: Run discovery
         run: |
           make prereqs
-          node -r esm -r ts-node/register -- app.js \
+          /opt/compiler-explorer/node/bin/node -r esm -r ts-node/register -- app.js \
             --discoveryonly=discovered-compilers.json \
             --env amazon --env no-s3
       - uses: actions/upload-artifact@v3
