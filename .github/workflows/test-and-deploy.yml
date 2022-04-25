@@ -80,7 +80,7 @@ jobs:
           make prereqs
           /opt/compiler-explorer/node/bin/node -r esm -r ts-node/register -- app.js \
             --discoveryonly=discovered-compilers.json \
-            --env amazon --env no-s3
+            --env amazon --env discovery
       - uses: actions/upload-artifact@v3
         with:
           name: discovery
