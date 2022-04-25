@@ -38,6 +38,8 @@ jobs:
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     runs-on: ubuntu-20.04
+    outputs:
+      release_name: ${{ steps.build_dist.outputs.release_name }}
 
     steps:
       - uses: actions/checkout@v2
