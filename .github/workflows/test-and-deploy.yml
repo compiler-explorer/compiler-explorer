@@ -3,110 +3,129 @@ name: Compiler Explorer
 on: [ push, pull_request ]
 
 jobs:
-  test:
-    runs-on: ubuntu-20.04
+#  test:
+#    runs-on: ubuntu-20.04
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Use Node.js 16.x
+#        uses: actions/setup-node@v1
+#        with:
+#          node-version: 16.x
+#      - name: Get npm cache directory
+#        id: npm-cache
+#        run: |
+#          echo "::set-output name=dir::$(npm config get cache)"
+#      - uses: actions/cache@v1
+#        with:
+#          path: ${{ steps.npm-cache.outputs.dir }}
+#          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#          restore-keys: |
+#            ${{ runner.os }}-node-
+#      - name: Install prerequisites
+#        run: make prereqs
+#      - name: Run checks
+#        run: |
+#          npm run lint
+#          npm run ci-test
+#          npm run format-check
+#          python3 ./etc/scripts/util/orphancompiler.py
+#      - name: Code coverage
+#        run: npm run codecov
+#
+#  build_dist:
+#    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+#    runs-on: ubuntu-20.04
+#    outputs:
+#      release_name: ${{ steps.build_dist.outputs.release_name }}
+#      branch: ${{ steps.build_dist.outputs.branch }}
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Use Node.js 16.x
+#        uses: actions/setup-node@v1
+#        with:
+#          node-version: 16.x
+#      - name: Get npm cache directory
+#        id: npm-cache
+#        run: |
+#          echo "::set-output name=dir::$(npm config get cache)"
+#      - uses: actions/cache@v1
+#        with:
+#          path: ${{ steps.npm-cache.outputs.dir }}
+#          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#          restore-keys: |
+#            ${{ runner.os }}-node-
+#      - name: Build distribution
+#        id: build_dist
+#        run: etc/scripts/build-dist.sh
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: dist
+#          path: out/dist-bin
 
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
-      - name: Get npm cache directory
-        id: npm-cache
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Install prerequisites
-        run: make prereqs
-      - name: Run checks
-        run: |
-          npm run lint
-          npm run ci-test
-          npm run format-check
-          python3 ./etc/scripts/util/orphancompiler.py
-      - name: Code coverage
-        run: npm run codecov
-
-  build_dist:
+  discovery:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     runs-on: ubuntu-20.04
-    outputs:
-      release_name: ${{ steps.build_dist.outputs.release_name }}
-      branch: ${{ steps.build_dist.outputs.branch }}
-
     steps:
+      - name: Start from a clean directory
+        uses: AutoModality/action-clean@v1.1.0
       - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
-      - name: Get npm cache directory
-        id: npm-cache
+      - name: Run discovery
         run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Build distribution
-        id: build_dist
-        run: etc/scripts/build-dist.sh
+          make prereqs
+          node -r esm -r ts-node/register -- app.js \
+            --discoveryonly=discovered-compilers.json \
+            --env amazon --env no-s3
       - uses: actions/upload-artifact@v3
         with:
-          name: dist
-          path: out/dist-bin
+          name: discovery
+          path: discovered-compilers.json
 
-  deploy:
-    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    needs: [ test, build_dist ]
-    runs-on: ubuntu-20.04
 
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16.x
-      - name: Download the built distribution
-        uses: actions/download-artifact@v3
-        with:
-          name: dist
-          path: out/dist-bin
-      - name: Tag in sentry
-        run: |
-          export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
-          export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
-          export SENTRY_ORG=compiler-explorer
-          export SENTRY_PROJECT=compiler-explorer
-          npm run sentry -- releases new -p compiler-explorer "${{ needs.build_dist.outputs.release_name }}"
-          npm run sentry -- releases set-commits --auto "${{ needs.build_dist.outputs.release_name }}"
-          npm run sentry -- releases files "${{ needs.build_dist.outputs.release_name }}" upload-sourcemaps out/dist/static
-      - name: Deploy
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --acl public-read --follow-symlinks
-        env:
-          AWS_S3_BUCKET: compiler-explorer
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: out/dist-bin
-          DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
-      - name: Tag the commit
-        uses: tvdias/github-tagger@v0.0.2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          tag: gh-${{ github.run_number }}
+#  deploy:
+#    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+#    needs: [ test, build_dist ]
+#    runs-on: [ 'self-hosted', 'ce', 'ubuntu' ]
+#
+#    steps:
+#      - uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Use Node.js 16.x
+#        uses: actions/setup-node@v1
+#        with:
+#          node-version: 16.x
+#      - name: Download the built distribution
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: dist
+#          path: out/dist-bin
+#      - name: Tag in sentry
+#        run: |
+#          export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
+#          export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
+#          export SENTRY_ORG=compiler-explorer
+#          export SENTRY_PROJECT=compiler-explorer
+#          npm run sentry -- releases new -p compiler-explorer "${{ needs.build_dist.outputs.release_name }}"
+#          npm run sentry -- releases set-commits --auto "${{ needs.build_dist.outputs.release_name }}"
+#          npm run sentry -- releases files "${{ needs.build_dist.outputs.release_name }}" upload-sourcemaps out/dist/static
+#      - name: Deploy
+#        uses: jakejarvis/s3-sync-action@master
+#        with:
+#          args: --acl public-read --follow-symlinks
+#        env:
+#          AWS_S3_BUCKET: compiler-explorer
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          SOURCE_DIR: out/dist-bin
+#          DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
+#      - name: Tag the commit
+#        uses: tvdias/github-tagger@v0.0.2
+#        with:
+#          repo-token: ${{ secrets.GITHUB_TOKEN }}
+#          tag: gh-${{ github.run_number }}
