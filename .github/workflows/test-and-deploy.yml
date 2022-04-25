@@ -70,7 +70,7 @@ jobs:
 
   discovery:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    runs-on: ubuntu-20.04
+    runs-on: [ 'self-hosted', 'ce', 'ubuntu' ]
     steps:
       - name: Start from a clean directory
         uses: AutoModality/action-clean@v1.1.0
@@ -90,7 +90,7 @@ jobs:
 #  deploy:
 #    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
 #    needs: [ test, build_dist ]
-#    runs-on: [ 'self-hosted', 'ce', 'ubuntu' ]
+#    runs-on: ubuntu-20.04
 #
 #    steps:
 #      - uses: actions/checkout@v2
