@@ -1,6 +1,6 @@
 name: Compiler Explorer
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   test:
@@ -35,9 +35,9 @@ jobs:
       - name: Code coverage
         run: npm run codecov
 
-  build-dist-and-deploy:
+  build-dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    needs: [test]
+    needs: [ test ]
     runs-on: ubuntu-20.04
 
     steps:
@@ -60,12 +60,48 @@ jobs:
             ${{ runner.os }}-node-
       - name: Build distribution
         id: build_dist
+        run: etc/scripts/build-dist.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: out/dist-bin
+
+  deploy:
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+    needs: [ test, build-dist ]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+      - name: Get npm cache directory
+        id: npm-cache
+        run: |
+          echo "::set-output name=dir::$(npm config get cache)"
+      - uses: actions/cache@v1
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Download the built distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+      - name: Tag in sentry
         run: |
           export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
           export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
           export SENTRY_ORG=compiler-explorer
           export SENTRY_PROJECT=compiler-explorer
-          etc/scripts/build-dist.sh
+          npm run sentry -- releases new -p compiler-explorer "${{ needs.build-dist.outputs.release_name} }}"
+          npm run sentry -- releases set-commits --auto "${{ needs.build-dist.outputs.release_name} }}"
+          npm run sentry -- releases files "${{ needs.build-dist.outputs.release_name} }}" upload-sourcemaps out/dist/static
       - name: Deploy
         uses: jakejarvis/s3-sync-action@master
         with:
