@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       release_name: ${{ steps.build_dist.outputs.release_name }}
+      branch: ${{ steps.build_dist.outputs.branch }}
 
     steps:
       - uses: actions/checkout@v2
@@ -103,7 +104,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           SOURCE_DIR: out/dist-bin
-          DEST_DIR: dist/gh/${{ steps.build_dist.outputs.branch }}
+          DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
         uses: tvdias/github-tagger@v0.0.2
         with:

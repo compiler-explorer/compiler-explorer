@@ -9,7 +9,6 @@ cd "$(
 
 RELEASE_FILE_NAME=${GITHUB_RUN_NUMBER}
 RELEASE_NAME=gh-${RELEASE_FILE_NAME}
-echo "::set-output name=release_name::${RELEASE_NAME}"
 HASH=$(git rev-parse HEAD)
 
 # Clear the output
@@ -32,8 +31,9 @@ npm run webpack
 rm -rf node_modules
 npm install --no-audit --production
 
-# Output some magic for GH to set the branch name
+# Output some magic for GH to set the branch name and release name
 echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+echo "::set-output name=release_name::${RELEASE_NAME}"
 
 # Run to make sure we haven't just made something that won't work
 node -r esm -r ts-node/register ./app.js --version --dist
