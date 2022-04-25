@@ -153,6 +153,7 @@
   },
   "scripts": {
     "ci-lint": "eslint --format github .",
+    "ci-lint-files": "eslint --format github",
     "ci-test": "nyc npm run test",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
@@ -168,14 +169,15 @@
     "prepare": "husky install",
     "format": "prettier --ignore-unknown ./static/**/*.ts",
     "format-fix": "prettier --write --ignore-unknown ./static/**/*.ts",
+    "format-fix-files": "prettier --write --ignore-unknown",
     "format-check": "prettier --ignore-unknown --check ./static/**/*.ts",
     "ts-compile": "tsc",
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.[jt]s": [
-      "npm run ci-lint --",
-      "npm run format-fix --"
+      "npm run ci-lint-files --",
+      "npm run format-fix-files --"
     ]
   },
   "license": "BSD-2-Clause"

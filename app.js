@@ -46,25 +46,25 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws';
 import * as normalizer from './lib/clientstate-normalizer';
-import { CompilationEnvironment } from './lib/compilation-env';
-import { CompilationQueue } from './lib/compilation-queue';
-import { CompilerFinder } from './lib/compiler-finder';
+import {CompilationEnvironment} from './lib/compilation-env';
+import {CompilationQueue} from './lib/compilation-queue';
+import {CompilerFinder} from './lib/compiler-finder';
 // import { policy as csp } from './lib/csp';
-import { initialiseWine } from './lib/exec';
-import { CompileHandler } from './lib/handlers/compile';
+import {initialiseWine} from './lib/exec';
+import {CompileHandler} from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
-import { NoScriptHandler } from './lib/handlers/noscript';
-import { RouteAPI } from './lib/handlers/route-api';
-import { SourceHandler } from './lib/handlers/source';
-import { languages as allLanguages } from './lib/languages';
-import { logger, logToLoki, logToPapertrail, suppressConsoleLog } from './lib/logger';
-import { setupMetricsServer } from './lib/metrics-server';
-import { ClientOptionsHandler } from './lib/options-handler';
+import {NoScriptHandler} from './lib/handlers/noscript';
+import {RouteAPI} from './lib/handlers/route-api';
+import {SourceHandler} from './lib/handlers/source';
+import {languages as allLanguages} from './lib/languages';
+import {logger, logToLoki, logToPapertrail, suppressConsoleLog} from './lib/logger';
+import {setupMetricsServer} from './lib/metrics-server';
+import {ClientOptionsHandler} from './lib/options-handler';
 import * as props from './lib/properties';
-import { ShortLinkResolver } from './lib/shortener/google';
-import { sources } from './lib/sources';
-import { loadSponsorsFromString } from './lib/sponsors';
-import { getStorageTypeByKey } from './lib/storage';
+import {ShortLinkResolver} from './lib/shortener/google';
+import {sources} from './lib/sources';
+import {loadSponsorsFromString} from './lib/sponsors';
+import {getStorageTypeByKey} from './lib/storage';
 import * as utils from './lib/utils';
 
 // Parse arguments from command line 'node ./app.js args...'
@@ -183,7 +183,8 @@ const propHierarchy = [
     _.map(defArgs.env, e => `${e}.${process.platform}`),
     process.platform,
     os.hostname(),
-    'local'].flat();
+    'local',
+].flat();
 logger.info(`properties hierarchy: ${propHierarchy.join(', ')}`);
 
 // Propagate debug mode if need be
@@ -200,9 +201,11 @@ let languages = allLanguages;
 if (defArgs.wantedLanguage) {
     const filteredLangs = {};
     _.each(languages, lang => {
-        if (lang.id === defArgs.wantedLanguage ||
+        if (
+            lang.id === defArgs.wantedLanguage ||
             lang.name === defArgs.wantedLanguage ||
-            (lang.alias && lang.alias.includes(defArgs.wantedLanguage))) {
+            (lang.alias && lang.alias.includes(defArgs.wantedLanguage))
+        ) {
             filteredLangs[lang.id] = lang;
         }
     });
@@ -238,7 +241,7 @@ function contentPolicyHeader(/*res*/) {
 }
 
 function measureEventLoopLag(delayMs) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
         const start = process.hrtime.bigint();
         setTimeout(() => {
             const elapsed = process.hrtime.bigint() - start;
@@ -292,12 +295,14 @@ async function setupWebPackDevMiddleware(router) {
     /* eslint-enable */
 
     const webpackCompiler = webpack(webpackConfig);
-    router.use(webpackDevMiddleware(webpackCompiler, {
-        publicPath: '/static',
-        stats: 'errors-only',
-    }));
+    router.use(
+        webpackDevMiddleware(webpackCompiler, {
+            publicPath: '/static',
+            stats: 'errors-only',
+        })
+    );
 
-    pugRequireHandler = (path) => urljoin(httpRoot, 'static', path);
+    pugRequireHandler = path => urljoin(httpRoot, 'static', path);
 }
 
 async function setupStaticMiddleware(router) {
@@ -308,12 +313,15 @@ async function setupStaticMiddleware(router) {
     } else {
         const staticPath = path.join(distPath, 'static');
         logger.info(`  serving static files from '${staticPath}'`);
-        router.use('/static', express.static(staticPath, {
-            maxAge: staticMaxAgeSecs * 1000,
-        }));
+        router.use(
+            '/static',
+            express.static(staticPath, {
+                maxAge: staticMaxAgeSecs * 1000,
+            })
+        );
     }
 
-    pugRequireHandler = (path) => {
+    pugRequireHandler = path => {
         if (Object.prototype.hasOwnProperty.call(staticManifest, path)) {
             return urljoin(staticRoot, staticManifest[path]);
         } else {
@@ -337,7 +345,8 @@ const googleShortUrlResolver = new ShortLinkResolver();
 function oldGoogleUrlHandler(req, res, next) {
     const id = req.params.id;
     const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
-    googleShortUrlResolver.resolve(googleUrl)
+    googleShortUrlResolver
+        .resolve(googleUrl)
         .then(resultObj => {
             const parsed = new url.URL(resultObj.longUrl);
             const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
@@ -420,9 +429,7 @@ function setupSentry(sentryDsn, expressApp) {
         release: releaseBuildNumber || gitReleaseName,
         environment: sentryEnv || defArgs.env[0],
         beforeSend(event) {
-            if (event.request
-                && event.request.data
-                && shouldRedactRequestData(event.request.data)) {
+            if (event.request && event.request.data && shouldRedactRequestData(event.request.data)) {
                 event.request.data = JSON.stringify({redacted: true});
             }
             return event;
@@ -435,12 +442,10 @@ function setupSentry(sentryDsn, expressApp) {
         ],
         tracesSampler: samplingContext => {
             // always inherit
-            if (samplingContext.parentSampled !== undefined)
-                return samplingContext.parentSampled;
+            if (samplingContext.parentSampled !== undefined) return samplingContext.parentSampled;
 
             // never sample healthcheck
-            if (samplingContext.transactionContext.name === 'GET /healthcheck')
-                return 0;
+            if (samplingContext.transactionContext.name === 'GET /healthcheck') return 0;
 
             // default sample rate of 10%
             return 0.1;
@@ -492,8 +497,7 @@ async function main() {
 
     if (opts.discoveryonly) {
         for (const compiler of initialCompilers) {
-            if (compiler.buildenvsetup && compiler.buildenvsetup.id === '')
-                delete compiler.buildenvsetup;
+            if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
 
             const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
             if (compilerInstance) {
@@ -505,7 +509,8 @@ async function main() {
         process.exit(0);
     }
 
-    const webServer = express(), router = express.Router();
+    const webServer = express(),
+        router = express.Router();
     setupSentry(aws.getConfig('sentryDsn'), webServer);
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
@@ -546,8 +551,10 @@ async function main() {
     const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
     if (rescanCompilerSecs && !opts.prediscovered) {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
-        setInterval(() => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
-            rescanCompilerSecs * 1000);
+        setInterval(
+            () => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
+            rescanCompilerSecs * 1000
+        );
     }
 
     const sentrySlowRequestMs = ceProps('sentrySlowRequestMs', 0);
@@ -562,19 +569,23 @@ async function main() {
         .set('view engine', 'pug')
         .on('error', err => logger.error('Caught error in web handler; continuing:', err))
         // sentry request handler must be the first middleware on the app
-        .use(Sentry.Handlers.requestHandler({
-            ip: true,
-        }))
+        .use(
+            Sentry.Handlers.requestHandler({
+                ip: true,
+            })
+        )
         .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
-        .use(responseTime((req, res, time) => {
-            if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
-                Sentry.withScope(scope => {
-                    scope.setExtra('duration_ms', time);
-                    Sentry.captureMessage('SlowRequest', 'warning');
-                });
-            }
-        }))
+        .use(
+            responseTime((req, res, time) => {
+                if (sentrySlowRequestMs > 0 && time >= sentrySlowRequestMs) {
+                    Sentry.withScope(scope => {
+                        scope.setExtra('duration_ms', time);
+                        Sentry.captureMessage('SlowRequest', 'warning');
+                    });
+                }
+            })
+        )
         // Handle healthchecks at the root, as they're not expected from the outside world
         .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
         .use(httpRoot, router)
@@ -586,11 +597,7 @@ async function main() {
         // eslint-disable-next-line no-unused-vars
         .use((err, req, res, next) => {
             const status =
-                err.status ||
-                err.statusCode ||
-                err.status_code ||
-                (err.output && err.output.statusCode) ||
-                500;
+                err.status || err.statusCode || err.status_code || (err.output && err.output.statusCode) || 500;
             const message = err.message || 'Internal Server Error';
             res.status(status);
             res.render('error', renderConfig({error: {code: status, message: message}}));
@@ -602,12 +609,8 @@ async function main() {
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
 
     function renderConfig(extra, urlOptions) {
-        const urlOptionsAllowed = [
-            'readOnly', 'hideEditorToolbars', 'language',
-        ];
-        const filteredUrlOptions = _.mapObject(
-            _.pick(urlOptions, urlOptionsAllowed),
-            val => utils.toProperty(val));
+        const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
+        const filteredUrlOptions = _.mapObject(_.pick(urlOptions, urlOptionsAllowed), val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
 
         if (allExtraOptions.mobileViewer && allExtraOptions.config) {
@@ -641,26 +644,38 @@ async function main() {
 
         const embedded = req.query.embedded === 'true' ? true : false;
 
-        res.render(embedded ? 'embed' : 'index', renderConfig({
-            embedded: embedded,
-            mobileViewer: isMobileViewer(req),
-            config: config,
-            metadata: metadata,
-            storedStateId: req.params.id ? req.params.id : false,
-        }, req.query));
+        res.render(
+            embedded ? 'embed' : 'index',
+            renderConfig(
+                {
+                    embedded: embedded,
+                    mobileViewer: isMobileViewer(req),
+                    config: config,
+                    metadata: metadata,
+                    storedStateId: req.params.id ? req.params.id : false,
+                },
+                req.query
+            )
+        );
     }
 
     const embeddedHandler = function (req, res) {
         staticHeaders(res);
         contentPolicyHeader(res);
-        res.render('embed', renderConfig({
-            embedded: true,
-            mobileViewer: isMobileViewer(req),
-        }, req.query));
+        res.render(
+            'embed',
+            renderConfig(
+                {
+                    embedded: true,
+                    mobileViewer: isMobileViewer(req),
+                },
+                req.query
+            )
+        );
     };
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
-    morgan.token('gdpr_ip', req => req.ip ? utils.anonymizeIp(req.ip) : '');
+    morgan.token('gdpr_ip', req => (req.ip ? utils.anonymizeIp(req.ip) : ''));
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
@@ -701,29 +716,41 @@ async function main() {
     });
 
     router
-        .use(morgan(morganFormat, {
-            stream: logger.stream,
-            // Skip for non errors (2xx, 3xx)
-            skip: (req, res) => res.statusCode >= 400,
-        }))
-        .use(morgan(morganFormat, {
-            stream: logger.warnStream,
-            // Skip for non user errors (4xx)
-            skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
-        }))
-        .use(morgan(morganFormat, {
-            stream: logger.errStream,
-            // Skip for non server errors (5xx)
-            skip: (req, res) => res.statusCode < 500,
-        }))
+        .use(
+            morgan(morganFormat, {
+                stream: logger.stream,
+                // Skip for non errors (2xx, 3xx)
+                skip: (req, res) => res.statusCode >= 400,
+            })
+        )
+        .use(
+            morgan(morganFormat, {
+                stream: logger.warnStream,
+                // Skip for non user errors (4xx)
+                skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
+            })
+        )
+        .use(
+            morgan(morganFormat, {
+                stream: logger.errStream,
+                // Skip for non server errors (5xx)
+                skip: (req, res) => res.statusCode < 500,
+            })
+        )
         .use(compression())
         .get('/', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('index', renderConfig({
-                embedded: false,
-                mobileViewer: isMobileViewer(req),
-            }, req.query));
+            res.render(
+                'index',
+                renderConfig(
+                    {
+                        embedded: false,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query
+                )
+            );
         })
         .get('/e', embeddedHandler)
         // legacy. not a 301 to prevent any redirect loops between old e links and embed.html
@@ -731,11 +758,17 @@ async function main() {
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render('embed', renderConfig({
-                embedded: true,
-                readOnly: true,
-                mobileViewer: isMobileViewer(req),
-            }, req.query));
+            res.render(
+                'embed',
+                renderConfig(
+                    {
+                        embedded: true,
+                        readOnly: true,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query
+                )
+            );
         })
         .get('/robots.txt', (req, res) => {
             staticHeaders(res);
@@ -755,10 +788,16 @@ async function main() {
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
             contentPolicyHeader(res);
-            res.render(`bits/${sanitize(req.params.bits)}`, renderConfig({
-                embedded: false,
-                mobileViewer: isMobileViewer(req),
-            }, req.query));
+            res.render(
+                `bits/${sanitize(req.params.bits)}`,
+                renderConfig(
+                    {
+                        embedded: false,
+                        mobileViewer: isMobileViewer(req),
+                    },
+                    req.query
+                )
+            );
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
         .use('/source', sourceHandler.handle.bind(sourceHandler))
@@ -790,17 +829,16 @@ process.on('SIGTERM', terminationHandler('SIGTERM', 0));
 process.on('SIGQUIT', terminationHandler('SIGQUIT', 0));
 
 function terminationHandler(name, code) {
-  return (error) => {
-    logger.info(`stopping process: ${name}`);
-    if (error && error instanceof Error) {
-      logger.error(error);
-    }
-    process.exit(code);
-  };
+    return error => {
+        logger.info(`stopping process: ${name}`);
+        if (error && error instanceof Error) {
+            logger.error(error);
+        }
+        process.exit(code);
+    };
 }
 
-main()
-    .catch(err => {
-        logger.error('Top-level error (shutting down):', err);
-        process.exit(1);
-    });
+main().catch(err => {
+    logger.error('Top-level error (shutting down):', err);
+    process.exit(1);
+});
