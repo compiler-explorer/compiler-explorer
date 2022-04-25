@@ -37,7 +37,6 @@ jobs:
 
   build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    needs: [ test ]
     runs-on: ubuntu-20.04
 
     steps:
