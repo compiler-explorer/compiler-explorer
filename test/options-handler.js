@@ -245,32 +245,6 @@ describe('Options handler', () => {
             },
         });
     });
-    it('should understand most kinds of semvers', () => {
-        optionsHandler._asSafeVer('0').should.equal('0.0.0');
-        optionsHandler._asSafeVer('1').should.equal('1.0.0');
-
-        optionsHandler._asSafeVer('1.0').should.equal('1.0.0');
-        optionsHandler._asSafeVer('1.1').should.equal('1.1.0');
-
-        optionsHandler._asSafeVer('1.1.0').should.equal('1.1.0');
-        optionsHandler._asSafeVer('1.1.1').should.equal('1.1.1');
-
-        const MAGIC_TRUNK_VERSION = '9999999.99999.999';
-        optionsHandler._asSafeVer('trunk').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('(trunk)').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('(123.456.789 test)').should.equal(MAGIC_TRUNK_VERSION);
-
-        optionsHandler._asSafeVer('0..0').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('0.0.').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('0.').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('.0.0').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('.0..').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('0..').should.equal(MAGIC_TRUNK_VERSION);
-
-        optionsHandler._asSafeVer('123 TEXT').should.equal('123.0.0');
-        optionsHandler._asSafeVer('123.456 TEXT').should.equal('123.456.0');
-        optionsHandler._asSafeVer('123.456.789 TEXT').should.equal('123.456.789');
-    });
     it('should order compilers as expected', () => {
         const compilers = [
             makeFakeCompilerInfo('a1', languages.fake.id, 'a', '0.0.1', true),
