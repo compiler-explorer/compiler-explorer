@@ -181,7 +181,7 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    override registerPreElements(state: CfgState) {
+    override registerDynamicElements(state: CfgState) {
         this.defaultCfgOutput = {nodes: [{id: 0, shape: 'box', label: 'No Output'}], edges: []};
         // Note that this might be outdated if no functions were present when creating the link, but that's handled
         // by selectize
