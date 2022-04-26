@@ -119,7 +119,7 @@ if (opts.tmpDir) {
     process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
 }
 
-const distPath = utils.resolvePathFromAppRoot('out', 'dist');
+const distPath = utils.resolvePathFromAppRoot('.');
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
