@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import GoldenLayout from 'golden-layout';
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 import {Hub} from './hub';
 

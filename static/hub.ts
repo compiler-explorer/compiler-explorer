@@ -51,7 +51,7 @@ import {Cfg as CfgView} from './panes/cfg-view';
 import {Conformance as ConformanceView} from './panes/conformance-view';
 import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view';
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();
