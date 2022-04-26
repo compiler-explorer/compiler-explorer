@@ -50,7 +50,7 @@ import {CompilationEnvironment} from './lib/compilation-env';
 import {CompilationQueue} from './lib/compilation-queue';
 import {CompilerFinder} from './lib/compiler-finder';
 // import { policy as csp } from './lib/csp';
-import {initialiseWine} from './lib/exec';
+import {startWineInit} from './lib/exec';
 import {CompileHandler} from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
 import {NoScriptHandler} from './lib/handlers/noscript';
@@ -459,7 +459,7 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
-    await initialiseWine();
+    startWineInit();
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
     const compilationQueue = CompilationQueue.fromProps(compilerProps.ceProps);
