@@ -367,7 +367,7 @@ export function splitArguments(options?: string): string[] {
     return _.chain(
         quoteParse(options || '')
             // FIXME: x might not contain a .pattern!
-            .map((x: any) => (typeof x === 'string' ? x : (x.pattern as string)))
+            .map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))),
     )
         .compact()
         .value();
