@@ -57,5 +57,5 @@ mkdir -p "${ROOT}/out/dist-bin"
 export XZ_OPT="-1 -T 0"
 tar -Jcf "${ROOT}/out/dist-bin/${RELEASE_FILE_NAME}.tar.xz" --exclude static .
 tar -Jcf "${ROOT}/out/dist-bin/${RELEASE_FILE_NAME}.static.tar.xz" --transform="s,^static/,," static/*
-echo "${HASH}" >"${RELEASE_FILE_NAME}.txt"
+echo "${HASH}" >"${ROOT}/out/dist-bin/${RELEASE_FILE_NAME}.txt"
 du -ch ./*
