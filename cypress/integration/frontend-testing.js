@@ -6,6 +6,8 @@ function runFrontendTest(name) {
     });
 }
 
+const click = $el => $el.click();
+
 describe.skip('Frontendtestresults', () => {
     before(() => {
         cy.visit('/');
@@ -44,9 +46,10 @@ describe('Prod happy path', () => {
 function policiesHappyPath() {
     cy.get('#alert').within(() => {
         cy.get('.modal-title').contains('New Privacy Policy. Please take a moment to read it').should('be.visible');
-        cy.get('.modal-footer button').click();
+        cy.get('.modal-footer button')
+            .pipe(click)
+            .should($el => expect($el).to.not.be.visible);
     });
-    cy.wait(1000);
 
     // Now, same for the cookies popup
     cy.get('#simplecook')
@@ -63,9 +66,10 @@ function policiesHappyPath() {
             cy.get('.modal-footer button').should('have.length', 2);
 
             // Close the modal, we'll test it later
-            cy.get('.modal-header button').click();
+            cy.get('.modal-header button')
+                .pipe(click)
+                .should($el => expect($el).to.not.be.visible);
         });
-    cy.wait(1000);
 
     // Grant this monster a cookie for breakfast
     cy.get('#simplecook button.cook-do-consent').click();
@@ -78,9 +82,10 @@ function policiesHappyPath() {
         .within(() => {
             cy.get('.modal-title').should('include.text', 'Granted');
             // Give the cookie back
-            cy.get('.modal-footer button.no').click();
+            cy.get('.modal-footer button.no')
+                .pipe(click)
+                .should($el => expect($el).to.not.be.visible);
         });
-    cy.wait(1000);
 
     // Check that the monster returned the cookie
     cy.get('button#policiesDropdown').click();
@@ -89,9 +94,10 @@ function policiesHappyPath() {
         .should('be.visible')
         .within(() => {
             cy.get('.modal-title').should('include.text', 'Denied');
-            cy.get('.modal-footer button.no').click();
+            cy.get('.modal-footer button.no')
+                .pipe(click)
+                .should($el => expect($el).to.not.be.visible);
         });
-    cy.wait(1000);
 }
 
 function editorHappyPath() {
@@ -112,7 +118,7 @@ function compilerHappyPath() {
         cy.get('.lm_title').should('include.text', 'Editor #1, Compiler #1');
         cy.get('.lm_modify_tab_title').click();
     });
-    cy.wait(1000);
+
     cy.get('#enter-something')
         .should('be.visible')
         .within(() => {
@@ -121,9 +127,10 @@ function compilerHappyPath() {
                 .should('include.value', 'Editor #1, Compiler #1')
                 .clear()
                 .type('Cypress Compiler #1');
-            cy.get('.modal-footer button.yes').click();
+            cy.get('.modal-footer button.yes')
+                .pipe(click)
+                .should($el => expect($el).to.not.be.visible);
         });
-    cy.wait(1000);
     cy.get('@compilerStack').within(() => {
         cy.get('.lm_title').should('contain.text', 'Cypress Compiler #1');
     });
@@ -138,5 +145,4 @@ function executionHappyPath() {
             cy.get('button.add-pane').click();
             cy.get('.dropdown-menu button.add-executor').click();
         });
-    cy.wait(1000);
 }
