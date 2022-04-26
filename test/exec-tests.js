@@ -190,7 +190,7 @@ describe('Execution tests', () => {
                 'sandbox',
                 './exec',
                 ['/some/custom/cwd/file', '/not/custom/file'],
-                {customCwd: '/some/custom/cwd'}
+                {customCwd: '/some/custom/cwd'},
             );
             args.should.deep.equals([
                 '--config',

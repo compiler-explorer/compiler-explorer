@@ -29,7 +29,7 @@ rules:
       objects: always-multiline
       imports: always-multiline
       exports: always-multiline
-      functions: never
+      functions: always-multiline
   eol-last:
     - error
     - always
