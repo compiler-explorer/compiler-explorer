@@ -13,7 +13,7 @@ RELEASE_NAME=gh-${RELEASE_FILE_NAME}
 HASH=$(git rev-parse HEAD)
 
 # Clear the output
-rm -rf out/dist
+rm -rf out
 mkdir -p out/dist
 cd out/dist
 
