@@ -101,7 +101,7 @@ class DotNetCompiler extends BaseCompiler {
             this.buildConfig,
             this.targetFramework,
             this.rID,
-            'publish'
+            'publish',
         );
 
         const programDllPath = path.join(programPublishPath, 'CompilerExplorer.dll');
@@ -164,7 +164,7 @@ class DotNetCompiler extends BaseCompiler {
             programPublishPath,
             programDllPath,
             crossgen2Options,
-            this.getOutputFilename(programDir, this.outputFilebase)
+            this.getOutputFilename(programDir, this.outputFilebase),
         );
 
         if (crossgen2Result.code !== 0) {
@@ -203,7 +203,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`)
+            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`),
         );
 
         return result;

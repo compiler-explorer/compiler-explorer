@@ -299,7 +299,7 @@ async function setupWebPackDevMiddleware(router) {
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/static',
             stats: 'errors-only',
-        })
+        }),
     );
 
     pugRequireHandler = path => urljoin(httpRoot, 'static', path);
@@ -317,7 +317,7 @@ async function setupStaticMiddleware(router) {
             '/static',
             express.static(staticPath, {
                 maxAge: staticMaxAgeSecs * 1000,
-            })
+            }),
         );
     }
 
@@ -553,7 +553,7 @@ async function main() {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
         setInterval(
             () => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
-            rescanCompilerSecs * 1000
+            rescanCompilerSecs * 1000,
         );
     }
 
@@ -572,7 +572,7 @@ async function main() {
         .use(
             Sentry.Handlers.requestHandler({
                 ip: true,
-            })
+            }),
         )
         .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
@@ -584,7 +584,7 @@ async function main() {
                         Sentry.captureMessage('SlowRequest', 'warning');
                     });
                 }
-            })
+            }),
         )
         // Handle healthchecks at the root, as they're not expected from the outside world
         .use('/healthcheck', new healthCheck.HealthCheckHandler(compilationQueue, healthCheckFilePath).handle)
@@ -654,8 +654,8 @@ async function main() {
                     metadata: metadata,
                     storedStateId: req.params.id ? req.params.id : false,
                 },
-                req.query
-            )
+                req.query,
+            ),
         );
     }
 
@@ -669,8 +669,8 @@ async function main() {
                     embedded: true,
                     mobileViewer: isMobileViewer(req),
                 },
-                req.query
-            )
+                req.query,
+            ),
         );
     };
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
@@ -721,21 +721,21 @@ async function main() {
                 stream: logger.stream,
                 // Skip for non errors (2xx, 3xx)
                 skip: (req, res) => res.statusCode >= 400,
-            })
+            }),
         )
         .use(
             morgan(morganFormat, {
                 stream: logger.warnStream,
                 // Skip for non user errors (4xx)
                 skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
-            })
+            }),
         )
         .use(
             morgan(morganFormat, {
                 stream: logger.errStream,
                 // Skip for non server errors (5xx)
                 skip: (req, res) => res.statusCode < 500,
-            })
+            }),
         )
         .use(compression())
         .get('/', (req, res) => {
@@ -748,8 +748,8 @@ async function main() {
                         embedded: false,
                         mobileViewer: isMobileViewer(req),
                     },
-                    req.query
-                )
+                    req.query,
+                ),
             );
         })
         .get('/e', embeddedHandler)
@@ -766,8 +766,8 @@ async function main() {
                         readOnly: true,
                         mobileViewer: isMobileViewer(req),
                     },
-                    req.query
-                )
+                    req.query,
+                ),
             );
         })
         .get('/robots.txt', (req, res) => {
@@ -795,8 +795,8 @@ async function main() {
                         embedded: false,
                         mobileViewer: isMobileViewer(req),
                     },
-                    req.query
-                )
+                    req.query,
+                ),
             );
         })
         .use(bodyParser.json({limit: ceProps('bodyParserLimit', maxUploadSize)}))
