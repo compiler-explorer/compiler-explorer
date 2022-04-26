@@ -24,11 +24,12 @@
 
 import crypto from 'crypto';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
 import fs from 'fs-extra';
-import { ComponentConfig, ItemConfigType } from 'golden-layout';
-import { parse as quoteParse } from 'shell-quote';
+import {ComponentConfig, ItemConfigType} from 'golden-layout';
+import semverParser from 'semver';
+import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 interface IResultLineTag {
@@ -49,12 +50,11 @@ const lineRe = /\r?\n/;
 export function splitLines(text: string): string[] {
     if (!text) return [];
     const result = text.split(lineRe);
-    if (result.length > 0 && result[result.length - 1] === '')
-        return result.slice(0, -1);
+    if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => (IResultLine | void)): (IResultLine | void)[] {
+export function eachLine(text: string, func: (line: string) => IResultLine | void): (IResultLine | void)[] {
     return splitLines(text).map(func);
 }
 
@@ -96,14 +96,14 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
 export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): IResultLine[] {
     const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result: IResultLine[]  = [];
+    const result: IResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (!inputFilename) {
             line = maskRootdir(line);
         }
         if (line !== null) {
-            const lineObj: IResultLine = { text: line };
+            const lineObj: IResultLine = {text: line};
             const filteredline = line.replace(ansiColoursRe, '');
             let match = filteredline.match(re);
             if (match) {
@@ -135,7 +135,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
-            const lineObj: IResultLine = { text: line };
+            const lineObj: IResultLine = {text: line};
             const match = line.replace(ansiColoursRe, '').match(re);
 
             if (match) {
@@ -202,7 +202,7 @@ export function anonymizeIp(ip: string): string {
  */
 function objectToHashableString(object: any): string {
     // See https://stackoverflow.com/questions/899574/which-is-best-to-use-typeof-or-instanceof/6625960#6625960
-    return (typeof (object) === 'string') ? object : JSON.stringify(object);
+    return typeof object === 'string' ? object : JSON.stringify(object);
 }
 
 const DefaultHash = 'Compiler Explorer Default Version 1';
@@ -216,9 +216,7 @@ const DefaultHash = 'Compiler Explorer Default Version 1';
  * @returns {Buffer} - Hash of object
  */
 export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
-    return crypto.createHmac('sha256', HashVersion)
-        .update(objectToHashableString(object))
-        .digest();
+    return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest();
 }
 
 /***
@@ -230,9 +228,7 @@ export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
  * @returns {string} - Hash of object
  */
 export function getHash(object: any, HashVersion = DefaultHash): string {
-    return crypto.createHmac('sha256', HashVersion)
-        .update(objectToHashableString(object))
-        .digest('hex');
+    return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest('hex');
 }
 
 interface glEditorMainContent {
@@ -258,7 +254,7 @@ interface glContents {
  * @returns {glContents}
  */
 export function glGetMainContents(content: ItemConfigType[] = []): glContents {
-    const contents: glContents = { editors: [], compilers: [] };
+    const contents: glContents = {editors: [], compilers: []};
     _.each(content, element => {
         if (element.type === 'component') {
             const component = element as ComponentConfig;
@@ -314,7 +310,7 @@ export function toProperty(prop: string): boolean | number | string {
 export function replaceAll(line: string, oldValue: string, newValue: string): string {
     if (oldValue.length === 0) return line;
     let startPoint = 0;
-    for (; ;) {
+    for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
         line = line.substr(0, index) + newValue + line.substr(index + oldValue.length);
@@ -346,7 +342,7 @@ export function base32Encode(buffer: Buffer): string {
         output += character;
         bits -= 5;
         // Shift out the newly processed word
-        digest = (digest >>> 5);
+        digest = digest >>> 5;
     }
 
     for (const byte of buffer) {
@@ -368,9 +364,11 @@ export function base32Encode(buffer: Buffer): string {
 }
 
 export function splitArguments(options?: string): string[] {
-    return _.chain(quoteParse(options || '')
-        // FIXME: x might not contain a .pattern!
-        .map((x: any) => typeof (x) === 'string' ? x : x.pattern as string))
+    return _.chain(
+        quoteParse(options || '')
+            // FIXME: x might not contain a .pattern!
+            .map((x: any) => (typeof x === 'string' ? x : (x.pattern as string)))
+    )
         .compact()
         .value();
 }
@@ -411,4 +409,25 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
         }
     }
     return result;
+}
+
+export function asSafeVer(semver: string | number | null) {
+    if (semver !== null) {
+        if (typeof semver === 'number') {
+            semver = `${semver}`;
+        }
+        const splits = semver.split(' ');
+        if (splits.length > 0) {
+            let interestingPart = splits[0];
+            let dotCount = countOccurrences(interestingPart, '.');
+            for (; dotCount < 2; dotCount++) {
+                interestingPart += '.0';
+            }
+            const validated: string | null = semverParser.valid(interestingPart, true);
+            if (validated != null) {
+                return validated;
+            }
+        }
+    }
+    return '9999999.99999.999';
 }
