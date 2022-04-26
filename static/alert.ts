@@ -26,7 +26,7 @@ import $ from 'jquery';
 
 import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
 import {toggleEventListener} from './utils';
-import Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/browser';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
