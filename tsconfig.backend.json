@@ -2,7 +2,7 @@
   "extends": "./tsconfig.base.json",
   "files": ["app.js"],
   "include": ["**/*.js", "**/*.ts"],
-  "exclude": ["out", "etc", "examples", "static", "**/*.d.ts"],
+  "exclude": ["out", "test", "etc", "examples", "static", "**/*.d.ts"],
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
