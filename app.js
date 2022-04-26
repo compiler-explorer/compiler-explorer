@@ -557,7 +557,6 @@ async function main() {
                 ip: true,
             }),
         )
-        .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
         .use(
             responseTime((req, res, time) => {
