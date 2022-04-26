@@ -29,7 +29,6 @@ import process from 'process';
 import url from 'url';
 
 import * as Sentry from '@sentry/node';
-import * as Tracing from '@sentry/tracing';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import express from 'express';
@@ -418,7 +417,7 @@ function startListening(server) {
     }
 }
 
-function setupSentry(sentryDsn, expressApp) {
+function setupSentry(sentryDsn) {
     if (!sentryDsn) {
         logger.info('Not configuring sentry');
         return;
@@ -433,22 +432,6 @@ function setupSentry(sentryDsn, expressApp) {
                 event.request.data = JSON.stringify({redacted: true});
             }
             return event;
-        },
-        integrations: [
-            // enable HTTP calls tracing
-            new Sentry.Integrations.Http({tracing: true}),
-            // enable Express.js middleware tracing
-            new Tracing.Integrations.Express({expressApp}),
-        ],
-        tracesSampler: samplingContext => {
-            // always inherit
-            if (samplingContext.parentSampled !== undefined) return samplingContext.parentSampled;
-
-            // never sample healthcheck
-            if (samplingContext.transactionContext.name === 'GET /healthcheck') return 0;
-
-            // default sample rate of 10%
-            return 0.1;
         },
     });
     logger.info(`Configured with Sentry endpoint ${sentryDsn}`);
@@ -511,7 +494,7 @@ async function main() {
 
     const webServer = express(),
         router = express.Router();
-    setupSentry(aws.getConfig('sentryDsn'), webServer);
+    setupSentry(aws.getConfig('sentryDsn'));
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -574,7 +557,6 @@ async function main() {
                 ip: true,
             }),
         )
-        .use(Sentry.Handlers.tracingHandler())
         // eslint-disable-next-line no-unused-vars
         .use(
             responseTime((req, res, time) => {
