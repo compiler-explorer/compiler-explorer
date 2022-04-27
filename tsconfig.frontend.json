@@ -8,5 +8,6 @@
     "inlineSources": true,
     "strictPropertyInitialization": false,
     "lib": ["dom", "es5"]
-  }
+  },
+  "exclude": ["app.js", "lib", "examples"]
 }
