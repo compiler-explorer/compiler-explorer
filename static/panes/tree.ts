@@ -420,11 +420,12 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        this.container.layoutManager
-            .createDragSource(dragSource, dragConfig.bind(this))
-            ._dragListener.on('dragStart', () => {
+        (this.container.layoutManager.createDragSource(dragSource, dragConfig.bind(this)) as any)._dragListener.on(
+            'dragStart',
+            () => {
                 this.domRoot.find('.add-pane').dropdown('toggle');
-            });
+            }
+        );
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
@@ -513,7 +514,10 @@ export class Tree {
             this.languageBtn.prop('disabled', true);
         }
 
-        this.toggleCMakeButton = new Toggles(this.domRoot.find('.options'), state);
+        this.toggleCMakeButton = new Toggles(
+            this.domRoot.find('.options'),
+            state as unknown as Record<string, boolean>
+        );
     }
 
     private numberUsedLines() {
