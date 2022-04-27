@@ -162,13 +162,11 @@ export class Tree {
     }
 
     private getCmakeArgs(): string {
-        const val = this.cmakeArgsInput.val() as string | undefined;
-        return val ?? '';
+        return this.cmakeArgsInput.val() as string;
     }
 
     private getCustomOutputFilename(): string {
-        const val = this.customOutputFilenameInput.val() as string | undefined;
-        return _.escape(val ?? '');
+        return _.escape(this.customOutputFilenameInput.val() as string);
     }
 
     public currentState(): TreeState {
