@@ -29,7 +29,7 @@ cp -R "${ROOT}"/etc \
 rm -rf "${ROOT}"/lib/storage/data
 
 # Create any generated files.
-mkdir static
+mkdir -p static/generated
 cp -R "${ROOT}"/static/favicon.ico ./static/
 SCRIPTS="${ROOT}/etc/scripts/util"
 python3 "${SCRIPTS}/changelog.py"
