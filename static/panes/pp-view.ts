@@ -27,7 +27,6 @@
 import {Toggles} from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import $ from 'jquery';
 import {MonacoPane} from './pane';
 import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';

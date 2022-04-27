@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
 import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
 import {toggleEventListener} from './utils';
 import * as Sentry from '@sentry/browser';

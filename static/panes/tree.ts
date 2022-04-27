@@ -31,7 +31,6 @@ import {Hub} from '../hub';
 import {EventHub} from '../event-hub';
 
 const _ = require('underscore');
-const $ = require('jquery');
 const Alert = require('../alert').Alert;
 const Components = require('../components');
 const ga = require('../analytics').ga;

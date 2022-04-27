@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
