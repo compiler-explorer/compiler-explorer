@@ -8,9 +8,6 @@
     "esModuleInterop": true,
     /* Other options */
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noImplicitAny": false,
-    "noImplicitOverride": true
+    "skipLibCheck": true
   }
 }

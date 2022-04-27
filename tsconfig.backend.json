@@ -10,5 +10,8 @@
     /* Code generation */
     "outDir": "./out/app",
     "typeRoots": ["./typings", "./node_modules/@types"],
+    /* Other options */
+    "strict": true,
+    "noImplicitAny": false
   }
 }
