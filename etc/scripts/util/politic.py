@@ -25,31 +25,40 @@
 
 import subprocess
 import re
+import argparse
+import sys
+from pathlib import Path
 
 date_placeholder = '(<span id="last-changed">).*(</span>)'
 date_placeholder_regex = re.compile(date_placeholder)
 
 
-def check_policy_file(police_name):
-    policy_path = f"static/policies/{police_name}.html"
-    policy_last_time = subprocess.check_output(['git', 'log', '-1', '--format=%cd', policy_path]).decode('utf-8').rstrip()
+def update_policy_file(source: Path, dest: Path) -> None:
+    policy_last_time = subprocess.check_output(
+        ['git', 'log', '-1', '--format=%cd', str(source)]
+    ).decode('utf-8').rstrip()
 
     if len(policy_last_time) == 0:
-        print(f'No need to update {policy_path}')
-        return
-    policy_last_commit = subprocess.check_output(['git', 'log', '-1', '--format=%h', policy_path]).decode('utf-8').rstrip()
-    print(f'Setting policy {policy_path} last updated time to {policy_last_time} with commit {policy_last_commit}')
-    f = open(policy_path, 'r')
-    file_lines = f.readlines()
-    f.close()
-    with open(policy_path, 'w') as f:
+        print(f'Unable to get git info for {source}')
+        sys.exit(1)
+    policy_last_commit = subprocess.check_output(['git', 'log', '-1', '--format=%h', str(source)]).decode(
+        'utf-8').rstrip()
+    print(f'Setting policy {dest} last updated time to {policy_last_time} with commit {policy_last_commit}')
+    with source.open('r', encoding='utf-8') as f:
+        file_lines = f.readlines()
+    with dest.open('w', encoding='utf-8') as f:
         for line in file_lines:
             if re.match(date_placeholder_regex, line):
-                f.write(re.sub(date_placeholder_regex, f'\\1Last changed on: <time id="changed-date" datetime="{policy_last_time}">{policy_last_time}</time> <i>(<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{policy_last_commit}" target="_blank">diff</a>)</i>\\2', line))
+                f.write(re.sub(date_placeholder_regex,
+                               f'\\1Last changed on: <time id="changed-date" datetime="{policy_last_time}">{policy_last_time}</time> <i>(<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{policy_last_commit}" target="_blank">diff</a>)</i>\\2',
+                               line))
             else:
                 f.write(line)
 
 
 if __name__ == '__main__':
-    check_policy_file('privacy')
-    check_policy_file('cookies')
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source", help="policy source filename", metavar="SRC", type=Path)
+    parser.add_argument("dest", help="policy destination filename", metavar="DEST", type=Path)
+    args = parser.parse_args()
+    update_policy_file(args.source, args.dest)
