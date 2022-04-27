@@ -37,8 +37,8 @@ const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
 console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
-const distPath = path.resolve(__dirname, 'out', 'dist');
-const staticPath = path.join(distPath, 'static');
+const manifestPath = path.resolve(__dirname, 'out', 'dist', 'manifest.json');
+const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
@@ -74,7 +74,7 @@ const plugins = [
         filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
-        fileName: path.join(distPath, 'manifest.json'),
+        fileName: manifestPath,
         publicPath: '',
     }),
     new DefinePlugin({
@@ -105,7 +105,7 @@ export default {
             path: 'path-browserify',
         },
         modules: ['./static', './node_modules'],
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.js', '.html'],
     },
     stats: 'normal',
     devtool: 'source-map',

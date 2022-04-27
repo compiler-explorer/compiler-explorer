@@ -58,7 +58,7 @@ def format_commit(url, commit):
 
 def get_commits(repo):
     coms = subprocess.check_output(['git', 'log', '--date=local', '--after="3 months ago"', '--grep=(#[0-9]*)', '--oneline']).decode('utf-8')
-    with open('static/changelog.html', 'w') as f:
+    with open('static/generated/changelog.html', 'w') as f:
         f.write('<div class="commits-list">\n')
         for commit in coms.splitlines():
             f.write(format_commit(repo, commit))
