@@ -181,10 +181,18 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    showAstResults(results: AstCodeEntry[]) {
-        const fullText = results.map(x => x.text).join('\n');
+    showAstResults(results: AstCodeEntry[] | string) {
+        const fullText = typeof results === 'string' ? results : results.map(x => x.text).join('\n');
         this.editor.setValue(fullText);
-        this.astCode = results;
+        if (typeof results === 'string') {
+            this.astCode = results.split('\n').map(x => {
+                return {
+                    text: x,
+                } as AstCodeEntry;
+            });
+        } else {
+            this.astCode = results;
+        }
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
