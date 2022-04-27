@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {options} from './options';
-import {LanguageLibs, Library, Libs} from './options.interfaces';
+import {LanguageLibs, Library} from './options.interfaces';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
@@ -77,8 +77,7 @@ export function getSupportedLibraries(
         }
         return allLibs;
     } else {
-        const allRemotes = getRemoteLibraries(langId, remote.target);
-        const allLibs = allRemotes;
+        const allLibs = getRemoteLibraries(langId, remote.target);
         if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
             return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
         }

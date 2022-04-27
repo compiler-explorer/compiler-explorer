@@ -106,7 +106,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         if (result.hasOptOutput) {
             this.showOptResults(result.optOutput);
         }
-        // TODO: This is unelegant again. Previously took advantage of fourth argument for the compileResult event.
+        // TODO: This is inelegant again. Previously took advantage of fourth argument for the compileResult event.
         const lang = compiler.lang === 'c++' ? 'cpp' : compiler.lang;
         const model = this.editor.getModel();
         if (model != null && this.getCurrentEditorLanguage() !== lang) {

@@ -26,8 +26,7 @@ import _ from 'underscore';
 import path from 'path';
 import JSZip from 'jszip';
 import {Hub} from './hub';
-const options = require('./options').options;
-const languages = options.languages;
+const languages = require('./options').options.languages;
 
 export interface MultifileFile {
     fileId: number;
