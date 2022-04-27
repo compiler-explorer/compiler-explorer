@@ -40,12 +40,11 @@ done
 # Set up and build and webpack everything
 cd "${ROOT}"
 npm install --no-audit
-npm run webpack
+env MODIFIED_FILE_DIR="${ROOT}/out/dist" npm run webpack
 npm run ts-compile
 
 # Now install only the production dependencies in our output directory
 cd out/dist
-rm -rf node_modules
 npm install --no-audit --ignore-scripts --production
 rm -rf node_modules/.cache/ node_modules/monaco-editor/
 find node_modules -name \*.ts -delete
