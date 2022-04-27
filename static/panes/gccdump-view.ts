@@ -395,8 +395,10 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         const parent = super.getCurrentState();
         const filters = this.getEffectiveFilters() as unknown as GccDumpFilters; // TODO: Validate somehow?
         const state: MonacoPaneState & GccDumpState = {
-            selectedPass: this.selectedPass,
+            // filters needs to come first, the entire state is given to the toggles and we don't want to override
+            // properties such as selectedPass with obsolete values
             ...filters,
+            selectedPass: this.selectedPass,
             ...parent,
         };
         // TODO(jeremy-rifkin)
