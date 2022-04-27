@@ -22,6 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// This jQuery import needs to be here, because noscript.ts is a different entrypoint than the rest of the code.
+// See webpack.config.esm.js -> entry for more details.
+import $ from 'jquery';
 import 'bootstrap';
 import 'popper.js';
 
