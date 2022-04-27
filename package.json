@@ -171,6 +171,7 @@
     "format-fix-files": "prettier --write --ignore-unknown",
     "format-check": "prettier --ignore-unknown --check ./static/**/*.ts",
     "ts-compile": "tsc",
+    "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
