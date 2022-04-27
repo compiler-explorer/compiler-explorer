@@ -84,7 +84,7 @@ class DotNetCompiler extends BaseCompiler {
         ];
     }
 
-    override async runCompiler(compiler, options, inputFileName, execOptions) {
+    async runCompiler(compiler, options, inputFileName, execOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
