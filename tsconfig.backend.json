@@ -12,8 +12,6 @@
     "outDir": "./out/dist",
     "typeRoots": ["./typings", "./node_modules/@types"],
     /* Other options */
-    "strict": true,
-    "noImplicitAny": false,
     "allowJs": true
   }
 }

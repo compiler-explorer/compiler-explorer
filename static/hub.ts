@@ -51,7 +51,6 @@ import {Cfg as CfgView} from './panes/cfg-view';
 import {Conformance as ConformanceView} from './panes/conformance-view';
 import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view';
-import Sentry from '@sentry/browser';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();
@@ -263,27 +262,29 @@ export class Hub {
 
     // Layout getters
 
-    public findParentRowOrColumn(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
+    public findParentRowOrColumn(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | null {
         let currentElem: GoldenLayout.ContentItem | null = elem;
         while (currentElem) {
             if (currentElem.isRow || currentElem.isColumn) return currentElem;
+            // currentElem.parent may be null, this is reflected in newer GoldenLayout versions but not the version
+            // we're using. Making a cast here just to be precise about what's going on.
             currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        Sentry.captureMessage('findParentRowOrColumn: Unable to find parent row or column');
-        return null as any;
+        return null;
     }
 
-    public findParentRowOrColumnOrStack(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem {
+    public findParentRowOrColumnOrStack(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | null {
         let currentElem: GoldenLayout.ContentItem | null = elem;
         while (currentElem) {
             if (currentElem.isRow || currentElem.isColumn || currentElem.isStack) return currentElem;
+            // currentElem.parent may be null, this is reflected in newer GoldenLayout versions but not the version
+            // we're using. Making a cast here just to be precise about what's going on.
             currentElem = currentElem.parent as GoldenLayout.ContentItem | null;
         }
-        Sentry.captureMessage('#findParentRowOrColumnOrStack: Unable to find parent row, column, or stack');
-        return null as any;
+        return null;
     }
 
-    public findEditorInChildren(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | boolean {
+    public findEditorInChildren(elem: GoldenLayout.ContentItem): GoldenLayout.ContentItem | boolean | null {
         const count = elem.contentItems.length;
         let index = 0;
         while (index < count) {
@@ -304,7 +305,7 @@ export class Hub {
         return false;
     }
 
-    public findEditorParentRowOrColumn(): GoldenLayout.ContentItem | boolean {
+    public findEditorParentRowOrColumn(): GoldenLayout.ContentItem | boolean | null {
         return this.findEditorInChildren(this.layout.root);
     }
 

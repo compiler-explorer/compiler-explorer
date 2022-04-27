@@ -6,9 +6,8 @@
     "rootDirs": ["./static", "./types"],
     /* Code generation */
     "inlineSources": true,
-    "strict": true,
     "strictPropertyInitialization": false,
-    "noImplicitAny": false,
     "lib": ["dom", "es5"]
-  }
+  },
+  "exclude": ["app.js", "lib", "examples"]
 }
