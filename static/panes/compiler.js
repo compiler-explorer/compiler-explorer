@@ -132,13 +132,19 @@ function Compiler(hub, container, state) {
         monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
     }
 
-    this.outputEditor = monaco.editor.create(this.monacoPlaceholder[0], monacoConfig.extendConfig({
-        readOnly: true,
-        language: monacoDisassembly,
-        glyphMargin: !options.embedded,
-        guides: false,
-        vimInUse: false,
-    }, this.settings));
+    this.outputEditor = monaco.editor.create(
+        this.monacoPlaceholder[0],
+        monacoConfig.extendConfig(
+            {
+                readOnly: true,
+                language: monacoDisassembly,
+                glyphMargin: !options.embedded,
+                guides: false,
+                vimInUse: false,
+            },
+            this.settings
+        )
+    );
 
     this.fontScale = new FontScale(this.domRoot, state, this.outputEditor);
     this.compilerPicker = new CompilerPicker(
@@ -210,11 +216,13 @@ Compiler.prototype.initPanerButtons = function () {
     }, this);
 
     this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
-    this.outputBtn.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(outputConfig);
-    }, this));
+    this.outputBtn.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(outputConfig);
+        }, this)
+    );
 
     var cloneComponent = _.bind(function () {
         var currentState = this.currentState();
@@ -227,8 +235,14 @@ Compiler.prototype.initPanerButtons = function () {
         };
     }, this);
     var createOptView = _.bind(function () {
-        return Components.getOptViewWith(this.id, this.source, this.lastResult.optOutput, this.getCompilerName(),
-            this.sourceEditorId, this.sourceTreeId);
+        return Components.getOptViewWith(
+            this.id,
+            this.source,
+            this.lastResult.optOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createFlagsView = _.bind(function () {
@@ -240,53 +254,112 @@ Compiler.prototype.initPanerButtons = function () {
     }
 
     var createPpView = _.bind(function () {
-        return Components.getPpViewWith(this.id, this.source, this.lastResult.ppOutput, this.getCompilerName(),
-            this.sourceEditorId, this.sourceTreeId);
+        return Components.getPpViewWith(
+            this.id,
+            this.source,
+            this.lastResult.ppOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createAstView = _.bind(function () {
-        return Components.getAstViewWith(this.id, this.source, this.lastResult.astOutput, this.getCompilerName(),
-            this.sourceEditorId, this.sourceTreeId);
+        return Components.getAstViewWith(
+            this.id,
+            this.source,
+            this.lastResult.astOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createIrView = _.bind(function () {
-        return Components.getIrViewWith(this.id, this.source, this.lastResult.irOutput, this.getCompilerName(),
-            this.sourceEditorId, this.sourceTreeId);
+        return Components.getIrViewWith(
+            this.id,
+            this.source,
+            this.lastResult.irOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createDeviceView = _.bind(function () {
-        return Components.getDeviceViewWith(this.id, this.source, this.lastResult.devices, this.getCompilerName(),
-            this.sourceEditorId, this.sourceTreeId);
+        return Components.getDeviceViewWith(
+            this.id,
+            this.source,
+            this.lastResult.devices,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createRustMirView = _.bind(function () {
-        return Components.getRustMirViewWith(this.id, this.source, this.lastResult.rustMirOutput,
-            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
+        return Components.getRustMirViewWith(
+            this.id,
+            this.source,
+            this.lastResult.rustMirOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createRustMacroExpView = _.bind(function () {
-        return Components.getRustMacroExpViewWith(this.id, this.source, this.lastResult.rustMacroExpOutput,
-            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
+        return Components.getRustMacroExpViewWith(
+            this.id,
+            this.source,
+            this.lastResult.rustMacroExpOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createRustHirView = _.bind(function () {
-        return Components.getRustHirViewWith(this.id, this.source, this.lastResult.rustHirOutput,
-            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
+        return Components.getRustHirViewWith(
+            this.id,
+            this.source,
+            this.lastResult.rustHirOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createGccDumpView = _.bind(function () {
-        return Components.getGccDumpViewWith(this.id, this.getCompilerName(), this.sourceEditorId,
-            this.sourceTreeId, this.lastResult.gccDumpOutput);
+        return Components.getGccDumpViewWith(
+            this.id,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId,
+            this.lastResult.gccDumpOutput
+        );
     }, this);
 
     var createGnatDebugTreeView = _.bind(function () {
-        return Components.getGnatDebugTreeViewWith(this.id, this.source, this.lastResult.gnatDebugTreeOutput,
-            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
+        return Components.getGnatDebugTreeViewWith(
+            this.id,
+            this.source,
+            this.lastResult.gnatDebugTreeOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createGnatDebugView = _.bind(function () {
-        return Components.getGnatDebugViewWith(this.id, this.source, this.lastResult.gnatDebugOutput,
-            this.getCompilerName(), this.sourceEditorId, this.sourceTreeId);
+        return Components.getGnatDebugViewWith(
+            this.id,
+            this.source,
+            this.lastResult.gnatDebugOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
     }, this);
 
     var createCfgView = _.bind(function () {
@@ -318,32 +391,38 @@ Compiler.prototype.initPanerButtons = function () {
         .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.domRoot.find('.btn.add-compiler').click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(cloneComponent);
-    }, this));
+    this.domRoot.find('.btn.add-compiler').click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(cloneComponent);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.optButton, createOptView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.optButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createOptView);
-    }, this));
+    this.optButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createOptView);
+        }, this)
+    );
 
     var popularArgumentsMenu = this.domRoot.find('div.populararguments div.dropdown-menu');
     this.container.layoutManager
         .createDragSource(this.flagsButton, createFlagsView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.flagsButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createFlagsView);
-    }, this));
+    this.flagsButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createFlagsView);
+        }, this)
+    );
 
     popularArgumentsMenu.append(this.flagsButton);
 
@@ -351,121 +430,145 @@ Compiler.prototype.initPanerButtons = function () {
         .createDragSource(this.ppButton, createPpView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.ppButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createPpView);
-    }, this));
+    this.ppButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createPpView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.astButton, createAstView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.astButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createAstView);
-    }, this));
+    this.astButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createAstView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.irButton, createIrView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.irButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createIrView);
-    }, this));
+    this.irButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createIrView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.deviceButton, createDeviceView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.deviceButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createDeviceView);
-    }, this));
+    this.deviceButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createDeviceView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.rustMirButton, createRustMirView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.rustMirButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createRustMirView);
-    }, this));
+    this.rustMirButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createRustMirView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.rustMacroExpButton, createRustMacroExpView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.rustMacroExpButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createRustMacroExpView);
-    }, this));
+    this.rustMacroExpButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createRustMacroExpView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.rustHirButton, createRustHirView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.rustHirButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createRustHirView);
-    }, this));
+    this.rustHirButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createRustHirView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.gccDumpButton, createGccDumpView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.gccDumpButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createGccDumpView);
-    }, this));
+    this.gccDumpButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createGccDumpView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.gnatDebugTreeButton, createGnatDebugTreeView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.gnatDebugTreeButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createGnatDebugTreeView);
-    }, this));
+    this.gnatDebugTreeButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createGnatDebugTreeView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.gnatDebugButton, createGnatDebugView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.gnatDebugButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createGnatDebugView);
-    }, this));
+    this.gnatDebugButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createGnatDebugView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.cfgButton, createCfgView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.cfgButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createCfgView);
-    }, this));
+    this.cfgButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createCfgView);
+        }, this)
+    );
 
     this.container.layoutManager
         .createDragSource(this.executorButton, createExecutor)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    this.executorButton.click(_.bind(function () {
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createExecutor);
-    }, this));
+    this.executorButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createExecutor);
+        }, this)
+    );
 
     this.initToolButtons(togglePannerAdder);
 };
@@ -496,9 +599,7 @@ Compiler.prototype.getLabelAtPosition = function (position) {
         var labels = asmLine.labels || [];
 
         for (var i = 0; i < labels.length; ++i) {
-            if (column >= labels[i].range.startCol &&
-                column < labels[i].range.endCol
-            ) {
+            if (column >= labels[i].range.startCol && column < labels[i].range.endCol) {
                 return labels[i];
             }
         }
@@ -526,9 +627,9 @@ Compiler.prototype.jumpToLabel = function (position) {
 
     this.pushRevealJump();
 
-    this.outputEditor.setSelection(new monaco.Selection(
-        labelDefLineNum, 0,
-        labelDefLineNum, endLineContent.length + 1));
+    this.outputEditor.setSelection(
+        new monaco.Selection(labelDefLineNum, 0, labelDefLineNum, endLineContent.length + 1)
+    );
 
     // Jump to the given line.
     this.outputEditor.revealLineInCenter(labelDefLineNum);
@@ -580,9 +681,12 @@ Compiler.prototype.initEditorActions = function () {
             if (this.isAsmKeywordCtxKey) {
                 var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
                 if (currentWord) {
-                    currentWord.range = new monaco.Range(e.target.position.lineNumber,
+                    currentWord.range = new monaco.Range(
+                        e.target.position.lineNumber,
                         Math.max(currentWord.startColumn, 1),
-                        e.target.position.lineNumber, currentWord.endColumn);
+                        e.target.position.lineNumber,
+                        currentWord.endColumn
+                    );
                     if (currentWord.word) {
                         this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
                     }
@@ -591,7 +695,6 @@ Compiler.prototype.initEditorActions = function () {
         }
         realMethod.apply(contextmenu, arguments);
     }, this);
-
 
     this.outputEditor.addAction({
         id: 'returnfromreveal',
@@ -650,7 +753,6 @@ Compiler.prototype.initEditorActions = function () {
             });
         }, this),
     });
-
 };
 
 Compiler.prototype.initEditorCommands = function () {
@@ -696,9 +798,13 @@ Compiler.prototype.findTools = function (content, tools) {
             });
         }
     } else if (content.content) {
-        _.each(content.content, function (subcontent) {
-            tools = this.findTools(subcontent, tools);
-        }, this);
+        _.each(
+            content.content,
+            function (subcontent) {
+                tools = this.findTools(subcontent, tools);
+            },
+            this
+        );
     }
 
     return tools;
@@ -817,21 +923,23 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
 };
 
 Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
-    this.compilerService.expand(this.source).then(_.bind(function (expanded) {
-        var request = {
-            source: expanded || '',
-            compiler: this.compiler ? this.compiler.id : '',
-            options: options,
-            lang: this.currentLangId,
-            files: [],
-        };
-        if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-        } else {
-            this.sendCompile(request);
-        }
-    }, this));
+    this.compilerService.expand(this.source).then(
+        _.bind(function (expanded) {
+            var request = {
+                source: expanded || '',
+                compiler: this.compiler ? this.compiler.id : '',
+                options: options,
+                lang: this.currentLangId,
+                files: [],
+            };
+            if (bypassCache) request.bypassCache = true;
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this)
+    );
 };
 
 Compiler.prototype.sendCMakeCompile = function (request) {
@@ -849,10 +957,14 @@ Compiler.prototype.sendCMakeCompile = function (request) {
     this.pendingCMakeRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
-    var progress = setTimeout(_.bind(function () {
-        this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
-    }, this), 500);
-    this.compilerService.submitCMake(request)
+    var progress = setTimeout(
+        _.bind(function () {
+            this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
+        }, this),
+        500
+    );
+    this.compilerService
+        .submitCMake(request)
         .then(function (x) {
             clearTimeout(progress);
             onCompilerResponse(request, x.result, x.localCacheHit);
@@ -865,8 +977,7 @@ Compiler.prototype.sendCMakeCompile = function (request) {
             } else if (x) {
                 message = x.error || x.code || message;
             }
-            onCompilerResponse(request,
-                errorResult('<Compilation failed: ' + message + '>'), false);
+            onCompilerResponse(request, errorResult('<Compilation failed: ' + message + '>'), false);
         });
 };
 
@@ -885,10 +996,14 @@ Compiler.prototype.sendCompile = function (request) {
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
-    var progress = setTimeout(_.bind(function () {
-        this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
-    }, this), 500);
-    this.compilerService.submit(request)
+    var progress = setTimeout(
+        _.bind(function () {
+            this.setAssembly({asm: fakeAsm('<Compiling...>')}, 0);
+        }, this),
+        500
+    );
+    this.compilerService
+        .submit(request)
         .then(function (x) {
             clearTimeout(progress);
             onCompilerResponse(request, x.result, x.localCacheHit);
@@ -956,56 +1071,61 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     if (!this.awaitingInitialResults) {
         if (this.selection) {
             this.outputEditor.setSelection(this.selection);
-            this.outputEditor.revealLinesInCenter(
-                this.selection.startLineNumber, this.selection.endLineNumber);
+            this.outputEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
         }
         this.awaitingInitialResults = true;
     } else {
         var visibleRanges = this.outputEditor.getVisibleRanges();
-        var currentTopLine =
-            visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
+        var currentTopLine = visibleRanges.length > 0 ? visibleRanges[0].startLineNumber : 1;
         this.outputEditor.revealLine(currentTopLine);
     }
 
     this.decorations.labelUsages = [];
-    _.each(this.assembly, _.bind(function (obj, line) {
-        if (!obj.labels || !obj.labels.length) return;
+    _.each(
+        this.assembly,
+        _.bind(function (obj, line) {
+            if (!obj.labels || !obj.labels.length) return;
 
-        obj.labels.forEach(function (label) {
-            this.decorations.labelUsages.push({
-                range: new monaco.Range(line + 1, label.range.startCol,
-                    line + 1, label.range.endCol),
-                options: {
-                    inlineClassName: 'asm-label-link',
-                    hoverMessage: [{
-                        value: 'Ctrl + Left click to follow the label',
-                    }],
-                },
-            });
-        }, this);
-    }, this));
+            obj.labels.forEach(function (label) {
+                this.decorations.labelUsages.push({
+                    range: new monaco.Range(line + 1, label.range.startCol, line + 1, label.range.endCol),
+                    options: {
+                        inlineClassName: 'asm-label-link',
+                        hoverMessage: [
+                            {
+                                value: 'Ctrl + Left click to follow the label',
+                            },
+                        ],
+                    },
+                });
+            }, this);
+        }, this)
+    );
     this.updateDecorations();
 
     var codeLenses = [];
     if (this.getEffectiveFilters().binary) {
         this.setBinaryMargin();
-        _.each(this.assembly, _.bind(function (obj, line) {
-            if (obj.opcodes) {
-                var address = obj.address ? obj.address.toString(16) : '';
-                codeLenses.push({
-                    range: {
-                        startLineNumber: line + 1,
-                        startColumn: 1,
-                        endLineNumber: line + 2,
-                        endColumn: 1,
-                    },
-                    id: address,
-                    command: {
-                        title: obj.opcodes.join(' '),
-                    },
-                });
-            }
-        }, this));
+        _.each(
+            this.assembly,
+            _.bind(function (obj, line) {
+                if (obj.opcodes) {
+                    var address = obj.address ? obj.address.toString(16) : '';
+                    codeLenses.push({
+                        range: {
+                            startLineNumber: line + 1,
+                            startColumn: 1,
+                            endLineNumber: line + 2,
+                            endColumn: 1,
+                        },
+                        id: address,
+                        command: {
+                            title: obj.opcodes.join(' '),
+                        },
+                    });
+                }
+            }, this)
+        );
     } else {
         this.setNormalMargin();
     }
@@ -1181,8 +1301,11 @@ Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId
         }
     }
 
-    if (editor === this.sourceEditorId && langId === this.currentLangId &&
-        (compilerId === undefined || compilerId === this.id)) {
+    if (
+        editor === this.sourceEditorId &&
+        langId === this.currentLangId &&
+        (compilerId === undefined || compilerId === this.id)
+    ) {
         this.source = source;
         if (this.settings.compileOnChange) {
             this.compile();
@@ -1201,13 +1324,15 @@ Compiler.prototype.onToolOpened = function (compilerId, toolSettings) {
         var toolId = toolSettings.toolId;
 
         var buttons = this.toolsMenu.find('button');
-        $(buttons).each(_.bind(function (idx, button) {
-            var toolButton = $(button);
-            var toolName = toolButton.data('toolname');
-            if (toolId === toolName) {
-                toolButton.prop('disabled', true);
-            }
-        }, this));
+        $(buttons).each(
+            _.bind(function (idx, button) {
+                var toolButton = $(button);
+                var toolName = toolButton.data('toolname');
+                if (toolId === toolName) {
+                    toolButton.prop('disabled', true);
+                }
+            }, this)
+        );
 
         this.compile(false, toolSettings);
     }
@@ -1218,13 +1343,15 @@ Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
         var toolId = toolSettings.toolId;
 
         var buttons = this.toolsMenu.find('button');
-        $(buttons).each(_.bind(function (idx, button) {
-            var toolButton = $(button);
-            var toolName = toolButton.data('toolname');
-            if (toolId === toolName) {
-                toolButton.prop('disabled', !this.supportsTool(toolId));
-            }
-        }, this));
+        $(buttons).each(
+            _.bind(function (idx, button) {
+                var toolButton = $(button);
+                var toolName = toolButton.data('toolname');
+                if (toolId === toolName) {
+                    toolButton.prop('disabled', !this.supportsTool(toolId));
+                }
+            }, this)
+        );
     }
 };
 
@@ -1429,9 +1556,9 @@ Compiler.prototype.onGccDumpUIInit = function (id) {
 
 Compiler.prototype.onGccDumpFiltersChanged = function (id, filters, reqCompile) {
     if (this.id === id) {
-        this.treeDumpEnabled = (filters.treeDump !== false);
-        this.rtlDumpEnabled = (filters.rtlDump !== false);
-        this.ipaDumpEnabled = (filters.ipaDump !== false);
+        this.treeDumpEnabled = filters.treeDump !== false;
+        this.rtlDumpEnabled = filters.rtlDump !== false;
+        this.ipaDumpEnabled = filters.ipaDump !== false;
         this.dumpFlags = {
             address: filters.addressOption !== false,
             slim: filters.slimOption !== false,
@@ -1519,31 +1646,31 @@ Compiler.prototype.onCfgViewClosed = function (id) {
 };
 
 Compiler.prototype.initFilterButtons = function () {
-    this.filterBinaryButton = this.domRoot.find('[data-bind=\'binary\']');
+    this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
     this.filterBinaryTitle = this.filterBinaryButton.prop('title');
 
-    this.filterExecuteButton = this.domRoot.find('[data-bind=\'execute\']');
+    this.filterExecuteButton = this.domRoot.find("[data-bind='execute']");
     this.filterExecuteTitle = this.filterExecuteButton.prop('title');
 
-    this.filterLabelsButton = this.domRoot.find('[data-bind=\'labels\']');
+    this.filterLabelsButton = this.domRoot.find("[data-bind='labels']");
     this.filterLabelsTitle = this.filterLabelsButton.prop('title');
 
-    this.filterDirectivesButton = this.domRoot.find('[data-bind=\'directives\']');
+    this.filterDirectivesButton = this.domRoot.find("[data-bind='directives']");
     this.filterDirectivesTitle = this.filterDirectivesButton.prop('title');
 
-    this.filterLibraryCodeButton = this.domRoot.find('[data-bind=\'libraryCode\']');
+    this.filterLibraryCodeButton = this.domRoot.find("[data-bind='libraryCode']");
     this.filterLibraryCodeTitle = this.filterLibraryCodeButton.prop('title');
 
-    this.filterCommentsButton = this.domRoot.find('[data-bind=\'commentOnly\']');
+    this.filterCommentsButton = this.domRoot.find("[data-bind='commentOnly']");
     this.filterCommentsTitle = this.filterCommentsButton.prop('title');
 
-    this.filterTrimButton = this.domRoot.find('[data-bind=\'trim\']');
+    this.filterTrimButton = this.domRoot.find("[data-bind='trim']");
     this.filterTrimTitle = this.filterTrimButton.prop('title');
 
-    this.filterIntelButton = this.domRoot.find('[data-bind=\'intel\']');
+    this.filterIntelButton = this.domRoot.find("[data-bind='intel']");
     this.filterIntelTitle = this.filterIntelButton.prop('title');
 
-    this.filterDemangleButton = this.domRoot.find('[data-bind=\'demangle\']');
+    this.filterDemangleButton = this.domRoot.find("[data-bind='demangle']");
     this.filterDemangleTitle = this.filterDemangleButton.prop('title');
 
     this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
@@ -1583,16 +1710,25 @@ Compiler.prototype.initButtons = function (state) {
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('mouseup', _.bind(function (e) {
-        var target = $(e.target);
-        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.prependOptions.popover('hide');
+    $(document).on(
+        'mouseup',
+        _.bind(function (e) {
+            var target = $(e.target);
+            if (
+                !target.is(this.prependOptions) &&
+                this.prependOptions.has(target).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.prependOptions.popover('hide');
 
-        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.fullCompilerName.popover('hide');
-    }, this));
+            if (
+                !target.is(this.fullCompilerName) &&
+                this.fullCompilerName.has(target).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.fullCompilerName.popover('hide');
+        }, this)
+    );
 
     this.initFilterButtons(state);
 
@@ -1629,9 +1765,11 @@ Compiler.prototype.initLibraries = function (state) {
         this.libsButton,
         state,
         _.bind(this.onLibsChanged, this),
-        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr: [],
+        LibUtils.getSupportedLibraries(
+            this.compiler ? this.compiler.libsArr : [],
             this.currentLangId,
-            this.compiler ? this.compiler.remote : null)
+            this.compiler ? this.compiler.remote : null
+        )
     );
 };
 
@@ -1639,14 +1777,14 @@ Compiler.prototype.updateLibraries = function () {
     if (this.libsWidget) {
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr,
+            filteredLibraries = LibUtils.getSupportedLibraries(
+                this.compiler.libsArr,
                 this.currentLangId,
-                this.compiler ? this.compiler.remote : null);
+                this.compiler ? this.compiler.remote : null
+            );
         }
 
-        this.libsWidget.setNewLangId(this.currentLangId,
-            this.compiler ? this.compiler.id : false,
-            filteredLibraries);
+        this.libsWidget.setNewLangId(this.currentLangId, this.compiler ? this.compiler.id : false, filteredLibraries);
     }
 };
 
@@ -1661,9 +1799,12 @@ Compiler.prototype.isSupportedTool = function (tool) {
 Compiler.prototype.supportsTool = function (toolId) {
     if (!this.compiler) return;
 
-    return _.find(this.compiler.tools, _.bind(function (tool) {
-        return (tool.tool.id === toolId && this.isSupportedTool(tool));
-    }, this));
+    return _.find(
+        this.compiler.tools,
+        _.bind(function (tool) {
+            return tool.tool.id === toolId && this.isSupportedTool(tool);
+        }, this)
+    );
 };
 
 Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId) {
@@ -1686,12 +1827,14 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
         .createDragSource(button, createToolView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
-    button.click(_.bind(function () {
-        button.prop('disabled', true);
-        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
-            this.container.layoutManager.root.contentItems[0];
-        insertPoint.addChild(createToolView);
-    }, this));
+    button.click(
+        _.bind(function () {
+            button.prop('disabled', true);
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createToolView);
+        }, this)
+    );
 };
 
 Compiler.prototype.initToolButtons = function (togglePannerAdder) {
@@ -1701,10 +1844,10 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     if (!this.compiler) return;
 
     var addTool = _.bind(function (toolName, title) {
-        var btn = $('<button class=\'dropdown-item btn btn-light btn-sm\'>');
+        var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append('<span class=\'dropdown-icon fas fa-cog\'></span>' + title);
+        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
@@ -1715,11 +1858,14 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
     if (_.isEmpty(this.compiler.tools)) {
         addTool('none', 'No tools available');
     } else {
-        _.each(this.compiler.tools, _.bind(function (tool) {
-            if (this.isSupportedTool(tool)) {
-                addTool(tool.tool.id, tool.tool.name);
-            }
-        }, this));
+        _.each(
+            this.compiler.tools,
+            _.bind(function (tool) {
+                if (this.isSupportedTool(tool)) {
+                    addTool(tool.tool.id, tool.tool.name);
+                }
+            }, this)
+        );
     }
 };
 
@@ -1727,13 +1873,13 @@ Compiler.prototype.enableToolButtons = function () {
     var activeTools = this.getActiveTools();
 
     var buttons = this.toolsMenu.find('button');
-    $(buttons).each(_.bind(function (idx, button) {
-        var toolButton = $(button);
-        var toolName = toolButton.data('toolname');
-        toolButton.prop('disabled',
-            !(this.supportsTool(toolName)
-                && !this.isToolActive(activeTools, toolName)));
-    }, this));
+    $(buttons).each(
+        _.bind(function (idx, button) {
+            var toolButton = $(button);
+            var toolName = toolButton.data('toolname');
+            toolButton.prop('disabled', !(this.supportsTool(toolName) && !this.isToolActive(activeTools, toolName)));
+        }, this)
+    );
 };
 
 // eslint-disable-next-line max-statements
@@ -1743,8 +1889,14 @@ Compiler.prototype.updateButtons = function () {
     // We can support intel output if the compiler supports it, or if we're compiling
     // to binary (as we can disassemble it however we like).
     var formatFilterTitle = function (button, title) {
-        button.prop('title', '[' + (button.hasClass('active') ? 'ON' : 'OFF') + '] ' + title +
-            (button.prop('disabled') ? ' [LOCKED]' : ''));
+        button.prop(
+            'title',
+            '[' +
+                (button.hasClass('active') ? 'ON' : 'OFF') +
+                '] ' +
+                title +
+                (button.prop('disabled') ? ' [LOCKED]' : '')
+        );
     };
     var isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary;
     this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
@@ -1816,32 +1968,42 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
     }
 
     if (result && !this.flagsViewOpen) {
-        _.forEach(result, _.bind(function (arg, key) {
-            var argumentButton = $(document.createElement('button'));
-            argumentButton.addClass('dropdown-item btn btn-light btn-sm');
-            argumentButton.attr('title', arg.description);
-            argumentButton.data('arg', key);
-            argumentButton.html(
-                '<div class=\'argmenuitem\'>' +
-                '<span class=\'argtitle\'>' + _.escape(key) + '</span>' +
-                '<span class=\'argdescription\'>' + arg.description + '</span>' +
-                '</div>');
+        _.forEach(
+            result,
+            _.bind(function (arg, key) {
+                var argumentButton = $(document.createElement('button'));
+                argumentButton.addClass('dropdown-item btn btn-light btn-sm');
+                argumentButton.attr('title', arg.description);
+                argumentButton.data('arg', key);
+                argumentButton.html(
+                    "<div class='argmenuitem'>" +
+                        "<span class='argtitle'>" +
+                        _.escape(key) +
+                        '</span>' +
+                        "<span class='argdescription'>" +
+                        arg.description +
+                        '</span>' +
+                        '</div>'
+                );
 
-            argumentButton.on('click', _.bind(function () {
-                var button = argumentButton;
-                var curOptions = this.optionsField.val();
-                if (curOptions.length > 0) {
-                    this.optionsField.val(curOptions + ' ' + button.data('arg'));
-                } else {
-                    this.optionsField.val(button.data('arg'));
-                }
+                argumentButton.on(
+                    'click',
+                    _.bind(function () {
+                        var button = argumentButton;
+                        var curOptions = this.optionsField.val();
+                        if (curOptions.length > 0) {
+                            this.optionsField.val(curOptions + ' ' + button.data('arg'));
+                        } else {
+                            this.optionsField.val(button.data('arg'));
+                        }
 
-                this.optionsField.change();
-            }, this));
+                        this.optionsField.change();
+                    }, this)
+                );
 
-            popularArgumentsMenu.append(argumentButton);
-        }, this));
-
+                popularArgumentsMenu.append(argumentButton);
+            }, this)
+        );
     }
 };
 
@@ -1859,9 +2021,13 @@ Compiler.prototype.initListeners = function () {
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    this.container.on('open', function () {
-        this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
-    }, this);
+    this.container.on(
+        'open',
+        function () {
+            this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId, this.sourceTreeId);
+        },
+        this
+    );
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('compilerFlagsChange', this.onCompilerFlagsChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
@@ -1915,73 +2081,96 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
     this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
     this.eventHub.on('resize', this.resize, this);
-    this.eventHub.on('requestFilters', function (id) {
-        if (id === this.id) {
-            this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
-        }
-    }, this);
-    this.eventHub.on('requestCompiler', function (id) {
-        if (id === this.id) {
-            this.sendCompiler();
-        }
-    }, this);
+    this.eventHub.on(
+        'requestFilters',
+        function (id) {
+            if (id === this.id) {
+                this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters());
+            }
+        },
+        this
+    );
+    this.eventHub.on(
+        'requestCompiler',
+        function (id) {
+            if (id === this.id) {
+                this.sendCompiler();
+            }
+        },
+        this
+    );
     this.eventHub.on('languageChange', this.onLanguageChange, this);
 
-    this.fullTimingInfo
-        .off('click')
-        .click(_.bind(function () {
+    this.fullTimingInfo.off('click').click(
+        _.bind(function () {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
-        }, this));
+        }, this)
+    );
 };
 
 Compiler.prototype.initCallbacks = function () {
     this.initListeners();
 
-    var optionsChange = _.debounce(_.bind(function (e) {
-        this.onOptionsChange($(e.target).val());
-    }, this), 800);
+    var optionsChange = _.debounce(
+        _.bind(function (e) {
+            this.onOptionsChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    this.optionsField
-        .on('change', optionsChange)
-        .on('keyup', optionsChange);
+    this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
 
     this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
-    this.outputEditor.onMouseMove(_.bind(function (e) {
-        this.mouseMoveThrottledFunction(e);
-    }, this));
+    this.outputEditor.onMouseMove(
+        _.bind(function (e) {
+            this.mouseMoveThrottledFunction(e);
+        }, this)
+    );
 
-    this.cursorSelectionThrottledFunction =
-        _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-    this.outputEditor.onDidChangeCursorSelection(_.bind(function (e) {
-        this.cursorSelectionThrottledFunction(e);
-    }, this));
+    this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
+    this.outputEditor.onDidChangeCursorSelection(
+        _.bind(function (e) {
+            this.cursorSelectionThrottledFunction(e);
+        }, this)
+    );
 
     this.mouseUpThrottledFunction = _.throttle(_.bind(this.onMouseUp, this), 50);
-    this.outputEditor.onMouseUp(_.bind(function (e) {
-        this.mouseUpThrottledFunction(e);
-    }, this));
+    this.outputEditor.onMouseUp(
+        _.bind(function (e) {
+            this.mouseUpThrottledFunction(e);
+        }, this)
+    );
 
-    this.compileClearCache.on('click', _.bind(function () {
-        this.compilerService.cache.reset();
-        this.compile(true);
-    }, this));
+    this.compileClearCache.on(
+        'click',
+        _.bind(function () {
+            this.compilerService.cache.reset();
+            this.compile(true);
+        }, this)
+    );
 
     // Dismiss the popover on escape.
-    $(document).on('keyup.editable', _.bind(function (e) {
-        if (e.which === 27) {
-            this.libsButton.popover('hide');
-        }
-    }, this));
+    $(document).on(
+        'keyup.editable',
+        _.bind(function (e) {
+            if (e.which === 27) {
+                this.libsButton.popover('hide');
+            }
+        }, this)
+    );
 
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('click', _.bind(function (e) {
-        var elem = this.libsButton;
-        var target = $(e.target);
-        if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
-            elem.popover('hide');
-        }
-    }, this));
+    $(document).on(
+        'click',
+        _.bind(function (e) {
+            var elem = this.libsButton;
+            var target = $(e.target);
+            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+                elem.popover('hide');
+            }
+        }, this)
+    );
 
     this.eventHub.on('initialised', this.undefer, this);
 };
@@ -1998,9 +2187,12 @@ Compiler.prototype.onOptionsChange = function (options) {
 
 Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     // Check if any options are in the unwiseOptions array and remember them
-    var unwiseOptions = _.intersection(optionsArray, _.filter(this.compiler.unwiseOptions, function (opt) {
-        return opt !== '';
-    }));
+    var unwiseOptions = _.intersection(
+        optionsArray,
+        _.filter(this.compiler.unwiseOptions, function (opt) {
+            return opt !== '';
+        })
+    );
 
     var options = unwiseOptions.length === 1 ? 'Option ' : 'Options ';
     var names = unwiseOptions.join(', ');
@@ -2121,21 +2313,27 @@ Compiler.prototype.saveState = function () {
 
 Compiler.prototype.onColours = function (editor, colours, scheme) {
     var asmColours = {};
-    _.each(this.assembly, _.bind(function (x, index) {
-        if (x.source && x.source.line > 0) {
-            var editorId = this.getEditorIdBySourcefile(x.source);
-            if (editorId === editor) {
-                if (!asmColours[editorId]) {
-                    asmColours[editorId] = {};
+    _.each(
+        this.assembly,
+        _.bind(function (x, index) {
+            if (x.source && x.source.line > 0) {
+                var editorId = this.getEditorIdBySourcefile(x.source);
+                if (editorId === editor) {
+                    if (!asmColours[editorId]) {
+                        asmColours[editorId] = {};
+                    }
+                    asmColours[editorId][index] = colours[x.source.line - 1];
                 }
-                asmColours[editorId][index] = colours[x.source.line - 1];
             }
-        }
-    }, this));
+        }, this)
+    );
 
-    _.each(asmColours, _.bind(function (col) {
-        this.colours = colour.applyColours(this.outputEditor, col, scheme, this.colours);
-    }, this));
+    _.each(
+        asmColours,
+        _.bind(function (col) {
+            this.colours = colour.applyColours(this.outputEditor, col, scheme, this.colours);
+        }, this)
+    );
 };
 
 Compiler.prototype.onColoursForCompiler = function (compilerId, colours, scheme) {
@@ -2157,9 +2355,9 @@ Compiler.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
     if (this.sourceEditorId) {
-        return compName + ' (' + langName +', Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')';
+        return compName + ' (' + langName + ', Editor #' + this.sourceEditorId + ', Compiler #' + this.id + ')';
     } else if (this.sourceTreeId) {
-        return compName + ' (' + langName +', Tree #' + this.sourceTreeId + ', Compiler #' + this.id + ')';
+        return compName + ' (' + langName + ', Tree #' + this.sourceTreeId + ', Compiler #' + this.id + ')';
     } else {
         return '';
     }
@@ -2196,7 +2394,9 @@ Compiler.prototype.onResendCompilation = function (id) {
 
 Compiler.prototype.updateDecorations = function () {
     this.prevDecorations = this.outputEditor.deltaDecorations(
-        this.prevDecorations, _.flatten(_.values(this.decorations)));
+        this.prevDecorations,
+        _.flatten(_.values(this.decorations))
+    );
 };
 
 Compiler.prototype.clearLinkedLines = function () {
@@ -2209,19 +2409,22 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
         var lineNums = [];
         var directlyLinkedLineNums = [];
         var signalFromAnotherPane = sender !== this.getPaneName();
-        _.each(this.assembly, _.bind(function (asmLine, i) {
-            if (asmLine.source && asmLine.source.line === lineNumber) {
-                var fileEditorId = this.getEditorIdBySourcefile(asmLine.source);
-                if (fileEditorId && (editorId === fileEditorId)) {
-                    var line = i + 1;
-                    lineNums.push(line);
-                    var currentCol = asmLine.source.column;
-                    if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
-                        directlyLinkedLineNums.push(line);
+        _.each(
+            this.assembly,
+            _.bind(function (asmLine, i) {
+                if (asmLine.source && asmLine.source.line === lineNumber) {
+                    var fileEditorId = this.getEditorIdBySourcefile(asmLine.source);
+                    if (fileEditorId && editorId === fileEditorId) {
+                        var line = i + 1;
+                        lineNums.push(line);
+                        var currentCol = asmLine.source.column;
+                        if (signalFromAnotherPane && currentCol && colBegin <= currentCol && currentCol <= colEnd) {
+                            directlyLinkedLineNums.push(line);
+                        }
                     }
                 }
-            }
-        }, this));
+            }, this)
+        );
 
         if (revealLine && lineNums[0]) {
             this.pushRevealJump();
@@ -2252,10 +2455,13 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
         if (this.linkedFadeTimeoutId !== -1) {
             clearTimeout(this.linkedFadeTimeoutId);
         }
-        this.linkedFadeTimeoutId = setTimeout(_.bind(function () {
-            this.clearLinkedLines();
-            this.linkedFadeTimeoutId = -1;
-        }, this), 5000);
+        this.linkedFadeTimeoutId = setTimeout(
+            _.bind(function () {
+                this.clearLinkedLines();
+                this.linkedFadeTimeoutId = -1;
+            }, this),
+            5000
+        );
         this.updateDecorations();
     }
 };
@@ -2284,7 +2490,8 @@ Compiler.prototype.setCompilationOptionsPopover = function (content) {
     this.prependOptions.popover('dispose');
     this.prependOptions.popover({
         content: content || 'No options in use',
-        template: '<div class="popover' +
+        template:
+            '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
@@ -2296,35 +2503,38 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     // `notification` contains HTML from a config file, so is 'safe'.
     // `version` comes from compiler output, so isn't, and is escaped.
     var bodyContent = $('<div>');
-    var versionContent = $('<div>')
-        .html(_.escape(version.version));
+    var versionContent = $('<div>').html(_.escape(version.version));
     bodyContent.append(versionContent);
     if (version.fullVersion) {
         var hiddenSection = $('<div>');
         var lines = _.map(version.fullVersion.split('\n'), function (line) {
             return _.escape(line);
         }).join('<br/>');
-        var hiddenVersionText = $('<div>')
-            .html(lines)
-            .hide();
+        var hiddenVersionText = $('<div>').html(lines).hide();
         var clickToExpandContent = $('<a>')
             .attr('href', 'javascript:;')
             .text('Toggle full version output')
-            .on('click', _.bind(function () {
-                versionContent.toggle();
-                hiddenVersionText.toggle();
-                this.fullCompilerName.popover('update');
-            }, this));
+            .on(
+                'click',
+                _.bind(function () {
+                    versionContent.toggle();
+                    hiddenVersionText.toggle();
+                    this.fullCompilerName.popover('update');
+                }, this)
+            );
         hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
         bodyContent.append(hiddenSection);
     }
     this.fullCompilerName.popover({
         html: true,
-        title: notification ?
-            $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
-            'Full compiler version',
+        title: notification
+            ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0]
+            : 'Full compiler version',
         content: bodyContent,
-        template: '<div class="popover' + (version ? ' compiler-options-popover' : '') + '" role="tooltip">' +
+        template:
+            '<div class="popover' +
+            (version ? ' compiler-options-popover' : '') +
+            '" role="tooltip">' +
             '<div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
             '</div>',
@@ -2332,7 +2542,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
 };
 
 Compiler.prototype.onRequestCompilation = function (editorId, treeId) {
-    if ((editorId === this.sourceEditorId) || (treeId && treeId === this.sourceTreeId)) {
+    if (editorId === this.sourceEditorId || (treeId && treeId === this.sourceTreeId)) {
         this.compile();
     }
 };
@@ -2360,20 +2570,17 @@ var decimalLike = /^(#?)(-?[0-9]+)$/;
 
 function parseNumericValue(value) {
     var hexMatch = hexLike.exec(value) || hexLike2.exec(value);
-    if (hexMatch)
-        return bigInt(hexMatch[2], 16);
+    if (hexMatch) return bigInt(hexMatch[2], 16);
 
     var decMatch = decimalLike.exec(value);
-    if (decMatch)
-        return bigInt(decMatch[2]);
+    if (decMatch) return bigInt(decMatch[2]);
 
     return null;
 }
 
 function getNumericToolTip(value) {
     var numericValue = parseNumericValue(value);
-    if (numericValue === null)
-        return null;
+    if (numericValue === null) return null;
 
     // Decimal representation.
     var result = numericValue.toString(10);
@@ -2387,16 +2594,16 @@ function getNumericToolTip(value) {
     }
 
     // Printable ASCII character.
-    if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7E)) {
+    if (numericValue.greaterOrEquals(0x20) && numericValue.lesserOrEquals(0x7e)) {
         var char = String.fromCharCode(numericValue.valueOf());
-        result += ' = \'' + char + '\'';
+        result += " = '" + char + "'";
     }
 
     return result;
 }
 
 function getAsmInfo(opcode, instructionSet) {
-    var cacheName = 'asm/' + (instructionSet ? (instructionSet + '/') : '') + opcode;
+    var cacheName = 'asm/' + (instructionSet ? instructionSet + '/' : '') + opcode;
     var cached = OpcodeCache.get(cacheName);
     if (cached) {
         if (cached.found) {
@@ -2405,18 +2612,19 @@ function getAsmInfo(opcode, instructionSet) {
         return Promise.reject(cached.data);
     }
     return new Promise(function (resolve, reject) {
-        getAssemblyDocumentation({ opcode: opcode, instructionSet: instructionSet })
+        getAssemblyDocumentation({opcode: opcode, instructionSet: instructionSet})
             .then(function (response) {
                 response.json().then(function (body) {
                     if (response.status === 200) {
-                        OpcodeCache.set(cacheName, { found: true, data: body });
+                        OpcodeCache.set(cacheName, {found: true, data: body});
                         resolve(body);
                     } else {
-                        OpcodeCache.set(cacheName, { found: false, data: body.error });
+                        OpcodeCache.set(cacheName, {found: false, data: body.error});
                         reject(body.error);
                     }
                 });
-            }).catch(function (error) {
+            })
+            .catch(function (error) {
                 reject('Fetch error: ' + error);
             });
     });
@@ -2458,10 +2666,17 @@ Compiler.prototype.onMouseMove = function (e) {
                 var editorId = this.getEditorIdBySourcefile(hoverAsm.source);
                 if (editorId) {
                     this.eventHub.emit('editorLinkLine', editorId, sourceLine, sourceColBegin, sourceColEnd, false);
-    
-                    this.eventHub.emit('panesLinkLine', this.id,
-                        sourceLine, sourceColBegin, sourceColEnd,
-                        false, this.getPaneName(), editorId);
+
+                    this.eventHub.emit(
+                        'panesLinkLine',
+                        this.id,
+                        sourceLine,
+                        sourceColBegin,
+                        sourceColEnd,
+                        false,
+                        this.getPaneName(),
+                        editorId
+                    );
                 }
             }
         }
@@ -2481,37 +2696,48 @@ Compiler.prototype.onMouseMove = function (e) {
                 startColumn -= 1;
             }
         }
-        currentWord.range = new monaco.Range(e.target.position.lineNumber, Math.max(startColumn, 1),
-            e.target.position.lineNumber, currentWord.endColumn);
+        currentWord.range = new monaco.Range(
+            e.target.position.lineNumber,
+            Math.max(startColumn, 1),
+            e.target.position.lineNumber,
+            currentWord.endColumn
+        );
         var numericToolTip = getNumericToolTip(word);
         if (numericToolTip) {
             this.decorations.numericToolTip = {
                 range: currentWord.range,
                 options: {
-                    isWholeLine: false, hoverMessage: [{
-                        // We use double `` as numericToolTip may include a single ` character.
-                        value: '``' + numericToolTip + '``',
-                    }],
+                    isWholeLine: false,
+                    hoverMessage: [
+                        {
+                            // We use double `` as numericToolTip may include a single ` character.
+                            value: '``' + numericToolTip + '``',
+                        },
+                    ],
                 },
             };
             this.updateDecorations();
         }
 
         if (hoverShowSource && this.isWordAsmKeyword(currentWord)) {
-            getAsmInfo(currentWord.word, this.compiler.instructionSet).then(_.bind(function (response) {
-                if (!response) return;
-                this.decorations.asmToolTip = {
-                    range: currentWord.range,
-                    options: {
-                        isWholeLine: false,
-                        hoverMessage: [{
-                            value: response.tooltip + '\n\nMore information available in the context menu.',
-                            isTrusted: true,
-                        }],
-                    },
-                };
-                this.updateDecorations();
-            }, this));
+            getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
+                _.bind(function (response) {
+                    if (!response) return;
+                    this.decorations.asmToolTip = {
+                        range: currentWord.range,
+                        options: {
+                            isWholeLine: false,
+                            hoverMessage: [
+                                {
+                                    value: response.tooltip + '\n\nMore information available in the context menu.',
+                                    isTrusted: true,
+                                },
+                            ],
+                        },
+                    };
+                    this.updateDecorations();
+                }, this)
+            );
         }
     }
 };
@@ -2543,42 +2769,55 @@ Compiler.prototype.onAsmToolTip = function (ed) {
     var opcode = word.word.toUpperCase();
 
     function newGitHubIssueUrl() {
-        return 'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
-            encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode');
+        return (
+            'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
+            encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
+        );
     }
 
     function appendInfo(url) {
-        return '<br><br>For more information, visit <a href="' + url +
-            '" target="_blank" rel="noopener noreferrer">the ' + opcode +
+        return (
+            '<br><br>For more information, visit <a href="' +
+            url +
+            '" target="_blank" rel="noopener noreferrer">the ' +
+            opcode +
             ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
             ' title="Opens in a new window"></small></sup></a>.' +
             '<br>If the documentation for this opcode is wrong or broken in some way, ' +
-            'please feel free to <a href="' + newGitHubIssueUrl() + '" target="_blank" rel="noopener noreferrer">' +
+            'please feel free to <a href="' +
+            newGitHubIssueUrl() +
+            '" target="_blank" rel="noopener noreferrer">' +
             'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
-            'title="Opens in a new window"></small></sup></a>.';
+            'title="Opens in a new window"></small></sup></a>.'
+        );
     }
 
-    getAsmInfo(word.word, this.compiler.instructionSet).then(_.bind(function (asmHelp) {
-        if (asmHelp) {
-            this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
-                ed.focus();
-                ed.setPosition(pos);
-            });
-        } else {
-            this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                group: 'notokenindocs',
-                alertClass: 'notification-error',
-                dismissTime: 5000,
-            });
-        }
-    }, this), _.bind(function (rejection) {
-        this.alertSystem
-            .notify('There was an error fetching the documentation for this opcode (' + rejection + ').', {
-                group: 'notokenindocs',
-                alertClass: 'notification-error',
-                dismissTime: 5000,
-            });
-    }, this));
+    getAsmInfo(word.word, this.compiler.instructionSet).then(
+        _.bind(function (asmHelp) {
+            if (asmHelp) {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
+                    ed.focus();
+                    ed.setPosition(pos);
+                });
+            } else {
+                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
+            }
+        }, this),
+        _.bind(function (rejection) {
+            this.alertSystem.notify(
+                'There was an error fetching the documentation for this opcode (' + rejection + ').',
+                {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                }
+            );
+        }, this)
+    );
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {
@@ -2586,8 +2825,10 @@ Compiler.prototype.handleCompilationStatus = function (status) {
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {
-    if ((this.sourceEditorId && this.sourceEditorId === editorId) ||
-        (this.sourceTreeId && this.sourceTreeId === treeId)) {
+    if (
+        (this.sourceEditorId && this.sourceEditorId === editorId) ||
+        (this.sourceTreeId && this.sourceTreeId === treeId)
+    ) {
         var oldLangId = this.currentLangId;
         this.currentLangId = newLangId;
         // Store the current selected stuff to come back to it later in the same session (Not state stored!)
