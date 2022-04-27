@@ -206,8 +206,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     }
 
     registerCallbacks() {
-        this.filters.on('change', _.bind(this.onFilterChange, this));
-        this.selectize.on('change', _.bind(this.onPassSelect, this));
+        this.filters.on('change', this.onFilterChange.bind(this));
+        this.selectize.on('change', this.onPassSelect.bind(this));
 
         this.eventHub.emit('gccDumpViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
@@ -285,13 +285,9 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         selectize.clear(true);
         selectize.clearOptions(true);
 
-        _.each(
-            passes,
-            function (p) {
-                selectize.addOption(p);
-            },
-            this
-        );
+        for (const p of passes) {
+            selectize.addOption(p);
+        }
 
         if (gccDumpOutput.selectedPass) selectize.addItem(gccDumpOutput.selectedPass.name, true);
         else selectize.clear(true);
