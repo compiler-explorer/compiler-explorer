@@ -36,7 +36,7 @@ import {MonacoPane} from './pane';
 import {MonacoPaneState} from './pane.interfaces';
 import * as monacoConfig from '../monaco-config';
 
-import {GccDumpState} from './gccdump-view.interfaces';
+import {GccDumpFilters, GccDumpState} from './gccdump-view.interfaces';
 
 import {ga} from '../analytics';
 
@@ -205,7 +205,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.optionAllTitle = this.optionAllButton.prop('title');
     }
 
-    registerCallbacks() {
+    override registerCallbacks() {
         this.filters.on('change', this.onFilterChange.bind(this));
         this.selectize.on('change', this.onPassSelect.bind(this));
 
@@ -254,7 +254,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.dumpFiltersButtons.prop('disabled', false);
     }
 
-    onPassSelect(passId: never) {
+    onPassSelect(passId: string) {
         const selectedPass = this.selectize.options[passId];
 
         if (this.inhibitPassSelect !== true) {
@@ -297,7 +297,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = false;
     }
 
-    onCompileResult(id, compiler, result) {
+    override onCompileResult(id, compiler, result) {
         if (this.compilerInfo.compilerId !== id || !compiler) return;
 
         const model = this.editor.getModel();
@@ -340,7 +340,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.updateState();
     }
 
-    getDefaultPaneName() {
+    override getDefaultPaneName() {
         return 'GCC Tree/RTL Viewer';
     }
 
@@ -393,22 +393,10 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     override getCurrentState() {
         const parent = super.getCurrentState();
-        const filters = this.getEffectiveFilters();
+        const filters = this.getEffectiveFilters() as unknown as GccDumpFilters; // TODO: Validate somehow?
         const state: MonacoPaneState & GccDumpState = {
             selectedPass: this.selectedPass,
-            treeDump: filters.treeDump,
-            rtlDump: filters.rtlDump,
-            ipaDump: filters.ipaDump,
-            addressOption: filters.addressOption,
-            slimOption: filters.slimOption,
-            rawOption: filters.rawOption,
-            detailsOption: filters.detailsOption,
-            statsOption: filters.statsOption,
-            blocksOption: filters.blocksOption,
-            vopsOption: filters.vopsOption,
-            linenoOption: filters.linenoOption,
-            uidOption: filters.uidOption,
-            allOption: filters.allOption,
+            ...filters,
             ...parent,
         };
         // TODO(jeremy-rifkin)
