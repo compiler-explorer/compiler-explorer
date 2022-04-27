@@ -86,10 +86,6 @@ if (isDev) {
     plugins.push(new HotModuleReplacementPlugin());
 }
 
-// Modified files are served in-place in development (as they aren't actually modified),
-// but in release we expect their modified version in the out/dist directory.
-const modifiedHtmlRoot = process.env.MODIFIED_FILE_DIR || __dirname;
-
 // eslint-disable-next-line import/no-default-export
 export default {
     mode: isDev ? 'development' : 'production',
@@ -104,9 +100,6 @@ export default {
     resolve: {
         alias: {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
-            'modified#cookies.html': `${modifiedHtmlRoot}/static/policies/cookies.html`,
-            'modified#privacy.html': `${modifiedHtmlRoot}/static/policies/privacy.html`,
-            'modified#changelog.html': `${modifiedHtmlRoot}/static/changelog.html`,
         },
         fallback: {
             path: 'path-browserify',

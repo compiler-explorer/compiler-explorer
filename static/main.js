@@ -130,18 +130,17 @@ function setupButtons(options) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').on('click', function (event, data) {
-            var modal = alertSystem.alert(
-                data && data.title ? data.title : 'Privacy policy',
-                require('modified#privacy.html').default
-            );
-            calcLocaleChangedDate(modal);
-            // I can't remember why this check is here as it seems superfluous
-            if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
-                    expires: 365,
-                    sameSite: 'strict',
-                });
-            }
+            $.get(window.location.origin + window.httpRoot + 'static/generated/privacy.html').done(function (policy) {
+                var modal = alertSystem.alert(data && data.title ? data.title : 'Privacy policy', policy);
+                calcLocaleChangedDate(modal);
+                // I can't remember why this check is here as it seems superfluous
+                if (options.policies.privacy.enabled) {
+                    jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
+                        expires: 365,
+                        sameSite: 'strict',
+                    });
+                }
+            });
         });
     }
 
@@ -156,17 +155,19 @@ function setupButtons(options) {
             );
         };
         $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), require('modified#cookies.html').default, {
-                yes: function () {
-                    simpleCooks.callDoConsent.apply(simpleCooks);
-                },
-                yesHtml: 'Consent',
-                no: function () {
-                    simpleCooks.callDontConsent.apply(simpleCooks);
-                },
-                noHtml: 'Do NOT consent',
+            $.get(window.location.origin + window.httpRoot + 'static/generated/cookies.html').done(function (cookies) {
+                var modal = alertSystem.ask(getCookieTitle(), cookies, {
+                    yes: function () {
+                        simpleCooks.callDoConsent.apply(simpleCooks);
+                    },
+                    yesHtml: 'Consent',
+                    no: function () {
+                        simpleCooks.callDontConsent.apply(simpleCooks);
+                    },
+                    noHtml: 'Do NOT consent',
+                });
+                calcLocaleChangedDate(modal);
             });
-            calcLocaleChangedDate(modal);
         });
     }
 
@@ -182,7 +183,9 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('modified#changelog.html').default));
+        $.get(window.location.origin + window.httpRoot + 'static/generated/changelog.html').done(function (changelog) {
+            alertSystem.alert('Changelog', $(changelog));
+        });
     });
 
     $('#ces').on('click', function () {
