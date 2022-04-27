@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,43 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
-import {BaseCompiler} from '../base-compiler';
-
-import {ClangParser} from './argument-parsers';
-
-export class HaskellCompiler extends BaseCompiler {
-    static get key() {
-        return 'haskell';
-    }
-
-    constructor(info, env) {
-        super(info, env);
-        this.compiler.supportsHaskellStgView = true;
-    }
-
-    optionsForBackend(backendOptions, outputFilename) {
-        const opts = super.optionsForBackend(backendOptions, outputFilename);
-
-        if (backendOptions.produceHaskellStg && this.compiler.supportsHaskellStgView) {
-            opts.push('-ddump-to-file', '-dumpdir', path.dirname(outputFilename), '-ddump-stg-final');
-        }
-        return opts;
-    }
-
-    optionsForFilter(filters, outputFilename) {
-        const options = ['-g', '-o', this.filename(outputFilename)];
-        if (!filters.binary) options.unshift('-S');
-        return options;
-    }
-
-    getSharedLibraryPathsAsArguments(libraries) {
-        const libPathFlag = this.compiler.libpathFlag || '-L';
-        return [libPathFlag + '.', ...this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)];
-    }
-
-    getArgumentParser() {
-        return ClangParser;
-    }
+export interface HaskellStgState {
+    haskellStgOutput: any;
 }
