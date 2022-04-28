@@ -28,15 +28,6 @@ cp -R "${ROOT}"/etc \
       .
 rm -rf "${ROOT}"/lib/storage/data
 
-# Create any generated files.
-mkdir -p static/generated
-cp -R "${ROOT}"/static/favicon.ico ./static/
-SCRIPTS="${ROOT}/etc/scripts/util"
-python3 "${SCRIPTS}/changelog.py"
-for policy in static/generated/{privacy,cookies}.html; do
-  python3 "${SCRIPTS}/politic.py" "${ROOT}"/${policy} ./${policy}
-done
-
 # Set up and build and webpack everything
 cd "${ROOT}"
 npm install --no-audit

@@ -65,9 +65,10 @@ clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out
 
 .PHONY: run
-run: prereqs  ## Runs the site normally
+run: prereqs  ## Runs the site like it runs in production
 	$(NPM) run webpack
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js $(EXTRA_ARGS)
+	$(NPM) run ts-compile
+	env NODE_ENV=production $(NODE) $(NODE_ARGS) -r esm ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
 
 .PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks

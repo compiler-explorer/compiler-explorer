@@ -10,7 +10,13 @@ Be aware: modifying this file in any way will cause a pop-up to users telling th
 <!--
 No need to update this! It's done by the build process.
 -->
-<span id="last-changed"></span>
+<span id="last-changed">
+    Last changed on: <time id="changed-date" datetime="{{lastTime}}">{{lastTime}}</time>
+    <i>
+        (<a href="https://github.com/compiler-explorer/compiler-explorer/commit/{{lastCommit}}" target="_blank">diff</a>)
+    </i>
+</span>
+
 <h2>Compiler Explorer Privacy Policy</h2>
 
 <p>

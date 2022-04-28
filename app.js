@@ -94,6 +94,7 @@ const opts = nopt({
     discoveryonly: [String],
     prediscovered: [String],
     version: [Boolean],
+    webpackContent: [String],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -217,7 +218,7 @@ if (Object.keys(languages).length === 0) {
 
 const compilerProps = new props.CompilerProps(languages, ceProps);
 
-const staticPath = path.join(distPath, 'static');
+const staticPath = opts.webpackContent || path.join(distPath, 'static');
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
@@ -656,10 +657,10 @@ async function main() {
         );
     };
 
-    // Always serve the generated context directly.
+    // Always serve the generated context directly from the distPath.
     router.use(
         '/static/generated',
-        express.static(path.join(staticPath, 'generated'), {
+        express.static(path.join(distPath, 'static', 'generated'), {
             maxAge: staticMaxAgeSecs * 1000,
         }),
     );
