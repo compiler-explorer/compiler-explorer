@@ -133,7 +133,9 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: this.onLanguageChange.bind(this),
+            onChange: (val: any) => {
+                this.onLanguageChange(val as string);
+            },
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
