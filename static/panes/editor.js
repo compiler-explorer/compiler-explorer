@@ -716,12 +716,7 @@ Editor.prototype.updateOpenInQuickBench = function () {
 
                 var compilerExtInfo = this.hub.compilerService.findCompiler(this.currentLanguage.id, compiler.compiler);
                 var semver = this.cleanupSemVer(compilerExtInfo.semver);
-                var groupOrName = compilerExtInfo.baseName
-                    ? compilerExtInfo.baseName
-                    : compilerExtInfo.groupName
-                    ? compilerExtInfo.groupName
-                    : compilerExtInfo.name;
-
+                var groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
                 if (semver && groupOrName) {
                     groupOrName = groupOrName.toLowerCase();
                     if (groupOrName.indexOf('gcc') !== -1) {
@@ -1537,19 +1532,17 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
             this.pushRevealJump();
             this.editor.revealLineInCenter(lineNum);
         }
-        this.decorations.linkedCode =
-            lineNum === -1 || !lineNum
-                ? []
-                : [
-                      {
-                          range: new monaco.Range(lineNum, 1, lineNum, 1),
-                          options: {
-                              isWholeLine: true,
-                              linesDecorationsClassName: 'linked-code-decoration-margin',
-                              inlineClassName: 'linked-code-decoration-inline',
-                          },
-                      },
-                  ];
+        this.decorations.linkedCode = [];
+        if (lineNum && lineNum !== -1) {
+            this.decorations.linkedCode.push({
+                range: new monaco.Range(lineNum, 1, lineNum, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    inlineClassName: 'linked-code-decoration-inline',
+                },
+            });
+        }
         this.updateDecorations();
     }
 };
