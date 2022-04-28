@@ -116,6 +116,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-rusthir(title="Show Rust HIR")
             span.dropdown-icon.fas.fa-arrows-alt
             | Rust HIR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellStg(title="Show Haskell STG Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | Haskell STG output
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
@@ -329,6 +332,11 @@
     .monaco-placeholder
 
   #rustmir
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
+  #haskellStg
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
     .monaco-placeholder
