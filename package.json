@@ -69,7 +69,6 @@
     "semver": "^7.3.5",
     "serve-favicon": "^2.4.5",
     "shell-quote": "^1.7.3",
-    "simple-pug-loader": "^0.2.1",
     "systemd-socket": "0.0.0",
     "tar-stream": "^2.2.0",
     "temp": "^0.9.4",
