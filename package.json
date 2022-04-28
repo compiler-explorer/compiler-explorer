@@ -176,8 +176,8 @@
   },
   "lint-staged": {
     "*.[jt]s": [
-      "npm run ci-lint-files --",
-      "npm run format-fix-files --"
+      "npm run format-fix-files --",
+      "npm run ci-lint-files --"
     ]
   },
   "license": "BSD-2-Clause"
