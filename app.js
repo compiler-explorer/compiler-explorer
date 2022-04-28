@@ -300,6 +300,7 @@ async function setupWebPackDevMiddleware(router) {
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/static',
             stats: 'errors-only',
+            writeToDisk: true,
         }),
     );
 
@@ -308,6 +309,14 @@ async function setupWebPackDevMiddleware(router) {
 
 async function setupStaticMiddleware(router) {
     const staticManifest = await fs.readJson(path.join(distPath, 'manifest.json'));
+
+    // Always serve the generated context directly from the distPath.
+    router.use(
+        '/static/generated',
+        express.static(path.join(distPath, 'static', 'generated'), {
+            maxAge: staticMaxAgeSecs * 1000,
+        }),
+    );
 
     if (staticUrl) {
         logger.info(`  using static files from '${staticUrl}'`);
@@ -657,13 +666,6 @@ async function main() {
         );
     };
 
-    // Always serve the generated context directly from the distPath.
-    router.use(
-        '/static/generated',
-        express.static(path.join(distPath, 'static', 'generated'), {
-            maxAge: staticMaxAgeSecs * 1000,
-        }),
-    );
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
     morgan.token('gdpr_ip', req => (req.ip ? utils.anonymizeIp(req.ip) : ''));

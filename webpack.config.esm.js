@@ -29,9 +29,9 @@ import {fileURLToPath} from 'url';
 /* eslint-disable node/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
-import Handlebars from 'handlebars';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
+import * as pug from 'pug';
 import TerserPlugin from 'terser-webpack-plugin';
 import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
@@ -100,16 +100,6 @@ const plugins = [
     new CopyWebpackPlugin({
         patterns: [
             {from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')},
-            {
-                from: './static/generated/*.html',
-                to: path.resolve(distPath),
-                toType: 'dir',
-                transform: (content, filename) => {
-                    const lastTime = execGit(`git log -1 --format=%cd "${filename}"`).trimEnd();
-                    const lastCommit = execGit(`git log -1 --format=%h "${filename}"`).trimEnd();
-                    return Handlebars.compile(content.toString())({gitChanges, lastTime, lastCommit});
-                },
-            },
         ],
     }),
 ];
@@ -186,8 +176,17 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /\.(html)$/,
+                test: /.pug$/,
                 loader: 'html-loader',
+                options: {
+                    preprocessor: (content, loaderContext) => {
+                        const filename = loaderContext.resourcePath;
+                        const lastTime = execGit(`git log -1 --format=%cd "${filename}"`).trimEnd();
+                        const lastCommit = execGit(`git log -1 --format=%h "${filename}"`).trimEnd();
+                        const compiled = pug.compile(content.toString(), {filename});
+                        return compiled({gitChanges, lastTime, lastCommit});
+                    },
+                },
             },
             {
                 test: /\.tsx?$/,
