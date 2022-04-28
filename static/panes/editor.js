@@ -1493,19 +1493,17 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
             this.pushRevealJump();
             this.editor.revealLineInCenter(lineNum);
         }
-        this.decorations.linkedCode =
-            lineNum === -1 || !lineNum
-                ? []
-                : [
-                      {
-                          range: new monaco.Range(lineNum, 1, lineNum, 1),
-                          options: {
-                              isWholeLine: true,
-                              linesDecorationsClassName: 'linked-code-decoration-margin',
-                              className: 'linked-code-decoration-line',
-                          },
-                      },
-                  ];
+        this.decorations.linkedCode = [];
+        if (lineNum && lineNum !== -1) {
+            this.decorations.linkedCode.push({
+                range: new monaco.Range(lineNum, 1, lineNum, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    className: 'linked-code-decoration-line',
+                },
+            });
+        }
 
         if (lineNum > 0 && columnBegin !== -1) {
             var lastTokenSpan = this.getTokenSpan(lineNum, columnEnd);
