@@ -28,6 +28,7 @@ import {fileURLToPath} from 'url';
 
 import fs from 'fs-extra';
 import {ComponentConfig, ItemConfigType} from 'golden-layout';
+import stringifyDeterministic from 'json-stringify-deterministic';
 import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
@@ -200,9 +201,9 @@ export function anonymizeIp(ip: string): string {
  * @param {*} object
  * @returns {string}
  */
-function objectToHashableString(object: any): string {
+export function objectToHashableString(object: any): string {
     // See https://stackoverflow.com/questions/899574/which-is-best-to-use-typeof-or-instanceof/6625960#6625960
-    return typeof object === 'string' ? object : JSON.stringify(object);
+    return typeof object === 'string' ? object : stringifyDeterministic(object);
 }
 
 const DefaultHash = 'Compiler Explorer Default Version 1';
