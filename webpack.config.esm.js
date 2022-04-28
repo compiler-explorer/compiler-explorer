@@ -100,6 +100,7 @@ const plugins = [
     new CopyWebpackPlugin({
         patterns: [
             {from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')},
+            {from: './static/generated/*.pug', to: path.resolve(distPath)},
         ],
     }),
 ];
