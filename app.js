@@ -657,13 +657,6 @@ async function main() {
         );
     };
 
-    // Always serve the generated context directly from the distPath.
-    router.use(
-        '/static/generated',
-        express.static(path.join(distPath, 'static', 'generated'), {
-            maxAge: staticMaxAgeSecs * 1000,
-        }),
-    );
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
     morgan.token('gdpr_ip', req => (req.ip ? utils.anonymizeIp(req.ip) : ''));

@@ -22,14 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {execSync} from 'child_process';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
 /* eslint-disable node/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
-import Handlebars from 'handlebars';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
@@ -42,20 +40,6 @@ console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
-
-function execGit(command) {
-    const gitResult = execSync(command);
-    if (!gitResult) {
-        throw new Error(`Failed to execute ${command}`);
-    }
-    return gitResult.toString();
-}
-
-const gitChanges = execGit('git log --date=local --after="3 months ago" "--grep=(#[0-9]*)" --oneline')
-    .split('\n')
-    .map(line => line.match(/(?<hash>\w+) (?<description>.*)/))
-    .filter(x => x)
-    .map(match => match.groups);
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
@@ -98,19 +82,7 @@ const plugins = [
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [
-            {from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')},
-            {
-                from: './static/generated/*.html',
-                to: path.resolve(distPath),
-                toType: 'dir',
-                transform: (content, filename) => {
-                    const lastTime = execGit(`git log -1 --format=%cd "${filename}"`).trimEnd();
-                    const lastCommit = execGit(`git log -1 --format=%h "${filename}"`).trimEnd();
-                    return Handlebars.compile(content.toString())({gitChanges, lastTime, lastCommit});
-                },
-            },
-        ],
+        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
     }),
 ];
 
@@ -186,8 +158,8 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /\.(html)$/,
-                loader: 'html-loader',
+                test: /.pug$/,
+                loader: './etc/scripts/parsed_pug_file.js',
             },
             {
                 test: /\.tsx?$/,
