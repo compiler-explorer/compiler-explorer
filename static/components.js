@@ -338,6 +338,27 @@ module.exports = {
             },
         };
     },
+    getHaskellStgView: function () {
+        return {
+            type: 'component',
+            componentName: 'haskellStg',
+            componentState: {},
+        };
+    },
+    getHaskellStgViewWith: function (id, source, haskellStgOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'haskellStg',
+            componentState: {
+                id: id,
+                source: source,
+                haskellStgOutput: haskellStgOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
 
     getGnatDebugTreeView: function () {
         return {

@@ -116,3 +116,4 @@ From oldest to newest contributor, we would like to thank:
 - [Ankur Saini](https://github.com/Arsenic-ATG)
 - [m8mble](https://github.com/m8mble)
 - [Anders-T](https://github.com/anders-torbjornsen)
+- [Adam Sandberg Eriksson](https://github.com/adamse)
