@@ -29,7 +29,6 @@ import {fileURLToPath} from 'url';
 /* eslint-disable node/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
-import Handlebars from 'handlebars';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import * as pug from 'pug';
@@ -99,10 +98,7 @@ const plugins = [
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [
-            {from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')},
-            {from: './static/generated/*.pug', to: path.resolve(distPath)},
-        ],
+        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
     }),
 ];
 
