@@ -70,15 +70,8 @@ var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
 
 var policyDocuments = {
-    cookies: {
-        text: require('./generated/cookies.pug').default,
-        hash: require('../etc/scripts/sha256.js!./generated/cookies.pug').default,
-    },
-
-    privacy: {
-        text: require('./generated/privacy.pug').default,
-        hash: require('../etc/scripts/sha256.js!./generated/privacy.pug').default,
-    },
+    cookies: require('./generated/cookies.pug').default,
+    privacy: require('./generated/privacy.pug').default,
 };
 
 function setupSettings(hub) {
@@ -194,7 +187,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default));
+        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
     });
 
     $('#ces').on('click', function () {

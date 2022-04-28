@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {execSync} from 'child_process';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -31,7 +30,6 @@ import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
-import * as pug from 'pug';
 import TerserPlugin from 'terser-webpack-plugin';
 import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
@@ -42,20 +40,6 @@ console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
-
-function execGit(command) {
-    const gitResult = execSync(command);
-    if (!gitResult) {
-        throw new Error(`Failed to execute ${command}`);
-    }
-    return gitResult.toString();
-}
-
-const gitChanges = execGit('git log --date=local --after="3 months ago" "--grep=(#[0-9]*)" --oneline')
-    .split('\n')
-    .map(line => line.match(/(?<hash>\w+) (?<description>.*)/))
-    .filter(x => x)
-    .map(match => match.groups);
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
@@ -175,16 +159,7 @@ export default {
             },
             {
                 test: /.pug$/,
-                loader: 'html-loader',
-                options: {
-                    preprocessor: (content, loaderContext) => {
-                        const filename = loaderContext.resourcePath;
-                        const lastTime = execGit(`git log -1 --format=%cd "${filename}"`).trimEnd();
-                        const lastCommit = execGit(`git log -1 --format=%h "${filename}"`).trimEnd();
-                        const compiled = pug.compile(content.toString(), {filename});
-                        return compiled({gitChanges, lastTime, lastCommit});
-                    },
-                },
+                loader: './etc/scripts/parsed_pug_file.js',
             },
             {
                 test: /\.tsx?$/,
