@@ -124,7 +124,7 @@ export class Tree {
         this.initCallbacks();
         this.onSettingsChange(this.settings);
 
-        this.selectize = new TomSelect(this.languageBtn[0] as HTMLSelectElement, {
+        this.selectize = new TomSelect(this.languageBtn[0] as HTMLInputElement, {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
@@ -133,10 +133,7 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: (e: any) => {
-                // TomSelect says it's "Event", but we get string?
-                this.onLanguageChange(e as string);
-            },
+            onChange: this.onLanguageChange.bind(this),
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
