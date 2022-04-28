@@ -46,7 +46,9 @@ import {DeviceAsm as DeviceView} from './panes/device-view';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
 import {RustMir as RustMirView} from './panes/rustmir-view';
 import {RustHir as RustHirView} from './panes/rusthir-view';
+import {HaskellCore as HaskellCoreView} from './panes/haskellcore-view';
 import {HaskellStg as HaskellStgView} from './panes/haskellstg-view';
+import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view';
 import {GccDump as GCCDumpView} from './panes/gccdump-view';
 import {Cfg as CfgView} from './panes/cfg-view';
 import {Conformance as ConformanceView} from './panes/conformance-view';
@@ -95,8 +97,14 @@ export class Hub {
         layout.registerComponent(Components.getIrView().componentName, (c, s) => this.irViewFactory(c, s));
         layout.registerComponent(Components.getDeviceView().componentName, (c, s) => this.deviceViewFactory(c, s));
         layout.registerComponent(Components.getRustMirView().componentName, (c, s) => this.rustMirViewFactory(c, s));
+        layout.registerComponent(Components.getHaskellCoreView().componentName, (c, s) =>
+            this.haskellCoreViewFactory(c, s)
+        );
         layout.registerComponent(Components.getHaskellStgView().componentName, (c, s) =>
             this.haskellStgViewFactory(c, s)
+        );
+        layout.registerComponent(Components.getHaskellCmmView().componentName, (c, s) =>
+            this.haskellCmmViewFactory(c, s)
         );
         // eslint-disable-next-line max-len
         layout.registerComponent(Components.getGnatDebugTreeView().componentName, (c, s) =>
@@ -467,11 +475,24 @@ export class Hub {
         return new RustHirView(this, container, state);
     }
 
+    public haskellCoreViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof HaskellCoreView>[2]
+    ): HaskellCoreView {
+        return new HaskellCoreView(this, container, state);
+    }
+
     public haskellStgViewFactory(
         container: GoldenLayout.Container,
         state: ConstructorParameters<typeof HaskellStgView>[2]
     ): HaskellStgView {
         return new HaskellStgView(this, container, state);
+    }
+    public haskellCmmViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof HaskellCmmView>[2]
+    ): HaskellCmmView {
+        return new HaskellCmmView(this, container, state);
     }
 
     public gccDumpViewFactory(container: GoldenLayout.Container, state: any): any /* typeof GccDumpView */ {

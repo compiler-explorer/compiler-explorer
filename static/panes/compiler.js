@@ -330,11 +330,33 @@ Compiler.prototype.initPanerButtons = function () {
         );
     }, this);
 
+    var createHaskellCoreView = _.bind(function () {
+        return Components.getHaskellCoreViewWith(
+            this.id,
+            this.source,
+            this.lastResult.haskellCoreOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
+    }, this);
+
     var createHaskellStgView = _.bind(function () {
         return Components.getHaskellStgViewWith(
             this.id,
             this.source,
             this.lastResult.haskellStgOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
+    }, this);
+
+    var createHaskellCmmView = _.bind(function () {
+        return Components.getHaskellCmmViewWith(
+            this.id,
+            this.source,
+            this.lastResult.haskellCmmOutput,
             this.getCompilerName(),
             this.sourceEditorId,
             this.sourceTreeId
@@ -498,6 +520,18 @@ Compiler.prototype.initPanerButtons = function () {
     );
 
     this.container.layoutManager
+        .createDragSource(this.haskellCoreButton, createHaskellCoreView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.haskellCoreButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createHaskellCoreView);
+        }, this)
+    );
+
+    this.container.layoutManager
         .createDragSource(this.haskellStgButton, createHaskellStgView)
         ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -506,6 +540,18 @@ Compiler.prototype.initPanerButtons = function () {
             var insertPoint =
                 this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createHaskellStgView);
+        }, this)
+    );
+
+    this.container.layoutManager
+        .createDragSource(this.haskellCmmButton, createHaskellCmmView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.haskellCmmButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createHaskellCmmView);
         }, this)
     );
 
@@ -888,7 +934,9 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceRustMir: this.rustMirViewOpen,
             produceRustMacroExp: this.rustMacroExpViewOpen,
             produceRustHir: this.rustHirViewOpen,
+            produceHaskellCore: this.haskellCoreViewOpen,
             produceHaskellStg: this.haskellStgViewOpen,
+            produceHaskellCmm: this.haskellCmmViewOpen,
         },
         filters: this.getEffectiveFilters(),
         tools: this.getActiveTools(newTools),
@@ -1512,6 +1560,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onHaskellCoreViewOpened = function (id) {
+    if (this.id === id) {
+        this.haskellCoreButton.prop('disabled', true);
+        this.haskellCoreViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onHaskellCoreViewClosed = function (id) {
+    if (this.id === id) {
+        this.haskellCoreButton.prop('disabled', false);
+        this.haskellCoreViewOpen = false;
+    }
+};
+
 Compiler.prototype.onHaskellStgViewOpened = function (id) {
     if (this.id === id) {
         this.haskellStgButton.prop('disabled', true);
@@ -1524,6 +1587,21 @@ Compiler.prototype.onHaskellStgViewClosed = function (id) {
     if (this.id === id) {
         this.haskellStgButton.prop('disabled', false);
         this.haskellStgViewOpen = false;
+    }
+};
+
+Compiler.prototype.onHaskellCmmViewOpened = function (id) {
+    if (this.id === id) {
+        this.haskellCmmButton.prop('disabled', true);
+        this.haskellCmmViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onHaskellCmmViewClosed = function (id) {
+    if (this.id === id) {
+        this.haskellCmmButton.prop('disabled', false);
+        this.haskellCmmViewOpen = false;
     }
 };
 
@@ -1729,7 +1807,9 @@ Compiler.prototype.initButtons = function (state) {
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
     this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
     this.rustHirButton = this.domRoot.find('.btn.view-rusthir');
+    this.haskellCoreButton = this.domRoot.find('.btn.view-haskellCore');
     this.haskellStgButton = this.domRoot.find('.btn.view-haskellStg');
+    this.haskellCmmButton = this.domRoot.find('.btn.view-haskellCmm');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
@@ -1974,7 +2054,9 @@ Compiler.prototype.updateButtons = function () {
     this.irButton.prop('disabled', this.irViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
-    this.haskellStgButton.prop('disabled', this.haskellStgrViewOpen);
+    this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
+    this.haskellStgButton.prop('disabled', this.haskellStgViewOpen);
+    this.haskellCmmButton.prop('disabled', this.haskellCmmViewOpen);
     this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
     this.rustHirButton.prop('disabled', this.rustHirViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
@@ -1992,7 +2074,9 @@ Compiler.prototype.updateButtons = function () {
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
     this.rustHirButton.toggle(!!this.compiler.supportsRustHirView);
+    this.haskellCoreButton.toggle(!!this.compiler.supportsHaskellCoreView);
     this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
+    this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
     this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
@@ -2106,8 +2190,12 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('rustMacroExpViewClosed', this.onRustMacroExpViewClosed, this);
     this.eventHub.on('rustHirViewOpened', this.onRustHirViewOpened, this);
     this.eventHub.on('rustHirViewClosed', this.onRustHirViewClosed, this);
+    this.eventHub.on('haskellCoreViewOpened', this.onHaskellCoreViewOpened, this);
+    this.eventHub.on('haskellCoreViewClosed', this.onHaskellCoreViewClosed, this);
     this.eventHub.on('haskellStgViewOpened', this.onHaskellStgViewOpened, this);
     this.eventHub.on('haskellStgViewClosed', this.onHaskellStgViewClosed, this);
+    this.eventHub.on('haskellCmmViewOpened', this.onHaskellCmmViewOpened, this);
+    this.eventHub.on('haskellCmmViewClosed', this.onHaskellCmmViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
     this.eventHub.on('outputClosed', this.onOutputClosed, this);
 

@@ -338,6 +338,27 @@ module.exports = {
             },
         };
     },
+    getHaskellCoreView: function () {
+        return {
+            type: 'component',
+            componentName: 'haskellCore',
+            componentState: {},
+        };
+    },
+    getHaskellCoreViewWith: function (id, source, haskellCoreOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'haskellCore',
+            componentState: {
+                id: id,
+                source: source,
+                haskellCoreOutput: haskellCoreOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
     getHaskellStgView: function () {
         return {
             type: 'component',
@@ -353,6 +374,27 @@ module.exports = {
                 id: id,
                 source: source,
                 haskellStgOutput: haskellStgOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
+    getHaskellCmmView: function () {
+        return {
+            type: 'component',
+            componentName: 'haskellCmm',
+            componentState: {},
+        };
+    },
+    getHaskellCmmViewWith: function (id, source, haskellCmmOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'haskellCmm',
+            componentState: {
+                id: id,
+                source: source,
+                haskellCmmOutput: haskellCmmOutput,
                 compilerName: compilerName,
                 editorid: editorid,
                 treeid: treeid,
