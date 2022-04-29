@@ -767,7 +767,7 @@ Editor.prototype.updateOpenInQuickBench = function () {
             }, this)
         );
 
-        var link = 'http://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
+        var link = 'https://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
         this.quickBenchButton.attr('href', link);
     }
 };

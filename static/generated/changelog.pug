@@ -1,0 +1,6 @@
+div.commits-list
+  each change in gitChanges
+    div.row.commit-entry
+      div.col-sm-12
+        a(href="https://github.com/compiler-explorer/compiler-explorer/commit/#{change.hash}"
+          rel="noreferrer noopener" target="_blank") #{change.description}

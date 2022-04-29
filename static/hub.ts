@@ -46,6 +46,7 @@ import {DeviceAsm as DeviceView} from './panes/device-view';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
 import {RustMir as RustMirView} from './panes/rustmir-view';
 import {RustHir as RustHirView} from './panes/rusthir-view';
+import {HaskellStg as HaskellStgView} from './panes/haskellstg-view';
 import {GccDump as GCCDumpView} from './panes/gccdump-view';
 import {Cfg as CfgView} from './panes/cfg-view';
 import {Conformance as ConformanceView} from './panes/conformance-view';
@@ -94,6 +95,9 @@ export class Hub {
         layout.registerComponent(Components.getIrView().componentName, (c, s) => this.irViewFactory(c, s));
         layout.registerComponent(Components.getDeviceView().componentName, (c, s) => this.deviceViewFactory(c, s));
         layout.registerComponent(Components.getRustMirView().componentName, (c, s) => this.rustMirViewFactory(c, s));
+        layout.registerComponent(Components.getHaskellStgView().componentName, (c, s) =>
+            this.haskellStgViewFactory(c, s)
+        );
         // eslint-disable-next-line max-len
         layout.registerComponent(Components.getGnatDebugTreeView().componentName, (c, s) =>
             this.gnatDebugTreeViewFactory(c, s)
@@ -362,8 +366,8 @@ export class Hub {
         this.editors.push(editor);
     }
 
-    private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[1]): Tree {
-        const tree = new Tree(this, state, container);
+    private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[2]): Tree {
+        const tree = new Tree(this, container, state);
         this.trees.push(tree);
         return tree;
     }
@@ -461,6 +465,13 @@ export class Hub {
         state: ConstructorParameters<typeof RustHirView>[2]
     ): RustHirView {
         return new RustHirView(this, container, state);
+    }
+
+    public haskellStgViewFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof HaskellStgView>[2]
+    ): HaskellStgView {
+        return new HaskellStgView(this, container, state);
     }
 
     public gccDumpViewFactory(container: GoldenLayout.Container, state: any): any /* typeof GccDumpView */ {

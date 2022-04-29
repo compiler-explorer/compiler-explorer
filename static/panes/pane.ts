@@ -84,6 +84,8 @@ export abstract class Pane<S> {
 
         this.paneRenaming = new PaneRenaming(this, state);
 
+        this.registerDynamicElements(state);
+
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
@@ -115,6 +117,9 @@ export abstract class Pane<S> {
      * ```
      */
     abstract registerOpeningAnalyticsEvent(): void;
+
+    /** Optional overridable code for initializing necessary elements before rest of registers **/
+    registerDynamicElements(state: S): void {}
 
     /** Optionally overridable code for initializing pane buttons */
     registerButtons(state: S): void {}

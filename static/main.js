@@ -69,6 +69,11 @@ var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
 
+var policyDocuments = {
+    cookies: require('./generated/cookies.pug').default,
+    privacy: require('./generated/privacy.pug').default,
+};
+
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
@@ -111,7 +116,7 @@ function setupSettings(hub) {
 }
 
 function hasCookieConsented(options) {
-    return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
+    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
 function isMobileViewer() {
@@ -132,13 +137,14 @@ function setupButtons(options) {
         $('#privacy').on('click', function (event, data) {
             var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                require('./policies/privacy.html').default
+                policyDocuments.privacy.text
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
-                    expires: 365, sameSite: 'strict',
+                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                    expires: 365,
+                    sameSite: 'strict',
                 });
             }
         });
@@ -146,12 +152,16 @@ function setupButtons(options) {
 
     if (options.policies.cookies.enabled) {
         var getCookieTitle = function () {
-            return 'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
-                (hasCookieConsented(options) ? 'green' : 'red') + '">' +
-                (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
+            return (
+                'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
+                (hasCookieConsented(options) ? 'green' : 'red') +
+                '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') +
+                '</span></p>'
+            );
         };
         $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), require('./policies/cookies.html').default, {
+            var modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -177,7 +187,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./changelog.html').default));
+        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
     });
 
     $('#ces').on('click', function () {
@@ -192,8 +202,10 @@ function setupButtons(options) {
             })
             .fail(function (err) {
                 var result = err.responseText || JSON.stringify(err);
-                alertSystem.alert('Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>');
+                alertSystem.alert(
+                    'Compiler Explorer Sponsors',
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                );
             });
     });
 
@@ -262,9 +274,11 @@ function findConfig(defaultConfig, options) {
                 presentation.currentSlide = 0;
                 config = options.slides[0];
             }
-            if (isMobileViewer()
-                && window.compilerExplorerOptions.slides
-                && window.compilerExplorerOptions.slides.length > 1) {
+            if (
+                isMobileViewer() &&
+                window.compilerExplorerOptions.slides &&
+                window.compilerExplorerOptions.slides.length > 1
+            ) {
                 $('#share').remove();
                 $('.ui-presentation-control').removeClass('d-none');
                 $('.ui-presentation-first').on('click', presentation.first.bind(presentation));
@@ -292,13 +306,17 @@ function findConfig(defaultConfig, options) {
             }
         }
     } else {
-        config = _.extend(defaultConfig, {
-            settings: {
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                hasHeaders: false,
+        config = _.extend(
+            defaultConfig,
+            {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false,
+                },
             },
-        }, configFromEmbedded(window.location.hash.substr(1)));
+            configFromEmbedded(window.location.hash.substr(1))
+        );
     }
 
     removeOrphanedMaximisedItemFromConfig(config);
@@ -310,9 +328,7 @@ function findConfig(defaultConfig, options) {
 function initializeResetLayoutLink() {
     var currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
-        $('#ui-brokenlink')
-            .attr('href', currentUrl.replace('/z/', '/resetlayout/'))
-            .show();
+        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
     } else {
         $('#ui-brokenlink').hide();
     }
@@ -324,7 +340,7 @@ function initPolicies(options) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it',
             });
-        } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
             var ppolicyBellNotification = $('#policyBellNotification');
             var pprivacyBellNotification = $('#privacyBellNotification');
@@ -341,8 +357,9 @@ function initPolicies(options) {
         }
     }
     simpleCooks.setOnDoConsent(function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
-            expires: 365, sameSite: 'strict',
+        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
+            expires: 365,
+            sameSite: 'strict',
         });
         analytics.toggle(true);
     });
@@ -366,7 +383,7 @@ function initPolicies(options) {
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
-        if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
+        if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
             var cpolicyBellNotification = $('#policyBellNotification');
             var cprivacyBellNotification = $('#privacyBellNotification');
@@ -457,13 +474,12 @@ function start() {
 
     var defaultConfig = {
         settings: {showPopoutIcon: false},
-        content: [{
-            type: 'row',
-            content: [
-                Components.getEditor(1, defaultLangId),
-                Components.getCompiler(1, defaultLangId),
-            ],
-        }],
+        content: [
+            {
+                type: 'row',
+                content: [Components.getEditor(1, defaultLangId), Components.getCompiler(1, defaultLangId)],
+            },
+        ],
     };
 
     $(window).on('hashchange', function () {
@@ -532,10 +548,9 @@ function start() {
     var addDropdown = $('#addDropdown');
 
     function setupAdd(thing, func) {
-        layout.createDragSource(thing, func)
-            ._dragListener.on('dragStart', function () {
-                addDropdown.dropdown('toggle');
-            });
+        layout.createDragSource(thing, func)._dragListener.on('dragStart', function () {
+            addDropdown.dropdown('toggle');
+        });
 
         thing.on('click', function () {
             if (hub.hasTree()) {
@@ -566,7 +581,11 @@ function start() {
     // Skip some steps if using embedded mode
     if (!options.embedded) {
         // Only fetch MOTD when not embedded.
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds,
+        motd.initialise(
+            options.motdUrl,
+            $('#motd'),
+            subLangId,
+            settings.enableCommunityAds,
             function (data) {
                 var sendMotd = function () {
                     hub.layout.eventHub.emit('motd', data);
@@ -578,7 +597,8 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            });
+            }
+        );
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.gitReleaseCommit;
@@ -606,9 +626,12 @@ function start() {
 
     if (options.pageloadUrl) {
         setTimeout(function () {
-            var visibleIcons = $('.ces-icon:visible').map(function (index, value) {
-                return value.dataset.statsid;
-            }).get().join(',');
+            var visibleIcons = $('.ces-icon:visible')
+                .map(function (index, value) {
+                    return value.dataset.statsid;
+                })
+                .get()
+                .join(',');
             $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
         }, 5000);
     }

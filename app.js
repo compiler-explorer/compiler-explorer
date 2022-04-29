@@ -94,6 +94,7 @@ const opts = nopt({
     discoveryonly: [String],
     prediscovered: [String],
     version: [Boolean],
+    webpackContent: [String],
 });
 
 if (opts.debug) logger.level = 'debug';
@@ -119,7 +120,7 @@ if (opts.tmpDir) {
     process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
 }
 
-const distPath = utils.resolvePathFromAppRoot('out', 'dist');
+const distPath = utils.resolvePathFromAppRoot('.');
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
@@ -217,6 +218,7 @@ if (Object.keys(languages).length === 0) {
 
 const compilerProps = new props.CompilerProps(languages, ceProps);
 
+const staticPath = opts.webpackContent || path.join(distPath, 'static');
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
@@ -310,7 +312,6 @@ async function setupStaticMiddleware(router) {
     if (staticUrl) {
         logger.info(`  using static files from '${staticUrl}'`);
     } else {
-        const staticPath = path.join(distPath, 'static');
         logger.info(`  serving static files from '${staticPath}'`);
         router.use(
             '/static',
@@ -655,6 +656,7 @@ async function main() {
             ),
         );
     };
+
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
     morgan.token('gdpr_ip', req => (req.ip ? utils.anonymizeIp(req.ip) : ''));

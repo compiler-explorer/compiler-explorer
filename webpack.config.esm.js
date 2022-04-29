@@ -26,6 +26,7 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 /* eslint-disable node/no-unpublished-import */
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
@@ -38,7 +39,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
-const staticPath = path.join(distPath, 'static');
+const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
@@ -74,11 +75,14 @@ const plugins = [
         filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
-        fileName: path.join(distPath, 'manifest.json'),
+        fileName: path.resolve(distPath, 'manifest.json'),
         publicPath: '',
     }),
     new DefinePlugin({
         'window.PRODUCTION': JSON.stringify(!isDev),
+    }),
+    new CopyWebpackPlugin({
+        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
     }),
 ];
 
@@ -154,8 +158,8 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /\.(html)$/,
-                loader: 'html-loader',
+                test: /.pug$/,
+                loader: './etc/scripts/parsed_pug_file.js',
             },
             {
                 test: /\.tsx?$/,
