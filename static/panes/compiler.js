@@ -2762,8 +2762,8 @@ Compiler.prototype.onMouseMove = function (e) {
             };
             this.updateDecorations();
         }
-
-        if (hoverShowSource && this.isWordAsmKeyword(currentWord)) {
+        var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
+        if (hoverShowAsmDoc && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;
