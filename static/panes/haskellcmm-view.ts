@@ -67,7 +67,7 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
     }
 
     override getDefaultPaneName(): string {
-        return 'GHC Cmm viewer';
+        return 'GHC Cmm Viewer';
     }
 
     override registerCallbacks(): void {
@@ -98,7 +98,7 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         }
     }
 
-    showHaskellCmmResults(result: any[]): void {
+    showHaskellCmmResults(result: Record<'text', string>[]): void {
         this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No GHC Cmm generated>');
 
         if (!this.isAwaitingInitialResults) {

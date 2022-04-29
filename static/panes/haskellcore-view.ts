@@ -67,7 +67,7 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
     }
 
     override getDefaultPaneName(): string {
-        return 'GHC Core viewer';
+        return 'GHC Core Viewer';
     }
 
     override registerCallbacks(): void {
@@ -98,7 +98,7 @@ export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor,
         }
     }
 
-    showHaskellCoreResults(result: any[]): void {
+    showHaskellCoreResults(result: Record<'text', string>[]): void {
         this.editor
             .getModel()
             ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No GHC Core generated>');
