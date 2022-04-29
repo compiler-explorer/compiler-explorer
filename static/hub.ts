@@ -366,8 +366,8 @@ export class Hub {
         this.editors.push(editor);
     }
 
-    private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[1]): Tree {
-        const tree = new Tree(this, state, container);
+    private treeFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof Tree>[2]): Tree {
+        const tree = new Tree(this, container, state);
         this.trees.push(tree);
         return tree;
     }
