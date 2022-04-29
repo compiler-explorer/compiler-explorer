@@ -28,7 +28,7 @@ import {GetResult} from '../../types/cache.interfaces';
 import {logger} from '../logger';
 import {getHash} from '../utils';
 
-import {CacheStats} from './base.interfaces';
+import {Cache, CacheStats} from './base.interfaces';
 
 const HashVersion = 'Compiler Explorer Cache Version 1';
 
@@ -44,10 +44,10 @@ const PutCounter = new Counter({
     labelNames: ['type', 'name'],
 });
 
-export abstract class BaseCache {
-    private readonly cacheName: string;
+export abstract class BaseCache implements Cache {
+    readonly cacheName: string;
     readonly details: string;
-    private readonly type: string;
+    readonly type: string;
     gets: number;
     puts: number;
     hits: number;

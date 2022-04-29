@@ -24,7 +24,7 @@
 
 import {logger} from '../logger';
 
-import {BaseCache} from './base';
+import {Cache} from './base.interfaces';
 import {InMemoryCache} from './in-memory';
 import {MultiCache} from './multi';
 import {NullCache} from './null';
@@ -37,7 +37,7 @@ function paramInt(config: string, param: string): number {
     return result;
 }
 
-function createInternal(name: string, config: string): BaseCache {
+function createInternal(name: string, config: string): Cache {
     if (!config) {
         return new NullCache(name);
     }
@@ -66,7 +66,7 @@ function createInternal(name: string, config: string): BaseCache {
     }
 }
 
-export function createCacheFromConfig(name: string, config: string): BaseCache {
+export function createCacheFromConfig(name: string, config: string): Cache {
     const result = createInternal(name, config);
     logger.info(`Created cache ${name} of type ${result.details}`);
     return result;

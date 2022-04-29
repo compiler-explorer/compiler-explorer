@@ -22,8 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {GetResult} from '../../types/cache.interfaces';
+
 export type CacheStats = {
     hits: number;
     puts: number;
     gets: number;
 };
+
+export interface Cache {
+    readonly cacheName: string;
+    readonly details: string;
+    readonly type: string;
+    gets: number;
+    puts: number;
+    hits: number;
+
+    stats(): CacheStats;
+
+    statString(): string;
+
+    report(): void;
+
+    get(key: string): Promise<GetResult>;
+
+    put(key: string, value: any, creator?: string): Promise<void>;
+}
