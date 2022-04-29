@@ -2762,7 +2762,7 @@ Compiler.prototype.onMouseMove = function (e) {
             };
             this.updateDecorations();
         }
-        const hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
+        var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
         if (hoverShowAsmDoc && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
