@@ -44,7 +44,7 @@ export class InMemoryCache extends BaseCache {
         return `${super.statString()}, LRU has ${this.cache.itemCount} item(s) totalling ${this.cache.length} bytes`;
     }
 
-    override async getInternal(key): Promise<GetResult> {
+    override async getInternal(key: string): Promise<GetResult> {
         const cached = this.cache.get(key);
         return {hit: !!cached, data: cached};
     }

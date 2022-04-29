@@ -53,7 +53,7 @@ export abstract class BaseCache implements Cache {
     hits: number;
     protected countersEnabled: boolean;
 
-    protected constructor(cacheName, details, type) {
+    protected constructor(cacheName: string, details: string, type: string) {
         this.cacheName = cacheName;
         this.details = details;
         this.type = type;
@@ -77,7 +77,7 @@ export abstract class BaseCache implements Cache {
         logger.info(`${this.cacheName} ${this.details}: cache stats: ${this.statString()}`);
     }
 
-    static hash(object): string {
+    static hash(object: any): string {
         return getHash(object, HashVersion);
     }
 

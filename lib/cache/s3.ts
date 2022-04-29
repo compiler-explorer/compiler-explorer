@@ -54,7 +54,7 @@ export class S3Cache extends BaseCache {
             });
     }
 
-    override async getInternal(key): Promise<GetResult> {
+    override async getInternal(key: string): Promise<GetResult> {
         try {
             return await this.s3.get(key, this.path);
         } catch (e) {
