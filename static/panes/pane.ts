@@ -134,7 +134,7 @@ export abstract class Pane<S> {
      * compiler dropdown.
      *
      * Note that this event is also triggered when the changed compiler is not
-     * the one this view is attached to. Therefore it is smart to check that
+     * the one this view is attached to. Therefore, it is smart to check that
      * the updated compiler is the one the view is attached to. This can be done
      * with a simple check.
      *
@@ -162,7 +162,7 @@ export abstract class Pane<S> {
      *
      * Note that this event is triggered for *any* compilation, even when the
      * compilation was done for a source/compiler this view is not attached to.
-     * Therefore it is smart to check that the updated compiler is the one the
+     * Therefore, it is smart to check that the updated compiler is the one the
      * view is attached to. This can be done with a simple check.
      *
      * ```ts

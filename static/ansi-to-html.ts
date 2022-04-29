@@ -167,6 +167,8 @@ function handleDisplay(stack: string[], _code: string | number, options: AnsiToH
         return codeMap[code]();
     } else if (4 < code && code < 7) {
         return pushTag(stack, 'blink');
+    } else if (code === 7) {
+        return '';
     } else if (29 < code && code < 38) {
         // @ts-ignore
         return pushForegroundColor(stack, options.colors[code - 30]);

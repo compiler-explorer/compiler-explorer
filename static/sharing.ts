@@ -234,7 +234,7 @@ export class Sharing {
     }
 
     private onClipButtonPressed(event: ClickEvent, type: LinkType): void {
-        // Dont let the modal show up.
+        // Don't let the modal show up.
         // We need this because the button is a child of the dropdown-item with a data-toggle=modal
         if (Sharing.isNavigatorClipboardAvailable()) {
             event.stopPropagation();

@@ -186,7 +186,7 @@ export class LoadSave {
             const file = files[0];
             const reader = new FileReader();
             reader.onload = () => {
-                let result = '';
+                let result: string;
                 if (reader.result instanceof ArrayBuffer) {
                     result = LoadSave.ab2str(reader.result);
                 } else {

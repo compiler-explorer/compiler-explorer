@@ -216,7 +216,7 @@ export class CompilerPicker {
     }
 
     isAFavorite(compilerId: string) {
-        return !!this.getFavorites()[compilerId];
+        return compilerId in this.getFavorites();
     }
 
     addToFavorites(compilerId: string) {
