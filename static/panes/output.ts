@@ -91,6 +91,21 @@ export class Output extends Pane<OutputState> {
     override registerCallbacks() {
         this.options.on('change', this.onOptionsChange.bind(this));
         this.eventHub.on('compiling', this.onCompiling, this);
+        let s = false;
+        $(document).on('click', e => {
+            s = this.contentRoot[0].contains(e.target);
+        });
+        $(document).on('keydown', e => {
+            if (s && e.ctrlKey && e.key === 'a') {
+                e.preventDefault();
+                const range = document.createRange();
+                range.selectNode(this.contentRoot[0]);
+                const selection = window.getSelection();
+                if (selection !== null) {
+                    selection.addRange(range);
+                }
+            }
+        });
     }
 
     onOptionsChange() {
