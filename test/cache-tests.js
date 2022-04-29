@@ -286,7 +286,6 @@ describe('Config tests', () => {
     it('should create S3 caches', () => {
         const cache = createCacheFromConfig('test', `S3(test.bucket,cache,uk-north-1)`);
         cache.constructor.should.eql(S3Cache);
-        cache.bucket.should.equal('test.bucket');
         cache.path.should.equal('cache');
         cache.region.should.equal('uk-north-1');
         (() => createCacheFromConfig('test', 'S3()')).should.throw();

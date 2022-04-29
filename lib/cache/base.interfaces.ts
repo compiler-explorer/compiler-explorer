@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCache } from './base';
-
-export class NullCache extends BaseCache {
-    constructor(cacheName) {
-        super(cacheName, 'Null', 'null');
-    }
-    getInternal() {
-        return Promise.resolve({hit: false});
-    }
-
-    putInternal() {
-        return Promise.resolve();
-    }
-}
+export type CacheStats = {
+    hits: number;
+    puts: number;
+    gets: number;
+};

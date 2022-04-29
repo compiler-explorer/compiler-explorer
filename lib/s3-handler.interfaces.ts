@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import LRU from 'lru-cache';
+import {Metadata, StorageClass} from 'aws-sdk/clients/s3';
 
-import { BaseCache } from './base';
-
-export class InMemoryCache extends BaseCache {
-    constructor(cacheName, cacheMb) {
-        super(cacheName, `InMemoryCache(${cacheMb}Mb)`, 'memory');
-        this.cacheMb = cacheMb;
-        this.cache = new LRU({
-            max: cacheMb * 1024 * 1024,
-            length: n => n.length,
-        });
-    }
-
-    statString() {
-        return `${super.statString()}, LRU has ${this.cache.itemCount} item(s) totalling ${this.cache.length} bytes`;
-    }
-
-    getInternal(key) {
-        const cached = this.cache.get(key);
-        return Promise.resolve({
-            hit: !!cached,
-            data: cached,
-        });
-    }
-
-    putInternal(key, value/*, creator*/) {
-        this.cache.set(key, value);
-        return Promise.resolve();
-    }
-}
+export type S3HandlerOptions = {
+    redundancy?: StorageClass;
+    metadata?: Metadata;
+};
