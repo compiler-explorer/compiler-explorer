@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-// here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
+// here instead of in the editor.js and compiler.js etc. to prevent circular dependencies.
 module.exports = {
     getCompiler: function (editorId, lang) {
         return {

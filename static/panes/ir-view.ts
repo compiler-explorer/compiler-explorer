@@ -34,7 +34,6 @@ import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {applyColours} from '../colour';
 
-import {PaneRenaming} from '../widgets/pane-renaming';
 import {Hub} from '../hub';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
