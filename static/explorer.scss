@@ -250,7 +250,7 @@ pre.content.wrap * {
 
 .modal-content {
     max-width: max-content; /* modal boxes are at most as wide as their content - smaller width is handled by the browser and flexbox */
-    max-height: calc(100vh - 4rem); /* modal box height scales with the viewportheight and leaves space for borders */
+    max-height: calc(100vh - 4rem); /* modal box height scales with the viewport height and leaves space for borders */
 }
 
 #history {

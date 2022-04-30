@@ -265,7 +265,6 @@ div.argmenuitem span.argtitle {
     font-weight: bold;
     display: block;
     overflow-x: hidden;
-    overflow-anchor: visible;
     text-overflow: ellipsis;
 }
 
@@ -278,7 +277,6 @@ div.argmenuitem span.argdescription {
     display: block;
     white-space: normal;
     text-overflow: ellipsis;
-    overflow-anchor: visible;
     overflow-y: hidden;
 }
 

@@ -42,7 +42,7 @@ const DEFAULT_MONACO_CONFIG = {
 
 type EditorKinds = monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;
 
-/** Pick consturction options based on editor kind */
+/** Pick construction options based on editor kind */
 type EditorConstructionType<E extends EditorKinds> = E extends monaco.editor.IStandaloneDiffEditor
     ? monaco.editor.IDiffEditorConstructionOptions
     : monaco.editor.IStandaloneEditorConstructionOptions;

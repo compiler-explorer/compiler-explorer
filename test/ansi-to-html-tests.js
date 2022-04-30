@@ -34,32 +34,38 @@ describe('ansi-to-html', () => {
     };
     it('Should leave non-ansi colours alone', () => {
         const filter = new Filter(filterOpts);
-        filter.toHtml('I am a boring old string')
-            .should.equal('I am a boring old string');
+        filter.toHtml('I am a boring old string').should.equal('I am a boring old string');
     });
     it('Should handle simple cases', () => {
         const filter = new Filter(filterOpts);
-        filter.toHtml('\x1B[38;5;99mTest')
-            .should.equal('<span style="color:#875fff">Test</span>');
+        filter.toHtml('\x1B[38;5;99mTest').should.equal('<span style="color:#875fff">Test</span>');
     });
     it('Should handle nasty edge cases', () => {
         const filter = new Filter(filterOpts);
         // See #1666, this used to cause catastrophic backtracking.
-        filter.toHtml('\x1B[38;5;9999999999999999999999999999999999999999999999999999999999999999999999999999999' +
-            '99999999999999999999"mTest').should.equal(
-            '5;9999999999999999999999999999999999999999999999999999999999999' +
-            '99999999999999999999999999999999999999"mTest');
+        filter
+            .toHtml(
+                '\x1B[38;5;9999999999999999999999999999999999999999999999999999999999999999999999999999999' +
+                    '99999999999999999999"mTest',
+            )
+            .should.equal(
+                '5;9999999999999999999999999999999999999999999999999999999999999' +
+                    '99999999999999999999999999999999999999"mTest',
+            );
     });
 
     // With thanks to https://github.com/rburns/ansi-to-html/pull/84/files
     it('renders xterm foreground 256 sequences', () => {
         const filter = new Filter(filterOpts);
-        filter.toHtml('\x1B[38;5;196mhello')
-            .should.equal('<span style="color:#ff0000">hello</span>');
+        filter.toHtml('\x1B[38;5;196mhello').should.equal('<span style="color:#ff0000">hello</span>');
     });
     it('renders xterm background 256 sequences', () => {
         const filter = new Filter(filterOpts);
-        filter.toHtml('\x1B[48;5;196mhello')
-            .should.equal('<span style="background-color:#ff0000">hello</span>');
+        filter.toHtml('\x1B[48;5;196mhello').should.equal('<span style="background-color:#ff0000">hello</span>');
+    });
+
+    it('should ignore reverse video', () => {
+        const filter = new Filter(filterOpts);
+        filter.toHtml('\x1B[7mhello').should.equal('hello');
     });
 });

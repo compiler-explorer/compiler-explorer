@@ -84,6 +84,8 @@ export abstract class Pane<S> {
 
         this.paneRenaming = new PaneRenaming(this, state);
 
+        this.registerDynamicElements(state);
+
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
@@ -116,6 +118,9 @@ export abstract class Pane<S> {
      */
     abstract registerOpeningAnalyticsEvent(): void;
 
+    /** Optional overridable code for initializing necessary elements before rest of registers **/
+    registerDynamicElements(state: S): void {}
+
     /** Optionally overridable code for initializing pane buttons */
     registerButtons(state: S): void {}
 
@@ -129,7 +134,7 @@ export abstract class Pane<S> {
      * compiler dropdown.
      *
      * Note that this event is also triggered when the changed compiler is not
-     * the one this view is attached to. Therefore it is smart to check that
+     * the one this view is attached to. Therefore, it is smart to check that
      * the updated compiler is the one the view is attached to. This can be done
      * with a simple check.
      *
@@ -157,7 +162,7 @@ export abstract class Pane<S> {
      *
      * Note that this event is triggered for *any* compilation, even when the
      * compilation was done for a source/compiler this view is not attached to.
-     * Therefore it is smart to check that the updated compiler is the one the
+     * Therefore, it is smart to check that the updated compiler is the one the
      * view is attached to. This can be done with a simple check.
      *
      * ```ts

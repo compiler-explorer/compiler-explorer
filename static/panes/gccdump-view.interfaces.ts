@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PaneState} from './pane.interfaces';
-import * as vis from 'vis-network';
-
-export interface CfgOptions {
-    physics?: boolean;
-    navigation?: boolean;
+export interface GccDumpFilters {
+    treeDump: any;
+    rtlDump: any;
+    ipaDump: any;
+    addressOption: any;
+    slimOption: any;
+    rawOption: any;
+    detailsOption: any;
+    statsOption: any;
+    blocksOption: any;
+    vopsOption: any;
+    linenoOption: any;
+    uidOption: any;
+    allOption: any;
 }
 
-export interface CfgState extends PaneState {
-    selectedFn?: string;
-    pos: vis.Position;
-    scale: number;
-    options?: CfgOptions;
+export interface GccDumpState extends GccDumpFilters {
+    selectedPass: string | null;
+    // legacy
+    _compilerid?: number;
+    _compilerName?: string;
+    _editorid?: number;
+    _treeid?: number;
 }

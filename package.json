@@ -40,7 +40,6 @@
     "file-saver": "^2.0.5",
     "fs-extra": "^10.0.0",
     "golden-layout": "^1.5.9",
-    "handlebars": "^4.7.7",
     "html-loader": "^3.0.1",
     "http-proxy": "^1.18.1",
     "husky": "^7.0.4",
@@ -178,8 +177,8 @@
   },
   "lint-staged": {
     "*.[jt]s": [
-      "npm run ci-lint-files --",
-      "npm run format-fix-files --"
+      "npm run format-fix-files --",
+      "npm run ci-lint-files --"
     ]
   },
   "license": "BSD-2-Clause"

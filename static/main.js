@@ -69,6 +69,11 @@ var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
 
+var policyDocuments = {
+    cookies: require('./generated/cookies.pug').default,
+    privacy: require('./generated/privacy.pug').default,
+};
+
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
     var defaultSettings = {
@@ -111,7 +116,7 @@ function setupSettings(hub) {
 }
 
 function hasCookieConsented(options) {
-    return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
+    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
 function isMobileViewer() {
@@ -130,17 +135,18 @@ function setupButtons(options) {
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
         $('#privacy').on('click', function (event, data) {
-            $.get(window.location.origin + window.httpRoot + 'static/generated/privacy.html').done(function (policy) {
-                var modal = alertSystem.alert(data && data.title ? data.title : 'Privacy policy', policy);
-                calcLocaleChangedDate(modal);
-                // I can't remember why this check is here as it seems superfluous
-                if (options.policies.privacy.enabled) {
-                    jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
-                        expires: 365,
-                        sameSite: 'strict',
-                    });
-                }
-            });
+            var modal = alertSystem.alert(
+                data && data.title ? data.title : 'Privacy policy',
+                policyDocuments.privacy.text
+            );
+            calcLocaleChangedDate(modal);
+            // I can't remember why this check is here as it seems superfluous
+            if (options.policies.privacy.enabled) {
+                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                    expires: 365,
+                    sameSite: 'strict',
+                });
+            }
         });
     }
 
@@ -155,19 +161,17 @@ function setupButtons(options) {
             );
         };
         $('#cookies').on('click', function () {
-            $.get(window.location.origin + window.httpRoot + 'static/generated/cookies.html').done(function (cookies) {
-                var modal = alertSystem.ask(getCookieTitle(), cookies, {
-                    yes: function () {
-                        simpleCooks.callDoConsent.apply(simpleCooks);
-                    },
-                    yesHtml: 'Consent',
-                    no: function () {
-                        simpleCooks.callDontConsent.apply(simpleCooks);
-                    },
-                    noHtml: 'Do NOT consent',
-                });
-                calcLocaleChangedDate(modal);
+            var modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
+                yes: function () {
+                    simpleCooks.callDoConsent.apply(simpleCooks);
+                },
+                yesHtml: 'Consent',
+                no: function () {
+                    simpleCooks.callDontConsent.apply(simpleCooks);
+                },
+                noHtml: 'Do NOT consent',
             });
+            calcLocaleChangedDate(modal);
         });
     }
 
@@ -183,9 +187,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        $.get(window.location.origin + window.httpRoot + 'static/generated/changelog.html').done(function (changelog) {
-            alertSystem.alert('Changelog', $(changelog));
-        });
+        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
     });
 
     $('#ces').on('click', function () {
@@ -338,7 +340,7 @@ function initPolicies(options) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it',
             });
-        } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
             var ppolicyBellNotification = $('#policyBellNotification');
             var pprivacyBellNotification = $('#privacyBellNotification');
@@ -355,7 +357,7 @@ function initPolicies(options) {
         }
     }
     simpleCooks.setOnDoConsent(function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
+        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
             expires: 365,
             sameSite: 'strict',
         });
@@ -381,7 +383,7 @@ function initPolicies(options) {
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
-        if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
+        if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
             var cpolicyBellNotification = $('#policyBellNotification');
             var cprivacyBellNotification = $('#privacyBellNotification');
