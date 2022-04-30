@@ -1,11 +1,11 @@
-export class ResultLineTag {
+export type ResultLineTag = {
     line?: number;
     column?: number;
     file?: string;
     text: string;
-}
+};
 
-export class ResultLine {
+export type ResultLine = {
     text: string;
     tag?: ResultLineTag;
-}
+};
