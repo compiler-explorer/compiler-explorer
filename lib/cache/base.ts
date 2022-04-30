@@ -24,7 +24,7 @@
 
 import {Counter} from 'prom-client';
 
-import {GetResult} from '../../types/cache.interfaces';
+import {CacheableValue, GetResult} from '../../types/cache.interfaces';
 import {logger} from '../logger';
 import {getHash} from '../utils';
 
@@ -77,7 +77,7 @@ export abstract class BaseCache implements Cache {
         logger.info(`${this.cacheName} ${this.details}: cache stats: ${this.statString()}`);
     }
 
-    static hash(object: any): string {
+    static hash(object: CacheableValue): string {
         return getHash(object, HashVersion);
     }
 
