@@ -1,4 +1,4 @@
-export class ParseFilters {
+export type ParseFilters = {
     binary: boolean;
     execute: boolean;
     demangle: boolean;
@@ -10,4 +10,4 @@ export class ParseFilters {
     libraryCode: boolean;
     trim: boolean;
     dontMaskFilenames?: boolean;
-}
+};
