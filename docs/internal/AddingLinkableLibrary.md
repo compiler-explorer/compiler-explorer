@@ -1,5 +1,6 @@
 Adding a library that is linked against:
 
+- If the library is a C shared library, you should not use these instructions, use the `after_staging_script` instead to build the library during the installation
 - Check what buildsystem is used.
   - If CMake, it's going to be relatively easy.
   - If something else, it's going to be complicated.

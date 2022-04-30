@@ -52,7 +52,7 @@ describe('Preprocessor Output Handling', () => {
             },
         };
         const compiler = new BaseCompiler(compilerInfo, env);
-        for(const testCase of filterTests.cases) {
+        for (const testCase of filterTests.cases) {
             const output = compiler.filterPP(testCase.input)[1];
             output.trim().should.eql(testCase.output.trim());
         }

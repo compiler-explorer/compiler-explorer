@@ -24,14 +24,14 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var colour = require('../colour');
 var ga = require('../analytics').ga;
 var monacoConfig = require('../monaco-config');
-var PaneRenaming = require('../pane-renaming').PaneRenaming;
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 var TomSelect = require('tom-select');
 
@@ -54,7 +54,8 @@ function DeviceAsm(hub, container, state) {
 
     this._compilerId = state.id;
     this._compilerName = state.compilerName;
-    this._editorId = state.editor;
+    this._editorId = state.editorid;
+    this._treeId = state.treeid;
 
     this.awaitingInitialResults = false;
     this.selection = state.selection;
@@ -80,6 +81,8 @@ function DeviceAsm(hub, container, state) {
         plugins: ['input_autogrow'],
     });
 
+    this.paneRenaming = new PaneRenaming(this, state);
+
     this.initButtons(state);
     this.initCallbacks();
     this.initEditorActions();
@@ -87,7 +90,6 @@ function DeviceAsm(hub, container, state) {
     if (state && state.irOutput) {
         this.showDeviceAsmResults(state.irOutput);
     }
-    this.updateTitle();
 
     ga.proxy('send', {
         hitType: 'event',
@@ -139,6 +141,7 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.fontScale.on('change', _.bind(this.updateState, this));
     this.selectize.on('change', _.bind(this.onDeviceSelect, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.container.on('destroy', this.close, this);
 
@@ -153,7 +156,6 @@ DeviceAsm.prototype.initCallbacks = function () {
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    PaneRenaming.registerCallback(this);
 };
 
 // TODO: de-dupe with compiler etc
@@ -222,13 +224,24 @@ DeviceAsm.prototype.updateDeviceAsm = function () {
         this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
 };
 
+DeviceAsm.prototype.getPaneTag = function () {
+    if(this._editorId) {
+        return this._compilerName + ' (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
+    } else {
+        return this._compilerName + ' (Tree #' + this._treeId + ', Compiler #' + this._compilerId + ')';
+    }
+};
+
+DeviceAsm.prototype.getDefaultPaneName = function () {
+    return 'Device Viewer';
+};
+
 DeviceAsm.prototype.getPaneName = function () {
-    return this._compilerName + ' Device Viewer (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
+    return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
 };
 
 DeviceAsm.prototype.updateTitle = function () {
-    var name = this.paneName ? this.paneName : this.getPaneName();
-    this.container.setTitle(_.escape(name));
+    this.container.setTitle(_.escape(this.getPaneName()));
 };
 
 DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
@@ -247,10 +260,11 @@ DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
     }
 };
 
-DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorId) {
+DeviceAsm.prototype.onCompiler = function (id, compiler, options, editorId, treeId) {
     if (id === this._compilerId) {
         this._compilerName = compiler ? compiler.name : '';
         this._editorId = editorId;
+        this._treeId = treeId;
         this.updateTitle();
         if (compiler && !compiler.supportsDeviceAsmView) {
             this.deviceEditor.setValue('<Device output is not supported for this compiler>');
@@ -290,10 +304,12 @@ DeviceAsm.prototype.updateState = function () {
 DeviceAsm.prototype.currentState = function () {
     var state = {
         id: this._compilerId,
-        editor: this._editorId,
+        editorid: this._editorId,
+        treeid: this._treeId,
         selection: this.selection,
         device: this.selectedDevice,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };

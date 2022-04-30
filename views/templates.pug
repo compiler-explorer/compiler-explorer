@@ -37,11 +37,11 @@
               include resources/quickbench.svg
             span.hideable Quick-bench
       .btn-group.btn-group-sm.mx-auto
-        button.btn.btn-sm.btn-outline-info.currentCursorPosition(disabled=true)
         button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")
           span.fas.fa-smile
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
+    div.currentCursorPosition
     div#v-status
     .monaco-placeholder
 
@@ -116,6 +116,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-rusthir(title="Show Rust HIR")
             span.dropdown-icon.fas.fa-arrows-alt
             | Rust HIR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellStg(title="Show Haskell STG Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | Haskell STG output
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
@@ -170,16 +173,16 @@
         button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.dp-text.hideable Libraries
-      button.btn.btn-sm.btn-light.toggle-compilation.active
+      button.btn.btn-sm.btn-light.toggle-compilation.active(title="Compiler options" aria-label="Toggle compiler options input")
         span.fas.fa-cogs
         span.hideable Compilation
-      button.btn.btn-sm.btn-light.toggle-args
+      button.btn.btn-sm.btn-light.toggle-args(title="Execution arguments" aria-label="Toggle execution arguments input")
         span.fas.fa-terminal
         span.hideable Arguments
-      button.btn.btn-sm.btn-light.toggle-stdin
+      button.btn.btn-sm.btn-light.toggle-stdin(title="Execution stdin" aria-label="Toggle execution stdin input")
         span.fas.fa-sign-in-alt
         span.hideable Stdin
-      button.btn.btn-sm.btn-light.toggle-compilerout.active
+      button.btn.btn-sm.btn-light.toggle-compilerout.active(title="Compiler output" aria-label="Toggle showing compiler output")
         span.fas.fa-sign-out-alt
         span.hideable Compiler output
       button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
@@ -329,6 +332,11 @@
     .monaco-placeholder
 
   #rustmir
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
+  #haskellStg
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
     .monaco-placeholder

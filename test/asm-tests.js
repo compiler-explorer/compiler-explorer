@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AsmParser } from '../lib/asm-parser';
-import { VcAsmParser } from '../lib/asm-parser-vc';
-import { AsmRegex } from '../lib/asmregex';
+import { AsmParser } from '../lib/parsers/asm-parser';
+import { VcAsmParser } from '../lib/parsers/asm-parser-vc';
+import { AsmRegex } from '../lib/parsers/asmregex';
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {

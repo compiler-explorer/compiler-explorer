@@ -38,7 +38,7 @@ export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hidea
 }
 
 /**
- *  Subscribe and unsuscribe the event listener.
+ *  Subscribe and unsubscribe the event listener.
  *
  * @param  {JQuery} element
  * @param  {string} eventName

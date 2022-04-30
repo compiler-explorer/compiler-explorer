@@ -23,7 +23,6 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@sentry/browser": "^6.16.1",
     "@sentry/node": "^6.16.1",
-    "@sentry/tracing": "^6.16.1",
     "aws-sdk": "^2.1048.0",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
@@ -32,6 +31,7 @@
     "clipboard": "^2.0.8",
     "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
+    "copy-webpack-plugin": "^9.1.0",
     "cross-env": "^7.0.3",
     "es6-promise": "^4.2.8",
     "eslint-plugin-header": "^3.1.1",
@@ -64,6 +64,7 @@
     "pug": "^3.0.2",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
+    "sanitize-filename": "^1.6.3",
     "semver": "^7.3.5",
     "serve-favicon": "^2.4.5",
     "shell-quote": "^1.7.3",
@@ -152,6 +153,7 @@
   },
   "scripts": {
     "ci-lint": "eslint --format github .",
+    "ci-lint-files": "eslint --format github",
     "ci-test": "nyc npm run test",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
@@ -165,15 +167,18 @@
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
-    "format": "prettier --ignore-unknown .",
-    "format-fix": "prettier --write --ignore-unknown .",
+    "format": "prettier --ignore-unknown ./static/**/*.ts",
+    "format-fix": "prettier --write --ignore-unknown ./static/**/*.ts",
+    "format-fix-files": "prettier --write --ignore-unknown",
+    "format-check": "prettier --ignore-unknown --check ./static/**/*.ts",
     "ts-compile": "tsc",
+    "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.[jt]s": [
-      "npm run ci-lint --",
-      "npm run format-fix --"
+      "npm run format-fix-files --",
+      "npm run ci-lint-files --"
     ]
   },
   "license": "BSD-2-Clause"

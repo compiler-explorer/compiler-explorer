@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { FormatBase } from '../settings';
+import {FormatBase} from '../settings';
 
 export interface FormattingRequest {
     source: string;
@@ -38,7 +38,7 @@ export interface FormattingRequest {
 }
 
 export interface FormattingResponse {
-    answer: string;
+    answer?: string;
     exit: number;
     throw?: true;
 }

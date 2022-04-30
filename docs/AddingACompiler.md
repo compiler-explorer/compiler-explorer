@@ -54,7 +54,7 @@ compiler.clang5.name=Clang 5
 compiler.clang5.exe=/usr/bin/clang5
 ```
 
-Note about configuration files hierachy:
+Note about configuration files hierarchy:
 
 As mentioned previously, the live site uses `etc/config/c++.amazon.properties` to load its configuration from,
 but for properties not defined in the `amazon` file, the values present in `etc/config/c++.defaults.properties` will be used.

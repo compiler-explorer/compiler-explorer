@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { MultifileService } from './multifile-service';
+import {MultifileService} from './multifile-service';
 
 interface ColouredSourcelineInfo {
     sourceLine: number;
@@ -52,7 +52,7 @@ export class LineColouring {
 
     public addFromAssembly(compilerId, asm) {
         let asmLineIdx = 0;
-        for (const asmLine of asm ) {
+        for (const asmLine of asm) {
             if (asmLine.source && asmLine.source.line > 0) {
                 const editorId = this.multifileService.getEditorIdByFilename(asmLine.source.file);
                 if (editorId != null && editorId > 0) {
@@ -60,11 +60,11 @@ export class LineColouring {
                         this.colouredSourceLinesByEditor[editorId] = [];
                     }
 
-                    if (!this.linesAndColourByCompiler[compilerId]) {
+                    if (!(compilerId in this.linesAndColourByCompiler)) {
                         this.linesAndColourByCompiler[compilerId] = {};
                     }
 
-                    if (!this.linesAndColourByEditor[editorId]) {
+                    if (!(editorId in this.linesAndColourByEditor)) {
                         this.linesAndColourByEditor[editorId] = {};
                     }
 
@@ -84,8 +84,7 @@ export class LineColouring {
         const lines: number[] = [];
 
         for (const info of this.colouredSourceLinesByEditor[editorId]) {
-            if (!lines.includes(info.sourceLine))
-                lines.push(info.sourceLine);
+            if (!lines.includes(info.sourceLine)) lines.push(info.sourceLine);
         }
 
         return lines;
@@ -136,7 +135,7 @@ export class LineColouring {
     }
 
     public getColoursForCompiler(compilerId: number): Record<number, number> {
-        if (this.linesAndColourByCompiler[compilerId]) {
+        if (compilerId in this.linesAndColourByCompiler) {
             return this.linesAndColourByCompiler[compilerId];
         } else {
             return {};
@@ -144,7 +143,7 @@ export class LineColouring {
     }
 
     public getColoursForEditor(editorId: number): Record<number, number> {
-        if (this.linesAndColourByEditor[editorId]) {
+        if (editorId in this.linesAndColourByEditor) {
             return this.linesAndColourByEditor[editorId];
         } else {
             return {};

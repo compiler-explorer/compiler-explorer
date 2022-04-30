@@ -26,9 +26,9 @@ import path from 'path';
 
 import approvals from 'approvals';
 
-import { AsmParser } from '../lib/asm-parser';
-import { SassAsmParser } from '../lib/asm-parser-sass';
-import { VcAsmParser } from '../lib/asm-parser-vc';
+import { AsmParser } from '../lib/parsers/asm-parser';
+import { SassAsmParser } from '../lib/parsers/asm-parser-sass';
+import { VcAsmParser } from '../lib/parsers/asm-parser-vc';
 
 import { fs, resolvePathFromTestRoot } from './utils';
 

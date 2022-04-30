@@ -22,12 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
-import { getAsmOpcode } from './generated/asm-docs-arm32';
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base';
+import {getAsmOpcode} from './generated/asm-docs-arm32';
 
 export class Arm32DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    private static readonly CONDITIONAL_INSTRUCTION_REGEXP = /^([A-Za-z]+?)(EQ|NE|CS|CC|MI|PL|VS|VC|HI|LS|GE|LT|GT|LE|AL)$/;
-    public static get key() { return 'arm32'; }
+    private static readonly CONDITIONAL_INSTRUCTION_REGEXP =
+        /^([A-Za-z]+?)(EQ|NE|CS|CC|MI|PL|VS|VC|HI|LS|GE|LT|GT|LE|AL)$/;
+    public static get key() {
+        return 'arm32';
+    }
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
         const info = getAsmOpcode(instruction) || Arm32DocumentationProvider.getConditionalOpcode(instruction);
         return info || null;
@@ -58,6 +61,7 @@ export class Arm32DocumentationProvider extends BaseAssemblyDocumentationProvide
             return null;
         }
         const information = getAsmOpcode(isConditionalOpcode[1]);
+        if (!information) return null;
         const text = Arm32DocumentationProvider.CONDITIONAL_OPCODE_TAGS[isConditionalOpcode[2]] || '';
         return {
             ...information,

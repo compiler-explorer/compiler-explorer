@@ -25,7 +25,11 @@ env:
 rules:
   comma-dangle:
     - error
-    - always-multiline
+    - arrays: always-multiline
+      objects: always-multiline
+      imports: always-multiline
+      exports: always-multiline
+      functions: always-multiline
   eol-last:
     - error
     - always
@@ -83,6 +87,9 @@ rules:
     - anonymous: always
       asyncArrow: always
       named: never
+  keyword-spacing:
+    - error
+    - after: true
   yoda:
     - error
     - never

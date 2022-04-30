@@ -250,7 +250,7 @@ pre.content.wrap * {
 
 .modal-content {
     max-width: max-content; /* modal boxes are at most as wide as their content - smaller width is handled by the browser and flexbox */
-    max-height: calc(100vh - 4rem); /* modal box height scales with the viewportheight and leaves space for borders */
+    max-height: calc(100vh - 4rem); /* modal box height scales with the viewport height and leaves space for borders */
 }
 
 #history {
@@ -326,16 +326,21 @@ pre.content.wrap * {
 }
 
 #notifications {
-    max-width: 33%;
+    padding: 5px;
+    border-radius: 0.5rem;
     position: fixed;
     bottom: 3px;
     right: 5px;
+    max-width: 40%;
 }
 
-.notification {
-    padding: 5px;
-    border-radius: 5px;
-    color: black;
+.toast {
+    max-width: 100% !important;
+}
+
+.toast-header .close {
+    float: left;
+    margin-right: 5px;
 }
 
 .font-size-list {
@@ -770,13 +775,19 @@ span.badge.badge-pill {
     margin-left: 2pt;
 }
 
+.theme-light-only, .theme-dark-only {
+    display: none;
+}
+
 html[data-theme=default] {
     @import "themes/default-theme";
+    .theme-light-only { display: inline }
 }
 
 html[data-theme=dark] {
     @import "themes/dark-theme";
     background-color: #333 !important;
+    .theme-dark-only { display: inline }
 }
 
 .socialsharing {
@@ -874,8 +885,18 @@ html[data-theme=dark] {
     cursor: pointer;
 }
 
-.currentCursorPosition, .ctrlSNothing {
+.ctrlSNothing {
     font-size: small;
     border: none;
     user-select: text;
+}
+
+.currentCursorPosition {
+    position: absolute;
+    bottom: 0;
+    right: 14px; // width of monaco scrollbar
+    font-size: small;
+    border-radius: 0.5rem;
+    z-index: 1;
+    padding: 5px;
 }

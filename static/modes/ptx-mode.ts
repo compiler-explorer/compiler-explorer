@@ -35,7 +35,6 @@ function definition() {
     // Thus the register-regex captures everything that starts with a '%'.
     ptx.registers = /%[a-z0-9_\\.]+/;
 
-
     // Redefine whitespaces, as asm interprets strings with a leading '@' as comments.
     ptx.tokenizer.whitespace = [
         [/[ \t\r\n]+/, 'white'],

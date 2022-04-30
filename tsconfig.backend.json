@@ -1,17 +1,17 @@
 {
   "extends": "./tsconfig.base.json",
-  "include": ["lib/**/*"],
-  "exclude": ["static/**/*"],
+  "files": ["app.js"],
+  "include": ["**/*.js", "**/*.ts"],
+  "exclude": ["out", "test", "etc", "examples", "static", "**/*.d.ts"],
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
     /* Code generation */
-    "outDir": "./out/app",
+    "outDir": "./out/dist",
     "typeRoots": ["./typings", "./node_modules/@types"],
     /* Other options */
-    "strict": true,
-    "noImplicitAny": false
+    "allowJs": true
   }
 }

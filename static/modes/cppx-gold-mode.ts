@@ -32,10 +32,10 @@ function definition() {
         defaultToken: '',
 
         brackets: [
-            { token: 'delimiter.curly', open: '{', close: '}' },
-            { token: 'delimiter.parenthesis', open: '(', close: ')' },
-            { token: 'delimiter.square', open: '[', close: ']' },
-            { token: 'delimiter.angle', open: '<', close: '>' },
+            {token: 'delimiter.curly', open: '{', close: '}'},
+            {token: 'delimiter.parenthesis', open: '(', close: ')'},
+            {token: 'delimiter.square', open: '[', close: ']'},
+            {token: 'delimiter.angle', open: '<', close: '>'},
         ],
 
         keywords: [
@@ -151,11 +151,41 @@ function definition() {
         ],
 
         operators: [
-            '=', '>', '<', '!', '~', '?', ':',
-            '==', '<=', '>=', '<>', '&&', '||',
-            '+', '-', '*', '/', '&', '|', '^', '%', '<<',
-            '>>', '>>>', '+=', '-=', '*=', '/=', '&=', '|=',
-            '^=', '%=', '<<=', '>>=', '>>>=',
+            '=',
+            '>',
+            '<',
+            '!',
+            '~',
+            '?',
+            ':',
+            '==',
+            '<=',
+            '>=',
+            '<>',
+            '&&',
+            '||',
+            '+',
+            '-',
+            '*',
+            '/',
+            '&',
+            '|',
+            '^',
+            '%',
+            '<<',
+            '>>',
+            '>>>',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
+            '&=',
+            '|=',
+            '^=',
+            '%=',
+            '<<=',
+            '>>=',
+            '>>>=',
         ],
 
         symbols: /[=><!~?:&|+\-*/^%]+/,
@@ -165,14 +195,17 @@ function definition() {
         tokenizer: {
             root: [
                 // identifiers and keywords
-                [/[a-z_$][\w$]*/, {
-                    cases: {
-                        '@typeKeywords': 'keyword',
-                        '@keywords': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-z_$][\w$]*/,
+                    {
+                        cases: {
+                            '@typeKeywords': 'keyword',
+                            '@keywords': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
-                [/[A-Z][\w$]*/, 'type.identifier'],  // to show class names nicely
+                ],
+                [/[A-Z][\w$]*/, 'type.identifier'], // to show class names nicely
 
                 // whitespace
                 {include: '@whitespace'},
@@ -180,12 +213,15 @@ function definition() {
                 // delimiters and operators
                 [/[{}()[\]]/, '@brackets'],
                 [/[<>](?!@symbols)/, '@brackets'],
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'operator',
-                        '@default': '',
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 // numbers
                 [/\d*\.\d+([eE][-+]?\d+)?[fFdD]?/, 'number.float'],
@@ -195,7 +231,7 @@ function definition() {
                 [/\d+[lL]?/, 'number'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-teminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
                 [/"/, 'string', '@string'],
 
                 // characters
@@ -224,9 +260,7 @@ function definition() {
                 [/#.*$/, 'comment'],
             ],
 
-            comment: [
-                [/[#]/, 'comment'],
-            ],
+            comment: [[/[#]/, 'comment']],
 
             nestingcomment: [
                 [/[^<#]+/, 'comment'],
@@ -253,19 +287,19 @@ function configuration() {
         ],
 
         autoClosingPairs: [
-            { open: '[', close: ']' },
-            { open: '{', close: '}' },
-            { open: '(', close: ')' },
-            { open: '\'', close: '\'', notIn: ['string', 'comment'] },
-            { open: '"', close: '"', notIn: ['string'] },
+            {open: '[', close: ']'},
+            {open: '{', close: '}'},
+            {open: '(', close: ')'},
+            {open: "'", close: "'", notIn: ['string', 'comment']},
+            {open: '"', close: '"', notIn: ['string']},
         ],
 
         surroundingPairs: [
-            { open: '{', close: '}' },
-            { open: '[', close: ']' },
-            { open: '(', close: ')' },
-            { open: '"', close: '"' },
-            { open: '\'', close: '\'' },
+            {open: '{', close: '}'},
+            {open: '[', close: ']'},
+            {open: '(', close: ')'},
+            {open: '"', close: '"'},
+            {open: "'", close: "'"},
         ],
     };
 }

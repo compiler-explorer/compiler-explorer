@@ -103,6 +103,9 @@ a.navbar-brand img.logo.normal {
 .modal-header {
     color: #eee !important;
     background-color: #333 !important;
+    .close {
+        color: #fff;
+    }
 }
 
 .modal-body {
@@ -201,12 +204,16 @@ a.navbar-brand img.logo.normal {
 }
 
 .notification-info {
-    background-color: #f2f2f2 !important;
+    background-color: #676767 !important;
+    color: #f2f2f2;
 }
 
 .notification-error {
     background-color: #aa3333 !important;
-    color: #000;
+    color: #fff;
+    .close {
+        color: #fff;
+    }
 }
 
 .notification-on {
@@ -217,6 +224,9 @@ a.navbar-brand img.logo.normal {
 .notification-off {
     background-color: #222 !important;
     color: #fff;
+    .close {
+        color: #fff;
+    }
 }
 
 pre {
@@ -244,6 +254,10 @@ input {
     color: #eee !important;
     background-color: #474747;
     border: 0 !important;
+}
+
+.form-control:disabled {
+    background-color: darken(#474747, 10%);
 }
 
 input:focus {
@@ -429,7 +443,6 @@ div.argmenuitem span.argtitle {
     font-weight: bold;
     display: block;
     overflow-x: hidden;
-    overflow-anchor: visible;
     text-overflow: ellipsis;
 }
 
@@ -442,7 +455,6 @@ div.argmenuitem span.argdescription {
     display: block;
     white-space: normal;
     text-overflow: ellipsis;
-    overflow-anchor: visible;
     overflow-y: hidden;
 }
 
@@ -475,10 +487,6 @@ a {
 }
 
 .fa, .fas {
-    color: white;
-}
-
-.close:hover {
     color: white;
 }
 
@@ -527,4 +535,9 @@ a {
 
 .popular-arguments-btn {
     border-color: #474747 !important;
+}
+
+.currentCursorPosition {
+    color: #17a2b8;
+    background-color: rgba(49, 54, 60, 0.85);
 }

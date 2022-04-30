@@ -8,7 +8,7 @@ For CE we use a lot of different compilers and environments that need to be sepa
 
 Including header files or equivalent is usually the easy part. If there are binaries involved, things get complicated.
 
-We have a couple of seperate stages where we use and mix different techniques to be able to produce the right assembly or executables.
+We have a couple of separate stages where we use and mix different techniques to be able to produce the right assembly or executables.
 
 * Compilation without linking
   * The `LD_LIBRARY_PATH` environment variable is used here to enable the compiler to find the `.so` files that they need to run.

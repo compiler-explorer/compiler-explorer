@@ -27,10 +27,10 @@ can be found in `/lib/asm-docs/generated/asm-docs-amd64.js`.
 
 How you generate this file is completely up to you, just make sure it's easy for others to run the script if needed as
 well. If you need inspiration on how to write this tool, you can look at the `docenizer-*` scripts found in
-`/etc/scripts` in the source control tree.
+`/etc/scripts/docenizers` in the source control tree.
 
 CE expects the tool to output the file into the `/lib/asm-docs/generated/` folder with a name following the existing 
-convention.  Each case in the switch should return a piece of formatted HTML to insert into the popup, a tooltip text 
+convention. Each case in the switch should return a piece of formatted HTML to insert into the popup, a tooltip text 
 for the on-hover tooltip and a URL to external documentation.
 
 ```js

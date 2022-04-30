@@ -153,11 +153,17 @@ a.navbar-brand img.logo.normal {
 .notification-error {
     background-color: indianred;
     color: white;
+    .close {
+        color: white;
+    }
 }
 
 .notification-on {
     background-color: green;
-    color: black;
+    color: #fff;
+    .close {
+        color: white;
+    }
 }
 
 .notification-off {
@@ -259,7 +265,6 @@ div.argmenuitem span.argtitle {
     font-weight: bold;
     display: block;
     overflow-x: hidden;
-    overflow-anchor: visible;
     text-overflow: ellipsis;
 }
 
@@ -272,7 +277,6 @@ div.argmenuitem span.argdescription {
     display: block;
     white-space: normal;
     text-overflow: ellipsis;
-    overflow-anchor: visible;
     overflow-y: hidden;
 }
 
@@ -331,4 +335,10 @@ div.argmenuitem span.argdescription {
 
 .ts-dropdown .optgroup-header {
     background-color: #f6f6f6;
- }
+}
+
+.currentCursorPosition {
+    color: #15a3b9;
+    background-color: darken(rgba(248, 249, 250, 0.85), 3%);
+    border: 1px solid #d2d3d4;
+}

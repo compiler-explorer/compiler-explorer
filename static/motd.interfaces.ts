@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { editor } from 'monaco-editor/';
+import {editor} from 'monaco-editor/';
 
 interface Decoration {
     decoration: editor.IModelDecorationOptions;
@@ -39,5 +39,6 @@ interface Ad {
 export interface Motd {
     ads?: Ad[];
     motd?: string;
+    update?: string;
     decorations?: Decoration[];
 }

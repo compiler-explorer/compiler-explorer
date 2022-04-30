@@ -1,5 +1,5 @@
-import { ITestable } from './frontend-testing.interfaces';
-import { assert } from 'chai';
+import {ITestable} from './frontend-testing.interfaces';
+import {assert} from 'chai';
 
 class HelloWorldTests implements ITestable {
     public readonly description: string = 'HelloWorld';

@@ -4,4 +4,4 @@
 make prereqs
 npx lint-staged
 npm run test
-python3 ./etc/scripts/orphancompiler.py
+python3 ./etc/scripts/util/orphancompiler.py

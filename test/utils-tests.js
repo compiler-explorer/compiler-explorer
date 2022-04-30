@@ -469,3 +469,32 @@ describe('fileExists', () => {
         (await utils.fileExists(path.resolve(path.dirname(fileURLToPath(import.meta.url))))).should.be.false;
     });
 });
+
+describe('safe semver', () => {
+    it('should understand most kinds of semvers', () => {
+        utils.asSafeVer('0').should.equal('0.0.0');
+        utils.asSafeVer('1').should.equal('1.0.0');
+
+        utils.asSafeVer('1.0').should.equal('1.0.0');
+        utils.asSafeVer('1.1').should.equal('1.1.0');
+
+        utils.asSafeVer('1.1.0').should.equal('1.1.0');
+        utils.asSafeVer('1.1.1').should.equal('1.1.1');
+
+        const MAGIC_TRUNK_VERSION = '9999999.99999.999';
+        utils.asSafeVer('trunk').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('(trunk)').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('(123.456.789 test)').should.equal(MAGIC_TRUNK_VERSION);
+
+        utils.asSafeVer('0..0').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('0.0.').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('0.').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('.0.0').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('.0..').should.equal(MAGIC_TRUNK_VERSION);
+        utils.asSafeVer('0..').should.equal(MAGIC_TRUNK_VERSION);
+
+        utils.asSafeVer('123 TEXT').should.equal('123.0.0');
+        utils.asSafeVer('123.456 TEXT').should.equal('123.456.0');
+        utils.asSafeVer('123.456.789 TEXT').should.equal('123.456.789');
+    });
+});

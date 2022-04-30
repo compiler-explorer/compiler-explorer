@@ -55,6 +55,7 @@ body:
     id: operating-system
     attributes:
       label: Operating System
+      description: If applicable (i.e, an issue with how the site behaves for you) the OS version this bug is happening in
       placeholder: Ubuntu Linux 20.04
     validations:
       required: false
@@ -62,6 +63,7 @@ body:
     id: browser-version
     attributes:
       label: Browser version
+      description: If applicable, the version of your browser
       placeholder: Google Chrome 90.0.4430.72 (Official Build) (64-bit)
     validations:
       required: false
