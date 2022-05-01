@@ -52,6 +52,9 @@ export class Output extends Pane<OutputState> {
     errorAnsiToHtml: AnsiToHtml.Filter;
     wrapTitle: string;
     options: Toggles;
+
+    private isOutputCurrentSelection = false;
+
     constructor(hub: Hub, container: Container, state: OutputState & PaneState) {
         // canonicalize state
         if ((state as any).compiler) state.id = (state as any).compiler;
@@ -67,6 +70,22 @@ export class Output extends Pane<OutputState> {
         this.errorAnsiToHtml = makeAnsiToHtml('red');
         this.eventHub.emit('outputOpened', this.compilerInfo.compilerId);
         this.onOptionsChange();
+    }
+
+    private onClickCallback(e: JQuery.ClickEvent) {
+        this.isOutputCurrentSelection = this.contentRoot[0].contains(e.target);
+    }
+
+    private onKeydownCallback(e: JQuery.KeyDownEvent) {
+        if (this.isOutputCurrentSelection && e.ctrlKey && e.key === 'a') {
+            e.preventDefault();
+            const range = document.createRange();
+            range.selectNode(this.contentRoot[0]);
+            const selection = window.getSelection();
+            if (selection !== null) {
+                selection.addRange(range);
+            }
+        }
     }
 
     override getInitialHTML(): string {
@@ -91,21 +110,8 @@ export class Output extends Pane<OutputState> {
     override registerCallbacks() {
         this.options.on('change', this.onOptionsChange.bind(this));
         this.eventHub.on('compiling', this.onCompiling, this);
-        let s = false;
-        $(document).on('click', e => {
-            s = this.contentRoot[0].contains(e.target);
-        });
-        $(document).on('keydown', e => {
-            if (s && e.ctrlKey && e.key === 'a') {
-                e.preventDefault();
-                const range = document.createRange();
-                range.selectNode(this.contentRoot[0]);
-                const selection = window.getSelection();
-                if (selection !== null) {
-                    selection.addRange(range);
-                }
-            }
-        });
+        $(document).on('click', this.onClickCallback.bind(this));
+        $(document).on('keydown', this.onKeydownCallback.bind(this));
     }
 
     onOptionsChange() {
@@ -284,6 +290,8 @@ export class Output extends Pane<OutputState> {
     override close() {
         this.eventHub.emit('outputClosed', this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
+        $(document).off('click', this.onClickCallback);
+        $(document).off('keydown', this.onKeydownCallback);
     }
 
     setCompileStatus(isCompiling) {
