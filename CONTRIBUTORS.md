@@ -117,3 +117,4 @@ From oldest to newest contributor, we would like to thank:
 - [m8mble](https://github.com/m8mble)
 - [Anders-T](https://github.com/anders-torbjornsen)
 - [Adam Sandberg Eriksson](https://github.com/adamse)
+- [Ofek Shilon](https://github.com/ofekshilon)
