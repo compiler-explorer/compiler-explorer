@@ -24,41 +24,52 @@
 
 import AWS from 'aws-sdk';
 
+import {GetResult} from '../types/cache.interfaces';
+
+import {S3HandlerOptions} from './s3-handler.interfaces';
+
 const NoSuchKey = 'NoSuchKey';
 
 export class S3Bucket {
-    constructor(bucket, region) {
+    private readonly instance: AWS.S3;
+    readonly bucket: string;
+    readonly region: string;
+
+    constructor(bucket: string, region: string) {
         this.instance = new AWS.S3({region});
         this.bucket = bucket;
         this.region = region;
     }
 
-    async get(key, path) {
+    async get(key: string, path: string): Promise<GetResult> {
         try {
             const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`}).promise();
             return {hit: true, data: result.Body};
-        } catch (x) {
+        } catch (x: any) {
             if (x.code === NoSuchKey) return {hit: false};
             throw x;
         }
     }
 
-    async delete(key, path) {
+    async delete(key, path): Promise<boolean> {
         try {
             await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`}).promise();
-        } catch (x) {
+        } catch (x: any) {
             if (x.code === NoSuchKey) return false;
             throw x;
         }
+        return true;
     }
 
-    async put(key, value, path, options) {
-        return this.instance.putObject({
-            Bucket: this.bucket,
-            Key: `${path}/${key}`,
-            Body: value,
-            StorageClass: options.redundancy || 'STANDARD',
-            Metadata: options.metadata || {},
-        }).promise();
+    async put(key: string, value: Buffer, path: string, options: S3HandlerOptions): Promise<void> {
+        await this.instance
+            .putObject({
+                Bucket: this.bucket,
+                Key: `${path}/${key}`,
+                Body: value,
+                StorageClass: options.redundancy || 'STANDARD',
+                Metadata: options.metadata || {},
+            })
+            .promise();
     }
 }

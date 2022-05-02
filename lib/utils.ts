@@ -32,6 +32,8 @@ import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
+import {CacheableValue} from '../types/cache.interfaces';
+
 interface IResultLineTag {
     line?: number;
     column?: number;
@@ -200,7 +202,7 @@ export function anonymizeIp(ip: string): string {
  * @param {*} object
  * @returns {string}
  */
-function objectToHashableString(object: any): string {
+function objectToHashableString(object: CacheableValue): string {
     // See https://stackoverflow.com/questions/899574/which-is-best-to-use-typeof-or-instanceof/6625960#6625960
     return typeof object === 'string' ? object : JSON.stringify(object);
 }
@@ -215,7 +217,7 @@ const DefaultHash = 'Compiler Explorer Default Version 1';
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {Buffer} - Hash of object
  */
-export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
+export function getBinaryHash(object: CacheableValue, HashVersion = DefaultHash): Buffer {
     return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest();
 }
 
@@ -227,7 +229,7 @@ export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {string} - Hash of object
  */
-export function getHash(object: any, HashVersion = DefaultHash): string {
+export function getHash(object: CacheableValue, HashVersion = DefaultHash): string {
     return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest('hex');
 }
 

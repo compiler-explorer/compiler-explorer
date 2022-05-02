@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import LRU from 'lru-cache';
+import {GetResult} from '../../types/cache.interfaces';
 
-import { BaseCache } from './base';
+export type CacheStats = {
+    hits: number;
+    puts: number;
+    gets: number;
+};
 
-export class InMemoryCache extends BaseCache {
-    constructor(cacheName, cacheMb) {
-        super(cacheName, `InMemoryCache(${cacheMb}Mb)`, 'memory');
-        this.cacheMb = cacheMb;
-        this.cache = new LRU({
-            max: cacheMb * 1024 * 1024,
-            length: n => n.length,
-        });
-    }
+export interface Cache {
+    readonly cacheName: string;
+    readonly details: string;
+    readonly type: string;
+    gets: number;
+    puts: number;
+    hits: number;
 
-    statString() {
-        return `${super.statString()}, LRU has ${this.cache.itemCount} item(s) totalling ${this.cache.length} bytes`;
-    }
+    stats(): CacheStats;
 
-    getInternal(key) {
-        const cached = this.cache.get(key);
-        return Promise.resolve({
-            hit: !!cached,
-            data: cached,
-        });
-    }
+    statString(): string;
 
-    putInternal(key, value/*, creator*/) {
-        this.cache.set(key, value);
-        return Promise.resolve();
-    }
+    report(): void;
+
+    get(key: string): Promise<GetResult>;
+
+    put(key: string, value: any, creator?: string): Promise<void>;
 }

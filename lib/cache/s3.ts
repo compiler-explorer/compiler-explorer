@@ -24,45 +24,54 @@
 
 import * as Sentry from '@sentry/node';
 
-import { logger } from '../logger';
-import { S3Bucket } from '../s3-handler';
+import {GetResult} from '../../types/cache.interfaces';
+import {logger} from '../logger';
+import {S3Bucket} from '../s3-handler';
+import {S3HandlerOptions} from '../s3-handler.interfaces';
 
-import { BaseCache } from './base';
+import {BaseCache} from './base';
 
 function messageFor(e) {
     return e.message || e.toString();
 }
 
 export class S3Cache extends BaseCache {
-    constructor(cacheName, bucket, path, region) {
+    private readonly s3: S3Bucket;
+    readonly path: string;
+    readonly region: string;
+    private readonly onError: (Error, string) => void;
+
+    constructor(cacheName: string, bucket: string, path: string, region: string, onError?: (Error, string) => void) {
         super(cacheName, `S3Cache(s3://${bucket}/${path} in ${region})`, 's3');
-        this.bucket = bucket;
         this.path = path;
         this.region = region;
         this.s3 = new S3Bucket(bucket, region);
-    }
-
-    getInternal(key) {
-        return this.s3.get(key, this.path)
-            .catch(e => {
+        this.onError =
+            onError ||
+            ((e, op) => {
                 Sentry.captureException(e);
-                logger.error(`Error while trying to read S3 cache: ${messageFor(e)}`);
-                return {hit: false};
+                logger.error(`Error while trying to ${op} S3 cache: ${messageFor(e)}`);
             });
     }
 
-    putInternal(key, value, creator) {
-        const options = {
-            metadata: {},
+    override async getInternal(key: string): Promise<GetResult> {
+        try {
+            return await this.s3.get(key, this.path);
+        } catch (e) {
+            this.onError(e, 'read');
+            return {hit: false};
+        }
+    }
+
+    override async putInternal(key: string, value: Buffer, creator?: string): Promise<void> {
+        const options: S3HandlerOptions = {
+            metadata: creator ? {CreatedBy: creator} : {},
             redundancy: 'REDUCED_REDUNDANCY',
         };
-        if (creator) {
-            options.metadata.CreatedBy = creator;
+        try {
+            await this.s3.put(key, value, this.path, options);
+        } catch (e) {
+            this.onError(e, 'write');
         }
-        return this.s3.put(key, value, this.path, options)
-            .catch(e => {
-                Sentry.captureException(e);
-                logger.error(`Error while trying to write to S3 cache: ${messageFor(e)}`);
-            });
     }
 }
