@@ -48,6 +48,7 @@ export class Output extends Pane<OutputState> {
     optionsToolbar: JQuery<HTMLElement>;
     fontScale: FontScale;
     wrapButton: JQuery<HTMLElement>;
+    selectAllButton: JQuery;
     normalAnsiToHtml: AnsiToHtml.Filter;
     errorAnsiToHtml: AnsiToHtml.Filter;
     wrapTitle: string;
@@ -76,15 +77,20 @@ export class Output extends Pane<OutputState> {
         this.isOutputCurrentSelection = this.contentRoot[0].contains(e.target);
     }
 
+    private selectAll() {
+        const range = document.createRange();
+        range.selectNode(this.contentRoot[0]);
+        const selection = window.getSelection();
+        if (selection !== null) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
     private onKeydownCallback(e: JQuery.KeyDownEvent) {
         if (this.isOutputCurrentSelection && e.ctrlKey && e.key === 'a') {
             e.preventDefault();
-            const range = document.createRange();
-            range.selectNode(this.contentRoot[0]);
-            const selection = window.getSelection();
-            if (selection !== null) {
-                selection.addRange(range);
-            }
+            this.selectAll();
         }
     }
 
@@ -102,6 +108,7 @@ export class Output extends Pane<OutputState> {
 
     override registerButtons(state: OutputState & PaneState) {
         this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.selectAllButton = this.domRoot.find('.select-all');
         this.wrapTitle = this.wrapButton.prop('title');
         // TODO: Would be nice to be able to get rid of this cast
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
@@ -110,6 +117,7 @@ export class Output extends Pane<OutputState> {
     override registerCallbacks() {
         this.options.on('change', this.onOptionsChange.bind(this));
         this.eventHub.on('compiling', this.onCompiling, this);
+        this.selectAllButton.on('click', this.onSelectAllButton.bind(this));
         $(document).on('click', this.onClickCallback.bind(this));
         $(document).on('keydown', this.onKeydownCallback.bind(this));
     }
@@ -296,5 +304,9 @@ export class Output extends Pane<OutputState> {
 
     setCompileStatus(isCompiling) {
         this.contentRoot.toggleClass('compiling', isCompiling);
+    }
+
+    private onSelectAllButton(unused: JQuery.ClickEvent) {
+        this.selectAll();
     }
 }
