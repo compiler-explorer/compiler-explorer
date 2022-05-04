@@ -292,10 +292,12 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     }
 
     resize() {
-        const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-        this.editor.layout({
-            width: this.domRoot.width() as number,
-            height: (this.domRoot.height() as number) - topBarHeight,
+        _.defer(() => {
+            const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
+            this.editor.layout({
+                width: this.domRoot.width() as number,
+                height: (this.domRoot.height() as number) - topBarHeight,
+            });
         });
     }
 
