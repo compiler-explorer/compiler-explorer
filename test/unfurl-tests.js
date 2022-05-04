@@ -51,7 +51,7 @@ describe('Basic unfurls', () => {
         };
     });
 
-    it('Too much editors to meta', async () => {
+    it('Too many editors to meta', async () => {
         const prom = new Promise((resolve, reject) => {
             config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
