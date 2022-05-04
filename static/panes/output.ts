@@ -123,11 +123,11 @@ export class Output extends Pane<OutputState> {
         this.eventHub.on('compiling', this.onCompiling, this);
         this.selectAllButton.on('click', this.onSelectAllButton.bind(this));
 
-        this.clickCallback = (e) => {
+        this.clickCallback = e => {
             this.onClickCallback(e);
         };
 
-        this.keydownCallback = (e) => {
+        this.keydownCallback = e => {
             this.onKeydownCallback(e);
         };
 
