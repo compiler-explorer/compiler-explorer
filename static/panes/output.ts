@@ -54,6 +54,10 @@ export class Output extends Pane<OutputState> {
     wrapTitle: string;
     options: Toggles;
 
+    clickCallback: (e: JQuery.ClickEvent) => void;
+
+    keydownCallback: (e: JQuery.KeyDownEvent) => void;
+
     private isOutputCurrentSelection = false;
 
     constructor(hub: Hub, container: Container, state: OutputState & PaneState) {
@@ -77,6 +81,13 @@ export class Output extends Pane<OutputState> {
         this.isOutputCurrentSelection = this.contentRoot[0].contains(e.target);
     }
 
+    private onKeydownCallback(e: JQuery.KeyDownEvent) {
+        if (this.isOutputCurrentSelection && e.ctrlKey && e.key === 'a') {
+            e.preventDefault();
+            this.selectAll();
+        }
+    }
+
     private selectAll() {
         const range = document.createRange();
         range.selectNode(this.contentRoot[0]);
@@ -84,13 +95,6 @@ export class Output extends Pane<OutputState> {
         if (selection !== null) {
             selection.removeAllRanges();
             selection.addRange(range);
-        }
-    }
-
-    private onKeydownCallback(e: JQuery.KeyDownEvent) {
-        if (this.isOutputCurrentSelection && e.ctrlKey && e.key === 'a') {
-            e.preventDefault();
-            this.selectAll();
         }
     }
 
@@ -118,8 +122,18 @@ export class Output extends Pane<OutputState> {
         this.options.on('change', this.onOptionsChange.bind(this));
         this.eventHub.on('compiling', this.onCompiling, this);
         this.selectAllButton.on('click', this.onSelectAllButton.bind(this));
-        $(document).on('click', this.onClickCallback.bind(this));
-        $(document).on('keydown', this.onKeydownCallback.bind(this));
+
+        this.clickCallback = (e) => {
+            this.onClickCallback(e);
+        };
+
+        this.keydownCallback = (e) => {
+            this.onKeydownCallback(e);
+        };
+
+        $(document).on('click', this.clickCallback);
+        // domRoot is not sufficient here
+        $(document).on('keydown', this.keydownCallback);
     }
 
     onOptionsChange() {
@@ -298,8 +312,8 @@ export class Output extends Pane<OutputState> {
     override close() {
         this.eventHub.emit('outputClosed', this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
-        $(document).off('click', this.onClickCallback);
-        $(document).off('keydown', this.onKeydownCallback);
+        $(document).off('click', this.clickCallback);
+        $(document).off('keydown', this.keydownCallback);
     }
 
     setCompileStatus(isCompiling) {
