@@ -650,12 +650,14 @@ Compiler.prototype.undefer = function () {
 };
 
 Compiler.prototype.resize = function () {
-    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-    var bottomBarHeight = this.bottomBar.outerHeight(true);
-    this.outputEditor.layout({
-        width: this.domRoot.width(),
-        height: this.domRoot.height() - topBarHeight - bottomBarHeight,
-    });
+    _.defer(function (self) {
+        var topBarHeight = utils.updateAndCalcTopBarHeight(self.domRoot, self.topBar, self.hideable);
+        var bottomBarHeight = self.bottomBar.outerHeight(true);
+        self.outputEditor.layout({
+            width: self.domRoot.width(),
+            height: self.domRoot.height() - topBarHeight - bottomBarHeight,
+        });
+    }, this);
 };
 
 // Returns a label name if it can be found in the given position, otherwise
