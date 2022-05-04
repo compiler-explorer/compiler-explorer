@@ -1437,6 +1437,10 @@ Editor.prototype.onSelectLine = function (id, lineNum) {
 //              ^a   ^column  ^b
 Editor.prototype.getTokenSpan = function (lineNum, column) {
     var model = this.editor.getModel();
+    if (lineNum < 1 || lineNum > model.getLineCount()) {
+        // #3592 Be forgiving towards parsing errors
+        return {colBegin: 0, colEnd: 0};
+    }
     if (lineNum <= model.getLineCount()) {
         var line = model.getLineContent(lineNum);
         if (0 < column && column < line.length) {
