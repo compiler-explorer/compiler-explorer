@@ -303,8 +303,10 @@ export class Cfg extends Pane<CfgState> {
 
     override resize() {
         const height = (this.domRoot.height() as number) - (this.topBar.outerHeight(true) ?? 0);
-        this.cfgVisualiser.setSize('100%', height.toString());
-        this.cfgVisualiser.redraw();
+        if ((this.cfgVisualiser as any).canvas !== undefined) {
+            this.cfgVisualiser.setSize('100%', height.toString());
+            this.cfgVisualiser.redraw();
+        }
     }
 
     override getDefaultPaneName() {

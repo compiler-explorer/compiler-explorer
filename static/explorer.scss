@@ -159,6 +159,11 @@ pre.content {
     overflow: auto;
 }
 
+pre.content.output-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
 pre.content p {
     margin: 0;
 }

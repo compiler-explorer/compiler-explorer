@@ -48,10 +48,18 @@ export class Output extends Pane<OutputState> {
     optionsToolbar: JQuery<HTMLElement>;
     fontScale: FontScale;
     wrapButton: JQuery<HTMLElement>;
+    selectAllButton: JQuery;
     normalAnsiToHtml: AnsiToHtml.Filter;
     errorAnsiToHtml: AnsiToHtml.Filter;
     wrapTitle: string;
     options: Toggles;
+
+    clickCallback: (e: JQuery.ClickEvent) => void;
+
+    keydownCallback: (e: JQuery.KeyDownEvent) => void;
+
+    private isOutputCurrentSelection = false;
+
     constructor(hub: Hub, container: Container, state: OutputState & PaneState) {
         // canonicalize state
         if ((state as any).compiler) state.id = (state as any).compiler;
@@ -69,6 +77,27 @@ export class Output extends Pane<OutputState> {
         this.onOptionsChange();
     }
 
+    private onClickCallback(e: JQuery.ClickEvent) {
+        this.isOutputCurrentSelection = this.contentRoot[0].contains(e.target);
+    }
+
+    private onKeydownCallback(e: JQuery.KeyDownEvent) {
+        if (this.isOutputCurrentSelection && e.ctrlKey && e.key === 'a') {
+            e.preventDefault();
+            this.selectAll();
+        }
+    }
+
+    private selectAll() {
+        const range = document.createRange();
+        range.selectNode(this.contentRoot[0]);
+        const selection = window.getSelection();
+        if (selection !== null) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
     override getInitialHTML(): string {
         return $('#compiler-output').html();
     }
@@ -83,6 +112,7 @@ export class Output extends Pane<OutputState> {
 
     override registerButtons(state: OutputState & PaneState) {
         this.wrapButton = this.domRoot.find('.wrap-lines');
+        this.selectAllButton = this.domRoot.find('.select-all');
         this.wrapTitle = this.wrapButton.prop('title');
         // TODO: Would be nice to be able to get rid of this cast
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
@@ -91,6 +121,19 @@ export class Output extends Pane<OutputState> {
     override registerCallbacks() {
         this.options.on('change', this.onOptionsChange.bind(this));
         this.eventHub.on('compiling', this.onCompiling, this);
+        this.selectAllButton.on('click', this.onSelectAllButton.bind(this));
+
+        this.clickCallback = e => {
+            this.onClickCallback(e);
+        };
+
+        this.keydownCallback = e => {
+            this.onKeydownCallback(e);
+        };
+
+        $(document).on('click', this.clickCallback);
+        // domRoot is not sufficient here
+        $(document).on('keydown', this.keydownCallback);
     }
 
     onOptionsChange() {
@@ -269,9 +312,15 @@ export class Output extends Pane<OutputState> {
     override close() {
         this.eventHub.emit('outputClosed', this.compilerInfo.compilerId);
         this.eventHub.unsubscribe();
+        $(document).off('click', this.clickCallback);
+        $(document).off('keydown', this.keydownCallback);
     }
 
     setCompileStatus(isCompiling) {
         this.contentRoot.toggleClass('compiling', isCompiling);
+    }
+
+    private onSelectAllButton(unused: JQuery.ClickEvent) {
+        this.selectAll();
     }
 }
