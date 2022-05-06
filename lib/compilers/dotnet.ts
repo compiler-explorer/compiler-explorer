@@ -174,7 +174,7 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    optionsForFilter() {
+    override optionsForFilter() {
         return this.compilerOptions;
     }
 
