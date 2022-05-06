@@ -14,5 +14,6 @@ Additionally, these people have been immensely helpful in the development of Com
 - [Filipe Cabecinhas](https://github.com/filcab)
 - [Mats Larsen](https://supergrecko.dev)
 - [Marc Poulhiès](https://poulhies.fr)
+- [Jeremy Rifkin](https://github.com/jeremy-rifkin)
 
 Please also see our [Contributors](CONTRIBUTORS.md) for a full list.
