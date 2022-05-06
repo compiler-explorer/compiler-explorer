@@ -24,8 +24,3 @@ Note that Turbo C is C only, so it belongs in your `c.local.properties`.
 Also note that you will immediately get an error with the default example source code, because the compiler doesn't support `//` comments.
 
 Also note that in this old C version, you must declare all variables in the first few lines of your functions.
-
-### Weird behaviour
-
-* Including default header files seem to break the compilation without error.
-* Line numbers for compilation errors always seem to point to line 1

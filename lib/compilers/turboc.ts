@@ -25,8 +25,8 @@
 import path from 'path';
 
 import {logger} from '../logger';
-import {TurboCParser} from './argument-parsers';
 
+import {TurboCParser} from './argument-parsers';
 import {DosboxCompiler} from './dosbox-compiler';
 
 export class TurboCCompiler extends DosboxCompiler {

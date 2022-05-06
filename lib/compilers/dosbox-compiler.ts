@@ -41,6 +41,37 @@ export class DosboxCompiler extends BaseCompiler {
         this.root = this.compilerProps(`compiler.${this.compiler.id}.root`);
     }
 
+    protected override async writeMultipleFiles(files: any[], dirPath: string): Promise<any[]> {
+        const filesToWrite: any[] = [];
+
+        for (const file of files) {
+            if (!file.filename) throw new Error('One of more files do not have a filename');
+
+            const fullpath = this.getExtraFilepath(dirPath, file.filename);
+            const contents = file.contents.replaceAll(/\n/g, '\r\n');
+            filesToWrite.push(fs.outputFile(fullpath, contents));
+        }
+
+        return Promise.all(filesToWrite);
+    }
+
+    protected override async writeAllFiles(dirPath: string, source: string, files: any[], filters: object) {
+        if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
+
+        const inputFilename = path.join(dirPath, this.compileFilename);
+        await fs.writeFile(inputFilename, source.replaceAll(/\n/g, '\r\n'));
+
+        if (files && files.length > 0) {
+            (filters as any).dontMaskFilenames = true;
+
+            await this.writeMultipleFiles(files, dirPath);
+        }
+
+        return {
+            inputFilename,
+        };
+    }
+
     private getDosboxArgs(tempDir: string, compileArgs: string[]) {
         const binPath = path.relative(this.root, path.dirname(this.compiler.exe));
         const exeName = path.basename(this.compiler.exe).replace(/\.exe$/i, '');

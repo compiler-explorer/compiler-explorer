@@ -5,6 +5,7 @@ export declare class BaseCompiler {
     public outputFilebase: string;
     protected mtime;
     protected env;
+    protected compileFilename;
     protected getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string);
     protected getSharedLibraryPathsAsLdLibraryPaths(libraries: object[]);
     protected getCompilerCacheKey(compiler: string, args: string[], options: object);
@@ -12,6 +13,9 @@ export declare class BaseCompiler {
     protected async newTempDir();
     protected filename(fn: string): string;
     protected optionsForFilter(filters: object, outputFilename: string): string[];
+    protected getExtraFilepath(dirPath: string, filename: string): string;
+    protected async writeAllFiles(dirPath: string, source: string, files: any[], filters: object);
+    protected async writeMultipleFiles(files: any[], dirPath: string): Promise<any[]>;
     public compilerProps: (key: string) => string;
     public getOutputFilename(dirPath: string, outputFilebase: string, key?: object): string;
     public async exec(filepath: string, args: string[], execOptions);
