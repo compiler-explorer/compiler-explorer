@@ -15,7 +15,7 @@ To run the Turbo C compiler you will need:
 
 In the `turboc.properties` file you can see an example on how to setup the compiler to work with Compiler Explorer.
 
-Make sure you the `.dosbox` path is correct, as well as the `.root` and `.exe`. The `.root` indicates the root of the `C` drive, and the `.exe` points to the actual `TCC.EXE`
+Make sure the `.dosbox` path is correct, as well as the `.root` and `.exe`. The `.root` indicates the root of the `C` drive, and the `.exe` points to the actual `TCC.EXE`
 
 ## More notes
 
