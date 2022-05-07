@@ -37,5 +37,5 @@ This is the symbol that looks like a bar graph (📊). If your compilations are 
 Though both GCC and Clang create supplementary outputs along with assembly (shown by default),
 and an executable (created if an executor has been added), the exact nature of the outputs and their formats differ between the compilers.
 
-GCC only allows the RTL and graph output, while Clang allows optimization, AST, IR and graph outputs.
-Some outputs, like RTL and graph output also have a rich set of options in the UI to enable focussing on a particular function or compiler stage.
+GCC allows the Tree, IPA, RTL and graph outputs, while Clang allows optimization, AST, IR and graph outputs.
+Some outputs (e.g. RTL or graph) also have a rich set of options in the UI to enable focussing on a particular function or compiler stage.
