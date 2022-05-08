@@ -48,8 +48,8 @@ jobs:
         run: etc/scripts/build-dist.sh
       - uses: actions/upload-artifact@v3
         with:
-          name: output
-          path: out
+          name: dist
+          path: out/dist-bin
 
   deploy:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
@@ -68,8 +68,12 @@ jobs:
       - name: Download the built distribution
         uses: actions/download-artifact@v3
         with:
-          name: output
-          path: out
+          name: dist
+          path: out/dist-bin
+      - name: Unpack static files for sentry
+        run: |
+          mkdir -p out/dist/static
+          tar Jxf out/dist-bin/*.static.tar.xz -C out/dist/static
       - name: Tag in sentry
         run: |
           export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
