@@ -24,7 +24,7 @@
 
 import * as fs from 'fs';
 
-import { BaseCompiler } from '../lib/base-compiler';
+import {BaseCompiler} from '../lib/base-compiler';
 import * as properties from '../lib/properties';
 
 import * as filterTests from './pp-output-cases/filter-tests';
@@ -48,8 +48,7 @@ describe('Preprocessor Output Handling', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
         const compiler = new BaseCompiler(compilerInfo, env);
         for (const testCase of filterTests.cases) {

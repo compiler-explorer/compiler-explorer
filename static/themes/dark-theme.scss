@@ -1,4 +1,4 @@
-@import "~golden-layout/src/css/goldenlayout-dark-theme";
+@import '~golden-layout/src/css/goldenlayout-dark-theme';
 
 /*
  * replace low res golden-layout icons with svg recreations to improve high DPI displays
@@ -145,14 +145,18 @@ a.navbar-brand img.logo.normal {
 .rainbow-decoration {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-image: -webkit-gradient(linear, left top, right bottom,
-    color-stop(0.00, red),
-    color-stop(16%, orange),
-    color-stop(32%, yellow),
-    color-stop(48%, green),
-    color-stop(60%, blue),
-    color-stop(76%, indigo),
-    color-stop(1.00, violet));
+    background-image: -webkit-gradient(
+        linear,
+        left top,
+        right bottom,
+        color-stop(0, red),
+        color-stop(16%, orange),
+        color-stop(32%, yellow),
+        color-stop(48%, green),
+        color-stop(60%, blue),
+        color-stop(76%, indigo),
+        color-stop(1, violet)
+    );
 }
 
 .ts-wrapper.single .ts-control {
@@ -166,7 +170,7 @@ a.navbar-brand img.logo.normal {
     border-color: #728690 transparent transparent transparent;
 }
 
-.ts-dropdown .option:hover{
+.ts-dropdown .option:hover {
     background-color: #8d8d8e;
 }
 .ts-dropdown .active {
@@ -354,7 +358,7 @@ textarea.form-control {
 
 .ts-dropdown .optgroup-header {
     background-color: #555 !important;
-    color: #EEE !important;
+    color: #eee !important;
     text-shadow: none !important;
 }
 
@@ -370,7 +374,12 @@ textarea.form-control {
     border-color: #464545 !important;
 }
 
-.popover, .popover-content, .libs-container, .lib-list, .popover-body, .popover-header {
+.popover,
+.popover-content,
+.libs-container,
+.lib-list,
+.popover-body,
+.popover-header {
     background-color: #151515 !important;
     color: #f2f2f2 !important;
 }
@@ -379,12 +388,14 @@ textarea.form-control {
     background-color: #333 !important;
 }
 
-#socialshare .share-twitter, .share-twitter {
+#socialshare .share-twitter,
+.share-twitter {
     background-color: #1da1f2 !important;
     color: white !important;
 }
 
-#socialshare .share-reddit, .share-reddit {
+#socialshare .share-reddit,
+.share-reddit {
     background-color: #ff4500 !important;
     color: white !important;
 }
@@ -486,7 +497,8 @@ a {
     color: #45bbe0 !important;
 }
 
-.fa, .fas {
+.fa,
+.fas {
     color: white;
 }
 
@@ -495,8 +507,8 @@ a {
 }
 
 .navbar-light .navbar-toggler {
-    color: rgba(255,255,255,.5);
-    border-color: rgba(255,255,255,.1);
+    color: rgba(255, 255, 255, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
 }
 
 #library-selection .libs-selected-col button {
@@ -519,7 +531,8 @@ a {
     border-bottom: 1px solid #3e3e3e;
 }
 
-.tree ul, .tree li {
+.tree ul,
+.tree li {
     background-color: #222222 !important;
     color: white;
 }

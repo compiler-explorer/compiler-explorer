@@ -26,24 +26,23 @@ import path from 'path';
 
 import approvals from 'approvals';
 
-import { AsmParser } from '../lib/parsers/asm-parser';
-import { SassAsmParser } from '../lib/parsers/asm-parser-sass';
-import { VcAsmParser } from '../lib/parsers/asm-parser-vc';
+import {AsmParser} from '../lib/parsers/asm-parser';
+import {SassAsmParser} from '../lib/parsers/asm-parser-sass';
+import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
 
-import { fs, resolvePathFromTestRoot } from './utils';
+import {fs, resolvePathFromTestRoot} from './utils';
 
 approvals.mocha();
 
 function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf-8');
     let parser;
-    if (file.includes('Microsoft'))
-        parser = new VcAsmParser();
-    else if (filename.includes('sass-'))
-        parser = new SassAsmParser();
+    if (file.includes('Microsoft')) parser = new VcAsmParser();
+    else if (filename.includes('sass-')) parser = new SassAsmParser();
     else {
         parser = new AsmParser();
-        parser.binaryHideFuncRe = /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/;
+        parser.binaryHideFuncRe =
+            /^(__.*|_(init|start|fini)|(de)?register_tm_clones|call_gmon_start|frame_dummy|\.plt.*|_dl_relocate_static_pie)$/;
     }
     return parser.process(file, filters);
 }
@@ -68,11 +67,7 @@ function testFilter(filename, suffix, filters) {
         const result = processAsm(filename, filters);
         delete result.parsingTime;
         delete result.filteredCount;
-        approvals.verifyAsJSON(
-            casesRoot,
-            testName,
-            result,
-            optionsOverride);
+        approvals.verifyAsJSON(casesRoot, testName, result, optionsOverride);
     }).timeout(5000); // Bump the timeout a bit so that we don't fail for slow cases
 }
 
@@ -81,7 +76,6 @@ function testFilter(filename, suffix, filters) {
     That's sad because then we can't have cases be loaded in a before() for every describe child to see.
  */
 describe('Filter test cases', function () {
-
     describe('No filters', function () {
         for (const x of cases) testFilter(x, '.none', {});
     });
@@ -147,14 +141,23 @@ describe('Filter test cases', function () {
     });
     describe('Directives, labels, comments and library code', function () {
         for (const x of cases) {
-            testFilter(x, '.directives.labels.comments.library',
-                {directives: true, labels: true, commentOnly: true, libraryCode: true});
+            testFilter(x, '.directives.labels.comments.library', {
+                directives: true,
+                labels: true,
+                commentOnly: true,
+                libraryCode: true,
+            });
         }
     });
     describe('Directives, labels, comments and library code with dontMaskFilenames', function () {
         for (const x of cases) {
-            testFilter(x, '.directives.labels.comments.library.dontMaskFilenames',
-                {directives: true, labels: true, commentOnly: true, libraryCode: true, dontMaskFilenames: true});
+            testFilter(x, '.directives.labels.comments.library.dontMaskFilenames', {
+                directives: true,
+                labels: true,
+                commentOnly: true,
+                libraryCode: true,
+                dontMaskFilenames: true,
+            });
         }
     });
 });

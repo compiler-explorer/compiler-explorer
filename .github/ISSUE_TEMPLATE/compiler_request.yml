@@ -1,7 +1,7 @@
 name: Compiler request
 description: Request a new compiler
-title: "[COMPILER REQUEST]: "
-labels: ["request", "new-compilers"]
+title: '[COMPILER REQUEST]: '
+labels: ['request', 'new-compilers']
 body:
   - type: input
     id: compiler-name

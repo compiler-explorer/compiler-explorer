@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AsmParser } from '../lib/parsers/asm-parser';
-import { VcAsmParser } from '../lib/parsers/asm-parser-vc';
-import { AsmRegex } from '../lib/parsers/asmregex';
+import {AsmParser} from '../lib/parsers/asm-parser';
+import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
+import {AsmRegex} from '../lib/parsers/asmregex';
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
@@ -33,10 +33,12 @@ describe('ASM CL parser', () => {
             directives: true,
         });
 
-        result.asm.should.deep.equal([{
-            source: null,
-            text: '<Compilation failed>',
-        }]);
+        result.asm.should.deep.equal([
+            {
+                source: null,
+                text: '<Compilation failed>',
+            },
+        ]);
     });
 });
 
@@ -52,10 +54,12 @@ describe('ASM regex base class', () => {
     it('should keep whitespace in strings', () => {
         AsmRegex.filterAsmLine('equs     "this    string"', {trim: true}).should.equal('equs "this    string"');
         AsmRegex.filterAsmLine('     equs     "this    string"', {trim: true}).should.equal('  equs "this    string"');
-        AsmRegex.filterAsmLine('equs     "this    \\"  string  \\""', {trim: true}).should.equal('equs "this    \\"  string  \\""');
+        AsmRegex.filterAsmLine('equs     "this    \\"  string  \\""', {trim: true}).should.equal(
+            'equs "this    \\"  string  \\""',
+        );
     });
     it('should not get upset by mismatched strings', () => {
-        AsmRegex.filterAsmLine("a   \"string    'yeah", {trim: true}).should.equal("a \"string 'yeah");
+        AsmRegex.filterAsmLine('a   "string    \'yeah', {trim: true}).should.equal('a "string \'yeah');
     });
 });
 

@@ -28,7 +28,7 @@ import path from 'path';
 
 import * as props from '../properties';
 
-import type { Source, SourceEntry } from './index';
+import type {Source, SourceEntry} from './index';
 
 const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
 const NAME_SUBSTUTION_PATTERN = new RegExp('_', 'g');

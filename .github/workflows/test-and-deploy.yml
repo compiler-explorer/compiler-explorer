@@ -1,6 +1,6 @@
 name: Compiler Explorer
 
-on: [ push, pull_request ]
+on: [push, pull_request]
 
 jobs:
   test:
@@ -53,7 +53,7 @@ jobs:
 
   deploy:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    needs: [ test, build_dist ]
+    needs: [test, build_dist]
     runs-on: ubuntu-20.04
 
     steps:

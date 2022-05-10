@@ -1,4 +1,4 @@
-@import "~golden-layout/src/css/goldenlayout-light-theme";
+@import '~golden-layout/src/css/goldenlayout-light-theme';
 
 /*
  * replace low res golden-layout icons with svg recreations to improve high DPI displays
@@ -45,7 +45,7 @@
 }
 
 body {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
 }
 
 .navbar-nav a.nav-link {
@@ -108,14 +108,18 @@ a.navbar-brand img.logo.normal {
 .rainbow-decoration {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-image: -webkit-gradient(linear, left top, right bottom,
-    color-stop(0.00, red),
-    color-stop(16%, orange),
-    color-stop(32%, yellow),
-    color-stop(48%, green),
-    color-stop(60%, blue),
-    color-stop(76%, indigo),
-    color-stop(1.00, violet));
+    background-image: -webkit-gradient(
+        linear,
+        left top,
+        right bottom,
+        color-stop(0, red),
+        color-stop(16%, orange),
+        color-stop(32%, yellow),
+        color-stop(48%, green),
+        color-stop(60%, blue),
+        color-stop(76%, indigo),
+        color-stop(1, violet)
+    );
 }
 
 .font-option {
@@ -131,7 +135,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .font-option-active:hover {
-    background: #4477AA;
+    background: #4477aa;
 }
 
 .linked-code-decoration-margin {
@@ -189,7 +193,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .graph-placeholder {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
 }
 
 .text-count {
@@ -208,7 +212,10 @@ a.navbar-brand img.logo.normal {
     background-color: #f2f2f2;
 }
 
-.popover, .popover-content, .libs-container, .lib-list {
+.popover,
+.popover-content,
+.libs-container,
+.lib-list {
     background-color: #fefefe;
 }
 
@@ -216,12 +223,14 @@ a.navbar-brand img.logo.normal {
     background-color: green;
 }
 
-#socialshare .share-twitter, .share-twitter {
+#socialshare .share-twitter,
+.share-twitter {
     background-color: #1da1f2;
     color: white;
 }
 
-#socialshare .share-reddit, .share-reddit {
+#socialshare .share-reddit,
+.share-reddit {
     background-color: #ff4500;
     color: white;
 }

@@ -1,6 +1,6 @@
 name: Compiler Explorer on Windows
 
-on: [ push ]
+on: [push]
 
 jobs:
   build-and-test:

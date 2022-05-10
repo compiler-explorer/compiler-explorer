@@ -13,9 +13,12 @@ export function setupMetricsServer(serverPort: number, hostname: string): void {
     const metricsServer = express();
 
     metricsServer.get('/metrics', (req, res) => {
-      PromClient.register.metrics()
-        .then(metrics => { res.header('Content-Type', PromClient.register.contentType).send(metrics); })
-        .catch(err => res.status(500).send(err));
+        PromClient.register
+            .metrics()
+            .then(metrics => {
+                res.header('Content-Type', PromClient.register.contentType).send(metrics);
+            })
+            .catch(err => res.status(500).send(err));
     });
 
     metricsServer.listen(serverPort, hostname);

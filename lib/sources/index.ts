@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { browser } from './browser';
-import { builtin } from './builtin';
+import {browser} from './browser';
+import {builtin} from './builtin';
 
 export interface SourceEntry {
     /** The file name of the source file */
@@ -45,7 +45,4 @@ export interface Source {
     save: unknown;
 }
 
-export const sources = [
-    browser,
-    builtin,
-];
+export const sources = [browser, builtin];
