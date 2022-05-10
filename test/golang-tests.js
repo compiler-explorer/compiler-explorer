@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { GolangCompiler } from '../lib/compilers/golang';
+import {GolangCompiler} from '../lib/compilers/golang';
 import * as utils from '../lib/utils';
 
-import { fs, makeCompilationEnvironment } from './utils';
+import {fs, makeCompilationEnvironment} from './utils';
 
 const languages = {
     go: {id: 'go'},
@@ -44,7 +44,7 @@ function testGoAsm(basefilename) {
     const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
 
     const result = {
-        stderr: asmLines.map((line) => {
+        stderr: asmLines.map(line => {
             return {
                 text: line,
             };

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { loadSponsorsFromString } from '../lib/sponsors';
+import {loadSponsorsFromString} from '../lib/sponsors';
 
 describe('Sponsors', () => {
     it('should load a simple example', () => {
@@ -59,10 +59,7 @@ levels:
     - Just a string
     - name: An object
         `).levels[0].sponsors;
-        folks.should.deep.equalInAnyOrder([
-            {name: 'An object'},
-            {name: 'Just a string'},
-        ]);
+        folks.should.deep.equalInAnyOrder([{name: 'An object'}, {name: 'Just a string'}]);
     });
 
     it('should sort sponsors by name', () => {
@@ -77,12 +74,7 @@ levels:
     - A
     - B
         `).levels[0].sponsors;
-        peeps.should.deep.equals([
-            {name: 'A'},
-            {name: 'B'},
-            {name: 'C'},
-            {name: 'D'},
-        ]);
+        peeps.should.deep.equals([{name: 'A'}, {name: 'B'}, {name: 'C'}, {name: 'D'}]);
     });
     it('should sort sponsors by priority then name', () => {
         const peeps = loadSponsorsFromString(`
@@ -135,9 +127,7 @@ levels:
       icon: icon
       icon_dark: dark
         `).levels[0].sponsors;
-        things.should.deep.equalInAnyOrder([
-            {name: 'batman', icon: 'icon', icon_dark: 'dark', img: 'not_an_icon'},
-        ]);
+        things.should.deep.equalInAnyOrder([{name: 'batman', icon: 'icon', icon_dark: 'dark', img: 'not_an_icon'}]);
     });
 
     it('should pick out the top level icons', () => {

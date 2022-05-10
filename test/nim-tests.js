@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import { NimCompiler } from '../lib/compilers/nim';
+import {NimCompiler} from '../lib/compilers/nim';
 
-import { makeCompilationEnvironment, should } from './utils';
+import {makeCompilationEnvironment, should} from './utils';
 
 const languages = {
     nim: {id: 'nim'},

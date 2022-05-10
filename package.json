@@ -168,10 +168,10 @@
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
-    "format": "prettier --ignore-unknown ./static/**/*.ts",
-    "format-fix": "prettier --write --ignore-unknown ./static/**/*.ts",
+    "format": "prettier --ignore-unknown .",
+    "format-fix": "prettier --write .",
     "format-fix-files": "prettier --write --ignore-unknown",
-    "format-check": "prettier --ignore-unknown --check ./static/**/*.ts",
+    "format-check": "prettier --check .",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production"
@@ -180,6 +180,9 @@
     "*.[jt]s": [
       "npm run format-fix-files --",
       "npm run ci-lint-files --"
+    ],
+    "*.{html,md}": [
+      "npm run format-fix-files --"
     ]
   },
   "license": "BSD-2-Clause"

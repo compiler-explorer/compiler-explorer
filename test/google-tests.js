@@ -37,41 +37,27 @@ describe('Google short URL resolver tests', () => {
     const resolver = new google.ShortLinkResolver();
 
     it('Resolves simple URLs', async () => {
-        nock(googlDomain)
-            .head(shortUrl)
-            .reply(302, {}, { location: 'http://long.url/' });
+        nock(googlDomain).head(shortUrl).reply(302, {}, {location: 'http://long.url/'});
 
         const resp = await resolver.resolve(googlDomain + shortUrl);
-        resp.should.deep.equal({ longUrl: 'http://long.url/' });
+        resp.should.deep.equal({longUrl: 'http://long.url/'});
     });
 
     it('Handles missing long urls', () => {
-        nock(googlDomain)
-            .head(shortUrl)
-            .reply(404);
+        nock(googlDomain).head(shortUrl).reply(404);
 
-        return resolver
-            .resolve(googlDomain + shortUrl)
-            .should.be.rejectedWith('Got response 404');
+        return resolver.resolve(googlDomain + shortUrl).should.be.rejectedWith('Got response 404');
     });
 
     it('Handles missing location header', () => {
-        nock(googlDomain)
-            .head(shortUrl)
-            .reply(302);
+        nock(googlDomain).head(shortUrl).reply(302);
 
-        return resolver
-            .resolve(googlDomain + shortUrl)
-            .should.be.rejectedWith('Missing location url in undefined');
+        return resolver.resolve(googlDomain + shortUrl).should.be.rejectedWith('Missing location url in undefined');
     });
 
     it('Handles failed requests', () => {
-        nock(googlDomain)
-            .head(shortUrl)
-            .replyWithError('Something went wrong');
+        nock(googlDomain).head(shortUrl).replyWithError('Something went wrong');
 
-        return resolver
-            .resolve(googlDomain + shortUrl)
-            .should.be.rejectedWith('Something went wrong');
+        return resolver.resolve(googlDomain + shortUrl).should.be.rejectedWith('Something went wrong');
     });
 });

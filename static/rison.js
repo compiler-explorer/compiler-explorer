@@ -13,19 +13,18 @@
         // Browser globals
         factory((root.rison = {}));
     }
-}(this, function (exports) {
+})(this, function (exports) {
     var rison = exports;
 
-//////////////////////////////////////////////////
-//
-//  the stringifier is based on
-//    http://json.org/json.js as of 2006-04-28 from json.org
-//  the parser is based on 
-//    http://osteele.com/sources/openlaszlo/json
-//
+    //////////////////////////////////////////////////
+    //
+    //  the stringifier is based on
+    //    http://json.org/json.js as of 2006-04-28 from json.org
+    //  the parser is based on
+    //    http://osteele.com/sources/openlaszlo/json
+    //
 
-    if (typeof rison == 'undefined')
-        window.rison = {};
+    if (typeof rison == 'undefined') window.rison = {};
 
     /**
      *  rules for an uri encoder that is more tolerant than encodeURIComponent
@@ -35,11 +34,22 @@
      *  we also allow              ,:@$/
      *
      */
-    rison.uri_ok = {  // ok in url paths and in form query args
-        '~': true, '!': true, '*': true, '(': true, ')': true,
-        '-': true, '_': true, '.': true, ',': true,
-        ':': true, '@': true, '$': true,
-        "'": true, '/': true
+    rison.uri_ok = {
+        // ok in url paths and in form query args
+        '~': true,
+        '!': true,
+        '*': true,
+        '(': true,
+        ')': true,
+        '-': true,
+        _: true,
+        '.': true,
+        ',': true,
+        ':': true,
+        '@': true,
+        $: true,
+        "'": true,
+        '/': true,
     };
 
     /*
@@ -53,8 +63,8 @@
     /**
      * punctuation characters that are legal inside ids.
      */
-// this var isn't actually used
-//rison.idchar_punctuation = "_-./~";  
+    // this var isn't actually used
+    //rison.idchar_punctuation = "_-./~";
 
     (function () {
         var l = [];
@@ -62,8 +72,7 @@
             for (var lo = 0; lo < 16; lo++) {
                 if (hi + lo == 0) continue;
                 var c = String.fromCharCode(hi * 16 + lo);
-                if (!/\w|[-_.\/~]/.test(c))
-                    l.push('\\u00' + hi.toString(16) + lo.toString(16));
+                if (!/\w|[-_.\/~]/.test(c)) l.push('\\u00' + hi.toString(16) + lo.toString(16));
             }
         }
         /**
@@ -71,24 +80,21 @@
          * <rison> and <reserved> classes are illegal in ids.
          *
          */
-        rison.not_idchar = l.join('')
+        rison.not_idchar = l.join('');
         //idcrx = new RegExp('[' + rison.not_idchar + ']');
         //console.log('NOT', (idcrx.test(' ')) );
     })();
-//rison.not_idchar  = " \t\r\n\"<>[]{}'!=:(),*@$;&";
+    //rison.not_idchar  = " \t\r\n\"<>[]{}'!=:(),*@$;&";
     rison.not_idchar = " '!:(),*@$";
-
 
     /**
      * characters that are illegal as the start of an id
      * this is so ids can't look like numbers.
      */
-    rison.not_idstart = "-0123456789";
-
+    rison.not_idstart = '-0123456789';
 
     (function () {
-        var idrx = '[^' + rison.not_idstart + rison.not_idchar +
-            '][^' + rison.not_idchar + ']*';
+        var idrx = '[^' + rison.not_idstart + rison.not_idchar + '][^' + rison.not_idchar + ']*';
 
         rison.id_ok = new RegExp('^' + idrx + '$');
 
@@ -107,8 +113,7 @@
      *   and quotes " " as "+" instead of "%20"
      */
     rison.quote = function (x) {
-        if (/^[-A-Za-z0-9~!*()_.',:@$\/]*$/.test(x))
-            return x;
+        if (/^[-A-Za-z0-9~!*()_.',:@$\/]*$/.test(x)) return x;
 
         return encodeURIComponent(x)
             .replace(/%2C/g, ',')
@@ -119,17 +124,18 @@
             .replace(/%20/g, '+');
     };
 
-
-//
-//  based on json.js 2006-04-28 from json.org
-//  license: http://www.json.org/license.html
-//
-//  hacked by nix for use in uris.
-//
+    //
+    //  based on json.js 2006-04-28 from json.org
+    //  license: http://www.json.org/license.html
+    //
+    //  hacked by nix for use in uris.
+    //
 
     (function () {
-        var sq = { // url-ok but quoted in strings
-                "'": true, '!': true
+        var sq = {
+                // url-ok but quoted in strings
+                "'": true,
+                '!': true,
             },
             enc = function (v) {
                 if (v && typeof v.toJSON === 'function') v = v.toJSON();
@@ -138,7 +144,12 @@
             },
             s = {
                 array: function (x) {
-                    var a = ['!('], b, f, i, l = x.length, v;
+                    var a = ['!('],
+                        b,
+                        f,
+                        i,
+                        l = x.length,
+                        v;
                     for (i = 0; i < l; i += 1) {
                         v = enc(x[i]);
                         if (typeof v == 'string') {
@@ -152,17 +163,15 @@
                     a[a.length] = ')';
                     return a.join('');
                 },
-                'boolean': function (x) {
-                    if (x)
-                        return '!t';
-                    return '!f'
+                boolean: function (x) {
+                    if (x) return '!t';
+                    return '!f';
                 },
-                'null': function (x) {
-                    return "!n";
+                null: function (x) {
+                    return '!n';
                 },
                 number: function (x) {
-                    if (!isFinite(x))
-                        return '!n';
+                    if (!isFinite(x)) return '!n';
                     // strip '+' out of exponent, '-' is ok though
                     return String(x).replace(/\+/, '');
                 },
@@ -175,9 +184,14 @@
                         if (typeof x.__prototype__ === 'object' && typeof x.__prototype__.encode_rison !== 'undefined')
                             return x.encode_rison();
 
-                        var a = ['('], b, f, i, v, ki, ks = [];
-                        for (i in x)
-                            ks[ks.length] = i;
+                        var a = ['('],
+                            b,
+                            f,
+                            i,
+                            v,
+                            ki,
+                            ks = [];
+                        for (i in x) ks[ks.length] = i;
                         ks.sort();
                         for (ki = 0; ki < ks.length; ki++) {
                             i = ks[ki];
@@ -196,11 +210,9 @@
                     return '!n';
                 },
                 string: function (x) {
-                    if (x == '')
-                        return "''";
+                    if (x == '') return "''";
 
-                    if (rison.id_ok.test(x))
-                        return x;
+                    if (rison.id_ok.test(x)) return x;
 
                     x = x.replace(/(['!])/g, function (a, b) {
                         if (sq[b]) return '!' + b;
@@ -210,9 +222,8 @@
                 },
                 undefined: function (x) {
                     // ignore undefined just like JSON
-                }
+                },
             };
-
 
         /**
          * rison-encode a javascript structure
@@ -231,7 +242,7 @@
          */
         rison.encode_object = function (v) {
             if (typeof v != 'object' || v === null || v instanceof Array)
-                throw new Error("rison.encode_object expects an object argument");
+                throw new Error('rison.encode_object expects an object argument');
             var r = s[typeof v](v);
             return r.substring(1, r.length - 1);
         };
@@ -241,8 +252,7 @@
          *
          */
         rison.encode_array = function (v) {
-            if (!(v instanceof Array))
-                throw new Error("rison.encode_array expects an array argument");
+            if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
             var r = s[typeof v](v);
             return r.substring(2, r.length - 1);
         };
@@ -254,19 +264,16 @@
         rison.encode_uri = function (v) {
             return rison.quote(s[typeof v](v));
         };
-
     })();
 
-
-//
-// based on openlaszlo-json and hacked by nix for use in uris.
-//
-// Author: Oliver Steele
-// Copyright: Copyright 2006 Oliver Steele.  All rights reserved.
-// Homepage: http://osteele.com/sources/openlaszlo/json
-// License: MIT License.
-// Version: 1.0
-
+    //
+    // based on openlaszlo-json and hacked by nix for use in uris.
+    //
+    // Author: Oliver Steele
+    // Copyright: Copyright 2006 Oliver Steele.  All rights reserved.
+    // Homepage: http://osteele.com/sources/openlaszlo/json
+    // License: MIT License.
+    // Version: 1.0
 
     /**
      * parse a rison string into a javascript structure.
@@ -302,7 +309,6 @@
         return rison.decode('!(' + r + ')');
     };
 
-
     /**
      * construct a new parser object for reuse.
      *
@@ -320,12 +326,11 @@
      * by default the rison decoder tolerates no whitespace.
      * to accept whitespace set rison.parser.WHITESPACE = " \t\n\r\f";
      */
-    rison.parser.WHITESPACE = "";
+    rison.parser.WHITESPACE = '';
 
-// expose this as-is?
+    // expose this as-is?
     rison.parser.prototype.setOptions = function (options) {
-        if (options['errorHandler'])
-            this.errorHandler = options.errorHandler;
+        if (options['errorHandler']) this.errorHandler = options.errorHandler;
     };
 
     /**
@@ -338,14 +343,12 @@
         var value = this.readValue();
         if (!this.message && this.next())
             value = this.error("unable to parse string as rison: '" + rison.encode(str) + "'");
-        if (this.message && this.errorHandler)
-            this.errorHandler(this.message, this.index);
+        if (this.message && this.errorHandler) this.errorHandler(this.message, this.index);
         return value;
     };
 
     rison.parser.prototype.error = function (message) {
-        if (typeof(console) != 'undefined')
-            console.log('rison parser error: ', message);
+        if (typeof console != 'undefined') console.log('rison parser error: ', message);
         this.message = message;
         return undefined;
     };
@@ -354,8 +357,7 @@
         var c = this.next();
         var fn = c && this.table[c];
 
-        if (fn)
-            return fn.apply(this);
+        if (fn) return fn.apply(this);
 
         // fell through table, parse as an id
 
@@ -372,11 +374,11 @@
         if (m.length > 0) {
             var id = m[0];
             this.index = i + id.length;
-            return id;  // a string
+            return id; // a string
         }
 
         if (c) return this.error("invalid character: '" + c + "'");
-        return this.error("empty expression");
+        return this.error('empty expression');
     };
 
     rison.parser.parse_array = function (parser) {
@@ -385,14 +387,12 @@
         while ((c = parser.next()) != ')') {
             if (!c) return parser.error("unmatched '!('");
             if (ar.length) {
-                if (c != ',')
-                    parser.error("missing ','");
+                if (c != ',') parser.error("missing ','");
             } else if (c == ',') {
                 return parser.error("extra ','");
-            } else
-                --parser.index;
+            } else --parser.index;
             var n = parser.readValue();
-            if (typeof n == "undefined") return undefined;
+            if (typeof n == 'undefined') return undefined;
             ar.push(n);
         }
         return ar;
@@ -402,7 +402,7 @@
         t: true,
         f: false,
         n: null,
-        '(': rison.parser.parse_array
+        '(': rison.parser.parse_array,
     };
 
     rison.parser.prototype.table = {
@@ -411,9 +411,9 @@
             var c = s.charAt(this.index++);
             if (!c) return this.error('"!" at end of input');
             var x = rison.parser.bangs[c];
-            if (typeof(x) == 'function') {
+            if (typeof x == 'function') {
                 return x.call(null, this);
-            } else if (typeof(x) == 'undefined') {
+            } else if (typeof x == 'undefined') {
                 return this.error('unknown literal: "!' + c + '"');
             }
             return x;
@@ -424,17 +424,15 @@
             var count = 0;
             while ((c = this.next()) != ')') {
                 if (count) {
-                    if (c != ',')
-                        this.error("missing ','");
+                    if (c != ',') this.error("missing ','");
                 } else if (c == ',') {
                     return this.error("extra ','");
-                } else
-                    --this.index;
+                } else --this.index;
                 var k = this.readValue();
-                if (typeof k == "undefined") return undefined;
+                if (typeof k == 'undefined') return undefined;
                 if (this.next() != ':') return this.error("missing ':'");
                 var v = this.readValue();
-                if (typeof v == "undefined") return undefined;
+                if (typeof v == 'undefined') return undefined;
                 o[k] = v;
                 count++;
             }
@@ -450,8 +448,7 @@
                 //if (i == s.length) return this.error('unmatched "\'"');
                 if (!c) return this.error('unmatched "\'"');
                 if (c == '!') {
-                    if (start < i - 1)
-                        segments.push(s.slice(start, i - 1));
+                    if (start < i - 1) segments.push(s.slice(start, i - 1));
                     c = s.charAt(i++);
                     if ("!'".indexOf(c) >= 0) {
                         segments.push(c);
@@ -461,8 +458,7 @@
                     start = i;
                 }
             }
-            if (start < i - 1)
-                segments.push(s.slice(start, i - 1));
+            if (start < i - 1) segments.push(s.slice(start, i - 1));
             this.index = i;
             return segments.length == 1 ? segments[0] : segments.join('');
         },
@@ -477,7 +473,7 @@
             var transitions = {
                 'int+.': 'frac',
                 'int+e': 'exp',
-                'frac+e': 'exp'
+                'frac+e': 'exp',
             };
             do {
                 var c = s.charAt(i++);
@@ -492,17 +488,16 @@
             } while (state);
             this.index = --i;
             s = s.slice(start, i);
-            if (s == '-') return this.error("invalid number");
+            if (s == '-') return this.error('invalid number');
             return Number(s);
-        }
+        },
     };
-// copy table['-'] to each of table[i] | i <- '0'..'9':
+    // copy table['-'] to each of table[i] | i <- '0'..'9':
     (function (table) {
-        for (var i = 0; i <= 9; i++)
-            table[String(i)] = table['-'];
+        for (var i = 0; i <= 9; i++) table[String(i)] = table['-'];
     })(rison.parser.prototype.table);
 
-// return the next non-whitespace character, or undefined
+    // return the next non-whitespace character, or undefined
     rison.parser.prototype.next = function () {
         var c;
         var s = this.string;
@@ -515,5 +510,5 @@
         return c;
     };
 
-// End of UMD module wrapper
-}));
+    // End of UMD module wrapper
+});

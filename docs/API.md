@@ -1,65 +1,59 @@
 # RESTful API
 
-There's a simple restful API that can be used to do compiles to asm and to
- list compilers. In general all handlers live in `/api/*` endpoints, will
- accept JSON or text in POSTs, and will return text or JSON responses depending
- on the request's `Accept` header.
+There's a simple restful API that can be used to do compiles to asm and to list compilers. In general all handlers live
+in `/api/*` endpoints, will accept JSON or text in POSTs, and will return text or JSON responses depending on the
+request's `Accept` header.
 
-At a later date there may be some form of rate-limiting:
- currently, requests will be queued and dealt with in the same way interactive
- requests are done for the main site. Authentication might be required at some
- point in the future (for the main **Compiler Explorer** site anyway).
+At a later date there may be some form of rate-limiting: currently, requests will be queued and dealt with in the same
+way interactive requests are done for the main site. Authentication might be required at some point in the future (for
+the main **Compiler Explorer** site anyway).
 
 ## Endpoints
 
 ### `GET /api/languages` - return a list of languages
 
-Returns a list of the currently supported languages, as pairs of languages IDs
- and their names.
+Returns a list of the currently supported languages, as pairs of languages IDs and their names.
 
 ### `GET /api/compilers` - return a list of compilers
 
-Returns a list of compilers. In text form, there's a simple formatting of the
- ID of the compiler, its description and its language ID. In JSON, all the
- information is returned as an array of compilers, with the `id` key being the
- primary identifier of each compiler.
+Returns a list of compilers. In text form, there's a simple formatting of the ID of the compiler, its description and
+its language ID. In JSON, all the information is returned as an array of compilers, with the `id` key being the primary
+identifier of each compiler.
 
-Due to the amount of compilers and information available through this api call,
- by default you will only get these fields per compiler:
- `['id', 'name', 'lang', 'compilerType', 'semver', 'extensions', 'monaco']`
+Due to the amount of compilers and information available through this api call, by default you will only get these
+fields per compiler: `['id', 'name', 'lang', 'compilerType', 'semver', 'extensions', 'monaco']`
 
-If you require different fields, you can specify them by adding `?fields=field1,field2,field3`
- to your query.
+If you require different fields, you can specify them by adding `?fields=field1,field2,field3` to your query.
 
 To see all the available fields, you can use `?fields=all`. It is not recommended using this by default.
 
 ### `GET /api/compilers/<language-id>` - return a list of compilers with matching language
 
-Returns a list of compilers for the provided language id. In text form,
- there's a simple formatting of the ID of the compiler, its description and its
- language ID. In JSON, all the information is returned as an array of compilers,
- with the `id` key being the primary identifier of each compiler.
+Returns a list of compilers for the provided language id. In text form, there's a simple formatting of the ID of the
+compiler, its description and its language ID. In JSON, all the information is returned as an array of compilers, with
+the `id` key being the primary identifier of each compiler.
 
 The same field restrictions apply as with `GET /api/compilers`
 
 ### `GET /api/libraries/<language-id>` - return a list of libraries available with for a language
 
-Returns a list of libraries and library versions available for the provided language id.
- This request only returns data in JSON.
+Returns a list of libraries and library versions available for the provided language id. This request only returns data
+in JSON.
 
-You can use the given include paths to supply in the userArguments for compilation. *(deprecated)*
+You can use the given include paths to supply in the userArguments for compilation. _(deprecated)_
 
-You will need the library id's, and the version id's to supply to **compile** if you want to include libraries during compilation.
+You will need the library id's, and the version id's to supply to **compile** if you want to include libraries during
+compilation.
 
-###  `GET /api/shortlinkinfo/<linkid>` - return information about a given link
+### `GET /api/shortlinkinfo/<linkid>` - return information about a given link
 
-Returns information like Sourcecode, Compiler settings and libraries for a given link id.
- This request only returns data in JSON.
+Returns information like Sourcecode, Compiler settings and libraries for a given link id. This request only returns data
+in JSON.
 
 ### `POST /api/compiler/<compiler-id>/compile` - perform a compilation
 
-To specify a compilation request as a JSON document, post it as the appropriate
- type and send an object of the form:
+To specify a compilation request as a JSON document, post it as the appropriate type and send an object of the form:
+
 ```JSON
 {
     "source": "<Source-to-compile>",
@@ -94,6 +88,7 @@ To specify a compilation request as a JSON document, post it as the appropriate
 ```
 
 Execution Only request example:
+
 ```JSON
 {
     "source": "int main () { return 1; }",
@@ -120,27 +115,26 @@ Execution Only request example:
 }
 ```
 
-The filters are a JSON object with `true`/`false` values. If not supplied,
- defaults are used. If supplied, the provided filters override their default
- values. The `compilerOptions` is used to pass extra arguments to the back end,
- and is probably not useful for most REST users.
+The filters are a JSON object with `true`/`false` values. If not supplied, defaults are used. If supplied, the provided
+filters override their default values. The `compilerOptions` is used to pass extra arguments to the back end, and is
+probably not useful for most REST users.
 
 To force a cache bypass, set `bypassCache` in the root of the request to `true`.
 
-Filters include `binary`, `labels`, `intel`, `directives` and
- `demangle`, which correspond to the UI buttons on the HTML version.
+Filters include `binary`, `labels`, `intel`, `directives` and `demangle`, which correspond to the UI buttons on the HTML
+version.
 
-With the tools array you can ask CE to execute certain tools available for
- the current compiler, and also supply arguments for this tool.
+With the tools array you can ask CE to execute certain tools available for the current compiler, and also supply
+arguments for this tool.
 
-Libraries can be marked to have their directories available when including
- their header files. The can be listed by supplying the library ids and versions in an array.
- The id's to supply can be found with the `/api/libraries/<language-id>`
+Libraries can be marked to have their directories available when including their header files. The can be listed by
+supplying the library ids and versions in an array. The id's to supply can be found with the
+`/api/libraries/<language-id>`
 
 ### `GET /api/formats` - return available code formatters
 
-Returns a list of code formatters. The API returns an array of formatter objects
- which have the following object structure:
+Returns a list of code formatters. The API returns an array of formatter objects which have the following object
+structure:
 
 ```JSON
 {
@@ -178,8 +172,7 @@ The returned JSON body has the following object structure:
 }
 ```
 
-In cases of internal code formatter failure an additional field named `throw`
- is also provided and set to true.
+In cases of internal code formatter failure an additional field named `throw` is also provided and set to true.
 
 # Non-REST API's
 
@@ -187,12 +180,10 @@ In cases of internal code formatter failure an additional field named `throw`
 
 This is same endpoint as for compilation using JSON.
 
-A text compilation request has the source as the body of the post, and uses
- query parameters to pass the options and filters. Filters are supplied as a
- comma-separated string. Use the query parameter `filters=XX` to set the
- filters directly, else `addFilters=XX` to add a filter to defaults,
- or `removeFilters` to remove from defaults.
- Compiler parameters should be passed as `options=-O2` and default to empty.
+A text compilation request has the source as the body of the post, and uses query parameters to pass the options and
+filters. Filters are supplied as a comma-separated string. Use the query parameter `filters=XX` to set the filters
+directly, else `addFilters=XX` to add a filter to defaults, or `removeFilters` to remove from defaults. Compiler
+parameters should be passed as `options=-O2` and default to empty.
 
 The text request is designed for simplicity for command-line clients like `curl`
 
@@ -207,8 +198,7 @@ foo():
         ret
 ```
 
-If JSON is present in the request's `Accept` header, the compilation results
- are of the form:
+If JSON is present in the request's `Accept` header, the compilation results are of the form:
 
 (_Optional values are marked with a `**`_)
 
@@ -250,12 +240,14 @@ If JSON is present in the request's `Accept` header, the compilation results
 }
 ```
 
-### `POST /api/shortener` - saves given state *forever* to a shortlink and returns the unique id for the link
+### `POST /api/shortener` - saves given state _forever_ to a shortlink and returns the unique id for the link
 
-The body of this post should be in the format of a [ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/main/lib/clientstate.js)
-Be sure that the Content-Type of your post is application/json
+The body of this post should be in the format of a
+[ClientState](https://github.com/compiler-explorer/compiler-explorer/blob/main/lib/clientstate.js) Be sure that the
+Content-Type of your post is application/json
 
 An example of one the easiest forms of a clientstate:
+
 ```JSON
 {
   "sessions": [
@@ -286,6 +278,7 @@ An example of one the easiest forms of a clientstate:
 ```
 
 Returns:
+
 ```JSON
 {
     "url": "https://godbolt.org/z/Km_340"
@@ -298,27 +291,27 @@ The storedId can be used in the api call /api/shortlinkinfo/<id> and to open in 
 
 This call opens the website in a state that was previously saved using the built-in shortener.
 
-
 ### `GET /z/<id>/code/<sourceid>` - Returns just the sourcecode from a shortlink
 
 This call returns plain/text for the code that was previously saved using the built-in shortener.
 
-If there were multiple editors during the saved session, you can retrieve them by setting <sourceid> to 1, 2, 3, etcetera, otherwise <sourceid> can be set to 1.
-
+If there were multiple editors during the saved session, you can retrieve them by setting <sourceid> to 1, 2, 3,
+etcetera, otherwise <sourceid> can be set to 1.
 
 ### `GET /clientstate/<base64>` - Opens the website in a given state
 
 This call is to open the website with a given state (without having to store the state first with /api/shortener)
-Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly onto the URL.
-
+Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly
+onto the URL.
 
 # Implementations
 
 Here are some examples of projects using the Compiler Explorer API:
-* [Commandline CE by ethanhs](https://github.com/ethanhs/cce) (Rust)
-* [VIM plugin by ldrumm](https://github.com/ldrumm/compiler-explorer.vim)
-* [API in Delphi by partouf](https://github.com/partouf/compilerexplorer-api) (Delphi)
-* [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
-* [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
-* [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
-* [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)
+
+- [Commandline CE by ethanhs](https://github.com/ethanhs/cce) (Rust)
+- [VIM plugin by ldrumm](https://github.com/ldrumm/compiler-explorer.vim)
+- [API in Delphi by partouf](https://github.com/partouf/compilerexplorer-api) (Delphi)
+- [QTCreator Plugin by dobokirisame](https://github.com/dobokirisame/CompilerExplorer) (C++)
+- [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
+- [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
+- [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)
