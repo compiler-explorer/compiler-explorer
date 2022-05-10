@@ -17,16 +17,16 @@ Adding a library that is linked against:
 - Note: the name of the library in the yaml file needs to be the same as the name in the c++.amazon.properties file
 - Add basic entry
 
-```
-     unifex:
-       type: github
-       method: nightlyclone
-       repo: facebookexperimental/libunifex
-       build_type: cmake
-       make_targets:
-         - unifex
-       targets:
-         - trunk
+```yaml
+unifex:
+  type: github
+  method: nightlyclone
+  repo: facebookexperimental/libunifex
+  build_type: cmake
+  make_targets:
+    - unifex
+  targets:
+    - trunk
 ```
 
 2. Test installing
@@ -48,7 +48,7 @@ Adding a library that is linked against:
   - libraryname here is without the 'lib' prefix of the .a file
 - Example unifex
 
-```
+```ini
 libs.unifex.name=libunifex
 libs.unifex.versions=trunk
 libs.unifex.staticliblink=unifex
