@@ -168,7 +168,6 @@
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
-    "format": "prettier --ignore-unknown .",
     "format-fix": "prettier --write .",
     "format-fix-files": "prettier --write --ignore-unknown",
     "format-check": "prettier --check .",
