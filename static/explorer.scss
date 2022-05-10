@@ -1,5 +1,5 @@
-@import "~@fortawesome/fontawesome-free/css/all.min.css";
-@import "~vis-network/styles/vis-network.css";
+@import '~@fortawesome/fontawesome-free/css/all.min.css';
+@import '~vis-network/styles/vis-network.css';
 
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
@@ -19,7 +19,7 @@
 // These blocks should be removed once a downstream release of monaco is cut
 :root {
     // updated at runtime
-    --user-selected-font-stack: Consolas, "Liberation Mono", Courier, monospace;
+    --user-selected-font-stack: Consolas, 'Liberation Mono', Courier, monospace;
 }
 .monaco-editor .codelens-decoration {
     font-family: var(--user-selected-font-stack);
@@ -242,7 +242,8 @@ pre.content.wrap * {
     font-weight: 600;
 }
 
-.modal { /* maximum for all modal dialogs */
+.modal {
+    /* maximum for all modal dialogs */
     width: 100%;
     height: 100%;
     padding: 1.75rem;
@@ -260,7 +261,7 @@ pre.content.wrap * {
 
 #history {
     .modal-content {
-        min-width: calc(80vw);  /* force min-width on html element containing history editor */
+        min-width: calc(80vw); /* force min-width on html element containing history editor */
     }
 }
 
@@ -428,7 +429,8 @@ label#vim-label {
     top: 3px;
 }
 
-#settings input, #embedsettings input {
+#settings input,
+#embedsettings input {
     margin-right: 3px;
 }
 
@@ -436,12 +438,13 @@ label#vim-label {
     user-select: none;
 }
 
-#settings select, #settings input:not([type=checkbox]):not([type=range]) {
+#settings select,
+#settings input:not([type='checkbox']):not([type='range']) {
     display: block;
 }
 
 input.vim-check {
-    margin-bottom: 4px
+    margin-bottom: 4px;
 }
 
 .opens-new-window {
@@ -457,7 +460,7 @@ input.vim-check {
 }
 
 .program-exec-output {
-    font-family: "Courier New", Courier, monospace;
+    font-family: 'Courier New', Courier, monospace;
     padding-left: 2%;
 }
 
@@ -606,7 +609,9 @@ div.populararguments div.dropdown-menu {
 
 .ces-content-root {
     min-height: 100px;
-    max-height: calc(100vh - 306px); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out */
+    max-height: calc(
+        100vh - 306px
+    ); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out */
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
 }
 
@@ -632,7 +637,7 @@ div.populararguments div.dropdown-menu {
     flex-wrap: wrap;
     justify-content: space-around;
     align-items: center;
-    font-size: 60%
+    font-size: 60%;
 }
 
 @media (min-height: 700px) {
@@ -780,19 +785,24 @@ span.badge.badge-pill {
     margin-left: 2pt;
 }
 
-.theme-light-only, .theme-dark-only {
+.theme-light-only,
+.theme-dark-only {
     display: none;
 }
 
-html[data-theme=default] {
-    @import "themes/default-theme";
-    .theme-light-only { display: inline }
+html[data-theme='default'] {
+    @import 'themes/default-theme';
+    .theme-light-only {
+        display: inline;
+    }
 }
 
-html[data-theme=dark] {
-    @import "themes/dark-theme";
+html[data-theme='dark'] {
+    @import 'themes/dark-theme';
     background-color: #333 !important;
-    .theme-dark-only { display: inline }
+    .theme-dark-only {
+        display: inline;
+    }
 }
 
 .socialsharing {
@@ -800,11 +810,12 @@ html[data-theme=dark] {
 }
 
 .ts-input {
-    height: 100%
+    height: 100%;
 }
 
-.ts-input, .ts-dropdown .option {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+.ts-input,
+.ts-dropdown .option {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 20px;
 }

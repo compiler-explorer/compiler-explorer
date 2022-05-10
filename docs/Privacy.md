@@ -1,9 +1,8 @@
-Compiler Explorer and Privacy
------------------------------
+## Compiler Explorer and Privacy
 
-*This is a summary of our Privacy policy, not a legal document, and might be incomplete.*
+_This is a summary of our Privacy policy, not a legal document, and might be incomplete._
 
-*For the full Privacy policy, see `static/policies/privacy.html`, or visit https://godbolt.org/#privacy*
+_For the full Privacy policy, see `static/policies/privacy.html`, or visit https://godbolt.org/#privacy_
 
 The main Compiler Explorer site (at https://godbolt.org/) has a cookie and privacy policy, and it's expected that any
 changes to the code are in compliance with those policies. It's worth taking a look at them if you're touching any area
@@ -20,9 +19,9 @@ the sister site www.godbolt.ms and that data is covered by
 
 Users have rights over the data they create: so in theory they could ask for any data stored on them to be removed. We
 have no way of tracking data (a short link, perhaps) back to an individual user, and when I asked some experts on this
-the consensus was that we're OK not to supply this. If, however, we ever have user attribution (e.g., we start
-having accounts), we need to support the user being able to close their account, and/or delete any data they created
-(e.g., short links). All this makes perfect sense and would probably be done anyway, as it seems useful!
+the consensus was that we're OK not to supply this. If, however, we ever have user attribution (e.g., we start having
+accounts), we need to support the user being able to close their account, and/or delete any data they created (e.g.,
+short links). All this makes perfect sense and would probably be done anyway, as it seems useful!
 
 We anonymise IP addresses so there's no exact mapping back to an individual using an IP. Not that it's trivial to map an
 IP to a user anyway.
@@ -37,10 +36,10 @@ is to not use the main Compiler Explorer but instead run their own local service
 
 A very small group of people have administrator rights on the public Compiler Explorer. Those individuals can:
 
-* Read the logs
-* Log in to the running Compiler Explorer compilation nodes
-* Access the S3 storage where caches and stored information may be kept
-* Access and modify the EFS storage where compilers are stored
+- Read the logs
+- Log in to the running Compiler Explorer compilation nodes
+- Access the S3 storage where caches and stored information may be kept
+- Access and modify the EFS storage where compilers are stored
 
 In short, administrators can see everything that goes on. It is expected that administrators keep this deep
 responsibility in mind when performing actions on Compiler Explorer, and that they keep users' privacy at the forefront

@@ -1,110 +1,110 @@
 ui:
-    - static/**/*
-    - views/**/*
+  - static/**/*
+  - views/**/*
 lang-ada:
-    - lib/compilers/ada.js
-    - etc/config/ada.*.properties
+  - lib/compilers/ada.js
+  - etc/config/ada.*.properties
 lang-asm:
-    - lib/compilers/assembly.js
-    - lib/compilers/nasm.js
-    - lib/compilers/ptxas.js
-    - etc/config/assembly.*.properties
+  - lib/compilers/assembly.js
+  - lib/compilers/nasm.js
+  - lib/compilers/ptxas.js
+  - etc/config/assembly.*.properties
 lang-c:
-    - lib/compilers/cc65.js
-    - lib/compilers/ellcc.js
-    - lib/compilers/ewarm.js
-    - lib/compilers/awavr.js
-    - lib/compilers/ppci.js
-    - lib/compilers/sdcc.js
-    - lib/compilers/tendra.js
-    - etc/config/c.*.properties
+  - lib/compilers/cc65.js
+  - lib/compilers/ellcc.js
+  - lib/compilers/ewarm.js
+  - lib/compilers/awavr.js
+  - lib/compilers/ppci.js
+  - lib/compilers/sdcc.js
+  - lib/compilers/tendra.js
+  - etc/config/c.*.properties
 lang-c++:
-    - lib/compilers/ewarm.js
-    - lib/compilers/awavr.js
-    - etc/config/c++.*.properties
+  - lib/compilers/ewarm.js
+  - lib/compilers/awavr.js
+  - etc/config/c++.*.properties
 lang-c++-opencl:
-    - etc/config/cpp_for_opencl.*.properties
+  - etc/config/cpp_for_opencl.*.properties
 lang-circle:
-    - lib/compilers/circle.js
-    - etc/config/circle.*.properties
+  - lib/compilers/circle.js
+  - etc/config/circle.*.properties
 lang-clean:
-    - lib/compilers/clean.js
-    - etc/config/clean.*.properties
+  - lib/compilers/clean.js
+  - etc/config/clean.*.properties
 lang-cppx:
-    - etc/config/cppx?(_blue|_gold).*.properties
+  - etc/config/cppx?(_blue|_gold).*.properties
 lang-crystal:
-    - lib/compilers/crystal.js
-    - etc/config/crystal.*.properties
+  - lib/compilers/crystal.js
+  - etc/config/crystal.*.properties
 lang-cuda:
-    - lib/compilers/nvcc.js
-    - etc/config/cuda.*.properties
+  - lib/compilers/nvcc.js
+  - etc/config/cuda.*.properties
 lang-d:
-    - lib/compilers/dmd.js
-    - lib/compilers/ldc.js
-    - etc/config/d.*.properties
+  - lib/compilers/dmd.js
+  - lib/compilers/ldc.js
+  - etc/config/d.*.properties
 lang-dotnet:
-    - lib/compilers/dotnet.ts
-    - lib/asm-parser-dotnet.ts
-    - etc/config/csharp.*.properties
-    - etc/config/fsharp.*.properties
-    - etc/config/vb.*.properties
+  - lib/compilers/dotnet.ts
+  - lib/asm-parser-dotnet.ts
+  - etc/config/csharp.*.properties
+  - etc/config/fsharp.*.properties
+  - etc/config/vb.*.properties
 lang-dart:
-    - lib/compilers/dart.js
-    - etc/config/dart.*.properties
+  - lib/compilers/dart.js
+  - etc/config/dart.*.properties
 lang-fortran:
-    - lib/compilers/fortran.js
-    - etc/config/fortran.*.properties
+  - lib/compilers/fortran.js
+  - etc/config/fortran.*.properties
 lang-go:
-    - lib/compilers/golang.js
-    - etc/config/go.*.properties
+  - lib/compilers/golang.js
+  - etc/config/go.*.properties
 lang-haskell:
-    - lib/compilers/haskell.js
-    - etc/config/haskell.*.properties
+  - lib/compilers/haskell.js
+  - etc/config/haskell.*.properties
 lang-ispc:
-    - lib/compilers/ispc.js
-    - etc/config/ispc.*.properties
+  - lib/compilers/ispc.js
+  - etc/config/ispc.*.properties
 lang-java:
-    - lib/compilers/java.js
-    - etc/config/java.*.properties
+  - lib/compilers/java.js
+  - etc/config/java.*.properties
 lang-kotlin:
-    - lib/compilers/kotlin.js
-    - etc/config/kotlin.*.properties
+  - lib/compilers/kotlin.js
+  - etc/config/kotlin.*.properties
 lang-nim:
-    - lib/compilers/nim.js
-    - etc/config/nim.*.properties
+  - lib/compilers/nim.js
+  - etc/config/nim.*.properties
 lang-ocaml:
-    - lib/compilers/ocaml.js
-    - etc/config/ocaml.*.properties
+  - lib/compilers/ocaml.js
+  - etc/config/ocaml.*.properties
 lang-opencl-c:
-    - etc/config/openclc.*.properties
+  - etc/config/openclc.*.properties
 lang-pascal:
-    - lib/compilers/pascal.js
-    - etc/config/pascal.*.properties
+  - lib/compilers/pascal.js
+  - etc/config/pascal.*.properties
 lang-python:
-    - lib/compilers/python.js
-    - etc/config/python.*.properties
+  - lib/compilers/python.js
+  - etc/config/python.*.properties
 lang-ruby:
-    - lib/compilers/ruby.js
-    - etc/config/ruby.*.properties
+  - lib/compilers/ruby.js
+  - etc/config/ruby.*.properties
 lang-rust:
-    - lib/compilers/rust.js
-    - etc/config/rust.*.properties
+  - lib/compilers/rust.js
+  - etc/config/rust.*.properties
 lang-scala:
-    - lib/compilers/scala.js
-    - etc/config/scala.*.properties
+  - lib/compilers/scala.js
+  - etc/config/scala.*.properties
 lang-solidity:
-    - lib/compilers/solidity.js
-    - etc/config/solidity.*.properties
+  - lib/compilers/solidity.js
+  - etc/config/solidity.*.properties
 lang-swift:
-    - lib/compilers/swift.js
-    - etc/config/swift.*.properties
+  - lib/compilers/swift.js
+  - etc/config/swift.*.properties
 lang-typescript:
-    - lib/compilers/typescript.js
-    - etc/config/typescript.*.properties
+  - lib/compilers/typescript.js
+  - etc/config/typescript.*.properties
 lang-zig:
-    - lib/compilers/zig.js
-    - etc/config/zig.*.properties
+  - lib/compilers/zig.js
+  - etc/config/zig.*.properties
 documentation:
-    - docs/**/*
-    - README.md
-    - CONTRIBUTING.md
+  - docs/**/*
+  - README.md
+  - CONTRIBUTING.md

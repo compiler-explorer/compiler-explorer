@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { replace, restore, stub } from 'sinon';
+import {replace, restore, stub} from 'sinon';
 
-import { StorageBase } from '../../lib/storage';
-import { should } from '../utils';
+import {StorageBase} from '../../lib/storage';
+import {should} from '../utils';
 
 describe('Hash tests', () => {
     afterEach(() => restore());
@@ -46,8 +46,10 @@ describe('Hash tests', () => {
         const testCase = {some: 'test'};
         const goodResult = 'uy3AkJTC9PRg8LfxqcxuUgKrCb-OatsRW7FAAVi3-4M'; // L in 13th place: OK
         const callback = stub()
-            .onFirstCall().returns(badResult)
-            .onSecondCall().returns(badResult) // force nonce to update a couple of times
+            .onFirstCall()
+            .returns(badResult)
+            .onSecondCall()
+            .returns(badResult) // force nonce to update a couple of times
             .returns(goodResult);
         replace(StorageBase, 'encodeBuffer', callback);
         const {config, configHash} = StorageBase.getSafeHash(testCase);

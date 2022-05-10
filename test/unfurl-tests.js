@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { RouteAPI } from '../lib/handlers/route-api';
+import {RouteAPI} from '../lib/handlers/route-api';
 
-import { fs } from './utils';
+import {fs} from './utils';
 
 describe('Basic unfurls', () => {
     const router = null;
@@ -40,7 +40,7 @@ describe('Basic unfurls', () => {
                 },
             },
             storageHandler: {
-                expandId: async (id) => {
+                expandId: async id => {
                     const json = await fs.readFile('test/state/' + id + '.json');
                     return {
                         config: json,
@@ -66,7 +66,9 @@ describe('Basic unfurls', () => {
                 },
                 compilers: [],
             };
-            routeApi.storedStateHandler({ params: { id: '../example-states/default-state' }}, null, () => { reject('Error in test'); });
+            routeApi.storedStateHandler({params: {id: '../example-states/default-state'}}, null, () => {
+                reject('Error in test');
+            });
         });
 
         const res = await prom;
@@ -92,13 +94,16 @@ describe('Basic unfurls', () => {
                 },
                 compilers: [],
             };
-            routeApi.storedStateHandler({ params: { id: 'andthekitchensink' }}, null, () => { reject('Error in test'); });
+            routeApi.storedStateHandler({params: {id: 'andthekitchensink'}}, null, () => {
+                reject('Error in test');
+            });
         });
 
         const res = await prom;
         res.metadata.should.deep.equal({
             ogAuthor: null,
-            ogDescription: '\ntemplate&lt;typename T&gt;\nconcept TheSameAndAddable = requires(T a, T b) {\n    {a+b} -&gt; T;\n};\n\ntemplate&lt;TheSameAndAddable T&gt;\nT sum(T x, T y) {\n    return x + y;\n}\n\n#include &lt;string&gt;\n\nint main() {\n    int z = 0;\n    int w;\n\n    return sum(z, w);\n}\n',
+            ogDescription:
+                '\ntemplate&lt;typename T&gt;\nconcept TheSameAndAddable = requires(T a, T b) {\n    {a+b} -&gt; T;\n};\n\ntemplate&lt;TheSameAndAddable T&gt;\nT sum(T x, T y) {\n    return x + y;\n}\n\n#include &lt;string&gt;\n\nint main() {\n    int z = 0;\n    int w;\n\n    return sum(z, w);\n}\n',
             ogTitle: 'Compiler Explorer - C++',
         });
     });
@@ -118,7 +123,9 @@ describe('Basic unfurls', () => {
                 },
                 compilers: [],
             };
-            routeApi.storedStateHandler({ params: { id: 'tree-gl' }}, null, () => { reject('Error in test'); });
+            routeApi.storedStateHandler({params: {id: 'tree-gl'}}, null, () => {
+                reject('Error in test');
+            });
         });
 
         const res = await prom;

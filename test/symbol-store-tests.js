@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils';
-import { SymbolStore } from '../lib/symbol-store';
+import {SymbolStore} from '../lib/symbol-store';
 
 describe('SymbolStore', function () {
     it('should be empty initially', function () {
@@ -107,7 +107,7 @@ describe('SymbolStore', function () {
         translations.length.should.equal(1);
         translations[0][0].should.equal('test123456');
     });
-    
+
     it('should be able to check contents', function () {
         const store = new SymbolStore();
         store.addMany(['test123', 'test123456', 'test123']);

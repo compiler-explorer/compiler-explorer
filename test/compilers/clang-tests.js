@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ClangCompiler } from '../../lib/compilers';
-import { chai, makeCompilationEnvironment } from '../utils';
+import {ClangCompiler} from '../../lib/compilers';
+import {chai, makeCompilationEnvironment} from '../utils';
 
 const expect = chai.expect;
 
@@ -44,7 +44,8 @@ describe('clang tests', () => {
             expect(clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
         });
         it('should separate out bundles ', () => {
-            expect(clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
+            expect(
+                clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
     i am some
     linux remote stuff
 # __CLANG_OFFLOAD_BUNDLE____END__ openmp-x86_64-unknown-linux-gnu
@@ -53,7 +54,8 @@ describe('clang tests', () => {
     whereas
     i am host code
 # __CLANG_OFFLOAD_BUNDLE____END__ host-x86_64-unknown-linux-gnu
-`)).to.deep.equal({
+`),
+            ).to.deep.equal({
                 'host-x86_64-unknown-linux-gnu': '    whereas\n    i am host code\n',
                 'openmp-x86_64-unknown-linux-gnu': '    i am some\n    linux remote stuff\n',
             });

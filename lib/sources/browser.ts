@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type { Source, SourceEntry } from './index';
+import type {Source, SourceEntry} from './index';
 
 // This is a fake plugin. All of the functionality is in the browser code.
 export const browser: Source = {

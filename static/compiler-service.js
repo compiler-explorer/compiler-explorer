@@ -40,14 +40,22 @@ function CompilerService(eventHub) {
         },
     });
     this.compilersByLang = {};
-    _.each(options.compilers, function (compiler) {
-        if (!this.compilersByLang[compiler.lang]) this.compilersByLang[compiler.lang] = {};
-        this.compilersByLang[compiler.lang][compiler.id] = compiler;
-    }, this);
+    _.each(
+        options.compilers,
+        function (compiler) {
+            if (!this.compilersByLang[compiler.lang]) this.compilersByLang[compiler.lang] = {};
+            this.compilersByLang[compiler.lang][compiler.id] = compiler;
+        },
+        this
+    );
     // settingsChange is triggered on page load
-    eventHub.on('settingsChange', function (newSettings) {
-        this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug;
-    }, this);
+    eventHub.on(
+        'settingsChange',
+        function (newSettings) {
+            this.allowStoreCodeDebug = newSettings.allowStoreCodeDebug;
+        },
+        this
+    );
 }
 
 CompilerService.prototype.getDefaultCompilerForLang = function (langId) {
@@ -69,19 +77,23 @@ CompilerService.prototype.processFromLangAndCompiler = function (languageId, com
                 foundCompiler = compilers[_.first(_.keys(compilers))];
             }
         } else if (compilerId) {
-            var matchingCompilers =_.map(options.languages, function (lang) {
-                var compiler = this.findCompiler(lang.id, compilerId);
-                if (compiler) {
-                    return {
-                        langId: lang.id,
-                        compiler: compiler,
-                    };
-                }
-                return null;
-            }, this);
+            var matchingCompilers = _.map(
+                options.languages,
+                function (lang) {
+                    var compiler = this.findCompiler(lang.id, compilerId);
+                    if (compiler) {
+                        return {
+                            langId: lang.id,
+                            compiler: compiler,
+                        };
+                    }
+                    return null;
+                },
+                this
+            );
 
             return _.find(matchingCompilers, function (match) {
-                return (match !== null);
+                return match !== null;
             });
         } else {
             var firstLang = _.first(_.values(options.languages));
@@ -108,10 +120,8 @@ CompilerService.prototype.getGroupsInUse = function (langId) {
         .map(function (compiler) {
             return {value: compiler.group, label: compiler.groupName || compiler.group};
         })
-        .sort(function (a, b){
-            return a.label.localeCompare(b.label,
-                undefined /* Ignore language */,
-                { sensitivity: 'base' });
+        .sort(function (a, b) {
+            return a.label.localeCompare(b.label, undefined /* Ignore language */, {sensitivity: 'base'});
         })
         .value();
 };
@@ -182,28 +192,30 @@ CompilerService.prototype.submit = function (request) {
             });
         }
     }
-    return new Promise(_.bind(function (resolve, reject) {
-        var bindHandler = _.partial(handleRequestError, request, reject);
-        var compilerId = encodeURIComponent(request.compiler);
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/compile',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: jsonRequest,
-            success: _.bind(function (result) {
-                if (result && result.okToCache && options.doCache) {
-                    this.cache.set(jsonRequest, result);
-                }
-                resolve({
-                    request: request,
-                    result: result,
-                    localCacheHit: false,
-                });
-            }, this),
-            error: bindHandler,
-        });
-    }, this));
+    return new Promise(
+        _.bind(function (resolve, reject) {
+            var bindHandler = _.partial(handleRequestError, request, reject);
+            var compilerId = encodeURIComponent(request.compiler);
+            $.ajax({
+                type: 'POST',
+                url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/compile',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: jsonRequest,
+                success: _.bind(function (result) {
+                    if (result && result.okToCache && options.doCache) {
+                        this.cache.set(jsonRequest, result);
+                    }
+                    resolve({
+                        request: request,
+                        result: result,
+                        localCacheHit: false,
+                    });
+                }, this),
+                error: bindHandler,
+            });
+        }, this)
+    );
 };
 
 CompilerService.prototype.submitCMake = function (request) {
@@ -219,51 +231,55 @@ CompilerService.prototype.submitCMake = function (request) {
             });
         }
     }
-    return new Promise(_.bind(function (resolve, reject) {
-        var bindHandler = _.partial(handleRequestError, request, reject);
-        var compilerId = encodeURIComponent(request.compiler);
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/cmake',
-            dataType: 'json',
-            contentType: 'application/json',
-            data: jsonRequest,
-            success: _.bind(function (result) {
-                if (result && result.okToCache && options.doCache) {
-                    this.cache.set(jsonRequest, result);
-                }
-                resolve({
-                    request: request,
-                    result: result,
-                    localCacheHit: false,
-                });
-            }, this),
-            error: bindHandler,
-        });
-    }, this));
+    return new Promise(
+        _.bind(function (resolve, reject) {
+            var bindHandler = _.partial(handleRequestError, request, reject);
+            var compilerId = encodeURIComponent(request.compiler);
+            $.ajax({
+                type: 'POST',
+                url: window.location.origin + this.base + 'api/compiler/' + compilerId + '/cmake',
+                dataType: 'json',
+                contentType: 'application/json',
+                data: jsonRequest,
+                success: _.bind(function (result) {
+                    if (result && result.okToCache && options.doCache) {
+                        this.cache.set(jsonRequest, result);
+                    }
+                    resolve({
+                        request: request,
+                        result: result,
+                        localCacheHit: false,
+                    });
+                }, this),
+                error: bindHandler,
+            });
+        }, this)
+    );
 };
 
 CompilerService.prototype.requestPopularArguments = function (compilerId, options) {
-    return new Promise(_.bind(function (resolve, reject) {
-        var bindHandler = _.partial(handleRequestError, compilerId, reject);
-        $.ajax({
-            type: 'POST',
-            url: window.location.origin + this.base + 'api/popularArguments/' + compilerId,
-            dataType: 'json',
-            data: JSON.stringify({
-                usedOptions: options,
-                presplit: false,
-            }),
-            success: _.bind(function (result) {
-                resolve({
-                    request: compilerId,
-                    result: result,
-                    localCacheHit: false,
-                });
-            }, this),
-            error: bindHandler,
-        });
-    }, this));
+    return new Promise(
+        _.bind(function (resolve, reject) {
+            var bindHandler = _.partial(handleRequestError, compilerId, reject);
+            $.ajax({
+                type: 'POST',
+                url: window.location.origin + this.base + 'api/popularArguments/' + compilerId,
+                dataType: 'json',
+                data: JSON.stringify({
+                    usedOptions: options,
+                    presplit: false,
+                }),
+                success: _.bind(function (result) {
+                    resolve({
+                        request: compilerId,
+                        result: result,
+                        localCacheHit: false,
+                    });
+                }, this),
+                error: bindHandler,
+            });
+        }, this)
+    );
 };
 
 CompilerService.prototype.expand = function (source) {
@@ -273,18 +289,26 @@ CompilerService.prototype.expand = function (source) {
     _.each(lines, function (line, lineNumZeroBased) {
         var match = line.match(includeFind);
         if (match) {
-            promises.push(new Promise(function (resolve) {
-                var req = $.get(match[1], function (data) {
-                    data = '#line 1 "' + match[1] + '"\n' + data + '\n\n#line ' +
-                        (lineNumZeroBased + 1) + ' "<stdin>"\n';
+            promises.push(
+                new Promise(function (resolve) {
+                    var req = $.get(match[1], function (data) {
+                        data =
+                            '#line 1 "' +
+                            match[1] +
+                            '"\n' +
+                            data +
+                            '\n\n#line ' +
+                            (lineNumZeroBased + 1) +
+                            ' "<stdin>"\n';
 
-                    lines[lineNumZeroBased] = data;
-                    resolve();
-                });
-                req.fail(function () {
-                    resolve();
-                });
-            }));
+                        lines[lineNumZeroBased] = data;
+                        resolve();
+                    });
+                    req.fail(function () {
+                        resolve();
+                    });
+                })
+            );
         }
     });
     return Promise.all(promises).then(function () {
@@ -293,11 +317,7 @@ CompilerService.prototype.expand = function (source) {
 };
 
 CompilerService.prototype.getSelectizerOrder = function () {
-    return [
-        {field: '$order'},
-        {field: '$score'},
-        {field: 'name'},
-    ];
+    return [{field: '$order'}, {field: '$score'}, {field: 'name'}];
 };
 
 CompilerService.prototype.doesCompilationResultHaveWarnings = function (result) {
@@ -364,9 +384,7 @@ function color(status) {
 
 CompilerService.prototype.handleCompilationStatus = function (statusLabel, statusIcon, status) {
     if (statusLabel != null) {
-        statusLabel
-            .toggleClass('error', status.code === 3)
-            .toggleClass('warning', status.code === 2);
+        statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);
     }
 
     if (statusIcon != null) {
@@ -393,9 +411,7 @@ CompilerService.prototype.handleOutputButtonTitle = function (element, result) {
         return line.text.replace(asciiColorsRe, '');
     }
 
-    var output =_.map(stdout, filterAsciiColors)
-        .concat(_.map(stderr, filterAsciiColors))
-        .join('\n');
+    var output = _.map(stdout, filterAsciiColors).concat(_.map(stderr, filterAsciiColors)).join('\n');
 
     element.prop('title', output);
 };

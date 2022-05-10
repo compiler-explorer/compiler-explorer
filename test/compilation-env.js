@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils';
-import { CompilationEnvironment } from '../lib/compilation-env';
-import { CompilerProps, fakeProps } from '../lib/properties';
+import {CompilationEnvironment} from '../lib/compilation-env';
+import {CompilerProps, fakeProps} from '../lib/properties';
 
 const props = {
     optionsAllowedRe: '.*',
@@ -41,20 +41,26 @@ describe('Compilation environment', () => {
 
     it('Should cache by default', () => {
         const ce = new CompilationEnvironment(compilerProps);
-        return ce.cacheGet('foo').should.eventually.equal(null)
+        return ce
+            .cacheGet('foo')
+            .should.eventually.equal(null)
             .then(() => ce.cachePut('foo', {res: 'bar'}))
             .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}))
             .then(() => ce.cacheGet('baz').should.eventually.equal(null));
     });
     it('Should cache when asked', () => {
         const ce = new CompilationEnvironment(compilerProps, undefined, true);
-        return ce.cacheGet('foo').should.eventually.equal(null)
+        return ce
+            .cacheGet('foo')
+            .should.eventually.equal(null)
             .then(() => ce.cachePut('foo', {res: 'bar'}))
             .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}));
     });
-    it('Shouldn\'t cache when asked', () => {
+    it("Shouldn't cache when asked", () => {
         const ce = new CompilationEnvironment(compilerProps, undefined, false);
-        return ce.cacheGet('foo').should.eventually.equal(null)
+        return ce
+            .cacheGet('foo')
+            .should.eventually.equal(null)
             .then(() => ce.cachePut('foo', {res: 'bar'}))
             .then(() => ce.cacheGet('foo').should.eventually.equal(null));
     });
