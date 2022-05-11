@@ -1,7 +1,7 @@
 name: Library request
 description: Request a new library
-title: "[LIB REQUEST]: "
-labels: ["request", "new-libs"]
+title: '[LIB REQUEST]: '
+labels: ['request', 'new-libs']
 body:
   - type: input
     id: library-name
@@ -15,7 +15,9 @@ body:
     id: library-description
     attributes:
       label: Library description
-      description: A sentence that describes what this library does. It helps us when filling some of the UI elements when adding the library
+      description:
+        A sentence that describes what this library does. It helps us when filling some of the UI elements when adding
+        the library
       placeholder: GoogleTest is a testing library for C++
     validations:
       required: true

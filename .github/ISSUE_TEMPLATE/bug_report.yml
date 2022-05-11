@@ -1,7 +1,7 @@
 name: Bug Report
 description: Create a report to help us improve
-title: "[BUG]: "
-labels: ["bug"]
+title: '[BUG]: '
+labels: ['bug']
 body:
   - type: textarea
     id: description
@@ -50,12 +50,13 @@ body:
       required: false
   - type: markdown
     attributes:
-      value: "# System information"
+      value: '# System information'
   - type: input
     id: operating-system
     attributes:
       label: Operating System
-      description: If applicable (i.e, an issue with how the site behaves for you) the OS version this bug is happening in
+      description:
+        If applicable (i.e, an issue with how the site behaves for you) the OS version this bug is happening in
       placeholder: Ubuntu Linux 20.04
     validations:
       required: false

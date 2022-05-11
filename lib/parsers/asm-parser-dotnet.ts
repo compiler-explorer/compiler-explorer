@@ -24,12 +24,12 @@
 
 import * as utils from '../utils';
 
-type InlineLabel = { name: string, range: { startCol: number, endCol: number } };
-type Source = { file: string, line: number };
+type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
+type Source = {file: string; line: number};
 
 export class DotNetAsmParser {
     scanLabelsAndMethods(asmLines: string[], removeUnused: boolean) {
-        const labelDef: Record<number, { name: string, remove: boolean }> = {};
+        const labelDef: Record<number, {name: string; remove: boolean}> = {};
         const methodDef: Record<number, string> = {};
         const labelUsage: Record<number, InlineLabel> = {};
         const methodUsage: Record<number, InlineLabel> = {};
@@ -47,8 +47,7 @@ export class DotNetAsmParser {
                 if (trimmedLine.includes('(')) {
                     methodDef[line] = trimmedLine.substring(0, trimmedLine.length - 1);
                     allAvailable.push(methodDef[line]);
-                }
-                else {
+                } else {
                     labelDef[line] = {
                         name: trimmedLine.substring(0, trimmedLine.length - 1),
                         remove: false,
@@ -64,7 +63,7 @@ export class DotNetAsmParser {
                 const index = asmLines[line].indexOf(name) + 1;
                 labelUsage[line] = {
                     name: labelResult.value[1],
-                    range: { startCol: index, endCol: index + name.length },
+                    range: {startCol: index, endCol: index + name.length},
                 };
                 usedLabels.push(labelResult.value[1]);
             }
@@ -76,7 +75,7 @@ export class DotNetAsmParser {
                 const index = asmLines[line].indexOf(name) + 1;
                 methodUsage[line] = {
                     name: methodResult.value[1],
-                    range: { startCol: index, endCol: index + name.length },
+                    range: {startCol: index, endCol: index + name.length},
                 };
             }
         }
@@ -125,9 +124,9 @@ export class DotNetAsmParser {
         const startTime = process.hrtime.bigint();
 
         const asm: {
-            text: string,
-            source: Source | null,
-            labels: InlineLabel[],
+            text: string;
+            source: Source | null;
+            labels: InlineLabel[];
         }[] = [];
         let labelDefinitions: [string, number][] = [];
 
@@ -136,7 +135,7 @@ export class DotNetAsmParser {
 
         if (filters.commentOnly) {
             const commentRe = /^\s*(;.*)$/g;
-            asmLines = asmLines.flatMap(l => commentRe.test(l) ? [] : [l]);
+            asmLines = asmLines.flatMap(l => (commentRe.test(l) ? [] : [l]));
         }
 
         const result = this.scanLabelsAndMethods(asmLines, filters.labels);
@@ -170,11 +169,10 @@ export class DotNetAsmParser {
         }
 
         let lineOffset = 1;
-        labelDefinitions = labelDefinitions.sort((a, b) => a[1] < b[1] ? -1 : 1);
+        labelDefinitions = labelDefinitions.sort((a, b) => (a[1] < b[1] ? -1 : 1));
 
         for (const index in labelDefinitions) {
-            if (result.labelDef[labelDefinitions[index][1]] &&
-                result.labelDef[labelDefinitions[index][1]].remove) {
+            if (result.labelDef[labelDefinitions[index][1]] && result.labelDef[labelDefinitions[index][1]].remove) {
                 labelDefinitions[index][1] = -1;
                 lineOffset--;
                 continue;

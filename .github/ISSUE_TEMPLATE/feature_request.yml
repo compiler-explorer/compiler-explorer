@@ -1,7 +1,7 @@
 name: Feature request
 description: Suggest an idea for the project
-title: "[REQUEST]: "
-labels: ["request"]
+title: '[REQUEST]: '
+labels: ['request']
 body:
   - type: textarea
     id: introduction
@@ -23,7 +23,9 @@ body:
     id: alternatives
     attributes:
       label: Describe alternatives you've considered
-      description: If applicable, please add a clear and concise description of any alternative solutions or features you've considered.
+      description:
+        If applicable, please add a clear and concise description of any alternative solutions or features you've
+        considered.
       placeholder: You can pass -E to the compiler flags, but I'd like to easily side-by-side compare
     validations:
       required: true

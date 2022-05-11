@@ -22,16 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ClientState } from '../lib/clientstate';
-import { ClientStateGoldenifier, ClientStateNormalizer } from '../lib/clientstate-normalizer';
+import {ClientState} from '../lib/clientstate';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer';
 
-import { fs } from './utils';
+import {fs} from './utils';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync('test/state/twocompilers.json'));
+        const data = JSON.parse(fs.readFileSync('test/state/twocompilers.json'));
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/twocompilers.json.normalized'));
@@ -45,7 +45,7 @@ describe('Normalizing clientstate', () => {
     it('Should recognize everything and kitchensink as well', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync('test/state/andthekitchensink.json'));
+        const data = JSON.parse(fs.readFileSync('test/state/andthekitchensink.json'));
 
         normalizer.fromGoldenLayout(data);
 
@@ -59,7 +59,7 @@ describe('Normalizing clientstate', () => {
     it('Should support conformanceview', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync('test/state/conformanceview.json'));
+        const data = JSON.parse(fs.readFileSync('test/state/conformanceview.json'));
 
         normalizer.fromGoldenLayout(data);
 
@@ -73,7 +73,7 @@ describe('Normalizing clientstate', () => {
     it('Should support executors', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync('test/state/executor.json'));
+        const data = JSON.parse(fs.readFileSync('test/state/executor.json'));
 
         normalizer.fromGoldenLayout(data);
 
@@ -87,7 +87,7 @@ describe('Normalizing clientstate', () => {
     it('Should support newer features', () => {
         const normalizer = new ClientStateNormalizer();
 
-        const data =  JSON.parse(fs.readFileSync('test/state/executorwrap.json'));
+        const data = JSON.parse(fs.readFileSync('test/state/executorwrap.json'));
 
         normalizer.fromGoldenLayout(data);
 
@@ -100,7 +100,7 @@ describe('Normalizing clientstate', () => {
 
     it('Allow output without editor id', () => {
         const normalizer = new ClientStateNormalizer();
-        const data =  JSON.parse(fs.readFileSync('test/state/output-editor-id.json'));
+        const data = JSON.parse(fs.readFileSync('test/state/output-editor-id.json'));
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(fs.readFileSync('test/state/output-editor-id.normalized.json'));
@@ -115,11 +115,8 @@ describe('ClientState parsing', () => {
     it('Should work without executors', () => {
         const state = new ClientState({
             sessions: [
-                {id:1,
-                    language:'c++',
-                    source:'int main() {}',
-                    compilers:[{id:'g91',options:'-O3 -std=c++2a'}],
-                }],
+                {id: 1, language: 'c++', source: 'int main() {}', compilers: [{id: 'g91', options: '-O3 -std=c++2a'}]},
+            ],
         });
 
         state.sessions[0].compilers.length.should.equal(1);
@@ -129,14 +126,18 @@ describe('ClientState parsing', () => {
     it('Should work with executor', () => {
         const state = new ClientState({
             sessions: [
-                {id:1,
-                    language:'c++',
-                    source:'int main() {}',
+                {
+                    id: 1,
+                    language: 'c++',
+                    source: 'int main() {}',
                     compilers: [],
-                    executors:[{
-                        compiler:{id:'g91',options:'-O3 -std=c++2a'},
-                    }],
-                }],
+                    executors: [
+                        {
+                            compiler: {id: 'g91', options: '-O3 -std=c++2a'},
+                        },
+                    ],
+                },
+            ],
         });
 
         state.sessions[0].compilers.length.should.equal(0);

@@ -62,5 +62,8 @@
     <codeStyleSettings language="kotlin">
       <option name="CODE_STYLE_DEFAULTS" value="KOTLIN_OFFICIAL" />
     </codeStyleSettings>
+    <codeStyleSettings language="yaml">
+      <option name="SPACE_WITHIN_BRACKETS" value="false" />
+    </codeStyleSettings>
   </code_scheme>
 </component>

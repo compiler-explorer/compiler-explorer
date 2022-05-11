@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { MapFileReaderDelphi } from '../lib/mapfiles/map-file-delphi';
-import { MapFileReaderVS } from '../lib/mapfiles/map-file-vs';
+import {MapFileReaderDelphi} from '../lib/mapfiles/map-file-delphi';
+import {MapFileReaderVS} from '../lib/mapfiles/map-file-vs';
 
 describe('Map setup', function () {
     it('VS-map preferred load address', function () {
@@ -32,7 +32,7 @@ describe('Map setup', function () {
 
         reader.tryReadingPreferredAddress(' Preferred load address is 00400000');
         reader.preferredLoadAddress.should.equal(0x400000);
-        
+
         reader.tryReadingPreferredAddress(' Preferred load address is 00410000');
         reader.preferredLoadAddress.should.equal(0x410000);
     });
@@ -92,7 +92,7 @@ describe('Code Segments', function () {
 
         info = reader.getSegmentInfoAddressIsIn(false, reader.getSegmentOffset('0001') + 0x2838 + 0x10);
         info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2838);
-        
+
         info = reader.getSegmentInfoAddressIsIn('0001', reader.getSegmentOffset('0001') + 0x2837);
         info.should.equal(false);
     });
@@ -100,7 +100,9 @@ describe('Code Segments', function () {
     it('Repair VS-Map code segment info', function () {
         const reader = new MapFileReaderVS();
         reader.tryReadingCodeSegmentInfo(' 0002:00000000 00004c73H .text$mn                CODE');
-        reader.tryReadingNamedAddress(' 0002:000007f0       _main                      004117f0 f   ConsoleApplication1.obj');
+        reader.tryReadingNamedAddress(
+            ' 0002:000007f0       _main                      004117f0 f   ConsoleApplication1.obj',
+        );
 
         let info = reader.getSegmentInfoByStartingAddress('0002', 0);
         info.unitName.should.equal('ConsoleApplication1.obj');
@@ -117,7 +119,7 @@ describe('Symbol info', function () {
         const reader = new MapFileReaderDelphi();
         reader.tryReadingNamedAddress(' 0001:00002838       Square');
         reader.namedAddresses.length.should.equal(1);
-        
+
         let info = reader.getSymbolAt('0001', 0x2838);
         info.should.not.equal(false, 'Symbol Square should have been returned 1');
         info.displayName.should.equal('Square');
@@ -132,25 +134,27 @@ describe('Symbol info', function () {
         reader.tryReadingNamedAddress(' 0001:00002C4C       output.MaxArray');
         reader.namedAddresses.length.should.equal(1);
 
-        let info = reader.getSymbolAt('0001', 0x2C4C);
+        let info = reader.getSymbolAt('0001', 0x2c4c);
         info.should.not.equal(false, 'Symbol MaxArray should have been returned');
         info.displayName.should.equal('output.MaxArray');
 
-        info = reader.getSymbolAt(false, reader.getSegmentOffset('0001') + 0x2C4C);
+        info = reader.getSymbolAt(false, reader.getSegmentOffset('0001') + 0x2c4c);
         info.should.not.equal(false, 'Symbol MaxArray should have been returned');
         info.displayName.should.equal('output.MaxArray');
     });
 
     it('VS-Map symbol test', function () {
         const reader = new MapFileReaderVS();
-        reader.tryReadingNamedAddress(' 0002:000006b0       ??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ 004116b0 f i ConsoleApplication1.obj');
+        reader.tryReadingNamedAddress(
+            ' 0002:000006b0       ??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ 004116b0 f i ConsoleApplication1.obj',
+        );
         reader.namedAddresses.length.should.equal(1);
 
-        let info = reader.getSymbolAt('0002', 0x6B0);
+        let info = reader.getSymbolAt('0002', 0x6b0);
         info.should.not.equal(false, 'Symbol start_verify_argument should have been returned 1');
         info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
-        
-        info = reader.getSymbolAt(false, 0x4116B0);
+
+        info = reader.getSymbolAt(false, 0x4116b0);
         info.should.not.equal(false, 'Symbol start_verify_argument should have been returned 2');
         info.displayName.should.equal('??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ');
     });
@@ -159,7 +163,7 @@ describe('Symbol info', function () {
         const reader = new MapFileReaderDelphi();
         reader.tryReadingNamedAddress(' 0001:00002838       Square');
         reader.namedAddresses.length.should.equal(1);
-        
+
         reader.tryReadingNamedAddress(' 0001:00002838       Square');
         reader.namedAddresses.length.should.equal(1);
     });
@@ -175,16 +179,18 @@ describe('Delphi-Map Line number info', function () {
         const reader = new MapFileReaderDelphi();
         reader.tryReadingLineNumbers('    17 0001:000028A4').should.equal(true);
 
-        let lineInfo = reader.getLineInfoByAddress('0001', 0x28A4);
+        let lineInfo = reader.getLineInfoByAddress('0001', 0x28a4);
         lineInfo.lineNumber.should.equal(17);
 
-        lineInfo = reader.getLineInfoByAddress(false, reader.getSegmentOffset('0001') + 0x28A4);
+        lineInfo = reader.getLineInfoByAddress(false, reader.getSegmentOffset('0001') + 0x28a4);
         lineInfo.lineNumber.should.equal(17);
     });
 
     it('Multiple lines', function () {
         const reader = new MapFileReaderDelphi();
-        reader.tryReadingLineNumbers('    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858').should.equal(true);
+        reader
+            .tryReadingLineNumbers('    12 0001:00002838    13 0001:0000283B    14 0001:00002854    15 0001:00002858')
+            .should.equal(true);
 
         let lineInfo = reader.getLineInfoByAddress('0001', 0x2838);
         lineInfo.lineNumber.should.equal(12);
@@ -195,7 +201,7 @@ describe('Delphi-Map Line number info', function () {
         lineInfo = reader.getLineInfoByAddress('0001', 0x2854);
         lineInfo.lineNumber.should.equal(14);
 
-        lineInfo = reader.getLineInfoByAddress('0001', 0x283B);
+        lineInfo = reader.getLineInfoByAddress('0001', 0x283b);
         lineInfo.lineNumber.should.equal(13);
     });
 });
@@ -210,12 +216,12 @@ describe('Delphi-Map load test', function () {
         reader.namedAddresses.length.should.equal(11);
 
         let info = reader.getSegmentInfoByUnitName('output.pas');
-        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2C4C);
+        info.addressInt.should.equal(reader.getSegmentOffset('0001') + 0x2c4c);
 
         info = reader.getICodeSegmentInfoByUnitName('output.pas');
         info.segment.should.equal('0002');
-        info.addressWithoutOffset.should.equal(0xB0);
-        info.addressInt.should.equal(0x4040B0);
+        info.addressWithoutOffset.should.equal(0xb0);
+        info.addressInt.should.equal(0x4040b0);
     });
 });
 
@@ -231,8 +237,8 @@ describe('VS-Map load test', function () {
         reader.getSegmentOffset('0002').should.equal(0x411000, 'offset 2');
         reader.getSegmentOffset('0003').should.equal(0x416000, 'offset 3');
         reader.getSegmentOffset('0004').should.equal(0x419000, 'offset 4');
-        reader.getSegmentOffset('0005').should.equal(0x41A000, 'offset 5');
-        reader.getSegmentOffset('0007').should.equal(0x41C000, 'offset 7');
+        reader.getSegmentOffset('0005').should.equal(0x41a000, 'offset 5');
+        reader.getSegmentOffset('0007').should.equal(0x41c000, 'offset 7');
     });
 });
 
@@ -241,7 +247,7 @@ describe('VS-Map address checking', function () {
         const reader = new MapFileReaderVS();
 
         const mainAddresses = [
-            {startAddress:  1, startAddressHex: '00000001', endAddress:  10, endAddressHex: '0000000A'},
+            {startAddress: 1, startAddressHex: '00000001', endAddress: 10, endAddressHex: '0000000A'},
             {startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF'},
         ];
 
@@ -256,7 +262,7 @@ describe('VS-Map address checking', function () {
         const reader = new MapFileReaderVS();
 
         const mainAddresses = [
-            {startAddress:  1, startAddressHex: '00000001', endAddress:  10, endAddressHex: '0000000A'},
+            {startAddress: 1, startAddressHex: '00000001', endAddress: 10, endAddressHex: '0000000A'},
             {startAddress: 16, startAddressHex: '00000010', endAddress: 255, endAddressHex: '000000FF'},
         ];
 

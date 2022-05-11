@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
 import chai from 'chai';
 
-import { CompilationEnvironment } from '../lib/compilation-env';
-import { CompilationQueue } from '../lib/compilation-queue';
-import { CompilerProps, fakeProps } from '../lib/properties';
+import {CompilationEnvironment} from '../lib/compilation-env';
+import {CompilationQueue} from '../lib/compilation-queue';
+import {CompilerProps, fakeProps} from '../lib/properties';
 
 export function makeCompilationEnvironment(options) {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));

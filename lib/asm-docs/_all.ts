@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export { Amd64DocumentationProvider } from './amd64';
-export { Arm32DocumentationProvider } from './arm32';
-export { AvrDocumentationProvider } from './avr';
-export { JavaDocumentationProvider } from './java';
-export { Mos6502DocumentationProvider } from './mos6502';
+export {Amd64DocumentationProvider} from './amd64';
+export {Arm32DocumentationProvider} from './arm32';
+export {AvrDocumentationProvider} from './avr';
+export {JavaDocumentationProvider} from './java';
+export {Mos6502DocumentationProvider} from './mos6502';
