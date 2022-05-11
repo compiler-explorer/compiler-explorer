@@ -23,28 +23,34 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
+const monaco = require('monaco-editor');
 
 function definition() {
     return {
         keywords: [
-            'module', 'import', 'main', 'where', 'otherwise', 'newtype',
-            'definition', 'implementation', 'from', 'class', 'instance', 'abort',
+            'module',
+            'import',
+            'main',
+            'where',
+            'otherwise',
+            'newtype',
+            'definition',
+            'implementation',
+            'from',
+            'class',
+            'instance',
+            'abort',
         ],
 
-        builtintypes: [
-            'Int', 'Real', 'String',
-        ],
+        builtintypes: ['Int', 'Real', 'String'],
 
-        operators: [
-            '=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$',
-        ],
+        operators: ['=', '==', '>=', '<=', '+', '-', '*', '/', '::', '->', '=:', '=>', '|', '$'],
 
         numbers: /-?[0-9.]/,
 
         tokenizer: {
             root: [
-                { include: '@whitespace' },
+                {include: '@whitespace'},
 
                 [/->/, 'operators'],
 
@@ -54,13 +60,16 @@ function definition() {
 
                 [/[+\-*/=<>$]/, 'operators'],
 
-                [/[a-zA-Z_][a-zA-Z0-9_]*/, {
-                    cases: {
-                        '@builtintypes': 'type',
-                        '@keywords': 'keyword',
-                        '@default': '',
+                [
+                    /[a-zA-Z_][a-zA-Z0-9_]*/,
+                    {
+                        cases: {
+                            '@builtintypes': 'type',
+                            '@keywords': 'keyword',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 [/[()[\],:]/, 'delimiter'],
 
@@ -88,4 +97,4 @@ function definition() {
 monaco.languages.register({id: 'haskell'});
 monaco.languages.setMonarchTokensProvider('haskell', definition());
 
-export {}
+export {};

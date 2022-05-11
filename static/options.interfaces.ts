@@ -22,19 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Language} from '../types/languages.interfaces';
+
 export interface LibraryVersion {
     alias: string[];
     hidden: boolean;
     libId: string;
     used: boolean;
     version?: string;
-    versionId: string;
 }
 
 export interface Library {
     dependencies: string[];
     description?: string;
-    examples: string[];
+    examples?: string[];
     name?: string;
     url?: string;
     versions: Record<string, LibraryVersion>;
@@ -44,7 +45,15 @@ export type LanguageLibs = Record<string, Library>;
 
 export type Libs = Record<string, LanguageLibs>;
 
+export type LibsPerRemote = Record<string, LanguageLibs>;
+
 export interface Options {
     libs: Libs;
+    remoteLibs: LibsPerRemote;
+    languages: Record<string, Language>;
     defaultLibs: Record<string, string | null>;
+    defaultFontScale: number;
+    sentryDsn?: string;
+    release?: string;
+    sentryEnvironment?: string;
 }

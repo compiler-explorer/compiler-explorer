@@ -23,12 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-var monaco = require('monaco-editor');
-var cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
-var cppp = require('./cppp-mode');
+const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+const cppp = require('./cppp-mode');
 
 function definition() {
-    var cppx_blue = $.extend(true, {}, cppp); // deep copy
+    const cppx_blue = $.extend(true, {}, cppp); // deep copy
     cppx_blue.tokenPostfix = '.cppx-blue';
 
     // add the 'type' keyword

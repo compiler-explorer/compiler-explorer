@@ -29,25 +29,27 @@ const lzstring = require('lz-string');
 const rison = require('rison');
 const Components = require('./components');
 
-
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
     if (!sc) throw new Error('Unable to determine compiler from old state');
-    const content = [];
+    // TODO: Restrict type once Components has been tsfied
+    const content: any[] = [];
     let source;
     if (sc.sourcez) {
         source = lzstring.decompressFromBase64(sc.sourcez);
     } else {
         source = sc.source;
     }
-    const options = {compileOnChange: true, colouriseAsm: state.filterAsm.colouriseAsm};
+    const options = {
+        compileOnChange: true,
+        colouriseAsm: state.filterAsm.colouriseAsm,
+    };
     const filters = _.clone(state.filterAsm);
     delete filters.colouriseAsm;
     content.push(Components.getEditorWith(1, source, options));
     content.push(Components.getCompilerWith(1, filters, sc.options, sc.compiler));
     return {version: 4, content: [{type: 'row', content: content}]};
 }
-
 
 export function loadState(state: any): any {
     if (!state || state.version === undefined) return false;
@@ -62,7 +64,7 @@ export function loadState(state: any): any {
         /* falls through */
         case 3:
             state = convertOldState(state);
-            break;  // no fall through
+            break; // no fall through
         case 4:
             state = GoldenLayout.unminifyConfig(state);
             break;
@@ -108,7 +110,7 @@ export function serialiseState(stateText: any): string {
     ctx.version = 4;
     const uncompressed = risonify(ctx);
     const compressed = risonify({z: lzstring.compressToBase64(uncompressed)});
-    const MinimalSavings = 0.20;  // at least this ratio smaller
+    const MinimalSavings = 0.2; // at least this ratio smaller
     if (compressed.length < uncompressed.length * (1.0 - MinimalSavings)) {
         return compressed;
     } else {

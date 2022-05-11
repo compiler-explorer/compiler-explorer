@@ -22,27 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
+import {options} from './options';
 import {LanguageLibs, Library} from './options.interfaces';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
-export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
+function getRemoteId(language: string, remoteUrl: string): string {
+    const url: URL = new URL(remoteUrl);
+    return url.host.replace(/\./g, '_') + '_' + language;
+}
+
+function getRemoteLibraries(language: string, remoteUrl: string): LanguageLibs {
+    const remoteId = getRemoteId(language, remoteUrl);
+    return options.remoteLibs[remoteId];
+}
+
+function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
     const filterLibAndVersion = filter.map(lib => {
         const match = lib.match(LIB_MATCH_RE);
         return {
             id: match ? match[1] : lib,
-            version: match ? match[2] : false
+            version: match ? match[2] : false,
         };
     });
 
     const filterLibIds = new Set(filterLibAndVersion.map(lib => lib.id));
 
     const copiedLibraries: Record<string, Library> = {};
-    for (let libid in allLibraries) {
+    for (const libid in allLibraries) {
         if (!filterLibIds.has(libid)) continue;
         const lib = {...allLibraries[libid]};
-        for (let versionid in lib.versions) {
+        for (const versionid in lib.versions) {
             for (const filter of filterLibAndVersion) {
                 if (!(!filter.version || filter.version === versionid)) {
                     delete filterLibAndVersion[versionid];
@@ -55,10 +65,22 @@ export function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: strin
     return copiedLibraries;
 }
 
-export function getSupportedLibraries(supportedLibrariesArr: string[], langId: string) {
-    const allLibs = options.libs[langId];
-    if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
-        return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+export function getSupportedLibraries(
+    supportedLibrariesArr: string[] | undefined,
+    langId: string,
+    remote
+): LanguageLibs {
+    if (!remote) {
+        const allLibs = options.libs[langId];
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
+    } else {
+        const allLibs = getRemoteLibraries(langId, remote.target);
+        if (supportedLibrariesArr && supportedLibrariesArr.length > 0) {
+            return copyAndFilterLibraries(allLibs, supportedLibrariesArr);
+        }
+        return allLibs;
     }
-    return allLibs;
 }

@@ -11,14 +11,6 @@ levels:
         priority: 100
         topIcon: true
         statsId: solid_sands
-      - name: Stop Bugs
-        description: Identify defects, vulnerabilities, unmaintainable code, and more with PC-lint Plus.
-        icon: https://static.ce-cdn.net/gimpel/pcl_logo2.png
-        img: https://static.ce-cdn.net/gimpel/logo_large_tint.png
-        url: https://gimpel.com/?promo=godbolt
-        priority: 200
-        topIcon: true
-        statsId: gimpel
       - name: Intel
         description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
         icon: https://static.ce-cdn.net/intel/logo-classicblue-3000px-single-colour.png
@@ -28,6 +20,16 @@ levels:
         topIcon: true
         sideBySide: true
         statsId: intel
+      - name: Backtrace
+        description: We compress error debugging time by automating capture and providing essential context and insight about impact, all on one platform. Get started for free.
+        icon: https://static.ce-cdn.net/bt/Black-BT-Logo-A.svg
+        icon_dark: https://static.ce-cdn.net/bt/White-BT-Logo-A.svg
+        img: https://static.ce-cdn.net/bt/BT-logo (1).png
+        url: https://hubs.la/Q013D7rx0
+        priority: 500
+        topIcon: true
+        sideBySide: true
+        statsId: backtrace
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -61,6 +63,10 @@ levels:
       - Kade Phillips
       - Brendan Bellows
       - Daniel Williams
+      - name: Paul Williams
+        url: https://pcwilliams.design/
+      - name: Molecular Matters GmbH
+        url: https://liveplusplus.tech/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -143,7 +149,6 @@ levels:
       - Reiner Eiteljoerge
       - Johnathan Roatch
       - John Biesnecker
-      - Paul Williams
       - CB Bailey
       - Joe Doyle
       - Jason Rice
@@ -350,3 +355,20 @@ levels:
       - Nico L'Insalata
       - James Wilcox
       - Jonas Greitemann
+      - Andrew Spencer
+      - Nathan Lawrence
+      - Barry Brown
+      - Jan Stoltenberg-Lerche
+      - Angus Hewlett
+      - Joshua
+      - Vladimir Motyka
+      - Gerasimos Chourdakis
+      - Dusan Jovanovic
+      - Geoff Evans
+      - Pat Monaghan
+      - NoNae
+      - Martin Weitzel
+      - Scott Bruce
+      - Sergii Lovygin
+      - Marton Szasz
+      - CiotatSoft

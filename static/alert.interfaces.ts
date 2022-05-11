@@ -40,8 +40,8 @@ export interface AlertAskOptions {
 }
 
 export type AlertEnterTextOptions = {
-    /** The enter text action returns a value which is captured here */
-    yes?: (answer: string) => void;
+    /** The enter-text action returns a value which is captured here */
+    yes?: (answer?: string | number | string[]) => void;
 } & Partial<Pick<AlertAskOptions, 'no' | 'yesHtml' | 'yesClass' | 'noHtml' | 'noClass' | 'onClose'>>;
 
 export interface AlertNotifyOptions {
@@ -49,26 +49,26 @@ export interface AlertNotifyOptions {
      * Which group this notification is from. Sets data-group attribute value
      * Default: ""
      */
-    group?: string
+    group?: string;
     /** If set to true, other notifications within the same group will be removed before sending this one. (Note that
      * this only has any effect if options.group is set).
      * Default: true
      */
-    collapseSimilar?: boolean
+    collapseSimilar?: boolean;
     /**
      * Space separated list of HTML classes to give to the notification's div element.
      * Default: ""
      */
-    alertClass?: string
+    alertClass?: string;
     /**
      * If set to true, the notification will fade out and be removed automatically.
      * Default: true
      */
-    autoDismiss?: boolean
+    autoDismiss?: boolean;
     /**
      * If allow by autoDismiss, controls how long the notification will be visible (in milliseconds) before
      * automatically removed
      * Default: 5000
      */
-    dismissTime?: number
+    dismissTime?: number;
 }

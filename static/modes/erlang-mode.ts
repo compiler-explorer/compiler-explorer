@@ -30,11 +30,9 @@ function definition() {
 
         funcdef: ['when', '->', 'if', 'end', 'unknown', 'case', 'of', 'receive', 'after'],
 
-        operators: [
-            '<=', '>=', '==', '!=', '=<', '+', '-', '*', '/',
-        ],
+        operators: ['<=', '>=', '==', '!=', '=<', '+', '-', '*', '/'],
 
-        symbols: /[=><!+\-\*\/]+/,
+        symbols: /[=><!+\-*/]+/,
 
         escapes: /~(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
 
@@ -42,29 +40,38 @@ function definition() {
             root: [
                 [/-?\d[\d.]*/, 'number'],
 
-                [/-[a-zA-Z][\w]*/, {
-                    cases: {
-                        '@commands': 'keyword',
-                        '@default': '',
-                    }
-                }],
-
-                [/[a-zA-Z-][>\w]*/, {
-                    cases: {
-                        '@funcdef': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /-[a-zA-Z][\w]*/,
+                    {
+                        cases: {
+                            '@commands': 'keyword',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
-                [/[(){}\[\]]/, '@brackets'],
+                [
+                    /[a-zA-Z-][>\w]*/,
+                    {
+                        cases: {
+                            '@funcdef': 'keyword',
+                            '@default': 'identifier',
+                        },
+                    },
+                ],
+
+                [/[(){}[\]]/, '@brackets'],
                 [/<<.*>>/, '@brackets'],
 
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'delimiter',
-                        '@default': ''
-                    }
-                }],
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'delimiter',
+                            '@default': '',
+                        },
+                    },
+                ],
 
                 [/^%.*/, 'comment'],
 
@@ -79,13 +86,9 @@ function definition() {
                 [/[;.,]/, 'delimiter'],
             ],
 
-            whitespace: [
-                [/\s/]
-            ],
+            whitespace: [[/\s/]],
 
-            comment: [
-                [/%/, 'comment'],
-            ],
+            comment: [[/%/, 'comment']],
 
             stringDouble: [
                 [/[^\\"]+/, 'string'],
@@ -105,34 +108,34 @@ function definition() {
 function configuration() {
     return {
         comments: {
-            lineComment: "%"
+            lineComment: '%',
         },
         brackets: [
-            ["{", "}"],
-            ["[", "]"],
-            ["(", ")"],
-            ["<<", ">>"]
+            ['{', '}'],
+            ['[', ']'],
+            ['(', ')'],
+            ['<<', '>>'],
         ],
         autoClosingPairs: [
-            { open: "{", "close": "}", "notIn": ["string", "comment"] },
-            { open: "[", "close": "]", "notIn": ["string", "comment"] },
-            { open: "(", "close": ")", "notIn": ["string", "comment"] },
-            { open: "<<", "close": ">>", "notIn": ["string", "comment"] },
-            { open: "'", "close": "'", "notIn": ["string", "comment"] },
-            { open: "\"", "close": "\"" }
+            {open: '{', close: '}', notIn: ['string', 'comment']},
+            {open: '[', close: ']', notIn: ['string', 'comment']},
+            {open: '(', close: ')', notIn: ['string', 'comment']},
+            {open: '<<', close: '>>', notIn: ['string', 'comment']},
+            {open: "'", close: "'", notIn: ['string', 'comment']},
+            {open: '"', close: '"'},
         ],
         folding: {
             markers: {
-                start: "^\\s*\\%\\%region\\b",
-                end: "^\\s*\\%\\%endregion\\b"
-            }
-        }
+                start: '^\\s*\\%\\%region\\b',
+                end: '^\\s*\\%\\%endregion\\b',
+            },
+        },
     };
 }
 
 const def = definition();
 
-monaco.languages.register({ id: 'erlang' });
+monaco.languages.register({id: 'erlang'});
 monaco.languages.setMonarchTokensProvider('erlang', def);
 monaco.languages.setLanguageConfiguration('erlang', configuration());
 

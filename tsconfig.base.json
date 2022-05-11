@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    /* Code generation */
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "importHelpers": true,
+    /* Module resolution */
+    "esModuleInterop": true,
+    /* Other options */
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "noImplicitOverride": true
+  }
+}

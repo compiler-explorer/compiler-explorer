@@ -26,20 +26,18 @@
 var $ = require('jquery');
 var _ = require('underscore');
 var ga = require('../analytics').ga;
-var Toggles = require('../toggles').Toggles;
-var FontScale = require('../fontscale').FontScale;
+var Toggles = require('../widgets/toggles').Toggles;
+var FontScale = require('../widgets/fontscale').FontScale;
 var options = require('../options').options;
 var Alert = require('../alert').Alert;
-var LibsWidget = require('../libs-widget').LibsWidget;
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
 var AnsiToHtml = require('../ansi-to-html').Filter;
-var TimingWidget = require('../timing-info-widget');
+var TimingWidget = require('../widgets/timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
-var Settings = require('../settings');
+var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-
-require('../modes/asm-mode');
-require('../modes/ptx-mode');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 var languages = options.languages;
 
@@ -51,7 +49,6 @@ function makeAnsiToHtml(color) {
         escapeXML: true,
     });
 }
-
 
 function Executor(hub, container, state) {
     this.container = container;
@@ -85,7 +82,7 @@ function Executor(hub, container, state) {
     this.nextCMakeRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -101,6 +98,8 @@ function Executor(hub, container, state) {
         _.bind(this.onCompilerChange, this),
         this.compilerIsVisible
     );
+
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -159,22 +158,23 @@ Executor.prototype.undefer = function () {
 };
 
 Executor.prototype.resize = function () {
-    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, $(this.topBar[0]), this.hideable);
+    _.defer(function (self) {
+        var topBarHeight = utils.updateAndCalcTopBarHeight(self.domRoot, $(self.topBar[0]), self.hideable);
 
-    // We have some more elements that modify the topBarHeight
-    if (!this.panelCompilation.hasClass('d-none')) {
-        topBarHeight += this.panelCompilation.outerHeight(true);
-    }
-    if (!this.panelArgs.hasClass('d-none')) {
-        topBarHeight += this.panelArgs.outerHeight(true);
-    }
-    if (!this.panelStdin.hasClass('d-none')) {
-        topBarHeight += this.panelStdin.outerHeight(true);
-    }
+        // We have some more elements that modify the topBarHeight
+        if (!self.panelCompilation.hasClass('d-none')) {
+            topBarHeight += self.panelCompilation.outerHeight(true);
+        }
+        if (!self.panelArgs.hasClass('d-none')) {
+            topBarHeight += self.panelArgs.outerHeight(true);
+        }
+        if (!self.panelStdin.hasClass('d-none')) {
+            topBarHeight += self.panelStdin.outerHeight(true);
+        }
 
-    var bottomBarHeight = this.bottomBar.outerHeight(true);
-    this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
-
+        var bottomBarHeight = self.bottomBar.outerHeight(true);
+        self.outputContentRoot.outerHeight(self.domRoot.height() - topBarHeight - bottomBarHeight);
+    }, this);
 };
 
 function errorResult(message) {
@@ -224,21 +224,23 @@ Executor.prototype.compileFromEditorSource = function (options, bypassCache) {
         });
         return;
     }
-    this.compilerService.expand(this.source).then(_.bind(function (expanded) {
-        var request = {
-            source: expanded || '',
-            compiler: this.compiler ? this.compiler.id : '',
-            options: options,
-            lang: this.currentLangId,
-            files: [],
-        };
-        if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-        } else {
-            this.sendCompile(request);
-        }
-    }, this));
+    this.compilerService.expand(this.source).then(
+        _.bind(function (expanded) {
+            var request = {
+                source: expanded || '',
+                compiler: this.compiler ? this.compiler.id : '',
+                options: options,
+                lang: this.currentLangId,
+                files: [],
+            };
+            if (bypassCache) request.bypassCache = true;
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this)
+    );
 };
 
 Executor.prototype.compileFromTree = function (options, bypassCache) {
@@ -293,7 +295,8 @@ Executor.prototype.sendCMakeCompile = function (request) {
     this.pendingCMakeRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
-    this.compilerService.submitCMake(request)
+    this.compilerService
+        .submitCMake(request)
         .then(function (x) {
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
@@ -302,7 +305,7 @@ Executor.prototype.sendCMakeCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code || x;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
@@ -323,7 +326,8 @@ Executor.prototype.sendCompile = function (request) {
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
-    this.compilerService.submit(request)
+    this.compilerService
+        .submit(request)
         .then(function (x) {
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
@@ -332,34 +336,39 @@ Executor.prototype.sendCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
 };
 
-Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum/*, column*/) {
+Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum /*, column*/) {
     var elem = $('<div/>').appendTo(container);
     if (lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
-                .click(_.bind(function (e) {
-                    // var editorId = this.getEditorIdBySourcefile(source);
-                    // if (editorId) {
-                    //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
-                    // }
-                    // do not bring user to the top of index.html
-                    // http://stackoverflow.com/questions/3252730
-                    e.preventDefault();
-                    return false;
-                }, this))
-                .on('mouseover', _.bind(function () {
-                    // var editorId = this.getEditorIdBySourcefile(source);
-                    // if (editorId) {
-                    //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
-                    // }
-                }, this))
+                .click(
+                    _.bind(function (e) {
+                        // var editorId = this.getEditorIdBySourcefile(source);
+                        // if (editorId) {
+                        //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
+                        // }
+                        // do not bring user to the top of index.html
+                        // http://stackoverflow.com/questions/3252730
+                        e.preventDefault();
+                        return false;
+                    }, this)
+                )
+                .on(
+                    'mouseover',
+                    _.bind(function () {
+                        // var editorId = this.getEditorIdBySourcefile(source);
+                        // if (editorId) {
+                        //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
+                        // }
+                    }, this)
+                )
         );
     } else {
         elem.html(msg);
@@ -374,22 +383,26 @@ Executor.prototype.clearPreviousOutput = function () {
 
 Executor.prototype.handleOutput = function (output, element, ansiParser) {
     var outElem = $('<pre class="card"></pre>').appendTo(element);
-    _.each(output, function (obj) {
-        if (obj.text === '') {
-            this.addCompilerOutputLine('<br/>', outElem);
-        } else {
-            var lineNumber = obj.tag ? obj.tag.line : obj.line;
-            var columnNumber = obj.tag ? obj.tag.column : -1;
-            this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
-        }
-    }, this);
+    _.each(
+        output,
+        function (obj) {
+            if (obj.text === '') {
+                this.addCompilerOutputLine('<br/>', outElem);
+            } else {
+                var lineNumber = obj.tag ? obj.tag.line : obj.line;
+                var columnNumber = obj.tag ? obj.tag.column : -1;
+                this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
+            }
+        },
+        this
+    );
     return outElem;
 };
 
 Executor.prototype.getBuildStdoutFromResult = function (result) {
     var arr = [];
 
-    if (result.buildResult) {
+    if (result.buildResult && result.buildResult.stdout !== undefined) {
         arr = arr.concat(result.buildResult.stdout);
     }
 
@@ -405,7 +418,7 @@ Executor.prototype.getBuildStdoutFromResult = function (result) {
 Executor.prototype.getBuildStderrFromResult = function (result) {
     var arr = [];
 
-    if (result.buildResult) {
+    if (result.buildResult && result.buildResult.stderr !== undefined) {
         arr = arr.concat(result.buildResult.stderr);
     }
 
@@ -419,7 +432,7 @@ Executor.prototype.getBuildStderrFromResult = function (result) {
 };
 
 Executor.prototype.getExecutionStdoutfromResult = function (result) {
-    if (result.execResult) {
+    if (result.execResult && result.execResult.stdout !== undefined) {
         return result.execResult.stdout;
     }
 
@@ -529,8 +542,11 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
     }
     this.compileTimeLabel.text(timeLabelText);
 
-    this.setCompilationOptionsPopover(result.buildResult &&
-    result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
+    this.setCompilationOptionsPopover(
+        result.buildResult && result.buildResult.compilationOptions
+            ? result.buildResult.compilationOptions.join(' ')
+            : ''
+    );
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
 };
@@ -577,8 +593,7 @@ Executor.prototype.onEditorChange = function (editor, source, langId, compilerId
         }
     }
 
-    if (editor === this.sourceEditorId && langId === this.currentLangId &&
-        (compilerId === undefined)) {
+    if (editor === this.sourceEditorId && langId === this.currentLangId && compilerId === undefined) {
         this.source = source;
         if (this.settings.compileOnChange) {
             this.compile();
@@ -608,16 +623,25 @@ Executor.prototype.initButtons = function (state) {
 
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('mouseup', _.bind(function (e) {
-        var target = $(e.target);
-        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.prependOptions.popover('hide');
+    $(document).on(
+        'mouseup',
+        _.bind(function (e) {
+            var target = $(e.target);
+            if (
+                !target.is(this.prependOptions) &&
+                this.prependOptions.has(target).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.prependOptions.popover('hide');
 
-        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.fullCompilerName.popover('hide');
-    }, this));
+            if (
+                !target.is(this.fullCompilerName) &&
+                this.fullCompilerName.has(target).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.fullCompilerName.popover('hide');
+        }, this)
+    );
 
     this.optionsField.val(this.options);
     this.execArgsField.val(this.executionArguments);
@@ -687,7 +711,11 @@ Executor.prototype.initLibraries = function (state) {
         this.libsButton,
         state,
         _.bind(this.onLibsChanged, this),
-        LibUtils.getSupportedLibraries(this.compiler ? this.compiler.libsArr : [], this.currentLangId)
+        LibUtils.getSupportedLibraries(
+            this.compiler ? this.compiler.libsArr : [],
+            this.currentLangId,
+            this.compiler ? this.compiler.remote : null
+        )
     );
 };
 
@@ -698,14 +726,19 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
     this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    this.container.on('open', function () {
-        this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
-    }, this);
+    this.container.on(
+        'open',
+        function () {
+            this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
+        },
+        this
+    );
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -715,11 +748,11 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('findExecutors', this.sendExecutor, this);
     this.eventHub.on('languageChange', this.onLanguageChange, this);
 
-    this.fullTimingInfo
-        .off('click')
-        .click(_.bind(function () {
+    this.fullTimingInfo.off('click').click(
+        _.bind(function () {
             TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
-        }, this));
+        }, this)
+    );
 };
 
 Executor.prototype.showPanel = function (button, panel) {
@@ -746,73 +779,98 @@ Executor.prototype.togglePanel = function (button, panel) {
 Executor.prototype.initCallbacks = function () {
     this.initListeners();
 
-    var optionsChange = _.debounce(_.bind(function (e) {
-        this.onOptionsChange($(e.target).val());
-    }, this), 800);
+    var optionsChange = _.debounce(
+        _.bind(function (e) {
+            this.onOptionsChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    var execArgsChange = _.debounce(_.bind(function (e) {
-        this.onExecArgsChange($(e.target).val());
-    }, this), 800);
+    var execArgsChange = _.debounce(
+        _.bind(function (e) {
+            this.onExecArgsChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    var execStdinChange = _.debounce(_.bind(function (e) {
-        this.onExecStdinChange($(e.target).val());
-    }, this), 800);
+    var execStdinChange = _.debounce(
+        _.bind(function (e) {
+            this.onExecStdinChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    this.optionsField
-        .on('change', optionsChange)
-        .on('keyup', optionsChange);
+    this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
 
-    this.execArgsField
-        .on('change', execArgsChange)
-        .on('keyup', execArgsChange);
+    this.execArgsField.on('change', execArgsChange).on('keyup', execArgsChange);
 
-    this.execStdinField
-        .on('change', execStdinChange)
-        .on('keyup', execStdinChange);
+    this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
 
-    this.compileClearCache.on('click', _.bind(function () {
-        this.compilerService.cache.reset();
-        this.compile(true);
-    }, this));
+    this.compileClearCache.on(
+        'click',
+        _.bind(function () {
+            this.compilerService.cache.reset();
+            this.compile(true);
+        }, this)
+    );
 
     // Dismiss the popover on escape.
-    $(document).on('keyup.editable', _.bind(function (e) {
-        if (e.which === 27) {
-            this.libsButton.popover('hide');
-        }
-    }, this));
+    $(document).on(
+        'keyup.editable',
+        _.bind(function (e) {
+            if (e.which === 27) {
+                this.libsButton.popover('hide');
+            }
+        }, this)
+    );
 
-    this.toggleCompilation.on('click', _.bind(function () {
-        this.togglePanel(this.toggleCompilation, this.panelCompilation);
-    }, this));
+    this.toggleCompilation.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleCompilation, this.panelCompilation);
+        }, this)
+    );
 
-    this.toggleArgs.on('click', _.bind(function () {
-        this.togglePanel(this.toggleArgs, this.panelArgs);
-    }, this));
+    this.toggleArgs.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleArgs, this.panelArgs);
+        }, this)
+    );
 
-    this.toggleStdin.on('click', _.bind(function () {
-        this.togglePanel(this.toggleStdin, this.panelStdin);
-    }, this));
+    this.toggleStdin.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleStdin, this.panelStdin);
+        }, this)
+    );
 
-    this.toggleCompilerOut.on('click', _.bind(function () {
-        this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
-    }, this));
+    this.toggleCompilerOut.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
+        }, this)
+    );
 
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('click', _.bind(function (e) {
-        var elem = this.libsButton;
-        var target = $(e.target);
-        if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
-            elem.popover('hide');
-        }
-    }, this));
+    $(document).on(
+        'click',
+        _.bind(function (e) {
+            var elem = this.libsButton;
+            var target = $(e.target);
+            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+                elem.popover('hide');
+            }
+        }, this)
+    );
 
     this.eventHub.on('initialised', this.undefer, this);
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
-            attributes: true, attributeFilter: ['style'],
+            attributes: true,
+            attributeFilter: ['style'],
         });
     }
 };
@@ -836,7 +894,7 @@ Executor.prototype.onExecStdinChange = function (newStdin) {
 };
 
 Executor.prototype.onRequestCompilation = function (editorId, treeId) {
-    if ((editorId === this.sourceEditorId) || (treeId && treeId === this.sourceTreeId)) {
+    if (editorId === this.sourceEditorId || (treeId && treeId === this.sourceTreeId)) {
         this.compile();
     }
 };
@@ -878,7 +936,7 @@ Executor.prototype.onToggleWrapChange = function () {
 };
 
 Executor.prototype.sendExecutor = function () {
-    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId);
+    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId, this.sourceTreeId);
 };
 
 Executor.prototype.onEditorClose = function (editor) {
@@ -909,6 +967,7 @@ Executor.prototype.currentState = function () {
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
         wrap: this.toggleWrapButton.get().wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -921,20 +980,17 @@ Executor.prototype.getCompilerName = function () {
     return this.compiler ? this.compiler.name : 'No compiler set';
 };
 
-
 Executor.prototype.getLanguageName = function () {
     var lang = options.languages[this.currentLangId];
     return lang ? lang.name : '?';
 };
 
 Executor.prototype.getLinkHint = function () {
-    var linkhint = '';
     if (this.sourceTreeId) {
-        linkhint = 'Tree #' + this.sourceTreeId;
+        return 'Tree #' + this.sourceTreeId;
     } else {
-        linkhint = 'Editor #' + this.sourceEditorId;
+        return 'Editor #' + this.sourceEditorId;
     }
-    return linkhint;
 };
 
 Executor.prototype.getPaneName = function () {
@@ -943,12 +999,17 @@ Executor.prototype.getPaneName = function () {
     return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
 };
 
+Executor.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
+};
+
 Executor.prototype.updateCompilerName = function () {
+    this.updateTitle();
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
     var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
     var compilerNotification = this.compiler ? this.compiler.notification : '';
-    this.container.setTitle(this.getPaneName());
     this.shortCompilerName.text(compilerName);
     this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
@@ -957,7 +1018,8 @@ Executor.prototype.setCompilationOptionsPopover = function (content) {
     this.prependOptions.popover('dispose');
     this.prependOptions.popover({
         content: content || 'No options in use',
-        template: '<div class="popover' +
+        template:
+            '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
@@ -969,32 +1031,35 @@ Executor.prototype.setCompilerVersionPopover = function (version, notification) 
     // `notification` contains HTML from a config file, so is 'safe'.
     // `version` comes from compiler output, so isn't, and is escaped.
     var bodyContent = $('<div>');
-    var versionContent = $('<div>')
-        .html(_.escape(version.version));
+    var versionContent = $('<div>').html(_.escape(version.version));
     bodyContent.append(versionContent);
     if (version.fullVersion) {
         var hiddenSection = $('<div>');
-        var hiddenVersionText = $('<div>')
-            .html(_.escape(version.fullVersion))
-            .hide();
+        var hiddenVersionText = $('<div>').html(_.escape(version.fullVersion)).hide();
         var clickToExpandContent = $('<a>')
             .attr('href', 'javascript:;')
             .text('Toggle full version output')
-            .on('click', _.bind(function () {
-                versionContent.toggle();
-                hiddenVersionText.toggle();
-                this.fullCompilerName.popover('update');
-            }, this));
+            .on(
+                'click',
+                _.bind(function () {
+                    versionContent.toggle();
+                    hiddenVersionText.toggle();
+                    this.fullCompilerName.popover('update');
+                }, this)
+            );
         hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
         bodyContent.append(hiddenSection);
     }
     this.fullCompilerName.popover({
         html: true,
-        title: notification ?
-            $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] :
-            'Full compiler version',
+        title: notification
+            ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0]
+            : 'Full compiler version',
         content: bodyContent,
-        template: '<div class="popover' + (version ? ' compiler-options-popover' : '') + '" role="tooltip">' +
+        template:
+            '<div class="popover' +
+            (version ? ' compiler-options-popover' : '') +
+            '" role="tooltip">' +
             '<div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
             '</div>',
@@ -1044,12 +1109,14 @@ Executor.prototype.updateLibraries = function () {
     if (this.libsWidget) {
         var filteredLibraries = {};
         if (this.compiler) {
-            filteredLibraries = LibUtils.getSupportedLibraries(this.compiler.libsArr, this.currentLangId);
+            filteredLibraries = LibUtils.getSupportedLibraries(
+                this.compiler.libsArr,
+                this.currentLangId,
+                this.compiler ? this.compiler.remote : null
+            );
         }
 
-        this.libsWidget.setNewLangId(this.currentLangId,
-            this.compiler ? this.compiler.id : false,
-            filteredLibraries);
+        this.libsWidget.setNewLangId(this.currentLangId, this.compiler ? this.compiler.id : false, filteredLibraries);
     }
 };
 
@@ -1075,7 +1142,7 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
 Executor.prototype.getCurrentLangCompilers = function () {
     var allCompilers = this.compilerService.getCompilersForLang(this.currentLangId);
     var hasAtLeastOneExecuteSupported = _.any(allCompilers, function (compiler) {
-        return (compiler.supportsExecute !== false);
+        return compiler.supportsExecute !== false;
     });
 
     if (!hasAtLeastOneExecuteSupported) {
@@ -1086,9 +1153,12 @@ Executor.prototype.getCurrentLangCompilers = function () {
     return _.filter(
         allCompilers,
         _.bind(function (compiler) {
-            return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
-                (this.compiler && compiler.id === this.compiler.id);
-        }, this));
+            return (
+                (compiler.hidden !== true && compiler.supportsExecute !== false) ||
+                (this.compiler && compiler.id === this.compiler.id)
+            );
+        }, this)
+    );
 };
 
 Executor.prototype.updateCompilersSelector = function (info) {

@@ -24,19 +24,30 @@
 
 export function updateAndCalcTopBarHeight(domRoot: JQuery, topBar: JQuery, hideable: JQuery): number {
     let topBarHeight = 0;
-    let topBarHeightMax = 0;
-    let topBarHeightMin = 0;
-
     if (!topBar.hasClass('d-none')) {
         hideable.show();
-        topBarHeightMax = topBar.outerHeight(true);
+        const topBarHeightMax = topBar.outerHeight(true) ?? 0;
         hideable.hide();
-        topBarHeightMin = topBar.outerHeight(true);
+        const topBarHeightMin = topBar.outerHeight(true) ?? 0;
         topBarHeight = topBarHeightMin;
         if (topBarHeightMin === topBarHeightMax) {
             hideable.show();
         }
     }
-
     return topBarHeight;
+}
+
+/**
+ *  Subscribe and unsubscribe the event listener.
+ *
+ * @param  {JQuery} element
+ * @param  {string} eventName
+ * @param  {(event:JQuery.Event)=>void} callback
+ * @returns void
+ */
+export function toggleEventListener(element: JQuery, eventName: string, callback: (event: JQuery.Event) => void): void {
+    element.on(eventName, (event: JQuery.Event) => {
+        callback(event);
+        element.off(eventName);
+    });
 }

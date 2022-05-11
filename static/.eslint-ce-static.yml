@@ -1,0 +1,86 @@
+---
+plugins:
+  - jsdoc
+  - sonarjs
+  - unicorn
+extends:
+  - ../.eslint-license-header.yml
+  - eslint:recommended
+env:
+  browser: true
+  node: true
+  es6: false
+rules:
+  comma-dangle:
+    - error
+    - arrays: always-multiline
+      objects: always-multiline
+      imports: always-multiline
+      exports: always-multiline
+      functions: never
+  eol-last:
+    - error
+    - always
+  eqeqeq:
+    - error
+    - smart
+  indent:
+    - error
+    - 4
+    - SwitchCase: 1
+  max-len:
+    - error
+    - 120
+    - ignoreRegExpLiterals: true
+      ignoreComments: true
+  max-statements:
+    - error
+    - 50
+  no-control-regex: 0
+  no-useless-call: error
+  no-useless-computed-key: error
+  no-useless-concat: error
+  no-useless-escape: error
+  no-useless-rename: error
+  no-useless-return: error
+  quote-props:
+    - error
+    - as-needed
+  quotes:
+    - error
+    - single
+    - allowTemplateLiterals: true
+      avoidEscape: true
+  semi:
+    - error
+    - always
+  space-before-function-paren:
+    - error
+    - anonymous: always
+      asyncArrow: always
+      named: never
+  yoda:
+    - error
+    - never
+    - onlyEquality: true
+  jsdoc/check-alignment: warn
+  jsdoc/check-param-names: warn
+  jsdoc/check-syntax: warn
+  jsdoc/check-tag-names: off
+  jsdoc/check-types: warn
+  jsdoc/empty-tags: warn
+  jsdoc/newline-after-description: warn
+  jsdoc/require-hyphen-before-param-description: warn
+  jsdoc/valid-types: warn
+  sonarjs/no-collection-size-mischeck: error
+  sonarjs/no-redundant-boolean: error
+  sonarjs/no-unused-collection: error
+  sonarjs/prefer-immediate-return: error
+  sonarjs/prefer-object-literal: error
+  sonarjs/prefer-single-boolean-return: error
+  unicorn/filename-case: error
+parserOptions:
+  ecmaVersion: 5
+globals:
+  define: false
+  __webpack_public_path__: true

@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
-import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
+import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
+import {toggleEventListener} from './utils';
+import * as Sentry from '@sentry/browser';
 
 export class Alert {
-    yesHandler: (answer?: string | string[] | number) => void | null = null;
-    noHandler: () => void | null = null;
-    prefixMessage: string = '';
+    yesHandler: ((answer?: string | string[] | number) => void) | null = null;
+    noHandler: (() => void) | null = null;
+    prefixMessage = '';
 
     constructor() {
         const yesNoModal = $('#yes-no');
@@ -37,15 +37,6 @@ export class Alert {
             this.yesHandler?.();
         });
         yesNoModal.find('button.no').on('click', () => {
-            this.noHandler?.();
-        });
-
-        const enterSomething = $('#enter-something');
-        enterSomething.find('button.yes').on('click', () => {
-            const answer = enterSomething.find('.question-answer');
-            this.yesHandler?.(answer.val());
-        });
-        enterSomething.find('button.no').on('click', () => {
             this.noHandler?.();
         });
     }
@@ -70,23 +61,17 @@ export class Alert {
      */
     ask(title: string, question: string, askOptions: AlertAskOptions) {
         const modal = $('#yes-no');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
-        modal.find('.modal-body')
-            .css("min-height", "inherit")
-            .html(question);
+        modal.find('.modal-body').css('min-height', 'inherit').html(question);
         if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
         if (askOptions.yesClass) {
-            modal.find('.modal-footer .yes')
-                .removeClass('btn-link')
-                .addClass(askOptions.yesClass);
+            modal.find('.modal-footer .yes').removeClass('btn-link').addClass(askOptions.yesClass);
         }
         if (askOptions.noHtml) modal.find('.modal-footer .no').html(askOptions.noHtml);
         if (askOptions.noClass) {
-            modal.find('.modal-footer .no')
-                .removeClass('btn-link')
-                .addClass(askOptions.noClass);
+            modal.find('.modal-footer .no').removeClass('btn-link').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
             modal.off('hidden.bs.modal');
@@ -97,41 +82,51 @@ export class Alert {
     }
 
     /**
-     * Notifes the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
+     * Notifies the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
-    notify(body: string, {
-        group = "",
-        collapseSimilar = true,
-        alertClass = "",
-        autoDismiss = true,
-        dismissTime = 5000
-    }: AlertNotifyOptions) {
+    notify(
+        body: string,
+        {
+            group = '',
+            collapseSimilar = true,
+            alertClass = '',
+            autoDismiss = true,
+            dismissTime = 5000,
+        }: AlertNotifyOptions
+    ) {
         const container = $('#notifications');
-        if (!container) return;
+        if (container.length === 0) {
+            Sentry.captureMessage('#notifications not found');
+            return;
+        }
         const newElement = $(`
-            <div class="alert notification ${alertClass}" tabindex="-1" role="dialog">
-                <button type="button" class="close" style="float: left; margin-right: 5px;" data-dismiss="alert">
-                    &times;
-                </button>
-                <span id="msg">${this.prefixMessage}${body}</span>
+            <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header ${alertClass}">
+                    <strong class="mr-auto">${this.prefixMessage}</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body ${alertClass}">
+                    <span id="msg">${body}</span>
+               </div>
             </div>
         `);
-        if (group !== "") {
+        container.append(newElement);
+        newElement.toast({
+            autohide: autoDismiss,
+            delay: dismissTime,
+        });
+        if (group !== '') {
             if (collapseSimilar) {
                 // Only collapsing if a group has been specified
-                container.find(`[data-group="${group}"]`).remove();
+                const old = container.find(`[data-group="${group}"]`);
+                old.toast('hide');
+                old.remove();
             }
-            newElement.attr('data-group', group)
+            newElement.attr('data-group', group);
         }
-        if (autoDismiss) {
-            setTimeout(() => {
-                newElement.fadeOut('slow', () => {
-                    newElement.remove();
-                });
-            }, dismissTime);
-        }
-        // Append the newly created element to the container
-        container.append(newElement);
+        newElement.toast('show');
     }
 
     /**
@@ -139,16 +134,25 @@ export class Alert {
      */
     enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body .question').html(question);
 
         const yesButton = modal.find('.modal-footer .yes');
+        toggleEventListener(yesButton, 'click', () => {
+            const answer = modal.find('.question-answer');
+            this.yesHandler?.(answer.val());
+        });
+
         const noButton = modal.find('.modal-footer .no');
+        toggleEventListener(noButton, 'click', () => {
+            this.noHandler?.();
+        });
+
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
-        answerEdit.on('keyup', (e) => {
+        answerEdit.on('keyup', e => {
             if (e.keyCode === 13 || e.which === 13) {
                 yesButton.trigger('click');
             }

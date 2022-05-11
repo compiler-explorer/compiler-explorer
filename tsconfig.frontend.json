@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    /* Module resolution */
+    "target": "es5",
+    "rootDirs": ["./static", "./types"],
+    /* Code generation */
+    "inlineSources": true,
+    "strictPropertyInitialization": false,
+    "lib": ["dom", "es5"]
+  },
+  "exclude": ["app.js", "lib", "examples"]
+}

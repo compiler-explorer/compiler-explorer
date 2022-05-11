@@ -32,10 +32,14 @@ interface RegisteredCodeLens {
 }
 
 let registeredCodelenses: RegisteredCodeLens[] = [];
-let providersPerLanguage: Record<string, monaco.IDisposable> = {};
+const providersPerLanguage: Record<string, monaco.IDisposable> = {};
 
-export function registerLensesForCompiler(compilerId: number, editorModel: monaco.editor.ITextModel, lenses: monaco.languages.CodeLens[]): void {
-    const item: RegisteredCodeLens = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
+export function registerLensesForCompiler(
+    compilerId: number,
+    editorModel: monaco.editor.ITextModel,
+    lenses: monaco.languages.CodeLens[]
+): void {
+    const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
         return item.compilerId === compilerId;
     });
 
@@ -51,7 +55,7 @@ export function registerLensesForCompiler(compilerId: number, editorModel: monac
 }
 
 function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList {
-    const item: RegisteredCodeLens = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
+    const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
         return item.editorModel === model;
     });
 
@@ -69,7 +73,7 @@ function provide(model: monaco.editor.ITextModel): monaco.languages.CodeLensList
 }
 
 export function unregister(compilerId: number): void {
-    const item: RegisteredCodeLens = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
+    const item = _.find(registeredCodelenses, (item: RegisteredCodeLens): boolean => {
         return item.compilerId === compilerId;
     });
 
@@ -79,7 +83,7 @@ export function unregister(compilerId: number): void {
 }
 
 export function registerProviderForLanguage(language: string): void {
-    if (!providersPerLanguage[language]) {
+    if (!(language in providersPerLanguage)) {
         providersPerLanguage[language] = monaco.languages.registerCodeLensProvider(language, {
             provideCodeLenses: provide,
         });

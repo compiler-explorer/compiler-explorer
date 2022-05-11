@@ -24,24 +24,22 @@
 
 'use strict';
 
-var FontScale = require('../fontscale').FontScale;
+var FontScale = require('../widgets/fontscale').FontScale;
 var monaco = require('monaco-editor');
 var _ = require('underscore');
 var $ = require('jquery');
 var ga = require('../analytics').ga;
 var TomSelect = require('tom-select');
-
-require('../modes/asm-mode');
-
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 // note that these variables are saved to state, so don't change, only add to it
-var
-    DiffType_ASM = 0,
+var DiffType_ASM = 0,
     DiffType_CompilerStdOut = 1,
     DiffType_CompilerStdErr = 2,
     DiffType_ExecStdOut = 3,
     DiffType_ExecStdErr = 4,
-    DiffType_GNAT_ExpandedCode = 5;
+    DiffType_GNAT_ExpandedCode = 5,
+    DiffType_GNAT_Tree = 6;
 
 function State(id, model, difftype) {
     this.id = id;
@@ -74,16 +72,16 @@ State.prototype.refresh = function () {
                 output = this.result.stderr || [];
                 break;
             case DiffType_ExecStdOut:
-                if (this.result.execResult)
-                    output = this.result.execResult.stdout || [];
+                if (this.result.execResult) output = this.result.execResult.stdout || [];
                 break;
             case DiffType_ExecStdErr:
-                if (this.result.execResult)
-                    output = this.result.execResult.stderr || [];
+                if (this.result.execResult) output = this.result.execResult.stderr || [];
                 break;
             case DiffType_GNAT_ExpandedCode:
-                if (this.result.hasGnatDebugOutput)
-                    output = this.result.gnatDebugOutput || [];
+                if (this.result.hasGnatDebugOutput) output = this.result.gnatDebugOutput || [];
+                break;
+            case DiffType_GNAT_Tree:
+                if (this.result.hasGnatDebugTreeOutput) output = this.result.gnatDebugTreeOutput || [];
                 break;
         }
     }
@@ -122,98 +120,111 @@ function Diff(hub, container, state) {
 
     this.selectize = {};
 
-    this.domRoot[0].querySelectorAll('.difftype-picker').forEach(_.bind(function (picker) {
-
-        var instance = new TomSelect(picker, {
-            sortField: 'name',
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            options: [
-                {id: DiffType_ASM, name: 'Assembly'},
-                {id: DiffType_CompilerStdOut, name: 'Compiler stdout'},
-                {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
-                {id: DiffType_ExecStdOut, name: 'Execution stdout'},
-                {id: DiffType_ExecStdErr, name: 'Execution stderr'},
-                {id: DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
-            ],
-            items: [],
-            render: {
-                option: function (item, escape) {
-                    return '<div>' + escape(item.name) + '</div>';
+    this.domRoot[0].querySelectorAll('.difftype-picker').forEach(
+        _.bind(function (picker) {
+            var instance = new TomSelect(picker, {
+                sortField: 'name',
+                valueField: 'id',
+                labelField: 'name',
+                searchField: ['name'],
+                options: [
+                    {id: DiffType_ASM, name: 'Assembly'},
+                    {id: DiffType_CompilerStdOut, name: 'Compiler stdout'},
+                    {id: DiffType_CompilerStdErr, name: 'Compiler stderr'},
+                    {id: DiffType_ExecStdOut, name: 'Execution stdout'},
+                    {id: DiffType_ExecStdErr, name: 'Execution stderr'},
+                    {id: DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
+                    {id: DiffType_GNAT_Tree, name: 'GNAT Tree Code'},
+                ],
+                items: [],
+                render: {
+                    option: function (item, escape) {
+                        return '<div>' + escape(item.name) + '</div>';
+                    },
                 },
-            },
-            dropdownParent: 'body',
-            plugins: ['input_autogrow'],
-            onChange: _.bind(function (value) {
-                if (picker.classList.contains('lhsdifftype')) {
-                    this.lhs.difftype = parseInt(value);
-                    this.lhs.refresh();
-                } else {
-                    this.rhs.difftype = parseInt(value);
-                    this.rhs.refresh();
-                }
-                this.updateState();
-            }, this),
-        });
+                dropdownParent: 'body',
+                plugins: ['input_autogrow'],
+                onChange: _.bind(function (value) {
+                    if (picker.classList.contains('lhsdifftype')) {
+                        this.lhs.difftype = parseInt(value);
+                        this.lhs.refresh();
+                    } else {
+                        this.rhs.difftype = parseInt(value);
+                        this.rhs.refresh();
+                    }
+                    this.updateState();
+                }, this),
+            });
 
-        if (picker.classList.contains('lhsdifftype')) {
-            this.selectize.lhsdifftype = instance;
-        } else {
-            this.selectize.rhsdifftype = instance;
-        }
+            if (picker.classList.contains('lhsdifftype')) {
+                this.selectize.lhsdifftype = instance;
+            } else {
+                this.selectize.rhsdifftype = instance;
+            }
+        }, this)
+    );
 
-    }, this));
-
-
-    this.domRoot[0].querySelectorAll('.diff-picker').forEach(_.bind(function (picker) {
-        var instance = new TomSelect(picker, {
-            sortField: 'name',
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            options: [],
-            items: [],
-            render: {
-                option: function (item, escape) {
-                    return '<div>' +
-                        '<span class="compiler">' + escape(item.compiler.name) + '</span>' +
-                        '<span class="options">' + escape(item.options) + '</span>' +
-                        '<ul class="meta">' +
-                        '<li class="editor">Editor #' + escape(item.editorId) + '</li>' +
-                        '<li class="compilerId">' + escape(getItemDisplayTitle(item)) + '</li>' +
-                        '</ul></div>';
+    this.domRoot[0].querySelectorAll('.diff-picker').forEach(
+        _.bind(function (picker) {
+            var instance = new TomSelect(picker, {
+                sortField: 'name',
+                valueField: 'id',
+                labelField: 'name',
+                searchField: ['name'],
+                options: [],
+                items: [],
+                render: {
+                    option: function (item, escape) {
+                        var origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
+                        return (
+                            '<div>' +
+                            '<span class="compiler">' +
+                            escape(item.compiler.name) +
+                            '</span>' +
+                            '<span class="options">' +
+                            escape(item.options) +
+                            '</span>' +
+                            '<ul class="meta">' +
+                            '<li class="editor">' +
+                            escape(origin) +
+                            '</li>' +
+                            '<li class="compilerId">' +
+                            escape(getItemDisplayTitle(item)) +
+                            '</li>' +
+                            '</ul></div>'
+                        );
+                    },
                 },
-            },
-            dropdownParent: 'body',
-            plugins: ['input_autogrow'],
-            onChange: _.bind(function (value) {
+                dropdownParent: 'body',
+                plugins: ['input_autogrow'],
+                onChange: _.bind(function (value) {
+                    var compiler = this.compilers[value];
+                    if (!compiler) return;
+                    if (picker.classList.contains('lhs')) {
+                        this.lhs.compiler = compiler;
+                        this.lhs.id = compiler.id;
+                    } else {
+                        this.rhs.compiler = compiler;
+                        this.rhs.id = compiler.id;
+                    }
+                    this.onDiffSelect(compiler.id);
+                }, this),
+            });
 
-                var compiler = this.compilers[value];
-                if (!compiler) return;
-                if (picker.classList.contains('lhs')) {
-                    this.lhs.compiler = compiler;
-                    this.lhs.id = compiler.id;
-                } else {
-                    this.rhs.compiler = compiler;
-                    this.rhs.id = compiler.id;
-                }
-                this.onDiffSelect(compiler.id);
-            }, this),
-        });
+            if (picker.classList.contains('lhs')) {
+                this.selectize.lhs = instance;
+            } else {
+                this.selectize.rhs = instance;
+            }
+        }, this)
+    );
 
-        if (picker.classList.contains('lhs')) {
-            this.selectize.lhs = instance;
-        } else {
-            this.selectize.rhs = instance;
-        }
-    }, this));
-
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initButtons(state);
     this.initCallbacks();
 
-    this.updateCompilerNames();
+    this.updateTitle();
     this.updateCompilers();
     ga.proxy('send', {
         hitType: 'event',
@@ -233,7 +244,7 @@ Diff.prototype.resize = function () {
 
 Diff.prototype.onDiffSelect = function (id) {
     this.requestResendResult(id);
-    this.updateCompilerNames();
+    this.updateTitle();
     this.updateState();
 };
 
@@ -243,7 +254,7 @@ Diff.prototype.onCompileResult = function (id, compiler, result) {
     var lhsChanged = this.lhs.update(id, compiler, result);
     var rhsChanged = this.rhs.update(id, compiler, result);
     if (lhsChanged || rhsChanged) {
-        this.updateCompilerNames();
+        this.updateTitle();
     }
 };
 
@@ -266,6 +277,7 @@ Diff.prototype.initButtons = function (state) {
 
 Diff.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
     this.eventHub.on('compileResult', this.onCompileResult, this);
     this.eventHub.on('executeResult', this.onExecuteResult, this);
@@ -275,10 +287,14 @@ Diff.prototype.initCallbacks = function () {
     this.eventHub.on('executorClose', this.onExecutorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('themeChange', this.onThemeChange, this);
-    this.container.on('destroy', function () {
-        this.eventHub.unsubscribe();
-        this.outputEditor.dispose();
-    }, this);
+    this.container.on(
+        'destroy',
+        function () {
+            this.eventHub.unsubscribe();
+            this.outputEditor.dispose();
+        },
+        this
+    );
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
 
@@ -304,7 +320,7 @@ Diff.prototype.requestResendResult = function (id) {
     }
 };
 
-Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
+Diff.prototype.onCompiler = function (id, compiler, options, editorId, treeId) {
     if (!compiler) return;
     options = options || '';
     var name = compiler.name + ' ' + options;
@@ -318,6 +334,7 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
         name: name,
         options: options,
         editorId: editorId,
+        treeId: treeId,
         compiler: compiler,
     };
     if (!this.lhs.id) {
@@ -332,8 +349,8 @@ Diff.prototype.onCompiler = function (id, compiler, options, editorId) {
     this.updateCompilers();
 };
 
-Diff.prototype.onExecutor = function (id, compiler, options, editorId) {
-    this.onCompiler(id + '_exec', compiler, options, editorId);
+Diff.prototype.onExecutor = function (id, compiler, options, editorId, treeId) {
+    this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
 };
 
 Diff.prototype.onCompilerClose = function (id) {
@@ -345,8 +362,9 @@ Diff.prototype.onExecutorClose = function (id) {
     this.onCompilerClose(id + '_exec');
 };
 
-Diff.prototype.updateCompilerNames = function () {
-    this.container.setTitle(this.getPaneName());
+Diff.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Diff.prototype.getPaneName = function () {
@@ -359,9 +377,13 @@ Diff.prototype.getPaneName = function () {
 
 Diff.prototype.updateCompilersFor = function (selectize, id) {
     selectize.clearOptions();
-    _.each(this.compilers, function (compiler) {
-        selectize.addOption(compiler);
-    }, this);
+    _.each(
+        this.compilers,
+        function (compiler) {
+            selectize.addOption(compiler);
+        },
+        this
+    );
     if (this.compilers[id]) {
         selectize.setValue(id);
     }
@@ -382,13 +404,13 @@ Diff.prototype.updateState = function () {
         lhsdifftype: this.lhs.difftype,
         rhsdifftype: this.rhs.difftype,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     this.container.setState(state);
 };
 
 Diff.prototype.onThemeChange = function (newTheme) {
-    if (this.outputEditor)
-        this.outputEditor.updateOptions({theme: newTheme.monaco});
+    if (this.outputEditor) this.outputEditor.updateOptions({theme: newTheme.monaco});
 };
 
 Diff.prototype.onSettingsChange = function (newSettings) {

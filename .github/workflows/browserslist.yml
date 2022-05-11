@@ -19,8 +19,8 @@ jobs:
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "[bot] Update browsers list"
+          title: '[bot] Update browsers list'
           body: |
-           Automatic run of `npm run-update-browerslist` which needs to
-            be done periodically to keep in-date.
-            See [here](https://github.com/browserslist/browserslist#browsers-data-updating) for more details.
+            Automatic run of `npm run-update-browerslist` which needs to
+             be done periodically to keep in-date.
+             See [here](https://github.com/browserslist/browserslist#browsers-data-updating) for more details.

@@ -1,4 +1,4 @@
-@import "~golden-layout/src/css/goldenlayout-light-theme";
+@import '~golden-layout/src/css/goldenlayout-light-theme';
 
 /*
  * replace low res golden-layout icons with svg recreations to improve high DPI displays
@@ -7,6 +7,22 @@
 .lm_header .lm_tab .lm_close_tab {
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z'/%3E%3C/svg%3E") !important;
     background-size: 9px !important;
+}
+
+#renamepanemodal .modal-body {
+    min-height: 100px;
+}
+
+.lm_header .lm_tab .lm_modify_tab_title {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' class='bi bi-pencil' viewBox='0 0 16 16'%3E%3Cpath d='M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 11px;
+    height: 11px;
+    position: absolute;
+    top: 4px;
+    right: 23px;
 }
 
 .lm_controls .lm_maximise {
@@ -29,7 +45,7 @@
 }
 
 body {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
 }
 
 .navbar-nav a.nav-link {
@@ -92,14 +108,18 @@ a.navbar-brand img.logo.normal {
 .rainbow-decoration {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    background-image: -webkit-gradient(linear, left top, right bottom,
-    color-stop(0.00, red),
-    color-stop(16%, orange),
-    color-stop(32%, yellow),
-    color-stop(48%, green),
-    color-stop(60%, blue),
-    color-stop(76%, indigo),
-    color-stop(1.00, violet));
+    background-image: -webkit-gradient(
+        linear,
+        left top,
+        right bottom,
+        color-stop(0, red),
+        color-stop(16%, orange),
+        color-stop(32%, yellow),
+        color-stop(48%, green),
+        color-stop(60%, blue),
+        color-stop(76%, indigo),
+        color-stop(1, violet)
+    );
 }
 
 .font-option {
@@ -115,7 +135,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .font-option-active:hover {
-    background: #4477AA;
+    background: #4477aa;
 }
 
 .linked-code-decoration-margin {
@@ -137,11 +157,17 @@ a.navbar-brand img.logo.normal {
 .notification-error {
     background-color: indianred;
     color: white;
+    .close {
+        color: white;
+    }
 }
 
 .notification-on {
     background-color: green;
-    color: black;
+    color: #fff;
+    .close {
+        color: white;
+    }
 }
 
 .notification-off {
@@ -167,7 +193,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .graph-placeholder {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
 }
 
 .text-count {
@@ -186,7 +212,10 @@ a.navbar-brand img.logo.normal {
     background-color: #f2f2f2;
 }
 
-.popover, .popover-content, .libs-container, .lib-list {
+.popover,
+.popover-content,
+.libs-container,
+.lib-list {
     background-color: #fefefe;
 }
 
@@ -194,12 +223,14 @@ a.navbar-brand img.logo.normal {
     background-color: green;
 }
 
-#socialshare .share-twitter, .share-twitter {
+#socialshare .share-twitter,
+.share-twitter {
     background-color: #1da1f2;
     color: white;
 }
 
-#socialshare .share-reddit, .share-reddit {
+#socialshare .share-reddit,
+.share-reddit {
     background-color: #ff4500;
     color: white;
 }
@@ -243,7 +274,6 @@ div.argmenuitem span.argtitle {
     font-weight: bold;
     display: block;
     overflow-x: hidden;
-    overflow-anchor: visible;
     text-overflow: ellipsis;
 }
 
@@ -256,7 +286,6 @@ div.argmenuitem span.argdescription {
     display: block;
     white-space: normal;
     text-overflow: ellipsis;
-    overflow-anchor: visible;
     overflow-y: hidden;
 }
 
@@ -315,4 +344,10 @@ div.argmenuitem span.argdescription {
 
 .ts-dropdown .optgroup-header {
     background-color: #f6f6f6;
- }
+}
+
+.currentCursorPosition {
+    color: #15a3b9;
+    background-color: darken(rgba(248, 249, 250, 0.85), 3%);
+    border: 1px solid #d2d3d4;
+}

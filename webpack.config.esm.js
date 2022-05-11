@@ -22,58 +22,80 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-/* eslint-disable node/no-unpublished-import */
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
+/* eslint-disable node/no-unpublished-import */
 import CopyWebpackPlugin from 'copy-webpack-plugin';
+import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
-import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import webpack from 'webpack';
-import ManifestPlugin from 'webpack-manifest-plugin';
+import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
+console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
-const staticPath = path.join(distPath, 'static');
+const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v4.';
+const webjackJsHack = '.v9.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: [ 'cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 'kotlin', 'scala', 'ruby' ],
+        languages: [
+            'cpp',
+            'go',
+            'pascal',
+            'python',
+            'rust',
+            'swift',
+            'java',
+            'kotlin',
+            'scala',
+            'ruby',
+            'csharp',
+            'fsharp',
+            'vb',
+            'dart',
+            'typescript',
+            'solidity',
+        ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
-    new CopyWebpackPlugin([
-        {
-            from: 'node_modules/es6-shim/es6-shim.min.js',
-            to: staticPath,
-        },
-    ]),
-    new webpack.ProvidePlugin({
+    new ProvidePlugin({
         $: 'jquery',
         jQuery: 'jquery',
     }),
     new MiniCssExtractPlugin({
-        filename: isDev ? '[name].css' : '[name].[contenthash].css',
+        filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
     }),
-    new ManifestPlugin({
-        fileName: path.join(distPath, 'manifest.json'),
+    new WebpackManifestPlugin({
+        fileName: path.resolve(distPath, 'manifest.json'),
         publicPath: '',
     }),
+    new DefinePlugin({
+        'window.PRODUCTION': JSON.stringify(!isDev),
+    }),
+    new CopyWebpackPlugin({
+        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
+    }),
 ];
+
+if (isDev) {
+    plugins.push(new HotModuleReplacementPlugin());
+}
 
 // eslint-disable-next-line import/no-default-export
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {
         main: './static/main.js',
-        noscript: './static/noscript.js',
+        noscript: './static/noscript.ts',
     },
     output: {
         filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
@@ -83,8 +105,11 @@ export default {
         alias: {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',
         },
+        fallback: {
+            path: 'path-browserify',
+        },
         modules: ['./static', './node_modules'],
-        extensions: [ '.tsx', '.ts', '.js' ],
+        extensions: ['.tsx', '.ts', '.js'],
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -100,18 +125,14 @@ export default {
                 },
             },
         },
-        moduleIds: 'hashed',
+        moduleIds: 'deterministic',
         minimizer: [
-            new OptimizeCssAssetsPlugin({
-                cssProcessorPluginOptions: {
-                    preset: ['default', { discardComments: { removeAll: true } }],
-                },
-            }),
+            new CssMinimizerPlugin(),
             new TerserPlugin({
                 parallel: true,
-                sourceMap: true,
                 terserOptions: {
                     ecma: 5,
+                    sourceMap: true,
                 },
             }),
         ],
@@ -119,26 +140,12 @@ export default {
     module: {
         rules: [
             {
-                test: /\.css$/,
+                test: /\.s?css$/,
                 use: [
                     {
                         loader: MiniCssExtractPlugin.loader,
                         options: {
                             publicPath: './',
-                            hmr: isDev,
-                        },
-                    },
-                    'css-loader',
-                ],
-            },
-            {
-                test: /\.scss$/,
-                use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,
-                        options: {
-                            publicPath: './',
-                            hmr: isDev,
                         },
                     },
                     'css-loader',
@@ -147,11 +154,12 @@ export default {
             },
             {
                 test: /\.(png|woff|woff2|eot|ttf|svg)$/,
-                loader: 'url-loader?limit=8192',
+                type: 'asset',
+                parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /\.(html)$/,
-                loader: 'html-loader',
+                test: /.pug$/,
+                loader: './etc/scripts/parsed_pug_file.js',
             },
             {
                 test: /\.tsx?$/,

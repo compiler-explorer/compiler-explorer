@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 'use strict';
-// here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
+// here instead of in the editor.js and compiler.js etc. to prevent circular dependencies.
 module.exports = {
     getCompiler: function (editorId, lang) {
         return {
@@ -155,7 +155,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getOptViewWith: function (id, source, optimization, compilerName, editorid) {
+    getOptViewWith: function (id, source, optimization, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'opt',
@@ -165,6 +165,7 @@ module.exports = {
                 optOutput: optimization,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
@@ -186,6 +187,27 @@ module.exports = {
             },
         };
     },
+    getPpView: function () {
+        return {
+            type: 'component',
+            componentName: 'pp',
+            componentState: {},
+        };
+    },
+    getPpViewWith: function (id, source, ppOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'pp',
+            componentState: {
+                id: id,
+                source: source,
+                ppOutput: ppOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
     getAstView: function () {
         return {
             type: 'component',
@@ -193,7 +215,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getAstViewWith: function (id, source, astOutput, compilerName, editorid) {
+    getAstViewWith: function (id, source, astOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'ast',
@@ -203,6 +225,7 @@ module.exports = {
                 astOutput: astOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
@@ -213,7 +236,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getGccDumpViewWith: function (id, compilerName, editorid, gccDumpOutput) {
+    getGccDumpViewWith: function (id, compilerName, editorid, treeid, gccDumpOutput) {
         var ret = {
             type: 'component',
             componentName: 'gccdump',
@@ -221,6 +244,7 @@ module.exports = {
                 _compilerid: id,
                 _compilerName: compilerName,
                 _editorid: editorid,
+                _treeid: treeid,
             },
         };
         if (gccDumpOutput) {
@@ -249,22 +273,24 @@ module.exports = {
             componentState: {},
         };
     },
-    getCfgViewWith: function (id, editorid) {
+    getCfgViewWith: function (id, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'cfg',
             componentState: {
                 id: id,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
-    getConformanceView: function (editorid, source, langId) {
+    getConformanceView: function (editorid, treeid, source, langId) {
         return {
             type: 'component',
             componentName: 'conformance',
             componentState: {
                 editorid: editorid,
+                treeid: treeid,
                 source: source,
                 langId: langId,
             },
@@ -277,7 +303,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getIrViewWith: function (id, source, irOutput, compilerName, editorid) {
+    getIrViewWith: function (id, source, irOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'ir',
@@ -287,6 +313,7 @@ module.exports = {
                 irOutput: irOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
@@ -297,7 +324,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getRustMirViewWith: function (id, source, rustMirOutput, compilerName, editorid) {
+    getRustMirViewWith: function (id, source, rustMirOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'rustmir',
@@ -307,9 +334,96 @@ module.exports = {
                 rustMirOutput: rustMirOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
+    getHaskellCoreView: function () {
+        return {
+            type: 'component',
+            componentName: 'haskellCore',
+            componentState: {},
+        };
+    },
+    getHaskellCoreViewWith: function (id, source, haskellCoreOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'haskellCore',
+            componentState: {
+                id: id,
+                source: source,
+                haskellCoreOutput: haskellCoreOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
+    getHaskellStgView: function () {
+        return {
+            type: 'component',
+            componentName: 'haskellStg',
+            componentState: {},
+        };
+    },
+    getHaskellStgViewWith: function (id, source, haskellStgOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'haskellStg',
+            componentState: {
+                id: id,
+                source: source,
+                haskellStgOutput: haskellStgOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
+    getHaskellCmmView: function () {
+        return {
+            type: 'component',
+            componentName: 'haskellCmm',
+            componentState: {},
+        };
+    },
+    getHaskellCmmViewWith: function (id, source, haskellCmmOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'haskellCmm',
+            componentState: {
+                id: id,
+                source: source,
+                haskellCmmOutput: haskellCmmOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
+
+    getGnatDebugTreeView: function () {
+        return {
+            type: 'component',
+            componentName: 'gnatdebugtree',
+            componentState: {},
+        };
+    },
+    getGnatDebugTreeViewWith: function (id, source, gnatDebugTreeOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'gnatdebugtree',
+            componentState: {
+                id: id,
+                source: source,
+                gnatDebugTreeOutput: gnatDebugTreeOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
+
     getGnatDebugView: function () {
         return {
             type: 'component',
@@ -317,7 +431,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getGnatDebugViewWith: function (id, source, gnatDebugOutput, compilerName, editorid) {
+    getGnatDebugViewWith: function (id, source, gnatDebugOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'gnatdebug',
@@ -327,6 +441,7 @@ module.exports = {
                 gnatDebugOutput: gnatDebugOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
@@ -337,7 +452,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getRustMacroExpViewWith: function (id, source, rustMacroExpOutput, compilerName, editorid) {
+    getRustMacroExpViewWith: function (id, source, rustMacroExpOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'rustmacroexp',
@@ -347,6 +462,7 @@ module.exports = {
                 rustMacroExpOutput: rustMacroExpOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
@@ -357,7 +473,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getRustHirViewWith: function (id, source, rustHirOutput, compilerName, editorid) {
+    getRustHirViewWith: function (id, source, rustHirOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'rusthir',
@@ -367,6 +483,7 @@ module.exports = {
                 rustHirOutput: rustHirOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },
@@ -377,7 +494,7 @@ module.exports = {
             componentState: {},
         };
     },
-    getDeviceViewWith: function (id, source, deviceOutput, compilerName, editorid) {
+    getDeviceViewWith: function (id, source, deviceOutput, compilerName, editorid, treeid) {
         return {
             type: 'component',
             componentName: 'device',
@@ -387,6 +504,7 @@ module.exports = {
                 deviceOutput: deviceOutput,
                 compilerName: compilerName,
                 editorid: editorid,
+                treeid: treeid,
             },
         };
     },

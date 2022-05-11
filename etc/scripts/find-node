@@ -25,7 +25,7 @@ find_node() {
 NODE="$(find_node)"
 
 NODE_MIN_VERSION=14
-NODE_VERSION_USED=14
+NODE_VERSION_USED=16
 NODE_VERSION=$(${NODE} --version)
 NODE_MAJOR_VERSION=$(echo "${NODE_VERSION}" | cut -f1 -d. | sed 's/^v//g')
 
