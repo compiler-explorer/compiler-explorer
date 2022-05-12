@@ -1,4 +1,5 @@
-// Copyright (c) 2017, Marc Poulhiès - Kalray Inc, 2022, Compiler Explorer Authors
+// Copyright (c) 2017, Marc Poulhiès - Kalray Inc.
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
