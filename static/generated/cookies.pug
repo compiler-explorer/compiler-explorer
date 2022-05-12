@@ -1,0 +1,63 @@
+// Be aware: modifying this file in any way will cause a pop-up to users telling them the cookie policy has changed.
+html(lang="en")
+  body
+    span(id="last-changed")
+      | Last changed on:
+      |
+      time(id="changed-date" datetime=lastTime) #{lastTime}
+      |
+      | (
+      i
+        a(href="https://github.com/compiler-explorer/compiler-explorer/commit/#{lastCommit}" target="_blank") diff
+      | )
+
+    h2 Compiler Explorer Cookie Policy
+
+    p
+      | Browsers support the storing and sending back of small text files called "Cookies". These cookie files can be
+      | used (amongst other things) to help track the usage of a website. See
+      |
+      a(href="https://developer.mozilla.org/docs/Web/HTTP/Cookies"
+        target="_blank"
+        rel="noreferrer noopener") the Mozilla description of cookies
+      |
+      | for more details.
+
+    p
+      | Compiler Explorer uses Google Analytics, which in turn uses cookies. Google Analytics allows us to see how many
+      | individual users there are, how often users visit us, the average amount of time spent on the
+      | site, the frequency and distribution of compilers selected, and so on. It is invaluable in helping us make
+      | decisions in prioritising work on the site. It's important to note that these cookies are anonymous: we don't know
+      | who each individual user is. Our Google Analytics settings prevent data being retained for more than 14 months. The
+      | cookie stored is a first party cookie: you will find it in your browser under "godbolt.org" cookies.
+
+    p
+      | Your privacy is important to us, and you may opt out of this tracking at any time using the buttons on this dialog,
+      | with no loss of access or functionality of Compiler Explorer.
+
+    h2 #[span(style="color: darkslategray") Necessary] Local Storage
+
+    p
+      | To store your preferred options between sessions, such as your input code and user interface layout, we make use of
+      | your browser's local storage, where we place:
+
+    ul
+      li The current page state, such as:
+        ul
+          li Your current code
+          li Selected compilers and their options
+          li Pane layout
+          li Font sizes
+      li Your settings as shown in the settings popup (which can be found at: More > Settings), such as:
+        ul
+          li Your theme selection
+          li The default language
+          li Compile-as-you-type settings
+
+    p
+    | Note that the usage of local storage is necessary for the proper functioning of the site, and it won't be disabled
+    | if you choose to not grant cookie usage consent. This information is not used to track any user identifying
+    | information. The data stored locally is only that required by the site to function.
+
+    h3 How to control the cookies
+    p You can change your cookie consent decision on Compiler Explorer by pressing one of the following buttons:

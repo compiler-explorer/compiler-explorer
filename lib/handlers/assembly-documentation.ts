@@ -24,8 +24,8 @@
 
 import express from 'express';
 
-import { BaseAssemblyDocumentationProvider, getDocumentationProviderTypeByKey } from '../asm-docs';
-import { propsFor } from '../properties';
+import {BaseAssemblyDocumentationProvider, getDocumentationProviderTypeByKey} from '../asm-docs';
+import {propsFor} from '../properties';
 
 const MAX_STATIC_AGE = propsFor('asm-docs')('staticMaxAgeSecs', 10);
 
@@ -39,31 +39,38 @@ const onDocumentationProviderRequest = (
     const instruction = (request.params.opcode || '__UNKNOWN_OPCODE').toUpperCase();
     const information = provider.getInstructionInformation(instruction);
     if (information === null) {
-        return response.status(404).send({ error: `Unknown opcode '${instruction}'` });
+        return response.status(404).send({error: `Unknown opcode '${instruction}'`});
     }
     // Accept either JSON or Plaintext Content-Type
     const requestedContentType = request.accepts(['text', 'json']);
     switch (requestedContentType) {
-        case 'text': response.send(information.html); break;
-        case 'json': response.send(information); break;
-        default: response.status(406).send({ error: 'Not Acceptable' }); break;
+        case 'text':
+            response.send(information.html);
+            break;
+        case 'json':
+            response.send(information);
+            break;
+        default:
+            response.status(406).send({error: 'Not Acceptable'});
+            break;
     }
 };
 
 /** Initialize API routes for assembly documentation */
-export const withAssemblyDocumentationProviders = (
-    router: express.Router,
-) => router.get('/asm/:arch/:opcode', (req, res) => {
-    if (MAX_STATIC_AGE > 0) {
-        res.setHeader('Cache-Control', `public, max-age=${MAX_STATIC_AGE}`);
-    }
-    const arch = req.params.arch;
-    // makeKeyedTypeGetter throws if the key is not found. We do not wish
-    // crash CE if this happens, so we catch the error and return a 404.
-    try {
-        const providerClass = getDocumentationProviderTypeByKey(arch);
-        onDocumentationProviderRequest(new providerClass(), req, res);
-    } catch {
-        res.status(404).json({ error: `No documentation for '${arch}'` }).send();
-    }
-});
+export const withAssemblyDocumentationProviders = (router: express.Router) =>
+    router.get('/asm/:arch/:opcode', (req, res) => {
+        if (MAX_STATIC_AGE > 0) {
+            res.setHeader('Cache-Control', `public, max-age=${MAX_STATIC_AGE}`);
+        }
+        const arch = req.params.arch;
+        // makeKeyedTypeGetter throws if the key is not found. We do not wish
+        // crash CE if this happens, so we catch the error and return a 404.
+        try {
+            const providerClass = getDocumentationProviderTypeByKey(arch);
+            onDocumentationProviderRequest(new providerClass(), req, res);
+        } catch {
+            res.status(404)
+                .json({error: `No documentation for '${arch}'`})
+                .send();
+        }
+    });

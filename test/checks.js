@@ -24,10 +24,10 @@
 
 import _ from 'underscore';
 
-import { languages } from '../lib/languages';
+import {languages} from '../lib/languages';
 import * as properties from '../lib/properties';
 
-import { fs } from './utils';
+import {fs} from './utils';
 
 describe('Live site checks', () => {
     let ceProps;
@@ -64,6 +64,9 @@ describe('Live site checks', () => {
                 differences[lang] = difference;
             }
         });
-        differences.should.be.eql({}, 'One or more defined libraries are not listed on their corresponding language libs property array');
+        differences.should.be.eql(
+            {},
+            'One or more defined libraries are not listed on their corresponding language libs property array',
+        );
     });
 });

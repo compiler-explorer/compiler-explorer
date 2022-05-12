@@ -26,6 +26,7 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 /* eslint-disable node/no-unpublished-import */
+import CopyWebpackPlugin from 'copy-webpack-plugin';
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
@@ -38,16 +39,32 @@ const isDev = process.env.NODE_ENV !== 'production';
 console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
-const staticPath = path.join(distPath, 'static');
+const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v6.';
+const webjackJsHack = '.v9.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
-        languages: ['cpp', 'go', 'pascal', 'python', 'rust', 'swift', 'java', 
-            'kotlin', 'scala', 'ruby', 'csharp', 'fsharp', 'vb', 'dart'],
+        languages: [
+            'cpp',
+            'go',
+            'pascal',
+            'python',
+            'rust',
+            'swift',
+            'java',
+            'kotlin',
+            'scala',
+            'ruby',
+            'csharp',
+            'fsharp',
+            'vb',
+            'dart',
+            'typescript',
+            'solidity',
+        ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
     new ProvidePlugin({
@@ -58,11 +75,14 @@ const plugins = [
         filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
     }),
     new WebpackManifestPlugin({
-        fileName: path.join(distPath, 'manifest.json'),
+        fileName: path.resolve(distPath, 'manifest.json'),
         publicPath: '',
     }),
     new DefinePlugin({
         'window.PRODUCTION': JSON.stringify(!isDev),
+    }),
+    new CopyWebpackPlugin({
+        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
     }),
 ];
 
@@ -75,7 +95,7 @@ export default {
     mode: isDev ? 'development' : 'production',
     entry: {
         main: './static/main.js',
-        noscript: './static/noscript.js',
+        noscript: './static/noscript.ts',
     },
     output: {
         filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
@@ -111,8 +131,8 @@ export default {
             new TerserPlugin({
                 parallel: true,
                 terserOptions: {
-                    ecma: 5, sourceMap: true,
-
+                    ecma: 5,
+                    sourceMap: true,
                 },
             }),
         ],
@@ -138,8 +158,8 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /\.(html)$/,
-                loader: 'html-loader',
+                test: /.pug$/,
+                loader: './etc/scripts/parsed_pug_file.js',
             },
             {
                 test: /\.tsx?$/,

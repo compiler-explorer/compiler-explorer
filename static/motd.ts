@@ -22,23 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
 import {ga} from './analytics';
 
 import {Motd} from './motd.interfaces';
 
+function ensureShownMessage(message: string, motdNode: JQuery) {
+    motdNode.find('.content').html(message);
+    motdNode.removeClass('d-none');
+    motdNode
+        .find('.close')
+        .on('click', () => {
+            motdNode.addClass('d-none');
+        })
+        .prop('title', 'Hide message');
+}
 
 function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: boolean, onHide: () => void) {
-    if (motd.motd) {
-        motdNode.find('.content').html(motd.motd);
-        motdNode.removeClass('d-none');
-        motdNode.find('.close')
-            .on('click', () => {
-                motdNode.addClass('d-none');
-            })
-            .prop('title', 'Hide message');
+    if (motd.update) {
+        ensureShownMessage(motd.update, motdNode);
+    } else if (motd.motd) {
+        ensureShownMessage(motd.motd, motdNode);
     } else if (adsEnabled) {
-        const applicableAds = motd.ads?.filter((ad) => {
+        const applicableAds = motd.ads?.filter(ad => {
             return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
         });
 
@@ -74,8 +79,8 @@ export function initialise(
     defaultLanguage: string,
     adsEnabled: boolean,
     onMotd: (res?: Motd) => void,
-    onHide: () => void)
-{
+    onHide: () => void
+) {
     if (!url) return;
     $.getJSON(url)
         .then((res: Motd) => {

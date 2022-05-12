@@ -48,13 +48,15 @@ function definition() {
                 // Label definition (ARM style)
                 [/^\s*[|][^|]*[|]/, {token: 'type.identifier'}],
                 // Label definition (CL style)
-                [/^\s*[.a-zA-Z0-9_$|]*\s+(PROC|ENDP|DB|DD)/, {token: 'type.identifier'}],
+                [/^\s*[.a-zA-Z0-9_$|]*\s+(PROC|ENDP|DB|DD)/, {token: 'type.identifier', next: '@rest'}],
                 // Constant definition
                 [/^[.a-zA-Z0-9_$?@][^=]*=/, {token: 'type.identifier'}],
                 // opcode
                 [/[.a-zA-Z_][.a-zA-Z_0-9]*/, {token: 'keyword', next: '@rest'}],
                 // braces and parentheses at the start of the line (e.g. nvcc output)
                 [/[(){}]/, {token: 'operator', next: '@rest'}],
+                // msvc can have strings at the start of a line in a inSegDirList
+                [/`/, {token: 'string.backtick', bracket: '@open', next: '@segDirMsvcstring'}],
 
                 // whitespace
                 {include: '@whitespace'},
@@ -83,8 +85,10 @@ function definition() {
                 [/[-+,*/!:&{}()]/, 'operator'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'],  // non-terminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
+                // `msvc does this, sometimes'
+                [/`/, {token: 'string.backtick', bracket: '@open', next: '@msvcstring'}],
                 [/'/, {token: 'string.singlequote', bracket: '@open', next: '@sstring'}],
 
                 // characters
@@ -101,7 +105,7 @@ function definition() {
 
             comment: [
                 [/[^/*]+/, 'comment'],
-                [/\/\*/, 'comment', '@push'],    // nested comment
+                [/\/\*/, 'comment', '@push'], // nested comment
                 ['\\*/', 'comment', '@pop'],
                 [/[/*]/, 'comment'],
             ],
@@ -111,6 +115,23 @@ function definition() {
                 [/@escapes/, 'string.escape'],
                 [/\\./, 'string.escape.invalid'],
                 [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+
+            msvcstringCommon: [
+                [/[^\\']+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/''/, 'string.escape'], // ` isn't escaped but ' is escaped as ''
+                [/\\./, 'string.escape.invalid'],
+            ],
+
+            msvcstring: [
+                {include: '@msvcstringCommon'},
+                [/'/, {token: 'string.backtick', bracket: '@close', next: '@pop'}],
+            ],
+
+            segDirMsvcstring: [
+                {include: '@msvcstringCommon'},
+                [/'/, {token: 'string.backtick', bracket: '@close', switchTo: '@rest'}],
             ],
 
             sstring: [

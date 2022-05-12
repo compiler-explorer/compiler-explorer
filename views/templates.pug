@@ -37,11 +37,11 @@
               include resources/quickbench.svg
             span.hideable Quick-bench
       .btn-group.btn-group-sm.mx-auto
-        button.btn.btn-sm.btn-outline-info.currentCursorPosition(disabled=true)
         button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")
           span.fas.fa-smile
       .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
         select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
+    div.currentCursorPosition
     div#v-status
     .monaco-placeholder
 
@@ -116,6 +116,15 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-rusthir(title="Show Rust HIR")
             span.dropdown-icon.fas.fa-arrows-alt
             | Rust HIR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellCore(title="Show GHC Core Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | GHC Core output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellStg(title="Show GHC STG Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | GHC STG output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellCmm(title="Show GHC Cmm Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | GHC Cmm output
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
@@ -170,16 +179,16 @@
         button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
           span.fas.fa-book
           span.dp-text.hideable Libraries
-      button.btn.btn-sm.btn-light.toggle-compilation.active
+      button.btn.btn-sm.btn-light.toggle-compilation.active(title="Compiler options" aria-label="Toggle compiler options input")
         span.fas.fa-cogs
         span.hideable Compilation
-      button.btn.btn-sm.btn-light.toggle-args
+      button.btn.btn-sm.btn-light.toggle-args(title="Execution arguments" aria-label="Toggle execution arguments input")
         span.fas.fa-terminal
         span.hideable Arguments
-      button.btn.btn-sm.btn-light.toggle-stdin
+      button.btn.btn-sm.btn-light.toggle-stdin(title="Execution stdin" aria-label="Toggle execution stdin input")
         span.fas.fa-sign-in-alt
         span.hideable Stdin
-      button.btn.btn-sm.btn-light.toggle-compilerout.active
+      button.btn.btn-sm.btn-light.toggle-compilerout.active(title="Compiler output" aria-label="Toggle showing compiler output")
         span.fas.fa-sign-out-alt
         span.hideable Compiler output
       button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
@@ -225,7 +234,10 @@
           button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
             span Wrap lines
           input.d-none(type="checkbox" checked=false)
-    pre.content
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-sm.btn-light.select-all(type="button" title="Select all lines")
+          span Select all
+    pre.content.output-content
 
   #tool-input
     .top-bar.btn-toolbar.bg-light(role="toolbar")
@@ -329,6 +341,21 @@
     .monaco-placeholder
 
   #rustmir
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
+  #haskellCore
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
+  #haskellStg
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
+  #haskellCmm
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
     .monaco-placeholder

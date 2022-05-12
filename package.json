@@ -23,15 +23,14 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@sentry/browser": "^6.16.1",
     "@sentry/node": "^6.16.1",
-    "@sentry/tracing": "^6.16.1",
     "aws-sdk": "^2.1048.0",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
     "bootstrap": "^4.6.1",
     "chart.js": "^3.6.2",
     "clipboard": "^2.0.8",
-    "compiler-opt-info": "0.0.4",
     "compression": "^1.7.1",
+    "copy-webpack-plugin": "^9.1.0",
     "cross-env": "^7.0.3",
     "es6-promise": "^4.2.8",
     "eslint-plugin-header": "^3.1.1",
@@ -62,8 +61,10 @@
     "profanities": "^2.14.0",
     "prom-client": "^14.0.1",
     "pug": "^3.0.2",
+    "ramda": "^0.23.0",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
+    "sanitize-filename": "^1.6.3",
     "semver": "^7.3.5",
     "serve-favicon": "^2.4.5",
     "shell-quote": "^1.7.3",
@@ -84,7 +85,8 @@
     "winston-loki": "^6.0.3",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.4.1",
-    "yaml": "^1.10.2"
+    "yaml": "^1.10.2",
+    "yamljs": "^0.2.9"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.16.5",
@@ -152,6 +154,7 @@
   },
   "scripts": {
     "ci-lint": "eslint --format github .",
+    "ci-lint-files": "eslint --format github",
     "ci-test": "nyc npm run test",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
@@ -166,14 +169,20 @@
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
     "format": "prettier --ignore-unknown .",
-    "format-fix": "prettier --write --ignore-unknown .",
+    "format-fix": "prettier --write .",
+    "format-fix-files": "prettier --write --ignore-unknown",
+    "format-check": "prettier --check .",
     "ts-compile": "tsc",
+    "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.[jt]s": [
-      "npm run ci-lint --",
-      "npm run format-fix --"
+      "npm run format-fix-files --",
+      "npm run ci-lint-files --"
+    ],
+    "*.{html,md}": [
+      "npm run format-fix-files --"
     ]
   },
   "license": "BSD-2-Clause"

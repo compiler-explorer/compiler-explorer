@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseFormatter } from '../lib/formatters/base';
+import {BaseFormatter} from '../lib/formatters/base';
 
 describe('Basic formatter functionality', () => {
     it('should be one-true-style if the styles are empty', () => {

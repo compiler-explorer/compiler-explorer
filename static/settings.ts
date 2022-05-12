@@ -22,27 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { options } from './options';
+import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
-import { themes, Themes } from './themes';
+import {themes, Themes} from './themes';
+import {AppTheme, ColourSchemeInfo} from './colour';
 
-type ColourScheme =
-    | 'rainbow'
-    | 'rainbow2'
-    | 'earth'
-    | 'green-blue'
-    | 'gray-shade'
-    | 'rainbow-dark';
+type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
 
-export type FormatBase =
-    | 'Google'
-    | 'LLVM'
-    | 'Mozilla'
-    | 'Chromium'
-    | 'WebKit'
-    | 'Microsoft'
-    | 'GNU';
+export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
@@ -56,11 +44,11 @@ export interface SiteSettings {
     defaultLanguage?: string;
     delayAfterChange: number;
     enableCodeLens: boolean;
-    enableCommunityAds: boolean
+    enableCommunityAds: boolean;
     enableCtrlS: string;
     enableSharingPopover: boolean;
     enableCtrlStree: boolean;
-    editorsFFont: string
+    editorsFFont: string;
     editorsFLigatures: boolean;
     formatBase: FormatBase;
     formatOnCompile: boolean;
@@ -81,10 +69,9 @@ export interface SiteSettings {
 class BaseSetting {
     constructor(public elem: JQuery, public name: string) {}
 
-    protected val(): string | number | string[] {
-        //  If it's undefined, something went wrong, so the following exception is helpful
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this.elem.val()!;
+    // Can be undefined if the element doesn't exist which is the case in embed mode
+    protected val(): string | number | string[] | undefined {
+        return this.elem.val();
     }
 
     getUi(): any {
@@ -107,7 +94,7 @@ class Checkbox extends BaseSetting {
 }
 
 class Select extends BaseSetting {
-    constructor(elem: JQuery, name: string, populate: {label: string, desc: string}[]) {
+    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
         super(elem, name);
 
         elem.empty();
@@ -144,8 +131,7 @@ class Slider extends BaseSetting {
         this.max = sliderSettings.max || 100;
         this.min = sliderSettings.min || 1;
 
-        elem
-            .prop('max', this.max)
+        elem.prop('max', this.max)
             .prop('min', this.min)
             .prop('step', sliderSettings.step || 1);
 
@@ -158,7 +144,7 @@ class Slider extends BaseSetting {
     }
 
     override getUi(): number {
-        return parseInt(this.val().toString());
+        return parseInt(this.val()?.toString() ?? '0');
     }
 
     private updateDisplay() {
@@ -178,12 +164,11 @@ class Numeric extends BaseSetting {
         this.min = params.min;
         this.max = params.max;
 
-        elem.attr('min', this.min)
-            .attr('max', this.max);
+        elem.attr('min', this.min).attr('max', this.max);
     }
 
     override getUi(): number {
-        return this.clampValue(parseInt(this.val().toString()));
+        return this.clampValue(parseInt(this.val()?.toString() ?? '0'));
     }
 
     override putUi(value: number) {
@@ -196,15 +181,15 @@ class Numeric extends BaseSetting {
 }
 
 export class Settings {
-    private settingsObjs: BaseSetting[];
+    private readonly settingsObjs: BaseSetting[];
 
-    constructor(private root: JQuery,
-                private settings: SiteSettings,
-                private onChange: (SiteSettings) => void,
-                private subLangId: string | null) {
-
+    constructor(
+        private root: JQuery,
+        private settings: SiteSettings,
+        private onChange: (SiteSettings) => void,
+        private subLangId: string | null
+    ) {
         this.settings = settings;
-        this.settings.defaultLanguage = this.settings.defaultLanguage === null ? undefined : settings.defaultLanguage;
         this.settingsObjs = [];
 
         this.addCheckboxes();
@@ -240,7 +225,7 @@ export class Settings {
         }
     }
 
-    private add<Type extends BaseSetting>(setting: Type, defaultValue: any) {
+    private add<T extends BaseSetting>(setting: T, defaultValue: any) {
         const key = setting.name;
         if (this.settings[key] === undefined) this.settings[key] = defaultValue;
         this.settingsObjs.push(setting);
@@ -249,7 +234,7 @@ export class Settings {
 
     private addCheckboxes() {
         // Known checkbox options in order [selector, key, defaultValue]
-        const checkboxes: [string, keyof SiteSettings, boolean][]= [
+        const checkboxes: [string, keyof SiteSettings, boolean][] = [
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
             ['.autoCloseBrackets', 'autoCloseBrackets', true],
@@ -283,7 +268,7 @@ export class Settings {
         const addSelector = (
             selector: string,
             name: keyof SiteSettings,
-            populate: {label: string, desc: string}[],
+            populate: {label: string; desc: string}[],
             defaultValue: string
         ) => {
             this.add(new Select(this.root.find(selector), name, populate), defaultValue);
@@ -299,7 +284,7 @@ export class Settings {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         let defaultThemeId = themes.default.id;
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultThemeId = themes.dark.id;
         }
         addSelector('.theme', 'theme', themesData, defaultThemeId);
@@ -353,7 +338,13 @@ export class Settings {
     }
 
     private addNumerics() {
-        this.add(new Numeric(this.root.find('.tabWidth'), 'tabWidth', {min: 1, max: 80}), 4);
+        this.add(
+            new Numeric(this.root.find('.tabWidth'), 'tabWidth', {
+                min: 1,
+                max: 80,
+            }),
+            4
+        );
     }
 
     private addTextBoxes() {
@@ -364,50 +355,71 @@ export class Settings {
     }
 
     private handleThemes() {
-        this.onThemeChange();
         const themeSelect = this.root.find('.theme');
         themeSelect.on('change', () => {
             this.onThemeChange();
             $.data(themeSelect, 'last-theme', themeSelect.val() as string);
         });
+
+        const colourSchemeSelect = this.root.find('.colourScheme');
+        colourSchemeSelect.on('change', e => {
+            const currentTheme = this.settings.theme;
+            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
+        });
+
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
         $.data(themeSelect, 'last-theme', themeSelect.val() as string);
     }
 
+    private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+        for (const scheme of colour.schemes) {
+            if (this.isSchemeUsable(scheme, newTheme)) {
+                colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
+            }
+        }
+    }
+
+    private isSchemeUsable(scheme: ColourSchemeInfo, newTheme?: AppTheme): boolean {
+        return (
+            this.settings.alwaysEnableAllSchemes ||
+            scheme.themes.length === 0 ||
+            (newTheme && scheme.themes.includes(newTheme)) ||
+            scheme.themes.includes('all')
+        );
+    }
+
+    private selectorHasOption(selector: JQuery, option: string): boolean {
+        return selector.children(`[value=${option}]`).length > 0;
+    }
+
     private onThemeChange() {
+        // We can be called when:
+        // Site is initializing (settings and dropdowns are already done)
+        // "Make all colour schemes available" changes
+        // Selected theme changes
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-
+        const oldScheme = colourSchemeSelect.val() as string;
         const newTheme = themeSelect.val() as colour.AppTheme;
-        // Store the scheme of the old theme
-        $.data(themeSelect, 'theme-' + $.data(themeSelect, 'last-theme'), colourSchemeSelect.val() as string);
-        // Get the scheme of the new theme
-        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme);
-        let isStoredUsable = false;
-        colourSchemeSelect.empty();
-        for (const scheme of colour.schemes) {
-            if (this.settings.alwaysEnableAllSchemes
-                || !scheme.themes || scheme.themes.length === 0
-                || scheme.themes.includes(newTheme) || scheme.themes.includes('all')) {
 
-                colourSchemeSelect.append($('<option value="' + scheme.name + '">' + scheme.desc + '</option>'));
-                if (newThemeStoredScheme === scheme.name) {
-                    isStoredUsable = true;
-                }
-            }
+        colourSchemeSelect.empty();
+        this.fillThemeSelector(colourSchemeSelect, newTheme);
+        const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
+
+        // If nothing else, set the new scheme to the first of the available ones
+        let newScheme = colourSchemeSelect.first().val() as string;
+        // If we have one old one stored, check if it's still valid and set it if so
+        if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
+            newScheme = newThemeStoredScheme;
+        } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
+            newScheme = oldScheme;
         }
-        if (colourSchemeSelect.children().length >= 1) {
-            colourSchemeSelect.val(isStoredUsable ? newThemeStoredScheme : colourSchemeSelect.first().val());
-        }else {
-            // This should never happen. In case it does, lets use the default one
-            colourSchemeSelect.append(
-                $('<option value="' + colour.schemes[0].name + '">' + colour.schemes[0].desc + '</option>')
-            );
-            colourSchemeSelect.val(colourSchemeSelect.first().val() as string);
-        }
+
+        colourSchemeSelect.val(newScheme);
+
         colourSchemeSelect.trigger('change');
     }
 }

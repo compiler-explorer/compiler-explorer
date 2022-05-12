@@ -65,12 +65,7 @@ function setup() {
         AWS.mock('EC2', 'describeInstances', {
             Reservations: [
                 {
-                    Instances: [
-                        instanceA,
-                        instanceB,
-                        instanceC,
-                        instanceD,
-                    ],
+                    Instances: [instanceA, instanceB, instanceC, instanceD],
                 },
             ],
         });
@@ -87,7 +82,6 @@ function setup() {
                 },
             ],
         });
-
     });
     afterEach(() => AWS.restore());
 }
@@ -117,12 +111,13 @@ describe('AWS instance fetcher tests', () => {
 
 describe('AWS config tests', () => {
     setup();
-    it('Doesn\'t fetch unless region is configured', () => {
+    it("Doesn't fetch unless region is configured", () => {
         const fakeProps = {
             region: '',
             configValue: 'fromConfigFile',
         };
-        return aws.initConfig(prop => fakeProps[prop])
+        return aws
+            .initConfig(prop => fakeProps[prop])
             .then(() => {
                 aws.getConfig('configValue').should.equal('fromConfigFile');
             });
@@ -134,7 +129,8 @@ describe('AWS config tests', () => {
             configValue: 'fromConfigFile',
             notInAmazon: 'yay',
         };
-        return aws.initConfig(prop => fakeProps[prop])
+        return aws
+            .initConfig(prop => fakeProps[prop])
             .then(() => {
                 aws.getConfig('configValue').should.equal('fromAws');
                 aws.getConfig('onlyOnAws').should.equal('bibble');

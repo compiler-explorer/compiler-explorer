@@ -24,7 +24,7 @@
 
 import * as properties from '../lib/properties';
 
-import { should } from './utils';
+import {should} from './utils';
 
 const languages = {
     a: {id: 'a'},
@@ -37,9 +37,12 @@ describe('Properties', () => {
         properties.initialize('test/example-config/', ['test', 'overridden-base', 'overridden-tip']);
         casesProps = properties.propsFor('cases');
         overridingProps = properties.propsFor('overwrite');
-        compilerProps = new properties.CompilerProps(languages, properties.fakeProps({
-            foo: '1',
-        }));
+        compilerProps = new properties.CompilerProps(
+            languages,
+            properties.fakeProps({
+                foo: '1',
+            }),
+        );
     });
 
     after(() => {
@@ -163,9 +166,11 @@ describe('Properties', () => {
 describe('Properties blob parsing', () => {
     it('Normal properties', () => {
         const props = properties.parseProperties(
+            // prettier-ignore
             'hello = test \n' +
             'etc=123\n' +
-            'mybool=false\n');
+            'mybool=false\n',
+        );
         props.hello.should.equal('test');
         props.etc.should.equal(123);
         props.mybool.should.equal(false);
