@@ -22,47 +22,54 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as Sentry from '@sentry/node';
+import AWS from 'aws-sdk';
 
-import { logger } from '../logger';
-import { S3Bucket } from '../s3-handler';
+import {GetResult} from '../types/cache.interfaces';
 
-import { BaseCache } from './base';
+import {S3HandlerOptions} from './s3-handler.interfaces';
 
-function messageFor(e) {
-    return e.message || e.toString();
-}
+const NoSuchKey = 'NoSuchKey';
 
-export class S3Cache extends BaseCache {
-    constructor(cacheName, bucket, path, region) {
-        super(cacheName, `S3Cache(s3://${bucket}/${path} in ${region})`, 's3');
+export class S3Bucket {
+    private readonly instance: AWS.S3;
+    readonly bucket: string;
+    readonly region: string;
+
+    constructor(bucket: string, region: string) {
+        this.instance = new AWS.S3({region});
         this.bucket = bucket;
-        this.path = path;
         this.region = region;
-        this.s3 = new S3Bucket(bucket, region);
     }
 
-    getInternal(key) {
-        return this.s3.get(key, this.path)
-            .catch(e => {
-                Sentry.captureException(e);
-                logger.error(`Error while trying to read S3 cache: ${messageFor(e)}`);
-                return {hit: false};
-            });
-    }
-
-    putInternal(key, value, creator) {
-        const options = {
-            metadata: {},
-            redundancy: 'REDUCED_REDUNDANCY',
-        };
-        if (creator) {
-            options.metadata.CreatedBy = creator;
+    async get(key: string, path: string): Promise<GetResult> {
+        try {
+            const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`}).promise();
+            return {hit: true, data: result.Body};
+        } catch (x: any) {
+            if (x.code === NoSuchKey) return {hit: false};
+            throw x;
         }
-        return this.s3.put(key, value, this.path, options)
-            .catch(e => {
-                Sentry.captureException(e);
-                logger.error(`Error while trying to write to S3 cache: ${messageFor(e)}`);
-            });
+    }
+
+    async delete(key, path): Promise<boolean> {
+        try {
+            await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`}).promise();
+        } catch (x: any) {
+            if (x.code === NoSuchKey) return false;
+            throw x;
+        }
+        return true;
+    }
+
+    async put(key: string, value: Buffer, path: string, options: S3HandlerOptions): Promise<void> {
+        await this.instance
+            .putObject({
+                Bucket: this.bucket,
+                Key: `${path}/${key}`,
+                Body: value,
+                StorageClass: options.redundancy || 'STANDARD',
+                Metadata: options.metadata || {},
+            })
+            .promise();
     }
 }

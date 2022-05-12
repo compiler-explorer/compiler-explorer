@@ -52,6 +52,8 @@ var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
 var Presentation = require('./presentation').Presentation;
 
+var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+
 if (!window.PRODUCTION) {
     require('./tests/_all');
 }
@@ -436,6 +438,23 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
+function setupLanguageLogos(languages) {
+    _.each(
+        languages,
+        function (lang) {
+            try {
+                lang.logoData = logos('./' + lang.logoUrl);
+                if (lang.logoUrlDark) {
+                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                }
+            } catch (ignored) {
+                lang.logoData = '';
+            }
+        },
+        this
+    );
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -462,6 +481,8 @@ function start() {
             defaultLangId = _.keys(options.languages)[0];
         }
     }
+
+    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).

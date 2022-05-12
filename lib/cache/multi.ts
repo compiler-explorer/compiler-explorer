@@ -22,28 +22,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCache } from './base';
+import {GetResult} from '../../types/cache.interfaces';
+
+import {BaseCache} from './base';
 
 // A write-through multiple cache.
 // Writes get pushed to all caches, but reads are serviced from the first cache that returns
 // a hit.
 export class MultiCache extends BaseCache {
+    private readonly upstream: BaseCache[];
+
     constructor(cacheName, ...upstream) {
         super(cacheName, 'Multi', 'multi');
         this.countersEnabled = false;
         this.upstream = upstream;
     }
 
-    statString() {
+    override statString(): string {
         return `${super.statString()}. ${this.upstream.map(c => `${c.details}: ${c.statString()}`).join('. ')}`;
     }
 
-    propagateHitToMissedCaches(caches, key, data) {
-        return Promise.all(caches.map(c => c.put(key, data)));
+    private async propagateHitToMissedCaches(caches: BaseCache[], key: string, data: Buffer): Promise<void> {
+        await Promise.all(caches.map(c => c.put(key, data)));
     }
 
-    async getInternal(key) {
-        const misses = [];
+    override async getInternal(key: string): Promise<GetResult> {
+        const misses: BaseCache[] = [];
 
         for (const cache of this.upstream) {
             const result = await cache.get(key);
@@ -61,9 +65,7 @@ export class MultiCache extends BaseCache {
         return {hit: false};
     }
 
-    putInternal(object, value, creator) {
-        return Promise.all(this.upstream.map(cache => {
-            return cache.put(object, value, creator);
-        }));
+    async putInternal(object: string, value: Buffer, creator?: string): Promise<void> {
+        await Promise.all(this.upstream.map(cache => cache.put(object, value, creator)));
     }
 }

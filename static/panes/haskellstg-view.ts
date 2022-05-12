@@ -67,7 +67,7 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
     }
 
     override getDefaultPaneName(): string {
-        return 'Haskell STG viewer';
+        return 'GHC STG Viewer';
     }
 
     override registerCallbacks(): void {
@@ -93,15 +93,13 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsHaskellStgView) {
-                this.showHaskellStgResults([{text: '<Haskell STG output is not supported for this compiler>'}]);
+                this.showHaskellStgResults([{text: '<GHC STG output is not supported for this compiler>'}]);
             }
         }
     }
 
-    showHaskellStgResults(result: any[]): void {
-        this.editor
-            .getModel()
-            ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No Haskell STG generated>');
+    showHaskellStgResults(result: Record<'text', string>[]): void {
+        this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No GHC STG generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {

@@ -32,7 +32,8 @@ import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
-import { ResultLine } from '../types/resultline/resultline.interfaces';
+import {CacheableValue} from '../types/cache.interfaces';
+import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -44,7 +45,7 @@ export function splitLines(text: string): string[] {
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => (ResultLine | void)): (ResultLine | void)[] {
+export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
     return splitLines(text).map(func);
 }
 
@@ -86,14 +87,14 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
 export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
     const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result: ResultLine[]  = [];
+    const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (!inputFilename) {
             line = maskRootdir(line);
         }
         if (line !== null) {
-            const lineObj: ResultLine = { text: line };
+            const lineObj: ResultLine = {text: line};
             const filteredline = line.replace(ansiColoursRe, '');
             let match = filteredline.match(re);
             if (match) {
@@ -125,7 +126,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
-            const lineObj: ResultLine = { text: line };
+            const lineObj: ResultLine = {text: line};
             const match = line.replace(ansiColoursRe, '').match(re);
 
             if (match) {
@@ -190,7 +191,7 @@ export function anonymizeIp(ip: string): string {
  * @param {*} object
  * @returns {string}
  */
-function objectToHashableString(object: any): string {
+function objectToHashableString(object: CacheableValue): string {
     // See https://stackoverflow.com/questions/899574/which-is-best-to-use-typeof-or-instanceof/6625960#6625960
     return typeof object === 'string' ? object : JSON.stringify(object);
 }
@@ -205,7 +206,7 @@ const DefaultHash = 'Compiler Explorer Default Version 1';
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {Buffer} - Hash of object
  */
-export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
+export function getBinaryHash(object: CacheableValue, HashVersion = DefaultHash): Buffer {
     return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest();
 }
 
@@ -217,7 +218,7 @@ export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {string} - Hash of object
  */
-export function getHash(object: any, HashVersion = DefaultHash): string {
+export function getHash(object: CacheableValue, HashVersion = DefaultHash): string {
     return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest('hex');
 }
 

@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo, BaseAssemblyDocumentationProvider } from './base';
-import { getAsmOpcode } from './generated/asm-docs-6502';
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base';
+import {getAsmOpcode} from './generated/asm-docs-6502';
 
 export class Mos6502DocumentationProvider extends BaseAssemblyDocumentationProvider {
-    public static get key() { return '6502'; }
+    public static get key() {
+        return '6502';
+    }
     public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
         return getAsmOpcode(instruction) || null;
     }

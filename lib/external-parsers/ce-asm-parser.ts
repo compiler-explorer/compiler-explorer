@@ -1,5 +1,7 @@
-import { ExternalParserBase } from './base';
+import {ExternalParserBase} from './base';
 
 export class CEAsmParser extends ExternalParserBase {
-    static get key() { return 'CEAsmParser'; }
+    static get key() {
+        return 'CEAsmParser';
+    }
 }

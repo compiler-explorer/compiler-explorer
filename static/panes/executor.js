@@ -158,21 +158,23 @@ Executor.prototype.undefer = function () {
 };
 
 Executor.prototype.resize = function () {
-    var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, $(this.topBar[0]), this.hideable);
+    _.defer(function (self) {
+        var topBarHeight = utils.updateAndCalcTopBarHeight(self.domRoot, $(self.topBar[0]), self.hideable);
 
-    // We have some more elements that modify the topBarHeight
-    if (!this.panelCompilation.hasClass('d-none')) {
-        topBarHeight += this.panelCompilation.outerHeight(true);
-    }
-    if (!this.panelArgs.hasClass('d-none')) {
-        topBarHeight += this.panelArgs.outerHeight(true);
-    }
-    if (!this.panelStdin.hasClass('d-none')) {
-        topBarHeight += this.panelStdin.outerHeight(true);
-    }
+        // We have some more elements that modify the topBarHeight
+        if (!self.panelCompilation.hasClass('d-none')) {
+            topBarHeight += self.panelCompilation.outerHeight(true);
+        }
+        if (!self.panelArgs.hasClass('d-none')) {
+            topBarHeight += self.panelArgs.outerHeight(true);
+        }
+        if (!self.panelStdin.hasClass('d-none')) {
+            topBarHeight += self.panelStdin.outerHeight(true);
+        }
 
-    var bottomBarHeight = this.bottomBar.outerHeight(true);
-    this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
+        var bottomBarHeight = self.bottomBar.outerHeight(true);
+        self.outputContentRoot.outerHeight(self.domRoot.height() - topBarHeight - bottomBarHeight);
+    }, this);
 };
 
 function errorResult(message) {

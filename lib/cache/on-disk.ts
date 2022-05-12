@@ -27,15 +27,16 @@ import path from 'path';
 import fs from 'fs-extra';
 import LRU from 'lru-cache';
 
-import { logger } from '../logger';
+import {GetResult} from '../../types/cache.interfaces';
+import {logger} from '../logger';
 
-import { BaseCache } from './base';
+import {BaseCache} from './base';
 
 // With thanks to https://gist.github.com/kethinov/6658166
-function getAllFiles(root, dir) {
-    dir = dir || root;
-    return fs.readdirSync(dir).reduce((files, file) => {
-        const fullPath = path.join(dir, file);
+function getAllFiles(root: string, dir?: string) {
+    const actualDir = dir || root;
+    return fs.readdirSync(actualDir).reduce((files: Array<string>, file: string) => {
+        const fullPath = path.join(actualDir, file);
         const name = path.relative(root, fullPath);
         const isDirectory = fs.statSync(fullPath).isDirectory();
         return isDirectory ? [...files, ...getAllFiles(root, fullPath)] : [...files, {name, fullPath}];
@@ -43,7 +44,11 @@ function getAllFiles(root, dir) {
 }
 
 export class OnDiskCache extends BaseCache {
-    constructor(cacheName, path, cacheMb) {
+    readonly path: string;
+    readonly cacheMb: number;
+    private readonly cache: LRU;
+
+    constructor(cacheName: string, path: string, cacheMb: number) {
         super(cacheName, `OnDiskCache(${path}, ${cacheMb}mb)`, 'disk');
         this.path = path;
         this.cacheMb = cacheMb;
@@ -55,7 +60,7 @@ export class OnDiskCache extends BaseCache {
                 fs.unlink(n.path, () => {});
             },
         });
-        fs.mkdirSync(path, { recursive: true });
+        fs.mkdirSync(path, {recursive: true});
         const info = getAllFiles(path).map(({name, fullPath}) => {
             const stat = fs.statSync(fullPath);
             return {
@@ -69,17 +74,19 @@ export class OnDiskCache extends BaseCache {
         });
         // Sort oldest first
         info.sort((x, y) => x.sort - y.sort);
-        for (let i of info) {
+        for (const i of info) {
             this.cache.set(i.key, i.data);
         }
     }
 
-    statString() {
-        return `${super.statString()}, LRU has ${this.cache.itemCount} item(s) ` +
-            `totalling ${this.cache.length} bytes on disk`;
+    override statString(): string {
+        return (
+            `${super.statString()}, LRU has ${this.cache.itemCount} item(s) ` +
+            `totalling ${this.cache.length} bytes on disk`
+        );
     }
 
-    async getInternal(key) {
+    override async getInternal(key: string): Promise<GetResult> {
         const cached = this.cache.get(key);
         if (!cached) return {hit: false};
 
@@ -92,7 +99,7 @@ export class OnDiskCache extends BaseCache {
         }
     }
 
-    async putInternal(key, value) {
+    async putInternal(key: string, value: Buffer): Promise<void> {
         const info = {
             path: path.join(this.path, key),
             size: value.length,

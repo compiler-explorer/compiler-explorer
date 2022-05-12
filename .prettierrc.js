@@ -5,9 +5,10 @@ module.exports = {
     arrowParens: 'avoid',
     tabWidth: 4,
     bracketSpacing: false,
+    proseWrap: 'always',
     overrides: [
         {
-            files: '*.{yml,json}',
+            files: '*.{yml,json,md}',
             options: {
                 tabWidth: 2,
             },

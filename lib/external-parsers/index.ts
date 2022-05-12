@@ -1,4 +1,4 @@
-import { makeKeyedTypeGetter } from '../keyed-type';
+import {makeKeyedTypeGetter} from '../keyed-type';
 
 import * as all from './_all';
 

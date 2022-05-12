@@ -22,10 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Counter } from 'prom-client';
+import {Counter} from 'prom-client';
 
-import { logger } from '../logger';
-import { getHash } from '../utils';
+import {CacheableValue, GetResult} from '../../types/cache.interfaces';
+import {logger} from '../logger';
+import {getHash} from '../utils';
+
+import {Cache, CacheStats} from './base.interfaces';
 
 const HashVersion = 'Compiler Explorer Cache Version 1';
 
@@ -41,8 +44,16 @@ const PutCounter = new Counter({
     labelNames: ['type', 'name'],
 });
 
-export class BaseCache {
-    constructor(cacheName, details, type) {
+export abstract class BaseCache implements Cache {
+    readonly cacheName: string;
+    readonly details: string;
+    readonly type: string;
+    gets: number;
+    puts: number;
+    hits: number;
+    protected countersEnabled: boolean;
+
+    protected constructor(cacheName: string, details: string, type: string) {
         this.cacheName = cacheName;
         this.details = details;
         this.type = type;
@@ -52,25 +63,25 @@ export class BaseCache {
         this.countersEnabled = true;
     }
 
-    stats() {
+    stats(): CacheStats {
         return {hits: this.hits, puts: this.puts, gets: this.gets};
     }
 
-    statString() {
+    statString(): string {
         const pc = this.gets ? (100 * this.hits) / this.gets : 0;
         const misses = this.gets - this.hits;
         return `${this.puts} puts; ${this.gets} gets, ${this.hits} hits, ${misses} misses (${pc.toFixed(2)}%)`;
     }
 
-    report() {
+    report(): void {
         logger.info(`${this.cacheName} ${this.details}: cache stats: ${this.statString()}`);
     }
 
-    static hash(object) {
+    static hash(object: CacheableValue): string {
         return getHash(object, HashVersion);
     }
 
-    async get(key) {
+    async get(key: string): Promise<GetResult> {
         this.gets++;
         const result = await this.getInternal(key);
         if (result.hit) this.hits++;
@@ -79,22 +90,14 @@ export class BaseCache {
         return result;
     }
 
-    async put(key, value, creator) {
-        if (!(value instanceof Buffer))
-            value = Buffer.from(value);
+    async put(key: string, value: any, creator?: string): Promise<void> {
+        if (!(value instanceof Buffer)) value = Buffer.from(value);
         this.puts++;
-        if (this.countersEnabled)
-            PutCounter.inc({type: this.type, name: this.cacheName});
+        if (this.countersEnabled) PutCounter.inc({type: this.type, name: this.cacheName});
         return this.putInternal(key, value, creator);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    async getInternal(key) {
-        throw new Error('should be implemented in subclass');
-    }
+    abstract getInternal(key: string): Promise<GetResult>;
 
-    // eslint-disable-next-line no-unused-vars
-    async putInternal(key, value, creator) {
-        throw new Error('should be implemented in subclass');
-    }
+    abstract putInternal(key: string, value: Buffer, creator?: string): Promise<void>;
 }

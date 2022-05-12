@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCache } from './base';
+export type GetResult = {
+    hit: boolean;
+    data?: any;
+};
 
-export class NullCache extends BaseCache {
-    constructor(cacheName) {
-        super(cacheName, 'Null', 'null');
-    }
-    getInternal() {
-        return Promise.resolve({hit: false});
-    }
-
-    putInternal() {
-        return Promise.resolve();
-    }
-}
+// Something that can be used as a value and passed to cache functions. A simple JSON-able type.
+export type CacheableValue = string | number | boolean | {[x: string]: CacheableValue} | Array<CacheableValue>;

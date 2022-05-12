@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 
-import { ParsedAsmResult } from '../../types/asmresult/asmresult.interfaces';
-import { TypicalExecutionFunc, UnprocessedExecResult } from '../../types/execution/execution.interfaces';
-import { ParseFilters } from '../../types/features/filters.interfaces';
-import { maskRootdir } from '../utils';
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
+import {maskRootdir} from '../utils';
 
-import { IExternalParser } from './external-parser.interface';
+import {IExternalParser} from './external-parser.interface';
 
 const starterScriptName = 'dump-and-parse.sh';
 
@@ -43,23 +43,29 @@ export class ExternalParserBase implements IExternalParser {
     private getObjdumpStarterScriptContent(filters: ParseFilters) {
         const parserArgs = this.getParserArguments(filters, true);
 
-        return '#!/bin/bash\n' +
+        return (
+            '#!/bin/bash\n' +
             `OBJDUMP=${this.objdumperPath}\n` +
             `ASMPARSER=${this.parserPath}\n` +
-            `$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`;
+            `$OBJDUMP "$@" | $ASMPARSER ${parserArgs.join(' ')}\n`
+        );
     }
 
     private async writeStarterScriptObjdump(buildfolder: string, filters: ParseFilters): Promise<string> {
         const scriptFilepath = path.join(buildfolder, starterScriptName);
 
-        return new Promise((resolve) => {
-            fs.writeFile(scriptFilepath,
-                this.getObjdumpStarterScriptContent(filters), {
-                encoding: 'utf8',
-                mode: 0o777,
-            }, () => {
-                resolve(maskRootdir(scriptFilepath));
-            });
+        return new Promise(resolve => {
+            fs.writeFile(
+                scriptFilepath,
+                this.getObjdumpStarterScriptContent(filters),
+                {
+                    encoding: 'utf8',
+                    mode: 0o777,
+                },
+                () => {
+                    resolve(maskRootdir(scriptFilepath));
+                },
+            );
         });
     }
 
@@ -71,9 +77,12 @@ export class ExternalParserBase implements IExternalParser {
         return result;
     }
 
-    public async objdumpAndParseAssembly(buildfolder: string, objdumpArgs: string[],
-        filters: ParseFilters): Promise<ParsedAsmResult> {
-        objdumpArgs = objdumpArgs.map((v) => {
+    public async objdumpAndParseAssembly(
+        buildfolder: string,
+        objdumpArgs: string[],
+        filters: ParseFilters,
+    ): Promise<ParsedAsmResult> {
+        objdumpArgs = objdumpArgs.map(v => {
             return maskRootdir(v);
         });
         await this.writeStarterScriptObjdump(buildfolder, filters);
@@ -86,7 +95,7 @@ export class ExternalParserBase implements IExternalParser {
         return this.parseAsmExecResult(execResult);
     }
 
-    public async parseAssembly(filepath: string, filters: ParseFilters): Promise<ParsedAsmResult>  {
+    public async parseAssembly(filepath: string, filters: ParseFilters): Promise<ParsedAsmResult> {
         const execOptions = {
             env: this.envInfo.getEnv(this.compilerInfo.needsMulti),
         };

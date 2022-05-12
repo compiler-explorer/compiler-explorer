@@ -22,22 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { logger } from '../logger';
+import {logger} from '../logger';
 
-import { InMemoryCache } from './in-memory';
-import { MultiCache } from './multi';
-import { NullCache } from './null';
-import { OnDiskCache } from './on-disk';
-import { S3Cache } from './s3';
+import {Cache} from './base.interfaces';
+import {InMemoryCache} from './in-memory';
+import {MultiCache} from './multi';
+import {NullCache} from './null';
+import {OnDiskCache} from './on-disk';
+import {S3Cache} from './s3';
 
-function paramInt(config, param) {
+function paramInt(config: string, param: string): number {
     const result = parseInt(param);
-    if (isNaN(result))
-        throw new Error(`Bad params: ${config}`);
+    if (isNaN(result)) throw new Error(`Bad params: ${config}`);
     return result;
 }
 
-function createInternal(name, config) {
+function createInternal(name: string, config: string): Cache {
     if (!config) {
         return new NullCache(name);
     }
@@ -46,31 +46,27 @@ function createInternal(name, config) {
         return new MultiCache(name, ...parts.map(part => createInternal(name, part)));
     }
     const match = config.match(/^([^(]+)\(([^)]+)\)$/);
-    if (!match)
-        throw new Error(`Unable to parse '${config}'`);
+    if (!match) throw new Error(`Unable to parse '${config}'`);
     const params = match[2].split(',');
     switch (match[1]) {
         case 'InMemory':
-            if (params.length !== 1)
-                throw new Error(`Bad params: ${config}`);
+            if (params.length !== 1) throw new Error(`Bad params: ${config}`);
             return new InMemoryCache(name, paramInt(config, params[0]));
 
         case 'OnDisk':
-            if (params.length !== 2)
-                throw new Error(`Bad params: ${config}`);
+            if (params.length !== 2) throw new Error(`Bad params: ${config}`);
             return new OnDiskCache(name, params[0], paramInt(config, params[1]));
 
         case 'S3':
-            if (params.length !== 3)
-                throw new Error(`Bad params: ${config}`);
-            return new S3Cache(name, ...params);
+            if (params.length !== 3) throw new Error(`Bad params: ${config}`);
+            return new S3Cache(name, params[0], params[1], params[2]);
 
         default:
             throw new Error(`Unrecognised cache type '${match[1]}'`);
     }
 }
 
-export function createCacheFromConfig(name, config) {
+export function createCacheFromConfig(name: string, config: string): Cache {
     const result = createInternal(name, config);
     logger.info(`Created cache ${name} of type ${result.details}`);
     return result;

@@ -24,23 +24,27 @@
 
 import express from 'express';
 
-import { SourceHandler } from '../../lib/handlers/source';
-import { chai } from '../utils';
+import {SourceHandler} from '../../lib/handlers/source';
+import {chai} from '../utils';
 
 describe('Sources', () => {
     const app = express();
     const handler = new SourceHandler(
-        [{
-            urlpart: 'moose',
-            list: () => Promise.resolve({moose: 'pig'}),
-            load: name => Promise.resolve({file: `File called ${name}`}),
-            save: null,
-        }],
-        res => res.setHeader('Yibble', 'boing'));
+        [
+            {
+                urlpart: 'moose',
+                list: () => Promise.resolve({moose: 'pig'}),
+                load: name => Promise.resolve({file: `File called ${name}`}),
+                save: null,
+            },
+        ],
+        res => res.setHeader('Yibble', 'boing'),
+    );
     app.use('/source', handler.handle.bind(handler));
 
     it('should list', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/source/moose/list')
             .then(res => {
                 res.should.have.status(200);
@@ -53,7 +57,8 @@ describe('Sources', () => {
             });
     });
     it('should fetch files', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .get('/source/moose/load/Grunkle')
             .then(res => {
                 res.should.have.status(200);

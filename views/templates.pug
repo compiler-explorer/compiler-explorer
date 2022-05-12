@@ -116,9 +116,15 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-rusthir(title="Show Rust HIR")
             span.dropdown-icon.fas.fa-arrows-alt
             | Rust HIR output
-          button.dropdown-item.btn.btn-sm.btn-light.view-haskellStg(title="Show Haskell STG Intermediate Representation")
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellCore(title="Show GHC Core Intermediate Representation")
             span.dropdown-icon.fas.fa-water
-            | Haskell STG output
+            | GHC Core output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellStg(title="Show GHC STG Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | GHC STG output
+          button.dropdown-item.btn.btn-sm.btn-light.view-haskellCmm(title="Show GHC Cmm Intermediate Representation")
+            span.dropdown-icon.fas.fa-water
+            | GHC Cmm output
           button.dropdown-item.btn.btn-sm.btn-light.view-gccdump(title="Show Tree/RTL dump (GCC only)")
             span.dropdown-icon.fas.fa-tree
             | GCC Tree/RTL output
@@ -228,7 +234,10 @@
           button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
             span Wrap lines
           input.d-none(type="checkbox" checked=false)
-    pre.content
+      .btn-group.btn-group-sm(role="group")
+        button.btn.btn-sm.btn-light.select-all(type="button" title="Select all lines")
+          span Select all
+    pre.content.output-content
 
   #tool-input
     .top-bar.btn-toolbar.bg-light(role="toolbar")
@@ -336,7 +345,17 @@
       include font-size
     .monaco-placeholder
 
+  #haskellCore
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
   #haskellStg
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size
+    .monaco-placeholder
+
+  #haskellCmm
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
     .monaco-placeholder
