@@ -29,6 +29,7 @@ import fs from 'fs-extra';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
+import {TurboCAsmParser} from '../parsers/asm-parser-turboc';
 
 export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
@@ -39,6 +40,7 @@ export class DosboxCompiler extends BaseCompiler {
 
         this.dosbox = this.compilerProps(`compiler.${this.compiler.id}.dosbox`);
         this.root = this.compilerProps(`compiler.${this.compiler.id}.root`);
+        this.asm = new TurboCAsmParser(this.compilerProps);
     }
 
     protected override async writeMultipleFiles(files: any[], dirPath: string): Promise<any[]> {
@@ -150,26 +152,17 @@ export class DosboxCompiler extends BaseCompiler {
     }
 
     public override async runCompiler(compiler, options, inputFilename, execOptions) {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        if (!execOptions.customCwd) {
-            execOptions.customCwd = path.dirname(inputFilename);
-        }
-
-        options = options.map(option => {
-            if (option === inputFilename) {
-                return path.basename(option);
-            } else {
-                return option;
-            }
-        });
-
-        const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-        this.parseCompilationOutput(result, transformedInput);
-        return result;
+        return super.runCompiler(
+            compiler,
+            options.map(option => {
+                if (option === inputFilename) {
+                    return path.basename(option);
+                } else {
+                    return option;
+                }
+            }),
+            inputFilename,
+            execOptions,
+        );
     }
 }

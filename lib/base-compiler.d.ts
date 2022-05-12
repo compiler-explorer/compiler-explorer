@@ -6,6 +6,7 @@ export declare class BaseCompiler {
     protected mtime;
     protected env;
     protected compileFilename;
+    protected asm;
     protected getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string);
     protected getSharedLibraryPathsAsLdLibraryPaths(libraries: object[]);
     protected getCompilerCacheKey(compiler: string, args: string[], options: object);
