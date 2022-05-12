@@ -11,7 +11,9 @@ If you want to add a new language to the site, you should follow this steps:
     name: YOUR_LANGUAGE_DISPLAY_NAME,
     monaco: MONACO_MODE_ID,
     extensions: ARRAY_OF_FILE_EXTENSIONS_OF_YOUR_LANGUAGE,
-    alias: [], // Leave empty unless needed
+    alias: [], // Leave empty unless needed,
+    logoUrl: PATH_TO_LOGO,
+    logoUrlDark: PATH_TO_DARK_LOGO, // Optional if not needed
   }
   ```
 
@@ -22,6 +24,8 @@ If you want to add a new language to the site, you should follow this steps:
     _require_ your mode file in `static/modes/_all.ts`, in alphabetical order
   - `language-key` is how your language will be referred internally by the code. In the rest of this document, replace
     `{language-key}` by the corresponding value in the real files.
+  - Add a logo file to the `views/resources/logos/` folder and add its path to the `logoUrl{Dark}` key(s) in the
+    language object
 
 - Add a `lib/compilers/{language-key}.js` file using the template below:
 

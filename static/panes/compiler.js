@@ -2562,6 +2562,10 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
 
         if (revealLine && lineNums[0]) {
             this.pushRevealJump();
+            var tab = this.container.tab;
+            if (tab !== null) {
+                tab.header.setActiveContentItem(tab.contentItem);
+            }
             this.outputEditor.revealLineInCenter(lineNums[0]);
         }
 

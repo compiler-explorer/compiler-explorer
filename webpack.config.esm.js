@@ -101,6 +101,12 @@ export default {
         filename: isDev ? '[name].js' : `[name]${webjackJsHack}[contenthash].js`,
         path: staticPath,
     },
+    cache: {
+        type: 'filesystem',
+        buildDependencies: {
+            config: [fileURLToPath(import.meta.url)],
+        },
+    },
     resolve: {
         alias: {
             'monaco-editor$': 'monaco-editor/esm/vs/editor/editor.api',

@@ -148,6 +148,10 @@ function Editor(hub, state, container) {
         plugins: ['dropdown_input'],
         onChange: _.bind(this.onLanguageChange, this),
         closeAfterSelect: true,
+        render: {
+            option: renderSelectizeOption,
+            item: renderSelectizeItem,
+        },
     });
 
     // We suppress posting changes until the user has stopped typing by:
@@ -1490,6 +1494,10 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
     if (Number(editorId) === this.id) {
         if (reveal && lineNum) {
             this.pushRevealJump();
+            var tab = this.container.tab;
+            if (tab !== null) {
+                tab.header.setActiveContentItem(tab.contentItem);
+            }
             this.editor.revealLineInCenter(lineNum);
         }
         this.decorations.linkedCode = [];
@@ -1655,6 +1663,41 @@ Editor.prototype.close = function () {
     this.editor.dispose();
     this.hub.removeEditor(this.id);
 };
+
+function getSelectizeRenderHtml(data, escape, width, height) {
+    var result =
+        '<div class="d-flex" style="align-items: center">' +
+        '<div class="mr-1">' +
+        '<img src="' +
+        data.logoData +
+        '" class="' +
+        (data.logoDataDark ? 'theme-light-only' : '') +
+        '" width="' +
+        width +
+        '" style="max-height: ' +
+        height +
+        'px"/>';
+    if (data.logoDataDark) {
+        result +=
+            '<img src="' +
+            data.logoDataDark +
+            '" class="theme-dark-only" width="' +
+            width +
+            '" style="max-height: ' +
+            height +
+            'px"/>';
+    }
+    result += '</div><div>' + escape(data.name) + '</div></div>';
+    return result;
+}
+
+function renderSelectizeOption(data, escape) {
+    return getSelectizeRenderHtml(data, escape, 23, 23);
+}
+
+function renderSelectizeItem(data, escape) {
+    return getSelectizeRenderHtml(data, escape, 20, 20);
+}
 
 module.exports = {
     Editor: Editor,
