@@ -1490,6 +1490,10 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
     if (Number(editorId) === this.id) {
         if (reveal && lineNum) {
             this.pushRevealJump();
+            var tab = this.container.tab;
+            if (tab !== null) {
+                tab.header.setActiveContentItem(tab.contentItem);
+            }
             this.editor.revealLineInCenter(lineNum);
         }
         this.decorations.linkedCode = [];
