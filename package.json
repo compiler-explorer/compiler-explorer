@@ -99,7 +99,7 @@
     "@typescript-eslint/parser": "^5.8.0",
     "ajv": "^8.8.2",
     "ajv-keywords": "^5.1.0",
-    "approvals": "^4.0.0-beta.1",
+    "approvals": "https://github.com/approvals/Approvals.NodeJS.git#d3cc041b5b8950e51671038094a3cee3f4eac9be",
     "aws-sdk-mock": "^5.5.0",
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
