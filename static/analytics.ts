@@ -89,7 +89,7 @@ class GAProxy {
     }
 
     proxy(...args) {
-        this._proxy(args);
+        this._proxy(...args);
     }
 }
 
