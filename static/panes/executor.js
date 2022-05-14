@@ -511,6 +511,9 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
         this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
         this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
     }
+    // reset stream styles
+    this.normalAnsiToHtml.reset();
+    this.errorAnsiToHtml.reset();
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
         this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);

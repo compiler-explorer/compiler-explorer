@@ -495,4 +495,8 @@ export class Filter {
 
         return buf.join('');
     }
+
+    public reset() {
+        this.stickyStack = [];
+    }
 }
