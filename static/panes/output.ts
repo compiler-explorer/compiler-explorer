@@ -197,6 +197,10 @@ export class Output extends Pane<OutputState> {
 
         this.contentRoot.empty();
 
+        // reset stream colors
+        this.normalAnsiToHtml.reset();
+        this.errorAnsiToHtml.reset();
+
         if (result.buildsteps) {
             for (const step of result.buildsteps) {
                 this.add('Step ' + step.step + ' returned: ' + step.code);
