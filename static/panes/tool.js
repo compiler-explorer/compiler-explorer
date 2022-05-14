@@ -466,6 +466,9 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             }
         }
 
+        // reset stream styles
+        this.normalAnsiToHtml.reset();
+
         if (toolResult) {
             if (toolResult.languageId && toolResult.languageId === 'stderr') {
                 toolResult.languageId = false;

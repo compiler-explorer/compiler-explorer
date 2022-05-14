@@ -68,4 +68,17 @@ describe('ansi-to-html', () => {
         const filter = new Filter(filterOpts);
         filter.toHtml('\x1B[7mhello').should.equal('hello');
     });
+
+    // tests for #3659
+    it('should stream', () => {
+        const filter = new Filter(filterOpts);
+        filter.toHtml('\x1B[38;5;99mfoo');
+        filter.toHtml('bar').should.equal('<span style="color:#875fff">bar</span>');
+    });
+    it('should handle stream reset', () => {
+        const filter = new Filter(filterOpts);
+        filter.toHtml('\x1B[38;5;99mfoo');
+        filter.reset();
+        filter.toHtml('bar').should.equal('bar');
+    });
 });
