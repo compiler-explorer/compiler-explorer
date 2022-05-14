@@ -455,6 +455,11 @@ function setupLanguageLogos(languages) {
     );
 }
 
+function earlyGetDefaultLangSetting() {
+    // returns string | undefined
+    return Settings.getStoredSettings().defaultLanguage;
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -475,7 +480,10 @@ function start() {
     }
     var defaultLangId = subLangId;
     if (!defaultLangId) {
-        if (options.languages['c++']) {
+        var defaultLangSetting = earlyGetDefaultLangSetting();
+        if (defaultLangSetting) {
+            defaultLangId = defaultLangSetting;
+        } else if (options.languages['c++']) {
             defaultLangId = 'c++';
         } else {
             defaultLangId = _.keys(options.languages)[0];
