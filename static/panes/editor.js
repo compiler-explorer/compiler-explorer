@@ -1667,7 +1667,7 @@ Editor.prototype.close = function () {
 function getSelectizeRenderHtml(data, escape, width, height) {
     var result =
         '<div class="d-flex" style="align-items: center">' +
-        '<div class="mr-1">' +
+        '<div class="mr-1 d-flex" style="align-items: center">' +
         '<img src="' +
         data.logoData +
         '" class="' +

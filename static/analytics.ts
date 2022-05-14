@@ -51,8 +51,7 @@ class GAProxy {
                             // eslint-disable-next-line prefer-rest-params
                             (i[r].q = i[r].q || []).push(arguments);
                         };
-                    // @ts-ignore
-                    i[r].l = 1 * new Date();
+                    i[r].l = Date.now();
                     // @ts-ignore
                     a = s.createElement(o);
                     // @ts-ignore
@@ -71,10 +70,7 @@ class GAProxy {
                 });
                 window.ga('send', 'pageview');
             }
-            this._proxy = function () {
-                // eslint-disable-next-line prefer-rest-params
-                window.ga.apply(window.ga, arguments);
-            };
+            this._proxy = (...args) => window.ga.apply(window.ga, args);
             this.isEnabled = true;
             this.hasBeenEnabled = true;
         } else {
@@ -93,7 +89,7 @@ class GAProxy {
     }
 
     proxy(...args) {
-        this._proxy(args);
+        this._proxy(...args);
     }
 }
 

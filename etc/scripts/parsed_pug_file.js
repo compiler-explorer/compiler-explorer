@@ -1,6 +1,16 @@
 import {execSync} from 'child_process';
 import {getHashDigest} from 'loader-utils';
 import * as pug from 'pug';
+import path from 'path';
+
+// If you edit either cookies.pug or privacy.pug be aware this will trigger a popup on the users' next visit.
+// Knowing the last versions here helps us be aware when this happens. If you get an error here and you _haven't_
+// knowingly edited either policy, contact the CE team. If you have edited the cookies and know that this expected,
+// just update the hash here.
+const expectedHashes = {
+    cookies: '4bc6a34572c2eb78',
+    privacy: '014c73c485dd3625',
+};
 
 function execGit(command) {
     const gitResult = execSync(command);
@@ -17,14 +27,30 @@ const gitChanges = execGit('git log --date=local --after="3 months ago" "--grep=
     .map(match => match.groups);
 
 export default function(content) {
-    const filename = this.resourcePath;
-    const lastTime = execGit(`git log -1 --format=%cd "${filename}"`).trimEnd();
-    const lastCommit = execGit(`git log -1 --format=%h "${filename}"`).trimEnd();
-    const compiled = pug.compile(content.toString(), {filename});
-    const source = compiled({gitChanges, lastTime, lastCommit});
+    const filePath = this.resourcePath;
+    const filename = path.basename(filePath, '.pug');
+    const lastTime = execGit(`git log -1 --format=%cd "${filePath}"`).trimEnd();
+    const lastCommit = execGit(`git log -1 --format=%h "${filePath}"`).trimEnd();
+    const compiled = pug.compile(content.toString(), {filename: filePath});
+
+    // When calculating the hash we ignore the hard-to-predict values like lastTime and lastCommit, else every time
+    // we merge changes in policies to main we get a new hash after checking in, and that breaks the build.
+    const htmlTextForHash = compiled({gitChanges, lastTime:'some-last-time', lastCommit:'some-last-commit'});
+    const hashDigest = getHashDigest(htmlTextForHash, 'sha256', 'hex', 16);
+    const expectedHash = expectedHashes[filename];
+    if (expectedHash !== undefined && expectedHash !== hashDigest) {
+        this.emitError(
+            new Error(
+                `Hash for file '${filePath}' changed from '${expectedHash}' to '${hashDigest}'` +
+                    ` - if expected, update the definition in parsed_pug.js`,
+            ),
+        );
+    }
+
+    const htmlText = compiled({gitChanges, lastTime, lastCommit});
     const result = {
-        hash: getHashDigest(source, 'sha256', 'hex', 16),
-        text: source.toString(),
+        hash: hashDigest,
+        text: htmlText,
     };
     return `export default ${JSON.stringify(result)};`;
 }

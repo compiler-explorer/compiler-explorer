@@ -38,7 +38,6 @@ class DotNetCompiler extends BaseCompiler {
     private clrBuildDir: string;
     private additionalSources: string;
     private langVersion: string;
-    protected asm: DotNetAsmParser;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -174,7 +173,7 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    optionsForFilter() {
+    override optionsForFilter() {
         return this.compilerOptions;
     }
 
