@@ -483,6 +483,8 @@ async function main() {
         for (const compiler of initialCompilers) {
             if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
 
+            if (compiler.externalparser && compiler.externalparser.id === '') delete compiler.externalparser;
+
             const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
             if (compilerInstance) {
                 compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;

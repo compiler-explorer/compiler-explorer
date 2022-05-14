@@ -33,18 +33,7 @@ import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
 import {CacheableValue} from '../types/cache.interfaces';
-
-interface IResultLineTag {
-    line?: number;
-    column?: number;
-    file?: string;
-    text: string;
-}
-
-interface IResultLine {
-    text: string;
-    tag?: IResultLineTag;
-}
+import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -56,7 +45,7 @@ export function splitLines(text: string): string[] {
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => IResultLine | void): (IResultLine | void)[] {
+export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
     return splitLines(text).map(func);
 }
 
@@ -95,17 +84,17 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
     return line;
 }
 
-export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): IResultLine[] {
+export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
     const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result: IResultLine[] = [];
+    const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (!inputFilename) {
             line = maskRootdir(line);
         }
         if (line !== null) {
-            const lineObj: IResultLine = {text: line};
+            const lineObj: ResultLine = {text: line};
             const filteredline = line.replace(ansiColoursRe, '');
             let match = filteredline.match(re);
             if (match) {
@@ -133,11 +122,11 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
     const re = /^ --> <source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result: IResultLine[] = [];
+    const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
-            const lineObj: IResultLine = {text: line};
+            const lineObj: ResultLine = {text: line};
             const match = line.replace(ansiColoursRe, '').match(re);
 
             if (match) {
