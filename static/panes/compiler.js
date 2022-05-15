@@ -750,16 +750,22 @@ Compiler.prototype.initEditorActions = function () {
             }
 
             if (this.isAsmKeywordCtxKey) {
-                var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
-                if (currentWord) {
-                    currentWord.range = new monaco.Range(
-                        e.target.position.lineNumber,
-                        Math.max(currentWord.startColumn, 1),
-                        e.target.position.lineNumber,
-                        currentWord.endColumn
-                    );
-                    if (currentWord.word) {
-                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+                if (!this.compiler.supportsAsmDocs) {
+                    // No need to show the "Show asm documentation" if it's just going to fail.
+                    // This is useful for things like xtensa which define an instructionSet but have no docs associated
+                    this.isAsmKeywordCtxKey.set(false);
+                } else {
+                    var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
+                    if (currentWord) {
+                        currentWord.range = new monaco.Range(
+                            e.target.position.lineNumber,
+                            Math.max(currentWord.startColumn, 1),
+                            e.target.position.lineNumber,
+                            currentWord.endColumn
+                        );
+                        if (currentWord.word) {
+                            this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
+                        }
                     }
                 }
             }
@@ -2857,7 +2863,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
         var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
-        if (hoverShowAsmDoc && this.isWordAsmKeyword(currentWord)) {
+        if (hoverShowAsmDoc && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;
