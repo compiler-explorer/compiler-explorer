@@ -81,4 +81,12 @@ describe('ansi-to-html', () => {
         filter.reset();
         filter.toHtml('bar').should.equal('bar');
     });
+
+    // rgb test
+    it('should process rgb colors', () => {
+        const filter = new Filter(filterOpts);
+        filter
+            .toHtml('\x1B[38;2;57;170;243mfoo\x1B[48;2;100;100;100mbar')
+            .should.equal('<span style="color:#39aaf3">foo<span style="background-color:#646464">bar</span></span>');
+    });
 });
