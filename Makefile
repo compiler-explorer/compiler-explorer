@@ -40,11 +40,11 @@ $(NODE_MODULES): package.json | node-installed
 .PHONY: lint
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
 	$(NPM) run ts-compile
-	$(NPM) run lint
+	$(NPM) run lint-check
 
 .PHONY: lint-fix
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
-	$(NPM) run lint-fix
+	$(NPM) run lint
 
 .PHONY: ci-lint
 ci-lint: $(NODE_MODULES)
