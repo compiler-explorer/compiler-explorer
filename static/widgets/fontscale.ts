@@ -24,10 +24,15 @@
 
 import EventEmitter from 'events';
 import {options} from '../options';
+import {Settings} from '../settings';
 import {editor} from 'monaco-editor';
 import IEditor = editor.IEditor;
 
 import {FontScaleState} from './fontscale.interfaces';
+
+function getDefaultFontScale() {
+    return Settings.getStoredSettings().defaultFontScale ?? options.defaultFontScale;
+}
 
 function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQuery) {
     function onClickEvent(this: JQuery) {
@@ -70,9 +75,9 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
             e.stopImmediatePropagation();
             // Set the correct scale as active
             elem.find('.active').removeClass('active');
-            elem.find(`[data-value=${options.defaultFontScale}]`).addClass('active');
+            elem.find(`[data-value=${getDefaultFontScale()}]`).addClass('active');
             // Set the scale
-            obj.setScale(options.defaultFontScale);
+            obj.setScale(getDefaultFontScale());
             obj.emit('change');
         }
     });
@@ -94,7 +99,7 @@ export class FontScale extends EventEmitter.EventEmitter {
         super();
         this.domRoot = domRoot;
         // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
-        this.scale = state.fontScale || options.defaultFontScale;
+        this.scale = state.fontScale || getDefaultFontScale();
         // The check seems pointless, but it ensures a false in case it's undefined
         // FontScale assumes it's an old state if it does not see a fontUsePx in the state, so at first it will use pt.
         // So the second condition is there to make new objects actually use px

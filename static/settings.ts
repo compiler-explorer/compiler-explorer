@@ -50,6 +50,7 @@ export interface SiteSettings {
     enableCtrlStree: boolean;
     editorsFFont: string;
     editorsFLigatures: boolean;
+    defaultFontScale?: number;
     formatBase: FormatBase;
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
@@ -105,6 +106,15 @@ class Select extends BaseSetting {
 
     override putUi(value: string | number | boolean | null) {
         this.elem.val(value?.toString() ?? '');
+    }
+}
+
+class NumericSelect extends Select {
+    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
+        super(elem, name, populate);
+    }
+    override getUi(): number {
+        return Number(this.val() as string);
     }
 }
 
@@ -269,9 +279,11 @@ export class Settings {
             selector: string,
             name: keyof SiteSettings,
             populate: {label: string; desc: string}[],
-            defaultValue: string
+            defaultValue: string,
+            numeric = false
         ) => {
-            this.add(new Select(this.root.find(selector), name, populate), defaultValue);
+            const selectType = numeric ? NumericSelect : Select;
+            this.add(new selectType(this.root.find(selector), name, populate), defaultValue);
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
@@ -304,6 +316,13 @@ export class Settings {
                 .prop('title', 'Default language inherited from subdomain')
                 .css('cursor', 'not-allowed');
         }
+
+        const defaultFontSize = this.settings.defaultFontScale || options.defaultFontScale;
+        const fontScales: {label: string; desc: string}[] = [];
+        for (let i = 8; i <= 30; i++) {
+            fontScales.push({label: i.toString(), desc: i.toString()});
+        }
+        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontSize.toString(), true);
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {
