@@ -34,8 +34,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
         // Toggle off the selection of the others
         $(this).addClass('active').siblings().removeClass('active');
         // Send the data
-        obj.scale = $(this).data('value');
-        obj.apply();
+        obj.setScale($(this).data('value'));
         obj.emit('change');
     }
 
@@ -73,8 +72,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
             elem.find('.active').removeClass('active');
             elem.find(`[data-value=${options.defaultFontScale}]`).addClass('active');
             // Set the scale
-            obj.scale = options.defaultFontScale;
-            obj.apply();
+            obj.setScale(options.defaultFontScale);
             obj.emit('change');
         }
     });
