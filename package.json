@@ -154,12 +154,12 @@
   },
   "scripts": {
     "ci-lint": "eslint --format github .",
-    "ci-lint-files": "eslint --format github",
     "ci-test": "nyc npm run test",
-    "lint": "eslint .",
-    "lint-fix": "eslint --fix .",
+    "lint": "eslint . --fix",
+    "lint-check": "eslint .",
+    "lint-files": "eslint",
     "test": "mocha --recursive",
-    "check": "npm run lint && npm run test",
+    "check": "npm run lint-check && npm run test",
     "dev": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js",
     "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm -r ts-node/register app.js --debug",
     "debug": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js --debug",
@@ -168,21 +168,20 @@
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",
     "prepare": "husky install",
-    "format": "prettier --ignore-unknown .",
-    "format-fix": "prettier --write .",
-    "format-fix-files": "prettier --write --ignore-unknown",
+    "format": "prettier --write .",
     "format-check": "prettier --check .",
+    "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production"
   },
   "lint-staged": {
     "*.[jt]s": [
-      "npm run format-fix-files --",
-      "npm run ci-lint-files --"
+      "npm run format-files --",
+      "npm run lint-files --"
     ],
     "*.{html,md}": [
-      "npm run format-fix-files --"
+      "npm run format-files --"
     ]
   },
   "license": "BSD-2-Clause"

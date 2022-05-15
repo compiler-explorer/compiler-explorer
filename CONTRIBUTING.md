@@ -28,7 +28,7 @@ well when testing your changes locally.
 - Make your changes, trying to stick to the style and format where possible.
   - We use [ESLint](https://eslint.org/) to ensure a consistent code base and PRs won't pass unless it detects no
     errors.
-  - Running `make lint` will run the linter, which will auto-fix everything it can and report back any errors and
+  - Running `make lint-fix` will run the linter, which will auto-fix everything it can and report back any errors and
     warnings.
 - If you're adding a new server-side component, please do your best to add a test to cover it. For client-side changes
   that's trickier.
