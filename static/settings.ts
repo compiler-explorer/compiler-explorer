@@ -280,10 +280,9 @@ export class Settings {
             name: keyof SiteSettings,
             populate: {label: string; desc: string}[],
             defaultValue: string,
-            numeric = false
+            component = Select
         ) => {
-            const selectType = numeric ? NumericSelect : Select;
-            this.add(new selectType(this.root.find(selector), name, populate), defaultValue);
+            this.add(new component(this.root.find(selector), name, populate), defaultValue);
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
@@ -322,7 +321,7 @@ export class Settings {
         for (let i = 8; i <= 30; i++) {
             fontScales.push({label: i.toString(), desc: i.toString()});
         }
-        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontSize.toString(), true);
+        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontSize.toString(), NumericSelect);
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {
