@@ -374,6 +374,7 @@ Editor.prototype.sendEditor = function () {
 
 Editor.prototype.onMouseMove = function (e) {
     if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
+        this.clearLinkedLine();
         var pos = e.target.position;
         this.tryPanesLinkLine(pos.lineNumber, pos.column, false);
     }
