@@ -750,7 +750,7 @@ Compiler.prototype.initEditorActions = function () {
             }
 
             if (this.isAsmKeywordCtxKey) {
-                if (!this.compiler.hasAsmDocs) {
+                if (!this.compiler.supportsAsmDocs) {
                     // No need to show the "Show asm documentation" if it's just going to fail.
                     // This is useful for things like xtensa which define an instructionSet but have no docs associated
                     this.isAsmKeywordCtxKey.set(false);
@@ -2863,7 +2863,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
         var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
-        if (hoverShowAsmDoc && this.compiler.hasAsmDocs && this.isWordAsmKeyword(currentWord)) {
+        if (hoverShowAsmDoc && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;
