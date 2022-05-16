@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface Language {
-    // Id of language. Added programmatically based on CELanguages key
+export type Language = {
+    // ID of language. Added programmatically based on CELanguages key
     id: string;
     // UI display name of the language
     name: string;
@@ -37,4 +37,4 @@ export interface Language {
     formatter: string | null;
     // Whether there's at least 1 compiler in this language that supportsExecute
     supportsExecute: boolean | null;
-}
+};
