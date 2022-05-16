@@ -41,7 +41,7 @@ export declare class BaseCompiler {
     protected getExtraFilepath(dirPath: string, filename: string): string;
     protected async writeAllFiles(dirPath: string, source: string, files: any[], filters: object);
     protected async writeMultipleFiles(files: any[], dirPath: string): Promise<any[]>;
-    public compilerProps: (key: string) => string;
+    public compilerProps: (key: string, defaultValue?: string) => string;
     public getOutputFilename(dirPath: string, outputFilebase: string, key?: object): string;
     public async exec(filepath: string, args: string[], execOptions);
     public parseCompilationOutput(result, filename: string);
