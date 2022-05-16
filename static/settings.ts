@@ -50,7 +50,7 @@ export interface SiteSettings {
     enableCtrlStree: boolean;
     editorsFFont: string;
     editorsFLigatures: boolean;
-    defaultFontScale?: number;
+    defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
     formatBase: FormatBase;
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
@@ -279,7 +279,7 @@ export class Settings {
             selector: string,
             name: keyof SiteSettings,
             populate: {label: string; desc: string}[],
-            defaultValue: string,
+            defaultValue: any,
             component = Select
         ) => {
             this.add(new component(this.root.find(selector), name, populate), defaultValue);
@@ -316,12 +316,12 @@ export class Settings {
                 .css('cursor', 'not-allowed');
         }
 
-        const defaultFontSize = this.settings.defaultFontScale || options.defaultFontScale;
+        const defaultFontScale = options.defaultFontScale;
         const fontScales: {label: string; desc: string}[] = [];
         for (let i = 8; i <= 30; i++) {
             fontScales.push({label: i.toString(), desc: i.toString()});
         }
-        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontSize.toString(), NumericSelect);
+        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontScale, NumericSelect);
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {
