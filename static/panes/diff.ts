@@ -354,12 +354,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             treeId: treeId,
             compiler: compiler,
         };
-        if (this.lhs.id !== undefined) {
+        if (this.lhs.id === undefined) {
             this.lhs.compiler = this.compilers[id];
             this.lhs.id = id;
             this.onDiffSelect(id);
         }
-        if (this.rhs.id !== undefined) {
+        if (this.rhs.id === undefined) {
             this.rhs.compiler = this.compilers[id];
             this.rhs.id = id;
             this.onDiffSelect(id);
