@@ -26,9 +26,7 @@ import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
 import {themes, Themes} from './themes';
-import {AppTheme, ColourSchemeInfo} from './colour';
-
-type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -275,11 +273,11 @@ export class Settings {
     }
 
     private addSelectors() {
-        const addSelector = (
+        const addSelector = <Name extends keyof SiteSettings>(
             selector: string,
-            name: keyof SiteSettings,
+            name: Name,
             populate: {label: string; desc: string}[],
-            defaultValue: any,
+            defaultValue: SiteSettings[Name],
             component = Select
         ) => {
             this.add(new component(this.root.find(selector), name, populate), defaultValue);
