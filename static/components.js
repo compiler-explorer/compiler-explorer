@@ -208,6 +208,20 @@ module.exports = {
             },
         };
     },
+    getDiffView: function () {
+        return {
+            type: 'component',
+            componentName: 'diff',
+            componentState: {},
+        };
+    },
+    getDiffViewWith: function (lhs, rhs) {
+        return {
+            type: 'component',
+            componentName: 'diff',
+            componentState: {lhs: lhs, rhs: rhs},
+        };
+    },
     getAstView: function () {
         return {
             type: 'component',
