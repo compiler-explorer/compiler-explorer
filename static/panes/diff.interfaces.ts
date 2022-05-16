@@ -34,8 +34,8 @@ export enum DiffType {
 }
 
 export interface DiffState {
-    lhs: any;
-    rhs: any;
+    lhs: number | string;
+    rhs: number | string;
     lhsdifftype: DiffType;
     rhsdifftype: DiffType;
 }
