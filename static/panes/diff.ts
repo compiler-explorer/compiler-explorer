@@ -25,30 +25,30 @@
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import { ga } from '../analytics';
-import { Hub } from '../hub';
-import { Container } from 'golden-layout';
-import { MonacoPane } from './pane';
-import { MonacoPaneState } from './pane.interfaces';
-import { DiffState, DiffType } from './diff.interfaces';
+import {ga} from '../analytics';
+import {Hub} from '../hub';
+import {Container} from 'golden-layout';
+import {MonacoPane} from './pane';
+import {MonacoPaneState} from './pane.interfaces';
+import {DiffState, DiffType} from './diff.interfaces';
 
 // TODO: Type here is only partially correct for what's used here
-type ResultEntry = { text: string };
+type ResultEntry = {text: string};
 
 type ResultType = {
     code: number;
     buildResult: unknown;
-    asm: ResultEntry[];
-    stdout: ResultEntry[];
-    stderr: ResultEntry[];
-    execResult: {
-        stdout: ResultEntry[];
-        stderr: ResultEntry[];
+    asm?: ResultEntry[];
+    stdout?: ResultEntry[];
+    stderr?: ResultEntry[];
+    execResult?: {
+        stdout?: ResultEntry[];
+        stderr?: ResultEntry[];
     };
     hasGnatDebugOutput: boolean;
-    gnatDebugOutput: ResultEntry[];
+    gnatDebugOutput?: ResultEntry[];
     hasGnatDebugTreeOutput: boolean;
-    gnatDebugTreeOutput: ResultEntry[];
+    gnatDebugTreeOutput?: ResultEntry[];
 };
 
 class DiffStateObject {
@@ -76,7 +76,7 @@ class DiffStateObject {
     }
 
     refresh() {
-        var output: ResultEntry[] = [];
+        let output: ResultEntry[] = [];
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.DiffType_ASM:
@@ -108,7 +108,7 @@ class DiffStateObject {
 
 function getItemDisplayTitle(item) {
     if (typeof item.id === 'string') {
-        var p = item.id.indexOf('_exec');
+        const p = item.id.indexOf('_exec');
         if (p !== -1) {
             return 'Executor #' + item.id.substr(0, p);
         }
@@ -141,107 +141,111 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     constructor(hub: Hub, container: Container, state: MonacoPaneState & DiffState) {
         super(hub, container, state);
 
-        this.lhs = new DiffStateObject(state.lhs, monaco.editor.createModel('', 'asm'), state.lhsdifftype || DiffType.DiffType_ASM);
-        this.rhs = new DiffStateObject(state.rhs, monaco.editor.createModel('', 'asm'), state.rhsdifftype || DiffType.DiffType_ASM);
+        this.lhs = new DiffStateObject(
+            state.lhs,
+            monaco.editor.createModel('', 'asm'),
+            state.lhsdifftype || DiffType.DiffType_ASM
+        );
+        this.rhs = new DiffStateObject(
+            state.rhs,
+            monaco.editor.createModel('', 'asm'),
+            state.rhsdifftype || DiffType.DiffType_ASM
+        );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
-        this.domRoot[0].querySelectorAll('.difftype-picker').forEach(
-            picker => {
-                if (!(picker instanceof HTMLSelectElement)) {
-                    throw new Error('.difftype-picker is not an HTMLSelectElement');
-                }
-                var instance = new TomSelect(picker, {
-                    sortField: 'name',
-                    valueField: 'id',
-                    labelField: 'name',
-                    searchField: ['name'],
-                    options: [
-                        {id: DiffType.DiffType_ASM, name: 'Assembly'},
-                        {id: DiffType.DiffType_CompilerStdOut, name: 'Compiler stdout'},
-                        {id: DiffType.DiffType_CompilerStdErr, name: 'Compiler stderr'},
-                        {id: DiffType.DiffType_ExecStdOut, name: 'Execution stdout'},
-                        {id: DiffType.DiffType_ExecStdErr, name: 'Execution stderr'},
-                        {id: DiffType.DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
-                        {id: DiffType.DiffType_GNAT_Tree, name: 'GNAT Tree Code'},
-                    ],
-                    items: [],
-                    render: {
-                        option: (item, escape) => {
-                            return `<div>${escape(item.name)}</div>`;
-                        },
-                    },
-                    dropdownParent: 'body',
-                    plugins: ['input_autogrow'],
-                    onChange: value => {
-                        if (picker.classList.contains('lhsdifftype')) {
-                            this.lhs.difftype = parseInt(value as any as string);
-                            this.lhs.refresh();
-                        } else {
-                            this.rhs.difftype = parseInt(value as any as string);
-                            this.rhs.refresh();
-                        }
-                        this.updateState();
-                    },
-                });
-
-                if (picker.classList.contains('lhsdifftype')) {
-                    this.selectize.lhsdifftype = instance;
-                } else {
-                    this.selectize.rhsdifftype = instance;
-                }
+        this.domRoot[0].querySelectorAll('.difftype-picker').forEach(picker => {
+            if (!(picker instanceof HTMLSelectElement)) {
+                throw new Error('.difftype-picker is not an HTMLSelectElement');
             }
-        );
-
-        this.domRoot[0].querySelectorAll('.diff-picker').forEach(
-            picker => {
-                if (!(picker instanceof HTMLSelectElement)) {
-                    throw new Error('.difftype-picker is not an HTMLSelectElement');
-                }
-                var instance = new TomSelect(picker, {
-                    sortField: 'name',
-                    valueField: 'id',
-                    labelField: 'name',
-                    searchField: ['name'],
-                    options: [],
-                    items: [],
-                    render: {
-                        option: function (item, escape) {
-                            var origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
-                            return (
-                                '<div>' +
-                                `<span class="compiler">${escape(item.compiler.name)}</span>` +
-                                `<span class="options">${escape(item.options)}</span>` +
-                                '<ul class="meta">' +
-                                `<li class="editor">${escape(origin)}</li>` +
-                                `<li class="compilerId">${escape(getItemDisplayTitle(item))}</li>` +
-                                '</ul>' +
-                                '</div>'
-                            );
-                        },
+            const instance = new TomSelect(picker, {
+                sortField: 'name',
+                valueField: 'id',
+                labelField: 'name',
+                searchField: ['name'],
+                options: [
+                    {id: DiffType.DiffType_ASM, name: 'Assembly'},
+                    {id: DiffType.DiffType_CompilerStdOut, name: 'Compiler stdout'},
+                    {id: DiffType.DiffType_CompilerStdErr, name: 'Compiler stderr'},
+                    {id: DiffType.DiffType_ExecStdOut, name: 'Execution stdout'},
+                    {id: DiffType.DiffType_ExecStdErr, name: 'Execution stderr'},
+                    {id: DiffType.DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
+                    {id: DiffType.DiffType_GNAT_Tree, name: 'GNAT Tree Code'},
+                ],
+                items: [],
+                render: {
+                    option: (item, escape) => {
+                        return `<div>${escape(item.name)}</div>`;
                     },
-                    dropdownParent: 'body',
-                    plugins: ['input_autogrow'],
-                    onChange: value => {
-                        var compiler = this.compilers[value as any as string];
-                        if (!compiler) return;
-                        if (picker.classList.contains('lhs')) {
-                            this.lhs.compiler = compiler;
-                            this.lhs.id = compiler.id;
-                        } else {
-                            this.rhs.compiler = compiler;
-                            this.rhs.id = compiler.id;
-                        }
-                        this.onDiffSelect(compiler.id);
-                    },
-                });
+                },
+                dropdownParent: 'body',
+                plugins: ['input_autogrow'],
+                onChange: value => {
+                    if (picker.classList.contains('lhsdifftype')) {
+                        this.lhs.difftype = parseInt(value as any as string);
+                        this.lhs.refresh();
+                    } else {
+                        this.rhs.difftype = parseInt(value as any as string);
+                        this.rhs.refresh();
+                    }
+                    this.updateState();
+                },
+            });
 
-                if (picker.classList.contains('lhs')) {
-                    this.selectize.lhs = instance;
-                } else {
-                    this.selectize.rhs = instance;
-                }
+            if (picker.classList.contains('lhsdifftype')) {
+                this.selectize.lhsdifftype = instance;
+            } else {
+                this.selectize.rhsdifftype = instance;
             }
-        );
+        });
+
+        this.domRoot[0].querySelectorAll('.diff-picker').forEach(picker => {
+            if (!(picker instanceof HTMLSelectElement)) {
+                throw new Error('.difftype-picker is not an HTMLSelectElement');
+            }
+            const instance = new TomSelect(picker, {
+                sortField: 'name',
+                valueField: 'id',
+                labelField: 'name',
+                searchField: ['name'],
+                options: [],
+                items: [],
+                render: {
+                    option: function (item, escape) {
+                        const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
+                        return (
+                            '<div>' +
+                            `<span class="compiler">${escape(item.compiler.name)}</span>` +
+                            `<span class="options">${escape(item.options)}</span>` +
+                            '<ul class="meta">' +
+                            `<li class="editor">${escape(origin)}</li>` +
+                            `<li class="compilerId">${escape(getItemDisplayTitle(item))}</li>` +
+                            '</ul>' +
+                            '</div>'
+                        );
+                    },
+                },
+                dropdownParent: 'body',
+                plugins: ['input_autogrow'],
+                onChange: value => {
+                    if (!((value as any as string) in this.compilers)) return;
+                    const compiler = this.compilers[value as any as string];
+                    if (picker.classList.contains('lhs')) {
+                        this.lhs.compiler = compiler;
+                        this.lhs.id = compiler.id;
+                    } else {
+                        this.rhs.compiler = compiler;
+                        this.rhs.id = compiler.id;
+                    }
+                    this.onDiffSelect(compiler.id);
+                },
+            });
+
+            if (picker.classList.contains('lhs')) {
+                this.selectize.lhs = instance;
+            } else {
+                this.selectize.rhs = instance;
+            }
+        });
 
         this.requestResendResult(this.lhs.id);
         this.requestResendResult(this.rhs.id);
@@ -286,8 +290,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     onCompileResult(id: number | string, compiler: unknown, result: ResultType) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
-        var lhsChanged = this.lhs.update(id, compiler, result);
-        var rhsChanged = this.rhs.update(id, compiler, result);
+        const lhsChanged = this.lhs.update(id, compiler, result);
+        const rhsChanged = this.rhs.update(id, compiler, result);
         if (lhsChanged || rhsChanged) {
             this.updateTitle();
         }
@@ -339,11 +343,14 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             treeId: treeId,
             compiler: compiler,
         };
+        // TODO: Typing here
         if (!this.lhs.id) {
             this.lhs.compiler = this.compilers[id];
             this.lhs.id = id;
             this.onDiffSelect(id);
-        } if (!this.rhs.id) {
+        }
+        // TODO: Typing here
+        if (!this.rhs.id) {
             this.rhs.compiler = this.compilers[id];
             this.rhs.id = id;
             this.onDiffSelect(id);
@@ -369,15 +376,15 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     override getPaneTag() {
-        return "xxx"; //return this.lhs.compiler.name + ' vs ' + this.rhs.compiler.name;
+        return 'xxx'; //return this.lhs.compiler.name + ' vs ' + this.rhs.compiler.name;
     }
 
     updateCompilersFor(selectize: TomSelect, id: number | string) {
         selectize.clearOptions();
-        for(let [_, compiler] of Object.entries(this.compilers)) {
+        for (const [_, compiler] of Object.entries(this.compilers)) {
             selectize.addOption(compiler);
         }
-        if (this.compilers[id]) {
+        if (id in this.compilers) {
             selectize.setValue(id.toString());
         }
     }
@@ -388,7 +395,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
         this.selectize.lhsdifftype.setValue((this.lhs.difftype || DiffType.DiffType_ASM) as any as string);
         this.selectize.rhsdifftype.setValue((this.rhs.difftype || DiffType.DiffType_ASM) as any as string);
-    };
+    }
 
     override getCurrentState() {
         const parent = super.getCurrentState();
@@ -398,7 +405,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             lhsdifftype: this.lhs.difftype,
             rhsdifftype: this.rhs.difftype,
             ...parent,
-        }
+        };
     }
 
     close() {
