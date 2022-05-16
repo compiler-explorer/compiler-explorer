@@ -1184,7 +1184,7 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     this.updateDecorations();
 
     var codeLenses = [];
-    if (this.getEffectiveFilters().binary) {
+    if (this.getEffectiveFilters().binary || result.forceBinaryView) {
         this.setBinaryMargin();
         _.each(
             this.assembly,
