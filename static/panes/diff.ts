@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -51,14 +51,20 @@ type ResultType = {
     gnatDebugTreeOutput?: ResultEntry[];
 };
 
+// TODO: Also incomplete, just filled in with what's needed for this pane
+type CompilerType = {
+    name: string;
+};
+
 class DiffStateObject {
-    id: number | string;
+    // can be undefined if there are no compilers / executors
+    id?: number | string;
     model: monaco.editor.ITextModel;
-    compiler: unknown;
+    compiler: CompilerType | null;
     result: ResultType | null;
     difftype: DiffType;
 
-    constructor(id: number | string, model: monaco.editor.ITextModel, difftype: DiffType) {
+    constructor(id: number | string | undefined, model: monaco.editor.ITextModel, difftype: DiffType) {
         this.id = id;
         this.model = model;
         this.compiler = null;
@@ -79,25 +85,25 @@ class DiffStateObject {
         let output: ResultEntry[] = [];
         if (this.result) {
             switch (this.difftype) {
-                case DiffType.DiffType_ASM:
+                case DiffType.ASM:
                     output = this.result.asm || [];
                     break;
-                case DiffType.DiffType_CompilerStdOut:
+                case DiffType.CompilerStdOut:
                     output = this.result.stdout || [];
                     break;
-                case DiffType.DiffType_CompilerStdErr:
+                case DiffType.CompilerStdErr:
                     output = this.result.stderr || [];
                     break;
-                case DiffType.DiffType_ExecStdOut:
+                case DiffType.ExecStdOut:
                     if (this.result.execResult) output = this.result.execResult.stdout || [];
                     break;
-                case DiffType.DiffType_ExecStdErr:
+                case DiffType.ExecStdErr:
                     if (this.result.execResult) output = this.result.execResult.stderr || [];
                     break;
-                case DiffType.DiffType_GNAT_ExpandedCode:
+                case DiffType.GNAT_ExpandedCode:
                     if (this.result.hasGnatDebugOutput) output = this.result.gnatDebugOutput || [];
                     break;
-                case DiffType.DiffType_GNAT_Tree:
+                case DiffType.GNAT_Tree:
                     if (this.result.hasGnatDebugTreeOutput) output = this.result.gnatDebugTreeOutput || [];
                     break;
             }
@@ -123,7 +129,7 @@ type CompilerEntry = {
     options: unknown;
     editorId: number;
     treeId: number;
-    compiler: unknown;
+    compiler: CompilerType;
 };
 
 type SelectizeType = {
@@ -144,12 +150,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.lhs = new DiffStateObject(
             state.lhs,
             monaco.editor.createModel('', 'asm'),
-            state.lhsdifftype || DiffType.DiffType_ASM
+            state.lhsdifftype || DiffType.ASM
         );
         this.rhs = new DiffStateObject(
             state.rhs,
             monaco.editor.createModel('', 'asm'),
-            state.rhsdifftype || DiffType.DiffType_ASM
+            state.rhsdifftype || DiffType.ASM
         );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
@@ -163,13 +169,13 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 labelField: 'name',
                 searchField: ['name'],
                 options: [
-                    {id: DiffType.DiffType_ASM, name: 'Assembly'},
-                    {id: DiffType.DiffType_CompilerStdOut, name: 'Compiler stdout'},
-                    {id: DiffType.DiffType_CompilerStdErr, name: 'Compiler stderr'},
-                    {id: DiffType.DiffType_ExecStdOut, name: 'Execution stdout'},
-                    {id: DiffType.DiffType_ExecStdErr, name: 'Execution stderr'},
-                    {id: DiffType.DiffType_GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
-                    {id: DiffType.DiffType_GNAT_Tree, name: 'GNAT Tree Code'},
+                    {id: DiffType.ASM, name: 'Assembly'},
+                    {id: DiffType.CompilerStdOut, name: 'Compiler stdout'},
+                    {id: DiffType.CompilerStdErr, name: 'Compiler stderr'},
+                    {id: DiffType.ExecStdOut, name: 'Execution stdout'},
+                    {id: DiffType.ExecStdErr, name: 'Execution stderr'},
+                    {id: DiffType.GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
+                    {id: DiffType.GNAT_Tree, name: 'GNAT Tree Code'},
                 ],
                 items: [],
                 render: {
@@ -247,8 +253,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             }
         });
 
-        this.requestResendResult(this.lhs.id);
-        this.requestResendResult(this.rhs.id);
+        if (this.lhs.id) this.requestResendResult(this.lhs.id);
+        if (this.rhs.id) this.requestResendResult(this.rhs.id);
 
         this.eventHub.emit('findCompilers');
         this.eventHub.emit('findExecutors');
@@ -277,7 +283,6 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
             scrollBeyondLastLine: true,
             readOnly: true,
-            //language: 'asm', // TODO TODO TODO
         });
     }
 
@@ -287,7 +292,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateState();
     }
 
-    onCompileResult(id: number | string, compiler: unknown, result: ResultType) {
+    onCompileResult(id: number | string, compiler: CompilerType, result: ResultType) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);
@@ -297,7 +302,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
-    onExecuteResult(id: number, compiler: unknown, result: ResultType) {
+    onExecuteResult(id: number, compiler: CompilerType, result: ResultType) {
         const compileResult: any = Object.assign({}, result.buildResult);
         compileResult.execResult = {
             code: result.code,
@@ -326,7 +331,13 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
-    override onCompiler(id: number | string, compiler: any, options: unknown, editorId: number, treeId: number) {
+    override onCompiler(
+        id: number | string,
+        compiler: CompilerType | undefined,
+        options: unknown,
+        editorId: number,
+        treeId: number
+    ) {
         if (!compiler) return;
         options = options || '';
         let name = compiler.name + ' ' + options;
@@ -343,14 +354,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
             treeId: treeId,
             compiler: compiler,
         };
-        // TODO: Typing here
-        if (!this.lhs.id) {
+        if (this.lhs.id !== undefined) {
             this.lhs.compiler = this.compilers[id];
             this.lhs.id = id;
             this.onDiffSelect(id);
         }
-        // TODO: Typing here
-        if (!this.rhs.id) {
+        if (this.rhs.id !== undefined) {
             this.rhs.compiler = this.compilers[id];
             this.rhs.id = id;
             this.onDiffSelect(id);
@@ -358,7 +367,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: any, options: unknown, editorId: number, treeId: number) {
+    onExecutor(id: number, compiler: CompilerType, options: unknown, editorId: number, treeId: number) {
         this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 
@@ -376,7 +385,13 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     override getPaneTag() {
-        return 'xxx'; //return this.lhs.compiler.name + ' vs ' + this.rhs.compiler.name;
+        // this gets called during the super's constructor before lhs/rhs have been initialized
+        if ((this.lhs as any) !== undefined && (this.rhs as any) !== undefined) {
+            if (this.lhs.compiler && this.rhs.compiler) {
+                return `${this.lhs.compiler.name} vs ${this.rhs.compiler.name}`;
+            }
+        }
+        return '';
     }
 
     updateCompilersFor(selectize: TomSelect, id: number | string) {
@@ -390,11 +405,11 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     }
 
     updateCompilers() {
-        this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
-        this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
+        if (this.lhs.id) this.updateCompilersFor(this.selectize.lhs, this.lhs.id);
+        if (this.rhs.id) this.updateCompilersFor(this.selectize.rhs, this.rhs.id);
 
-        this.selectize.lhsdifftype.setValue((this.lhs.difftype || DiffType.DiffType_ASM) as any as string);
-        this.selectize.rhsdifftype.setValue((this.rhs.difftype || DiffType.DiffType_ASM) as any as string);
+        this.selectize.lhsdifftype.setValue((this.lhs.difftype || DiffType.ASM) as any as string);
+        this.selectize.rhsdifftype.setValue((this.rhs.difftype || DiffType.ASM) as any as string);
     }
 
     override getCurrentState() {

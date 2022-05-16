@@ -24,13 +24,13 @@
 
 // note that these variables are saved to state, so don't change, only add to it
 export enum DiffType {
-    DiffType_ASM = 0,
-    DiffType_CompilerStdOut = 1,
-    DiffType_CompilerStdErr = 2,
-    DiffType_ExecStdOut = 3,
-    DiffType_ExecStdErr = 4,
-    DiffType_GNAT_ExpandedCode = 5,
-    DiffType_GNAT_Tree = 6
+    ASM = 0,
+    CompilerStdOut = 1,
+    CompilerStdErr = 2,
+    ExecStdOut = 3,
+    ExecStdErr = 4,
+    GNAT_ExpandedCode = 5,
+    GNAT_Tree = 6,
 }
 
 export interface DiffState {
