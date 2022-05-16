@@ -1365,6 +1365,33 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 
     this.checkForUnwiseArguments(result.compilationOptions);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
+
+    if (result.bbcdiskimage) {
+        this.emulateBbcDisk(result.bbcdiskimage);
+    }
+};
+
+Compiler.prototype.emulateBbcDisk = function (bbcdiskimage) {
+    var dialog = $('#jsbeebemu');
+
+    this.alertSystem.notify(
+        'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+        {
+            group: 'emulation',
+            collapseSimilar: true,
+            dismissTime: 10000,
+            onBeforeShow: function (elem) {
+                elem.find('#emulink').on('click', function () {
+                    dialog.modal();
+
+                    var emuwindow = dialog.find('#jsbeebemuframe')[0].contentWindow;
+                    var tmstr = Date.now();
+                    emuwindow.location =
+                        'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                });
+            },
+        }
+    );
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
