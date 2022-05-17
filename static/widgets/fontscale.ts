@@ -39,7 +39,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
         // Toggle off the selection of the others
         $(this).addClass('active').siblings().removeClass('active');
         // Send the data
-        obj.setScale($(this).data('value'));
+        obj.applyScale($(this).data('value'));
         obj.emit('change');
     }
 
@@ -77,7 +77,7 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
             elem.find('.active').removeClass('active');
             elem.find(`[data-value=${getDefaultFontScale()}]`).addClass('active');
             // Set the scale
-            obj.setScale(getDefaultFontScale());
+            obj.applyScale(getDefaultFontScale());
             obj.emit('change');
         }
     });
@@ -90,6 +90,7 @@ function convertOldScale(oldScale: number): number {
 
 export class FontScale extends EventEmitter.EventEmitter {
     private domRoot: JQuery;
+    private fontSizeList: JQuery;
     public scale: number;
     private readonly usePxUnits: boolean;
     private fontSelectorOrEditor: JQuery | string | IEditor;
@@ -109,7 +110,8 @@ export class FontScale extends EventEmitter.EventEmitter {
         }
         this.setTarget(fontSelectorOrEditor);
         this.apply();
-        makeFontSizeDropdown(this.domRoot.find('.font-size-list'), this, this.domRoot.find('.fs-button'));
+        this.fontSizeList = this.domRoot.find('.font-size-list');
+        makeFontSizeDropdown(this.fontSizeList, this, this.domRoot.find('.fs-button'));
     }
 
     apply() {
@@ -129,9 +131,15 @@ export class FontScale extends EventEmitter.EventEmitter {
         state.fontUsePx = true;
     }
 
-    setScale(scale: number) {
+    applyScale(scale: number) {
         this.scale = scale;
         this.apply();
+    }
+
+    setScale(scale: number) {
+        this.fontSizeList.find('.active').removeClass('active');
+        this.fontSizeList.find(`[data-value=${scale}]`).addClass('active');
+        this.applyScale(scale);
     }
 
     setTarget(target: JQuery | string | IEditor) {
