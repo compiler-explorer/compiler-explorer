@@ -27,6 +27,8 @@ import * as colour from './colour';
 import * as local from './local';
 import {themes, Themes} from './themes';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
+import {Hub} from './hub';
+import {EventHub} from './event-hub';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -190,13 +192,16 @@ class Numeric extends BaseSetting {
 
 export class Settings {
     private readonly settingsObjs: BaseSetting[];
+    private eventHub: EventHub;
 
     constructor(
+        hub: Hub,
         private root: JQuery,
         private settings: SiteSettings,
         private onChange: (SiteSettings) => void,
         private subLangId: string | null
     ) {
+        this.eventHub = hub.createEventHub();
         this.settings = settings;
         this.settingsObjs = [];
 
@@ -280,7 +285,9 @@ export class Settings {
             defaultValue: SiteSettings[Name],
             component = Select
         ) => {
-            this.add(new component(this.root.find(selector), name, populate), defaultValue);
+            const instance = new component(this.root.find(selector), name, populate);
+            this.add(instance, defaultValue);
+            return instance;
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
@@ -319,7 +326,12 @@ export class Settings {
         for (let i = 8; i <= 30; i++) {
             fontScales.push({label: i.toString(), desc: i.toString()});
         }
-        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontScale, NumericSelect);
+        addSelector('.defaultFontScale', 'defaultFontScale', fontScales, defaultFontScale, NumericSelect).elem.on(
+            'change',
+            e => {
+                this.eventHub.emit('broadcastFontScale', parseInt((e.target as HTMLSelectElement).value));
+            }
+        );
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {
