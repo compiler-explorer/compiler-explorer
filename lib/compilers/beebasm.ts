@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+/// <reference types="../base-compiler" />
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
 
@@ -40,15 +41,15 @@ export class BeebAsmCompiler extends BaseCompiler {
         this.asm = new AsmParserBeebAsm(this.compilerProps);
     }
 
-    optionsForFilter() {
+    override optionsForFilter() {
         return ['-v', '-do', 'disk.ssd'];
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(compiler, options, inputFilename, execOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
