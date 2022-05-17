@@ -31,25 +31,8 @@ import {Container} from 'golden-layout';
 import {MonacoPane} from './pane';
 import {MonacoPaneState} from './pane.interfaces';
 import {DiffState, DiffType} from './diff.interfaces';
-
-// TODO: Type here is only partially correct for what's used here
-type ResultEntry = {text: string};
-
-type ResultType = {
-    code: number;
-    buildResult: unknown;
-    asm?: ResultEntry[];
-    stdout?: ResultEntry[];
-    stderr?: ResultEntry[];
-    execResult?: {
-        stdout?: ResultEntry[];
-        stderr?: ResultEntry[];
-    };
-    hasGnatDebugOutput: boolean;
-    gnatDebugOutput?: ResultEntry[];
-    hasGnatDebugTreeOutput: boolean;
-    gnatDebugTreeOutput?: ResultEntry[];
-};
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 
 // TODO: Also incomplete, just filled in with what's needed for this pane
 type CompilerType = {
@@ -61,7 +44,7 @@ class DiffStateObject {
     id?: number | string;
     model: monaco.editor.ITextModel;
     compiler: CompilerType | null;
-    result: ResultType | null;
+    result: CompilationResult | null;
     difftype: DiffType;
 
     constructor(id: number | string | undefined, model: monaco.editor.ITextModel, difftype: DiffType) {
@@ -72,7 +55,7 @@ class DiffStateObject {
         this.difftype = difftype;
     }
 
-    update(id: number | string, compiler, result: ResultType) {
+    update(id: number | string, compiler, result: CompilationResult) {
         if (this.id !== id) return false;
         this.compiler = compiler;
         this.result = result;
@@ -82,7 +65,7 @@ class DiffStateObject {
     }
 
     refresh() {
-        let output: ResultEntry[] = [];
+        let output: ResultLine[] = [];
         if (this.result) {
             switch (this.difftype) {
                 case DiffType.ASM:
@@ -140,7 +123,7 @@ type SelectizeType = {
 };
 
 export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffState> {
-    compilers: Record<string, CompilerEntry> = {};
+    compilers: Record<string | number, CompilerEntry> = {};
     lhs: DiffStateObject;
     rhs: DiffStateObject;
     selectize: SelectizeType = {} as any; // will be filled in by the constructor
@@ -292,7 +275,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateState();
     }
 
-    onCompileResult(id: number | string, compiler: CompilerType, result: ResultType) {
+    onCompileResult(id: number | string, compiler: CompilerType, result: CompilationResult) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);
@@ -302,7 +285,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
-    onExecuteResult(id: number, compiler: CompilerType, result: ResultType) {
+    onExecuteResult(id: number, compiler: CompilerType, result: CompilationResult) {
         const compileResult: any = Object.assign({}, result.buildResult);
         compileResult.execResult = {
             code: result.code,
