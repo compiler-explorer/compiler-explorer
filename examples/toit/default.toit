@@ -1,2 +1,2 @@
 square num/int:
-  num * num
+  return num * num

@@ -30,8 +30,6 @@ import path from "path";
 import fs from "fs-extra";
 /* import Semver from "semver"; */
 
-const ToitCommands = ["execute"];
-
 
 export class ToitCompiler extends BaseCompiler {
     static get key() { return "toit"; }
@@ -41,28 +39,12 @@ export class ToitCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
     }
 
-    override cacheDir(outputFilename) { return outputFilename + ".cache"; }
+    override cacheDir(outputFilename: string) { return outputFilename + ".cache"; }
     override optionsForFilter(filters, outputFilename) {
-        const options = ["--context"];
-        if (!filters.binary)
-            if (filters.intel) options = options.concat("-mllvm", "--x86-asm-syntax=intel");
-
-        return options;
+        if (!filters.binary) return ["execute", outputFilename];
     }
 
-    override getCacheFile(options, inputFilename: string, cacheDir: string) {
-        const commandsInOptions = _.intersection(options, ToitCommands);
-        if (commandsInOptions.length === 0) return null;
-        const command = commandsInOptions[0];
-        const extention = this.expectedExtensionFromCommand(command);
-        if (!extension) return null;
-        const cacheName = path.basename(inputFilename);
-        const resultName = cacheName + extension;
-
-        return path.join(cacheDir, resultName);
-    }
-
-    override getSharedLibraryPathsAsArguments(libraries: object[]) { return []; }
+    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) { return []; }
     override getArgumentParser() { return ToitParser; }
     override isCfgCompiler() { return true; }
 }
