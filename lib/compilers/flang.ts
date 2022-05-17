@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import delimiter from 'path';
+
 import {FortranCompiler} from './fortran';
 
 export class FlangCompiler extends FortranCompiler {
@@ -33,7 +35,7 @@ export class FlangCompiler extends FortranCompiler {
         const result = super.getDefaultExecOptions();
         const gfortranPath = this.compilerProps('gfortranPath');
         if (gfortranPath) {
-            result.env.PATH = result.env.PATH + ':' + gfortranPath;
+            result.env.PATH = result.env.PATH + delimiter + gfortranPath;
         }
         return result;
     }
