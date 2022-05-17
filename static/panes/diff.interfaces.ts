@@ -33,9 +33,9 @@ export enum DiffType {
     GNAT_Tree = 6,
 }
 
-export interface DiffState {
+export type DiffState = {
     lhs: number | string;
     rhs: number | string;
     lhsdifftype: DiffType;
     rhsdifftype: DiffType;
-}
+};
