@@ -2863,7 +2863,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
         var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
-        if (hoverShowAsmDoc && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
+        if (hoverShowAsmDoc && this.compiler && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;
