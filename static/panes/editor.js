@@ -273,6 +273,13 @@ Editor.prototype.initLanguage = function (state) {
 
 Editor.prototype.initCallbacks = function () {
     this.fontScale.on('change', _.bind(this.updateState, this));
+    this.eventHub.on(
+        'broadcastFontScale',
+        _.bind(function (scale) {
+            this.fontScale.setScale(scale);
+            this.updateState();
+        }, this)
+    );
 
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);

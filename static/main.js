@@ -110,7 +110,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var SettingsObject = new Settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
@@ -130,7 +130,8 @@ function calcLocaleChangedDate(policyModal) {
     timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
 }
 
-function setupButtons(options) {
+function setupButtons(options, hub) {
+    var eventHub = hub.createEventHub();
     var alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
@@ -220,6 +221,13 @@ function setupButtons(options) {
         });
 
         $('#history').modal();
+    });
+
+    $('#ui-apply-default-font-scale').on('click', function () {
+        var defaultFontScale = Settings.getStoredSettings().defaultFontScale;
+        if (defaultFontScale !== undefined) {
+            eventHub.emit('broadcastFontScale', defaultFontScale);
+        }
     });
 }
 
@@ -571,7 +579,7 @@ function start() {
 
     // We assume no consent for embed users
     if (!options.embedded) {
-        setupButtons(options);
+        setupButtons(options, hub);
     }
 
     var addDropdown = $('#addDropdown');

@@ -2150,6 +2150,13 @@ Compiler.prototype.onFontScale = function () {
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.eventHub.on(
+        'broadcastFontScale',
+        _.bind(function (scale) {
+            this.fontScale.setScale(scale);
+            this.saveState();
+        }, this)
+    );
     this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
