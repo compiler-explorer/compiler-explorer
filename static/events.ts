@@ -26,6 +26,8 @@ import {Language} from '../types/languages.interfaces';
 import {CompilerFilters} from '../types/features/filters.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
+import {PPOptions} from './panes/pp-view.interfaces';
+import {GccSelectedPass} from './panes/gccdump-view.interfaces';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -76,7 +78,7 @@ export type Events = {
     flagsViewOpened: (compilerId: number) => void;
     gccDumpFiltersChanged: (compilerId: number, filters: CompilerFilters, recompile: boolean) => void;
     // TODO: pass type
-    gccDumpPassSelected: (compilerId: number, pass: string, recompile: boolean) => void;
+    gccDumpPassSelected: (compilerId: number, pass: GccSelectedPass, recompile: boolean) => void;
     gccDumpUIInit: (compilerId: number) => void;
     gccDumpViewClosed: (compilerId: number) => void;
     gccDumpViewOpened: (compilerId: number) => void;
@@ -112,7 +114,7 @@ export type Events = {
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
-    ppViewOptionsUpdated: (compilerId: number, options: string, recompile: boolean) => void;
+    ppViewOptionsUpdated: (compilerId: number, options: PPOptions, recompile: boolean) => void;
     requestCompilation: (editorId: number, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;

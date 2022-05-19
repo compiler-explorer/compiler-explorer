@@ -145,7 +145,14 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                         colEnd = hoverCode.source.to.col;
                     }
                 }
-                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, colBegin, colEnd, false);
+                this.eventHub.emit(
+                    'editorLinkLine',
+                    this.compilerInfo.editorId as number,
+                    sourceLine,
+                    colBegin,
+                    colEnd,
+                    false
+                );
                 this.eventHub.emit(
                     'panesLinkLine',
                     this.compilerInfo.compilerId,

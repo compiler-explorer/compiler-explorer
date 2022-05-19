@@ -81,7 +81,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange(false);
         });
-        this.eventHub.on('initialised', this.maybeEmitChange.bind(this));
+        this.eventHub.on('initialised', () => this.maybeEmitChange(false), this);
 
         this.editor.getModel()?.onDidChangeContent(() => {
             this.debouncedEmitChange(false);

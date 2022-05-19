@@ -91,7 +91,14 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     const desiredLine = position.lineNumber - 1;
                     const source = this.irCode[desiredLine].source;
                     if (source !== null && source.file !== null) {
-                        this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
+                        this.eventHub.emit(
+                            'editorLinkLine',
+                            this.compilerInfo.editorId as number,
+                            source.line,
+                            -1,
+                            -1,
+                            true
+                        );
                     }
                 }
             },
@@ -188,7 +195,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
                 this.eventHub.emit(
                     'editorLinkLine',
-                    this.compilerInfo.editorId,
+                    this.compilerInfo.editorId as number,
                     sourceLine,
                     sourceColumnBegin,
                     sourceColumnEnd,
