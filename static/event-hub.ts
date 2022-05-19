@@ -37,7 +37,7 @@ export interface DependencyProxies<T1 extends unknown[], T2 extends unknown[] = 
 
 export interface Event<T extends keyof Events, C = any> {
     evt: T;
-    fn: EventHubCallback<Events[T]>;
+    fn: Events[T];
     ctx?: C;
 }
 
@@ -62,7 +62,7 @@ export class EventHub {
      * components to install their listeners before the emission is performed.
      * This fixes some ordering issues.
      */
-    public emit(event: string, ...args: unknown[]): void {
+    public emit<Event extends keyof Events>(event: Event, ...args: Parameters<Events[Event]>): void {
         if (this.hub.deferred) {
             this.hub.deferredEmissions.push([event, ...args]);
         } else {
@@ -71,7 +71,7 @@ export class EventHub {
     }
 
     /** Attach a listener to the layout event hub. */
-    public on<T extends keyof Events, C = any>(event: T, callback: EventHubCallback<Events[T]>, context?: C): void {
+    public on<T extends keyof Events, C = any>(event: T, callback: Events[T], context?: C): void {
         this.layoutEventHub.on(event, callback, context);
         this.subscriptions.push({evt: event, fn: callback, ctx: context});
     }

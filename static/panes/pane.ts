@@ -144,16 +144,10 @@ export abstract class Pane<S> {
      *
      * @param compilerId - Id of the compiler that had its version changed
      * @param compiler - The updated compiler object
-     * @param options
+     * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(
-        compilerId: number,
-        compiler: unknown,
-        options: unknown,
-        editorId: number,
-        treeId: number
-    ): void;
+    abstract onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void;
 
     /**
      * Handle compilation result.

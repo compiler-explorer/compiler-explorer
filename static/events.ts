@@ -22,99 +22,130 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// grep -ro "eventHub\.on('.*'," static/ | cut -d "'" -f2 | sort | uniq
+import {Language} from '../types/languages.interfaces';
+import {CompilerFilters} from '../types/features/filters.interfaces';
+import {SiteSettings} from './settings';
+import {Theme} from './themes';
+
+// This list comes from executing
+// grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
 export type Events = {
-    astViewClosed: [];
-    astViewOpened: [];
-    broadcastFontScale: [];
-    cfgViewClosed: [];
-    cfgViewOpened: [];
-    colours: [];
-    coloursForCompiler: [];
-    coloursForEditor: [];
-    compiler: [];
-    compilerClose: [];
-    compileResult: [];
-    compilerFavoriteChange: [];
-    compilerFlagsChange: [];
-    compilerOpen: [];
-    compilerSetDecorations: [];
-    compiling: [];
-    conformanceViewClose: [];
-    conformanceViewOpen: [];
-    copyShortLinkToClip: [];
-    deviceViewClosed: [];
-    deviceViewOpened: [];
-    displaySharingPopover: [];
-    editorChange: [];
-    editorClose: [];
-    editorLinkLine: [];
-    editorOpen: [];
-    editorSetDecoration: [];
-    executeResult: [];
-    executor: [];
-    executorClose: [];
-    executorOpen: [];
-    filtersChange: [];
-    findCompilers: [];
-    findEditors: [];
-    findExecutors: [];
-    flagsViewClosed: [];
-    flagsViewOpened: [];
-    gccDumpFiltersChanged: [];
-    gccDumpPassSelected: [];
-    gccDumpUIInit: [];
-    gccDumpViewClosed: [];
-    gccDumpViewOpened: [];
-    gnatDebugTreeViewClosed: [];
-    gnatDebugTreeViewOpened: [];
-    gnatDebugViewClosed: [];
-    gnatDebugViewOpened: [];
-    haskellCmmViewClosed: [];
-    haskellCmmViewOpened: [];
-    haskellCoreViewClosed: [];
-    haskellCoreViewOpened: [];
-    haskellStgViewClosed: [];
-    haskellStgViewOpened: [];
-    initialised: [];
-    irViewClosed: [];
-    irViewOpened: [];
-    languageChange: [];
-    modifySettings: [];
-    motd: [];
-    newSource: [];
-    optViewClosed: [];
-    optViewOpened: [];
-    outputClosed: [];
-    outputOpened: [];
-    panesLinkLine: [];
-    ppViewClosed: [];
-    ppViewOpened: [];
-    ppViewOptionsUpdated: [];
-    requestCompilation: [];
-    requestMotd: [];
-    requestSettings: [];
-    resendCompilation: [];
-    resendExecution: [];
-    resize: [];
-    rustHirViewClosed: [];
-    rustHirViewOpened: [];
-    rustMacroExpViewClosed: [];
-    rustMacroExpViewOpened: [];
-    rustMirViewClosed: [];
-    rustMirViewOpened: [];
-    selectLine: [];
-    settingsChange: [];
-    setToolInput: [];
-    shown: [];
-    themeChange: [];
-    toolClosed: [];
-    toolInputChange: [];
-    toolInputViewClosed: [];
-    toolInputViewCloseRequest: [];
-    toolOpened: [];
-    toolSettingsChange: [];
-    treeClose: [];
-    treeCompilerEditorExcludeChange: [];
-    treeCompilerEditorIncludeChange: [];
+    astViewClosed: (compilerId: number) => void;
+    astViewOpened: (compilerId: number) => void;
+    broadcastFontScale: (scale: number) => void;
+    cfgViewClosed: (compilerId: number) => void;
+    cfgViewOpened: (compilerId: number) => void;
+    colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
+    coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
+    coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
+    compiler: (compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number) => void;
+    compilerClose: (compilerId: number) => void;
+    compileResult: (compilerId: number, compiler: unknown, result: unknown) => void;
+    compilerFavoriteChange: (compilerId: number) => void;
+    compilerFlagsChange: (compilerId: number, options: string) => void;
+    compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
+    // TODO: See if this one is necessary. Noone emits this one
+    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean) => void;
+    compiling: (compilerId: number, compiler: unknown) => void;
+    conformanceViewClose: (editorId: number) => void;
+    conformanceViewOpen: (editorId: number) => void;
+    copyShortLinkToClip: () => void;
+    deviceViewClosed: (compilerId: number) => void;
+    deviceViewOpened: (compilerId: number) => void;
+    displaySharingPopover: () => void;
+    editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
+    editorClose: (editorId: number) => void;
+    editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
+    editorOpen: (editorId: number) => void;
+    editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
+    executeResult: (executorId: number, compiler: unknown, result: unknown, languages?: Language) => void;
+    executor: (
+        executorId: number,
+        compiler: unknown,
+        options: string,
+        editorId: boolean | number,
+        treeId: boolean | number
+    ) => void;
+    executorClose: (executorId: number) => void;
+    executorOpen: (executorId: number, editorId: boolean | number) => void;
+    filtersChange: (compilerId: number, filters: CompilerFilters) => void;
+    findCompilers: () => void;
+    findEditors: () => void;
+    findExecutors: () => void;
+    flagsViewClosed: (compilerId: number, options: string) => void;
+    flagsViewOpened: (compilerId: number) => void;
+    gccDumpFiltersChanged: (compilerId: number, filters: CompilerFilters, recompile: boolean) => void;
+    // TODO: pass type
+    gccDumpPassSelected: (compilerId: number, pass: string, recompile: boolean) => void;
+    gccDumpUIInit: (compilerId: number) => void;
+    gccDumpViewClosed: (compilerId: number) => void;
+    gccDumpViewOpened: (compilerId: number) => void;
+    gnatDebugTreeViewClosed: (compilerId: number) => void;
+    gnatDebugTreeViewOpened: (compilerId: number) => void;
+    gnatDebugViewClosed: (compilerId: number) => void;
+    gnatDebugViewOpened: (compilerId: number) => void;
+    haskellCmmViewClosed: (compilerId: number) => void;
+    haskellCmmViewOpened: (compilerId: number) => void;
+    haskellCoreViewClosed: (compilerId: number) => void;
+    haskellCoreViewOpened: (compilerId: number) => void;
+    haskellStgViewClosed: (compilerId: number) => void;
+    haskellStgViewOpened: (compilerId: number) => void;
+    initialised: () => void;
+    irViewClosed: (compilerId: number) => void;
+    irViewOpened: (compilerId: number) => void;
+    languageChange: (editorId: number, newLangId: string, treeId?: boolean | number) => void;
+    modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
+    // TODO: Add type specificity
+    motd: (data: unknown) => void;
+    newSource: (editorId: number, newSource: string) => void;
+    optViewClosed: (compilerId: number) => void;
+    optViewOpened: (compilerId: number) => void;
+    outputClosed: (compilerId: number) => void;
+    outputOpened: (compilerId: number) => void;
+    panesLinkLine: (
+        compilerId: number,
+        lineNumber: number,
+        colBegin: number,
+        colEnd: number,
+        reveal: boolean,
+        sender: string
+    ) => void;
+    ppViewClosed: (compilerId: number) => void;
+    ppViewOpened: (compilerId: number) => void;
+    // TODO: See if this is necessary. Nothing emits this event
+    ppViewOptionsUpdated: (compilerId: number, options: string, recompile: boolean) => void;
+    requestCompilation: (editorId: number, treeId: boolean | number) => void;
+    requestMotd: () => void;
+    requestSettings: () => void;
+    resendCompilation: (compilerId: number) => void;
+    requestCompiler: (compilerId: number) => void;
+    // TODO: Bug? There are no listeners for this event, only Pane.ts emits it
+    requestFilters: (compilerId: number) => void;
+    resendExecution: (executorId: number) => void;
+    resize: () => void;
+    rustHirViewClosed: (compilerId: number) => void;
+    rustHirViewOpened: (compilerId: number) => void;
+    rustMacroExpViewClosed: (compilerId: number) => void;
+    rustMacroExpViewOpened: (compilerId: number) => void;
+    rustMirViewClosed: (compilerId: number) => void;
+    rustMirViewOpened: (compilerId: number) => void;
+    // TODO: There are no emitters for this event
+    selectLine: (editorId: number, lineNumber: number) => void;
+    settingsChange: (newSettings: SiteSettings) => void;
+    setToolInput: (compilerId: number, toolId: number, string: string) => void;
+    shown: () => void;
+    themeChange: (newTheme: Theme | null) => void;
+    toolClosed: (compilerId: number, toolState: unknown) => void;
+    toolInputChange: (compilerId: number, toolId: number, input: string) => void;
+    toolInputViewClosed: (compilerId: number, toolId: number, input: string) => void;
+    toolInputViewCloseRequest: (compilerId: number, toolId: number) => void;
+    // TODO: Only emitted
+    toolInputViewOpened: (toolId: number) => void;
+    toolOpened: (compilerId: number, toolState: unknown) => void;
+    toolSettingsChange: (compilerId: number) => void;
+    treeClose: (treeId: number) => void;
+    treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;
+    treeCompilerEditorIncludeChange: (treeId: number, compilerId: number, editorId: number) => void;
+    // Todo: Only emitted
+    treeOpen: (treeId: number) => void;
 };
