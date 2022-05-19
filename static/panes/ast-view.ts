@@ -215,7 +215,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    onColours(id: number, colours, scheme) {
+    onColours(id: number, colours: Record<number, number>, scheme: string) {
         if (id === this.compilerInfo.compilerId) {
             const astColours = {};
             for (const [index, code] of this.astCode.entries()) {

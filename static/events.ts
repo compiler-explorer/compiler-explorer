@@ -102,24 +102,15 @@ export type Events = {
     optViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
     outputOpened: (compilerId: number) => void;
-    panesLinkLine: (
-        compilerId: number,
-        lineNumber: number,
-        colBegin: number,
-        colEnd: number,
-        reveal: boolean,
-        sender: string
-    ) => void;
+    panesLinkLine: (compilerId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
-    // TODO: See if this is necessary. Nothing emits this event
     ppViewOptionsUpdated: (compilerId: number, options: string, recompile: boolean) => void;
     requestCompilation: (editorId: number, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;
     resendCompilation: (compilerId: number) => void;
     requestCompiler: (compilerId: number) => void;
-    // TODO: Bug? There are no listeners for this event, only Pane.ts emits it
     requestFilters: (compilerId: number) => void;
     resendExecution: (executorId: number) => void;
     resize: () => void;
@@ -146,6 +137,5 @@ export type Events = {
     treeClose: (treeId: number) => void;
     treeCompilerEditorExcludeChange: (treeId: number, compilerId: number, editorId: number) => void;
     treeCompilerEditorIncludeChange: (treeId: number, compilerId: number, editorId: number) => void;
-    // Todo: Only emitted
     treeOpen: (treeId: number) => void;
 };
