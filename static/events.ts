@@ -102,7 +102,14 @@ export type Events = {
     optViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
     outputOpened: (compilerId: number) => void;
-    panesLinkLine: (compilerId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
+    panesLinkLine: (
+        compilerId: number,
+        lineNumber: number,
+        colBegin: number,
+        colEnd: number,
+        reveal: boolean,
+        sender: string
+    ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
     ppViewOptionsUpdated: (compilerId: number, options: string, recompile: boolean) => void;
