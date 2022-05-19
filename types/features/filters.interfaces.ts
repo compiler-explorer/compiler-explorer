@@ -34,7 +34,7 @@ export type CompilerFilters = {
     trim: boolean;
 }
 
-export type ParseFilters = CompilerFilters | {
+export type ParseFilters = CompilerFilters & {
     dontMaskFilenames?: boolean;
     optOutput: boolean;
 };
