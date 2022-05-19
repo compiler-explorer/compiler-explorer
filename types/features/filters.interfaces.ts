@@ -32,7 +32,7 @@ export type CompilerFilters = {
     directives: boolean;
     commentOnly: boolean;
     trim: boolean;
-}
+};
 
 export type ParseFilters = CompilerFilters & {
     dontMaskFilenames?: boolean;
