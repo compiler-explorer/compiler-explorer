@@ -227,7 +227,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     code.source.to.line < code.source.from.line + 100
                 ) {
                     for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
-                        if (!(i - 1 in colours)) {
+                        if (i - 1 in colours) {
                             astColours[index] = colours[i - 1];
                             break;
                         }
