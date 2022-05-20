@@ -25,10 +25,8 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
-import {CompileHandler, SetTestMode} from '../../lib/handlers/compile';
+import {CompileHandler, ClearIntervalForTestRunner} from '../../lib/handlers/compile';
 import {chai, makeCompilationEnvironment} from '../utils';
-
-SetTestMode();
 
 const languages = {
     a: {id: 'a', name: 'A lang'},
@@ -52,6 +50,10 @@ describe('Compiler tests', () => {
         app.post('/noscript/compile', formParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/compile', textParser, compileHandler.handle.bind(compileHandler));
         app.post('/:compiler/cmake', compileHandler.handleCmake.bind(compileHandler));
+    });
+
+    after(() => {
+        ClearIntervalForTestRunner();
     });
 
     it('throws for unknown compilers', () => {

@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import AWS from 'aws-sdk-mock';
-import temp from 'temp';
 
 import {createCacheFromConfig} from '../lib/cache/from-config';
 import {InMemoryCache} from '../lib/cache/in-memory';
@@ -31,12 +30,12 @@ import {MultiCache} from '../lib/cache/multi';
 import {NullCache} from '../lib/cache/null';
 import {OnDiskCache} from '../lib/cache/on-disk';
 import {S3Cache} from '../lib/cache/s3';
+import {createTempDirSync} from '../lib/utils';
 
 import {fs, path} from './utils';
 
 function newTempDir() {
-    temp.track(true);
-    return temp.mkdirSync({prefix: 'compiler-explorer-cache-tests', dir: process.env.tmpDir});
+    return createTempDirSync({prefix: 'compiler-explorer-cache-tests'});
 }
 
 function basicTests(factory) {

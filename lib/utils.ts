@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import crypto from 'crypto';
+import {tmpdir} from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -37,6 +38,7 @@ import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
+const tempFilesTracked: string[] = [];
 
 export function splitLines(text: string): string[] {
     if (!text) return [];
@@ -421,4 +423,57 @@ export function asSafeVer(semver: string | number | null) {
         }
     }
     return '9999999.99999.999';
+}
+
+/***
+ * Returns a Promise that creates a temporary folder.
+ * The default dir is the returned by `os.tmpdir()`
+ * @param {Object} arg
+ * @param {string} arg.dir The directory to save the temp folder
+ * @param {string} arg.prefix The temporary folder prefix
+ * @returns {Promise} The equivalent of `fs.mkdtemp(path.join(dir/prefix-))`
+ * @returns {void} The equivalent of `fs.mkdtemp(path.join(dir/prefix-), cb)`
+ */
+export function createTempDir(
+    {dir, prefix}: {dir: string; prefix: string},
+    cb?: (err: unknown, data: unknown) => void,
+): Promise<string> | void {
+    const dest: string = path.join(dir || tmpdir(), prefix || 'compiler-explorer');
+    if (cb)
+        return fs.mkdtemp(dest, (err: Error, dir: string) => {
+            if (err) return cb(err, null);
+            tempFilesTracked.push(dir);
+            return cb(null, err);
+        });
+    return fs.mkdtemp(dest).then((dir: string) => {
+        tempFilesTracked.push(dir);
+        return dir;
+    });
+}
+
+/***
+ * Returns a Promise that creates a temporary folder.
+ * The default dir is the returned by `os.tmpdir()`
+ * @param {Object} arg
+ * @param {string} arg.dir The directory to save the temp folder
+ * @param {string} arg.prefix The temporary folder prefix
+ * @returns {string} The equivalent of `fs.mkdtempSync(path.join(dir/prefix-))`
+ */
+export function createTempDirSync({dir, prefix}: {dir: string; prefix: string}): string {
+    const tempDirName: string = fs.mkdtempSync(path.join(dir || tmpdir(), prefix || 'compiler-explorer'));
+    tempFilesTracked.push(tempDirName);
+    return tempDirName;
+}
+
+/***
+ * Returns a Promise that removes all temporary folders created.
+ * @returns {Promise}
+ */
+export async function cleanTempFolders(): Promise<void[]> {
+    const deleteFolderPromiseList: Promise<void>[] = [];
+    while (tempFilesTracked.length > 0) {
+        deleteFolderPromiseList.push(fs.rm(path.resolve(<string>tempFilesTracked.pop()), {force: true}));
+    }
+
+    return await Promise.all(deleteFolderPromiseList);
 }

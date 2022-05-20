@@ -22,19 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import temp from 'temp';
-
 import {Packager} from '../lib/packager';
+import {createTempDir} from '../lib/utils';
 
 import {fs, path} from './utils';
 
 function newTempDir() {
-    return new Promise((resolve, reject) => {
-        temp.mkdir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir}, (err, dirPath) => {
-            if (err) reject(`Unable to open temp file: ${err}`);
-            else resolve(dirPath);
-        });
-    });
+    return createTempDir({prefix: 'compiler-explorer-compiler', dir: process.env.tmpDir});
 }
 
 function writeTestFile(filepath) {
