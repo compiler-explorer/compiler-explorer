@@ -195,7 +195,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         if (!this.editor.getModel()) {
             return '';
         }
-        return this.editor.getModel()?.getValue();
+        return this.editor.getModel()?.getValue() ?? '';
     }
 
     maybeEmitChange(force) {

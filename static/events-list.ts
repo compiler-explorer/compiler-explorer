@@ -31,7 +31,7 @@ import {GccSelectedPass} from './panes/gccdump-view.interfaces';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
-export type Events = {
+export type EventsList = {
     astViewClosed: (compilerId: number) => void;
     astViewOpened: (compilerId: number) => void;
     broadcastFontScale: (scale: number) => void;
@@ -95,7 +95,7 @@ export type Events = {
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;
-    languageChange: (editorId: number, newLangId: string, treeId?: boolean | number) => void;
+    languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     // TODO: Add type specificity
     motd: (data: unknown) => void;
@@ -115,7 +115,7 @@ export type Events = {
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
     ppViewOptionsUpdated: (compilerId: number, options: PPOptions, recompile: boolean) => void;
-    requestCompilation: (editorId: number, treeId: boolean | number) => void;
+    requestCompilation: (editorId: number | boolean, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;
     resendCompilation: (compilerId: number) => void;

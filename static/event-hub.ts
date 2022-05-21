@@ -26,7 +26,7 @@ import GoldenLayout from 'golden-layout';
 import * as Sentry from '@sentry/browser';
 
 import {Hub} from './hub';
-import {Events} from './events';
+import {EventsList} from './events-list';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
@@ -35,9 +35,9 @@ export interface DependencyProxies<T1 extends unknown[], T2 extends unknown[] = 
     dependentProxy: EventHubCallback<T2>;
 }
 
-export interface Event<T extends keyof Events, C = any> {
+export interface Event<T extends keyof EventsList, C = any> {
     evt: T;
-    fn: Events[T];
+    fn: EventsList[T];
     ctx?: C;
 }
 
@@ -62,7 +62,7 @@ export class EventHub {
      * components to install their listeners before the emission is performed.
      * This fixes some ordering issues.
      */
-    public emit<Event extends keyof Events>(event: Event, ...args: Parameters<Events[Event]>): void {
+    public emit<Event extends keyof EventsList>(event: Event, ...args: Parameters<EventsList[Event]>): void {
         if (this.hub.deferred) {
             this.hub.deferredEmissions.push([event, ...args]);
         } else {
@@ -71,7 +71,7 @@ export class EventHub {
     }
 
     /** Attach a listener to the layout event hub. */
-    public on<T extends keyof Events, C = any>(event: T, callback: Events[T], context?: C): void {
+    public on<T extends keyof EventsList, C = any>(event: T, callback: EventsList[T], context?: C): void {
         this.layoutEventHub.on(event, callback, context);
         this.subscriptions.push({evt: event, fn: callback, ctx: context});
     }

@@ -262,15 +262,15 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number) {
+    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
         }
     }
 
-    private onCompilerClose(compilerId: number, unused, treeId: number) {
-        if (treeId === this.id) {
+    private onCompilerClose(compilerId: number/*, unused, treeId: number*/) {
+        if (compilerId in this.ourCompilers) {
             delete this.ourCompilers[compilerId];
         }
     }
