@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import {ResultLine} from '../resultline/resultline.interfaces';
 
-export function getToolchainPath(compilerExe, compilerOptions) {
-    const options = compilerOptions ? compilerOptions.split(' ') : [];
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
-    if (existingChain) return existingChain.substr(16);
-
-    const gxxname = options.find(elem => elem.includes('--gxx-name='));
-    if (gxxname) {
-        return path.resolve(path.dirname(gxxname.substr(11)), '..');
-    } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
-        return path.resolve(path.dirname(compilerExe), '..');
-    } else {
-        return false;
-    }
-}
+export type CompilationResult = {
+    code: number;
+    buildResult: unknown;
+    asm?: ResultLine[];
+    stdout?: ResultLine[];
+    stderr?: ResultLine[];
+    execResult?: {
+        stdout?: ResultLine[];
+        stderr?: ResultLine[];
+    };
+    hasGnatDebugOutput: boolean;
+    gnatDebugOutput?: ResultLine[];
+    hasGnatDebugTreeOutput: boolean;
+    gnatDebugTreeOutput?: ResultLine[];
+};

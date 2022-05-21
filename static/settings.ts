@@ -26,9 +26,9 @@ import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
 import {themes, Themes} from './themes';
-import {AppTheme, ColourSchemeInfo} from './colour';
-
-type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
+import {Hub} from './hub';
+import {EventHub} from './event-hub';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -50,6 +50,7 @@ export interface SiteSettings {
     enableCtrlStree: boolean;
     editorsFFont: string;
     editorsFLigatures: boolean;
+    defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
     formatBase: FormatBase;
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
@@ -105,6 +106,15 @@ class Select extends BaseSetting {
 
     override putUi(value: string | number | boolean | null) {
         this.elem.val(value?.toString() ?? '');
+    }
+}
+
+class NumericSelect extends Select {
+    constructor(elem: JQuery, name: string, populate: {label: string; desc: string}[]) {
+        super(elem, name, populate);
+    }
+    override getUi(): number {
+        return Number(this.val() as string);
     }
 }
 
@@ -182,13 +192,16 @@ class Numeric extends BaseSetting {
 
 export class Settings {
     private readonly settingsObjs: BaseSetting[];
+    private eventHub: EventHub;
 
     constructor(
+        hub: Hub,
         private root: JQuery,
         private settings: SiteSettings,
         private onChange: (SiteSettings) => void,
         private subLangId: string | null
     ) {
+        this.eventHub = hub.createEventHub();
         this.settings = settings;
         this.settingsObjs = [];
 
@@ -265,13 +278,16 @@ export class Settings {
     }
 
     private addSelectors() {
-        const addSelector = (
+        const addSelector = <Name extends keyof SiteSettings>(
             selector: string,
-            name: keyof SiteSettings,
+            name: Name,
             populate: {label: string; desc: string}[],
-            defaultValue: string
+            defaultValue: SiteSettings[Name],
+            component = Select
         ) => {
-            this.add(new Select(this.root.find(selector), name, populate), defaultValue);
+            const instance = new component(this.root.find(selector), name, populate);
+            this.add(instance, defaultValue);
+            return instance;
         };
 
         const colourSchemesData = colour.schemes.map(scheme => {
@@ -304,6 +320,22 @@ export class Settings {
                 .prop('title', 'Default language inherited from subdomain')
                 .css('cursor', 'not-allowed');
         }
+
+        const defaultFontScale = options.defaultFontScale;
+        const fontScales: {label: string; desc: string}[] = [];
+        for (let i = 8; i <= 30; i++) {
+            fontScales.push({label: i.toString(), desc: i.toString()});
+        }
+        const defaultFontScaleSelector = addSelector(
+            '.defaultFontScale',
+            'defaultFontScale',
+            fontScales,
+            defaultFontScale,
+            NumericSelect
+        ).elem;
+        defaultFontScaleSelector.on('change', e => {
+            this.eventHub.emit('broadcastFontScale', parseInt((e.target as HTMLSelectElement).value));
+        });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
         const formatsData = formats.map(format => {

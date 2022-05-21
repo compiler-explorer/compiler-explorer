@@ -2151,6 +2151,13 @@ Compiler.prototype.onFontScale = function () {
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.eventHub.on(
+        'broadcastFontScale',
+        _.bind(function (scale) {
+            this.fontScale.setScale(scale);
+            this.saveState();
+        }, this)
+    );
     this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
@@ -2864,7 +2871,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
         var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
-        if (hoverShowAsmDoc && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
+        if (hoverShowAsmDoc && this.compiler && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;

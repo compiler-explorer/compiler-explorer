@@ -336,6 +336,10 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     protected override registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
         this.fontScale.on('change', this.updateState.bind(this));
+        this.eventHub.on('broadcastFontScale', (scale: number) => {
+            this.fontScale.setScale(scale);
+            this.updateState();
+        });
     }
 
     /**

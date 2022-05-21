@@ -44,7 +44,14 @@ function definition() {
     ];
 
     // Add predicated instructions to the list of root tokens. Search for an opcode next, which is also a root token.
-    ptx.tokenizer.root.push([/@%p[0-9]+/, {token: 'operator', next: '@root'}]);
+    // Can be @p, @%p, or @!p. PTX docs use lowercase p, nvdisasm uses uppercase P.
+    ptx.tokenizer.root.push([/@[!%]?[pP][0-9]+/, {token: 'operator', next: '@root'}]);
+
+    // nvdisasm seems to use a single backtick as basically a comment...:
+    //    @!P0 BRA `(.L_x_0)
+    // Almost weirder than how MASM uses backticks
+    // Comes after an opcode so it goes in rest. Putting it at the very beginning so it fires before any string logic.
+    ptx.tokenizer.rest.unshift([/`.+/, {token: 'comment', next: '@root'}]);
 
     return ptx;
 }

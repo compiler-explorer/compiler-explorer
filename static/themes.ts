@@ -29,7 +29,7 @@ export type Themes = 'default' | 'dark' | 'darkplus';
 
 export interface Theme {
     path: string;
-    id: string;
+    id: Themes;
     name: string;
     mainColor: string;
     monaco: string;

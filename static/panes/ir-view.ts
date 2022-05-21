@@ -286,6 +286,8 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
     /** LLVM IR View proxies some things in the standard callbacks */
     override registerStandardCallbacks(): void {
+        // TODO(jeremy-rifkin) While I'm here, this needs to be refactored to take advantage of base class logic
+        // Other panes probably need to be changed too
         this.fontScale.on('change', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
