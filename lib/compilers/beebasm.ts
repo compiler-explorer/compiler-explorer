@@ -68,11 +68,13 @@ export class BeebAsmCompiler extends BaseCompiler {
         result.inputFilename = inputFilename;
         const transformedInput = result.filenameTransform(inputFilename);
 
-        if (result.code === 0 && options.includes('-v')) {
+        if (result.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
             fs.writeFileSync(outputFilename, result.stdout);
             result.stdout = '';
+        }
 
+        if (result.code === 0 && options.includes('-v')) {
             const diskfile = path.join(dirPath, 'disk.ssd');
             if (await utils.fileExists(diskfile)) {
                 const file_buffer = await fs.readFile(diskfile);
