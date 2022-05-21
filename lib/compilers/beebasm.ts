@@ -29,6 +29,7 @@ import fs from 'fs-extra';
 /// <reference types="../base-compiler" />
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
+import * as utils from '../utils';
 
 export class BeebAsmCompiler extends BaseCompiler {
     static get key() {
@@ -61,6 +62,8 @@ export class BeebAsmCompiler extends BaseCompiler {
 
         options.splice(-1, 0, '-i');
 
+        const hasBootOption = options.some(opt => opt.includes('-boot'));
+
         const result = await this.exec(compiler, options, execOptions);
         result.inputFilename = inputFilename;
         const transformedInput = result.filenameTransform(inputFilename);
@@ -69,15 +72,33 @@ export class BeebAsmCompiler extends BaseCompiler {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
             fs.writeFileSync(outputFilename, result.stdout);
             result.stdout = '';
+
+            const diskfile = path.join(dirPath, 'disk.ssd');
+            if (await utils.fileExists(diskfile)) {
+                const file_buffer = await fs.readFile(diskfile);
+                const binary_base64 = file_buffer.toString('base64');
+                result.bbcdiskimage = binary_base64;
+
+                if (!hasBootOption) {
+                    if (!result.hints) result.hints = [];
+                    result.hints.push(
+                        'Try using the "-boot <filename>" option so you don\'t have to manually run your file',
+                    );
+                }
+            }
         }
 
         this.parseCompilationOutput(result, transformedInput);
 
-        result.forceBinaryView = true;
+        const hasNoSaveError = result.stderr.some(opt => opt.text.includes('warning: no SAVE command in source file'));
+        if (hasNoSaveError) {
+            if (!result.hints) result.hints = [];
+            result.hints.push(
+                'You should SAVE your code to a file using\nSAVE "filename", start, end [, exec [, reload] ]',
+            );
+        }
 
-        const file_buffer = await fs.readFile(path.join(dirPath, 'disk.ssd'));
-        const binary_base64 = file_buffer.toString('base64');
-        result.bbcdiskimage = binary_base64;
+        result.forceBinaryView = true;
 
         return result;
     }

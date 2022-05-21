@@ -80,7 +80,7 @@ rules:
   sonarjs/prefer-single-boolean-return: error
   unicorn/filename-case: error
 parserOptions:
-  ecmaVersion: 5
+  ecmaVersion: 6
 globals:
   define: false
   __webpack_public_path__: true

@@ -1366,6 +1366,8 @@ Compiler.prototype.postCompilationResult = function (request, result) {
     this.checkForUnwiseArguments(result.compilationOptions);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
 
+    this.checkForHints(result);
+
     if (result.bbcdiskimage) {
         this.emulateBbcDisk(result.bbcdiskimage);
     }
@@ -2349,6 +2351,23 @@ Compiler.prototype.onOptionsChange = function (options) {
         this.compile();
         this.updateButtons();
         this.sendCompiler();
+    }
+};
+
+function htmlEncode(rawStr) {
+    return rawStr.replace(/[\u00A0-\u9999<>&]/g, function (i) {
+        return '&#' + i.charCodeAt(0) + ';';
+    });
+}
+
+Compiler.prototype.checkForHints = function (result) {
+    if (result.hints) {
+        result.hints.forEach(hint => {
+            this.alertSystem.notify(htmlEncode(hint), {
+                group: 'hints',
+                collapseSimilar: false,
+            });
+        });
     }
 };
 
