@@ -1184,7 +1184,7 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     this.updateDecorations();
 
     var codeLenses = [];
-    if (this.getEffectiveFilters().binary) {
+    if (this.getEffectiveFilters().binary || result.forceBinaryView) {
         this.setBinaryMargin();
         _.each(
             this.assembly,
@@ -1365,6 +1365,35 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 
     this.checkForUnwiseArguments(result.compilationOptions);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
+
+    this.checkForHints(result);
+
+    if (result.bbcdiskimage) {
+        this.emulateBbcDisk(result.bbcdiskimage);
+    }
+};
+
+Compiler.prototype.emulateBbcDisk = function (bbcdiskimage) {
+    var dialog = $('#jsbeebemu');
+
+    this.alertSystem.notify(
+        'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+        {
+            group: 'emulation',
+            collapseSimilar: true,
+            dismissTime: 10000,
+            onBeforeShow: function (elem) {
+                elem.find('#emulink').on('click', function () {
+                    dialog.modal();
+
+                    var emuwindow = dialog.find('#jsbeebemuframe')[0].contentWindow;
+                    var tmstr = Date.now();
+                    emuwindow.location =
+                        'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                });
+            },
+        }
+    );
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
@@ -2329,6 +2358,23 @@ Compiler.prototype.onOptionsChange = function (options) {
         this.compile();
         this.updateButtons();
         this.sendCompiler();
+    }
+};
+
+function htmlEncode(rawStr) {
+    return rawStr.replace(/[\u00A0-\u9999<>&]/g, function (i) {
+        return '&#' + i.charCodeAt(0) + ';';
+    });
+}
+
+Compiler.prototype.checkForHints = function (result) {
+    if (result.hints) {
+        result.hints.forEach(hint => {
+            this.alertSystem.notify(htmlEncode(hint), {
+                group: 'hints',
+                collapseSimilar: false,
+            });
+        });
     }
 };
 

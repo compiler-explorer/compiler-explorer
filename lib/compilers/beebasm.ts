@@ -26,22 +26,31 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+/// <reference types="../base-compiler" />
 import {BaseCompiler} from '../base-compiler';
+import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
+import * as utils from '../utils';
 
 export class BeebAsmCompiler extends BaseCompiler {
     static get key() {
         return 'beebasm';
     }
 
-    optionsForFilter() {
+    constructor(compilerInfo, env) {
+        super(compilerInfo, env);
+
+        this.asm = new AsmParserBeebAsm(this.compilerProps);
+    }
+
+    override optionsForFilter() {
         return ['-v', '-do', 'disk.ssd'];
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(compiler, options, inputFilename, execOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -53,16 +62,45 @@ export class BeebAsmCompiler extends BaseCompiler {
 
         options.splice(-1, 0, '-i');
 
+        const hasBootOption = options.some(opt => opt.includes('-boot'));
+
         const result = await this.exec(compiler, options, execOptions);
         result.inputFilename = inputFilename;
         const transformedInput = result.filenameTransform(inputFilename);
 
-        if (result.code === 0 && options.includes('-v')) {
+        if (result.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
             fs.writeFileSync(outputFilename, result.stdout);
+            result.stdout = '';
+        }
+
+        if (result.code === 0 && options.includes('-v')) {
+            const diskfile = path.join(dirPath, 'disk.ssd');
+            if (await utils.fileExists(diskfile)) {
+                const file_buffer = await fs.readFile(diskfile);
+                const binary_base64 = file_buffer.toString('base64');
+                result.bbcdiskimage = binary_base64;
+
+                if (!hasBootOption) {
+                    if (!result.hints) result.hints = [];
+                    result.hints.push(
+                        'Try using the "-boot <filename>" option so you don\'t have to manually run your file',
+                    );
+                }
+            }
         }
 
         this.parseCompilationOutput(result, transformedInput);
+
+        const hasNoSaveError = result.stderr.some(opt => opt.text.includes('warning: no SAVE command in source file'));
+        if (hasNoSaveError) {
+            if (!result.hints) result.hints = [];
+            result.hints.push(
+                'You should SAVE your code to a file using\nSAVE "filename", start, end [, exec [, reload] ]',
+            );
+        }
+
+        result.forceBinaryView = true;
 
         return result;
     }

@@ -92,6 +92,7 @@ export class Alert {
             alertClass = '',
             autoDismiss = true,
             dismissTime = 5000,
+            onBeforeShow = () => {},
         }: AlertNotifyOptions
     ) {
         const container = $('#notifications');
@@ -122,6 +123,7 @@ export class Alert {
             }
             newElement.attr('data-group', group);
         }
+        onBeforeShow(newElement);
         newElement.toast('show');
     }
 
