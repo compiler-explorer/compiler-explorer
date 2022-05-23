@@ -269,8 +269,8 @@ export class Tree {
         }
     }
 
-    private onCompilerClose(compilerId: number/*, unused, treeId: number*/) {
-        if (compilerId in this.ourCompilers) {
+    private onCompilerClose(compilerId: number, treeId: number | boolean) {
+        if (treeId === this.id) {
             delete this.ourCompilers[compilerId];
         }
     }

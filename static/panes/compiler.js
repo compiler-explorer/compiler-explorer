@@ -205,7 +205,7 @@ Compiler.prototype.initLangAndCompiler = function (state) {
 Compiler.prototype.close = function () {
     codeLensHandler.unregister(this.id);
     this.eventHub.unsubscribe();
-    this.eventHub.emit('compilerClose', this.id);
+    this.eventHub.emit('compilerClose', this.id, this.sourceTreeId);
     this.outputEditor.dispose();
 };
 
