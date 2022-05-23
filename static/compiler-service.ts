@@ -132,7 +132,7 @@ export class CompilerService {
         };
     }
 
-    public getGroupsInUse(langId: string) {
+    public getGroupsInUse(langId: string): {value: string, label: string}[] {
         return _.chain(this.getCompilersForLang(langId))
             .map((compiler: Compiler) => compiler)
             .uniq(false, compiler => compiler.group)
