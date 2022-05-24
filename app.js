@@ -80,7 +80,7 @@ const opts = nopt({
     noRemoteFetch: [Boolean],
     tmpDir: [String],
     wsl: [Boolean],
-    // If specified, only loads the specified language, resulting in faster loadup/iteration times
+    // If specified, only loads the specified languages, resulting in faster loadup/iteration times
     language: [String],
     // Do not use caching for compilation results (Requests might still be cached by the client's browser)
     noCache: [Boolean],
@@ -155,7 +155,7 @@ const defArgs = {
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguage: opts.language || null,
+    wantedLanguages: opts.language || null,
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
@@ -198,17 +198,21 @@ props.initialize(configDir, propHierarchy);
 const ceProps = props.propsFor('compiler-explorer');
 
 let languages = allLanguages;
-if (defArgs.wantedLanguage) {
+if (defArgs.wantedLanguages) {
     const filteredLangs = {};
-    _.each(languages, lang => {
-        if (
-            lang.id === defArgs.wantedLanguage ||
-            lang.name === defArgs.wantedLanguage ||
-            (lang.alias && lang.alias.includes(defArgs.wantedLanguage))
-        ) {
-            filteredLangs[lang.id] = lang;
+    const passedLangs = defArgs.wantedLanguages.split(',');
+    for (const wantedLang of passedLangs) {
+        for (const langId in languages) {
+            const lang = languages[langId];
+            if (
+                lang.id === defArgs.wantedLanguage ||
+                lang.name === defArgs.wantedLanguage ||
+                (lang.alias && lang.alias.includes(defArgs.wantedLanguage))
+            ) {
+                filteredLangs[lang.id] = lang;
+            }
         }
-    });
+    }
     languages = filteredLangs;
 }
 
