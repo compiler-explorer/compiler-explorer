@@ -973,10 +973,8 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         return;
     }
 
-    var mainsource = tree.multifileService.getMainSource();
-
     var request = {
-        source: mainsource,
+        source: tree.multifileService.getMainSource(),
         compiler: this.compiler ? this.compiler.id : '',
         options: options,
         lang: this.currentLangId,
@@ -984,6 +982,13 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
     };
 
     const fetches = [];
+
+    fetches.push(
+        this.compilerService.expand(request.source).then(contents => {
+            request.source = contents;
+        })
+    );
+
     for (let file of request.files) {
         fetches.push(
             this.compilerService.expand(file.contents).then(contents => {
