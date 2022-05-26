@@ -72,10 +72,10 @@ class DiffStateObject {
                     output = this.result.asm || [];
                     break;
                 case DiffType.CompilerStdOut:
-                    output = this.result.stdout || [];
+                    output = this.result.stdout;
                     break;
                 case DiffType.CompilerStdErr:
-                    output = this.result.stderr || [];
+                    output = this.result.stderr;
                     break;
                 case DiffType.ExecStdOut:
                     if (this.result.execResult) output = this.result.execResult.stdout || [];
