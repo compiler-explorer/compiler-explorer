@@ -973,33 +973,49 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         return;
     }
 
-    var mainsource = tree.multifileService.getMainSource();
-
     var request = {
-        source: mainsource,
+        source: tree.multifileService.getMainSource(),
         compiler: this.compiler ? this.compiler.id : '',
         options: options,
         lang: this.currentLangId,
         files: tree.multifileService.getFiles(),
     };
 
-    var treeState = tree.currentState();
-    var cmakeProject = tree.multifileService.isACMakeProject();
+    const fetches = [];
 
-    if (bypassCache) request.bypassCache = true;
-    if (!this.compiler) {
-        this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-    } else if (cmakeProject && request.source === '') {
-        this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
-    } else {
-        if (cmakeProject) {
-            request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-            request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-            this.sendCMakeCompile(request);
-        } else {
-            this.sendCompile(request);
-        }
+    fetches.push(
+        this.compilerService.expand(request.source).then(contents => {
+            request.source = contents;
+        })
+    );
+
+    for (let file of request.files) {
+        fetches.push(
+            this.compilerService.expand(file.contents).then(contents => {
+                file.contents = contents;
+            })
+        );
     }
+
+    Promise.all(fetches).then(() => {
+        var treeState = tree.currentState();
+        var cmakeProject = tree.multifileService.isACMakeProject();
+
+        if (bypassCache) request.bypassCache = true;
+        if (!this.compiler) {
+            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        } else if (cmakeProject && request.source === '') {
+            this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
+        } else {
+            if (cmakeProject) {
+                request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                this.sendCMakeCompile(request);
+            } else {
+                this.sendCompile(request);
+            }
+        }
+    });
 };
 
 Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
