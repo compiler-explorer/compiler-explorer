@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import delimiter from 'path';
+import path from 'path';
 
 import {FortranCompiler} from './fortran';
 
@@ -31,11 +31,24 @@ export class FlangCompiler extends FortranCompiler {
         return 'flang';
     }
 
+    override optionsForFilter(filters, outputFilename) {
+        let options = ['-o', this.filename(outputFilename)];
+        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+            options = options.concat(this.compiler.intelAsm.split(' '));
+        }
+        if (!filters.binary) {
+            options = options.concat('-S');
+        } else {
+            options = options.concat('-g');
+        }
+        return options;
+    }
+
     override getDefaultExecOptions() {
         const result = super.getDefaultExecOptions();
-        const gfortranPath = this.compilerProps('gfortranPath');
+        const gfortranPath = this.compilerProps(`compiler.${this.compiler.id}.gfortranPath`);
         if (gfortranPath) {
-            result.env.PATH = result.env.PATH + delimiter + gfortranPath;
+            result.env.PATH = result.env.PATH + path.delimiter + gfortranPath;
         }
         return result;
     }
