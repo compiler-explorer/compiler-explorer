@@ -26,7 +26,6 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-/// <reference types="../base-compiler" />
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
 import * as utils from '../utils';
