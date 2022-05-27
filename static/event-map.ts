@@ -60,7 +60,7 @@ export type EventMap = {
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
-    executeResult: (executorId: number, compiler: any, result: unknown, languages?: Language) => void;
+    executeResult: (executorId: number, compiler: any, result: any, languages?: Language) => void;
     executor: (
         executorId: number,
         compiler: any,
