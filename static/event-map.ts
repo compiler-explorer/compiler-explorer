@@ -28,6 +28,7 @@ import {SiteSettings} from './settings';
 import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
 import {GccSelectedPass} from './panes/gccdump-view.interfaces';
+import {Motd} from './motd.interfaces';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -46,7 +47,7 @@ export type EventMap = {
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
-    // TODO: See if this one is necessary. Noone emits this one
+    // Right now nothing emits this event, but it might be useful at some point so we keep it
     compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean) => void;
     compiling: (compilerId: number, compiler: unknown) => void;
     conformanceViewClose: (editorId: number) => void;
@@ -96,8 +97,7 @@ export type EventMap = {
     irViewOpened: (compilerId: number) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
-    // TODO: Add type specificity
-    motd: (data: unknown) => void;
+    motd: (data: Motd) => void;
     newSource: (editorId: number, newSource: string) => void;
     optViewClosed: (compilerId: number) => void;
     optViewOpened: (compilerId: number) => void;
