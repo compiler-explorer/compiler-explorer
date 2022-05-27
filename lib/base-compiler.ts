@@ -718,7 +718,7 @@ export class BaseCompiler {
             paths = process.env.LD_LIBRARY_PATH ? process.env.LD_LIBRARY_PATH : '';
         }
         return _.union(
-            paths.split(path.delimiter),
+            paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.getSharedLibraryPaths(libraries),
         ) as string[];
@@ -730,7 +730,7 @@ export class BaseCompiler {
             paths = process.env.LD_LIBRARY_PATH ? process.env.LD_LIBRARY_PATH : '';
         }
         return _.union(
-            paths.split(path.delimiter),
+            paths.split(path.delimiter).filter(p => !!p),
             this.compiler.ldPath,
             this.compiler.libPath,
             this.getSharedLibraryPaths(libraries),
