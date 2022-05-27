@@ -39,7 +39,8 @@ $(NODE_MODULES): package.json | node-installed
 
 .PHONY: lint
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
-	$(NPM) run ts-compile
+	$(NPM) run format-check
+	$(NPM) run ts-check
 	$(NPM) run lint-check
 
 .PHONY: lint-fix
@@ -55,10 +56,16 @@ test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
 	@echo Tests pass
 
+.PHONY: test-min
+test-min: $(NODE_MODULES)  ## Runs the minimal tests
+	$(NPM) run test-min
+	@echo Tests pass
+
 .PHONY: check
-check: $(NODE_MODULES) test lint  ## Runs all checks required before committing (fixing trivial things automatically)
+check: $(NODE_MODULES) lint test  ## Runs all checks required before committing (fixing trivial things automatically)
+
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test ci-lint
+pre-commit: $(NODE_MODULES) test-min ci-lint
 
 .PHONY: clean
 clean:  ## Cleans up everything
