@@ -350,7 +350,13 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: CompilerType, options: string, editorId: number, treeId: number | boolean) {
+    onExecutor(
+        id: number,
+        compiler: CompilerType,
+        options: string,
+        editorId: number | boolean,
+        treeId: number | boolean
+    ) {
         this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 
