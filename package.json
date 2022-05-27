@@ -159,7 +159,7 @@
     "lint-check": "eslint .",
     "lint-files": "eslint",
     "test": "mocha --recursive",
-    "check": "npm run lint-check && npm run test",
+    "check": "npm run lint-check && npm run test -- --reporter min",
     "dev": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js",
     "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm -r ts-node/register app.js --debug",
     "debug": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js --debug",
