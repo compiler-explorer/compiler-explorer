@@ -110,7 +110,7 @@ type CompilerEntry = {
     id: number | string;
     name: string;
     options: string;
-    editorId: number;
+    editorId: number | boolean;
     treeId: number | boolean;
     compiler: CompilerType;
 };
@@ -318,7 +318,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         id: number | string,
         compiler: CompilerType | undefined,
         options: string,
-        editorId: number,
+        editorId: number | boolean,
         treeId: number | boolean
     ) {
         if (!compiler) return;
