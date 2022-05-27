@@ -26,16 +26,79 @@ import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
     code: number;
-    buildResult: unknown;
+    buildResult?: unknown;
     asm?: ResultLine[];
-    stdout?: ResultLine[];
-    stderr?: ResultLine[];
+    stdout: ResultLine[];
+    stderr: ResultLine[];
+    didExecute?: boolean;
     execResult?: {
         stdout?: ResultLine[];
         stderr?: ResultLine[];
     };
-    hasGnatDebugOutput: boolean;
+    hasGnatDebugOutput?: boolean;
     gnatDebugOutput?: ResultLine[];
-    hasGnatDebugTreeOutput: boolean;
+    hasGnatDebugTreeOutput?: boolean;
     gnatDebugTreeOutput?: ResultLine[];
+    tools?: any;
+    dirPath?: string;
+    compilationOptions?: string[];
+    downloads?: string[];
+    gccDumpOutput?: any;
+
+    hasPpOutput?: boolean;
+    ppOutput?: any;
+
+    hasOptOutput?: boolean;
+    optPath?: string;
+
+    hasAstOutput?: boolean;
+    astOutput?: any;
+
+    hasIrOutput?: boolean;
+    irOutput?: any;
+
+    hasRustMirOutput?: boolean;
+    rustMirOutput?: any;
+
+    hasRustMacroExpOutput?: boolean;
+    rustMacroExpOutput?: any;
+
+    hasRustHirOutput?: boolean;
+    rustHirOutput?: any;
+
+    hasHaskellCoreOutput?: boolean;
+    haskellCoreOutput?: any;
+
+    hasHaskellStgOutput?: boolean;
+    haskellStgOutput?: any;
+
+    hasHaskellCmmOutput?: boolean;
+    haskellCmmOutput?: any;
+};
+
+export type ExecutionOptions = {
+    timeoutMs?: number;
+    maxErrorOutput?: number;
+    env?: any;
+    wrapper?: any;
+    maxOutput?: number;
+    ldPath?: string[];
+    appHome?: string;
+    customCwd?: string;
+    input?: any;
+};
+
+export type BuildResult = {
+    downloads: string[];
+    executableFilename: string;
+    compilationOptions: any[];
+};
+
+export type ToolResult = {
+    id: string;
+    name: string;
+    code: number;
+    languageId: string;
+    stderr: ResultLine[];
+    stdout: ResultLine[];
 };

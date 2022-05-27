@@ -24,10 +24,12 @@
 
 import * as utils from '../utils';
 
+import {IAsmParser} from './asm-parser.interfaces';
+
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
 type Source = {file: string; line: number};
 
-export class DotNetAsmParser {
+export class DotNetAsmParser implements IAsmParser {
     scanLabelsAndMethods(asmLines: string[], removeUnused: boolean) {
         const labelDef: Record<number, {name: string; remove: boolean}> = {};
         const methodDef: Record<number, string> = {};
