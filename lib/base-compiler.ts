@@ -510,10 +510,10 @@ export class BaseCompiler {
     // Meant to be overloaded by compiler classes.
     // Default handles the GCC compiler with some debug dump enabled.
     optionsForBackend(backendOptions, outputFilename) {
-        const addOpts: string[] = [];
+        let addOpts: string[] = [];
 
         if (backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump) {
-            addOpts.concat(this.getGccDumpOptions(backendOptions.produceGccDump, outputFilename));
+            addOpts = addOpts.concat(this.getGccDumpOptions(backendOptions.produceGccDump, outputFilename));
         }
 
         return addOpts;
