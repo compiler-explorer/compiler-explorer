@@ -60,10 +60,10 @@ export type EventMap = {
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
-    executeResult: (executorId: number, compiler: unknown, result: unknown, languages?: Language) => void;
+    executeResult: (executorId: number, compiler: any, result: unknown, languages?: Language) => void;
     executor: (
         executorId: number,
-        compiler: unknown,
+        compiler: any,
         options: string,
         editorId: boolean | number,
         treeId: boolean | number
@@ -77,7 +77,6 @@ export type EventMap = {
     flagsViewClosed: (compilerId: number, options: string) => void;
     flagsViewOpened: (compilerId: number) => void;
     gccDumpFiltersChanged: (compilerId: number, filters: CompilerFilters, recompile: boolean) => void;
-    // TODO: pass type
     gccDumpPassSelected: (compilerId: number, pass: GccSelectedPass, recompile: boolean) => void;
     gccDumpUIInit: (compilerId: number) => void;
     gccDumpViewClosed: (compilerId: number) => void;
@@ -118,6 +117,7 @@ export type EventMap = {
     requestCompilation: (editorId: number | boolean, treeId: boolean | number) => void;
     requestMotd: () => void;
     requestSettings: () => void;
+    requestTheme: () => void;
     resendCompilation: (compilerId: number) => void;
     requestCompiler: (compilerId: number) => void;
     requestFilters: (compilerId: number) => void;
