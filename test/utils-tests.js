@@ -536,4 +536,18 @@ describe('argument splitting', () => {
     it('should handle singlequoted args', () => {
         utils.splitArguments("--hello '-world etc'").should.deep.equal(['--hello', '-world etc']);
     });
+
+    it('should handle cheekyness part 1', () => {
+        /* eslint-disable no-useless-escape */
+        utils
+            .splitArguments('hello \#veryfancy etc')
+            .should.deep.equal(['hello', '#veryfancy', 'etc']);
+        /* eslint-enable no-useless-escape */
+    });
+
+    it('should handle cheekyness part 2', () => {
+        utils
+            .splitArguments('hello \\#veryfancy etc')
+            .should.deep.equal(['hello', '\\']);
+    });
 });
