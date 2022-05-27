@@ -12,7 +12,7 @@ mixin filteroption(name, longdescription, shortdescription, defaultchecked)
       button.dropdown-item.btn.btn-sm.btn-light(type='button' title=longdescription data-bind=name aria-pressed=pressed)
         span=shortdescription
       input.d-none(type="checkbox" checked=defaultchecked)
-
+// If you modify this, update types/features/filters.interfaces.ts
 +filteroption('labels', 'Filter unused labels from the output', 'Unused labels', true)
 +filteroption('libraryCode', 'Filter functions from other libraries from the output', 'Library functions', true)
 +filteroption('directives', 'Filter all assembler directives from the output', 'Directives', true)

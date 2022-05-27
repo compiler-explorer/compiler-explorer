@@ -145,7 +145,14 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                         colEnd = hoverCode.source.to.col;
                     }
                 }
-                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, colBegin, colEnd, false);
+                this.eventHub.emit(
+                    'editorLinkLine',
+                    this.compilerInfo.editorId as number,
+                    sourceLine,
+                    colBegin,
+                    colEnd,
+                    false
+                );
                 this.eventHub.emit(
                     'panesLinkLine',
                     this.compilerInfo.compilerId,
@@ -215,7 +222,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         }
     }
 
-    onColours(id: number, colours, scheme) {
+    onColours(id: number, colours: Record<number, number>, scheme: string) {
         if (id === this.compilerInfo.compilerId) {
             const astColours = {};
             for (const [index, code] of this.astCode.entries()) {
@@ -227,7 +234,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     code.source.to.line < code.source.from.line + 100
                 ) {
                     for (let i = code.source.from.line; i <= code.source.to.line; ++i) {
-                        if (colours[i - 1] !== undefined) {
+                        if (i - 1 in colours) {
                             astColours[index] = colours[i - 1];
                             break;
                         }
