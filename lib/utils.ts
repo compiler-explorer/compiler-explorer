@@ -354,12 +354,10 @@ export function base32Encode(buffer: Buffer): string {
     return output;
 }
 
-export function splitArguments(options?: string): string[] {
-    return _.chain(
-        quoteParse(options || '')
-            // FIXME: x might not contain a .pattern!
-            .map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))),
-    )
+export function splitArguments(options = ''): string[] {
+    // escape hashes first, otherwise they're interpreted as comments
+    const escapedOptions = options.replaceAll(/#/g, '\\#');
+    return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
         .compact()
         .value();
 }
