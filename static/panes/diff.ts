@@ -109,9 +109,9 @@ function getItemDisplayTitle(item) {
 type CompilerEntry = {
     id: number | string;
     name: string;
-    options: unknown;
+    options: string;
     editorId: number;
-    treeId: number;
+    treeId: number | boolean;
     compiler: CompilerType;
 };
 
@@ -317,9 +317,9 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
     override onCompiler(
         id: number | string,
         compiler: CompilerType | undefined,
-        options: unknown,
+        options: string,
         editorId: number,
-        treeId: number
+        treeId: number | boolean
     ) {
         if (!compiler) return;
         options = options || '';
@@ -350,7 +350,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: CompilerType, options: unknown, editorId: number, treeId: number) {
+    onExecutor(id: number, compiler: CompilerType, options: string, editorId: number, treeId: number | boolean) {
         this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 
