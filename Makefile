@@ -53,7 +53,7 @@ ci-lint: $(NODE_MODULES)
 
 .PHONY: test
 test: $(NODE_MODULES)  ## Runs the tests
-	$(NPM) run test
+	$(NPM) run test-min
 	@echo Tests pass
 
 .PHONY: check
