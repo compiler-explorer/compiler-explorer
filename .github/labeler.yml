@@ -52,6 +52,7 @@ lang-dart:
   - lib/compilers/dart.js
   - etc/config/dart.*.properties
 lang-fortran:
+  - lib/compilers/flang.ts
   - lib/compilers/fortran.js
   - etc/config/fortran.*.properties
 lang-go:

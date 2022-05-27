@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,17 +24,32 @@
 
 import path from 'path';
 
-export function getToolchainPath(compilerExe, compilerOptions) {
-    const options = compilerOptions ? compilerOptions.split(' ') : [];
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
-    if (existingChain) return existingChain.substr(16);
+import {FortranCompiler} from './fortran';
 
-    const gxxname = options.find(elem => elem.includes('--gxx-name='));
-    if (gxxname) {
-        return path.resolve(path.dirname(gxxname.substr(11)), '..');
-    } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
-        return path.resolve(path.dirname(compilerExe), '..');
-    } else {
-        return false;
+export class FlangCompiler extends FortranCompiler {
+    static override get key() {
+        return 'flang';
+    }
+
+    override optionsForFilter(filters, outputFilename) {
+        let options = ['-o', this.filename(outputFilename)];
+        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+            options = options.concat(this.compiler.intelAsm.split(' '));
+        }
+        if (!filters.binary) {
+            options = options.concat('-S');
+        } else {
+            options = options.concat('-g');
+        }
+        return options;
+    }
+
+    override getDefaultExecOptions() {
+        const result = super.getDefaultExecOptions();
+        const gfortranPath = this.compilerProps(`compiler.${this.compiler.id}.gfortranPath`);
+        if (gfortranPath) {
+            result.env.PATH = result.env.PATH + path.delimiter + gfortranPath;
+        }
+        return result;
     }
 }

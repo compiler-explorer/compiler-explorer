@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,48 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import {ResultLine} from '../resultline/resultline.interfaces';
 
-import fs from 'fs-extra';
-
-import {BaseCompiler} from '../base-compiler';
-
-export class BeebAsmCompiler extends BaseCompiler {
-    static get key() {
-        return 'beebasm';
-    }
-
-    optionsForFilter() {
-        return ['-v', '-do', 'disk.ssd'];
-    }
-
-    getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    async runCompiler(compiler, options, inputFilename, execOptions) {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        const dirPath = path.dirname(inputFilename);
-        if (!execOptions.customCwd) {
-            execOptions.customCwd = dirPath;
-        }
-
-        options.splice(-1, 0, '-i');
-
-        const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-
-        if (result.code === 0 && options.includes('-v')) {
-            const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
-            fs.writeFileSync(outputFilename, result.stdout);
-        }
-
-        this.parseCompilationOutput(result, transformedInput);
-
-        return result;
-    }
-}
+export type CompilationResult = {
+    code: number;
+    buildResult: unknown;
+    asm?: ResultLine[];
+    stdout?: ResultLine[];
+    stderr?: ResultLine[];
+    execResult?: {
+        stdout?: ResultLine[];
+        stderr?: ResultLine[];
+    };
+    hasGnatDebugOutput: boolean;
+    gnatDebugOutput?: ResultLine[];
+    hasGnatDebugTreeOutput: boolean;
+    gnatDebugTreeOutput?: ResultLine[];
+};

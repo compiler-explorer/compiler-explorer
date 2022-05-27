@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
-export function getToolchainPath(compilerExe, compilerOptions) {
-    const options = compilerOptions ? compilerOptions.split(' ') : [];
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
-    if (existingChain) return existingChain.substr(16);
-
-    const gxxname = options.find(elem => elem.includes('--gxx-name='));
-    if (gxxname) {
-        return path.resolve(path.dirname(gxxname.substr(11)), '..');
-    } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
-        return path.resolve(path.dirname(compilerExe), '..');
-    } else {
-        return false;
-    }
+// note that these variables are saved to state, so don't change, only add to it
+export enum DiffType {
+    ASM = 0,
+    CompilerStdOut = 1,
+    CompilerStdErr = 2,
+    ExecStdOut = 3,
+    ExecStdErr = 4,
+    GNAT_ExpandedCode = 5,
+    GNAT_Tree = 6,
 }
+
+export type DiffState = {
+    lhs: number | string;
+    rhs: number | string;
+    lhsdifftype: DiffType;
+    rhsdifftype: DiffType;
+};

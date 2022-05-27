@@ -35,7 +35,7 @@ import {Compiler} from './panes/compiler';
 import {Executor} from './panes/executor';
 import {Output} from './panes/output';
 import {Tool} from './panes/tool';
-import {Diff, getComponent as getDiffComponent} from './panes/diff';
+import {Diff} from './panes/diff';
 import {ToolInputView} from './panes/tool-input-view';
 import {Opt as OptView} from './panes/opt-view';
 import {Flags as FlagsView} from './panes/flags-view';
@@ -89,7 +89,7 @@ export class Hub {
         layout.registerComponent(Components.getToolInputView().componentName, (c, s) =>
             this.toolInputViewFactory(c, s)
         );
-        layout.registerComponent(getDiffComponent().componentName, (c, s) => this.diffFactory(c, s));
+        layout.registerComponent(Components.getDiffView().componentName, (c, s) => this.diffFactory(c, s));
         layout.registerComponent(Components.getOptView().componentName, (c, s) => this.optViewFactory(c, s));
         layout.registerComponent(Components.getFlagsView().componentName, (c, s) => this.flagsViewFactory(c, s));
         layout.registerComponent(Components.getPpView().componentName, (c, s) => this.ppViewFactory(c, s));
