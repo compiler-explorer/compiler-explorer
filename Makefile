@@ -53,6 +53,11 @@ ci-lint: $(NODE_MODULES)
 
 .PHONY: test
 test: $(NODE_MODULES)  ## Runs the tests
+	$(NPM) run test
+	@echo Tests pass
+
+.PHONY: test-min
+test-min: $(NODE_MODULES)  ## Runs the minimal tests
 	$(NPM) run test-min
 	@echo Tests pass
 
@@ -60,7 +65,7 @@ test: $(NODE_MODULES)  ## Runs the tests
 check: $(NODE_MODULES) lint test  ## Runs all checks required before committing (fixing trivial things automatically)
 
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test ci-lint
+pre-commit: $(NODE_MODULES) test-min ci-lint
 
 .PHONY: clean
 clean:  ## Cleans up everything
