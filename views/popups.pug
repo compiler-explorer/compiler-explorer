@@ -399,3 +399,25 @@
     .modal-content
       .modal-body
         iframe#jsbeebemuframe(src="about:blank" width="1280" height="768")
+
+#site-template-loader.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Load Site Template
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .container
+          .row(style="flex-wrap: nowrap; justify-content: space-between; gap: 25px;")
+            .libs-selected-col.col-auto(style="padding: 0;")
+              h5 Templates
+              ul#site-templates-list
+                li Foo
+                li Bar
+                li Baz
+            .libs-results-col.col-md-auto(style="padding: 0;")
+              h5 Preview
+              img#site-template-preview(src="https://media4.giphy.com/media/sIIhZliB2McAo/giphy.gif?cid=ecf05e471rjuqcc7fh7oonri355aa1loiut3ih6my6o2myzw&rid=giphy.gif&ct=g")
+

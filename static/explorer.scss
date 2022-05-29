@@ -917,3 +917,21 @@ html[data-theme='dark'] {
     z-index: 1;
     padding: 5px;
 }
+
+#site-templates-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    li {
+        margin: 0;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 3px 5px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        &:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+    }
+}
+

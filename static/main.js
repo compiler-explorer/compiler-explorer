@@ -51,6 +51,7 @@ var SimpleCook = require('./widgets/simplecook').SimpleCook;
 var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
 var Presentation = require('./presentation').Presentation;
+var SiteTemplatesWidget = require('./widgets/site-templates-widget').SiteTemplatesWidget;
 
 var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -471,6 +472,7 @@ function earlyGetDefaultLangSetting() {
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
+    new SiteTemplatesWidget();
 
     var options = require('options').options;
 
