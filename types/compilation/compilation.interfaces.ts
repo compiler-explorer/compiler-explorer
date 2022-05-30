@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
@@ -42,7 +43,7 @@ export type CompilationResult = {
     tools?: any;
     dirPath?: string;
     compilationOptions?: string[];
-    downloads?: string[];
+    downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
 
     hasPpOutput?: boolean;
@@ -89,7 +90,7 @@ export type ExecutionOptions = {
 };
 
 export type BuildResult = {
-    downloads: string[];
+    downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: any[];
 };

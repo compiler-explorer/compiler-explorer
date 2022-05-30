@@ -30,7 +30,16 @@ import _ from 'underscore';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
+import {BuildEnvDownloadInfo} from './buildenv.interfaces';
+
 export class BuildEnvSetupBase {
+    protected compiler: any;
+    protected env: any;
+    protected compilerOptionsArr: string[];
+    public compilerArch: string | boolean;
+    protected compilerTypeOrGCC: any;
+    protected compilerSupportsX86: boolean;
+
     constructor(compilerInfo, env) {
         this.compiler = compilerInfo;
         this.env = env;
@@ -52,7 +61,7 @@ export class BuildEnvSetupBase {
     }
 
     async hasSupportForArch(execCompilerCached, arch) {
-        let result = null;
+        let result: any;
         let searchFor = arch;
         if (this.compiler.exe.includes('icpx')) {
             return arch === 'x86' || arch === 'x86_64';
@@ -65,7 +74,7 @@ export class BuildEnvSetupBase {
             }
         } else if (this.compilerTypeOrGCC === 'gcc') {
             if (this.compiler.exe.includes('/icpx')) {
-                result = arch === 'x86' || arch === 'x86_64';
+                return arch === 'x86' || arch === 'x86_64';
             } else {
                 result = await execCompilerCached(this.compiler.exe, ['--target-help']);
             }
@@ -84,8 +93,8 @@ export class BuildEnvSetupBase {
         return false;
     }
 
-    async setup(/*key, dirPath, selectedLibraries*/) {
-        // override with specific implementation
+    async setup(key, dirPath, selectedLibraries): Promise<BuildEnvDownloadInfo[]> {
+        return [];
     }
 
     getCompilerArch() {
@@ -94,13 +103,13 @@ export class BuildEnvSetupBase {
         });
 
         let target = _.find(this.compilerOptionsArr, option => {
-            option.startsWith('-target=') || option.startsWith('--target=');
+            return option.startsWith('-target=') || option.startsWith('--target=');
         });
 
         if (target) {
             target = target.substr(target.indexOf('=') + 1);
         } else {
-            let targetIdx = this.compilerOptionsArr.indexOf('-target');
+            const targetIdx = this.compilerOptionsArr.indexOf('-target');
             if (targetIdx !== -1) {
                 target = this.compilerOptionsArr[targetIdx + 1];
             }
@@ -148,7 +157,7 @@ export class BuildEnvSetupBase {
         if (key.options.includes('-m32')) {
             return 'x86';
         } else {
-            let target = _.find(key.options, option => {
+            const target = _.find(key.options, option => {
                 return option.startsWith('-target=') || option.startsWith('--target=');
             });
 

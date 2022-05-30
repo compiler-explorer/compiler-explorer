@@ -31,24 +31,31 @@ import * as exec from '../exec';
 import {logger} from '../logger';
 
 import {BuildEnvSetupBase} from './base';
+import {BuildEnvDownloadInfo} from './buildenv.interfaces';
 
 export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
+    private exe: any;
+    private remote: any;
+    private onlyonstaticliblink: any;
+
     static get key() {
         return 'cliconan';
     }
 
-    constructor(compilerInfo, env, execCompilerCachedFunc) {
-        super(compilerInfo, env, execCompilerCachedFunc);
+    constructor(compilerInfo, env) {
+        super(compilerInfo, env);
 
         this.exe = compilerInfo.buildenvsetup.props('exe', 'conan');
         this.remote = compilerInfo.buildenvsetup.props('remote', false);
         this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', true);
     }
 
-    async setup(key, dirPath, libraryDetails) {
+    override async setup(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
         if (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails)) {
             await this.prepareConanRequest(libraryDetails, dirPath);
             return this.installLibrariesViaConan(key, dirPath);
+        } else {
+            return [];
         }
     }
 
@@ -99,6 +106,14 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
         );
 
         logger.info('Conan install: ', args);
-        return exec.execute(this.exe, args, {customCwd: dirPath});
+
+        const result = await exec.execute(this.exe, args, {customCwd: dirPath});
+        const info: BuildEnvDownloadInfo = {
+            step: 'Conan install',
+            packageUrl: args.join(' '),
+            time: result.execTime,
+        };
+
+        return [info];
     }
 }
