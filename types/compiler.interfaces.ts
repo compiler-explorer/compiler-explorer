@@ -29,4 +29,5 @@ export type Compiler = {
     groupName: string;
     id: string;
     lang: string;
+    name: string;
 };
