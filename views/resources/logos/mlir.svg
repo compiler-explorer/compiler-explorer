@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 23.0.6, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="MLIR" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+     viewBox="0 0 360 360" style="enable-background:new 0 0 360 360;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#FFFFFF;}
+	.st1{fill:#1B466C;}
+	.st2{fill:#3775E0;}
+	.st3{fill:#5EA8DB;}
+</style>
+    <g id="Full_Color">
+	<g>
+		<path class="st1" d="M324,263.14l-144,83.14L36,263.14V96.86l144-83.14l144,83.14V263.14z"/>
+        <polygon class="st2" points="180,60.66 110.77,100.63 147.16,121.65 180,102.69 212.84,121.65 249.23,100.63 		"/>
+        <polygon class="st3" points="180,299.34 249.23,259.37 212.84,238.35 180,257.31 147.16,238.35 110.77,259.37 		"/>
+        <polygon class="st0" points="180,180.04 76.65,120.33 76.65,239.67 113.05,218.64 113.05,180.77 180,219.45 246.95,180.77
+			246.95,218.64 283.35,239.67 283.35,120.33 		"/>
+	</g>
+</g>
+</svg>
