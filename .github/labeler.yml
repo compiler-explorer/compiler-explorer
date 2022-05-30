@@ -70,6 +70,15 @@ lang-java:
 lang-kotlin:
   - lib/compilers/kotlin.js
   - etc/config/kotlin.*.properties
+lang-llvm:
+  - lib/llvm-ast.js
+  - lib/llvm-ir.js
+  - lib/llvm-opt-transformer.ts
+  - lib/compilers/llc.js
+  - lib/compilers/llvm-mca.js
+  - lib/objdumper/llvm.js
+  - lib/tooling/llvm-mca-tool.js
+  - etc/config/llvm.*.properties
 lang-nim:
   - lib/compilers/nim.js
   - etc/config/nim.*.properties
