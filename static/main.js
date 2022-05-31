@@ -456,7 +456,6 @@ function setupLanguageLogos(languages) {
                     lang.logoDataDark = logos('./' + lang.logoUrlDark);
                 }
             } catch (ignored) {
-                console.log(ignored, lang);
                 lang.logoData = '';
             }
         },
