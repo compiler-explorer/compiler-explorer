@@ -25,6 +25,7 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
@@ -59,7 +60,6 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
-import * as PromClient from 'prom-client';
 
 export class BaseCompiler {
     public compiler: any;
@@ -87,7 +87,11 @@ export class BaseCompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, Library>;
     protected packager: Packager;
-    private static objdumpAndParseGauge?;
+    private static objdumpAndParseCounter = new PromClient.Counter({
+        name: 'ce_objdumpandparsetime_total',
+        help: 'Time spent on objdump and parsing of objdumps',
+        labelNames: [],
+    });
 
     constructor(compilerInfo, env) {
         // Information about our compiler
@@ -95,14 +99,6 @@ export class BaseCompiler {
         this.lang = languages[compilerInfo.lang];
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
-        }
-
-        if (!BaseCompiler.objdumpAndParseGauge) {
-            BaseCompiler.objdumpAndParseGauge = new PromClient.Counter({
-                name: 'ce_objdumpandparsetime_total',
-                help: 'Time spent on objdump and parsing of objdumps',
-                labelNames: [],
-            });
         }
 
         this.compileFilename = `example${this.lang.extensions[0]}`;
@@ -2076,7 +2072,7 @@ export class BaseCompiler {
                     result.filteredCount = res.filteredCount;
                     if (result.objdumpTime) {
                         const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
-                        BaseCompiler.objdumpAndParseGauge.inc(dumpAndParseTime);
+                        BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
                     }
                 } else {
                     result.asm = [{text: result.asm}];
