@@ -464,10 +464,11 @@ function setupLanguageLogos(languages) {
         function (lang) {
             try {
                 lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark) {
+                if (lang.logoUrlDark !== null) {
                     lang.logoDataDark = logos('./' + lang.logoUrlDark);
                 }
             } catch (ignored) {
+                console.log(ignored, lang);
                 lang.logoData = '';
             }
         },
