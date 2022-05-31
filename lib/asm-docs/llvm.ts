@@ -22,9 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {Amd64DocumentationProvider} from './amd64';
-export {Arm32DocumentationProvider} from './arm32';
-export {AvrDocumentationProvider} from './avr';
-export {JavaDocumentationProvider} from './java';
-export {LLVMDocumentationProvider} from './llvm';
-export {Mos6502DocumentationProvider} from './mos6502';
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base';
+import {getAsmOpcode} from './generated/asm-docs-llvm';
+
+export class LLVMDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'llvm';
+    }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
+}

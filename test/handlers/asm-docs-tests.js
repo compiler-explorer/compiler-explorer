@@ -71,6 +71,14 @@ export const TEST_MATRIX = {
             'https://docs.oracle.com/javase/specs/jvms/se16/html/',
         ],
     ],
+    llvm: [
+        [
+            'ret',
+            'There are two forms of the ‘ret’ instruction',
+            '<span id="i-ret"></span><h4>',
+            'https://llvm.org/docs/LangRef.html#ret-instruction',
+        ],
+    ],
 };
 
 describe('Assembly Documentation API', () => {
