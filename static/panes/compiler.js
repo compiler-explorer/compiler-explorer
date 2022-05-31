@@ -31,7 +31,7 @@ var Toggles = require('../widgets/toggles').Toggles;
 var FontScale = require('../widgets/fontscale').FontScale;
 var Promise = require('es6-promise').Promise;
 var Components = require('../components');
-var LruCache = require('lru-cache');
+require('lru-cache');
 var options = require('../options').options;
 var monaco = require('monaco-editor');
 var Alert = require('../alert').Alert;
@@ -44,15 +44,11 @@ var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
+// eslint-disable-next-line max-len
+var createViewAssemblyDocumentationAction =
+    require('../extensions/view-assembly-documentation').createViewAssemblyDocumentationAction;
+var getAssemblyInfo = require('../extensions/view-assembly-documentation').getAssemblyInfo;
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
-
-var OpcodeCache = new LruCache({
-    max: 64 * 1024,
-    length: function (n) {
-        return JSON.stringify(n).length;
-    },
-});
 
 function patchOldFilters(filters) {
     if (filters === undefined) return undefined;
@@ -808,16 +804,7 @@ Compiler.prototype.initEditorActions = function () {
         }, this),
     });
 
-    this.outputEditor.addAction({
-        id: 'viewasmdoc',
-        label: 'View assembly documentation',
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
-        keybindingContext: null,
-        precondition: 'isAsmKeyword',
-        contextMenuGroupId: 'help',
-        contextMenuOrder: 1.5,
-        run: _.bind(this.onAsmToolTip, this),
-    });
+    createViewAssemblyDocumentationAction(this.outputEditor, this.compiler.instructionSet || 'amd64');
 
     this.outputEditor.addAction({
         id: 'toggleColourisation',
@@ -981,38 +968,39 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         files: tree.multifileService.getFiles(),
     };
 
-    const fetches = [];
+    var fetches = [];
 
     fetches.push(
-        this.compilerService.expand(request.source).then(contents => {
+        this.compilerService.expand(request.source).then(function (contents) {
             request.source = contents;
         })
     );
 
-    for (let file of request.files) {
+    for (var i = 0; i < request.files.length; i++) {
         fetches.push(
-            this.compilerService.expand(file.contents).then(contents => {
-                file.contents = contents;
+            this.compilerService.expand(request.files[i].contents).then(function (contents) {
+                request.files[i].contents = contents;
             })
         );
     }
 
-    Promise.all(fetches).then(() => {
+    var self = this;
+    Promise.all(fetches).then(function () {
         var treeState = tree.currentState();
         var cmakeProject = tree.multifileService.isACMakeProject();
 
         if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        if (!self.compiler) {
+            self.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
         } else if (cmakeProject && request.source === '') {
-            this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
+            self.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
         } else {
             if (cmakeProject) {
                 request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
                 request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                this.sendCMakeCompile(request);
+                self.sendCMakeCompile(request);
             } else {
-                this.sendCompile(request);
+                self.sendCompile(request);
             }
         }
     });
@@ -2385,8 +2373,9 @@ function htmlEncode(rawStr) {
 
 Compiler.prototype.checkForHints = function (result) {
     if (result.hints) {
-        result.hints.forEach(hint => {
-            this.alertSystem.notify(htmlEncode(hint), {
+        var self = this;
+        result.hints.forEach(function (hint) {
+            self.alertSystem.notify(htmlEncode(hint), {
                 group: 'hints',
                 collapseSimilar: false,
             });
@@ -2815,34 +2804,6 @@ function getNumericToolTip(value) {
     return result;
 }
 
-function getAsmInfo(opcode, instructionSet) {
-    var cacheName = 'asm/' + (instructionSet ? instructionSet + '/' : '') + opcode;
-    var cached = OpcodeCache.get(cacheName);
-    if (cached) {
-        if (cached.found) {
-            return Promise.resolve(cached.data);
-        }
-        return Promise.reject(cached.data);
-    }
-    return new Promise(function (resolve, reject) {
-        getAssemblyDocumentation({opcode: opcode, instructionSet: instructionSet})
-            .then(function (response) {
-                response.json().then(function (body) {
-                    if (response.status === 200) {
-                        OpcodeCache.set(cacheName, {found: true, data: body});
-                        resolve(body);
-                    } else {
-                        OpcodeCache.set(cacheName, {found: false, data: body.error});
-                        reject(body.error);
-                    }
-                });
-            })
-            .catch(function (error) {
-                reject('Fetch error: ' + error);
-            });
-    });
-}
-
 Compiler.prototype.onDidChangeCursorSelection = function (e) {
     if (this.awaitingInitialResults) {
         this.selection = e.selection;
@@ -2933,7 +2894,7 @@ Compiler.prototype.onMouseMove = function (e) {
         }
         var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
         if (hoverShowAsmDoc && this.compiler && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
-            getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
+            getAssemblyInfo(currentWord.word.toUpperCase(), this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;
                     this.decorations.asmToolTip = {
@@ -2967,70 +2928,6 @@ Compiler.prototype.isWordAsmKeyword = function (word) {
     return _.some(this.getLineTokens(word.range.startLineNumber), function (t) {
         return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
     });
-};
-
-Compiler.prototype.onAsmToolTip = function (ed) {
-    ga.proxy('send', {
-        hitType: 'event',
-        eventCategory: 'OpenModalPane',
-        eventAction: 'AsmDocs',
-    });
-    var pos = ed.getPosition();
-    if (!pos || !ed.getModel()) return;
-    var word = ed.getModel().getWordAtPosition(pos);
-    if (!word || !word.word) return;
-    var opcode = word.word.toUpperCase();
-
-    function newGitHubIssueUrl() {
-        return (
-            'https://github.com/compiler-explorer/compiler-explorer/issues/new?title=' +
-            encodeURIComponent('[BUG] Problem with ' + opcode + ' opcode')
-        );
-    }
-
-    function appendInfo(url) {
-        return (
-            '<br><br>For more information, visit <a href="' +
-            url +
-            '" target="_blank" rel="noopener noreferrer">the ' +
-            opcode +
-            ' documentation <sup><small class="fas fa-external-link-alt opens-new-window"' +
-            ' title="Opens in a new window"></small></sup></a>.' +
-            '<br>If the documentation for this opcode is wrong or broken in some way, ' +
-            'please feel free to <a href="' +
-            newGitHubIssueUrl() +
-            '" target="_blank" rel="noopener noreferrer">' +
-            'open an issue on GitHub <sup><small class="fas fa-external-link-alt opens-new-window" ' +
-            'title="Opens in a new window"></small></sup></a>.'
-        );
-    }
-
-    getAsmInfo(word.word, this.compiler.instructionSet).then(
-        _.bind(function (asmHelp) {
-            if (asmHelp) {
-                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), function () {
-                    ed.focus();
-                    ed.setPosition(pos);
-                });
-            } else {
-                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                    group: 'notokenindocs',
-                    alertClass: 'notification-error',
-                    dismissTime: 5000,
-                });
-            }
-        }, this),
-        _.bind(function (rejection) {
-            this.alertSystem.notify(
-                'There was an error fetching the documentation for this opcode (' + rejection + ').',
-                {
-                    group: 'notokenindocs',
-                    alertClass: 'notification-error',
-                    dismissTime: 5000,
-                }
-            );
-        }, this)
-    );
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {

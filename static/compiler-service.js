@@ -35,9 +35,6 @@ function CompilerService(eventHub) {
     this.allowStoreCodeDebug = true;
     this.cache = new LruCache({
         max: 200 * 1024,
-        length: function (n) {
-            return JSON.stringify(n).length;
-        },
     });
     this.compilersByLang = {};
     _.each(
