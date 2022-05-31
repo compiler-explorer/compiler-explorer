@@ -62,6 +62,7 @@ describe('Basic unfurls', () => {
                 languages: {
                     'c++': {
                         name: 'C++',
+                        previewFilter: null,
                     },
                 },
                 compilers: [],
@@ -90,6 +91,7 @@ describe('Basic unfurls', () => {
                 languages: {
                     'c++': {
                         name: 'C++',
+                        previewFilter: null,
                     },
                 },
                 compilers: [],
@@ -119,6 +121,7 @@ describe('Basic unfurls', () => {
                 languages: {
                     'c++': {
                         name: 'C++',
+                        previewFilter: null,
                     },
                 },
                 compilers: [],

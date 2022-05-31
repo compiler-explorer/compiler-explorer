@@ -127,9 +127,11 @@ function Compiler(hub, container, state) {
     this.initButtons(state);
 
     var monacoDisassembly = 'asm';
-    if (languages[this.currentLangId] && languages[this.currentLangId].monacoDisassembly) {
-        // TODO: If languages[this.currentLangId] is not valid, something went wrong. Find out what
-        monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
+    // Bandaid fix to not have to include monacoDisassembly everywhere in languages.js
+    if (languages[this.currentLangId] && languages[this.currentLangId].id === 'cuda') {
+        monacoDisassembly = 'ptx';
+    } else if (languages[this.currentLangId] && languages[this.currentLangId].id === 'ruby') {
+        monacoDisassembly = 'asmruby';
     }
 
     this.outputEditor = monaco.editor.create(
