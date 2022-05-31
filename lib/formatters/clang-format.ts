@@ -24,27 +24,17 @@
 
 import * as exec from '../exec';
 
-import {BaseFormatter} from './base';
+import {BaseFormatter, ExecResult} from './base';
+import {FormatOptions} from './base.interfaces';
 
-export class GoFmtFormatter extends BaseFormatter {
+export class ClangFormatFormatter extends BaseFormatter {
     static get key() {
-        return 'gofmt';
+        return 'clangformat';
     }
 
-    /**
-     * Format the provided source code
-     *
-     * This function does not use any options, because gofmt does not have any
-     * options.
-     */
-    async format(source) {
-        return await exec.execute(this.formatterInfo.exe, [], {input: source});
-    }
-
-    /**
-     * Gofmt has no styling options
-     */
-    isValidStyle() {
-        return true;
+    override async format(source: string, options: FormatOptions): Promise<ExecResult> {
+        const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
+        const arg = `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
+        return await exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source});
     }
 }

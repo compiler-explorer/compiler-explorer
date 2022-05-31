@@ -24,29 +24,37 @@
 
 import * as exec from '../exec';
 
-import {BaseFormatter} from './base';
+import {FormatOptions, FormatterInfo} from './base.interfaces';
 
-export class RustFmtFormatter extends BaseFormatter {
-    static get key() {
-        return 'rustfmt';
+// TODO(supergrecko): initial type for ../exec.js exec method
+export type ExecResult = {
+    code: number;
+    stdout: string;
+    stderr: string;
+};
+
+export abstract class BaseFormatter {
+    public formatterInfo: FormatterInfo;
+
+    public constructor(formatterInfo: FormatterInfo) {
+        this.formatterInfo = formatterInfo;
     }
 
-    async format(source, options) {
-        const args = [
-            '--emit',
-            'stdout',
-            '--config',
-            `hard_tabs=${options.useSpaces ? 'false' : 'true'}`,
-            '--config',
-            `tab_spaces=${options.tabWidth}`,
-        ];
+    /**
+     * Format the provided source code using the formatting tool.
+     *
+     * This method should construct the command line arguments and call the formatter executable with the constructed
+     * arguments, returning the execution result
+     */
+    async format(source: string, options: FormatOptions): Promise<ExecResult> {
+        const args = [`--style=${options.baseStyle}`];
         return await exec.execute(this.formatterInfo.exe, args, {input: source});
     }
 
     /**
-     * Rust format only has one style.
+     * Test if a formatting base style is valid for this formatter
      */
-    isValidStyle() {
-        return true;
+    isValidStyle(style: string): boolean {
+        return this.formatterInfo.styles.includes(style);
     }
 }

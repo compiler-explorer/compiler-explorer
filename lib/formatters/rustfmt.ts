@@ -24,16 +24,30 @@
 
 import * as exec from '../exec';
 
-import {BaseFormatter} from './base';
+import {BaseFormatter, ExecResult} from './base';
+import {FormatOptions} from './base.interfaces';
 
-export class ClangFormatFormatter extends BaseFormatter {
+export class RustFmtFormatter extends BaseFormatter {
     static get key() {
-        return 'clangformat';
+        return 'rustfmt';
     }
 
-    async format(source, options) {
-        const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
-        const arg = `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
-        return await exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source});
+    override async format(source: string, options: FormatOptions): Promise<ExecResult> {
+        const args = [
+            '--emit',
+            'stdout',
+            '--config',
+            `hard_tabs=${options.useSpaces ? 'false' : 'true'}`,
+            '--config',
+            `tab_spaces=${options.tabWidth}`,
+        ];
+        return await exec.execute(this.formatterInfo.exe, args, {input: source});
+    }
+
+    /**
+     * Rust format only has one style.
+     */
+    override isValidStyle(style: string): boolean {
+        return true;
     }
 }

@@ -24,18 +24,19 @@
 
 import * as exec from '../exec';
 
-import {BaseFormatter} from './base';
+import {BaseFormatter, ExecResult} from './base';
+import {FormatOptions} from './base.interfaces';
 
 export class DartFormatFormatter extends BaseFormatter {
     static get key() {
         return 'dartformat';
     }
 
-    async format(source) {
+    override async format(source: string, options: FormatOptions): Promise<ExecResult> {
         return await exec.execute(this.formatterInfo.exe, ['format'], {input: source});
     }
 
-    isValidStyle() {
+    override isValidStyle(style: string): boolean {
         // Dart supports only one style
         return true;
     }
