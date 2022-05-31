@@ -100,7 +100,6 @@ export class BaseCompiler {
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
         }
-
         this.compileFilename = `example${this.lang.extensions[0]}`;
         this.env = env;
         // Partial application of compilerProps with the proper language id applied to it
