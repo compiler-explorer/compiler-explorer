@@ -59,6 +59,7 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
+import * as PromClient from 'prom-client';
 
 export class BaseCompiler {
     public compiler: any;
@@ -86,6 +87,8 @@ export class BaseCompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, Library>;
     protected packager: Packager;
+    private static objdumpAndParseGauge?;
+
     constructor(compilerInfo, env) {
         // Information about our compiler
         this.compiler = compilerInfo;
@@ -93,6 +96,15 @@ export class BaseCompiler {
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
         }
+
+        if (!BaseCompiler.objdumpAndParseGauge) {
+            BaseCompiler.objdumpAndParseGauge = new PromClient.Counter({
+                name: 'ce_objdumpandparsetime_total',
+                help: 'Time spent on objdump and parsing of objdumps',
+                labelNames: [],
+            });
+        }
+
         this.compileFilename = `example${this.lang.extensions[0]}`;
         this.env = env;
         // Partial application of compilerProps with the proper language id applied to it
@@ -2062,6 +2074,10 @@ export class BaseCompiler {
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
+                    if (result.objdumpTime) {
+                        const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
+                        BaseCompiler.objdumpAndParseGauge.inc(dumpAndParseTime);
+                    }
                 } else {
                     result.asm = [{text: result.asm}];
                 }
