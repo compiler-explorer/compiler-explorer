@@ -44,10 +44,10 @@ var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
-// eslint-disable-next-line max-len
+var createShowAssemblyDocumentationEvent =
+    require('../extensions/view-assembly-documentation').createShowAssemblyDocumentationEvent;
 var createViewAssemblyDocumentationAction =
     require('../extensions/view-assembly-documentation').createViewAssemblyDocumentationAction;
-var getAssemblyInfo = require('../extensions/view-assembly-documentation').getAssemblyInfo;
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
 
 function patchOldFilters(filters) {
@@ -717,7 +717,6 @@ Compiler.prototype.popAndRevealJump = function () {
 Compiler.prototype.initEditorActions = function () {
     this.isLabelCtxKey = this.outputEditor.createContextKey('isLabel', true);
     this.revealJumpStackHasElementsCtxKey = this.outputEditor.createContextKey('hasRevealJumpStackElements', false);
-    this.isAsmKeywordCtxKey = this.outputEditor.createContextKey('isAsmKeyword', true);
 
     this.outputEditor.addAction({
         id: 'jumptolabel',
@@ -743,27 +742,6 @@ Compiler.prototype.initEditorActions = function () {
             if (this.isLabelCtxKey) {
                 var label = this.getLabelAtPosition(e.target.position);
                 this.isLabelCtxKey.set(label !== null);
-            }
-
-            if (this.isAsmKeywordCtxKey) {
-                if (!this.compiler.supportsAsmDocs) {
-                    // No need to show the "Show asm documentation" if it's just going to fail.
-                    // This is useful for things like xtensa which define an instructionSet but have no docs associated
-                    this.isAsmKeywordCtxKey.set(false);
-                } else {
-                    var currentWord = this.outputEditor.getModel().getWordAtPosition(e.target.position);
-                    if (currentWord) {
-                        currentWord.range = new monaco.Range(
-                            e.target.position.lineNumber,
-                            Math.max(currentWord.startColumn, 1),
-                            e.target.position.lineNumber,
-                            currentWord.endColumn
-                        );
-                        if (currentWord.word) {
-                            this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
-                        }
-                    }
-                }
             }
         }
         realMethod.apply(contextmenu, arguments);
@@ -804,7 +782,10 @@ Compiler.prototype.initEditorActions = function () {
         }, this),
     });
 
-    createViewAssemblyDocumentationAction(this.outputEditor, this.compiler.instructionSet || 'amd64');
+    var self = this;
+    createViewAssemblyDocumentationAction(this.outputEditor, function () {
+        return self.compiler.instructionSet || 'amd64';
+    });
 
     this.outputEditor.addAction({
         id: 'toggleColourisation',
@@ -2300,6 +2281,20 @@ Compiler.prototype.initCallbacks = function () {
 
     this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
 
+    if (this.compiler.supportsAsmDocs) {
+        var self = this;
+        createShowAssemblyDocumentationEvent(
+            this.outputEditor,
+            function () {
+                return self.compiler.instructionSet || 'amd64';
+            },
+            function () {
+                return self.settings;
+            },
+            self
+        );
+    }
+
     this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
     this.outputEditor.onMouseMove(
         _.bind(function (e) {
@@ -2892,42 +2887,7 @@ Compiler.prototype.onMouseMove = function (e) {
             };
             this.updateDecorations();
         }
-        var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
-        if (hoverShowAsmDoc && this.compiler && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
-            getAssemblyInfo(currentWord.word.toUpperCase(), this.compiler.instructionSet).then(
-                _.bind(function (response) {
-                    if (!response) return;
-                    this.decorations.asmToolTip = {
-                        range: currentWord.range,
-                        options: {
-                            isWholeLine: false,
-                            hoverMessage: [
-                                {
-                                    value: response.tooltip + '\n\nMore information available in the context menu.',
-                                    isTrusted: true,
-                                },
-                            ],
-                        },
-                    };
-                    this.updateDecorations();
-                }, this)
-            );
-        }
     }
-};
-
-Compiler.prototype.getLineTokens = function (line) {
-    var model = this.outputEditor.getModel();
-    if (!model || line > model.getLineCount()) return [];
-    var flavour = model.getLanguageId();
-    var tokens = monaco.editor.tokenize(model.getLineContent(line), flavour);
-    return tokens.length > 0 ? tokens[0] : [];
-};
-
-Compiler.prototype.isWordAsmKeyword = function (word) {
-    return _.some(this.getLineTokens(word.range.startLineNumber), function (t) {
-        return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
-    });
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {

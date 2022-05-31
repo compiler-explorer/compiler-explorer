@@ -5,6 +5,8 @@ import {getAssemblyDocumentation} from '../api/api';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {InstructionSet} from '../../types/features/assembly-documentation.interfaces';
 import {Alert} from '../alert';
+import {throttle} from 'underscore';
+import {SiteSettings} from '../settings';
 
 type OpcodeCacheEntry =
     | {
@@ -17,6 +19,7 @@ type OpcodeCacheEntry =
       };
 
 const VIEW_ASSEMBLY_DOCUMENTATION_ID = 'viewasmdoc';
+const IS_ASM_KEYWORD_CTX = 'isAsmKeyword';
 const ASSEMBLY_OPCODE_CACHE = new LRUCache<string, OpcodeCacheEntry>({
     max: 64 * 1024,
 });
@@ -27,62 +30,177 @@ const ASSEMBLY_OPCODE_CACHE = new LRUCache<string, OpcodeCacheEntry>({
  */
 export const createViewAssemblyDocumentationAction = (
     editor: monaco.editor.IStandaloneCodeEditor,
-    instructionSet: InstructionSet
+    getInstructionSet: () => InstructionSet
 ) => {
+    const contextKey = editor.createContextKey(IS_ASM_KEYWORD_CTX, true);
+
+    editor.onContextMenu(event => {
+        if (event.target.position === null) return;
+        const position = event.target.position;
+
+        const word = editor.getModel()?.getWordAtPosition(position) ?? null;
+        if (word === null) return;
+
+        if (word.word) {
+            contextKey.set(
+                isAssemblyKeyword(
+                    editor,
+                    word,
+                    new monaco.Range(
+                        position.lineNumber,
+                        Math.max(1, word.startColumn),
+                        position.lineNumber,
+                        word.endColumn
+                    )
+                )
+            );
+        }
+    });
+
     editor.addAction({
         id: VIEW_ASSEMBLY_DOCUMENTATION_ID,
         label: 'View assembly documentation',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
-        precondition: 'isAsmKeyword',
+        precondition: IS_ASM_KEYWORD_CTX,
         contextMenuGroupId: 'help',
         contextMenuOrder: 1.5,
-        run: onAssemblyAction(editor, instructionSet),
+        run: onAssemblyAction(editor, getInstructionSet),
     });
 };
 
-const onAssemblyAction = (editor: monaco.editor.IStandaloneCodeEditor, instructionSet: InstructionSet) => async () => {
-    ga.proxy('send', {
-        hitType: 'event',
-        eventCategory: 'OpenModalPane',
-        eventAction: 'AsmDocs',
-    });
+// Very hacky solution to get access to the decorations stored on the compiler.js instance
+// TODO(supergrecko): refactor the decorations storage to be more accessible
+type DecorationStorageValue = {
+    range: monaco.IRange;
+    options: monaco.editor.IModelDecorationOptions;
+};
+type WithDecorationContext = {
+    prevDecorations: string[];
+    decorations: Record<string, DecorationStorageValue>;
+    updateDecorations(): void;
+};
 
-    const position = editor.getPosition();
+export const createShowAssemblyDocumentationEvent = (
+    editor: monaco.editor.IStandaloneCodeEditor,
+    getInstructionSet: () => InstructionSet,
+    getSettings: () => SiteSettings,
+    self: WithDecorationContext
+) => {
+    const handler = throttle((event: monaco.editor.IEditorMouseEvent) => {
+        onEditorMouseMove(event, editor, getInstructionSet, getSettings, self);
+    }, 50);
+    editor.onMouseMove(handler);
+};
+
+const onEditorMouseMove = async (
+    event: monaco.editor.IEditorMouseEvent,
+    editor: monaco.editor.IStandaloneCodeEditor,
+    getInstructionSet: () => InstructionSet,
+    getSettings: () => SiteSettings,
+    self: WithDecorationContext
+) => {
+    if (event.target.position === null) return;
+    const settings = getSettings();
+    if (!settings.hoverShowAsmDoc) return;
+
     const model = editor.getModel();
-    if (position === null || model === null) return;
+    if (model === null) return;
 
-    const word = model.getWordAtPosition(position);
-    if (word === null || word.word === '') return;
+    const word = model.getWordAtPosition(event.target.position);
+    if (word === null || !word.word) return;
 
-    const opcode = word.word.toUpperCase();
-    const alertSystem = new Alert();
+    const range = new monaco.Range(
+        event.target.position.lineNumber,
+        Math.max(1, word.startColumn),
+        event.target.position.lineNumber,
+        word.endColumn
+    );
+    const isAsmKeyword = isAssemblyKeyword(editor, word, range);
 
-    try {
-        const response = await getAssemblyInfo(opcode, instructionSet);
+    if (isAsmKeyword) {
+        const response = await getAssemblyInfo(word.word.toUpperCase(), getInstructionSet());
         if (response.found) {
-            alertSystem.alert(
-                opcode + ' help',
-                response.body.html + createDisplayableHtml(response.body.url, opcode),
-                () => {
-                    editor.focus();
-                    editor.setPosition(position);
-                }
-            );
-        } else {
-            alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                group: 'notokenindocs',
-                alertClass: 'notification-error',
-                dismissTime: 5000,
-            });
+            self.decorations.asmToolTip = {
+                range,
+                options: {
+                    isWholeLine: false,
+                    hoverMessage: [
+                        {
+                            value: response.body.tooltip + '\n\nMore information available in the context menu.',
+                            isTrusted: true,
+                        },
+                    ],
+                },
+            };
+            self.updateDecorations();
         }
-    } catch (error) {
-        alertSystem.notify('There was a network error fetching the documentation for this opcode (' + error + ').', {
-            group: 'notokenindocs',
-            alertClass: 'notification-error',
-            dismissTime: 5000,
-        });
     }
 };
+
+const isAssemblyKeyword = (
+    editor: monaco.editor.IStandaloneCodeEditor,
+    word: monaco.editor.IWordAtPosition,
+    range: monaco.IRange
+): boolean => {
+    const model = editor.getModel();
+    if (model === null || range.startLineNumber > model.getLineCount()) return false;
+    const language = model.getLanguageId();
+    const tokens = monaco.editor.tokenize(model.getLineContent(range.startLineNumber), language);
+
+    const line = tokens.length > 0 ? tokens[0] : [];
+
+    return line.some(t => {
+        return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
+    });
+};
+
+const onAssemblyAction =
+    (editor: monaco.editor.IStandaloneCodeEditor, getInstructionSet: () => InstructionSet) => async () => {
+        ga.proxy('send', {
+            hitType: 'event',
+            eventCategory: 'OpenModalPane',
+            eventAction: 'AsmDocs',
+        });
+
+        const position = editor.getPosition();
+        const model = editor.getModel();
+        if (position === null || model === null) return;
+
+        const word = model.getWordAtPosition(position);
+        if (word === null || word.word === '') return;
+
+        const opcode = word.word.toUpperCase();
+        const alertSystem = new Alert();
+
+        try {
+            const response = await getAssemblyInfo(opcode, getInstructionSet());
+            if (response.found) {
+                alertSystem.alert(
+                    opcode + ' help',
+                    response.body.html + createDisplayableHtml(response.body.url, opcode),
+                    () => {
+                        editor.focus();
+                        editor.setPosition(position);
+                    }
+                );
+            } else {
+                alertSystem.notify('This token was not found in the documentation. Sorry!', {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
+            }
+        } catch (error) {
+            alertSystem.notify(
+                'There was a network error fetching the documentation for this opcode (' + error + ').',
+                {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                }
+            );
+        }
+    };
 
 export const getAssemblyInfo = async (opcode: string, instructionSet: InstructionSet): Promise<OpcodeCacheEntry> => {
     const entryName = `asm/${instructionSet}/${opcode}`;
@@ -123,7 +241,7 @@ For more information, visit
   </sup>
 <a/>.
 If the documentation for this opcode is wrong or broken in some way, please feel free to 
-<a href="${github}">
+<a href='${github}'>
   open an issue on GitHub 
   <sup>
     <small class='fas fa-external-link-alt opens-new-window' title='Opens in a new window'>
