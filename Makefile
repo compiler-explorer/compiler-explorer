@@ -58,7 +58,7 @@ test: $(NODE_MODULES)  ## Runs the tests
 
 .PHONY: test-min
 test-min: $(NODE_MODULES)  ## Runs the minimal tests
-	$(NPM) run test-min
+	$(NPM) run test-min -- --reporter min
 	@echo Tests pass
 
 .PHONY: check
