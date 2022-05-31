@@ -19,7 +19,7 @@ Steps to add a test:
 
 - Create a new file in `static/tests` (copy paste from `static/tests/hello-world.ts`)
 - Make sure to change the `description` as well as the test
-- Add the file to the imports of `static/tests/_all.ts`
+- Add the file to the imports of `static/tests/_all.js`
 - Add a `runFrontendTest()` call with the new test description to `cypress/integration/frontend-testing.js`
 
 ## Starting tests locally
