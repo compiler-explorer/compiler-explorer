@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
-import {BaseFormatter, ExecResult} from './base';
+import {BaseFormatter} from './base';
 import {FormatOptions} from './base.interfaces';
 
 export class RustFmtFormatter extends BaseFormatter {
@@ -32,7 +33,7 @@ export class RustFmtFormatter extends BaseFormatter {
         return 'rustfmt';
     }
 
-    override async format(source: string, options: FormatOptions): Promise<ExecResult> {
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         const args = [
             '--emit',
             'stdout',

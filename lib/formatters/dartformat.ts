@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
-import {BaseFormatter, ExecResult} from './base';
+import {BaseFormatter} from './base';
 import {FormatOptions} from './base.interfaces';
 
 export class DartFormatFormatter extends BaseFormatter {
@@ -32,7 +33,7 @@ export class DartFormatFormatter extends BaseFormatter {
         return 'dartformat';
     }
 
-    override async format(source: string, options: FormatOptions): Promise<ExecResult> {
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         return await exec.execute(this.formatterInfo.exe, ['format'], {input: source});
     }
 

@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
-import {BaseFormatter, ExecResult} from './base';
+import {BaseFormatter} from './base';
 import {FormatOptions} from './base.interfaces';
 
 export class ClangFormatFormatter extends BaseFormatter {
@@ -32,7 +33,7 @@ export class ClangFormatFormatter extends BaseFormatter {
         return 'clangformat';
     }
 
-    override async format(source: string, options: FormatOptions): Promise<ExecResult> {
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
         const arg = `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
         return await exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source});

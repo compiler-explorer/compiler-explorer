@@ -32,8 +32,8 @@ export interface FormatterInfo {
     versionReExp?: string;
 }
 
-export interface FormatOptions {
+export type FormatOptions = {
     useSpaces: boolean;
     tabWidth: number;
     baseStyle: string;
-}
+};

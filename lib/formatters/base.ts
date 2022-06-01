@@ -22,16 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
 import {FormatOptions, FormatterInfo} from './base.interfaces';
-
-// TODO(supergrecko): initial type for ../exec.js exec method
-export type ExecResult = {
-    code: number;
-    stdout: string;
-    stderr: string;
-};
 
 export abstract class BaseFormatter {
     public formatterInfo: FormatterInfo;
@@ -46,7 +40,7 @@ export abstract class BaseFormatter {
      * This method should construct the command line arguments and call the formatter executable with the constructed
      * arguments, returning the execution result
      */
-    async format(source: string, options: FormatOptions): Promise<ExecResult> {
+    async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         const args = [`--style=${options.baseStyle}`];
         return await exec.execute(this.formatterInfo.exe, args, {input: source});
     }

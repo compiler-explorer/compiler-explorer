@@ -8,7 +8,8 @@
   - Add a `lib/formatters/<formatter>.ts` file using the template below, replacing `Type` and `type` as appropriate
 
     ```js
-    import {BaseFormatter, ExecResult} from './base';
+    import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+    import {BaseFormatter} from './base';
     import {FormatOptions} from './base.interfaces';
 
     export class TypeFormatter extends BaseFormatter {
@@ -20,7 +21,7 @@
 
   - The value returned by `key` above corresponds to the `type` property you set in the compiler-explorer properties
     configuration file.
-  - Tweak `format(source: string, options: FormatOptions): Promise<ExecResult>` and
+  - Tweak `format(source: string, options: FormatOptions): Promise<UnprocessedExecResult>` and
     `isValidStyle(style: string): boolean` as necessary. See the JSDoc for `format` and the implementations for other
     formatters to get a further understanding of how to implement `format(source, options)`.
 
