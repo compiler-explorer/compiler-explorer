@@ -64,6 +64,9 @@ lang-haskell:
 lang-ispc:
   - lib/compilers/ispc.js
   - etc/config/ispc.*.properties
+lang-mlir:
+  - lib/compilers/mlir.ts
+  - etc/config/mlir.*.properties
 lang-java:
   - lib/compilers/java.js
   - etc/config/java.*.properties
