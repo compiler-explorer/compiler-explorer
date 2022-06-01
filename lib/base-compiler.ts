@@ -25,6 +25,7 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
@@ -86,6 +87,12 @@ export class BaseCompiler {
     protected externalparser: null | ExternalParserBase;
     protected supportedLibraries?: Record<string, Library>;
     protected packager: Packager;
+    private static objdumpAndParseCounter = new PromClient.Counter({
+        name: 'ce_objdumpandparsetime_total',
+        help: 'Time spent on objdump and parsing of objdumps',
+        labelNames: [],
+    });
+
     constructor(compilerInfo, env) {
         // Information about our compiler
         this.compiler = compilerInfo;
@@ -2062,6 +2069,10 @@ export class BaseCompiler {
                     result.labelDefinitions = res.labelDefinitions;
                     result.parsingTime = res.parsingTime;
                     result.filteredCount = res.filteredCount;
+                    if (result.objdumpTime) {
+                        const dumpAndParseTime = parseInt(result.objdumpTime) + parseInt(result.parsingTime);
+                        BaseCompiler.objdumpAndParseCounter.inc(dumpAndParseTime);
+                    }
                 } else {
                     result.asm = [{text: result.asm}];
                 }
