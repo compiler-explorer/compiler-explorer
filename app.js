@@ -767,6 +767,7 @@ async function main() {
             staticHeaders(res);
             res.end('User-agent: *\nSitemap: https://godbolt.org/sitemap.xml\nDisallow:');
         })
+        .use('/template_screenshots', express.static('etc/template_screenshots/'))
         .get('/sitemap.xml', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/xml');
