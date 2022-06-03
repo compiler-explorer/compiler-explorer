@@ -918,6 +918,24 @@ html[data-theme='dark'] {
     padding: 5px;
 }
 
+#site-template-modal-row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 25px;
+    > div {
+        padding: 0;
+        flex-shrink: 0;
+        &.site-template-preview-col {
+            flex-grow: 1;
+            flex-shrink: 1;
+            img {
+                max-width: 100%;
+            }
+        }
+    }
+}
+
 #site-templates-list {
     list-style-type: none;
     margin: 0;
@@ -934,4 +952,3 @@ html[data-theme='dark'] {
         }
     }
 }
-

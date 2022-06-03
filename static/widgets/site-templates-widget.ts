@@ -48,13 +48,9 @@ class SiteTemplatesWidget {
         for (const [name, data] of Object.entries(templatesConfig.templates)) {
             root.append(`<li data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${name}</li>`);
         }
-        for (const [k, v] of Object.entries(templatesConfig.meta)) {
-            if (k === 'meta.screenshot_dimentions') {
-                const [w, h] = v.split('x').map(x => parseInt(x));
-                this.img.width = w;
-                this.img.height = h;
-            }
-        }
+        const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
+        this.img.src =
+            window.location.origin + window.httpRoot + `template_screenshots/${first.replace(/[^a-z]/gi, '')}.png`;
         for (const li of root.find('li')) {
             const li_copy = li;
             li.addEventListener(

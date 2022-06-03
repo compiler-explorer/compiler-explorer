@@ -410,11 +410,11 @@
             | &times;
       .modal-body
         .container
-          .row(style="flex-wrap: nowrap; justify-content: space-between; gap: 25px;")
-            .libs-selected-col.col-auto(style="padding: 0;")
+          .row(id="site-template-modal-row")
+            .site-templates-list-col
               h5 Templates
               ul#site-templates-list
                 li Loading.....
-            .libs-results-col.col-md-auto(style="padding: 0;")
+            .site-template-preview-col
               h5 Preview
               <img id="site-template-preview" src=""/>
