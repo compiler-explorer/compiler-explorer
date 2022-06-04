@@ -35,6 +35,21 @@ const godbolt    = "https://godbolt.org";
 const output_dir = "../../views/resources/template_screenshots";
 const config     = "../config/site-templates.conf";
 
+const cookieStatus = "4bc6a34572c2eb78"; // Note: Hardcoded, may need to be updated in the future
+
+const defaultViewport = {
+    width: 500,
+    height: 500
+};
+
+const defaultSettings = {
+    showMinimap: true,
+    wordWrap: false,
+    colourScheme: "gray-shade",
+    theme: "dark",
+    defaultFontScale: 14
+};
+
 // utilities
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -56,19 +71,6 @@ function partition(array, filter) {
     return [pass, fail];
 }
 
-const defaultViewport = {
-    width: 500,
-    height: 500
-};
-
-const defaultSettings = {
-    showMinimap: true,
-    wordWrap: false,
-    colourScheme: "gray-shade",
-    theme: "dark",
-    defaultFontScale: 14
-};
-
 async function generate_screenshot(url, output_path) {
     const browser = await puppeteer.launch({
         dumpio: true,
@@ -76,15 +78,19 @@ async function generate_screenshot(url, output_path) {
     });
     const page = await browser.newPage();
     await page.goto(godbolt);
+    await page.setCookie({
+        name: "cookie_status",
+        value: cookieStatus
+    })
     await page.evaluate(defaultSettings => {
         localStorage.setItem("settings", JSON.stringify(defaultSettings));
     }, defaultSettings);
     await page.goto(url);
     //await sleep(2000);
     //await page.click(".modal.show button.btn.btn-outline-primary[data-dismiss=modal]");
-    await sleep(2000);
-    await page.click("#simplecook .btn.btn-primary.btn-sm.cook-do-consent");
-    await sleep(2000);
+    //await sleep(5000);
+    //await page.click("#simplecook .btn.btn-primary.btn-sm.cook-do-consent");
+    await sleep(10000); // wait for things to settle
     await page.screenshot({ path: output_path });
 
     await browser.close();
