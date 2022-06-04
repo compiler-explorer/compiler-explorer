@@ -22,8 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+/*
+ * Note:
+ * - This script should be run in the etc/scripts/ directory, it uses relative paths
+ * - This script requires puppeteer which is not installed by default (I install it globally)
+ */
+
 const puppeteer = require("puppeteer");
 const fs = require("fs");
+
+const godbolt    = "https://godbolt.org";
+const output_dir = "../../views/resources/template_screenshots";
+const config     = "../config/site-templates.conf";
 
 // utilities
 function sleep(ms) {
@@ -65,7 +75,7 @@ async function generate_screenshot(url, output_path) {
         defaultViewport
     });
     const page = await browser.newPage();
-    await page.goto("https://godbolt.org");
+    await page.goto(godbolt);
     await page.evaluate(defaultSettings => {
         localStorage.setItem("settings", JSON.stringify(defaultSettings));
     }, defaultSettings);
@@ -84,7 +94,7 @@ async function generate_screenshot(url, output_path) {
     const [meta_directives, templates] =
         partition(
             fs
-            .readFileSync("../config/site-templates.properties", "utf-8")
+            .readFileSync(config, "utf-8")
             .split("\n")
             .filter(l => l !== "")
             .map(splitProperty)
@@ -102,15 +112,15 @@ async function generate_screenshot(url, output_path) {
             defaultViewport.height = h;
         }
     }
-    if(!fs.existsSync("../template_screenshots")) {
-        fs.mkdirSync("../template_screenshots", { recursive: true });
+    if(!fs.existsSync(output_dir)) {
+        fs.mkdirSync(output_dir, { recursive: true });
     }
     const promises = [];
     for(const [name, data] of templates) {
-        const path = `../template_screenshots/${name}.png`;
+        const path = `${output_dir}/${name}.png`;
         if(!fs.existsSync(path)) {
             promises.push(generate_screenshot(
-                `https://godbolt.org/#${data}`,
+                `${godbolt}/#${data}`,
                 path
             ));
         }

@@ -29,7 +29,9 @@ class SiteTemplatesWidget {
     img: HTMLImageElement;
     templatesConfig: null | siteTemplatesType = null;
     populated = false;
-    constructor() {
+    siteTemplateScreenshots: any;
+    constructor(siteTemplateScreenshots: any) {
+        this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
         this.img = document.getElementById('site-template-preview') as HTMLImageElement;
     }
@@ -41,6 +43,9 @@ class SiteTemplatesWidget {
         }
         return this.templatesConfig as siteTemplatesType;
     }
+    get_asset(name: string) {
+        return this.siteTemplateScreenshots('./' + name + '.png');
+    }
     async populate() {
         const templatesConfig = await this.getTemplates();
         const root = $('#site-templates-list');
@@ -49,17 +54,13 @@ class SiteTemplatesWidget {
             root.append(`<li data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${name}</li>`);
         }
         const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
-        this.img.src =
-            window.location.origin + window.httpRoot + `template_screenshots/${first.replace(/[^a-z]/gi, '')}.png`;
+        this.img.src = this.get_asset(first.replace(/[^a-z]/gi, ''));
         for (const li of root.find('li')) {
             const li_copy = li;
             li.addEventListener(
                 'mouseover',
                 () => {
-                    this.img.src =
-                        window.location.origin +
-                        window.httpRoot +
-                        `template_screenshots/${li_copy.getAttribute('data-name')}.png`;
+                    this.img.src = this.get_asset(li_copy.getAttribute('data-name') as string);
                 },
                 false
             );
@@ -82,9 +83,8 @@ class SiteTemplatesWidget {
     }
 }
 
-const siteTemplateModal = new SiteTemplatesWidget();
-
-export function setupSiteTemplateWidgetButton() {
+export function setupSiteTemplateWidgetButton(siteTemplateScreenshots: any) {
+    const siteTemplateModal = new SiteTemplatesWidget(siteTemplateScreenshots);
     $('#loadSiteTemplate').on('click', () => {
         siteTemplateModal.show();
     });

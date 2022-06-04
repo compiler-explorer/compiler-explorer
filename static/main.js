@@ -55,6 +55,8 @@ var setupSiteTemplateWidgetButton = require('./widgets/site-templates-widget').s
 
 var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
+var siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
+
 if (!window.PRODUCTION) {
     require('./tests/_all');
 }
@@ -472,7 +474,7 @@ function earlyGetDefaultLangSetting() {
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
-    setupSiteTemplateWidgetButton();
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     var options = require('options').options;
 
