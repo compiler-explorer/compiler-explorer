@@ -42,6 +42,14 @@ const defaultViewport = {
     height: 500
 };
 
+// Note: Hardcoded, may need to be updated in the future
+// array of pairs [theme, colourScheme]
+const themes = [
+    ["default",  "rainbow"],
+    ["dark",     "gray-shade"],
+    ["darkplus", "gray-shade"],
+];
+
 const defaultSettings = {
     showMinimap: true,
     wordWrap: false,
@@ -71,7 +79,7 @@ function partition(array, filter) {
     return [pass, fail];
 }
 
-async function generate_screenshot(url, output_path) {
+async function generate_screenshot(url, output_path, settings) {
     const browser = await puppeteer.launch({
         dumpio: true,
         defaultViewport
@@ -82,9 +90,9 @@ async function generate_screenshot(url, output_path) {
         name: "cookie_status",
         value: cookieStatus
     })
-    await page.evaluate(defaultSettings => {
-        localStorage.setItem("settings", JSON.stringify(defaultSettings));
-    }, defaultSettings);
+    await page.evaluate(settings => {
+        localStorage.setItem("settings", JSON.stringify(settings));
+    }, settings);
     await page.goto(url);
     //await sleep(2000);
     //await page.click(".modal.show button.btn.btn-outline-primary[data-dismiss=modal]");
@@ -123,12 +131,15 @@ async function generate_screenshot(url, output_path) {
     }
     const promises = [];
     for(const [name, data] of templates) {
-        const path = `${output_dir}/${name}.png`;
-        if(!fs.existsSync(path)) {
-            promises.push(generate_screenshot(
-                `${godbolt}/#${data}`,
-                path
-            ));
+        for(const [theme, colourScheme] of themes) {
+            const path = `${output_dir}/${name}.${theme}.png`;
+            if(!fs.existsSync(path)) {
+                promises.push(generate_screenshot(
+                    `${godbolt}/#${data}`,
+                    path,
+                    Object.assign(Object.assign({}, defaultSettings), {theme, colourScheme})
+                ));
+            }
         }
     }
     await Promise.all(promises);

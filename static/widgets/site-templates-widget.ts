@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {siteTemplatesType} from '../../types/features/site-templates.interfaces';
+import {Settings} from '../settings';
 
 class SiteTemplatesWidget {
     modal: JQuery;
@@ -43,8 +44,16 @@ class SiteTemplatesWidget {
         }
         return this.templatesConfig as siteTemplatesType;
     }
-    get_asset(name: string) {
-        return this.siteTemplateScreenshots('./' + name + '.png');
+    getCurrentTheme() {
+        return Settings.getStoredSettings()['theme'];
+    }
+    getAsset(name: string) {
+        return this.siteTemplateScreenshots(`./${name}.${this.getCurrentTheme()}.png`);
+    }
+    async setDefaultPreview() {
+        const templatesConfig = await this.getTemplates(); // by the time this is called it will be cached
+        const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
+        this.img.src = this.getAsset(first.replace(/[^a-z]/gi, ''));
     }
     async populate() {
         const templatesConfig = await this.getTemplates();
@@ -53,14 +62,12 @@ class SiteTemplatesWidget {
         for (const [name, data] of Object.entries(templatesConfig.templates)) {
             root.append(`<li data-data="${data}" data-name="${name.replace(/[^a-z]/gi, '')}">${name}</li>`);
         }
-        const first = Object.entries(templatesConfig.templates)[0][0]; // preview the first entry
-        this.img.src = this.get_asset(first.replace(/[^a-z]/gi, ''));
         for (const li of root.find('li')) {
             const li_copy = li;
             li.addEventListener(
                 'mouseover',
                 () => {
-                    this.img.src = this.get_asset(li_copy.getAttribute('data-name') as string);
+                    this.img.src = this.getAsset(li_copy.getAttribute('data-name') as string);
                 },
                 false
             );
@@ -80,6 +87,7 @@ class SiteTemplatesWidget {
         if (!this.populated) {
             this.populate();
         }
+        this.setDefaultPreview();
     }
 }
 
