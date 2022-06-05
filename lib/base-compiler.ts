@@ -1853,12 +1853,14 @@ export class BaseCompiler {
                 okToCache: true,
             };
 
-            const [asmResult] = await this.checkOutputFileAndDoPostProcess(
-                fullResult.result,
-                outputFilename,
-                cacheKey.filters,
-            );
-            fullResult.result = asmResult;
+            if (!key.backendOptions.skipAsm) {
+                const [asmResult] = await this.checkOutputFileAndDoPostProcess(
+                    fullResult.result,
+                    outputFilename,
+                    cacheKey.filters,
+                );
+                fullResult.result = asmResult;
+            }
 
             if (this.lang.id === 'c++') {
                 fullResult.result.compilationOptions = makeExecParams.env.CXXFLAGS.split(' ');
