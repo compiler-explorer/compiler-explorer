@@ -41,6 +41,7 @@ import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/librarie
 import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
+import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
 import * as cfg from './cfg';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
@@ -1222,7 +1223,7 @@ export class BaseCompiler {
         return libraryDetails;
     }
 
-    async setupBuildEnvironment(key, dirPath): Promise<string[]> {
+    async setupBuildEnvironment(key, dirPath): Promise<BuildEnvDownloadInfo[]> {
         if (this.buildenvsetup) {
             const libraryDetails = await this.getRequiredLibraryVersions(key.libraries);
             return this.buildenvsetup.setup(key, dirPath, libraryDetails);
@@ -1520,7 +1521,7 @@ export class BaseCompiler {
     }
 
     async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
-        let buildEnvironment: Promise<string[]> = Promise.resolve() as any;
+        let buildEnvironment: Promise<BuildEnvDownloadInfo[]> = Promise.resolve() as any;
         if (filters.binary) {
             buildEnvironment = this.setupBuildEnvironment(key, dirPath);
         }
