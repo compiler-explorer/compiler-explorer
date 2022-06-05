@@ -22,18 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
-import {BaseFormatter} from './base';
+import {FormatOptions, FormatterInfo} from './base.interfaces';
 
-export class ClangFormatFormatter extends BaseFormatter {
-    static get key() {
-        return 'clangformat';
+export abstract class BaseFormatter {
+    public formatterInfo: FormatterInfo;
+
+    public constructor(formatterInfo: FormatterInfo) {
+        this.formatterInfo = formatterInfo;
     }
 
-    async format(source, options) {
-        const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
-        const arg = `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
-        return await exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source});
+    /**
+     * Format the provided source code using the formatting tool.
+     *
+     * This method should construct the command line arguments and call the formatter executable with the constructed
+     * arguments, returning the execution result
+     */
+    async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
+        const args = [`--style=${options.baseStyle}`];
+        return await exec.execute(this.formatterInfo.exe, args, {input: source});
+    }
+
+    /**
+     * Test if a formatting base style is valid for this formatter
+     */
+    isValidStyle(style: string): boolean {
+        return this.formatterInfo.styles.includes(style);
     }
 }

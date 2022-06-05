@@ -22,31 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
 import {BaseFormatter} from './base';
+import {FormatOptions} from './base.interfaces';
 
-export class RustFmtFormatter extends BaseFormatter {
+export class GoFmtFormatter extends BaseFormatter {
     static get key() {
-        return 'rustfmt';
-    }
-
-    async format(source, options) {
-        const args = [
-            '--emit',
-            'stdout',
-            '--config',
-            `hard_tabs=${options.useSpaces ? 'false' : 'true'}`,
-            '--config',
-            `tab_spaces=${options.tabWidth}`,
-        ];
-        return await exec.execute(this.formatterInfo.exe, args, {input: source});
+        return 'gofmt';
     }
 
     /**
-     * Rust format only has one style.
+     * Format the provided source code
+     *
+     * This function does not use any options, because gofmt does not have any
+     * options.
      */
-    isValidStyle() {
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
+        return await exec.execute(this.formatterInfo.exe, [], {input: source});
+    }
+
+    /**
+     * Gofmt has no styling options
+     */
+    override isValidStyle(style: string): boolean {
         return true;
     }
 }

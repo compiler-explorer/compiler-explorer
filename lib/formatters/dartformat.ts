@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,37 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
-export class BaseFormatter {
-    constructor(formatterInfo) {
-        this.formatterInfo = formatterInfo;
+import {BaseFormatter} from './base';
+import {FormatOptions} from './base.interfaces';
+
+export class DartFormatFormatter extends BaseFormatter {
+    static get key() {
+        return 'dartformat';
     }
 
-    /**
-     * Format the provided source code using the formatting tool.
-     *
-     * This function should construct the final arguments passed to the tool
-     * executable.
-     *
-     * Optionally accept a third argument to respect other formatting options.
-     * The possible options passed are as follows:
-     *
-     * interface AdditionalFormatOptions {
-     *     useSpaces: boolean;
-     *     tabWidth: number;
-     *     baseStyle: string;
-     * }
-     */
-    async format(source, options) {
-        const args = [`--style=${options.baseStyle}`];
-        return await exec.execute(this.formatterInfo.exe, args, {input: source});
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
+        return await exec.execute(this.formatterInfo.exe, ['format'], {input: source});
     }
 
-    /**
-     * Test if a formatting base style is valid for this formatter
-     */
-    isValidStyle(style) {
-        return this.formatterInfo.styles.includes(style);
+    override isValidStyle(style: string): boolean {
+        // Dart supports only one style
+        return true;
     }
 }

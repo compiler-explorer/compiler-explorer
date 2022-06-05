@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,21 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import * as exec from '../exec';
 
 import {BaseFormatter} from './base';
+import {FormatOptions} from './base.interfaces';
 
-export class DartFormatFormatter extends BaseFormatter {
+export class RustFmtFormatter extends BaseFormatter {
     static get key() {
-        return 'dartformat';
+        return 'rustfmt';
     }
 
-    async format(source) {
-        return await exec.execute(this.formatterInfo.exe, ['format'], {input: source});
+    override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
+        const args = [
+            '--emit',
+            'stdout',
+            '--config',
+            `hard_tabs=${options.useSpaces ? 'false' : 'true'}`,
+            '--config',
+            `tab_spaces=${options.tabWidth}`,
+        ];
+        return await exec.execute(this.formatterInfo.exe, args, {input: source});
     }
 
-    isValidStyle() {
-        // Dart supports only one style
+    /**
+     * Rust format only has one style.
+     */
+    override isValidStyle(style: string): boolean {
         return true;
     }
 }

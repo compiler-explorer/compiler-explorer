@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,29 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as exec from '../exec';
-
-import {BaseFormatter} from './base';
-
-export class GoFmtFormatter extends BaseFormatter {
-    static get key() {
-        return 'gofmt';
-    }
-
-    /**
-     * Format the provided source code
-     *
-     * This function does not use any options, because gofmt does not have any
-     * options.
-     */
-    async format(source) {
-        return await exec.execute(this.formatterInfo.exe, [], {input: source});
-    }
-
-    /**
-     * Gofmt has no styling options
-     */
-    isValidStyle() {
-        return true;
-    }
+export interface FormatterInfo {
+    name: string;
+    exe: string;
+    styles: string[];
+    type: string;
+    explicitVersion?: string;
+    versionArgument?: string;
+    versionReExp?: string;
 }
+
+export type FormatOptions = {
+    useSpaces: boolean;
+    tabWidth: number;
+    baseStyle: string;
+};
