@@ -35,8 +35,6 @@ const godbolt    = "https://godbolt.org";
 const output_dir = "../../views/resources/template_screenshots";
 const config     = "../config/site-templates.conf";
 
-const cookieStatus = "4bc6a34572c2eb78"; // Note: Hardcoded, may need to be updated in the future
-
 const defaultViewport = {
     width: 500,
     height: 500
@@ -86,10 +84,6 @@ async function generate_screenshot(url, output_path, settings) {
     });
     const page = await browser.newPage();
     await page.goto(godbolt);
-    await page.setCookie({
-        name: "cookie_status",
-        value: cookieStatus
-    })
     await page.evaluate(settings => {
         localStorage.setItem("settings", JSON.stringify(settings));
     }, settings);
@@ -98,6 +92,11 @@ async function generate_screenshot(url, output_path, settings) {
     //await page.click(".modal.show button.btn.btn-outline-primary[data-dismiss=modal]");
     //await sleep(5000);
     //await page.click("#simplecook .btn.btn-primary.btn-sm.cook-do-consent");
+    await page.evaluate(() => {
+        for(let element of document.querySelectorAll(".float-link.link")){
+            element.parentNode.removeChild(element);
+        }
+    });
     await sleep(10000); // wait for things to settle
     await page.screenshot({ path: output_path });
 
@@ -135,7 +134,7 @@ async function generate_screenshot(url, output_path, settings) {
             const path = `${output_dir}/${name}.${theme}.png`;
             if(!fs.existsSync(path)) {
                 promises.push(generate_screenshot(
-                    `${godbolt}/#${data}`,
+                    `${godbolt}/e#${data}`,
                     path,
                     Object.assign(Object.assign({}, defaultSettings), {theme, colourScheme})
                 ));
