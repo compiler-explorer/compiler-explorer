@@ -343,7 +343,7 @@ export class CompilerService {
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
-        if (stdout.length === 1 && stderr.length === 0) {
+        if (stdout.length === 1 && stderr.length === 0 && result.inputFilename) {
             // We could also move this calculation to the server at some point
             const lastSlashPos = _.findLastIndex(result.inputFilename, ch => ch === '\\');
             return result.inputFilename.substring(lastSlashPos + 1) !== stdout[0].text;
