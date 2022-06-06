@@ -991,8 +991,8 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
     for (var i = 0; i < request.files.length; i++) {
         var file = request.files[i];
         fetches.push(
-            this.compilerService.expand(file.source).then(function (contents) {
-                file.source = contents;
+            this.compilerService.expand(file.contents).then(function (contents) {
+                file.contents = contents;
             })
         );
     }
