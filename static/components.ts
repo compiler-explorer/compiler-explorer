@@ -75,11 +75,38 @@ import {
     PopulatedDeviceViewState,
 } from './components.interfaces';
 
+export const COMPILER_COMPONENT_NAME = 'compiler';
+export const EXECUTOR_COMPONENT_NAME = 'executor';
+export const EDITOR_COMPONENT_NAME = 'codeEditor';
+export const TREE_COMPONENT_NAME = 'tree';
+export const OUTPUT_COMPONENT_NAME = 'output';
+export const TOOL_COMPONENT_NAME = 'tool';
+
+export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView';
+export const DIFF_VIEW_COMPONENT_NAME = 'diff';
+export const OPT_VIEW_COMPONENT_NAME = 'opt';
+export const FLAGS_VIEW_COMPONENT_NAME = 'flags';
+export const PP_VIEW_COMPONENT_NAME = 'pp';
+export const AST_VIEW_COMPONENT_NAME = 'ast';
+export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
+export const CFG_VIEW_COMPONENT_NAME = 'cfg';
+export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
+export const IR_VIEW_COMPONENT_NAME = 'ir';
+export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir';
+export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore';
+export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg';
+export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm';
+export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree';
+export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug';
+export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
+export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
+export const DEVICE_VIEW_COMPONENT_NAME = 'device';
+
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
     return {
         type: 'component',
-        componentName: 'compiler',
+        componentName: COMPILER_COMPONENT_NAME,
         componentState: {
             source: editorId,
             lang,
@@ -105,7 +132,7 @@ export function getCompilerWith(
 ): ComponentConfig<PopulatedCompilerState> {
     return {
         type: 'component',
-        componentName: 'compiler',
+        componentName: COMPILER_COMPONENT_NAME,
         componentState: {
             source: editorId,
             compiler: compilerId,
@@ -121,7 +148,7 @@ export function getCompilerWith(
 export function getCompilerForTree(treeId: number, lang: string): ComponentConfig<CompilerForTreeState> {
     return {
         type: 'component',
-        componentName: 'compiler',
+        componentName: COMPILER_COMPONENT_NAME,
         componentState: {
             tree: treeId,
             lang,
@@ -133,7 +160,7 @@ export function getCompilerForTree(treeId: number, lang: string): ComponentConfi
 export function getExecutor(editorId: number, lang: string): ComponentConfig<EmptyExecutorState> {
     return {
         type: 'component',
-        componentName: 'executor',
+        componentName: EXECUTOR_COMPONENT_NAME,
         componentState: {
             source: editorId,
             lang,
@@ -152,7 +179,7 @@ export function getExecutorWith(
 ): ComponentConfig<PopulatedExecutorState> {
     return {
         type: 'component',
-        componentName: 'executor',
+        componentName: EXECUTOR_COMPONENT_NAME,
         componentState: {
             source: editorId,
             tree: treeId,
@@ -168,7 +195,7 @@ export function getExecutorWith(
 export function getExecutorForTree(treeId: number, lang: string): ComponentConfig<ExecutorForTreeState> {
     return {
         type: 'component',
-        componentName: 'executor',
+        componentName: EXECUTOR_COMPONENT_NAME,
         componentState: {
             tree: treeId,
             lang,
@@ -184,7 +211,7 @@ export function getExecutorForTree(treeId: number, lang: string): ComponentConfi
 export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEditorState> {
     return {
         type: 'component',
-        componentName: 'codeEditor',
+        componentName: EDITOR_COMPONENT_NAME,
         componentState: {
             id,
             lang: langId,
@@ -196,7 +223,7 @@ export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEd
 export function getEditorWith(id: number, source: string, options): ComponentConfig<PopulatedEditorState> {
     return {
         type: 'component',
-        componentName: 'codeEditor',
+        componentName: EDITOR_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -213,7 +240,7 @@ export function getEditorWith(id: number, source: string, options): ComponentCon
 export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
     return {
         type: 'component',
-        componentName: 'tree',
+        componentName: TREE_COMPONENT_NAME,
         componentState: {
             id,
         },
@@ -224,7 +251,7 @@ export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
 export function getOutput(compiler: string, editor: number, tree: number): ComponentConfig<OutputState> {
     return {
         type: 'component',
-        componentName: 'output',
+        componentName: OUTPUT_COMPONENT_NAME,
         componentState: {
             compiler,
             editor,
@@ -244,7 +271,7 @@ export function getToolViewWith(
 ): ComponentConfig<ToolViewState> {
     return {
         type: 'component',
-        componentName: 'tool',
+        componentName: TOOL_COMPONENT_NAME,
         componentState: {
             compiler,
             editor,
@@ -260,7 +287,7 @@ export function getToolViewWith(
 export function getToolInputView(): ComponentConfig<EmptyToolInputViewState> {
     return {
         type: 'component',
-        componentName: 'toolInputView',
+        componentName: TOOL_INPUT_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -273,7 +300,7 @@ export function getToolInputViewWith(
 ): ComponentConfig<PopulatedToolInputViewState> {
     return {
         type: 'component',
-        componentName: 'toolInputView',
+        componentName: TOOL_INPUT_VIEW_COMPONENT_NAME,
         componentState: {
             compilerId,
             toolId,
@@ -286,7 +313,7 @@ export function getToolInputViewWith(
 export function getDiffView(): ComponentConfig<EmptyDiffViewState> {
     return {
         type: 'component',
-        componentName: 'diff',
+        componentName: DIFF_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -299,7 +326,7 @@ export function getDiffView(): ComponentConfig<EmptyDiffViewState> {
 export function getDiffViewWith(lhs: unknown, rhs: unknown): ComponentConfig<PopulatedDiffViewState> {
     return {
         type: 'component',
-        componentName: 'diff',
+        componentName: DIFF_VIEW_COMPONENT_NAME,
         componentState: {
             lhs,
             rhs,
@@ -311,7 +338,7 @@ export function getDiffViewWith(lhs: unknown, rhs: unknown): ComponentConfig<Pop
 export function getOptView(): ComponentConfig<EmptyOptViewState> {
     return {
         type: 'component',
-        componentName: 'opt',
+        componentName: OPT_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -327,7 +354,7 @@ export function getOptViewWith(
 ): ComponentConfig<PopulatedOptViewState> {
     return {
         type: 'component',
-        componentName: 'opt',
+        componentName: OPT_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -343,7 +370,7 @@ export function getOptViewWith(
 export function getFlagsView(): ComponentConfig<EmptyFlagsViewState> {
     return {
         type: 'component',
-        componentName: 'flags',
+        componentName: FLAGS_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -356,7 +383,7 @@ export function getFlagsViewWith(
 ): ComponentConfig<PopulatedFlagsViewState> {
     return {
         type: 'component',
-        componentName: 'flags',
+        componentName: FLAGS_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             compilerName,
@@ -369,7 +396,7 @@ export function getFlagsViewWith(
 export function getPpView(): ComponentConfig<EmptyPpViewState> {
     return {
         type: 'component',
-        componentName: 'pp',
+        componentName: PP_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -385,7 +412,7 @@ export function getPpViewWith(
 ): ComponentConfig<PopulatedPpViewState> {
     return {
         type: 'component',
-        componentName: 'pp',
+        componentName: PP_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -401,7 +428,7 @@ export function getPpViewWith(
 export function getAstView(): ComponentConfig<EmptyAstViewState> {
     return {
         type: 'component',
-        componentName: 'ast',
+        componentName: AST_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -417,7 +444,7 @@ export function getAstViewWith(
 ): ComponentConfig<PopulatedAstViewState> {
     return {
         type: 'component',
-        componentName: 'ast',
+        componentName: AST_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -433,7 +460,7 @@ export function getAstViewWith(
 export function getGccDumpView(): ComponentConfig<EmptyGccDumpViewState> {
     return {
         type: 'component',
-        componentName: 'gccdump',
+        componentName: GCC_DUMP_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -473,7 +500,7 @@ export function getGccDumpViewWith(
 
     return {
         type: 'component',
-        componentName: 'gccdump',
+        componentName: GCC_DUMP_VIEW_COMPONENT_NAME,
         componentState: ret,
     };
 }
@@ -482,20 +509,16 @@ export function getGccDumpViewWith(
 export function getCfgView(): ComponentConfig<EmptyCfgViewState> {
     return {
         type: 'component',
-        componentName: 'cfg',
+        componentName: CFG_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
 
 /** Get a cfg view with the given configuration. */
-export function getCfgViewWith(
-    id: number,
-    editorid: number,
-    treeid: number
-): ComponentConfig<PopulatedCfgViewState> {
+export function getCfgViewWith(id: number, editorid: number, treeid: number): ComponentConfig<PopulatedCfgViewState> {
     return {
         type: 'component',
-        componentName: 'cfg',
+        componentName: CFG_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             editorid,
@@ -513,7 +536,7 @@ export function getConformanceView(
 ): ComponentConfig<PopulatedConformanceViewState> {
     return {
         type: 'component',
-        componentName: 'conformance',
+        componentName: CONFORMANCE_VIEW_COMPONENT_NAME,
         componentState: {
             editorid,
             treeid,
@@ -527,7 +550,7 @@ export function getConformanceView(
 export function getIrView(): ComponentConfig<EmptyIrViewState> {
     return {
         type: 'component',
-        componentName: 'ir',
+        componentName: IR_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -543,7 +566,7 @@ export function getIrViewWith(
 ): ComponentConfig<PopulatedIrViewState> {
     return {
         type: 'component',
-        componentName: 'ir',
+        componentName: IR_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -559,7 +582,7 @@ export function getIrViewWith(
 export function getRustMirView(): ComponentConfig<EmptyRustMirViewState> {
     return {
         type: 'component',
-        componentName: 'rustmir',
+        componentName: RUST_MIR_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -575,7 +598,7 @@ export function getRustMirViewWith(
 ): ComponentConfig<PopulatedRustMirViewState> {
     return {
         type: 'component',
-        componentName: 'rustmir',
+        componentName: RUST_MIR_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -591,7 +614,7 @@ export function getRustMirViewWith(
 export function getHaskellCoreView(): ComponentConfig<EmptyHaskellCoreViewState> {
     return {
         type: 'component',
-        componentName: 'haskellCore',
+        componentName: HASKELL_CORE_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -607,7 +630,7 @@ export function getHaskellCoreViewWith(
 ): ComponentConfig<PopulatedHaskellCoreViewState> {
     return {
         type: 'component',
-        componentName: 'haskellCore',
+        componentName: HASKELL_CORE_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -623,7 +646,7 @@ export function getHaskellCoreViewWith(
 export function getHaskellStgView(): ComponentConfig<EmptyHaskellStgViewState> {
     return {
         type: 'component',
-        componentName: 'haskellStg',
+        componentName: HASKELL_STG_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -639,7 +662,7 @@ export function getHaskellStgViewWith(
 ): ComponentConfig<PopulatedHaskellStgViewState> {
     return {
         type: 'component',
-        componentName: 'haskellStg',
+        componentName: HASKELL_STG_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -655,7 +678,7 @@ export function getHaskellStgViewWith(
 export function getHaskellCmmView(): ComponentConfig<EmptyHaskellCmmViewState> {
     return {
         type: 'component',
-        componentName: 'haskellCmm',
+        componentName: HASKELL_CMM_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -670,7 +693,7 @@ export function getHaskellCmmViewWith(
 ): ComponentConfig<PopulatedHaskellCmmViewState> {
     return {
         type: 'component',
-        componentName: 'haskellCmm',
+        componentName: HASKELL_CMM_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -686,7 +709,7 @@ export function getHaskellCmmViewWith(
 export function getGnatDebugTreeView(): ComponentConfig<EmptyGnatDebugTreeViewState> {
     return {
         type: 'component',
-        componentName: 'gnatdebugtree',
+        componentName: GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -702,7 +725,7 @@ export function getGnatDebugTreeViewWith(
 ): ComponentConfig<PopulatedGnatDebugTreeViewState> {
     return {
         type: 'component',
-        componentName: 'gnatdebugtree',
+        componentName: GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -718,7 +741,7 @@ export function getGnatDebugTreeViewWith(
 export function getGnatDebugView(): ComponentConfig<EmptyGnatDebugViewState> {
     return {
         type: 'component',
-        componentName: 'gnatdebug',
+        componentName: GNAT_DEBUG_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -734,7 +757,7 @@ export function getGnatDebugViewWith(
 ): ComponentConfig<PopulatedGnatDebugViewState> {
     return {
         type: 'component',
-        componentName: 'gnatdebug',
+        componentName: GNAT_DEBUG_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -750,7 +773,7 @@ export function getGnatDebugViewWith(
 export function getRustMacroExpView(): ComponentConfig<EmptyRustMacroExpViewState> {
     return {
         type: 'component',
-        componentName: 'rustmacroexp',
+        componentName: RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -766,7 +789,7 @@ export function getRustMacroExpViewWith(
 ): ComponentConfig<PopulatedRustMacroExpViewState> {
     return {
         type: 'component',
-        componentName: 'rustmacroexp',
+        componentName: RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -782,7 +805,7 @@ export function getRustMacroExpViewWith(
 export function getRustHirView(): ComponentConfig<EmptyRustHirViewState> {
     return {
         type: 'component',
-        componentName: 'rusthir',
+        componentName: RUST_HIR_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -798,7 +821,7 @@ export function getRustHirViewWith(
 ): ComponentConfig<PopulatedRustHirViewState> {
     return {
         type: 'component',
-        componentName: 'rusthir',
+        componentName: RUST_HIR_VIEW_COMPONENT_NAME,
         componentState: {
             id,
             source,
@@ -814,7 +837,7 @@ export function getRustHirViewWith(
 export function getDeviceView(): ComponentConfig<EmptyDeviceViewState> {
     return {
         type: 'component',
-        componentName: 'device',
+        componentName: DEVICE_VIEW_COMPONENT_NAME,
         componentState: {},
     };
 }
@@ -830,7 +853,7 @@ export function getDeviceViewWith(
 ): ComponentConfig<PopulatedDeviceViewState> {
     return {
         type: 'component',
-        componentName: 'device',
+        componentName: DEVICE_VIEW_COMPONENT_NAME,
         componentState: {
             id: id,
             source: source,
