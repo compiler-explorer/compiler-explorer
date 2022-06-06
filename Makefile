@@ -65,7 +65,7 @@ test-min: $(NODE_MODULES)  ## Runs the minimal tests
 check: $(NODE_MODULES) lint test  ## Runs all checks required before committing (fixing trivial things automatically)
 
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test-min ci-lint
+pre-commit: $(NODE_MODULES) test-min lint
 
 .PHONY: clean
 clean:  ## Cleans up everything
