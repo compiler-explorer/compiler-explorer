@@ -45,11 +45,13 @@ export type PopulatedCompilerState = StateWithEditor & {
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
 
 export type EmptyExecutorState = StateWithLanguage & StateWithEditor;
-export type PopulatedExecutorState = StateWithLanguage & StateWithEditor & StateWithTree & {
-    compiler: string;
-    libs: unknown;
-    options: unknown;
-};
+export type PopulatedExecutorState = StateWithLanguage &
+    StateWithEditor &
+    StateWithTree & {
+        compiler: string;
+        libs: unknown;
+        options: unknown;
+    };
 export type ExecutorForTreeState = StateWithLanguage & StateWithTree;
 
 export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
@@ -63,7 +65,7 @@ export type EmptyTreeState = Partial<StateWithId>;
 export type OutputState = StateWithTree & {
     compiler: string;
     editor: number; // EditorId
-}
+};
 
 export type ToolViewState = StateWithTree & {
     compiler: string;
@@ -71,50 +73,53 @@ export type ToolViewState = StateWithTree & {
     toolId: string;
     args: unknown;
     monacoStdin: boolean;
-}
+};
 
 export type EmptyToolInputViewState = EmptyState;
 export type PopulatedToolInputViewState = {
     compilerId: string;
     toolId: string;
     toolName: string;
-}
+};
 
 export type EmptyDiffViewState = EmptyState;
 export type PopulatedDiffViewState = {
     lhs: unknown;
     rhs: unknown;
-}
+};
 
 export type EmptyOptViewState = EmptyState;
-export type PopulatedOptViewState = StateWithId & StateWithEditor & {
-    optOutput: unknown;
-    compilerName: string;
-    editorid: number;
-    treeid: number;
-}
+export type PopulatedOptViewState = StateWithId &
+    StateWithEditor & {
+        optOutput: unknown;
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyFlagsViewState = EmptyState;
 export type PopulatedFlagsViewState = StateWithId & {
     compilerName: string;
     compilerFlags: unknown;
-}
+};
 
 export type EmptyPpViewState = EmptyState;
-export type PopulatedPpViewState = StateWithId & StateWithEditor & {
-    ppOutput: unknown;
-    compilerName: string;
-    editorid: number;
-    treeid: number;
-}
+export type PopulatedPpViewState = StateWithId &
+    StateWithEditor & {
+        ppOutput: unknown;
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyAstViewState = EmptyState;
-export type PopulatedAstViewState = StateWithId & StateWithEditor & {
-    astOutput: unknown;
-    compilerName: string;
-    editorid: number;
-    treeid: number;
-}
+export type PopulatedAstViewState = StateWithId &
+    StateWithEditor & {
+        astOutput: unknown;
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyGccDumpViewState = EmptyState;
 export type GccDumpOptions =
@@ -137,21 +142,21 @@ export type PopulatedGccDumpViewState = {
     _compilerName: string;
     _editorid: number;
     _treeid: number;
-} & (Record<GccDumpOptions, unknown> | EmptyState)
+} & (Record<GccDumpOptions, unknown> | EmptyState);
 
 export type EmptyCfgViewState = EmptyState;
 export type PopulatedCfgViewState = StateWithId & {
     editorid: number;
     treeid: number;
-}
+};
 
 export type EmptyConformanceViewState = EmptyState; // TODO: unusued?
-export type PopulatedConformanceViewState =  {
+export type PopulatedConformanceViewState = {
     editorid: number;
     treeid: number;
     langId: string;
     source: string;
-}
+};
 
 export type EmptyIrViewState = EmptyState;
 export type PopulatedIrViewState = StateWithId & {
@@ -160,85 +165,85 @@ export type PopulatedIrViewState = StateWithId & {
     source: string;
     irOutput: unknown;
     compilerName: string;
-}
+};
 
 export type EmptyRustMirViewState = EmptyState;
 export type PopulatedRustMirViewState = StateWithId & {
-    source: string,
-    rustMirOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    rustMirOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyHaskellCoreViewState = EmptyState;
 export type PopulatedHaskellCoreViewState = StateWithId & {
-    source: string,
-    haskellCoreOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    haskellCoreOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyHaskellStgViewState = EmptyState;
 export type PopulatedHaskellStgViewState = StateWithId & {
-    source: string,
-    haskellStgOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    haskellStgOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyHaskellCmmViewState = EmptyState;
 export type PopulatedHaskellCmmViewState = StateWithId & {
-    source: string,
-    haskellCmmOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    haskellCmmOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyGnatDebugTreeViewState = EmptyState;
 export type PopulatedGnatDebugTreeViewState = StateWithId & {
-    source: string,
-    gnatDebugTreeOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    gnatDebugTreeOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyGnatDebugViewState = EmptyState;
 export type PopulatedGnatDebugViewState = StateWithId & {
-    source: string,
-    gnatDebugOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    gnatDebugOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyRustMacroExpViewState = EmptyState;
 export type PopulatedRustMacroExpViewState = StateWithId & {
-    source: string,
-    rustMacroExpOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    rustMacroExpOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyRustHirViewState = EmptyState;
 export type PopulatedRustHirViewState = StateWithId & {
-    source: string,
-    rustHirOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    rustHirOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
 
 export type EmptyDeviceViewState = EmptyState;
 export type PopulatedDeviceViewState = StateWithId & {
-    source: string,
-    deviceOutput: unknown,
-    compilerName: string,
-    editorid: number,
-    treeid: number,
-}
+    source: string;
+    deviceOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+};
