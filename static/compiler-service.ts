@@ -339,8 +339,7 @@ export class CompilerService {
     }
 
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
-        const stdout = result.stdout ?? [];
-        const stderr = result.stderr ?? [];
+        const {stdout, stderr} = result;
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
@@ -422,9 +421,6 @@ export class CompilerService {
     }
 
     public static handleOutputButtonTitle(element: JQuery, result: CompilationResult) {
-        const stdout = result.stdout ?? [];
-        const stderr = result.stderr ?? [];
-
         // TODO: Make its own const variable at top of module?
         const asciiColorsRe = RegExp(/\x1b\[[\d;]*m(.\[K)?/g);
 
@@ -432,7 +428,7 @@ export class CompilerService {
             return line.text.replace(asciiColorsRe, '');
         }
 
-        const output = stdout.map(filterAsciiColors).concat(stderr.map(filterAsciiColors)).join('\n');
+        const output = result.stdout.map(filterAsciiColors).concat(result.stderr.map(filterAsciiColors)).join('\n');
 
         element.prop('title', output);
     }

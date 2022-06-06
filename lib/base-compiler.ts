@@ -1750,6 +1750,7 @@ export class BaseCompiler {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
 
         if (!this.compiler.supportsBinary) {
+            // @ts-expect-error @partouf
             const errorResult: CompilationResult = {
                 code: -1,
                 didExecute: false,
