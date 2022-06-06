@@ -22,165 +22,242 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// here instead of in the editor.js and compiler.js etc to prevent circular dependencies.
 import {
-    AstOutputComponentState,
-    CompilerComponentState,
-    CompilerFilterComponentState, CompilerFlagsComponentState, CompilerNameComponentState,
-    ComponentConfig, DeviceOutputComponentState,
-    EditorComponentState, EditorIdComponentState, GccDumpComponentConfig,
-    IdComponentState, IrOutputComponentState, LangIdComponentState,
-    LibraryComponentState,
-    LibraryItem, OptimizationComponentState,
-    OptionsComponentState, RustMacroComponentState, RustMirComponentState,
-    SourceComponentState, ToolInputViewComponentState, ToolViewComponentState,
-    TreeComponentState,
+    EmptyCompilerState,
+    ComponentConfig,
+    PopulatedCompilerState,
+    CompilerForTreeState,
+    EmptyExecutorState,
+    PopulatedExecutorState,
+    ExecutorForTreeState,
+    EmptyEditorState,
+    PopulatedEditorState,
+    EmptyTreeState,
+    OutputState,
+    ToolViewState,
+    EmptyToolInputViewState,
+    PopulatedToolInputViewState,
+    PopulatedOptViewState,
+    EmptyOptViewState,
+    EmptyFlagsViewState,
+    PopulatedFlagsViewState,
+    EmptyDiffViewState,
+    PopulatedDiffViewState,
+    EmptyPpViewState,
+    PopulatedPpViewState,
+    EmptyAstViewState,
+    PopulatedAstViewState,
+    EmptyGccDumpViewState,
+    PopulatedGccDumpViewState,
+    GccDumpOptions,
+    EmptyCfgViewState,
+    PopulatedCfgViewState,
+    PopulatedConformanceViewState,
+    EmptyIrViewState,
+    PopulatedIrViewState,
+    EmptyRustMirViewState,
+    PopulatedRustMirViewState,
+    EmptyHaskellCoreViewState,
+    PopulatedHaskellCoreViewState,
+    EmptyHaskellStgViewState,
+    PopulatedHaskellStgViewState,
+    EmptyHaskellCmmViewState,
+    PopulatedHaskellCmmViewState,
+    EmptyGnatDebugTreeViewState,
+    PopulatedGnatDebugTreeViewState,
+    EmptyGnatDebugViewState,
+    PopulatedGnatDebugViewState,
+    EmptyRustMacroExpViewState,
+    PopulatedRustMacroExpViewState,
+    EmptyRustHirViewState,
+    PopulatedRustHirViewState,
+    EmptyDeviceViewState,
+    PopulatedDeviceViewState,
 } from './components.interfaces';
-import {Dictionary} from 'underscore';
 
-export function getCompiler(editorId: number, lang: string): ComponentConfig<SourceComponentState> {
+/** Get an empty compiler component. */
+export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {
     return {
         type: 'component',
         componentName: 'compiler',
         componentState: {
             source: editorId,
-            lang: lang,
+            lang,
         },
     };
 }
 
-// TODO: Add options type
-export function getCompilerWith(editorId: number, filters: Dictionary<boolean>, options, compilerId: string, langId: string, libs: LibraryItem[]): ComponentConfig<CompilerFilterComponentState> {
+/**
+ * Get a compiler component with the given configuration.
+ *
+ * We have legacy calls in the codebase (to keep shortlinks permanent) that use this function without
+ * passing langId and libs. To keep that support, the parameters are optional.
+ *
+ * TODO: Find the right type for options
+ */
+export function getCompilerWith(
+    editorId: number,
+    filters: Record<string, boolean>,
+    options: unknown,
+    compilerId: string,
+    langId?: string,
+    libs?: unknown
+): ComponentConfig<PopulatedCompilerState> {
     return {
         type: 'component',
         componentName: 'compiler',
         componentState: {
             source: editorId,
-            filters: filters,
-            options: options,
             compiler: compilerId,
             lang: langId,
-            libs: libs,
+            filters,
+            options,
+            libs,
         },
     };
 }
 
-export function getCompilerForTree(treeId: number, lang: string): ComponentConfig<TreeComponentState> {
+/** Get a compiler for a tree mode component. */
+export function getCompilerForTree(treeId: number, lang: string): ComponentConfig<CompilerForTreeState> {
     return {
         type: 'component',
         componentName: 'compiler',
         componentState: {
             tree: treeId,
-            lang: lang,
+            lang,
         },
     };
 }
 
-export function getExecutor(editorId: number, lang: string): ComponentConfig<SourceComponentState> {
+/** Get an empty executor component. */
+export function getExecutor(editorId: number, lang: string): ComponentConfig<EmptyExecutorState> {
     return {
         type: 'component',
         componentName: 'executor',
         componentState: {
             source: editorId,
-            lang: lang,
+            lang,
         },
     };
 }
 
-type GetExecutorWithConfig = ComponentConfig<CompilerComponentState & TreeComponentState & LibraryComponentState>;
-
-// TODO: Add compilerArgs type
-export function getExecutorWith(editorId: number, lang: string, compilerId: string, libraries: LibraryItem[], compilerArgs, treeId: number): GetExecutorWithConfig {
+/** Get a compiler component with the given configuration. */
+export function getExecutorWith(
+    editorId: number,
+    lang: string,
+    compilerId: string,
+    libraries: unknown,
+    compilerArgs,
+    treeId: number
+): ComponentConfig<PopulatedExecutorState> {
     return {
         type: 'component',
         componentName: 'executor',
         componentState: {
             source: editorId,
             tree: treeId,
-            lang: lang,
             compiler: compilerId,
             libs: libraries,
             options: compilerArgs,
+            lang,
         },
     };
 }
 
-export function getExecutorForTree(treeId: number, lang: string): ComponentConfig<TreeComponentState> {
+/** Get an executor for a tree mode component. */
+export function getExecutorForTree(treeId: number, lang: string): ComponentConfig<ExecutorForTreeState> {
     return {
         type: 'component',
         componentName: 'executor',
         componentState: {
             tree: treeId,
-            lang: lang,
+            lang,
         },
     };
 }
 
-export function getEditor(id: number, langId: string): ComponentConfig<IdComponentState> {
+/**
+ * Get an empty editor component.
+ *
+ * TODO: main.js calls this with no arguments.
+ */
+export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEditorState> {
     return {
         type: 'component',
         componentName: 'codeEditor',
         componentState: {
-            id: id,
+            id,
             lang: langId,
-        }
+        },
     };
 }
 
-type GetEditorWithConfig = ComponentConfig<IdComponentState & OptionsComponentState & SourceComponentState>;
-
-// TODO: Add options type
-export function getEditorWith(id: number, source: number, options): GetEditorWithConfig {
+/** Get an editor component with the given configuration. */
+export function getEditorWith(id: number, source: string, options): ComponentConfig<PopulatedEditorState> {
     return {
         type: 'component',
         componentName: 'codeEditor',
         componentState: {
-            id: id,
-            source: source,
-            options: options,
-        }
+            id,
+            source,
+            options,
+        },
     };
 }
 
-export function getTree(id: number): ComponentConfig<IdComponentState> {
+/**
+ * Get an empty tree component.
+ *
+ * TODO: main.js calls this with no arguments.
+ */
+export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
     return {
         type: 'component',
         componentName: 'tree',
         componentState: {
-            id: id
+            id,
         },
     };
 }
 
-export function getOutput(compiler: string, editor: number, tree: number): ComponentConfig<EditorComponentState> {
+/** Get an output component with the given configuration. */
+export function getOutput(compiler: string, editor: number, tree: number): ComponentConfig<OutputState> {
     return {
         type: 'component',
         componentName: 'output',
         componentState: {
-            compiler: compiler,
-            editor: editor,
-            tree: tree,
+            compiler,
+            editor,
+            tree,
         },
     };
 }
 
-// TODO: Add toolId type
-export function getToolViewWith(compiler: string, editor: number, toolId, args: string, monacoStdin: boolean, tree: number): ComponentConfig<ToolViewComponentState> {
+/** Get a tool view component with the given configuration. */
+export function getToolViewWith(
+    compiler: string,
+    editor: number,
+    toolId: string,
+    args: string,
+    monacoStdin: boolean,
+    tree: number
+): ComponentConfig<ToolViewState> {
     return {
         type: 'component',
         componentName: 'tool',
         componentState: {
-            compiler: compiler,
-            editor: editor,
-            toolId: toolId,
-            args: args,
-            tree: tree,
-            monacoStdin: monacoStdin,
+            compiler,
+            editor,
+            toolId,
+            args,
+            tree,
+            monacoStdin,
         },
     };
 }
 
-export function getToolInputView(): ComponentConfig {
+/** Get an empty tool input view component. */
+export function getToolInputView(): ComponentConfig<EmptyToolInputViewState> {
     return {
         type: 'component',
         componentName: 'toolInputView',
@@ -188,20 +265,25 @@ export function getToolInputView(): ComponentConfig {
     };
 }
 
-// TODO: Add toolId type
-export function getToolInputViewWith(compilerId: string, toolId, toolName: string): ComponentConfig<ToolInputViewComponentState> {
+/** Get a tool input view component with the given configuration. */
+export function getToolInputViewWith(
+    compilerId: string,
+    toolId: string,
+    toolName: string
+): ComponentConfig<PopulatedToolInputViewState> {
     return {
         type: 'component',
         componentName: 'toolInputView',
         componentState: {
-            compilerId: compilerId,
-            toolId: toolId,
-            toolName: toolName,
+            compilerId,
+            toolId,
+            toolName,
         },
     };
 }
 
-export function getDiff(): ComponentConfig {
+/** Get an empty diff component. */
+export function getDiffView(): ComponentConfig<EmptyDiffViewState> {
     return {
         type: 'component',
         componentName: 'diff',
@@ -209,7 +291,24 @@ export function getDiff(): ComponentConfig {
     };
 }
 
-export function getOptView() {
+/**
+ * Get a diff component with the given configuration.
+ *
+ * TODO: possibly unused?
+ */
+export function getDiffViewWith(lhs: unknown, rhs: unknown): ComponentConfig<PopulatedDiffViewState> {
+    return {
+        type: 'component',
+        componentName: 'diff',
+        componentState: {
+            lhs,
+            rhs,
+        },
+    };
+}
+
+/** Get an empty opt view component. */
+export function getOptView(): ComponentConfig<EmptyOptViewState> {
     return {
         type: 'component',
         componentName: 'opt',
@@ -217,24 +316,31 @@ export function getOptView() {
     };
 }
 
-type GetOptViewWithConfig = ComponentConfig<CompilerNameComponentState & SourceComponentState & EditorIdComponentState & OptimizationComponentState>;
-
-// TODO: Add optimization type
-export function getOptViewWith(id: number, source: number, optimization, compilerName: string, editorid: boolean): GetOptViewWithConfig {
+/** Get an opt view with the given configuration. */
+export function getOptViewWith(
+    id: number,
+    source: number,
+    optOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedOptViewState> {
     return {
         type: 'component',
         componentName: 'opt',
         componentState: {
-            id: id,
-            source: source,
-            optOutput: optimization,
-            compilerName: compilerName,
-            editorid: editorid,
+            id,
+            source,
+            optOutput,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }
 
-export function getFlagsView(): ComponentConfig {
+/** Get an empty flags view component. */
+export function getFlagsView(): ComponentConfig<EmptyFlagsViewState> {
     return {
         type: 'component',
         componentName: 'flags',
@@ -242,20 +348,57 @@ export function getFlagsView(): ComponentConfig {
     };
 }
 
-// TODO: Add compilerFlags type
-export function getFlagsViewWith(id: number, compilerName: string, compilerFlags): ComponentConfig<CompilerFlagsComponentState> {
+/** Get a flags view with the given configuration. */
+export function getFlagsViewWith(
+    id: number,
+    compilerName: string,
+    compilerFlags: unknown
+): ComponentConfig<PopulatedFlagsViewState> {
     return {
         type: 'component',
         componentName: 'flags',
         componentState: {
-            id: id,
-            compilerName: compilerName,
-            compilerFlags: compilerFlags,
+            id,
+            compilerName,
+            compilerFlags,
         },
     };
 }
 
-export function getAstView(): ComponentConfig {
+/** Get an empty preprocessor view component. */
+export function getPpView(): ComponentConfig<EmptyPpViewState> {
+    return {
+        type: 'component',
+        componentName: 'pp',
+        componentState: {},
+    };
+}
+
+/** Get a preprocessor view with the given configuration. */
+export function getPpViewWith(
+    id: number,
+    source: number,
+    ppOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedPpViewState> {
+    return {
+        type: 'component',
+        componentName: 'pp',
+        componentState: {
+            id,
+            source,
+            ppOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty ast view component. */
+export function getAstView(): ComponentConfig<EmptyAstViewState> {
     return {
         type: 'component',
         componentName: 'ast',
@@ -263,22 +406,31 @@ export function getAstView(): ComponentConfig {
     };
 }
 
-// TODO: Add astOutput type
-export function getAstViewWith(id: number, source: number, astOutput, compilerName: string, editorid: boolean): ComponentConfig<AstOutputComponentState> {
+/** Get an ast view with the given configuration. */
+export function getAstViewWith(
+    id: number,
+    source: number,
+    astOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedAstViewState> {
     return {
         type: 'component',
         componentName: 'ast',
         componentState: {
-            id: id,
-            source: source,
-            astOutput: astOutput,
-            compilerName: compilerName,
-            editorid: editorid,
+            id,
+            source,
+            astOutput,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }
 
-export function getGccDumpView(): ComponentConfig {
+/** Get an empty gcc dump view component. */
+export function getGccDumpView(): ComponentConfig<EmptyGccDumpViewState> {
     return {
         type: 'component',
         componentName: 'gccdump',
@@ -286,16 +438,20 @@ export function getGccDumpView(): ComponentConfig {
     };
 }
 
-// TODO: Add gccDumpOutput type
-export function getGccDumpViewWith(id: number, compilerName: string, editorid: boolean, gccDumpOutput): GccDumpComponentConfig {
-    var ret: GccDumpComponentConfig = {
-        type: 'component',
-        componentName: 'gccdump',
-        componentState: {
-            _compilerid: id,
-            _compilerName: compilerName,
-            _editorid: editorid,
-        },
+/** Get a gcc dump view with the given configuration. */
+export function getGccDumpViewWith(
+    id: string,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
+    gccDumpOutput?: Record<GccDumpOptions, unknown>
+): ComponentConfig<PopulatedGccDumpViewState> {
+    // TODO: remove any
+    const ret: any = {
+        _compilerid: id,
+        _compilerName: compilerName,
+        _editorid: editorid,
+        _treeid: treeid,
     };
 
     if (gccDumpOutput) {
@@ -315,10 +471,15 @@ export function getGccDumpViewWith(id: number, compilerName: string, editorid: b
         ret.selectedPass = gccDumpOutput.selectedPass;
     }
 
-    return ret;
+    return {
+        type: 'component',
+        componentName: 'gccdump',
+        componentState: ret,
+    };
 }
 
-export function getCfgView(): ComponentConfig {
+/** Get an empty cfg view component. */
+export function getCfgView(): ComponentConfig<EmptyCfgViewState> {
     return {
         type: 'component',
         componentName: 'cfg',
@@ -326,32 +487,44 @@ export function getCfgView(): ComponentConfig {
     };
 }
 
-export function getCfgViewWith(id: number, editorid: boolean): ComponentConfig<EditorIdComponentState & IdComponentState> {
+/** Get a cfg view with the given configuration. */
+export function getCfgViewWith(
+    id: number,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedCfgViewState> {
     return {
         type: 'component',
         componentName: 'cfg',
         componentState: {
-            id: id,
-            editorid: editorid,
+            id,
+            editorid,
+            treeid,
         },
     };
 }
 
-// langId may be string...
-// TODO: Add langId type
-export function getConformanceView(editorid: boolean, source: number, langId): ComponentConfig<LangIdComponentState> {
+/** Get a conformance view with the given configuration. */
+export function getConformanceView(
+    editorid: number,
+    treeid: number,
+    source: string,
+    langId: string
+): ComponentConfig<PopulatedConformanceViewState> {
     return {
         type: 'component',
         componentName: 'conformance',
         componentState: {
-            editorid: editorid,
-            source: source,
-            langId: langId,
+            editorid,
+            treeid,
+            source,
+            langId,
         },
     };
 }
 
-export function getIrView(): ComponentConfig {
+/** Get an empty ir view component. */
+export function getIrView(): ComponentConfig<EmptyIrViewState> {
     return {
         type: 'component',
         componentName: 'ir',
@@ -359,22 +532,31 @@ export function getIrView(): ComponentConfig {
     };
 }
 
-// TODO: Add irOutput type
-export function getIrViewWith(id: number, source: number, irOutput, compilerName: string, editorid: boolean): ComponentConfig<IrOutputComponentState> {
+/** Get a ir view with the given configuration. */
+export function getIrViewWith(
+    id: number,
+    source: string,
+    irOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedIrViewState> {
     return {
         type: 'component',
         componentName: 'ir',
         componentState: {
-            id: id,
-            source: source,
-            irOutput: irOutput,
-            compilerName: compilerName,
-            editorid: editorid,
+            id,
+            source,
+            irOutput,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }
 
-export function getRustMirView(): ComponentConfig {
+/** Get an empty rust mir view component. */
+export function getRustMirView(): ComponentConfig<EmptyRustMirViewState> {
     return {
         type: 'component',
         componentName: 'rustmir',
@@ -382,22 +564,190 @@ export function getRustMirView(): ComponentConfig {
     };
 }
 
-// TODO: Add rustMirOutput type
-export function getRustMirViewWith(id: number, source: number, rustMirOutput, compilerName: string, editorid: boolean): ComponentConfig<RustMirComponentState> {
+/** Get a rust mir view with the given configuration. */
+export function getRustMirViewWith(
+    id: number,
+    source: string,
+    rustMirOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedRustMirViewState> {
     return {
         type: 'component',
         componentName: 'rustmir',
         componentState: {
-            id: id,
-            source: source,
-            rustMirOutput: rustMirOutput,
-            compilerName: compilerName,
-            editorid: editorid,
+            id,
+            source,
+            rustMirOutput,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }
 
-export function getRustMacroExpView(): ComponentConfig {
+/** Get an empty haskell core view component. */
+export function getHaskellCoreView(): ComponentConfig<EmptyHaskellCoreViewState> {
+    return {
+        type: 'component',
+        componentName: 'haskellCore',
+        componentState: {},
+    };
+}
+
+/** Get a haskell core view with the given configuration. */
+export function getHaskellCoreViewWith(
+    id: number,
+    source: string,
+    haskellCoreOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedHaskellCoreViewState> {
+    return {
+        type: 'component',
+        componentName: 'haskellCore',
+        componentState: {
+            id,
+            source,
+            haskellCoreOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty haskell stg view component. */
+export function getHaskellStgView(): ComponentConfig<EmptyHaskellStgViewState> {
+    return {
+        type: 'component',
+        componentName: 'haskellStg',
+        componentState: {},
+    };
+}
+
+/** Get a haskell stg view with the given configuration. */
+export function getHaskellStgViewWith(
+    id: number,
+    source: string,
+    haskellStgOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedHaskellStgViewState> {
+    return {
+        type: 'component',
+        componentName: 'haskellStg',
+        componentState: {
+            id,
+            source,
+            haskellStgOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty haskell cmm view component. */
+export function getHaskellCmmView(): ComponentConfig<EmptyHaskellCmmViewState> {
+    return {
+        type: 'component',
+        componentName: 'haskellCmm',
+        componentState: {},
+    };
+}
+
+export function getHaskellCmmViewWith(
+    id: number,
+    source: string,
+    haskellCmmOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedHaskellCmmViewState> {
+    return {
+        type: 'component',
+        componentName: 'haskellCmm',
+        componentState: {
+            id,
+            source,
+            haskellCmmOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty gnat debug tree view component. */
+export function getGnatDebugTreeView(): ComponentConfig<EmptyGnatDebugTreeViewState> {
+    return {
+        type: 'component',
+        componentName: 'gnatdebugtree',
+        componentState: {},
+    };
+}
+
+/** Get a gnat debug tree view with the given configuration. */
+export function getGnatDebugTreeViewWith(
+    id: number,
+    source: string,
+    gnatDebugTreeOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedGnatDebugTreeViewState> {
+    return {
+        type: 'component',
+        componentName: 'gnatdebugtree',
+        componentState: {
+            id,
+            source,
+            gnatDebugTreeOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty gnat debug info view component. */
+export function getGnatDebugView(): ComponentConfig<EmptyGnatDebugViewState> {
+    return {
+        type: 'component',
+        componentName: 'gnatdebug',
+        componentState: {},
+    };
+}
+
+/** Get a gnat debug info view with the given configuration. */
+export function getGnatDebugViewWith(
+    id: number,
+    source: string,
+    gnatDebugOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedGnatDebugViewState> {
+    return {
+        type: 'component',
+        componentName: 'gnatdebug',
+        componentState: {
+            id,
+            source,
+            gnatDebugOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty rust macro exp view component. */
+export function getRustMacroExpView(): ComponentConfig<EmptyRustMacroExpViewState> {
     return {
         type: 'component',
         componentName: 'rustmacroexp',
@@ -405,22 +755,63 @@ export function getRustMacroExpView(): ComponentConfig {
     };
 }
 
-// TODO: Add rustMacroExpOutput type
-export function getRustMacroExpViewWith(id: number, source: number, rustMacroExpOutput, compilerName: string, editorid: boolean): ComponentConfig<RustMacroComponentState> {
+/** Get a rust macro exp view with the given configuration. */
+export function getRustMacroExpViewWith(
+    id: number,
+    source: string,
+    rustMacroExpOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedRustMacroExpViewState> {
     return {
         type: 'component',
         componentName: 'rustmacroexp',
         componentState: {
-            id: id,
-            source: source,
-            rustMacroExpOutput: rustMacroExpOutput,
-            compilerName: compilerName,
-            editorid: editorid,
+            id,
+            source,
+            rustMacroExpOutput,
+            compilerName,
+            editorid,
+            treeid,
         },
     };
 }
 
-export function getDeviceView(): ComponentConfig {
+/** Get an empty rust hir view component. */
+export function getRustHirView(): ComponentConfig<EmptyRustHirViewState> {
+    return {
+        type: 'component',
+        componentName: 'rusthir',
+        componentState: {},
+    };
+}
+
+/** Get a rust hir view with the given configuration. */
+export function getRustHirViewWith(
+    id: number,
+    source: string,
+    rustHirOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedRustHirViewState> {
+    return {
+        type: 'component',
+        componentName: 'rusthir',
+        componentState: {
+            id,
+            source,
+            rustHirOutput,
+            compilerName,
+            editorid,
+            treeid,
+        },
+    };
+}
+
+/** Get an empty device view component. */
+export function getDeviceView(): ComponentConfig<EmptyDeviceViewState> {
     return {
         type: 'component',
         componentName: 'device',
@@ -428,8 +819,15 @@ export function getDeviceView(): ComponentConfig {
     };
 }
 
-// TODO: Add deviceOutput type
-export function getDeviceViewWith(id: number, source: number, deviceOutput, compilerName: string, editorid: boolean): ComponentConfig<DeviceOutputComponentState> {
+/** Get a device view with the given configuration. */
+export function getDeviceViewWith(
+    id: number,
+    source: string,
+    deviceOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedDeviceViewState> {
     return {
         type: 'component',
         componentName: 'device',
@@ -439,6 +837,7 @@ export function getDeviceViewWith(id: number, source: number, deviceOutput, comp
             deviceOutput: deviceOutput,
             compilerName: compilerName,
             editorid: editorid,
+            treeid: treeid,
         },
     };
 }

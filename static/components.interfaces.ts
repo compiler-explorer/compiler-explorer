@@ -22,142 +22,223 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Dictionary} from 'underscore';
-
-export interface ComponentConfig<State extends ComponentState = ComponentState> {
+export interface ComponentConfig<S> {
     type: string;
     componentName: string;
-    componentState: State;
+    componentState: S;
 }
 
-export interface ComponentState {
-    lang?: string;
-}
+type StateWithLanguage = {lang: string};
+type StateWithEditor = {source: number};
+type StateWithTree = {tree: number};
+type StateWithId = {id: number};
+type EmptyState = Record<never, never>;
 
-export interface SourceComponentState extends ComponentState {
-    source: number;
-}
-
-export interface TreeComponentState extends ComponentState {
-    // The tree id
-    tree: number;
-}
-
-export interface IdComponentState extends ComponentState {
-    id: number;
-}
-
-// TODO: Add types
-export interface OptionsComponentState extends ComponentState, SourceComponentState {
-    options: any;
-}
-
-export interface LibraryItem {
-    name: string;
-    ver: string;
-}
-
-export interface CompilerComponentState extends ComponentState {
+export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
+export type PopulatedCompilerState = StateWithEditor & {
+    filters: Record<string, boolean>; // TODO: compilation filters
+    options: unknown;
     compiler: string;
+    libs?: unknown;
+    lang?: string;
+};
+export type CompilerForTreeState = StateWithLanguage & StateWithTree;
+
+export type EmptyExecutorState = StateWithLanguage & StateWithEditor;
+export type PopulatedExecutorState = StateWithLanguage & StateWithEditor & StateWithTree & {
+    compiler: string;
+    libs: unknown;
+    options: unknown;
+};
+export type ExecutorForTreeState = StateWithLanguage & StateWithTree;
+
+export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
+export type PopulatedEditorState = StateWithId & {
+    source: string;
+    options: unknown;
+};
+
+export type EmptyTreeState = Partial<StateWithId>;
+
+export type OutputState = StateWithTree & {
+    compiler: string;
+    editor: number; // EditorId
 }
 
-export interface LibraryComponentState extends CompilerComponentState, OptionsComponentState {
-    libs: LibraryItem[];
-}
-
-export interface CompilerFilterComponentState extends LibraryComponentState {
-    filters: Dictionary<boolean>;
-}
-
-export interface EditorComponentState extends CompilerComponentState, TreeComponentState {
-    editor: number;
-}
-
-// TODO: Add types
-export interface ToolIdComponentState extends ComponentState {
-    toolId: any;
-}
-
-export interface ToolInputViewComponentState extends ToolIdComponentState {
-    compilerId: string;
-    toolName: string;
-}
-
-// TODO: Add types
-export interface ToolViewComponentState extends EditorComponentState, ToolIdComponentState {
-    args: string;
+export type ToolViewState = StateWithTree & {
+    compiler: string;
+    editor: number; // EditorId
+    toolId: string;
+    args: unknown;
     monacoStdin: boolean;
 }
 
-export interface CompilerNameComponentState extends IdComponentState {
+export type EmptyToolInputViewState = EmptyState;
+export type PopulatedToolInputViewState = {
+    compilerId: string;
+    toolId: string;
+    toolName: string;
+}
+
+export type EmptyDiffViewState = EmptyState;
+export type PopulatedDiffViewState = {
+    lhs: unknown;
+    rhs: unknown;
+}
+
+export type EmptyOptViewState = EmptyState;
+export type PopulatedOptViewState = StateWithId & StateWithEditor & {
+    optOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+}
+
+export type EmptyFlagsViewState = EmptyState;
+export type PopulatedFlagsViewState = StateWithId & {
+    compilerName: string;
+    compilerFlags: unknown;
+}
+
+export type EmptyPpViewState = EmptyState;
+export type PopulatedPpViewState = StateWithId & StateWithEditor & {
+    ppOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+}
+
+export type EmptyAstViewState = EmptyState;
+export type PopulatedAstViewState = StateWithId & StateWithEditor & {
+    astOutput: unknown;
+    compilerName: string;
+    editorid: number;
+    treeid: number;
+}
+
+export type EmptyGccDumpViewState = EmptyState;
+export type GccDumpOptions =
+    | 'treeDump'
+    | 'rtlDump'
+    | 'ipaDump'
+    | 'addressOption'
+    | 'slimOption'
+    | 'rawOption'
+    | 'detailsOption'
+    | 'statsOption'
+    | 'blocksOption'
+    | 'vopsOption'
+    | 'linenoOption'
+    | 'uidOption'
+    | 'allOption'
+    | 'selectedPass';
+export type PopulatedGccDumpViewState = {
+    _compilerid: string;
+    _compilerName: string;
+    _editorid: number;
+    _treeid: number;
+} & (Record<GccDumpOptions, unknown> | EmptyState)
+
+export type EmptyCfgViewState = EmptyState;
+export type PopulatedCfgViewState = StateWithId & {
+    editorid: number;
+    treeid: number;
+}
+
+export type EmptyConformanceViewState = EmptyState; // TODO: unusued?
+export type PopulatedConformanceViewState =  {
+    editorid: number;
+    treeid: number;
+    langId: string;
+    source: string;
+}
+
+export type EmptyIrViewState = EmptyState;
+export type PopulatedIrViewState = StateWithId & {
+    editorid: number;
+    treeid: number;
+    source: string;
+    irOutput: unknown;
     compilerName: string;
 }
 
-// TODO: Add types
-export interface EditorIdComponentState extends ComponentState {
-    editorid: boolean;
+export type EmptyRustMirViewState = EmptyState;
+export type PopulatedRustMirViewState = StateWithId & {
+    source: string,
+    rustMirOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface OptimizationComponentState extends ComponentState {
-    optOutput: any;
+export type EmptyHaskellCoreViewState = EmptyState;
+export type PopulatedHaskellCoreViewState = StateWithId & {
+    source: string,
+    haskellCoreOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface CompilerFlagsComponentState extends ComponentState, CompilerNameComponentState {
-    compilerFlags: any;
+export type EmptyHaskellStgViewState = EmptyState;
+export type PopulatedHaskellStgViewState = StateWithId & {
+    source: string,
+    haskellStgOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface AstOutputComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
-    astOutput: any;
+export type EmptyHaskellCmmViewState = EmptyState;
+export type PopulatedHaskellCmmViewState = StateWithId & {
+    source: string,
+    haskellCmmOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-export interface GccDumpViewComponentState extends ComponentState {
-    _compilerid: number;
-    _compilerName: string;
-    _editorid: boolean;
+export type EmptyGnatDebugTreeViewState = EmptyState;
+export type PopulatedGnatDebugTreeViewState = StateWithId & {
+    source: string,
+    gnatDebugTreeOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface GccDumpComponentConfig extends ComponentConfig<GccDumpViewComponentState> {
-    treeDump?: any;
-    rtlDump?: any;
-    ipaDump?: any;
-    addressOption?: any;
-    slimOption?: any;
-    rawOption?: any;
-    detailsOption?: any;
-    statsOption?: any;
-    blocksOption?: any;
-    vopsOption?: any;
-    linenoOption?: any;
-    uidOption?: any;
-    allOption?: any;
-    selectedPass?: string;
+export type EmptyGnatDebugViewState = EmptyState;
+export type PopulatedGnatDebugViewState = StateWithId & {
+    source: string,
+    gnatDebugOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface LangIdComponentState extends EditorIdComponentState, SourceComponentState {
-    langId: any;
+export type EmptyRustMacroExpViewState = EmptyState;
+export type PopulatedRustMacroExpViewState = StateWithId & {
+    source: string,
+    rustMacroExpOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface IrOutputComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
-    irOutput: any;
+export type EmptyRustHirViewState = EmptyState;
+export type PopulatedRustHirViewState = StateWithId & {
+    source: string,
+    rustHirOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
 
-// TODO: Add types
-export interface RustMirComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState{
-    rustMirOutput: any;
-}
-
-// TODO: Add types
-export interface RustMacroComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
-    rustMacroExpOutput: any;
-}
-
-// TODO: Add types
-export interface DeviceOutputComponentState extends CompilerNameComponentState, SourceComponentState, EditorIdComponentState {
-    deviceOutput: any;
+export type EmptyDeviceViewState = EmptyState;
+export type PopulatedDeviceViewState = StateWithId & {
+    source: string,
+    deviceOutput: unknown,
+    compilerName: string,
+    editorid: number,
+    treeid: number,
 }
