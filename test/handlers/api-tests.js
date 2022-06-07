@@ -280,7 +280,7 @@ describe('API handling', () => {
     it('should respond to plain site template requests', () => {
         return chai
             .request(app)
-            .get('/api/getSiteTemplates')
+            .get('/api/siteTemplates')
             .then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
