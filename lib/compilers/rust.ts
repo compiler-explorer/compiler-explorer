@@ -27,11 +27,14 @@ import path from 'path';
 import _ from 'underscore';
 
 import {BaseCompiler} from '../base-compiler';
+import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
+import {logger} from '../logger';
 import {parseRustOutput} from '../utils';
 
 import {RustParser} from './argument-parsers';
 
 export class RustCompiler extends BaseCompiler {
+    linker: string;
     static get key() {
         return 'rust';
     }
@@ -52,11 +55,54 @@ export class RustCompiler extends BaseCompiler {
         this.linker = this.compilerProps('linker');
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
         return [];
     }
 
-    optionsForBackend(backendOptions, outputFilename) {
+    override getSharedLibraryLinks(libraries): string[] {
+        return [];
+    }
+
+    override getIncludeArguments(libraries) {
+        const includeFlag = '--extern';
+        return _.flatten(
+            _.map(libraries, selectedLib => {
+                const foundVersion = this.findLibVersion(selectedLib);
+                if (!foundVersion) return false;
+                const list: string[] = [];
+                for (const rlib of foundVersion.path) {
+                    list.push(includeFlag, `${foundVersion.name}=${foundVersion.name}/build/debug/${rlib}`);
+                }
+                return list;
+            }),
+        );
+    }
+
+    override orderArguments(
+        options,
+        inputFilename,
+        libIncludes,
+        libOptions,
+        libPaths,
+        libLinks,
+        userOptions,
+        staticLibLinks,
+    ) {
+        return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
+            this.filename(inputFilename),
+        ]);
+    }
+
+    override async setupBuildEnvironment(key, dirPath): Promise<BuildEnvDownloadInfo[]> {
+        if (this.buildenvsetup) {
+            const libraryDetails = await this.getRequiredLibraryVersions(key.libraries);
+            return this.buildenvsetup.setup(key, dirPath, libraryDetails);
+        } else {
+            return [];
+        }
+    }
+
+    override optionsForBackend(backendOptions, outputFilename) {
         // The super class handles the GCC dump files that may be needed by
         // rustc-cg-gcc subclass.
         const opts = super.optionsForBackend(backendOptions, outputFilename);
@@ -68,7 +114,7 @@ export class RustCompiler extends BaseCompiler {
         return opts;
     }
 
-    optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(filters, outputFilename, userOptions) {
         let options = ['-C', 'debuginfo=1', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
@@ -88,19 +134,19 @@ export class RustCompiler extends BaseCompiler {
     }
 
     // Override the IR file name method for rustc because the output file is different from clang.
-    getIrOutputFilename(inputFilename) {
+    override getIrOutputFilename(inputFilename) {
         return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.ll');
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return RustParser;
     }
 
-    isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler(/*compilerVersion*/) {
         return true;
     }
 
-    parseCompilationOutput(result, inputFilename) {
+    override parseCompilationOutput(result, inputFilename) {
         result.stdout = parseRustOutput(result.stdout, inputFilename);
         result.stderr = parseRustOutput(result.stderr, inputFilename);
     }

@@ -47,8 +47,8 @@ export type ConanBuildProperties = {
 };
 
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
-    private host: any;
-    private onlyonstaticliblink: any;
+    protected host: any;
+    protected onlyonstaticliblink: any;
 
     static get key() {
         return 'ceconan';
