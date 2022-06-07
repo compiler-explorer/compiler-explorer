@@ -1223,8 +1223,8 @@ export class BaseCompiler {
         return libraryDetails;
     }
 
-    async setupBuildEnvironment(key, dirPath): Promise<BuildEnvDownloadInfo[]> {
-        if (this.buildenvsetup) {
+    async setupBuildEnvironment(key: any, dirPath: string, binary: boolean): Promise<BuildEnvDownloadInfo[]> {
+        if (this.buildenvsetup && binary) {
             const libraryDetails = await this.getRequiredLibraryVersions(key.libraries);
             return this.buildenvsetup.setup(key, dirPath, libraryDetails);
         } else {
@@ -1280,7 +1280,7 @@ export class BaseCompiler {
     }
 
     async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
-        const buildEnvironment = this.setupBuildEnvironment(key, dirPath);
+        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
 
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
         const inputFilename = writeSummary.inputFilename;
@@ -1521,10 +1521,7 @@ export class BaseCompiler {
     }
 
     async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
-        let buildEnvironment: Promise<BuildEnvDownloadInfo[]> = Promise.resolve() as any;
-        if (filters.binary) {
-            buildEnvironment = this.setupBuildEnvironment(key, dirPath);
-        }
+        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, filters.binary);
 
         const inputFilenameSafe = this.filename(inputFilename);
 
@@ -1802,7 +1799,7 @@ export class BaseCompiler {
                 inputFilename: writeSummary.inputFilename,
             };
 
-            fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath);
+            fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
             let toolchainparam = '';
             if (this.toolchainPath) {
