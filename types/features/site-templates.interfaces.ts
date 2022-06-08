@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type siteTemplatesType = {
+export type SiteTemplatesType = {
     meta: Record<string, string>;
     templates: Record<string, string>;
 };

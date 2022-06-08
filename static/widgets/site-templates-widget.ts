@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {siteTemplatesType} from '../../types/features/site-templates.interfaces';
+import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
 import {Settings} from '../settings';
 
 class SiteTemplatesWidget {
     modal: JQuery;
     img: HTMLImageElement;
-    templatesConfig: null | siteTemplatesType = null;
+    templatesConfig: null | SiteTemplatesType = null;
     populated = false;
     siteTemplateScreenshots: any;
     constructor(siteTemplateScreenshots: any) {
@@ -42,7 +42,7 @@ class SiteTemplatesWidget {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }
-        return this.templatesConfig as siteTemplatesType;
+        return this.templatesConfig as SiteTemplatesType;
     }
     getCurrentTheme() {
         return Settings.getStoredSettings()['theme'];
