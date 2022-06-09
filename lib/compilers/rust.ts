@@ -69,11 +69,13 @@ export class RustCompiler extends BaseCompiler {
             _.map(libraries, selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
+                if (!foundVersion.name) return false;
                 const list: string[] = [];
+                const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
                 for (const rlib of foundVersion.path) {
                     list.push(
                         includeFlag,
-                        `${foundVersion.name}=${foundVersion.name}/build/debug/${rlib}`,
+                        `${lowercaseLibName}=${foundVersion.name}/build/debug/${rlib}`,
                         '-L',
                         `dependency=${foundVersion.name}/build/debug/deps`,
                     );
