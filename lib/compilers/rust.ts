@@ -71,7 +71,12 @@ export class RustCompiler extends BaseCompiler {
                 if (!foundVersion) return false;
                 const list: string[] = [];
                 for (const rlib of foundVersion.path) {
-                    list.push(includeFlag, `${foundVersion.name}=${foundVersion.name}/build/debug/${rlib}`);
+                    list.push(
+                        includeFlag,
+                        `${foundVersion.name}=${foundVersion.name}/build/debug/${rlib}`,
+                        '-L',
+                        `dependency=${foundVersion.name}/build/debug/deps`,
+                    );
                 }
                 return list;
             }),
