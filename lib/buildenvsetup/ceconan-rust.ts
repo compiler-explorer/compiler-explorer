@@ -22,15 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-import zlib from 'zlib';
-
-import fs, {mkdirp} from 'fs-extra';
-import request from 'request';
-import tar from 'tar-stream';
 import _ from 'underscore';
 
-import {BuildEnvDownloadInfo} from './buildenv.interfaces';
 import {BuildEnvSetupCeConanDirect} from './ceconan';
 
 export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
@@ -42,47 +35,12 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
         super(compilerInfo, env);
 
         this.onlyonstaticliblink = false;
+        this.extractAllToRoot = false;
     }
 
     override async initialise(execCompilerCachedFunc) {
         if (this.compilerArch) return;
         this.compilerSupportsX86 = true;
-    }
-
-    override async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
-        return new Promise(resolve => {
-            const startTime = process.hrtime.bigint();
-            const extract = tar.extract();
-            const gunzip = zlib.createGunzip();
-
-            extract.on('entry', async (header, stream, next) => {
-                const filename = header.name;
-                const filepath = path.join(downloadPath, filename);
-                await mkdirp(path.dirname(filepath));
-                const filestream = fs.createWriteStream(filepath);
-                stream.pipe(filestream);
-                stream.on('end', next);
-                stream.resume();
-            });
-
-            extract.on('finish', () => {
-                const endTime = process.hrtime.bigint();
-                resolve({
-                    step: `Download of ${libId} ${version}`,
-                    packageUrl: packageUrl,
-                    time: ((endTime - startTime) / BigInt(1000000)).toString(),
-                });
-            });
-
-            gunzip.pipe(extract);
-
-            const settings = {
-                method: 'GET',
-                encoding: null,
-            };
-
-            request(packageUrl, settings).pipe(gunzip);
-        });
     }
 
     override getLibcxx(key) {
