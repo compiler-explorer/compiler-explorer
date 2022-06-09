@@ -25,7 +25,7 @@
 import path from 'path';
 import zlib from 'zlib';
 
-import fs from 'fs-extra';
+import fs, {mkdirp} from 'fs-extra';
 import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
@@ -47,8 +47,9 @@ export type ConanBuildProperties = {
 };
 
 export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
-    private host: any;
-    private onlyonstaticliblink: any;
+    protected host: any;
+    protected onlyonstaticliblink: any;
+    protected extractAllToRoot: boolean;
 
     static get key() {
         return 'ceconan';
@@ -59,6 +60,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         this.host = compilerInfo.buildenvsetup.props('host', false);
         this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
+        this.extractAllToRoot = true;
 
         if (env.debug) request.debug = true;
     }
@@ -114,9 +116,25 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             const extract = tar.extract();
             const gunzip = zlib.createGunzip();
 
-            extract.on('entry', (header, stream, next) => {
-                const filename = path.basename(header.name);
-                const filestream = fs.createWriteStream(path.join(downloadPath, filename));
+            extract.on('entry', async (header, stream, next) => {
+                let filepath = '';
+                if (this.extractAllToRoot) {
+                    const filename = path.basename(header.name);
+                    filepath = path.join(downloadPath, filename);
+                } else {
+                    const filename = header.name;
+                    filepath = path.join(downloadPath, filename);
+                    const resolved = path.resolve(path.dirname(filepath));
+                    if (!resolved.startsWith(downloadPath)) {
+                        logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                        next();
+                        return;
+                    }
+
+                    await mkdirp(path.dirname(filepath));
+                }
+
+                const filestream = fs.createWriteStream(filepath);
                 stream.pipe(filestream);
                 stream.on('end', next);
                 stream.resume();

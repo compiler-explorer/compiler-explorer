@@ -24,3 +24,4 @@
 
 export {BuildEnvSetupCeConanDirect} from './ceconan';
 export {BuildEnvSetupCliConan} from './cliconan';
+export {BuildEnvSetupCeConanRustDirect} from './ceconan-rust';
