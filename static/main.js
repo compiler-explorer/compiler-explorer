@@ -51,8 +51,11 @@ var SimpleCook = require('./widgets/simplecook').SimpleCook;
 var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
 var Presentation = require('./presentation').Presentation;
+var setupSiteTemplateWidgetButton = require('./widgets/site-templates-widget').setupSiteTemplateWidgetButton;
 
 var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+
+var siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
 
 if (!window.PRODUCTION) {
     require('./tests/_all');
@@ -471,6 +474,7 @@ function earlyGetDefaultLangSetting() {
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     var options = require('options').options;
 

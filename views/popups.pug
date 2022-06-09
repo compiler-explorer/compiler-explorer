@@ -399,3 +399,22 @@
     .modal-content
       .modal-body
         iframe#jsbeebemuframe(src="about:blank" width="1280" height="768")
+
+#site-template-loader.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Load Site Template
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .container
+          .row(id="site-template-modal-row")
+            .site-templates-list-col
+              h5 Templates
+              ul#site-templates-list
+                li Loading.....
+            .site-template-preview-col
+              h5 Preview
+              <img id="site-template-preview" src=""/>

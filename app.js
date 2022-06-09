@@ -54,6 +54,7 @@ import {CompileHandler} from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
 import {NoScriptHandler} from './lib/handlers/noscript';
 import {RouteAPI} from './lib/handlers/route-api';
+import {loadSiteTemplates} from './lib/handlers/site-templates';
 import {SourceHandler} from './lib/handlers/source';
 import {languages as allLanguages} from './lib/languages';
 import {logger, logToLoki, logToPapertrail, suppressConsoleLog} from './lib/logger';
@@ -596,6 +597,8 @@ async function main() {
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+
+    loadSiteTemplates(configDir);
 
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
