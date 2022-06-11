@@ -331,6 +331,27 @@ module.exports = {
             },
         };
     },
+    getLLVMOptPipelineView: function () {
+        return {
+            type: 'component',
+            componentName: 'llvmOptPipelineView',
+            componentState: {},
+        };
+    },
+    getLLVMOptPipelineViewWith: function (id, source, irOutput, compilerName, editorid, treeid) {
+        return {
+            type: 'component',
+            componentName: 'llvmOptPipelineView',
+            componentState: {
+                id: id,
+                source: source,
+                irOutput: irOutput,
+                compilerName: compilerName,
+                editorid: editorid,
+                treeid: treeid,
+            },
+        };
+    },
     getRustMirView: function () {
         return {
             type: 'component',
