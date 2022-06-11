@@ -964,6 +964,40 @@ export class BaseCompiler {
         };
     }
 
+    async generateLLVMOptPipeline(inputFilename, options, filters: ParseFilters) {
+        // These options make Clang produce an IR
+        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(
+            this.compiler.llvmOptArg,
+        );
+
+        const execOptions = this.getDefaultExecOptions();
+        // A higher max output is needed for when the user includes headers
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+
+        console.log(newOptions, execOptions);
+
+        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        console.log(output);
+        if (output.code !== 0) {
+            return [{text: 'Failed to get the transformation pipeline output'}];
+        }
+        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters);
+        return llvmOptPipeline.asm;
+    }
+
+    async processLLVMOptPipeline(output, filters: ParseFilters) {
+        //const irPath = this.getIrOutputFilename(output.inputFilename);
+        //if (await fs.pathExists(irPath)) {
+        //    const output = await fs.readFile(irPath, 'utf-8');
+        //    // uses same filters as main compiler
+        //    return this.llvmIr.process(output, filters);
+        //}
+        return {
+            asm: output.stderr,
+            labelDefinitions: {},
+        };
+    }
+
     getRustMacroExpansionOutputFilename(inputFilename) {
         return inputFilename.replace(path.extname(inputFilename), '.expanded.rs');
     }
@@ -1541,6 +1575,7 @@ export class BaseCompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
+        const makeLLVMOptPipeline = backendOptions.produceLLVMOptPipeline && this.compiler.supportsLLVMOptPipelineView;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -1551,26 +1586,35 @@ export class BaseCompiler {
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
         const downloads = await buildEnvironment;
-        const [asmResult, astResult, ppResult, irResult, rustHirResult, rustMacroExpResult, toolsResult] =
-            await Promise.all([
-                this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
-                makeAst ? this.generateAST(inputFilename, options) : '',
-                makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
-                makeIr ? this.generateIR(inputFilename, options, filters) : '',
-                makeRustHir ? this.generateRustHir(inputFilename, options) : '',
-                makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
-                Promise.all(
-                    this.runToolsOfType(
-                        tools,
-                        'independent',
-                        this.getCompilationInfo(key, {
-                            inputFilename,
-                            dirPath,
-                            outputFilename,
-                        }),
-                    ),
+        const [
+            asmResult,
+            astResult,
+            ppResult,
+            irResult,
+            llvmOptPipelineResult,
+            rustHirResult,
+            rustMacroExpResult,
+            toolsResult,
+        ] = await Promise.all([
+            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
+            makeAst ? this.generateAST(inputFilename, options) : '',
+            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
+            makeIr ? this.generateIR(inputFilename, options, filters) : '',
+            makeLLVMOptPipeline ? this.generateLLVMOptPipeline(inputFilename, options, filters) : '',
+            makeRustHir ? this.generateRustHir(inputFilename, options) : '',
+            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
+            Promise.all(
+                this.runToolsOfType(
+                    tools,
+                    'independent',
+                    this.getCompilationInfo(key, {
+                        inputFilename,
+                        dirPath,
+                        outputFilename,
+                    }),
                 ),
-            ]);
+            ),
+        ]);
 
         // GNAT, GCC and rustc can produce their extra output files along
         // with the main compilation command.
@@ -1647,6 +1691,10 @@ export class BaseCompiler {
         if (irResult) {
             asmResult.hasIrOutput = true;
             asmResult.irOutput = irResult;
+        }
+        if (llvmOptPipelineResult) {
+            asmResult.hasIrOutput = true; // TODO
+            asmResult.irOutput = llvmOptPipelineResult; // TODO
         }
         if (rustMirResult) {
             asmResult.hasRustMirOutput = true;

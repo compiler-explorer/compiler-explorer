@@ -286,6 +286,17 @@ Compiler.prototype.initPanerButtons = function () {
         );
     }, this);
 
+    var createLLVMOptPipelineView = _.bind(function () {
+        return Components.getLLVMOptPipelineViewWith(
+            this.id,
+            this.source,
+            this.lastResult.irOutput,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
+    }, this);
+
     var createDeviceView = _.bind(function () {
         return Components.getDeviceViewWith(
             this.id,
@@ -492,6 +503,18 @@ Compiler.prototype.initPanerButtons = function () {
             var insertPoint =
                 this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createIrView);
+        }, this)
+    );
+
+    this.container.layoutManager
+        .createDragSource(this.llvmOptPipelineButton, createLLVMOptPipelineView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.llvmOptPipelineButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createLLVMOptPipelineView);
         }, this)
     );
 
@@ -938,6 +961,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceGnatDebugTree: this.gnatDebugTreeViewOpen,
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
+            produceLLVMOptPipeline: this.llvmOptPipelineViewOpen,
             produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
             produceRustMacroExp: this.rustMacroExpViewOpen,
@@ -1583,6 +1607,21 @@ Compiler.prototype.onIrViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onLLVMOptPipelineViewOpened = function (id) {
+    if (this.id === id) {
+        this.llvmOptPipelineButton.prop('disabled', true);
+        this.llvmOptPipelineViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onLLVMOptPipelineViewClosed = function (id) {
+    if (this.id === id) {
+        this.llvmOptPipelineButton.prop('disabled', false);
+        this.llvmOptPipelineViewOpen = false;
+    }
+};
+
 Compiler.prototype.onDeviceViewOpened = function (id) {
     if (this.id === id) {
         this.deviceButton.prop('disabled', true);
@@ -1854,6 +1893,7 @@ Compiler.prototype.initButtons = function (state) {
     this.ppButton = this.domRoot.find('.btn.view-pp');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
+    this.llvmOptPipelineButton = this.domRoot.find('.btn.view-llvm-opt-pipeline');
     this.deviceButton = this.domRoot.find('.btn.view-device');
     this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
@@ -2105,6 +2145,7 @@ Compiler.prototype.updateButtons = function () {
     this.ppButton.prop('disabled', this.ppViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
+    this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
     this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
@@ -2122,7 +2163,7 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
     this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
-    this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
@@ -2242,6 +2283,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+    this.eventHub.on('llvmOptPipelineViewOpened', this.onLLVMOptPipelineViewOpened, this);
+    this.eventHub.on('llvmOptPipelineViewClosed', this.onLLVMOptPipelineViewClosed, this);
     this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
     this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);

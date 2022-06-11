@@ -42,6 +42,7 @@ import {Flags as FlagsView} from './panes/flags-view';
 import {PP as PreProcessorView} from './panes/pp-view';
 import {Ast as AstView} from './panes/ast-view';
 import {Ir as IrView} from './panes/ir-view';
+import {LLVMOptPipeline} from './panes/llvm-opt-pipeline';
 import {DeviceAsm as DeviceView} from './panes/device-view';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
 import {RustMir as RustMirView} from './panes/rustmir-view';
@@ -95,6 +96,9 @@ export class Hub {
         layout.registerComponent(Components.getPpView().componentName, (c, s) => this.ppViewFactory(c, s));
         layout.registerComponent(Components.getAstView().componentName, (c, s) => this.astViewFactory(c, s));
         layout.registerComponent(Components.getIrView().componentName, (c, s) => this.irViewFactory(c, s));
+        layout.registerComponent(Components.getLLVMOptPipelineView().componentName, (c, s) =>
+            this.llvmOptPipelineFactory(c, s)
+        );
         layout.registerComponent(Components.getDeviceView().componentName, (c, s) => this.deviceViewFactory(c, s));
         layout.registerComponent(Components.getRustMirView().componentName, (c, s) => this.rustMirViewFactory(c, s));
         layout.registerComponent(Components.getHaskellCoreView().componentName, (c, s) =>
@@ -431,6 +435,13 @@ export class Hub {
 
     public irViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof IrView>[2]): IrView {
         return new IrView(this, container, state);
+    }
+
+    public llvmOptPipelineFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof LLVMOptPipeline>[2]
+    ): LLVMOptPipeline {
+        return new LLVMOptPipeline(this, container, state);
     }
 
     public deviceViewFactory(
