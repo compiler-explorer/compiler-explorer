@@ -66,6 +66,7 @@ import {Flags as FlagsView} from './panes/flags-view';
 import {PP as PreProcessorView} from './panes/pp-view';
 import {Ast as AstView} from './panes/ast-view';
 import {Ir as IrView} from './panes/ir-view';
+import {LLVMOptPipeline} from './panes/llvm-opt-pipeline';
 import {DeviceAsm as DeviceView} from './panes/device-view';
 import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
 import {RustMir as RustMirView} from './panes/rustmir-view';
@@ -435,6 +436,13 @@ export class Hub {
 
     public irViewFactory(container: GoldenLayout.Container, state: ConstructorParameters<typeof IrView>[2]): IrView {
         return new IrView(this, container, state);
+    }
+
+    public llvmOptPipelineFactory(
+        container: GoldenLayout.Container,
+        state: ConstructorParameters<typeof LLVMOptPipeline>[2]
+    ): LLVMOptPipeline {
+        return new LLVMOptPipeline(this, container, state);
     }
 
     public deviceViewFactory(

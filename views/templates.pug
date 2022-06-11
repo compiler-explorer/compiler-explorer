@@ -104,6 +104,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-ir(title="Show LLVM Intermediate Representation")
             span.dropdown-icon.fas.fa-align-center
             | LLVM IR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-llvm-opt-pipeline(title="Show LLVM Optimization Pipeline Output")
+            span.dropdown-icon.fas.fa-align-center
+            | LLVM Opt Pipeline output
           button.dropdown-item.btn.btn-sm.btn-light.view-device(title="Show Device output")
             span.dropdown-icon.fas.fa-tv
             | Device output
@@ -322,6 +325,14 @@
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
+
+  #llvm-opt-pipeline
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    div(style="display: flex; overflow: hidden;")
+      .passes-column(style="color: white; min-width: 100px; max-width: 20%;") Passes:
+        .passes-list
+      .monaco-placeholder
 
   #device
     .top-bar.btn-toolbar.bg-light(role="toolbar")
