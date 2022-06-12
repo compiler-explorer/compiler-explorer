@@ -33,6 +33,33 @@ import * as utils from '../utils';
 // It'd be helpful to better display annotations about branch weights
 // and parse debug info too at some point.
 
+// TODO(jeremy-rifkin): Doe we already have an assert utility
+function assert(condition: boolean, message?: string, ...args: any[]): asserts condition {
+    if(!condition) {
+        const error = message ?
+            `Assertion error in llvm-print-after-all-parser: ${message}`
+            : `Assertion error in llvm-print-after-all-parser`;
+        console.log(error, ...args);
+        console.trace();
+        throw error;
+    }
+}
+
+type OutputLine = {text: string};
+type PassDump = { // Ir Dump for a pass with raw lines
+    header: string;
+    lines: OutputLine[];
+};
+type SplitPassDump = { // Ir Dump for a pass with raw lines broken into affected functions (or "<loop>")
+    header: string;
+    functions: Record<string, OutputLine[]>;
+};
+type Pass = { // Pass name with before / after dump
+    name: string;
+    after: OutputLine[];
+    before: OutputLine[];
+};
+
 export class LlvmPrintAfterAllParser {
     filters: RegExp[];
     lineFilters: RegExp[];
@@ -64,27 +91,202 @@ export class LlvmPrintAfterAllParser {
             /,? #\d+((?=( {)?$))/, // attribute annotation
         ];
 
-        this.irDumpAfterHeader = /^\*{3} (.+) \*{3}$/;
+        this.irDumpAfterHeader = /^\*{3} (.+) \*{3}(;.+)?$/;
         this.defineLine = /^define .+ @(\w+)\(.+$/;
         this.label = /^\d+:(\s+;.+)?$/;
         this.instruction = /^\s+.+$/;
     }
 
-    getOutput(ir: {text: string}[]) {
+    breakdownDump(dump: PassDump) {
+        // break up down dumps for each pass into functions (or absence of functions in the case of loop passes)
+        // we have three cases of ir dumps to consider:
+        // - Most passes dump a single function
+        // - Some passes dump every function
+        // - Some loop passes only dump loops - these are challenging to deal with
+        const pass: SplitPassDump = {
+            header: dump.header,
+            functions: {}
+        };
+        let func: {
+            name: string,
+            lines: OutputLine[]
+        } | null = null;
+        for(const line of dump.lines) {
+            const match = line.text.match(this.defineLine);
+            if(match) { // function define line
+                if(func !== null) { // if the last function has not been closed...
+                    throw "Internal error during breakdownPass (1)";
+                }
+                func = {
+                    name: match[1],
+                    lines: [line] // include the current line
+                };
+            } else {
+                if(line.text.trim() === "}") { // close function
+                    if(func === null) { // if not currently in a function
+                        throw "Internal error during breakdownPass (2)";
+                    }
+                    const {name, lines} = func;
+                    lines.push(line); // include the }
+                    if(name === "<loop>") { // loop dumps can't be terminated with }
+                        throw "Internal error during breakdownPass (3)";
+                    }
+                    if(name in pass.functions) { // somehow dumped twice?
+                        throw "Internal error during breakdownPass (4)";
+                    }
+                    pass.functions[name] = lines;
+                    func = null;
+                } else {
+                    if(func === null) { // lines outside a function definition
+                        if(line.text.trim() == "") { // may be a blank line
+                            continue;
+                        } else { // otherwise a loop
+                            func = {
+                                name: "<loop>",
+                                lines: [] // current line will be included with the push below, no need to include here
+                            };
+                        }
+                    }
+                    func.lines.push(line);
+                }
+            }
+        }
+        if(func !== null) { // unterminated function, either a loop dump or an error
+            if(func.name === "<loop>") {
+                if(Object.entries(pass.functions).length !== 0) { // loop dumps must be alone
+                    throw "Internal error during breakdownPass (5)";
+                }
+                pass.functions[func.name] = func.lines;
+            } else {
+                throw "Internal error during breakdownPass (6)";
+            }
+        }
+        return pass;
+    }
+
+    breakdownOutput(ir: OutputLine[]) {
+        // break down output by "*** IR Dump After XYZ ***" markers
+        const raw_passes: PassDump[] = [];
+        let pass: PassDump | null = null;
+        for(const line of ir) {
+            const match = line.text.match(this.irDumpAfterHeader);
+            if(match) {
+                if(pass !== null) {
+                    raw_passes.push(pass);
+                }
+                pass = {
+                    header: match[1],
+                    lines: []
+                };
+            } else {
+                if(pass === null) {
+                    throw "Internal error during breakdownOutput (1)";
+                }
+                pass.lines.push(line);
+            }
+        }
+        if(pass !== null) {
+            raw_passes.push(pass);
+        }
+        //console.dir(raw_passes, {
+        //    depth: 3
+        //});
+        // Further break down by functions in each dump
+        const passDumps = raw_passes.map(this.breakdownDump.bind(this));
+        //console.dir(passDumps, {
+        //    depth: 5
+        //});
+        // Currently we have an array of passes with a map of functions altered in each pass
+        // We want to transpose to a map of functions with an array of passes on the function
+        let passDumpsByFunction: Record<string, PassDump[]> = {};
+        // I'm assuming loop dumps should correspond to the previous function dumped
+        let previousFunction: string | null = null;
+        for(const pass of passDumps) {
+            const {header, functions} = pass;
+            const functionEntries = Object.entries(functions);
+            for(const [function_name, lines] of functionEntries) {
+                const name: string | null = function_name === "<loop>" ? previousFunction : function_name;
+                assert(name !== null, "Loop dump without preceding dump");
+                if(!(name in passDumpsByFunction)) {
+                    passDumpsByFunction[name] = [];
+                }
+                passDumpsByFunction[name].push({
+                    header,
+                    lines
+                });
+            }
+            if(functionEntries.length == 0) {
+                throw "Internal error during breakdownOutput (2)";
+            } else if(functionEntries.length == 1) {
+                const name = functionEntries[0][0];
+                if(name !== "<loop>") {
+                    previousFunction = name;
+                }
+            } else {
+                previousFunction = null;
+            }
+        }
+        //console.dir(passDumpsByFunction, {
+        //    depth: 5
+        //});
+        // We have all the passes for each function, now we will go through each function and match the before/after
+        // dumps
+        const final_output: Record<string, Pass[]> = {};
+        for(const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
+            // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge case:
+            // At least the "Delete dead loops" may only print a before dump and no after dump
+            const passes: Pass[] = [];
+            for(let i = 0; i < passDumps.length; /* i incremented appropriately later */) {
+                const pass: Pass = {
+                    name: "",
+                    after: [],
+                    before: []
+                };
+                assert(i < passDumps.length - 1); // make sure there's another item
+                const current_dump = passDumps[i];
+                const next_dump = passDumps[i + 1];
+                if(current_dump.header.startsWith("IR Dump After ")) {
+                    // An after dump without a before dump - I don't think this can happen but we'll handle just in case
+                    pass.name = current_dump.header.slice("IR Dump After ".length);
+                    pass.after = current_dump.lines;
+                    i++;
+                } else if(current_dump.header.startsWith("IR Dump Before ")) {
+                    if(next_dump.header.startsWith("IR Dump After ")) {
+                        assert(current_dump.header.slice("IR Dump Before ".length)
+                            == next_dump.header.slice("IR Dump After ".length),
+                            current_dump.header, next_dump.header);
+                        pass.name = current_dump.header.slice("IR Dump Before ".length);
+                        pass.before = current_dump.lines;
+                        pass.after = next_dump.lines;
+                        i += 2;
+                    } else {
+                        // Before with no after - this can happen with Delete dead loops
+                        pass.name = current_dump.header.slice("IR Dump Before ".length);
+                        pass.before = current_dump.lines;
+                        i++;
+                    }
+                    //assert(current_dump.header.startsWith("IR Dump Before ")
+                    //    && next_dump.header.startsWith("IR Dump After "),
+                    //    "Unexpected line following IR Dump Before");
+                } else {
+                    assert(false, "Unexpected pass header", current_dump.header);
+                }
+                passes.push(pass);
+            }
+            assert(!(function_name in final_output), "xxx");
+            final_output[function_name] = passes;
+        }
+        console.dir(final_output, {
+            depth: 6
+        });
+
         return ir;
     }
 
     process(ir: {text: string}[], _: ParseFilters) {
-        let last_item: string | null = null; // awful impurity to used to filter adjacent blank lines
         // Filter a lot of junk before processing
         const preprocessed_lines = ir
             .filter(line => this.filters.every(re => line.text.match(re) === null)) // apply filters
-            .filter(line => {
-                // Filter duplicate blank lines
-                const b = line.text === '' && last_item === '';
-                last_item = line.text;
-                return !b;
-            })
             .map(_line => {
                 let line = _line.text;
                 // eslint-disable-next-line no-constant-condition
@@ -103,6 +305,6 @@ export class LlvmPrintAfterAllParser {
                 return _line;
             });
 
-        return this.getOutput(preprocessed_lines);
+        return this.breakdownOutput(preprocessed_lines);
     }
 }
