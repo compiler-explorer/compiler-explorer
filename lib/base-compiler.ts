@@ -57,8 +57,8 @@ import {logger} from './logger';
 import {getObjdumperTypeByKey} from './objdumper';
 import {Packager} from './packager';
 import {AsmParser} from './parsers/asm-parser';
-import {LlvmPrintAfterAllParser} from './parsers/llvm-print-after-all-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
+import {LlvmPrintAfterAllParser} from './parsers/llvm-print-after-all-parser';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
 
@@ -977,10 +977,7 @@ export class BaseCompiler {
         // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
-        console.log(newOptions, execOptions);
-
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
-        console.log(output);
         if (output.code !== 0) {
             return [{text: 'Failed to get the transformation pipeline output'}];
         }
