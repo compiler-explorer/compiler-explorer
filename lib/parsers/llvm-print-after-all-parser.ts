@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { ParseFilters } from '../../types/features/filters.interfaces';
 
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import * as utils from '../utils';
 
 // Note(jeremy-rifkin):
@@ -32,8 +32,6 @@ import * as utils from '../utils';
 // Maybe at a later date we'll want to allow user-controllable filters
 // It'd be helpful to better display annotations about branch weights
 // and parse debug info too at some point.
-
-// TODO: !tbaa
 
 export class LlvmPrintAfterAllParser {
     filters: RegExp[];
@@ -57,39 +55,45 @@ export class LlvmPrintAfterAllParser {
             /^\s+call void @llvm.dbg.declare.+$/, // dbg calls
             /^declare .+$/, // declare directives
             /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/, // meta
-            /^(!\d+) = !\{.*\}/, // meta
-            /^(![A-Za-z\._-]+) = !\{.*\}/, // meta
+            /^(!\d+) = !{.*}/, // meta
+            /^(![.A-Z_a-z-]+) = !{.*}/, // meta
             /^attributes #\d+ = { .+ }$/, // attributes directive
         ];
         this.lineFilters = [
-            /,? ![A-Za-z0-9]+((?=( \{)?$))/, // debug annotation
-            /,? #\d+((?=( \{)?$))/, // attribute annotation
+            /,? ![\dA-Za-z]+((?=( {)?$))/, // debug annotation
+            /,? #\d+((?=( {)?$))/, // attribute annotation
         ];
 
-        this.irDumpAfterHeader = /^\*\*\* (.+) \*\*\*$/;
-        this.defineLine = /^define .+ @([A-Za-z0-9_]+)\(.+$/;
+        this.irDumpAfterHeader = /^\*{3} (.+) \*{3}$/;
+        this.defineLine = /^define .+ @(\w+)\(.+$/;
         this.label = /^\d+:(\s+;.+)?$/;
         this.instruction = /^\s+.+$/;
     }
 
+    getOutput(ir: {text: string}[]) {
+        return ir;
+    }
+
     process(ir: {text: string}[], _: ParseFilters) {
-        let last_item: string | null = null; // aweful impurity to used to filter adjacent blank lines
+        let last_item: string | null = null; // awful impurity to used to filter adjacent blank lines
         // Filter a lot of junk before processing
         const preprocessed_lines = ir
             .filter(line => this.filters.every(re => line.text.match(re) === null)) // apply filters
-            .filter(line => { // Filter duplicate blank lines
-                const b = line.text === "" && last_item === "";
+            .filter(line => {
+                // Filter duplicate blank lines
+                const b = line.text === '' && last_item === '';
                 last_item = line.text;
                 return !b;
             })
             .map(_line => {
                 let line = _line.text;
-                while(true) {
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
                     let newLine = line;
-                    for(const re of this.lineFilters) {
-                        newLine = newLine.replace(re, "");
+                    for (const re of this.lineFilters) {
+                        newLine = newLine.replace(re, '');
                     }
-                    if(newLine === line) {
+                    if (newLine === line) {
                         break;
                     } else {
                         line = newLine;
@@ -97,176 +101,8 @@ export class LlvmPrintAfterAllParser {
                 }
                 _line.text = line;
                 return _line;
-            })
-        return preprocessed_lines;
+            });
+
+        return this.getOutput(preprocessed_lines);
     }
-
-    /*getFileName(debugInfo, scope) {
-        const stdInLooking = /.*<stdin>|^-$|example\.[^/]+$|<source>/;
-
-        if (!debugInfo[scope]) {
-            // No such meta info.
-            return null;
-        }
-        // MetaInfo is a file node
-        if (debugInfo[scope].filename) {
-            const filename = debugInfo[scope].filename;
-            return !stdInLooking.test(filename) ? filename : null;
-        }
-        // MetaInfo has a file reference.
-        if (debugInfo[scope].file) {
-            return this.getFileName(debugInfo, debugInfo[scope].file);
-        }
-        if (!debugInfo[scope].scope) {
-            // No higher scope => can't find file.
-            return null;
-        }
-        // "Bubbling" up.
-        return this.getFileName(debugInfo, debugInfo[scope].scope);
-    }
-
-    getSourceLineNumber(debugInfo, scope) {
-        if (!debugInfo[scope]) {
-            return null;
-        }
-        if (debugInfo[scope].line) {
-            return Number(debugInfo[scope].line);
-        }
-        if (debugInfo[scope].scope) {
-            return this.getSourceLineNumber(debugInfo, debugInfo[scope].scope);
-        }
-        return null;
-    }
-
-    getSourceColumn(debugInfo, scope) {
-        if (!debugInfo[scope]) {
-            return null;
-        }
-        if (debugInfo[scope].column) {
-            return Number(debugInfo[scope].column);
-        }
-        if (debugInfo[scope].scope) {
-            return this.getSourceColumn(debugInfo, debugInfo[scope].scope);
-        }
-        return null;
-    }
-
-    parseMetaNode(line) {
-        // Metadata Nodes
-        // See: https://llvm.org/docs/LangRef.html#metadata
-        const match = line.match(this.metaNodeRe);
-        if (!match) {
-            return null;
-        }
-        let metaNode = {
-            metaId: match[1],
-            metaType: match[2],
-        };
-
-        let keyValuePair;
-        while ((keyValuePair = this.metaNodeOptionsRe.exec(match[3]))) {
-            const key = keyValuePair[1];
-            metaNode[key] = keyValuePair[2];
-            // Remove "" from string
-            if (metaNode[key][0] === '"') {
-                metaNode[key] = metaNode[key].substr(1, metaNode[key].length - 2);
-            }
-        }
-
-        return metaNode;
-    }
-
-    processIr(ir, filters) {
-        const result = [];
-        let irLines = utils.splitLines(ir);
-        let debugInfo = {};
-        let prevLineEmpty = false;
-
-        // Filters
-        const commentOnly = /^\s*(;.*)$/;
-
-        for (const line of irLines) {
-            let source = null;
-            let match;
-
-            if (line.trim().length === 0) {
-                // Avoid multiple successive empty lines.
-                if (!prevLineEmpty) {
-                    result.push({text: '', source: null});
-                }
-                prevLineEmpty = true;
-                continue;
-            }
-
-            if (filters.commentOnly && commentOnly.test(line)) {
-                continue;
-            }
-
-            // Non-Meta IR line. Metadata is attached to it using "!dbg !123"
-            match = line.match(this.debugReference);
-            if (match) {
-                result.push({
-                    text: filters.trim ? utils.squashHorizontalWhitespace(line) : line,
-                    source: source,
-                    scope: match[1],
-                });
-                prevLineEmpty = false;
-                continue;
-            }
-
-            const metaNode = this.parseMetaNode(line);
-            if (metaNode) {
-                debugInfo[metaNode.metaId] = metaNode;
-            }
-
-            if (filters.directives && this.isLineLlvmDirective(line)) {
-                continue;
-            }
-            result.push({text: filters.trim ? utils.squashHorizontalWhitespace(line) : line, source: source});
-            prevLineEmpty = false;
-        }
-
-        if (result.length >= this.maxIrLines) {
-            result.length = this.maxIrLines + 1;
-            result[this.maxIrLines] = {text: '[truncated; too many lines]', source: null};
-        }
-
-        for (const line of result) {
-            if (!line.scope) continue;
-            line.source = {
-                file: this.getFileName(debugInfo, line.scope),
-                line: this.getSourceLineNumber(debugInfo, line.scope),
-                column: this.getSourceColumn(debugInfo, line.scope),
-            };
-        }
-
-        return {
-            asm: result,
-            labelDefinitions: {},
-        };
-    }
-
-    process(ir, filters) {
-        if (_.isString(ir)) {
-            return this.processIr(ir, filters);
-        }
-        return {
-            asm: [],
-            labelDefinitions: {},
-        };
-    }
-
-    isLineLlvmDirective(line) {
-        return !!(
-            /^!\d+ = (distinct )?!(DI|{)/.test(line) ||
-            line.startsWith('!llvm') ||
-            line.startsWith('source_filename = ') ||
-            line.startsWith('target datalayout = ') ||
-            line.startsWith('target triple = ')
-        );
-    }
-
-    isLlvmIr(code) {
-        return code.includes('@llvm') && code.includes('!DI') && code.includes('!dbg');
-    }*/
 }
