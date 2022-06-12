@@ -57,10 +57,10 @@ import {logger} from './logger';
 import {getObjdumperTypeByKey} from './objdumper';
 import {Packager} from './packager';
 import {AsmParser} from './parsers/asm-parser';
+import {LlvmPrintAfterAllParser} from './parsers/llvm-print-after-all-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
-import { LlvmPrintAfterAllParser } from './parsers/llvm-print-after-all-parser';
 
 export class BaseCompiler {
     public compiler: any;
@@ -1000,8 +1000,8 @@ export class BaseCompiler {
         //    labelDefinitions: {},
         //};
         return {
-            asm: this.llvmPrintAfterAllParser.process(output.stderr, filters)
-        }
+            asm: this.llvmPrintAfterAllParser.process(output.stderr, filters),
+        };
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
