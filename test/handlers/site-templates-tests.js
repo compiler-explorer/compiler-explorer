@@ -1,6 +1,6 @@
 import {assert} from 'chai';
 
-import {loadSiteTemplates, getSiteTemplates} from '../../lib/handlers/site-templates';
+import {getSiteTemplates, loadSiteTemplates} from '../../lib/handlers/site-templates';
 
 describe('Site Templates Backend', () => {
     before(() => {
