@@ -46,18 +46,18 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
 }
 
 type OutputLine = {text: string};
+// Ir Dump for a pass with raw lines
 type PassDump = {
-    // Ir Dump for a pass with raw lines
     header: string;
     lines: OutputLine[];
 };
+// Ir Dump for a pass with raw lines broken into affected functions (or "<loop>")
 type SplitPassDump = {
-    // Ir Dump for a pass with raw lines broken into affected functions (or "<loop>")
     header: string;
     functions: Record<string, OutputLine[]>;
 };
+// Pass name with before / after dump
 type Pass = {
-    // Pass name with before / after dump
     name: string;
     after: OutputLine[];
     before: OutputLine[];
@@ -116,10 +116,10 @@ export class LlvmPrintAfterAllParser {
         } | null = null;
         for (const line of dump.lines) {
             const match = line.text.match(this.defineLine);
+            // function define line
             if (match) {
-                // function define line
+                // if the last function has not been closed...
                 if (func !== null) {
-                    // if the last function has not been closed...
                     throw 'Internal error during breakdownPass (1)';
                 }
                 func = {
@@ -127,27 +127,27 @@ export class LlvmPrintAfterAllParser {
                     lines: [line], // include the current line
                 };
             } else {
+                // close function
                 if (line.text.trim() === '}') {
-                    // close function
+                    // if not currently in a function
                     if (func === null) {
-                        // if not currently in a function
                         throw 'Internal error during breakdownPass (2)';
                     }
                     const {name, lines} = func;
                     lines.push(line); // include the }
+                    // loop dumps can't be terminated with }
                     if (name === '<loop>') {
-                        // loop dumps can't be terminated with }
                         throw 'Internal error during breakdownPass (3)';
                     }
+                    // somehow dumped twice?
                     if (name in pass.functions) {
-                        // somehow dumped twice?
                         throw 'Internal error during breakdownPass (4)';
                     }
                     pass.functions[name] = lines;
                     func = null;
                 } else {
+                    // lines outside a function definition
                     if (func === null) {
-                        // lines outside a function definition
                         if (line.text.trim() === '') {
                             // may be a blank line
                             continue;
@@ -163,11 +163,11 @@ export class LlvmPrintAfterAllParser {
                 }
             }
         }
+        // unterminated function, either a loop dump or an error
         if (func !== null) {
-            // unterminated function, either a loop dump or an error
             if (func.name === '<loop>') {
+                // loop dumps must be alone
                 if (Object.entries(pass.functions).length > 0) {
-                    // loop dumps must be alone
                     throw 'Internal error during breakdownPass (5)';
                 }
                 pass.functions[func.name] = func.lines;
@@ -250,7 +250,8 @@ export class LlvmPrintAfterAllParser {
             // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
             // case: At least the "Delete dead loops" may only print a before dump and no after dump
             const passes: Pass[] = [];
-            for (let i = 0; i < passDumps.length /* i incremented appropriately later */; ) {
+            // i incremented appropriately later
+            for (let i = 0; i < passDumps.length; ) {
                 const pass: Pass = {
                     name: '',
                     after: [],
