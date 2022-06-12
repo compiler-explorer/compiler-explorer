@@ -62,6 +62,7 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
+import { LlvmPrintAfterAllParser } from './parsers/llvm-print-after-all-parser';
 
 export class BaseCompiler {
     public compiler: any;
@@ -76,6 +77,7 @@ export class BaseCompiler {
     protected compilerWrapper: any;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
+    protected llvmPrintAfterAllParser: LlvmPrintAfterAllParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
     protected possibleArguments: CompilerArguments;
@@ -124,6 +126,7 @@ export class BaseCompiler {
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIr = new LlvmIrParser(this.compilerProps);
+        this.llvmPrintAfterAllParser = new LlvmPrintAfterAllParser(this.compilerProps);
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
@@ -994,10 +997,13 @@ export class BaseCompiler {
         //    // uses same filters as main compiler
         //    return this.llvmIr.process(output, filters);
         //}
+        //return {
+        //    asm: output.stderr,
+        //    labelDefinitions: {},
+        //};
         return {
-            asm: output.stderr,
-            labelDefinitions: {},
-        };
+            asm: this.llvmPrintAfterAllParser.process(output.stderr, filters)
+        }
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
@@ -1692,8 +1698,8 @@ export class BaseCompiler {
             asmResult.irOutput = irResult;
         }
         if (llvmOptPipelineResult) {
-            asmResult.hasIrOutput = true; // TODO
-            asmResult.irOutput = llvmOptPipelineResult; // TODO
+            asmResult.hasLLVMOptPipelineOutput = true;
+            asmResult.llvmOptPipelineOutput = llvmOptPipelineResult;
         }
         if (rustMirResult) {
             asmResult.hasRustMirOutput = true;
