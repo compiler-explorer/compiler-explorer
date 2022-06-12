@@ -114,9 +114,9 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
         //console.log(compilerId, compiler, result);
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasIrOutput) {
-            this.showIrResults(result.irOutput);
-        } else if (compiler.supportsIrView) {
+        if (result.hasLLVMOptPipelineOutput) {
+            this.showIrResults(result.llvmOptPipelineOutput);
+        } else if (compiler.supportsLLVMOptPipelineView) {
             this.showIrResults([{text: '<No output>'}]);
         }
     }
@@ -127,7 +127,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
         this.compilerInfo.editorId = editorId;
         this.compilerInfo.treeId = treeId;
         this.updateTitle();
-        if (compiler && !compiler.supportsIrView) {
+        if (compiler && !compiler.supportsLLVMOptPipelineView) {
             this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }
@@ -161,129 +161,3 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
         this.editor.dispose();
     }
 }
-
-/*import * as monaco from 'monaco-editor';
-import _ from 'underscore';
-import {MonacoPane} from './pane';
-import {ga} from '../analytics';
-import * as monacoConfig from '../monaco-config';
-import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {Hub} from '../hub';
-
-export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEditor, {}> {
-    constructor(hub: Hub, container: Container, state: {} & MonacoPaneState) {
-        super(hub, container, state);
-        this.eventHub.emit('llvmOptPipelineViewOpened', this.compilerInfo.compilerId);
-        this.eventHub.emit('requestSettings');
-    }
-
-    override getInitialHTML(): string {
-        return $('#llvm-opt-pipeline').html();
-    }
-
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
-            editorRoot,
-            monacoConfig.extendConfig({
-                language: 'llvm-ir',
-                readOnly: true,
-                glyphMargin: true,
-                lineNumbersMinChars: 3,
-            })
-        );
-    }
-
-    override registerOpeningAnalyticsEvent(): void {
-        ga.proxy('send', {
-            hitType: 'event',
-            eventCategory: 'OpenViewPane',
-            eventAction: 'LLVMOptPipeline',
-        });
-    }
-
-    override registerButtons(state: {} & MonacoPaneState): void {
-        super.registerButtons(state);
-    }
-
-    showCompilationLoadingMessage() {
-        this.showPpResults('<Compiling...>');
-    }
-
-    override resize() {
-        const topBarHeight = this.topBar.outerHeight(true) as number;
-        this.editor.layout({
-            width: this.domRoot.width() as number,
-            height: (this.domRoot.height() as number) - topBarHeight,
-        });
-    }
-
-    override onCompileResult(compilerId: number, compiler: any, result: any) {
-        if (this.compilerInfo.compilerId !== compilerId) return;
-
-        if (result.hasPpOutput) {
-            this.showPpResults(result.ppOutput);
-        } else if (compiler.supportsPpView) {
-            this.showPpResults('<No output>');
-        }
-    }
-
-    getCurrentEditorLanguage() {
-        return this.editor.getModel()?.getLanguageId();
-    }
-
-    override getDefaultPaneName() {
-        return 'LLVM Opt Pipeline';
-    }
-
-    showPpResults(results) {
-        if (typeof results === 'object') {
-            if (results.numberOfLinesFiltered > 0) {
-                this.editor.setValue(
-                    `/* <${results.numberOfLinesFiltered} lines filtered> * /\n\n` + results.output.trimStart()
-                );
-            } else {
-                this.editor.setValue(results.output.trimStart());
-            }
-        } else {
-            this.editor.setValue(results);
-        }
-
-        if (!this.isAwaitingInitialResults) {
-            if (this.selection) {
-                this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
-            }
-            this.isAwaitingInitialResults = true;
-        }
-    }
-
-    override onCompiler(id, compiler, options, editorid, treeid) {
-        if (id === this.compilerInfo.compilerId) {
-            this.compilerInfo.compilerName = compiler ? compiler.name : '';
-            this.compilerInfo.editorId = editorid;
-            this.compilerInfo.treeId = treeid;
-            this.updateTitle();
-            if (compiler && !compiler.supportsPpView) {
-                this.editor.setValue('<Preprocessor output is not supported for this compiler>');
-            }
-        }
-    }
-
-    override onCompilerClose(id) {
-        if (id === this.compilerInfo.compilerId) {
-            // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
-            // the hierarchy. We can't modify while it's being iterated over.
-            this.close();
-            _.defer(function (self) {
-                self.container.close();
-            }, this);
-        }
-    }
-
-    override close() {
-        this.eventHub.unsubscribe();
-        this.eventHub.emit('llvmOptPipelineViewClosed', this.compilerInfo.compilerId);
-        this.editor.dispose();
-    }
-}*/
