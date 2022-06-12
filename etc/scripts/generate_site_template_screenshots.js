@@ -77,6 +77,19 @@ function partition(array, filter) {
     return [pass, fail];
 }
 
+async function PromisePoolExecutor(jobs, max_concurrency) {
+    async function worker(iterator) {
+        for(const [_, job] of iterator) {
+            await job();
+        }
+    }
+    const iterator = jobs.entries();
+    const workers = new Array(max_concurrency).fill(iterator).map(worker);
+    await Promise.allSettled(workers);
+}
+
+// end utils
+
 async function generate_screenshot(url, output_path, settings) {
     const browser = await puppeteer.launch({
         dumpio: true,
@@ -111,6 +124,7 @@ async function generate_screenshot(url, output_path, settings) {
             .split("\n")
             .filter(l => l !== "")
             .map(splitProperty)
+            .map(pair => [pair[0], pair[1].replace(/^https:\/\/godbolt.org\/#/, "")])
             .map(([name, data]) => [!name.startsWith("meta.") ? name.replaceAll(/[^a-z]/gi, "") : name, data]),
             ([name, _]) => name.startsWith("meta.")
         );
@@ -128,12 +142,12 @@ async function generate_screenshot(url, output_path, settings) {
     if(!fs.existsSync(output_dir)) {
         fs.mkdirSync(output_dir, { recursive: true });
     }
-    const promises = [];
+    const jobs = [];
     for(const [name, data] of templates) {
         for(const [theme, colourScheme] of themes) {
             const path = `${output_dir}/${name}.${theme}.png`;
             if(!fs.existsSync(path)) {
-                promises.push(generate_screenshot(
+                jobs.push(() => generate_screenshot(
                     `${godbolt}/e#${data}`,
                     path,
                     Object.assign(Object.assign({}, defaultSettings), {theme, colourScheme})
@@ -141,5 +155,6 @@ async function generate_screenshot(url, output_path, settings) {
             }
         }
     }
-    await Promise.all(promises);
+    // don't launch too many chrome instances concurrently
+    await PromisePoolExecutor(jobs, 4);
 })();
