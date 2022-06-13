@@ -329,8 +329,14 @@
   #llvm-opt-pipeline
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
-    div(style="display: flex; overflow: hidden;")
-      .passes-column(style="color: white; min-width: 100px; max-width: 20%;") Passes:
+      .btn-group.btn-group-sm
+        .input-group.input-group-sm.mb-auto
+          .input-group-prepend
+            label.input-group-text
+              | Function:&nbsp;
+          select.llvm-opt-function-picker.function-selector(placeholder="Select function")
+    div.llvm-opt-pipeline-body
+      .passes-column Passes:
         .passes-list
       .monaco-placeholder
 

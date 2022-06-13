@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {LLVMOptPipelineOutput, OutputLine, Pass} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import * as utils from '../utils';
 
@@ -45,7 +46,6 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
     }
 }
 
-type OutputLine = {text: string};
 // Ir Dump for a pass with raw lines
 type PassDump = {
     header: string;
@@ -55,12 +55,6 @@ type PassDump = {
 type SplitPassDump = {
     header: string;
     functions: Record<string, OutputLine[]>;
-};
-// Pass name with before / after dump
-type Pass = {
-    name: string;
-    after: OutputLine[];
-    before: OutputLine[];
 };
 
 export class LlvmPrintAfterAllParser {
@@ -229,7 +223,7 @@ export class LlvmPrintAfterAllParser {
                     lines,
                 });
             }
-            if (functionEntries.length > 0) {
+            if (functionEntries.length === 0) {
                 throw 'Internal error during breakdownOutput (2)';
             } else if (functionEntries.length === 1) {
                 const name = functionEntries[0][0];
@@ -245,7 +239,7 @@ export class LlvmPrintAfterAllParser {
         //});
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps
-        const final_output: Record<string, Pass[]> = {};
+        const final_output: LLVMOptPipelineOutput = {};
         for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
             // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
             // case: At least the "Delete dead loops" may only print a before dump and no after dump
@@ -256,6 +250,7 @@ export class LlvmPrintAfterAllParser {
                     name: '',
                     after: [],
                     before: [],
+                    irChanged: true,
                 };
                 assert(i < passDumps.length - 1); // make sure there's another item
                 const current_dump = passDumps[i];
@@ -286,6 +281,8 @@ export class LlvmPrintAfterAllParser {
                 } else {
                     assert(false, 'Unexpected pass header', current_dump.header);
                 }
+                // check for equality
+                pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
             }
             assert(!(function_name in final_output), 'xxx');
@@ -297,7 +294,7 @@ export class LlvmPrintAfterAllParser {
         return final_output;
     }
 
-    process(ir: {text: string}[], _: ParseFilters) {
+    process(ir: OutputLine[], _: ParseFilters) {
         // Filter a lot of junk before processing
         const preprocessed_lines = ir
             .filter(line => this.filters.every(re => line.text.match(re) === null)) // apply filters

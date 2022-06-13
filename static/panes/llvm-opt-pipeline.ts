@@ -38,21 +38,100 @@ import {Hub} from '../hub';
 
 import * as utils from '../utils';
 
-export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
+import {LLVMOptPipelineOutput, OutputLine, Pass} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+import TomSelect from 'tom-select';
+
+import scrollIntoView from 'scroll-into-view-if-needed';
+
+export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, IrState> {
+    results: LLVMOptPipelineOutput = {};
     irCode: any[] = [];
     passesColumn: JQuery;
+    passesList: JQuery;
+    body: JQuery;
+    clickCallback: (e: JQuery.ClickEvent) => void;
+    keydownCallback: (e: JQuery.KeyDownEvent) => void;
+    isPassListSelected = false;
+    functionSelector: TomSelect;
+    selectedFunction = '';
+    originalModel: any;
+    modifiedModel: any;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         this.passesColumn = this.domRoot.find('.passes-column');
+        this.passesList = this.domRoot.find('.passes-list');
+        this.body = this.domRoot.find('.llvm-opt-pipeline-body');
+        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        if (!(selector instanceof HTMLSelectElement)) {
+            throw new Error('.function-selector is not an HTMLSelectElement');
+        }
+        /*const instance = new TomSelect(selector, {
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            options: [
+                {id: 1, name: 'Assembly'},
+                {id: 2, name: 'Compiler stdout'},
+                {id: 3, name: 'Compiler stderr'},
+                {id: 4, name: 'Execution stdout'},
+                {id: 5, name: 'Execution stderr'},
+                {id: 6, name: 'GNAT Expanded Code'},
+                {id: 7, name: 'GNAT Tree Code'},
+            ],
+            items: [],
+            render: {
+                option: (item, escape) => {
+                    return `<div>${escape(item.name)}</div>`;
+                },
+            },
+            dropdownParent: 'body',
+            plugins: ['input_autogrow'],
+            onChange: value => {
+                //if (picker.classList.contains('lhsdifftype')) {
+                //    this.lhs.difftype = parseInt(value as any as string);
+                //    this.lhs.refresh();
+                //} else {
+                //    this.rhs.difftype = parseInt(value as any as string);
+                //    this.rhs.refresh();
+                //}
+                //this.updateState();
+            },
+        });*/
+        this.functionSelector = new TomSelect(selector, {
+            valueField: 'value',
+            labelField: 'title',
+            searchField: ['title'],
+            dropdownParent: 'body',
+            plugins: ['input_autogrow'],
+            sortField: 'title',
+            onChange: e => this.onFnChange(e as any as string),
+        });
+        //this.functionSelector.addOption({
+        //    title: "Test",
+        //    value: "x"
+        //});
+        //this.functionSelector.addOption({
+        //    title: "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest",
+        //    value: "y"
+        //});
+        //this.functionSelector.addOption({
+        //    title: "alpha",
+        //    value: "a"
+        //});
+        this.clickCallback = this.onClickCallback.bind(this);
+        this.keydownCallback = this.onKeydownCallback.bind(this);
+        $(document).on('click', this.clickCallback);
+        $(document).on('keydown', this.keydownCallback);
     }
 
     override getInitialHTML(): string {
         return $('#llvm-opt-pipeline').html();
     }
 
-    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneDiffEditor {
+        const editor = monaco.editor.createDiffEditor(
             editorRoot,
             extendConfig({
                 language: 'llvm-ir',
@@ -62,6 +141,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
                 automaticLayout: true,
             })
         );
+        this.originalModel = monaco.editor.createModel('', 'llvm-ir');
+        this.modifiedModel = monaco.editor.createModel('', 'llvm-ir');
+        editor.setModel({original: this.originalModel, modified: this.modifiedModel});
+        return editor;
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -115,9 +198,9 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
         //console.log(compilerId, compiler, result);
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
-            this.showIrResults(result.llvmOptPipelineOutput);
+            this.updateResults(result.llvmOptPipelineOutput as LLVMOptPipelineOutput);
         } else if (compiler.supportsLLVMOptPipelineView) {
-            this.showIrResults([{text: '<No output>'}]);
+            //this.showIrResults([{text: '<No output>'}]); // TODO
         }
     }
 
@@ -128,13 +211,31 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
         this.compilerInfo.treeId = treeId;
         this.updateTitle();
         if (compiler && !compiler.supportsLLVMOptPipelineView) {
-            this.editor.setValue('<LLVM IR output is not supported for this compiler>');
+            //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }
 
-    showIrResults(result: any[]): void {
-        this.irCode = result;
-        this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
+    updateResults(results: LLVMOptPipelineOutput): void {
+        this.results = results;
+        //const functions = Object.keys(result);
+        this.functionSelector.clearOptions();
+        this.functionSelector.clearActiveOption();
+        const keys = Object.keys(results);
+        if (keys.length === 0) {
+            this.functionSelector.addOption({
+                title: '<No functions available>',
+                value: '<No functions available>',
+            });
+        }
+        for (const fn of keys) {
+            this.functionSelector.addOption({
+                title: fn,
+                value: fn,
+            });
+        }
+
+        //this.irCode = result;
+        /*this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
@@ -142,6 +243,74 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
                 this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
+        }*/
+        //const x = result[Object.keys(result)[0]][0];
+        //this.editor.getModel()?.setValue(x.before.map(y => y.text).join("\n") + x.after.map(y => y.text).join("\n"));
+    }
+
+    onFnChange(name: string) {
+        this.selectedFunction = name;
+        const passes = this.results[name];
+        this.passesList.empty();
+        for (const [i, pass] of passes.entries()) {
+            const changedClass = pass.irChanged ? 'changed' : '';
+            this.passesList.append(`<div data-i="${i}" class="pass ${changedClass}">${_.escape(pass.name)}</div>`);
+        }
+        const passDivs = this.passesList.find('.pass');
+        passDivs.on('click', e => {
+            const target = e.target;
+            this.passesList.find('.active').removeClass('active');
+            $(target).addClass('active');
+            this.displayPass(parseInt(target.getAttribute('data-i') as string));
+        });
+        this.resize(); // pass list width may change
+    }
+
+    displayPass(i: number) {
+        const pass = this.results[this.selectedFunction][i];
+        console.log(pass);
+        const before = pass.before.map(x => x.text).join('\n');
+        const after = pass.after.map(x => x.text).join('\n');
+        console.log(this.editor.getModel());
+        console.log(this.editor.getModel()?.original);
+        this.editor.getModel()?.original.setValue(before);
+        this.editor.getModel()?.modified.setValue(after);
+    }
+
+    onClickCallback(e: JQuery.ClickEvent) {
+        this.isPassListSelected = (this.passesList.get(0) as HTMLElement).contains(e.target);
+    }
+
+    onKeydownCallback(e: JQuery.KeyDownEvent) {
+        if (this.isPassListSelected) {
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const active = this.passesList.find('.active');
+                const prev = active.prev().get(0);
+                if (prev) {
+                    active.removeClass('active');
+                    $(prev).addClass('active');
+                    scrollIntoView(prev, {
+                        scrollMode: 'if-needed',
+                        block: 'nearest',
+                    });
+                    this.displayPass(parseInt(prev.getAttribute('data-i') as string));
+                }
+            }
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const active = this.passesList.find('.active');
+                const next = active.next().get(0);
+                if (next) {
+                    active.removeClass('active');
+                    $(next).addClass('active');
+                    scrollIntoView(next, {
+                        scrollMode: 'if-needed',
+                        block: 'nearest',
+                    });
+                    this.displayPass(parseInt(next.getAttribute('data-i') as string));
+                }
+            }
         }
     }
 
@@ -152,10 +321,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneCodeEdi
                 width: (this.domRoot.width() as number) - (this.passesColumn.width() as number),
                 height: (this.domRoot.height() as number) - topBarHeight,
             });
+            (this.body.get(0) as HTMLElement).style.height = (this.domRoot.height() as number) - topBarHeight + 'px';
         });
     }
 
     override close(): void {
+        $(document).off('click', this.clickCallback);
+        $(document).off('keydown', this.keydownCallback);
         this.eventHub.unsubscribe();
         this.eventHub.emit('llvmOptPipelineViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
