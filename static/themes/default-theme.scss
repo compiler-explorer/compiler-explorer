@@ -351,3 +351,10 @@ div.argmenuitem span.argdescription {
     background-color: darken(rgba(248, 249, 250, 0.85), 3%);
     border: 1px solid #d2d3d4;
 }
+
+.llvm-opt-pipeline-body .passes-column .passes-list div {
+    background: rgba(0, 0, 0, 0.1);
+    &:hover, &.active {
+        background: rgba(0, 0, 0, 0.2);
+    }
+}

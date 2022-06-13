@@ -134,6 +134,10 @@ li.tweet {
     margin: 0 10px 0 0;
 }
 
+.llvm-opt-function-picker {
+    min-width: 10em;
+}
+
 #root {
     width: 100%;
     margin: 0;
@@ -949,6 +953,33 @@ html[data-theme='dark'] {
         cursor: pointer;
         &:hover {
             background: rgba(0, 0, 0, 0.4);
+        }
+    }
+}
+
+.llvm-opt-pipeline-body {
+    display: flex;
+    overflow: hidden;
+    align-items: stretch;
+    height: 100%;
+    .passes-column {
+        color: white;
+        min-width: 200px;
+        max-width: 30%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 100%;
+        .passes-list div {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 3px;
+            border: 1px solid black;
+            cursor: pointer;
+            &:hover, &.active {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            &.changed {
+                color: #36ac46;
+            }
         }
     }
 }
