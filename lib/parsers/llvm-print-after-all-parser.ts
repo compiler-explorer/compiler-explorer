@@ -61,6 +61,7 @@ export class LlvmPrintAfterAllParser {
     filters: RegExp[];
     lineFilters: RegExp[];
     irDumpAfterHeader: RegExp;
+    machineCodeDumpHeader: RegExp;
     defineLine: RegExp;
     label: RegExp;
     instruction: RegExp;
@@ -89,6 +90,7 @@ export class LlvmPrintAfterAllParser {
         ];
 
         this.irDumpAfterHeader = /^\*{3} (.+) \*{3}(;.+)?$/;
+        this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
         this.defineLine = /^define .+ @(\w+)\(.+$/;
         this.label = /^\d+:(\s+;.+)?$/;
         this.instruction = /^\s+.+$/;
@@ -162,6 +164,8 @@ export class LlvmPrintAfterAllParser {
             if (func.name === '<loop>') {
                 // loop dumps must be alone
                 if (Object.entries(pass.functions).length > 0) {
+                    //console.dir(dump, { depth: 5, maxArrayLength: 100000 });
+                    //console.log(pass.functions);
                     throw 'Internal error during breakdownPass (5)';
                 }
                 pass.functions[func.name] = func.lines;
@@ -177,6 +181,10 @@ export class LlvmPrintAfterAllParser {
         const raw_passes: PassDump[] = [];
         let pass: PassDump | null = null;
         for (const line of ir) {
+            // stop once the machine code passes start, can't handle these yet
+            if (this.machineCodeDumpHeader.test(line.text)) {
+                break;
+            }
             const match = line.text.match(this.irDumpAfterHeader);
             if (match) {
                 if (pass !== null) {
