@@ -1,3 +1,7 @@
+// Example code of an affine reduction.
+// MLIR example code may not always work out of the box because the textual MLIR format is not stable.
+// The example tries to be compatible with the latest MLIR version, which may not work on previous versions.
+
 func @affine_parallel_with_reductions_i64(%arg0: memref<3x3xi64>, %arg1: memref<3x3xi64>) -> (i64, i64) {
   %0:2 = affine.parallel (%kx, %ky) = (0, 0) to (2, 2) reduce ("addi", "muli") -> (i64, i64) {
             %1 = affine.load %arg0[%kx, %ky] : memref<3x3xi64>
