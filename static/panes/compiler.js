@@ -981,38 +981,39 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         files: tree.multifileService.getFiles(),
     };
 
-    const fetches = [];
-
+    var fetches = [];
     fetches.push(
-        this.compilerService.expand(request.source).then(contents => {
+        this.compilerService.expand(request.source).then(function (contents) {
             request.source = contents;
         })
     );
 
-    for (let file of request.files) {
+    for (var i = 0; i < request.files.length; i++) {
+        var file = request.files[i];
         fetches.push(
-            this.compilerService.expand(file.contents).then(contents => {
+            this.compilerService.expand(file.contents).then(function (contents) {
                 file.contents = contents;
             })
         );
     }
 
-    Promise.all(fetches).then(() => {
+    var self = this;
+    Promise.all(fetches).then(function () {
         var treeState = tree.currentState();
         var cmakeProject = tree.multifileService.isACMakeProject();
 
         if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        if (!self.compiler) {
+            self.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
         } else if (cmakeProject && request.source === '') {
-            this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
+            self.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
         } else {
             if (cmakeProject) {
                 request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
                 request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-                this.sendCMakeCompile(request);
+                self.sendCMakeCompile(request);
             } else {
-                this.sendCompile(request);
+                self.sendCompile(request);
             }
         }
     });
@@ -2385,8 +2386,9 @@ function htmlEncode(rawStr) {
 
 Compiler.prototype.checkForHints = function (result) {
     if (result.hints) {
-        result.hints.forEach(hint => {
-            this.alertSystem.notify(htmlEncode(hint), {
+        var self = this;
+        result.hints.forEach(function (hint) {
+            self.alertSystem.notify(htmlEncode(hint), {
                 group: 'hints',
                 collapseSimilar: false,
             });

@@ -333,7 +333,7 @@ export class Hub {
     }
 
     public addAtRoot(elem: GoldenLayout.ContentItem): void {
-        const rootFirstItem = this.layout.root.contentItems[0] as typeof this.layout.root.contentItems[0] | undefined;
+        const rootFirstItem = this.layout.root.contentItems[0] as GoldenLayout.ContentItem | undefined;
         if (rootFirstItem) {
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
