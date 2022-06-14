@@ -251,9 +251,14 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.selectedFunction = name;
         const passes = this.results[name];
         this.passesList.empty();
+        let isFirstMachinePass = true;
         for (const [i, pass] of passes.entries()) {
-            const changedClass = pass.irChanged ? 'changed' : '';
-            this.passesList.append(`<div data-i="${i}" class="pass ${changedClass}">${_.escape(pass.name)}</div>`);
+            let className = pass.irChanged ? 'changed' : '';
+            if (pass.machine && isFirstMachinePass) {
+                className += ' firstMachinePass';
+                isFirstMachinePass = false;
+            }
+            this.passesList.append(`<div data-i="${i}" class="pass ${className}">${_.escape(pass.name)}</div>`);
         }
         const passDivs = this.passesList.find('.pass');
         passDivs.on('click', e => {
