@@ -138,7 +138,6 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-                automaticLayout: true,
             })
         );
         this.originalModel = monaco.editor.createModel('', 'llvm-ir');
