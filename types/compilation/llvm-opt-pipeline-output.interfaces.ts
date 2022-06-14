@@ -27,6 +27,7 @@ export type OutputLine = {text: string};
 // Pass name with before / after dump
 export type Pass = {
     name: string;
+    machine: boolean;
     after: OutputLine[];
     before: OutputLine[];
     irChanged: boolean;

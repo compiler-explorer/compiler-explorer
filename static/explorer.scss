@@ -974,6 +974,19 @@ html[data-theme='dark'] {
             padding: 2px 3px;
             border: 1px solid black;
             cursor: pointer;
+            &.firstMachinePass {
+                margin-top: 5px;
+                position: relative;
+                &:before {
+                    position: absolute;
+                    top: -5px;
+                    left: 0;
+                    content: "";
+                    height: 4px;
+                    width: 100%;
+                    background: white;
+                }
+            }
             &:hover, &.active {
                 background: rgba(255, 255, 255, 0.2);
             }

@@ -49,11 +49,13 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
 // Ir Dump for a pass with raw lines
 type PassDump = {
     header: string;
+    machine: boolean;
     lines: OutputLine[];
 };
 // Ir Dump for a pass with raw lines broken into affected functions (or "<loop>")
 type SplitPassDump = {
     header: string;
+    machine: boolean;
     functions: Record<string, OutputLine[]>;
 };
 
@@ -62,9 +64,11 @@ export class LlvmPrintAfterAllParser {
     lineFilters: RegExp[];
     irDumpAfterHeader: RegExp;
     machineCodeDumpHeader: RegExp;
-    defineLine: RegExp;
-    label: RegExp;
-    instruction: RegExp;
+    functionDefine: RegExp;
+    machineFunctionBegin: RegExp;
+    functionEnd: RegExp;
+    //label: RegExp;
+    //instruction: RegExp;
 
     constructor(compilerProps) {
         //this.maxIrLines = 5000;
@@ -89,11 +93,18 @@ export class LlvmPrintAfterAllParser {
             /,? #\d+((?=( {)?$))/, // attribute annotation
         ];
 
+        // Ir dump headers look like "*** IR Dump After XYZ ***"
+        // Machine dump headers look like "# *** IR Dump After XYZ ***:"
         this.irDumpAfterHeader = /^\*{3} (.+) \*{3}(;.+)?$/;
         this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
-        this.defineLine = /^define .+ @(\w+)\(.+$/;
-        this.label = /^\d+:(\s+;.+)?$/;
-        this.instruction = /^\s+.+$/;
+        // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
+        this.functionDefine = /^define .+ @(\w+)\(.+$/;
+        this.machineFunctionBegin = /^# Machine code for function (\w+):.*$/;
+        // Functions end with either a closing brace or "# End machine code for function _Z3fooi."
+        this.functionEnd = /^(?:}|# End machine code for function (\w+).)$/;
+        // Either "123:" with a possible comment or something like "bb.3 (%ir-block.13):"
+        //this.label = /^(?:\d+:(\s+;.+)?|\w+.+:)$/;
+        //this.instruction = /^\s+.+$/;
     }
 
     breakdownDump(dump: PassDump) {
@@ -104,27 +115,30 @@ export class LlvmPrintAfterAllParser {
         // - Some loop passes only dump loops - these are challenging to deal with
         const pass: SplitPassDump = {
             header: dump.header,
+            machine: dump.machine,
             functions: {},
         };
         let func: {
             name: string;
             lines: OutputLine[];
         } | null = null;
+        //console.log(dump);
         for (const line of dump.lines) {
-            const match = line.text.match(this.defineLine);
+            const irFnMatch = line.text.match(this.functionDefine);
+            const machineFnMatch = line.text.match(this.machineFunctionBegin);
             // function define line
-            if (match) {
+            if (irFnMatch || machineFnMatch) {
                 // if the last function has not been closed...
                 if (func !== null) {
                     throw 'Internal error during breakdownPass (1)';
                 }
                 func = {
-                    name: match[1],
+                    name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
                 };
             } else {
                 // close function
-                if (line.text.trim() === '}') {
+                if (this.functionEnd.test(line.text.trim())) {
                     // if not currently in a function
                     if (func === null) {
                         throw 'Internal error during breakdownPass (2)';
@@ -182,16 +196,18 @@ export class LlvmPrintAfterAllParser {
         let pass: PassDump | null = null;
         for (const line of ir) {
             // stop once the machine code passes start, can't handle these yet
-            if (this.machineCodeDumpHeader.test(line.text)) {
-                break;
-            }
-            const match = line.text.match(this.irDumpAfterHeader);
-            if (match) {
+            //if (this.machineCodeDumpHeader.test(line.text)) {
+            //    break;
+            //}
+            const irMatch = line.text.match(this.irDumpAfterHeader);
+            const machineMatch = line.text.match(this.machineCodeDumpHeader);
+            if (irMatch || machineMatch) {
                 if (pass !== null) {
                     raw_passes.push(pass);
                 }
                 pass = {
-                    header: match[1],
+                    header: (irMatch || machineMatch)![1],
+                    machine: !!machineMatch,
                     lines: [],
                 };
             } else {
@@ -210,7 +226,8 @@ export class LlvmPrintAfterAllParser {
         // Further break down by functions in each dump
         const passDumps = raw_passes.map(this.breakdownDump.bind(this));
         //console.dir(passDumps, {
-        //    depth: 5
+        //    depth: 5,
+        //    maxArrayLength: 10000
         //});
         // Currently we have an array of passes with a map of functions altered in each pass
         // We want to transpose to a map of functions with an array of passes on the function
@@ -218,7 +235,7 @@ export class LlvmPrintAfterAllParser {
         // I'm assuming loop dumps should correspond to the previous function dumped
         let previousFunction: string | null = null;
         for (const pass of passDumps) {
-            const {header, functions} = pass;
+            const {header, machine, functions} = pass;
             const functionEntries = Object.entries(functions);
             for (const [function_name, lines] of functionEntries) {
                 const name: string | null = function_name === '<loop>' ? previousFunction : function_name;
@@ -228,6 +245,7 @@ export class LlvmPrintAfterAllParser {
                 }
                 passDumpsByFunction[name].push({
                     header,
+                    machine,
                     lines,
                 });
             }
@@ -256,6 +274,7 @@ export class LlvmPrintAfterAllParser {
             for (let i = 0; i < passDumps.length; ) {
                 const pass: Pass = {
                     name: '',
+                    machine: false,
                     after: [],
                     before: [],
                     irChanged: true,
@@ -276,6 +295,7 @@ export class LlvmPrintAfterAllParser {
                             current_dump.header,
                             next_dump.header,
                         );
+                        assert(current_dump.machine === next_dump.machine);
                         pass.name = current_dump.header.slice('IR Dump Before '.length);
                         pass.before = current_dump.lines;
                         pass.after = next_dump.lines;
@@ -289,10 +309,15 @@ export class LlvmPrintAfterAllParser {
                 } else {
                     assert(false, 'Unexpected pass header', current_dump.header);
                 }
+                pass.machine = current_dump.machine;
                 // check for equality
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
             }
+            //console.dir(passes, {
+            //    depth: 5,
+            //    maxArrayLength: 100000
+            //});
             assert(!(function_name in final_output), 'xxx');
             final_output[function_name] = passes;
         }
