@@ -305,7 +305,16 @@ function findConfig(defaultConfig, options) {
                 try {
                     config = url.deserialiseState(window.location.hash.substring(1));
                 } catch (e) {
-                    // Ignore so we at least load the site, but it would be good to notify the user
+                    // #3518 Alert the user that the url is invalid
+                    var alertSystem = new Alert();
+                    alertSystem.notify(
+                        'Unable to load custom configuration from URL,\
+                     the last locally saved configuration will be used if present.',
+                        {
+                            alertClass: 'notification-error',
+                            dismissTime: 5000,
+                        }
+                    );
                 }
             }
 
