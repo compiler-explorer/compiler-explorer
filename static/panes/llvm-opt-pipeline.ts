@@ -42,6 +42,7 @@ import {LLVMOptPipelineOutput, OutputLine, Pass} from '../../types/compilation/l
 import TomSelect from 'tom-select';
 
 import scrollIntoView from 'scroll-into-view-if-needed';
+import {Toggles} from '../widgets/toggles';
 
 export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, IrState> {
     results: LLVMOptPipelineOutput = {};
@@ -56,6 +57,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     selectedFunction = '';
     originalModel: any;
     modifiedModel: any;
+    options: Toggles;
 
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
@@ -106,7 +108,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
             sortField: 'title',
-            onChange: e => this.onFnChange(e as any as string),
+            onChange: e => this.selectFunction(e as any as string),
         });
         //this.functionSelector.addOption({
         //    title: "Test",
@@ -185,12 +187,23 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         });
     }
 
+    override registerButtons(state: IrState) {
+        super.registerButtons(state);
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
+        this.options.on('change', this.onOptionsChange.bind(this));
+    }
+
     override registerCallbacks(): void {
         super.registerCallbacks();
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
         this.eventHub.emit('llvmOptPipelineViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
+    }
+
+    onOptionsChange() {
+        // Redo pass sidebar
+        this.selectFunction(this.selectedFunction);
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
@@ -247,12 +260,16 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         //this.editor.getModel()?.setValue(x.before.map(y => y.text).join("\n") + x.after.map(y => y.text).join("\n"));
     }
 
-    onFnChange(name: string) {
+    selectFunction(name: string) {
         this.selectedFunction = name;
+        const filterInconsequentialPasses = this.options.get()['filter-headers'];
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
         for (const [i, pass] of passes.entries()) {
+            if (filterInconsequentialPasses && !pass.irChanged) {
+                continue;
+            }
             let className = pass.irChanged ? 'changed' : '';
             if (pass.machine && isFirstMachinePass) {
                 className += ' firstMachinePass';

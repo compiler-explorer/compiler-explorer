@@ -329,6 +329,12 @@
   #llvm-opt-pipeline
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
+      .btn-group.btn-group-sm.options(role="group" aria-label="Panel options")
+        .input-group.input-group-sm.mb-auto
+          .button-checkbox
+            button.btn.btn-sm.btn-light.filter-inconsequential-passes(type="button" title="Filter passes which do not make changes" data-bind="filter-headers" aria-pressed="false" aria-label="Filter Inconsequential Passes")
+              span Filter Inconsequential Passes
+            input.d-none(type="checkbox" checked=false)
       .btn-group.btn-group-sm
         .input-group.input-group-sm.mb-auto
           .input-group-prepend
