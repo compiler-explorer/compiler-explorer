@@ -1343,7 +1343,12 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
     this.compileInfoLabel.text(infoLabelText);
 
     if (result.result) {
-        this.postCompilationResult(request, result.result);
+        var wasCmake =
+            result.buildsteps &&
+            _.any(result.buildsteps, function (step) {
+                return step.step === 'cmake';
+            });
+        this.postCompilationResult(request, result.result, wasCmake);
     } else {
         this.postCompilationResult(request, result);
     }
@@ -1365,7 +1370,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     this.doNextCompileRequest();
 };
 
-Compiler.prototype.postCompilationResult = function (request, result) {
+Compiler.prototype.postCompilationResult = function (request, result, wasCmake) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
     } else {
@@ -1380,7 +1385,7 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 
     this.updateButtons();
 
-    this.checkForUnwiseArguments(result.compilationOptions);
+    this.checkForUnwiseArguments(result.compilationOptions, wasCmake);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
 
     this.checkForHints(result);
@@ -2396,7 +2401,7 @@ Compiler.prototype.checkForHints = function (result) {
     }
 };
 
-Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
+Compiler.prototype.checkForUnwiseArguments = function (optionsArray, wasCmake) {
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(
         optionsArray,
@@ -2410,7 +2415,7 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     var are = unwiseOptions.length === 1 ? ' is ' : ' are ';
     var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
-    if (_.contains(optionsArray, '-flto') && !this.filters.state.binary) {
+    if (_.contains(optionsArray, '-flto') && !this.filters.state.binary && !wasCmake) {
         this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
             group: 'unwiseOption',
             collapseSimilar: true,
