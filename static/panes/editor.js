@@ -1351,6 +1351,12 @@ Editor.prototype.getAllOutputAndErrors = function (result) {
             all = all.concat(step.stderr);
         });
     }
+    if (result.tools) {
+        _.each(result.tools, function (tool) {
+            all = all.concat(tool.stdout);
+            all = all.concat(tool.stderr);
+        });
+    }
     all = all.concat(result.stderr || []);
 
     return all;
