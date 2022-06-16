@@ -94,8 +94,9 @@ export class LlvmPrintAfterAllParser {
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
-        // Machine dump headers look like "# *** IR Dump After XYZ ***:"
-        this.irDumpAfterHeader = /^\*{3} (.+) \*{3}(;.+)?$/;
+        // Machine dump headers look like "# *** IR Dump After XYZ ***:", possibly with a comment or "(function: xyz)"
+        // or "(loop: %x)" at the end
+        this.irDumpAfterHeader = /^\*{3} (.+) \*{3}(\s+\((function: \w+|loop: %\w+)\))?(;.+)?$/;
         this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
         // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
         this.functionDefine = /^define .+ @(\w+)\(.+$/;
@@ -107,7 +108,40 @@ export class LlvmPrintAfterAllParser {
         //this.instruction = /^\s+.+$/;
     }
 
-    breakdownDump(dump: PassDump) {
+    breakdownOutputIntoPassDumps(ir: OutputLine[]) {
+        // break down output by "*** IR Dump After XYZ ***" markers
+        const raw_passes: PassDump[] = [];
+        let pass: PassDump | null = null;
+        for (const line of ir) {
+            // stop once the machine code passes start, can't handle these yet
+            //if (this.machineCodeDumpHeader.test(line.text)) {
+            //    break;
+            //}
+            const irMatch = line.text.match(this.irDumpAfterHeader);
+            const machineMatch = line.text.match(this.machineCodeDumpHeader);
+            if (irMatch || machineMatch) {
+                if (pass !== null) {
+                    raw_passes.push(pass);
+                }
+                pass = {
+                    header: (irMatch || machineMatch)![1],
+                    machine: !!machineMatch,
+                    lines: [],
+                };
+            } else {
+                if (pass === null) {
+                    throw 'Internal error during breakdownOutput (1)';
+                }
+                pass.lines.push(line);
+            }
+        }
+        if (pass !== null) {
+            raw_passes.push(pass);
+        }
+        return raw_passes;
+    }
+
+    breakdownPassDumpsIntoFunctions(dump: PassDump) {
         // break up down dumps for each pass into functions (or absence of functions in the case of loop passes)
         // we have three cases of ir dumps to consider:
         // - Most passes dump a single function
@@ -123,7 +157,9 @@ export class LlvmPrintAfterAllParser {
             lines: OutputLine[];
         } | null = null;
         //console.log(dump);
+        console.log("----");
         for (const line of dump.lines) {
+            console.log(line);
             const irFnMatch = line.text.match(this.functionDefine);
             const machineFnMatch = line.text.match(this.machineFunctionBegin);
             // function define line
@@ -190,45 +226,7 @@ export class LlvmPrintAfterAllParser {
         return pass;
     }
 
-    breakdownOutput(ir: OutputLine[]) {
-        // break down output by "*** IR Dump After XYZ ***" markers
-        const raw_passes: PassDump[] = [];
-        let pass: PassDump | null = null;
-        for (const line of ir) {
-            // stop once the machine code passes start, can't handle these yet
-            //if (this.machineCodeDumpHeader.test(line.text)) {
-            //    break;
-            //}
-            const irMatch = line.text.match(this.irDumpAfterHeader);
-            const machineMatch = line.text.match(this.machineCodeDumpHeader);
-            if (irMatch || machineMatch) {
-                if (pass !== null) {
-                    raw_passes.push(pass);
-                }
-                pass = {
-                    header: (irMatch || machineMatch)![1],
-                    machine: !!machineMatch,
-                    lines: [],
-                };
-            } else {
-                if (pass === null) {
-                    throw 'Internal error during breakdownOutput (1)';
-                }
-                pass.lines.push(line);
-            }
-        }
-        if (pass !== null) {
-            raw_passes.push(pass);
-        }
-        //console.dir(raw_passes, {
-        //    depth: 3
-        //});
-        // Further break down by functions in each dump
-        const passDumps = raw_passes.map(this.breakdownDump.bind(this));
-        //console.dir(passDumps, {
-        //    depth: 5,
-        //    maxArrayLength: 10000
-        //});
+    breakdownIntoPassDumpsByFunction(passDumps: SplitPassDump[]) {
         // Currently we have an array of passes with a map of functions altered in each pass
         // We want to transpose to a map of functions with an array of passes on the function
         const passDumpsByFunction: Record<string, PassDump[]> = {};
@@ -260,9 +258,10 @@ export class LlvmPrintAfterAllParser {
                 previousFunction = null;
             }
         }
-        //console.dir(passDumpsByFunction, {
-        //    depth: 5
-        //});
+        return passDumpsByFunction;
+    }
+
+    matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps
         const final_output: LLVMOptPipelineOutput = {};
@@ -321,9 +320,19 @@ export class LlvmPrintAfterAllParser {
             assert(!(function_name in final_output), 'xxx');
             final_output[function_name] = passes;
         }
-        //console.dir(final_output, {
-        //    depth: 6
-        //});
+        return final_output;
+    }
+
+    breakdownOutput(ir: OutputLine[]) {
+        // break down output by "*** IR Dump After XYZ ***" markers
+        const raw_passes = this.breakdownOutputIntoPassDumps(ir);
+        // Further break down by functions in each dump
+        const passDumps = raw_passes.map(this.breakdownPassDumpsIntoFunctions.bind(this));
+        // Transform array of passes containing multiple functions into a map from functions to arrays of passes on
+        // those functions
+        const passDumpsByFunction = this.breakdownIntoPassDumpsByFunction(passDumps);
+        // Match before / after pass dumps
+        const final_output = this.matchPassDumps(passDumpsByFunction);
         return final_output;
     }
 

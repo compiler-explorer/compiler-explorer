@@ -97,6 +97,7 @@ export type EventMap = {
     irViewOpened: (compilerId: number) => void;
     llvmOptPipelineViewClosed: (compilerId: number) => void;
     llvmOptPipelineViewOpened: (compilerId: number) => void;
+    llvmOptPipelineViewOptionsUpdated: (compilerId: number, options: any, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;

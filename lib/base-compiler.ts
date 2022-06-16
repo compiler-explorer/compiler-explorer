@@ -969,10 +969,12 @@ export class BaseCompiler {
         };
     }
 
-    async generateLLVMOptPipeline(inputFilename, options, filters: ParseFilters) {
+    async generateLLVMOptPipeline(inputFilename, options, filters: ParseFilters, llvmOptPipelineOptions) {
         // These options make Clang produce an IR
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(
             this.compiler.llvmOptArg,
+        ).concat(
+            llvmOptPipelineOptions["dump-full-module"] ? this.compiler.llvmOptModuleScopeArg : []
         );
 
         const execOptions = this.getDefaultExecOptions();
@@ -1577,7 +1579,7 @@ export class BaseCompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
-        const makeLLVMOptPipeline = backendOptions.produceLLVMOptPipeline && this.compiler.supportsLLVMOptPipelineView;
+        const makeLLVMOptPipeline = typeof backendOptions.produceLLVMOptPipeline == 'object' && this.compiler.supportsLLVMOptPipelineView;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -1602,7 +1604,7 @@ export class BaseCompiler {
             makeAst ? this.generateAST(inputFilename, options) : '',
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
             makeIr ? this.generateIR(inputFilename, options, filters) : '',
-            makeLLVMOptPipeline ? this.generateLLVMOptPipeline(inputFilename, options, filters) : '',
+            makeLLVMOptPipeline ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline) : '',
             makeRustHir ? this.generateRustHir(inputFilename, options) : '',
             makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
             Promise.all(
