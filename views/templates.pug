@@ -329,11 +329,18 @@
   #llvm-opt-pipeline
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
-      .btn-group.btn-group-sm.options(role="group" aria-label="Panel options")
-        .input-group.input-group-sm.mb-auto
+      .btn-group.btn-group-sm.options(role="group")
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+          span.fas.fa-anchor
+          span.hideable Options
+        .dropdown-menu
           .button-checkbox
-            button.btn.btn-sm.btn-light.filter-inconsequential-passes(type="button" title="Filter passes which do not make changes" data-bind="filter-headers" aria-pressed="false" aria-label="Filter Inconsequential Passes")
+            button.dropdown-item.btn.btn-sm.btn-light.filter-inconsequential-passes(type="button" title="Filter passes which do not make changes" data-bind="filter-inconsequential-passes" aria-pressed="false" aria-label="Filter Inconsequential Passes")
               span Filter Inconsequential Passes
+            input.d-none(type="checkbox" checked=false)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Dump the entire module for each pass" data-bind="dump-full-module" aria-pressed="false" aria-label="Filter Inconsequential Passes")
+              span Dump Full Module
             input.d-none(type="checkbox" checked=false)
       .btn-group.btn-group-sm
         .input-group.input-group-sm.mb-auto

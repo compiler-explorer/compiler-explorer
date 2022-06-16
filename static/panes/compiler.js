@@ -961,7 +961,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceGnatDebugTree: this.gnatDebugTreeViewOpen,
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
-            produceLLVMOptPipeline: this.llvmOptPipelineViewOpen,
+            produceLLVMOptPipeline: this.llvmOptPipelineViewOpen ? this.llvmOptPipelineOptions : false,
             produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
             produceRustMacroExp: this.rustMacroExpViewOpen,
@@ -974,6 +974,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         tools: this.getActiveTools(newTools),
         libraries: [],
     };
+    console.log(options);
 
     _.each(this.libsWidget.getLibsInUse(), function (item) {
         options.libraries.push({
@@ -1628,6 +1629,16 @@ Compiler.prototype.onLLVMOptPipelineViewClosed = function (id) {
     if (this.id === id) {
         this.llvmOptPipelineButton.prop('disabled', false);
         this.llvmOptPipelineViewOpen = false;
+    }
+};
+
+Compiler.prototype.onLLVMOptPipelineViewOptionsUpdated = function (id, options, recompile) {
+    if (this.id === id) {
+        console.log(options);
+        this.llvmOptPipelineOptions = options;
+        if (recompile) {
+            this.compile();
+        }
     }
 };
 
@@ -2294,6 +2305,7 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
     this.eventHub.on('llvmOptPipelineViewOpened', this.onLLVMOptPipelineViewOpened, this);
     this.eventHub.on('llvmOptPipelineViewClosed', this.onLLVMOptPipelineViewClosed, this);
+    this.eventHub.on('llvmOptPipelineViewOptionsUpdated', this.onLLVMOptPipelineViewOptionsUpdated, this);
     this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
     this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);

@@ -58,7 +58,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
-
+    // todo: can probably get rid of this and just use state?
+    lastOptions = {'dump-full-module': false};
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         this.passesColumn = this.domRoot.find('.passes-column');
@@ -126,6 +127,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.keydownCallback = this.onKeydownCallback.bind(this);
         $(document).on('click', this.clickCallback);
         $(document).on('keydown', this.keydownCallback);
+
+        this.emitOptions(true);
     }
 
     override getInitialHTML(): string {
@@ -201,9 +204,37 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.eventHub.emit('requestSettings');
     }
 
+    emitOptions(force = false) {
+        const options = this.options.get();
+        console.log(options);
+        // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
+        // the backend? Would be a data transfer optimization.
+        const newOptions = {
+            //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
+            'dump-full-module': options['dump-full-module'],
+        };
+        let changed = false;
+        for(const k in newOptions) {
+            if(newOptions[k] !== this.lastOptions[k]) {
+                changed = true;
+            }
+        }
+        this.lastOptions = newOptions;
+        if(changed || force) {
+            this.eventHub.emit(
+                'llvmOptPipelineViewOptionsUpdated',
+                this.compilerInfo.compilerId,
+                newOptions,
+                true
+            );
+        }
+    }
+
     onOptionsChange() {
         // Redo pass sidebar
         this.selectFunction(this.selectedFunction);
+        // Inform compiler of the options
+        this.emitOptions();
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
@@ -263,6 +294,9 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     selectFunction(name: string) {
         this.selectedFunction = name;
         const filterInconsequentialPasses = this.options.get()['filter-headers'];
+        if(!(name in this.results)) {
+            return;
+        }
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
