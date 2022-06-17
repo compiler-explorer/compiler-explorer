@@ -1145,6 +1145,7 @@ Compiler.prototype.getBinaryForLine = function (line) {
 };
 
 Compiler.prototype.setAssembly = function (result, filteredCount) {
+    console.log(result);
     var asm = result.asm || fakeAsm('<No output>');
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
@@ -1303,6 +1304,9 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
         this.setAssembly(result, result.filteredCount || 0);
     } else if (result.result && result.result.asm) {
         this.setAssembly(result.result, result.result.filteredCount || 0);
+    } else {
+        result.asm = fakeAsm('<Compilation failed>');
+        this.setAssembly(result, 0);
     }
 
     var stdout = result.stdout || [];
