@@ -293,7 +293,11 @@ export class Settings {
         const colourSchemesData = colour.schemes.map(scheme => {
             return {label: scheme.name, desc: scheme.desc};
         });
-        addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
+        let defaultColourScheme = colour.schemes[0].name;
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            defaultColourScheme = 'gray-shade';
+        }
+        addSelector('.colourScheme', 'colourScheme', colourSchemesData, defaultColourScheme);
 
         // keys(themes) is Themes[] but TS does not realize without help
         const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
