@@ -1303,6 +1303,8 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
         this.setAssembly(result, result.filteredCount || 0);
     } else if (result.result && result.result.asm) {
         this.setAssembly(result.result, result.result.filteredCount || 0);
+    } else {
+        this.setAssembly({asm: fakeAsm('<Compilation failed>')}, 0);
     }
 
     var stdout = result.stdout || [];
