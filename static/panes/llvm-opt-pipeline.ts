@@ -229,6 +229,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         } else if (compiler.supportsLLVMOptPipelineView) {
             this.updateResults({});
             this.editor.getModel()?.original.setValue('<Error>');
+            this.editor.getModel()?.modified.setValue('');
         }
     }
 
@@ -270,6 +271,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             if (selectedFunction in results) {
                 this.functionSelector.setValue(selectedFunction);
             }
+        } else {
+            // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
+            // still be the same
+            this.selectedFunction = selectedFunction;
         }
     }
 
@@ -278,7 +283,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (!(name in this.results)) {
             return;
         }
-        const filterInconsequentialPasses = this.options.get()['filter-headers'];
+        const filterInconsequentialPasses = this.options.get()['filter-inconsequential-passes'];
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
