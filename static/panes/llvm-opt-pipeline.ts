@@ -227,7 +227,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (result.hasLLVMOptPipelineOutput) {
             this.updateResults(result.llvmOptPipelineOutput as LLVMOptPipelineOutput);
         } else if (compiler.supportsLLVMOptPipelineView) {
-            //this.showIrResults([{text: '<No output>'}]); // TODO
+            this.updateResults({});
+            this.editor.getModel()?.original.setValue('<Error>');
         }
     }
 
@@ -261,16 +262,18 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 value: fn,
             });
         }
-        if (selectedFunction === '') {
-            selectedFunction = keys[0];
-        }
-        if (selectedFunction in results) {
-            this.functionSelector.setValue(selectedFunction);
+        this.passesList.empty();
+        if (keys.length > 0) {
+            if (selectedFunction === '') {
+                selectedFunction = keys[0];
+            }
+            if (selectedFunction in results) {
+                this.functionSelector.setValue(selectedFunction);
+            }
         }
     }
 
     selectFunction(name: string) {
-        console.log('---->', name);
         this.selectedFunction = name;
         if (!(name in this.results)) {
             return;
