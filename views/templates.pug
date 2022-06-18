@@ -349,8 +349,10 @@
               | Function:&nbsp;
           select.llvm-opt-function-picker.function-selector(placeholder="Select function")
     div.llvm-opt-pipeline-body
-      .passes-column Passes:
+      .passes-column(style="width: 250px;") Passes:
         .passes-list
+      .passes-column-resizer
+        .passes-column-resizer-handle
       .monaco-placeholder
 
   #device

@@ -49,6 +49,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     irCode: any[] = [];
     passesColumn: JQuery;
     passesList: JQuery;
+    passesColumnResizer: JQuery;
     body: JQuery;
     clickCallback: (e: JQuery.ClickEvent) => void;
     keydownCallback: (e: JQuery.KeyDownEvent) => void;
@@ -60,6 +61,11 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     options: Toggles;
     // todo: can probably get rid of this and just use state?
     lastOptions = {'dump-full-module': false};
+    resizeStartX: number;
+    resizeStartWidth: number;
+    resizeDragMoveBind: (e: MouseEvent) => void;
+    resizeDragEndBind: (e: MouseEvent) => void;
+
     constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
         this.passesColumn = this.domRoot.find('.passes-column');
@@ -69,39 +75,6 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (!(selector instanceof HTMLSelectElement)) {
             throw new Error('.function-selector is not an HTMLSelectElement');
         }
-        /*const instance = new TomSelect(selector, {
-            sortField: 'name',
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            options: [
-                {id: 1, name: 'Assembly'},
-                {id: 2, name: 'Compiler stdout'},
-                {id: 3, name: 'Compiler stderr'},
-                {id: 4, name: 'Execution stdout'},
-                {id: 5, name: 'Execution stderr'},
-                {id: 6, name: 'GNAT Expanded Code'},
-                {id: 7, name: 'GNAT Tree Code'},
-            ],
-            items: [],
-            render: {
-                option: (item, escape) => {
-                    return `<div>${escape(item.name)}</div>`;
-                },
-            },
-            dropdownParent: 'body',
-            plugins: ['input_autogrow'],
-            onChange: value => {
-                //if (picker.classList.contains('lhsdifftype')) {
-                //    this.lhs.difftype = parseInt(value as any as string);
-                //    this.lhs.refresh();
-                //} else {
-                //    this.rhs.difftype = parseInt(value as any as string);
-                //    this.rhs.refresh();
-                //}
-                //this.updateState();
-            },
-        });*/
         this.functionSelector = new TomSelect(selector, {
             valueField: 'value',
             labelField: 'title',
@@ -111,18 +84,6 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             sortField: 'title',
             onChange: e => this.selectFunction(e as any as string),
         });
-        //this.functionSelector.addOption({
-        //    title: "Test",
-        //    value: "x"
-        //});
-        //this.functionSelector.addOption({
-        //    title: "TestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTestTest",
-        //    value: "y"
-        //});
-        //this.functionSelector.addOption({
-        //    title: "alpha",
-        //    value: "a"
-        //});
         this.clickCallback = this.onClickCallback.bind(this);
         this.keydownCallback = this.onKeydownCallback.bind(this);
         $(document).on('click', this.clickCallback);
@@ -194,6 +155,34 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
+
+        this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
+        this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
+    }
+
+    initResizeDrag(e: MouseEvent) {
+        // taken from SO
+        this.resizeStartX = e.clientX;
+        // (this.passesColumn.width() as number)
+        this.resizeStartWidth = parseInt(document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width, 10);
+        this.resizeDragMoveBind = this.resizeDragMove.bind(this);
+        this.resizeDragEndBind = this.resizeDragEnd.bind(this);
+        document.documentElement.addEventListener('mousemove', this.resizeDragMoveBind, false);
+        document.documentElement.addEventListener('mouseup', this.resizeDragEndBind, false);
+    }
+
+    resizeDragMove(e: MouseEvent) {
+        let width = this.resizeStartWidth + e.clientX - this.resizeStartX;
+        if (width < 50) {
+            width = 50;
+        }
+        this.passesColumn.get()[0].style.width = width + 'px';
+        this.resize();
+    }
+
+    resizeDragEnd(e: MouseEvent) {
+        document.documentElement.removeEventListener('mousemove', this.resizeDragMoveBind, false);
+        document.documentElement.removeEventListener('mouseup', this.resizeDragEndBind, false);
     }
 
     override registerCallbacks(): void {
@@ -214,19 +203,14 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             'dump-full-module': options['dump-full-module'],
         };
         let changed = false;
-        for(const k in newOptions) {
-            if(newOptions[k] !== this.lastOptions[k]) {
+        for (const k in newOptions) {
+            if (newOptions[k] !== this.lastOptions[k]) {
                 changed = true;
             }
         }
         this.lastOptions = newOptions;
-        if(changed || force) {
-            this.eventHub.emit(
-                'llvmOptPipelineViewOptionsUpdated',
-                this.compilerInfo.compilerId,
-                newOptions,
-                true
-            );
+        if (changed || force) {
+            this.eventHub.emit('llvmOptPipelineViewOptionsUpdated', this.compilerInfo.compilerId, newOptions, true);
         }
     }
 
@@ -276,25 +260,12 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 value: fn,
             });
         }
-
-        //this.irCode = result;
-        /*this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
-
-        if (!this.isAwaitingInitialResults) {
-            if (this.selection) {
-                this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
-            }
-            this.isAwaitingInitialResults = true;
-        }*/
-        //const x = result[Object.keys(result)[0]][0];
-        //this.editor.getModel()?.setValue(x.before.map(y => y.text).join("\n") + x.after.map(y => y.text).join("\n"));
     }
 
     selectFunction(name: string) {
         this.selectedFunction = name;
         const filterInconsequentialPasses = this.options.get()['filter-headers'];
-        if(!(name in this.results)) {
+        if (!(name in this.results)) {
             return;
         }
         const passes = this.results[name];
@@ -372,8 +343,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
+            const otherWidth = (this.passesColumn.width() as number) + (this.passesColumnResizer.width() as number);
+            const domWidth = this.domRoot.width() as number;
+            if (otherWidth > domWidth) {
+                this.passesColumn.get()[0].style.width = domWidth + 'px';
+            }
             this.editor.layout({
-                width: (this.domRoot.width() as number) - (this.passesColumn.width() as number),
+                width: domWidth - otherWidth,
                 height: (this.domRoot.height() as number) - topBarHeight,
             });
             (this.body.get(0) as HTMLElement).style.height = (this.domRoot.height() as number) - topBarHeight + 'px';
