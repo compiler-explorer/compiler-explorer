@@ -964,11 +964,10 @@ html[data-theme='dark'] {
     height: 100%;
     .passes-column {
         color: white;
-        min-width: 200px;
-        max-width: 30%;
         overflow-y: scroll;
         overflow-x: hidden;
         height: 100%;
+        position: relative;
         .passes-list div {
             background: rgba(255, 255, 255, 0.1);
             padding: 2px 3px;
@@ -993,6 +992,25 @@ html[data-theme='dark'] {
             &.changed {
                 color: #36ac46;
             }
+        }
+    }
+    .passes-column-resizer {
+        position: relative;
+        width: 5px;
+        height: 100%;
+        background-color: #000000;
+        transition: background-color 200ms ease;
+        z-index: 1;
+        &:hover {
+            background-color: #444444;
+            cursor: ew-resize;
+        }
+        .passes-column-resizer-handle {
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 15px;
+            height: 100%;
         }
     }
 }
