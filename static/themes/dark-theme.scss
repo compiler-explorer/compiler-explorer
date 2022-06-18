@@ -557,7 +557,8 @@ a {
 
 .llvm-opt-pipeline-body .passes-column .passes-list div {
     background: rgba(255, 255, 255, 0.1);
-    &:hover, &.active {
+    &:hover,
+    &.active {
         background: rgba(255, 255, 255, 0.2);
     }
 }
