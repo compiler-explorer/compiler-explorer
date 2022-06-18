@@ -171,6 +171,14 @@ export class LlvmPassDumpParser {
                     name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
                 };
+            } else if (line.text.startsWith('; Preheader:')) {
+                // loop dump
+                // every line in this dump should be part of the loop, exit condition will be end of the for loop
+                assert(func === null);
+                func = {
+                    name: '<loop>',
+                    lines: [line], // include the current line
+                };
             } else {
                 // close function
                 if (this.functionEnd.test(line.text.trim())) {
@@ -197,11 +205,9 @@ export class LlvmPassDumpParser {
                             // may be a blank line
                             continue;
                         } else {
-                            // otherwise a loop
-                            func = {
-                                name: '<loop>',
-                                lines: [], // current line will be included with the push below, no need to include here
-                            };
+                            console.log('ignoring ------>', line.text);
+                            // ignore
+                            continue;
                         }
                     }
                     func.lines.push(line);
@@ -247,7 +253,8 @@ export class LlvmPassDumpParser {
                 });
             }
             if (functionEntries.length === 0) {
-                throw 'Internal error during breakdownOutput (2)';
+                // This can happen as a result of "Printing <null> Function"
+                //throw 'Internal error during breakdownOutput (2)';
             } else if (functionEntries.length === 1) {
                 const name = functionEntries[0][0];
                 if (name !== '<loop>') {
