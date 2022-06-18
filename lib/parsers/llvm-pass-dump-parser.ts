@@ -59,7 +59,7 @@ type SplitPassDump = {
     functions: Record<string, OutputLine[]>;
 };
 
-export class LlvmPrintAfterAllParser {
+export class LlvmPassDumpParser {
     filters: RegExp[];
     lineFilters: RegExp[];
     irDumpAfterHeader: RegExp;

@@ -60,7 +60,7 @@ import {getObjdumperTypeByKey} from './objdumper';
 import {Packager} from './packager';
 import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
-import {LlvmPrintAfterAllParser} from './parsers/llvm-print-after-all-parser';
+import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
 
@@ -77,7 +77,7 @@ export class BaseCompiler {
     protected compilerWrapper: any;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
-    protected llvmPrintAfterAllParser: LlvmPrintAfterAllParser;
+    protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
     protected possibleArguments: CompilerArguments;
@@ -126,7 +126,7 @@ export class BaseCompiler {
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIr = new LlvmIrParser(this.compilerProps);
-        this.llvmPrintAfterAllParser = new LlvmPrintAfterAllParser(this.compilerProps);
+        this.llvmPassDumpParser = new LlvmPassDumpParser(this.compilerProps);
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
@@ -999,7 +999,7 @@ export class BaseCompiler {
         //    labelDefinitions: {},
         //};
         return {
-            asm: this.llvmPrintAfterAllParser.process(output.stderr, filters),
+            asm: this.llvmPassDumpParser.process(output.stderr, filters),
         };
     }
 
