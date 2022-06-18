@@ -84,8 +84,8 @@ export class LlvmPrintAfterAllParser {
             /^\s+call void @llvm.dbg.declare.+$/, // dbg calls
             /^declare .+$/, // declare directives
             /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/, // meta
-            /^(!\d+) = !{.*}/, // meta
-            /^(![.A-Z_a-z-]+) = !{.*}/, // meta
+            /^(!\d+) = (?:distinct )?!{.*}/, // meta
+            /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
             /^attributes #\d+ = { .+ }$/, // attributes directive
         ];
         this.lineFilters = [
@@ -123,7 +123,7 @@ export class LlvmPrintAfterAllParser {
                 if (pass !== null) {
                     raw_passes.push(pass);
                 }
-                // eslint-disable-line @typescript-eslint/no-non-null-assertion
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 pass = {
                     header: (irMatch || machineMatch)![1],
                     machine: !!machineMatch,
@@ -157,10 +157,7 @@ export class LlvmPrintAfterAllParser {
             name: string;
             lines: OutputLine[];
         } | null = null;
-        //console.log(dump);
-        console.log('----');
         for (const line of dump.lines) {
-            console.log(line);
             const irFnMatch = line.text.match(this.functionDefine);
             const machineFnMatch = line.text.match(this.machineFunctionBegin);
             // function define line
@@ -169,7 +166,7 @@ export class LlvmPrintAfterAllParser {
                 if (func !== null) {
                     throw 'Internal error during breakdownPass (1)';
                 }
-                // eslint-disable-line @typescript-eslint/no-non-null-assertion
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 func = {
                     name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
