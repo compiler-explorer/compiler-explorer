@@ -980,13 +980,14 @@ html[data-theme='dark'] {
                     position: absolute;
                     top: -5px;
                     left: 0;
-                    content: "";
+                    content: '';
                     height: 4px;
                     width: 100%;
                     background: white;
                 }
             }
-            &:hover, &.active {
+            &:hover,
+            &.active {
                 background: rgba(255, 255, 255, 0.2);
             }
             &.changed {

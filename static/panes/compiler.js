@@ -985,7 +985,6 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
         tools: this.getActiveTools(newTools),
         libraries: [],
     };
-    console.log(options);
 
     _.each(this.libsWidget.getLibsInUse(), function (item) {
         options.libraries.push({

@@ -123,6 +123,7 @@ export class LlvmPrintAfterAllParser {
                 if (pass !== null) {
                     raw_passes.push(pass);
                 }
+                // eslint-disable-line @typescript-eslint/no-non-null-assertion
                 pass = {
                     header: (irMatch || machineMatch)![1],
                     machine: !!machineMatch,
@@ -157,7 +158,7 @@ export class LlvmPrintAfterAllParser {
             lines: OutputLine[];
         } | null = null;
         //console.log(dump);
-        console.log("----");
+        console.log('----');
         for (const line of dump.lines) {
             console.log(line);
             const irFnMatch = line.text.match(this.functionDefine);
@@ -168,6 +169,7 @@ export class LlvmPrintAfterAllParser {
                 if (func !== null) {
                     throw 'Internal error during breakdownPass (1)';
                 }
+                // eslint-disable-line @typescript-eslint/no-non-null-assertion
                 func = {
                     name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
@@ -331,9 +333,8 @@ export class LlvmPrintAfterAllParser {
         // Transform array of passes containing multiple functions into a map from functions to arrays of passes on
         // those functions
         const passDumpsByFunction = this.breakdownIntoPassDumpsByFunction(passDumps);
-        // Match before / after pass dumps
-        const final_output = this.matchPassDumps(passDumpsByFunction);
-        return final_output;
+        // Match before / after pass dumps and we're done
+        return this.matchPassDumps(passDumpsByFunction);
     }
 
     process(ir: OutputLine[], _: ParseFilters) {
