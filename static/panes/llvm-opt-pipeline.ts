@@ -56,6 +56,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     isPassListSelected = false;
     functionSelector: TomSelect;
     selectedFunction = '';
+    selectedIndex = 0;
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
@@ -164,6 +165,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         // taken from SO
         this.resizeStartX = e.clientX;
         // (this.passesColumn.width() as number)
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.resizeStartWidth = parseInt(document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width, 10);
         this.resizeDragMoveBind = this.resizeDragMove.bind(this);
         this.resizeDragEndBind = this.resizeDragEnd.bind(this);
@@ -195,7 +197,6 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
 
     emitOptions(force = false) {
         const options = this.options.get();
-        console.log(options);
         // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
         // the backend? Would be a data transfer optimization.
         const newOptions = {
@@ -222,7 +223,6 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
-        //console.log(compilerId, compiler, result);
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
             this.updateResults(result.llvmOptPipelineOutput as LLVMOptPipelineOutput);
@@ -245,8 +245,9 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     updateResults(results: LLVMOptPipelineOutput): void {
         this.results = results;
         //const functions = Object.keys(result);
+        let selectedFunction = this.selectedFunction; // one of the .clear calls below will end up resetting this
+        this.functionSelector.clear();
         this.functionSelector.clearOptions();
-        this.functionSelector.clearActiveOption();
         const keys = Object.keys(results);
         if (keys.length === 0) {
             this.functionSelector.addOption({
@@ -260,14 +261,21 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 value: fn,
             });
         }
+        if (selectedFunction === '') {
+            selectedFunction = keys[0];
+        }
+        if (selectedFunction in results) {
+            this.functionSelector.setValue(selectedFunction);
+        }
     }
 
     selectFunction(name: string) {
+        console.log('---->', name);
         this.selectedFunction = name;
-        const filterInconsequentialPasses = this.options.get()['filter-headers'];
         if (!(name in this.results)) {
             return;
         }
+        const filterInconsequentialPasses = this.options.get()['filter-headers'];
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
@@ -289,16 +297,20 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             $(target).addClass('active');
             this.displayPass(parseInt(target.getAttribute('data-i') as string));
         });
-        this.resize(); // pass list width may change
+        // try to select a pass
+        if (this.selectedIndex >= passes.length) {
+            this.selectedIndex = 0;
+        }
+        const selectedPassDiv = this.passesList.find(`[data-i=${this.selectedIndex}]`);
+        selectedPassDiv.addClass('active');
+        this.displayPass(this.selectedIndex);
     }
 
     displayPass(i: number) {
+        this.selectedIndex = i;
         const pass = this.results[this.selectedFunction][i];
-        console.log(pass);
         const before = pass.before.map(x => x.text).join('\n');
         const after = pass.after.map(x => x.text).join('\n');
-        console.log(this.editor.getModel());
-        console.log(this.editor.getModel()?.original);
         this.editor.getModel()?.original.setValue(before);
         this.editor.getModel()?.modified.setValue(after);
     }
