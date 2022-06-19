@@ -35,6 +35,7 @@ import {
     ExecutionOptions,
     ToolResult,
 } from '../types/compilation/compilation.interfaces';
+import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
@@ -62,7 +63,6 @@ import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
-import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
 
 export class BaseCompiler {
     public compiler: any;
@@ -986,7 +986,7 @@ export class BaseCompiler {
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
-            return [{text: 'Failed to get the transformation pipeline output'}];
+            return;
         }
         const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
         return llvmOptPipeline.asm;

@@ -68,7 +68,7 @@ type SplitPassDump = {
 export class LlvmPassDumpParser {
     filters: RegExp[];
     lineFilters: RegExp[];
-    irDumpAfterHeader: RegExp;
+    irDumpHeader: RegExp;
     machineCodeDumpHeader: RegExp;
     functionDefine: RegExp;
     machineFunctionBegin: RegExp;
@@ -102,13 +102,17 @@ export class LlvmPassDumpParser {
         // Ir dump headers look like "*** IR Dump After XYZ ***"
         // Machine dump headers look like "# *** IR Dump After XYZ ***:", possibly with a comment or "(function: xyz)"
         // or "(loop: %x)" at the end
-        this.irDumpAfterHeader = /^\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?\w+)\))?(?:;.+)?$/;
+        this.irDumpHeader = /^\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?\w+)\))?(?:;.+)?$/;
         this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
         // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
-        this.functionDefine = /^define .+ @(\w+)\(.+$/;
-        this.machineFunctionBegin = /^# Machine code for function (\w+):.*$/;
+        // Some interesting edge cases found when testing:
+        // `define internal %"struct.libassert::detail::assert_static_parameters"* @"_ZZ4mainENK3$_0clEv"(
+        //      %class.anon* nonnull dereferenceable(1) %0) #5 align 2 !dbg !2 { ... }`
+        // `define internal void @__cxx_global_var_init.1() #0 section ".text.startup" {`
+        this.functionDefine = /^define .+ @([\w.]+|"[^"]+")\(.+$/;
+        this.machineFunctionBegin = /^# Machine code for function ([\w$.]+):.*$/;
         // Functions end with either a closing brace or "# End machine code for function _Z3fooi."
-        this.functionEnd = /^(?:}|# End machine code for function (\w+).)$/;
+        this.functionEnd = /^(?:}|# End machine code for function ([\w$.]+).)$/;
         // Either "123:" with a possible comment or something like "bb.3 (%ir-block.13):"
         //this.label = /^(?:\d+:(\s+;.+)?|\w+.+:)$/;
         //this.instruction = /^\s+.+$/;
@@ -124,7 +128,7 @@ export class LlvmPassDumpParser {
             //if (this.machineCodeDumpHeader.test(line.text)) {
             //    break;
             //}
-            const irMatch = line.text.match(this.irDumpAfterHeader);
+            const irMatch = line.text.match(this.irDumpHeader);
             const machineMatch = line.text.match(this.machineCodeDumpHeader);
             const header = irMatch || machineMatch;
             if (header) {
@@ -355,16 +359,15 @@ export class LlvmPassDumpParser {
                     before: [],
                     irChanged: true,
                 };
-                assert(i < passDumps.length - 1); // make sure there's another item
                 const current_dump = passDumps[i];
-                const next_dump = passDumps[i + 1];
+                const next_dump = i < passDumps.length - 1 ? passDumps[i + 1] : null;
                 if (current_dump.header.startsWith('IR Dump After ')) {
                     // An after dump without a before dump - I don't think this can happen but we'll handle just in case
                     pass.name = current_dump.header.slice('IR Dump After '.length);
                     pass.after = current_dump.lines;
                     i++;
                 } else if (current_dump.header.startsWith('IR Dump Before ')) {
-                    if (next_dump.header.startsWith('IR Dump After ')) {
+                    if (next_dump !== null && next_dump.header.startsWith('IR Dump After ')) {
                         assert(
                             current_dump.header.slice('IR Dump Before '.length) ===
                                 next_dump.header.slice('IR Dump After '.length),
@@ -421,6 +424,9 @@ export class LlvmPassDumpParser {
     process(ir: OutputLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         // Filter a lot of junk before processing
         const preprocessed_lines = ir
+            .slice(
+                ir.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
+            )
             .filter(line => this.filters.every(re => line.text.match(re) === null)) // apply filters
             .map(_line => {
                 let line = _line.text;
