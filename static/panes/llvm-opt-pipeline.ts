@@ -38,7 +38,12 @@ import {Hub} from '../hub';
 
 import * as utils from '../utils';
 
-import {LLVMOptPipelineOutput, OutputLine, Pass} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {
+    LLVMOptPipelineBackendOptions,
+    LLVMOptPipelineOutput,
+    OutputLine,
+    Pass,
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import TomSelect from 'tom-select';
 
 import scrollIntoView from 'scroll-into-view-if-needed';
@@ -61,7 +66,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     modifiedModel: any;
     options: Toggles;
     // todo: can probably get rid of this and just use state?
-    lastOptions = {'dump-full-module': false};
+    lastOptions: LLVMOptPipelineBackendOptions = {'dump-full-module': false};
     resizeStartX: number;
     resizeStartWidth: number;
     resizeDragMoveBind: (e: MouseEvent) => void;
@@ -199,7 +204,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         const options = this.options.get();
         // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
         // the backend? Would be a data transfer optimization.
-        const newOptions = {
+        const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
             'dump-full-module': options['dump-full-module'],
         };
@@ -265,12 +270,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         }
         this.passesList.empty();
         if (keys.length > 0) {
-            if (selectedFunction === '') {
+            if (selectedFunction === '' || !(selectedFunction in results)) {
                 selectedFunction = keys[0];
             }
-            if (selectedFunction in results) {
-                this.functionSelector.setValue(selectedFunction);
-            }
+            this.functionSelector.setValue(selectedFunction);
         } else {
             // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
             // still be the same

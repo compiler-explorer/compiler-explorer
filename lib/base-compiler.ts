@@ -63,6 +63,7 @@ import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
+import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
 
 export class BaseCompiler {
     public compiler: any;
@@ -969,7 +970,12 @@ export class BaseCompiler {
         };
     }
 
-    async generateLLVMOptPipeline(inputFilename, options, filters: ParseFilters, llvmOptPipelineOptions) {
+    async generateLLVMOptPipeline(
+        inputFilename,
+        options,
+        filters: ParseFilters,
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+    ) {
         // These options make Clang produce an IR
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
@@ -983,11 +989,11 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to get the transformation pipeline output'}];
         }
-        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters);
+        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
         return llvmOptPipeline.asm;
     }
 
-    async processLLVMOptPipeline(output, filters: ParseFilters) {
+    async processLLVMOptPipeline(output, filters: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         //const irPath = this.getIrOutputFilename(output.inputFilename);
         //if (await fs.pathExists(irPath)) {
         //    const output = await fs.readFile(irPath, 'utf-8');
@@ -999,7 +1005,7 @@ export class BaseCompiler {
         //    labelDefinitions: {},
         //};
         return {
-            asm: this.llvmPassDumpParser.process(output.stderr, filters),
+            asm: this.llvmPassDumpParser.process(output.stderr, filters, llvmOptPipelineOptions),
         };
     }
 
