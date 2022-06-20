@@ -284,7 +284,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                         astLine.source.to.line === lineNumber &&
                         astLine.source.from.col &&
                         astLine.source.to.col &&
-                        astLine.source.from.col <= colEnd &&
+                        astLine.source.from.col < colEnd &&
                         colBegin <= astLine.source.to.col
                     ) {
                         singleNodeLines.push(line);
