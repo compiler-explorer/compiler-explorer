@@ -205,11 +205,7 @@ if (defArgs.wantedLanguages) {
     for (const wantedLang of passedLangs) {
         for (const langId in languages) {
             const lang = languages[langId];
-            if (
-                lang.id === defArgs.wantedLanguage ||
-                lang.name === defArgs.wantedLanguage ||
-                (lang.alias && lang.alias.includes(defArgs.wantedLanguage))
-            ) {
+            if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
                 filteredLangs[lang.id] = lang;
             }
         }
