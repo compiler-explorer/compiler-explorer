@@ -342,6 +342,10 @@
             button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Dump the entire module for each pass" data-bind="dump-full-module" aria-pressed="false" aria-label="Filter Inconsequential Passes")
               span Dump Full Module
             input.d-none(type="checkbox" checked=false)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Demangle Symbols" data-bind="demangle-symbols" aria-pressed="false" aria-label="Demangle Symbols")
+              span Demangle Symbols
+            input.d-none(type="checkbox" checked=true)
       .btn-group.btn-group-sm
         .input-group.input-group-sm.mb-auto
           .input-group-prepend

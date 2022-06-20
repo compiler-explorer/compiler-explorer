@@ -66,7 +66,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     modifiedModel: any;
     options: Toggles;
     // todo: can probably get rid of this and just use state?
-    lastOptions: LLVMOptPipelineBackendOptions = {'dump-full-module': false};
+    lastOptions: LLVMOptPipelineBackendOptions = {'dump-full-module': false, demangle: true};
     resizeStartX: number;
     resizeStartWidth: number;
     resizeDragMoveBind: (e: MouseEvent) => void;
@@ -207,6 +207,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
             'dump-full-module': options['dump-full-module'],
+            demangle: options['demangle-symbols'],
         };
         let changed = false;
         for (const k in newOptions) {
