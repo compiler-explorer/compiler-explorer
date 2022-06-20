@@ -2366,7 +2366,7 @@ but nothing was dumped. Possible causes are:
         return GCCParser;
     }
 
-    getVersion() {
+    async getVersion() {
         logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
         if (this.compiler.explicitVersion) {
             logger.debug(`${this.compiler.id} has forced version output: ${this.compiler.explicitVersion}`);
@@ -2378,7 +2378,7 @@ but nothing was dumped. Possible causes are:
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         try {
-            return this.execCompilerCached(this.compiler.exe, [versionFlag], execOptions);
+            return await this.execCompilerCached(this.compiler.exe, [versionFlag], execOptions);
         } catch (err) {
             logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
             return null;
