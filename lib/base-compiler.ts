@@ -47,6 +47,7 @@ import * as cfg from './cfg';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
 import {getDemanglerTypeByKey} from './demangler';
+import {LLVMIRDemangler} from './demangler/llvm';
 import * as exec from './exec';
 import {getExternalParserByKey} from './external-parsers';
 import {ExternalParserBase} from './external-parsers/base';
@@ -975,37 +976,30 @@ export class BaseCompiler {
         filters: ParseFilters,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
     ) {
-        // These options make Clang produce an IR
+        // These options make Clang produce the pass dumps
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
             .concat(llvmOptPipelineOptions['dump-full-module'] ? this.compiler.llvmOptModuleScopeArg : []);
 
         const execOptions = this.getDefaultExecOptions();
-        // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
         if (output.code !== 0) {
             return;
         }
+        // new this.demanglerClass(this.compiler.demangler, this);
+        const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+        // collect labels off the raw input
+        await demangler.collect({asm: output.stderr});
+
         const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
-        return llvmOptPipeline.asm;
+        // apply demangles later, would complicate the parsing of the passes otherwise
+        return demangler.demangleLLVMPasses(llvmOptPipeline);
     }
 
     async processLLVMOptPipeline(output, filters: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
-        //const irPath = this.getIrOutputFilename(output.inputFilename);
-        //if (await fs.pathExists(irPath)) {
-        //    const output = await fs.readFile(irPath, 'utf-8');
-        //    // uses same filters as main compiler
-        //    return this.llvmIr.process(output, filters);
-        //}
-        //return {
-        //    asm: output.stderr,
-        //    labelDefinitions: {},
-        //};
-        return {
-            asm: this.llvmPassDumpParser.process(output.stderr, filters, llvmOptPipelineOptions),
-        };
+        return this.llvmPassDumpParser.process(output.stderr, filters, llvmOptPipelineOptions);
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
