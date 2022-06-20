@@ -988,14 +988,19 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return;
         }
-        // new this.demanglerClass(this.compiler.demangler, this);
-        const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
-        // collect labels off the raw input
-        await demangler.collect({asm: output.stderr});
 
         const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
-        // apply demangles later, would complicate the parsing of the passes otherwise
-        return demangler.demangleLLVMPasses(llvmOptPipeline);
+
+        if (llvmOptPipelineOptions.demangle) {
+            // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
+            // new this.demanglerClass(this.compiler.demangler, this);
+            const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+            // collect labels off the raw input
+            await demangler.collect({asm: output.stderr});
+            return await demangler.demangleLLVMPasses(llvmOptPipeline);
+        } else {
+            return llvmOptPipeline;
+        }
     }
 
     async processLLVMOptPipeline(output, filters: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {

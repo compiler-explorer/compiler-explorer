@@ -37,4 +37,5 @@ export type LLVMOptPipelineOutput = Record<string, Pass[]>;
 
 export type LLVMOptPipelineBackendOptions = {
     'dump-full-module': boolean;
+    demangle: boolean;
 };
