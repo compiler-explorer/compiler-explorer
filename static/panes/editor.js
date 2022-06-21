@@ -497,6 +497,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     var getConformanceConfig = _.bind(function () {
+        // TODO: this doesn't pass any treeid introduced by #3360
         return Components.getConformanceView(this.id, undefined, this.getSource(), this.currentLanguage.id);
     }, this);
 

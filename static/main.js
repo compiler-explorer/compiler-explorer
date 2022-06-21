@@ -615,7 +615,7 @@ function start() {
         return Components.getEditor();
     });
     setupAdd($('#add-diff'), function () {
-        return Components.getDiff();
+        return Components.getDiffView();
     });
     setupAdd($('#add-tree'), function () {
         $('#add-tree').prop('disabled', true);
