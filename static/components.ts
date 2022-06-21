@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilerFilters} from '../types/features/filters.interfaces';
 import {
     EmptyCompilerState,
     ComponentConfig,
@@ -122,7 +123,7 @@ export function getCompiler(editorId: number, lang: string): ComponentConfig<Emp
  */
 export function getCompilerWith(
     editorId: number,
-    filters: Record<string, boolean>,
+    filters: CompilerFilters,
     options: unknown,
     compilerId: string,
     langId?: string,
