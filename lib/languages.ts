@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 import _ from 'underscore';
+
 import {LanguageKey, Language} from '../types/languages.interfaces';
 
 type DefKeys = 'name' | 'monaco' | 'extensions' | 'alias' | 'previewFilter' | 'formatter' | 'logoUrl' | 'logoUrlDark';
@@ -128,7 +129,9 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.mlir'],
         alias: [],
         logoUrl: 'mlir.svg',
-        monacoDisassembly: 'mlir',
+        formatter: null,
+        logoUrlDark: null,
+        previewFilter: null,
     },
     cppx: {
         name: 'Cppx',

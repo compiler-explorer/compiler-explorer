@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export type LanguageKey =
+    | 'mlir'
     | 'c++'
     | 'llvm'
     | 'cppx'
