@@ -22,6 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export const COMPILER_COMPONENT_NAME = 'compiler';
+export const EXECUTOR_COMPONENT_NAME = 'executor';
+export const EDITOR_COMPONENT_NAME = 'codeEditor';
+export const TREE_COMPONENT_NAME = 'tree';
+export const OUTPUT_COMPONENT_NAME = 'output';
+export const TOOL_COMPONENT_NAME = 'tool';
+
+export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView';
+export const DIFF_VIEW_COMPONENT_NAME = 'diff';
+export const OPT_VIEW_COMPONENT_NAME = 'opt';
+export const FLAGS_VIEW_COMPONENT_NAME = 'flags';
+export const PP_VIEW_COMPONENT_NAME = 'pp';
+export const AST_VIEW_COMPONENT_NAME = 'ast';
+export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
+export const CFG_VIEW_COMPONENT_NAME = 'cfg';
+export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
+export const IR_VIEW_COMPONENT_NAME = 'ir';
+export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir';
+export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore';
+export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg';
+export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm';
+export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree';
+export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug';
+export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
+export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
+export const DEVICE_VIEW_COMPONENT_NAME = 'device';
+
 export interface ComponentConfig<S> {
     type: string;
     componentName: string;

@@ -25,12 +25,35 @@
 import GoldenLayout, {ContentItem} from 'golden-layout';
 
 import {CompilerService} from './compiler-service';
-import {IdentifierSet} from './identifier-set';
+import {
+    AST_VIEW_COMPONENT_NAME,
+    CFG_VIEW_COMPONENT_NAME,
+    COMPILER_COMPONENT_NAME,
+    CONFORMANCE_VIEW_COMPONENT_NAME,
+    DEVICE_VIEW_COMPONENT_NAME,
+    DIFF_VIEW_COMPONENT_NAME,
+    EDITOR_COMPONENT_NAME,
+    EXECUTOR_COMPONENT_NAME,
+    FLAGS_VIEW_COMPONENT_NAME,
+    GCC_DUMP_VIEW_COMPONENT_NAME,
+    GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
+    GNAT_DEBUG_VIEW_COMPONENT_NAME,
+    HASKELL_CMM_VIEW_COMPONENT_NAME,
+    HASKELL_CORE_VIEW_COMPONENT_NAME,
+    HASKELL_STG_VIEW_COMPONENT_NAME,
+    IR_VIEW_COMPONENT_NAME,
+    OPT_VIEW_COMPONENT_NAME,
+    OUTPUT_COMPONENT_NAME,
+    PP_VIEW_COMPONENT_NAME,
+    RUST_HIR_VIEW_COMPONENT_NAME,
+    RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
+    RUST_MIR_VIEW_COMPONENT_NAME,
+    TOOL_COMPONENT_NAME,
+    TOOL_INPUT_VIEW_COMPONENT_NAME,
+    TREE_COMPONENT_NAME,
+} from './components.interfaces';
 import {EventHub} from './event-hub';
-import * as Components from './components';
-
 import {Tree} from './panes/tree';
-import {Editor} from './panes/editor';
 import {Compiler} from './panes/compiler';
 import {Executor} from './panes/executor';
 import {Output} from './panes/output';
@@ -79,43 +102,31 @@ export class Hub {
         this.defaultLangId = defaultLangId;
         this.compilerService = new CompilerService(this.layout.eventHub);
 
-        layout.registerComponent(Components.EDITOR_COMPONENT_NAME, (c, s) => this.codeEditorFactory(c, s));
-        layout.registerComponent(Components.COMPILER_COMPONENT_NAME, (c, s) => this.compilerFactory(c, s));
-        layout.registerComponent(Components.TREE_COMPONENT_NAME, (c, s) => this.treeFactory(c, s));
-        layout.registerComponent(Components.EXECUTOR_COMPONENT_NAME, (c, s) => this.executorFactory(c, s));
-        layout.registerComponent(Components.OUTPUT_COMPONENT_NAME, (c, s) => this.outputFactory(c, s));
-        layout.registerComponent(Components.TOOL_COMPONENT_NAME, (c, s) => this.toolFactory(c, s));
-        layout.registerComponent(Components.TOOL_INPUT_VIEW_COMPONENT_NAME, (c, s) => this.toolInputViewFactory(c, s));
-        layout.registerComponent(Components.DIFF_VIEW_COMPONENT_NAME, (c, s) => this.diffFactory(c, s));
-        layout.registerComponent(Components.OPT_VIEW_COMPONENT_NAME, (c, s) => this.optViewFactory(c, s));
-        layout.registerComponent(Components.FLAGS_VIEW_COMPONENT_NAME, (c, s) => this.flagsViewFactory(c, s));
-        layout.registerComponent(Components.PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
-        layout.registerComponent(Components.AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
-        layout.registerComponent(Components.IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
-        layout.registerComponent(Components.DEVICE_VIEW_COMPONENT_NAME, (c, s) => this.deviceViewFactory(c, s));
-        layout.registerComponent(Components.RUST_MIR_VIEW_COMPONENT_NAME, (c, s) => this.rustMirViewFactory(c, s));
-        layout.registerComponent(Components.HASKELL_CORE_VIEW_COMPONENT_NAME, (c, s) =>
-            this.haskellCoreViewFactory(c, s)
-        );
-        layout.registerComponent(Components.HASKELL_STG_VIEW_COMPONENT_NAME, (c, s) =>
-            this.haskellStgViewFactory(c, s)
-        );
-        layout.registerComponent(Components.HASKELL_CMM_VIEW_COMPONENT_NAME, (c, s) =>
-            this.haskellCmmViewFactory(c, s)
-        );
-        layout.registerComponent(Components.GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c, s) =>
-            this.gnatDebugTreeViewFactory(c, s)
-        );
-        layout.registerComponent(Components.GNAT_DEBUG_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugViewFactory(c, s));
-        layout.registerComponent(Components.RUST_MACRO_EXP_VIEW_COMPONENT_NAME, (c, s) =>
-            this.rustMacroExpViewFactory(c, s)
-        );
-        layout.registerComponent(Components.RUST_HIR_VIEW_COMPONENT_NAME, (c, s) => this.rustHirViewFactory(c, s));
-        layout.registerComponent(Components.GCC_DUMP_VIEW_COMPONENT_NAME, (c, s) => this.gccDumpViewFactory(c, s));
-        layout.registerComponent(Components.CFG_VIEW_COMPONENT_NAME, (c, s) => this.cfgViewFactory(c, s));
-        layout.registerComponent(Components.CONFORMANCE_VIEW_COMPONENT_NAME, (c, s) =>
-            this.conformanceViewFactory(c, s)
-        );
+        layout.registerComponent(EDITOR_COMPONENT_NAME, (c, s) => this.codeEditorFactory(c, s));
+        layout.registerComponent(COMPILER_COMPONENT_NAME, (c, s) => this.compilerFactory(c, s));
+        layout.registerComponent(TREE_COMPONENT_NAME, (c, s) => this.treeFactory(c, s));
+        layout.registerComponent(EXECUTOR_COMPONENT_NAME, (c, s) => this.executorFactory(c, s));
+        layout.registerComponent(OUTPUT_COMPONENT_NAME, (c, s) => this.outputFactory(c, s));
+        layout.registerComponent(TOOL_COMPONENT_NAME, (c, s) => this.toolFactory(c, s));
+        layout.registerComponent(TOOL_INPUT_VIEW_COMPONENT_NAME, (c, s) => this.toolInputViewFactory(c, s));
+        layout.registerComponent(DIFF_VIEW_COMPONENT_NAME, (c, s) => this.diffFactory(c, s));
+        layout.registerComponent(OPT_VIEW_COMPONENT_NAME, (c, s) => this.optViewFactory(c, s));
+        layout.registerComponent(FLAGS_VIEW_COMPONENT_NAME, (c, s) => this.flagsViewFactory(c, s));
+        layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
+        layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
+        layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
+        layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c, s) => this.deviceViewFactory(c, s));
+        layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c, s) => this.rustMirViewFactory(c, s));
+        layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c, s) => this.haskellCoreViewFactory(c, s));
+        layout.registerComponent(HASKELL_STG_VIEW_COMPONENT_NAME, (c, s) => this.haskellStgViewFactory(c, s));
+        layout.registerComponent(HASKELL_CMM_VIEW_COMPONENT_NAME, (c, s) => this.haskellCmmViewFactory(c, s));
+        layout.registerComponent(GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugTreeViewFactory(c, s));
+        layout.registerComponent(GNAT_DEBUG_VIEW_COMPONENT_NAME, (c, s) => this.gnatDebugViewFactory(c, s));
+        layout.registerComponent(RUST_MACRO_EXP_VIEW_COMPONENT_NAME, (c, s) => this.rustMacroExpViewFactory(c, s));
+        layout.registerComponent(RUST_HIR_VIEW_COMPONENT_NAME, (c, s) => this.rustHirViewFactory(c, s));
+        layout.registerComponent(GCC_DUMP_VIEW_COMPONENT_NAME, (c, s) => this.gccDumpViewFactory(c, s));
+        layout.registerComponent(CFG_VIEW_COMPONENT_NAME, (c, s) => this.cfgViewFactory(c, s));
+        layout.registerComponent(CONFORMANCE_VIEW_COMPONENT_NAME, (c, s) => this.conformanceViewFactory(c, s));
 
         layout.eventHub.on(
             'editorOpen',

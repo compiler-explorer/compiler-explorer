@@ -73,34 +73,32 @@ import {
     PopulatedRustHirViewState,
     EmptyDeviceViewState,
     PopulatedDeviceViewState,
+    COMPILER_COMPONENT_NAME,
+    EXECUTOR_COMPONENT_NAME,
+    EDITOR_COMPONENT_NAME,
+    TREE_COMPONENT_NAME,
+    OUTPUT_COMPONENT_NAME,
+    TOOL_COMPONENT_NAME,
+    TOOL_INPUT_VIEW_COMPONENT_NAME,
+    DIFF_VIEW_COMPONENT_NAME,
+    OPT_VIEW_COMPONENT_NAME,
+    FLAGS_VIEW_COMPONENT_NAME,
+    PP_VIEW_COMPONENT_NAME,
+    AST_VIEW_COMPONENT_NAME,
+    GCC_DUMP_VIEW_COMPONENT_NAME,
+    CFG_VIEW_COMPONENT_NAME,
+    CONFORMANCE_VIEW_COMPONENT_NAME,
+    IR_VIEW_COMPONENT_NAME,
+    RUST_MIR_VIEW_COMPONENT_NAME,
+    HASKELL_CORE_VIEW_COMPONENT_NAME,
+    HASKELL_STG_VIEW_COMPONENT_NAME,
+    HASKELL_CMM_VIEW_COMPONENT_NAME,
+    GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME,
+    GNAT_DEBUG_VIEW_COMPONENT_NAME,
+    RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
+    RUST_HIR_VIEW_COMPONENT_NAME,
+    DEVICE_VIEW_COMPONENT_NAME,
 } from './components.interfaces';
-
-export const COMPILER_COMPONENT_NAME = 'compiler';
-export const EXECUTOR_COMPONENT_NAME = 'executor';
-export const EDITOR_COMPONENT_NAME = 'codeEditor';
-export const TREE_COMPONENT_NAME = 'tree';
-export const OUTPUT_COMPONENT_NAME = 'output';
-export const TOOL_COMPONENT_NAME = 'tool';
-
-export const TOOL_INPUT_VIEW_COMPONENT_NAME = 'toolInputView';
-export const DIFF_VIEW_COMPONENT_NAME = 'diff';
-export const OPT_VIEW_COMPONENT_NAME = 'opt';
-export const FLAGS_VIEW_COMPONENT_NAME = 'flags';
-export const PP_VIEW_COMPONENT_NAME = 'pp';
-export const AST_VIEW_COMPONENT_NAME = 'ast';
-export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
-export const CFG_VIEW_COMPONENT_NAME = 'cfg';
-export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
-export const IR_VIEW_COMPONENT_NAME = 'ir';
-export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir';
-export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore';
-export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg';
-export const HASKELL_CMM_VIEW_COMPONENT_NAME = 'haskellCmm';
-export const GNAT_DEBUG_TREE_VIEW_COMPONENT_NAME = 'gnatdebugtree';
-export const GNAT_DEBUG_VIEW_COMPONENT_NAME = 'gnatdebug';
-export const RUST_MACRO_EXP_VIEW_COMPONENT_NAME = 'rustmacroexp';
-export const RUST_HIR_VIEW_COMPONENT_NAME = 'rusthir';
-export const DEVICE_VIEW_COMPONENT_NAME = 'device';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {

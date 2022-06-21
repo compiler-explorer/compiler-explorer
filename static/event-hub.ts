@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import GoldenLayout from 'golden-layout';
 import * as Sentry from '@sentry/browser';
+import GoldenLayout from 'golden-layout';
 
-import {Hub} from './hub';
-import {EventMap} from './event-map';
+import {type EventMap} from './event-map';
+import {type Hub} from './hub';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
