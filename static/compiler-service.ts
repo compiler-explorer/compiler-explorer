@@ -217,11 +217,11 @@ export class CompilerService {
         if (options.doCache) {
             const cachedResult = this.cache.get(jsonRequest);
             if (cachedResult) {
-                return Promise.resolve({
+                return {
                     request: request,
                     result: cachedResult,
                     localCacheHit: true,
-                });
+                };
             }
         }
         return new Promise((resolve, reject) => {
@@ -243,7 +243,7 @@ export class CompilerService {
                     });
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(compilerId, reject, jqXHR, textStatus, errorThrown);
+                    CompilerService.handleRequestError(request, reject, jqXHR, textStatus, errorThrown);
                 },
             });
         });
@@ -281,7 +281,7 @@ export class CompilerService {
                     });
                 },
                 error: (jqXHR, textStatus, errorThrown) => {
-                    CompilerService.handleRequestError(compilerId, reject, jqXHR, textStatus, errorThrown);
+                    CompilerService.handleRequestError(request, reject, jqXHR, textStatus, errorThrown);
                 },
             });
         });
@@ -312,7 +312,7 @@ export class CompilerService {
     }
 
     public async expand(source: string) {
-        const includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^>"]+)[>"]/;
+        const includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^">]+)[">]/;
         const lines = source.split('\n');
         const promises: Promise<null>[] = [];
         for (const idx in lines) {
@@ -339,7 +339,10 @@ export class CompilerService {
     }
 
     public static doesCompilationResultHaveWarnings(result: CompilationResult) {
-        const {stdout, stderr} = result;
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const stdout = result.stdout ?? [];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const stderr = result.stderr ?? [];
         // TODO: Pass what compiler did this and check if it it's actually skippable
         // Right now we're ignoring outputs that match the input filename
         // Compiler & Executor are capable of giving us the info, but conformance view is not
@@ -421,14 +424,18 @@ export class CompilerService {
     }
 
     public static handleOutputButtonTitle(element: JQuery, result: CompilationResult) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const stdout = result.stdout ?? [];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        const stderr = result.stderr ?? [];
         // TODO: Make its own const variable at top of module?
-        const asciiColorsRe = RegExp(/\x1b\[[\d;]*m(.\[K)?/g);
+        const asciiColorsRe = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
         function filterAsciiColors(line: ResultLine) {
             return line.text.replace(asciiColorsRe, '');
         }
 
-        const output = result.stdout.map(filterAsciiColors).concat(result.stderr.map(filterAsciiColors)).join('\n');
+        const output = stdout.map(filterAsciiColors).concat(stderr.map(filterAsciiColors)).join('\n');
 
         element.prop('title', output);
     }
