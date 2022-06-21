@@ -53,6 +53,7 @@ import {
     TREE_COMPONENT_NAME,
 } from './components.interfaces';
 import {EventHub} from './event-hub';
+import {Editor} from './panes/editor';
 import {Tree} from './panes/tree';
 import {Compiler} from './panes/compiler';
 import {Executor} from './panes/executor';
@@ -77,6 +78,7 @@ import {Cfg as CfgView} from './panes/cfg-view';
 import {Conformance as ConformanceView} from './panes/conformance-view';
 import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view';
 import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view';
+import {IdentifierSet} from './identifier-set';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();
