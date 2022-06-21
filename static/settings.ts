@@ -290,11 +290,7 @@ export class Settings {
             return instance;
         };
 
-        const colourSchemesData = colour.schemes.map(scheme => {
-            return {label: scheme.name, desc: scheme.desc};
-        });
-        addSelector('.colourScheme', 'colourScheme', colourSchemesData, colour.schemes[0].name);
-
+        // We need theme data to populate the colour schemes; We don't add the selector until later
         // keys(themes) is Themes[] but TS does not realize without help
         const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
@@ -303,6 +299,17 @@ export class Settings {
         if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
             defaultThemeId = themes.dark.id;
         }
+
+        const colourSchemesData = colour.schemes
+            .filter(scheme => this.isSchemeUsable(scheme, defaultThemeId))
+            .map(scheme => ({label: scheme.name, desc: scheme.desc}));
+        let defaultColourScheme = colour.schemes[0].name;
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            defaultColourScheme = 'gray-shade';
+        }
+        addSelector('.colourScheme', 'colourScheme', colourSchemesData, defaultColourScheme);
+
+        // Now add the theme selector
         addSelector('.theme', 'theme', themesData, defaultThemeId);
 
         const langs = options.languages;
