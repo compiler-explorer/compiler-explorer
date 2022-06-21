@@ -28,6 +28,7 @@ import {ga} from './analytics';
 import * as local from './local';
 import {EventHub} from './event-hub';
 import {Hub} from './hub';
+import {CompilerService} from './compiler-service';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -89,7 +90,7 @@ export class CompilerPicker {
         this.lastCompilerId = compilerId;
 
         this.tomSelect = new TomSelect(this.domNode, {
-            sortField: this.compilerService.getSelectizerOrder(),
+            sortField: CompilerService.getSelectizerOrder(),
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
