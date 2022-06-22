@@ -23,6 +23,7 @@
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@sentry/browser": "^6.16.1",
     "@sentry/node": "^6.16.1",
+    "@types/tar-fs": "^2.0.1",
     "aws-sdk": "^2.1048.0",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
