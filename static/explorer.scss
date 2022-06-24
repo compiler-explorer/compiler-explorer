@@ -240,6 +240,7 @@ pre.content.wrap * {
 
 .linked-code-decoration-column {
     font-weight: 600;
+    color: red !important;
 }
 
 .modal {
@@ -915,4 +916,39 @@ html[data-theme='dark'] {
     border-radius: 0.5rem;
     z-index: 1;
     padding: 5px;
+}
+
+#site-template-modal-row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 25px;
+    > div {
+        padding: 0;
+        flex-shrink: 0;
+        &.site-template-preview-col {
+            flex-grow: 1;
+            flex-shrink: 1;
+            img {
+                max-width: 100%;
+            }
+        }
+    }
+}
+
+#site-templates-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    li {
+        margin: 0;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 3px 5px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        &:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+    }
 }

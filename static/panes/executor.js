@@ -25,6 +25,7 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
+var Promise = require('es6-promise').Promise;
 var ga = require('../analytics').ga;
 var Toggles = require('../widgets/toggles').Toggles;
 var FontScale = require('../widgets/fontscale').FontScale;
@@ -38,6 +39,7 @@ var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var CompilerService = require('../compiler-service').CompilerService;
 
 var languages = options.languages;
 
@@ -251,33 +253,51 @@ Executor.prototype.compileFromTree = function (options, bypassCache) {
         return;
     }
 
-    var mainsource = tree.multifileService.getMainSource();
-
     var request = {
-        source: mainsource,
+        source: tree.multifileService.getMainSource(),
         compiler: this.compiler ? this.compiler.id : '',
         options: options,
         lang: this.currentLangId,
         files: tree.multifileService.getFiles(),
     };
 
-    var treeState = tree.currentState();
-    var cmakeProject = tree.multifileService.isACMakeProject();
+    var fetches = [];
 
-    if (bypassCache) request.bypassCache = true;
-    if (!this.compiler) {
-        this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-    } else if (cmakeProject && request.source === '') {
-        this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
-    } else {
-        if (cmakeProject) {
-            request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-            request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-            this.sendCMakeCompile(request);
-        } else {
-            this.sendCompile(request);
-        }
+    fetches.push(
+        this.compilerService.expand(request.source).then(function (contents) {
+            request.source = contents;
+        })
+    );
+
+    for (var i = 0; i < request.files.length; i++) {
+        var file = request.files[i];
+        fetches.push(
+            this.compilerService.expand(file.contents).then(function (contents) {
+                file.contents = contents;
+            })
+        );
     }
+
+    var self = this;
+    Promise.all(fetches).then(function () {
+        var treeState = tree.currentState();
+        var cmakeProject = tree.multifileService.isACMakeProject();
+
+        if (bypassCache) request.bypassCache = true;
+        if (!self.compiler) {
+            self.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        } else if (cmakeProject && request.source === '') {
+            self.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
+        } else {
+            if (cmakeProject) {
+                request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                self.sendCMakeCompile(request);
+            } else {
+                self.sendCompile(request);
+            }
+        }
+    });
 };
 
 Executor.prototype.sendCMakeCompile = function (request) {
@@ -511,6 +531,9 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
         this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
         this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
     }
+    // reset stream styles
+    this.normalAnsiToHtml.reset();
+    this.errorAnsiToHtml.reset();
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
         this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);
@@ -1089,7 +1112,7 @@ function color(status) {
 
 Executor.prototype.handleCompilationStatus = function (status) {
     // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
-    this.compilerService.handleCompilationStatus(this.statusLabel, null, status);
+    CompilerService.handleCompilationStatus(this.statusLabel, null, status);
 
     if (this.statusIcon != null) {
         this.statusIcon

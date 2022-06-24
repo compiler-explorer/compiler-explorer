@@ -26,4 +26,5 @@ export {Amd64DocumentationProvider} from './amd64';
 export {Arm32DocumentationProvider} from './arm32';
 export {AvrDocumentationProvider} from './avr';
 export {JavaDocumentationProvider} from './java';
+export {LLVMDocumentationProvider} from './llvm';
 export {Mos6502DocumentationProvider} from './mos6502';

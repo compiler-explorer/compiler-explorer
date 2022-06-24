@@ -19,7 +19,7 @@ jobs:
         run: make prereqs
       - name: Run checks
         run: |
-          npm run lint
+          npm run lint-check
           npm run ci-test
           npm run format-check
           npm run ts-check

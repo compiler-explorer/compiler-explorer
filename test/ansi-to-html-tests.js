@@ -68,4 +68,25 @@ describe('ansi-to-html', () => {
         const filter = new Filter(filterOpts);
         filter.toHtml('\x1B[7mhello').should.equal('hello');
     });
+
+    // tests for #3659
+    it('should stream', () => {
+        const filter = new Filter(filterOpts);
+        filter.toHtml('\x1B[38;5;99mfoo');
+        filter.toHtml('bar').should.equal('<span style="color:#875fff">bar</span>');
+    });
+    it('should handle stream reset', () => {
+        const filter = new Filter(filterOpts);
+        filter.toHtml('\x1B[38;5;99mfoo');
+        filter.reset();
+        filter.toHtml('bar').should.equal('bar');
+    });
+
+    // rgb test
+    it('should process rgb colors', () => {
+        const filter = new Filter(filterOpts);
+        filter
+            .toHtml('\x1B[38;2;57;170;243mfoo\x1B[48;2;100;100;100mbar')
+            .should.equal('<span style="color:#39aaf3">foo<span style="background-color:#646464">bar</span></span>');
+    });
 });

@@ -2,7 +2,7 @@
 
 If you want to add a new language to the site, you should follow this steps:
 
-- Add the new language to the exported `languages` variable in `lib/languages.js`:
+- Add the new language to the exported `languages` variable in `lib/languages.ts`:
 
   - The syntax is as follows:
 

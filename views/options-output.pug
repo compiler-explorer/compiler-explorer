@@ -12,7 +12,7 @@ mixin outputoption(name, longdescription, shortdescription, defaultchecked)
       button.dropdown-item.btn.btn-sm.btn-light(type='button' title=longdescription data-bind=name aria-pressed=pressed)
         span=shortdescription
       input.d-none(type="checkbox" checked=defaultchecked)
-
+// If you modify this, update types/features/filters.interfaces.ts
 +outputoption('binary', 'Compile to binary and disassemble the output', 'Compile to binary', false)
 +outputoption('execute', 'Execute code and show its output', 'Execute the code', false)
 +outputoption('intel', 'Output disassembly in Intel syntax', 'Intel asm syntax', true)

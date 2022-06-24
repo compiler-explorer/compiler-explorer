@@ -318,5 +318,49 @@ describe('Execution tests', () => {
                 ]);
             }
         });
+
+        it('Use cwd inside appHome', () => {
+            const {args, options} = exec.getNsJailOptions(
+                'execute',
+                '/opt/compiler-explorer/compiler/bin/g++',
+                [
+                    '-c',
+                    '-S',
+                    '-I/usr/include',
+                    '-I/tmp/hellow/myincludes',
+                    '/tmp/hellow/example.cpp',
+                    '-o',
+                    '/tmp/hellow/build/example.o',
+                ],
+                {
+                    customCwd: '/tmp/hellow/build',
+                    appHome: '/tmp/hellow',
+                },
+            );
+
+            options.should.deep.equals({
+                appHome: '/tmp/hellow',
+            });
+            if (process.platform !== 'win32') {
+                args.should.deep.equals([
+                    '--config',
+                    'etc/nsjail/execute.cfg',
+                    '--cwd',
+                    '/app/build',
+                    '--bindmount',
+                    '/tmp/hellow:/app',
+                    '--env=HOME=/app',
+                    '--',
+                    '/opt/compiler-explorer/compiler/bin/g++',
+                    '-c',
+                    '-S',
+                    '-I/usr/include',
+                    '-I/app/myincludes',
+                    '/app/example.cpp',
+                    '-o',
+                    '/app/build/example.o',
+                ]);
+            }
+        });
     });
 });

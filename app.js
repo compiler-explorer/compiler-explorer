@@ -54,6 +54,7 @@ import {CompileHandler} from './lib/handlers/compile';
 import * as healthCheck from './lib/handlers/health-check';
 import {NoScriptHandler} from './lib/handlers/noscript';
 import {RouteAPI} from './lib/handlers/route-api';
+import {loadSiteTemplates} from './lib/handlers/site-templates';
 import {SourceHandler} from './lib/handlers/source';
 import {languages as allLanguages} from './lib/languages';
 import {logger, logToLoki, logToPapertrail, suppressConsoleLog} from './lib/logger';
@@ -80,7 +81,7 @@ const opts = nopt({
     noRemoteFetch: [Boolean],
     tmpDir: [String],
     wsl: [Boolean],
-    // If specified, only loads the specified language, resulting in faster loadup/iteration times
+    // If specified, only loads the specified languages, resulting in faster loadup/iteration times
     language: [String],
     // Do not use caching for compilation results (Requests might still be cached by the client's browser)
     noCache: [Boolean],
@@ -155,7 +156,7 @@ const defArgs = {
     port: opts.port || 10240,
     gitReleaseName: gitReleaseName,
     releaseBuildNumber: releaseBuildNumber,
-    wantedLanguage: opts.language || null,
+    wantedLanguages: opts.language || null,
     doCache: !opts.noCache,
     fetchCompilersFromRemote: !opts.noRemoteFetch,
     ensureNoCompilerClash: opts.ensureNoIdClash,
@@ -198,17 +199,17 @@ props.initialize(configDir, propHierarchy);
 const ceProps = props.propsFor('compiler-explorer');
 
 let languages = allLanguages;
-if (defArgs.wantedLanguage) {
+if (defArgs.wantedLanguages) {
     const filteredLangs = {};
-    _.each(languages, lang => {
-        if (
-            lang.id === defArgs.wantedLanguage ||
-            lang.name === defArgs.wantedLanguage ||
-            (lang.alias && lang.alias.includes(defArgs.wantedLanguage))
-        ) {
-            filteredLangs[lang.id] = lang;
+    const passedLangs = defArgs.wantedLanguages.split(',');
+    for (const wantedLang of passedLangs) {
+        for (const langId in languages) {
+            const lang = languages[langId];
+            if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
+                filteredLangs[lang.id] = lang;
+            }
         }
-    });
+    }
     languages = filteredLangs;
 }
 
@@ -483,6 +484,8 @@ async function main() {
         for (const compiler of initialCompilers) {
             if (compiler.buildenvsetup && compiler.buildenvsetup.id === '') delete compiler.buildenvsetup;
 
+            if (compiler.externalparser && compiler.externalparser.id === '') delete compiler.externalparser;
+
             const compilerInstance = compilerFinder.compileHandler.findCompiler(compiler.lang, compiler.id);
             if (compilerInstance) {
                 compiler.cachedPossibleArguments = compilerInstance.possibleArguments.possibleArguments;
@@ -590,6 +593,8 @@ async function main() {
         });
 
     const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+
+    loadSiteTemplates(configDir);
 
     function renderConfig(extra, urlOptions) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];

@@ -111,7 +111,15 @@
       "text": "        setp.ge.s32     %p1, %r1, %r2;"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "BB0_2",
+          "range": {
+            "endCol": 30,
+            "startCol": 25
+          }
+        }
+      ],
       "source": {
         "column": 5,
         "file": "/tmp/moo.cu",
@@ -242,6 +250,11 @@
     },
     {
       "labels": [],
+      "source": null,
+      "text": "BB0_2:"
+    },
+    {
+      "labels": [],
       "source": {
         "column": 1,
         "file": "/tmp/moo.cu",
@@ -262,6 +275,7 @@
     }
   ],
   "labelDefinitions": {
+    "BB0_2": 32,
     "entry": 1
   }
 }

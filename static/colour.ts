@@ -25,10 +25,12 @@
 import * as monaco from 'monaco-editor';
 import {Themes} from './themes';
 
+export type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
+
 export type AppTheme = Themes | 'all';
 
 export interface ColourSchemeInfo {
-    name: string;
+    name: ColourScheme;
     desc: string;
     count: number;
     themes: AppTheme[];

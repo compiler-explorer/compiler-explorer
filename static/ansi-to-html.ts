@@ -127,8 +127,25 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     } else if (token === 'xterm256') {
         // Note: Param 'data' must be a string at this point
         return handleXterm256(stack, data as string, options);
+    } else if (token === 'rgb') {
+        // Note: Param 'data' must be a string at this point
+        return handleRgb(stack, data as string, options);
     }
     return '';
+}
+
+function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
+    data = data.substring(2).slice(0, -1);
+    const operation = +data.substr(0, 2);
+
+    const color = data.substring(5).split(';');
+    const rgb = color
+        .map(value => {
+            return ('0' + Number(value).toString(16)).substr(-2);
+        })
+        .join('');
+
+    return pushStyle(stack, (operation === 38 ? 'color:#' : 'background-color:#') + rgb);
 }
 
 function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
@@ -312,6 +329,11 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
+    function rgb(m) {
+        callback('rgb', m);
+        return '';
+    }
+
     function removeXterm256(m: string): string {
         callback('xterm256', m);
         return '';
@@ -357,6 +379,10 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         {
             pattern: /^\x1b\[[012]?K/,
             sub: remove,
+        },
+        {
+            pattern: /^\x1b\[[34]8;2;\d+;\d+;\d+m/,
+            sub: rgb,
         },
         {
             pattern: /^\x1b\[[34]8;5;(\d+)m/,
@@ -494,5 +520,9 @@ export class Filter {
         }
 
         return buf.join('');
+    }
+
+    public reset() {
+        this.stickyStack = [];
     }
 }

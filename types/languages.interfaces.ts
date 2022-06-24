@@ -22,19 +22,68 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export type LanguageKey =
+    | 'mlir'
+    | 'c++'
+    | 'llvm'
+    | 'cppx'
+    | 'cppx_gold'
+    | 'cppx_blue'
+    | 'c'
+    | 'openclc'
+    | 'cpp_for_opencl'
+    | 'rust'
+    | 'd'
+    | 'erlang'
+    | 'go'
+    | 'ispc'
+    | 'haskell'
+    | 'java'
+    | 'kotlin'
+    | 'scala'
+    | 'ocaml'
+    | 'python'
+    | 'swift'
+    | 'pascal'
+    | 'fortran'
+    | 'assembly'
+    | 'analysis'
+    | 'cuda'
+    | 'zig'
+    | 'clean'
+    | 'ada'
+    | 'nim'
+    | 'crystal'
+    | 'circle'
+    | 'ruby'
+    | 'cmake'
+    | 'csharp'
+    | 'fsharp'
+    | 'vb'
+    | 'dart'
+    | 'typescript'
+    | 'solidity';
+
 export interface Language {
-    // Id of language. Added programmatically based on CELanguages key
-    id: string;
-    // UI display name of the language
+    /** Id of language. Added programmatically based on CELanguages key */
+    id: LanguageKey;
+    /** UI display name of the language */
     name: string;
-    // Monaco Editor language ID (Selects which language Monaco will use to highlight the code)
+    /** Monaco Editor language ID (Selects which language Monaco will use to highlight the code) */
     monaco: string;
-    // Usual extensions associated with the language. First one is used as file input etx
-    extensions: string[];
-    // Different ways in which we can also refer to this language
+    /** Usual extensions associated with the language. First one is used as file input extension */
+    extensions: [string, ...string[]];
+    /** Different ways in which we can also refer to this language */
     alias: string[];
-    // Format API name to use (See https://godbolt.org/api/formats)
+    /** Format API name to use (See https://godbolt.org/api/formats) */
     formatter: string | null;
-    // Whether there's at least 1 compiler in this language that supportsExecute
+    /** Whether there's at least 1 compiler in this language that supportsExecute */
     supportsExecute: boolean | null;
+    /** Path in /views/resources/logos to the logo of the language */
+    logoUrl: string;
+    /** Path in /views/resources/logos to the logo of the language for dark mode use */
+    logoUrlDark: string | null;
+    /** Example code to show in the language's editor */
+    example: string;
+    previewFilter: RegExp | null;
 }
