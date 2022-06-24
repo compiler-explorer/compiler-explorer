@@ -37,6 +37,7 @@ import {
 } from '../types/compilation/compilation.interfaces';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
+import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
 
@@ -50,7 +51,7 @@ import * as exec from './exec';
 import {getExternalParserByKey} from './external-parsers';
 import {ExternalParserBase} from './external-parsers/base';
 import {InstructionSets} from './instructionsets';
-import {CELanguage, languages} from './languages';
+import {languages} from './languages';
 import {LlvmAstParser} from './llvm-ast';
 import {LlvmIrParser} from './llvm-ir';
 import * as compilerOptInfo from './llvm-opt-transformer';
@@ -64,7 +65,7 @@ import * as utils from './utils';
 
 export class BaseCompiler {
     public compiler: any;
-    public lang: CELanguage;
+    public lang: Language;
     protected compileFilename: string;
     protected env: any;
     protected compilerProps: (key: string, defaultValue?: string) => string;
