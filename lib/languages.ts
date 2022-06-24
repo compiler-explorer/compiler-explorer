@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {LanguageKey, Language} from '../types/languages.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces';
 
 type DefKeys = 'name' | 'monaco' | 'extensions' | 'alias' | 'previewFilter' | 'formatter' | 'logoUrl' | 'logoUrlDark';
 type LanguageDefinition = Pick<Language, DefKeys>;
