@@ -497,6 +497,7 @@ Editor.prototype.initButtons = function (state) {
     }, this);
 
     var getConformanceConfig = _.bind(function () {
+        // TODO: this doesn't pass any treeid introduced by #3360
         return Components.getConformanceView(this.id, undefined, this.getSource(), this.currentLanguage.id);
     }, this);
 
@@ -1340,24 +1341,30 @@ Editor.prototype.onCompiling = function (compilerId) {
     this.busyCompilers[compilerId] = true;
 };
 
-Editor.prototype.getAllOutputAndErrors = function (result) {
-    var all = result.stdout || [];
-    if (result.buildsteps) {
-        _.each(result.buildsteps, function (step) {
-            all = all.concat(step.stdout);
-        });
+Editor.prototype.addSource = function (arr, source) {
+    arr.forEach(function (element) {
+        element.source = source;
+    });
+    return arr;
+};
 
-        _.each(result.buildsteps, function (step) {
-            all = all.concat(step.stderr);
+Editor.prototype.getAllOutputAndErrors = function (result, compilerName, compilerId) {
+    const compilerTitle = compilerName + ' #' + compilerId;
+    var all = this.addSource(result.stdout || [], compilerTitle);
+
+    if (result.buildsteps) {
+        _.each(result.buildsteps, step => {
+            all = all.concat(this.addSource(step.stdout, compilerTitle));
+            all = all.concat(this.addSource(step.stderr, compilerTitle));
         });
     }
     if (result.tools) {
-        _.each(result.tools, function (tool) {
-            all = all.concat(tool.stdout);
-            all = all.concat(tool.stderr);
+        _.each(result.tools, tool => {
+            all = all.concat(this.addSource(tool.stdout, tool.name + ' #' + compilerId));
+            all = all.concat(this.addSource(tool.stderr, tool.name + ' #' + compilerId));
         });
     }
-    all = all.concat(result.stderr || []);
+    all = all.concat(this.addSource(result.stderr || [], compilerTitle));
 
     return all;
 };
@@ -1366,8 +1373,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
-    var output = this.getAllOutputAndErrors(result);
-    const compilerLabel = compiler.name + ' #' + compilerId;
+    var output = this.getAllOutputAndErrors(result, compiler.name, compilerId);
     var widgets = _.compact(
         _.map(
             output,
@@ -1401,7 +1407,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                 return {
                     severity: severity,
                     message: obj.tag.text,
-                    source: compilerLabel,
+                    source: obj.source,
                     startLineNumber: obj.tag.line,
                     startColumn: colBegin,
                     endLineNumber: obj.tag.line,
