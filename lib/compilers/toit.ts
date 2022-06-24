@@ -24,10 +24,10 @@
 
 import _ from 'underscore';
 
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {ToitParser} from './argument-parsers';
-import {ParseFilters} from '../../types/features/filters.interfaces';
 
 export class ToitCompiler extends BaseCompiler {
     static get key() {
