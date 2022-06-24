@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,51 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import tarGzip from 'node-targz';
+declare module 'node-targz' {
+    import type {PathLike} from 'fs';
 
-export class Packager {
-    async package(directory, destination) {
-        return await this.tarGzFiles(directory, destination);
+    // eslint-disable-next-line node/no-extraneous-import
+    import type {ExtractOptions, PackOptions} from 'tar-fs';
+
+    type Callback = (error: Error | null) => void;
+
+    export interface CompressOptions {
+        source: string;
+        options: PackOptions | undefined;
+        level: number | undefined;
+        memLevel: number | undefined;
+        destination: PathLike;
     }
 
-    unpack(packageFile, destination) {
-        return new Promise((resolve, reject) => {
-            tarGzip.decompress(
-                {
-                    source: packageFile,
-                    destination: destination,
-                },
-                err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(destination);
-                    }
-                },
-            );
-        });
+    export interface DecompressOptions {
+        source: PathLike;
+        destination: string;
+        options: ExtractOptions | undefined;
     }
 
-    tarGzFiles(cwd, destination) {
-        return new Promise((resolve, reject) => {
-            tarGzip.compress(
-                {
-                    source: cwd,
-                    destination: destination,
-                    level: 6,
-                    memLevel: 6,
-                    options: {
-                        dereference: true,
-                    },
-                },
-                err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(destination);
-                    }
-                },
-            );
-        });
-    }
+    export function compress(options: CompressOptions, cb: Callback): void;
+
+    export function decompress(options: DecompressOptions, cb: Callback): void;
 }
