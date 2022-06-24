@@ -39,6 +39,7 @@ var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var CompilerService = require('../compiler-service').CompilerService;
 
 var languages = options.languages;
 
@@ -1111,7 +1112,7 @@ function color(status) {
 
 Executor.prototype.handleCompilationStatus = function (status) {
     // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
-    this.compilerService.handleCompilationStatus(this.statusLabel, null, status);
+    CompilerService.handleCompilationStatus(this.statusLabel, null, status);
 
     if (this.statusIcon != null) {
         this.statusIcon
