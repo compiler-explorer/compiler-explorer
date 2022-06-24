@@ -22,16 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
-import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {BaseCompiler} from '../base-compiler';
 
 import {ToitParser} from './argument-parsers';
-
-/* import Semver from "semver"; */
+import {ParseFilters} from '../../types/features/filters.interfaces';
 
 export class ToitCompiler extends BaseCompiler {
     static get key() {
@@ -43,11 +39,13 @@ export class ToitCompiler extends BaseCompiler {
         this.compiler.supportsIntel = true;
     }
 
-    override cacheDir(outputFilename: string) {
+    cacheDir(outputFilename: string) {
         return outputFilename + '.cache';
     }
-    override optionsForFilter(filters, outputFilename) {
+
+    override optionsForFilter(filters: ParseFilters, outputFilename, userOptions?): string[] {
         if (!filters.binary) return ['execute', outputFilename];
+        return [];
     }
 
     override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) {

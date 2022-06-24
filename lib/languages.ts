@@ -409,6 +409,9 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.toit'],
         alias: [],
         logoUrl: 'toit.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
     },
     typescript: {
         name: 'TypeScript Native',
