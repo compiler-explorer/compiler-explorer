@@ -45,7 +45,7 @@ export class ToitCompiler extends BaseCompiler {
 
     override optionsForFilter(filters: ParseFilters, outputFilename, userOptions?): string[] {
         if (!filters.binary) return ['execute', outputFilename];
-        return [];
+        return [outputFilename];
     }
 
     override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) {
