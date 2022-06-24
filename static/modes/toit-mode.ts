@@ -22,42 +22,36 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-"use strict";
-const monaco = require("monaco-editor");
+'use strict';
+const monaco = require('monaco-editor');
 
 function configuration() {
     /* Toit Language Configuration: */
 
     return {
-        comment: [
-            [/\/\*/, "comment"],
-            [/\*\//, "comment", "@pop"],
-            [{lineComment: /\/\//}]
-        ],
+        comment: [[/\/\*/, 'comment'], [/\*\//, 'comment', '@pop'], [{lineComment: /\/\//}]],
 
         brackets: [
-            ["{", "}", "delimiter.curly"],
-            ["[", "]", "delimiter.square"],
-            ["#[", "]", "delimiter.square"],
-            ["(", ")", "delimiter.parenthesis"],
-            ["<", ">", "delimiter.angle"]
+            ['{', '}', 'delimiter.curly'],
+            ['[', ']', 'delimiter.square'],
+            ['#[', ']', 'delimiter.square'],
+            ['(', ')', 'delimiter.parenthesis'],
+            ['<', '>', 'delimiter.angle'],
         ],
 
-        writespace: [
-            [/[ \t\r\n]+/, "write"]
-        ],
+        writespace: [[/[ \t\r\n]+/, 'write']],
 
         string: [
-            [/@escapes/, "string.escape"],
-            [/"/, "string", "@pop"]
+            [/@escapes/, 'string.escape'],
+            [/"/, 'string', '@pop'],
         ],
 
-        tripleQuoteString: [[/"""/, "string", "@pop"]],
-        rawString: [[/"/, "string", "@pop"]],
+        tripleQuoteString: [[/"""/, 'string', '@pop']],
+        rawString: [[/"/, 'string', '@pop']],
         character: [
-            [/@charEscapes/, "string.escape"],
-            [/'/, "string", "@pop"]
-        ]
+            [/@charEscapes/, 'string.escape'],
+            [/'/, 'string', '@pop'],
+        ],
     };
 }
 
@@ -66,70 +60,65 @@ function definition() {
 
     return {
         keywords: [
-            "import",
-            "export",
-            "as",
-            "show",
-            "class",
-            "extends",
-            "for",
-            "while",
-            "if",
-            "else",
-            "break",
-            "continue",
-            "static",
-            "assert",
-            "abstract",
-            "try",
-            "finally",
-            "return"
+            'import',
+            'export',
+            'as',
+            'show',
+            'class',
+            'extends',
+            'for',
+            'while',
+            'if',
+            'else',
+            'break',
+            'continue',
+            'static',
+            'assert',
+            'abstract',
+            'try',
+            'finally',
+            'return',
         ],
 
-        builtintypes: [
-            "bool",
-            "int",
-            "string",
-            "float"
-        ],
+        builtintypes: ['bool', 'int', 'string', 'float'],
 
-        wordOperators: ["and", "or", "not"],
+        wordOperators: ['and', 'or', 'not'],
         operators: [
-            "=",
-            "+",
-            "-",
-            "*",
-            "/",
-            "^",
-            "<",
-            ">",
-            "%",
-            "?",
-            "|",
-            "&",
-            "~",
-            "++",
-            "--",
-            "+=",
-            "-=",
-            "*=",
-            "/=",
-            "%=",
-            "|=",
-            "^=",
-            "&=",
-            "!=",
-            "==",
-            ":=",
-            "<<",
-            ">>",
-            "<=",
-            ">=",
-            "::=",
-            ">>>",
-            "<<=",
-            ">>=",
-            ">>>="
+            '=',
+            '+',
+            '-',
+            '*',
+            '/',
+            '^',
+            '<',
+            '>',
+            '%',
+            '?',
+            '|',
+            '&',
+            '~',
+            '++',
+            '--',
+            '+=',
+            '-=',
+            '*=',
+            '/=',
+            '%=',
+            '|=',
+            '^=',
+            '&=',
+            '!=',
+            '==',
+            ':=',
+            '<<',
+            '>>',
+            '<=',
+            '>=',
+            '::=',
+            '>>>',
+            '<<=',
+            '>>=',
+            '>>>=',
         ],
 
         /* We include these common regular expressions */
@@ -144,33 +133,33 @@ function definition() {
                     /[a-z_$][\w$]*/,
                     {
                         cases: {
-                            "@builtintypes": "keyword",
-                            "@keywords": "keyword",
-                            "@wordOperators": "keyword"
-                        }
-                    }
+                            '@builtintypes': 'keyword',
+                            '@keywords': 'keyword',
+                            '@wordOperators': 'keyword',
+                        },
+                    },
                 ],
 
-                {include: "@writespace"},
+                {include: '@writespace'},
                 [/([:|[[{(]\.|\.[\]})]|[[\]{}()])/, '@brackets'],
                 [
                     /@symbols/,
                     {
                         cases: {
-                            "@operators": "operator",
-                            "@default": ""
-                        }
-                    }
-                ]
-            ]
-        }
+                            '@operators': 'operator',
+                            '@default': '',
+                        },
+                    },
+                ],
+            ],
+        },
     };
 }
 
 const def = definition();
 
-monaco.languages.register({id: "toit"});
-monaco.languages.setMonarchTokensProvider("toit", def);
-monaco.languages.setLanguageConfiguration("toit", configuration());
+monaco.languages.register({id: 'toit'});
+monaco.languages.setMonarchTokensProvider('toit', def);
+monaco.languages.setLanguageConfiguration('toit', configuration());
 
 export = def;

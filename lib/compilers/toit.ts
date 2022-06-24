@@ -22,29 +22,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { BaseCompiler } from "../base-compiler";
-import { ToitParser } from "./argument-parsers";
+import path from 'path';
 
-import _ from "underscore";
-import path from "path";
-import fs from "fs-extra";
+import fs from 'fs-extra';
+import _ from 'underscore';
+
+import {BaseCompiler} from '../base-compiler';
+
+import {ToitParser} from './argument-parsers';
+
 /* import Semver from "semver"; */
 
-
 export class ToitCompiler extends BaseCompiler {
-    static get key() { return "toit"; }
+    static get key() {
+        return 'toit';
+    }
 
-    override constructor(info, env) {
+    constructor(info, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }
 
-    override cacheDir(outputFilename: string) { return outputFilename + ".cache"; }
+    override cacheDir(outputFilename: string) {
+        return outputFilename + '.cache';
+    }
     override optionsForFilter(filters, outputFilename) {
-        if (!filters.binary) return ["execute", outputFilename];
+        if (!filters.binary) return ['execute', outputFilename];
     }
 
-    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) { return []; }
-    override getArgumentParser() { return ToitParser; }
-    override isCfgCompiler() { return true; }
+    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) {
+        return [];
+    }
+    override getArgumentParser() {
+        return ToitParser;
+    }
+    override isCfgCompiler() {
+        return true;
+    }
 }
