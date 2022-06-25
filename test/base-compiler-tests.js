@@ -113,10 +113,11 @@ describe('Basic compiler invariants', function () {
         testIncludeNotG('#include <../fish.config> // for std::is_same_v<...>');
         testIncludeNotG('#include <./>      // for std::ranges::range<...> and std::ranges::range_type_v<...>');
     });
-    it('should skip version check if forced to', () => {
+    it('should skip version check if forced to', async () => {
         const newConfig = {...info, explicitVersion: '123'};
         const forcedVersionCompiler = new BaseCompiler(newConfig, ce);
-        forcedVersionCompiler.getVersion().stdout.should.deep.equal(['123']);
+        const result = await forcedVersionCompiler.getVersion();
+        result.stdout.should.deep.equal(['123']);
     });
 });
 

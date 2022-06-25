@@ -30,7 +30,7 @@ import {PaneRenaming} from '../widgets/pane-renaming';
 import {Hub} from '../hub';
 import {EventHub} from '../event-hub';
 import {Alert} from '../alert';
-import Components from '../components';
+import * as Components from '../components';
 import {ga} from '../analytics';
 import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles';

@@ -41,6 +41,7 @@ var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var TimingWidget = require('../widgets/timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
+var CompilerService = require('../compiler-service').CompilerService;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
@@ -127,9 +128,19 @@ function Compiler(hub, container, state) {
     this.initButtons(state);
 
     var monacoDisassembly = 'asm';
-    if (languages[this.currentLangId] && languages[this.currentLangId].monacoDisassembly) {
-        // TODO: If languages[this.currentLangId] is not valid, something went wrong. Find out what
-        monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
+    // Bandaid fix to not have to include monacoDisassembly everywhere in languages.js
+    if (languages[this.currentLangId]) {
+        switch (languages[this.currentLangId].id) {
+            case 'cuda':
+                monacoDisassembly = 'ptx';
+                break;
+            case 'ruby':
+                monacoDisassembly = 'asmruby';
+                break;
+            case 'mlir':
+                monacoDisassembly = 'mlir';
+                break;
+        }
     }
 
     this.outputEditor = monaco.editor.create(
@@ -1320,13 +1331,13 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
         });
     }
 
-    this.handleCompilationStatus(this.compilerService.calculateStatusIcon(result));
+    this.handleCompilationStatus(CompilerService.calculateStatusIcon(result));
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
     if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
         this.outputBtn.prop('title', '');
     } else {
-        this.compilerService.handleOutputButtonTitle(this.outputBtn, result);
+        CompilerService.handleOutputButtonTitle(this.outputBtn, result);
     }
     var infoLabelText = '';
     if (cached) {
@@ -3041,7 +3052,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {
-    this.compilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
+    CompilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {

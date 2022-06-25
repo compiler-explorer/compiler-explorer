@@ -464,7 +464,7 @@ function setupLanguageLogos(languages) {
         function (lang) {
             try {
                 lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark) {
+                if (lang.logoUrlDark !== null) {
                     lang.logoDataDark = logos('./' + lang.logoUrlDark);
                 }
             } catch (ignored) {
@@ -615,7 +615,7 @@ function start() {
         return Components.getEditor();
     });
     setupAdd($('#add-diff'), function () {
-        return Components.getDiff();
+        return Components.getDiffView();
     });
     setupAdd($('#add-tree'), function () {
         $('#add-tree').prop('disabled', true);

@@ -28,6 +28,7 @@ import {ResultLine} from '../resultline/resultline.interfaces';
 export type CompilationResult = {
     code: number;
     buildResult?: unknown;
+    inputFilename?: string;
     asm?: ResultLine[];
     stdout: ResultLine[];
     stderr: ResultLine[];

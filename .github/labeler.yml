@@ -111,6 +111,9 @@ lang-solidity:
 lang-swift:
   - lib/compilers/swift.js
   - etc/config/swift.*.properties
+lang-toit:
+  - lib/compilers/toit.ts
+  - etc/config/toit.*.properties
 lang-typescript:
   - lib/compilers/typescript.js
   - etc/config/typescript.*.properties

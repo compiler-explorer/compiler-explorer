@@ -38,6 +38,7 @@ const DEFAULT_MONACO_CONFIG = {
     folding: true,
     lineNumbersMinChars: 1,
     emptySelectionClipboard: true,
+    wrappingStrategy: 'advanced',
 };
 
 type EditorKinds = monaco.editor.IStandaloneDiffEditor | monaco.editor.IStandaloneCodeEditor;

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,41 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../types/languages.interfaces';
-import {Compiler} from '../types/compiler.interfaces';
+declare module 'node-targz' {
+    import type {PathLike} from 'fs';
 
-export type LibraryVersion = {
-    alias: string[];
-    hidden: boolean;
-    libId: string;
-    used: boolean;
-    version?: string;
-};
+    // eslint-disable-next-line node/no-extraneous-import
+    import type {ExtractOptions, PackOptions} from 'tar-fs';
 
-export type Library = {
-    dependencies: string[];
-    description?: string;
-    examples?: string[];
-    name?: string;
-    url?: string;
-    versions: Record<string, LibraryVersion>;
-};
+    type Callback = (error: Error | null) => void;
 
-export type LanguageLibs = Record<string, Library>;
+    export interface CompressOptions {
+        source: string;
+        options: PackOptions | undefined;
+        level: number | undefined;
+        memLevel: number | undefined;
+        destination: PathLike;
+    }
 
-export type Libs = Record<string, LanguageLibs>;
+    export interface DecompressOptions {
+        source: PathLike;
+        destination: string;
+        options: ExtractOptions | undefined;
+    }
 
-export type LibsPerRemote = Record<string, LanguageLibs>;
+    export function compress(options: CompressOptions, cb: Callback): void;
 
-export type Options = {
-    libs: Libs;
-    remoteLibs: LibsPerRemote;
-    languages: Record<string, Language>;
-    compilers: Compiler[];
-    defaultCompiler: Record<string, string>;
-    defaultLibs: Record<string, string | null>;
-    defaultFontScale: number;
-    sentryDsn?: string;
-    release?: string;
-    sentryEnvironment?: string;
-};
+    export function decompress(options: DecompressOptions, cb: Callback): void;
+}

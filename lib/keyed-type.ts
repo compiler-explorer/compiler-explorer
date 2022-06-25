@@ -22,11 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Keyable} from './keyed-type.interfaces';
 import {logger} from './logger';
 
-function makeKeyMap(typeName, objects) {
-    const keyToNameMap = {};
-    const keyToTypeMap = {};
+function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string, T>): Record<string, T> {
+    const keyToNameMap: Record<string, string> = {};
+    const keyToTypeMap: Record<string, T> = {};
     let haveErrors = false;
 
     for (const name in objects) {
@@ -48,18 +49,17 @@ function makeKeyMap(typeName, objects) {
         }
     }
 
-    /*
-     * If there are any errors we just log them and continue above.
-     *
-     * Once done, we throw to halt instance startup so the logs don't
-     * get lost in a wall of text.
-     */
+    // If there are any errors, we just log them and continue above. Once done, we throw to
+    // halt instance startup so the logs don't get lost in a wall of text.
     if (haveErrors) throw new Error(`${typeName} KeyedType configuration error`);
 
     return keyToTypeMap;
 }
 
-export function makeKeyedTypeGetter(typeName, objects) {
+export function makeKeyedTypeGetter<T extends Keyable>(
+    typeName: string,
+    objects: Record<string, T>,
+): (key: string) => T {
     const keyMap = makeKeyMap(typeName, objects);
 
     return function getFromKey(key) {

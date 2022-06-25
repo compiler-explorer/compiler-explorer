@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2022, Serzhan Nasredin
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,51 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import tarGzip from 'node-targz';
+import _ from 'underscore';
 
-export class Packager {
-    async package(directory, destination) {
-        return await this.tarGzFiles(directory, destination);
+import {ParseFilters} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
+
+import {ToitParser} from './argument-parsers';
+
+export class ToitCompiler extends BaseCompiler {
+    static get key() {
+        return 'toit';
     }
 
-    unpack(packageFile, destination) {
-        return new Promise((resolve, reject) => {
-            tarGzip.decompress(
-                {
-                    source: packageFile,
-                    destination: destination,
-                },
-                err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(destination);
-                    }
-                },
-            );
-        });
+    constructor(info, env) {
+        super(info, env);
+        this.compiler.supportsIntel = true;
     }
 
-    tarGzFiles(cwd, destination) {
-        return new Promise((resolve, reject) => {
-            tarGzip.compress(
-                {
-                    source: cwd,
-                    destination: destination,
-                    level: 6,
-                    memLevel: 6,
-                    options: {
-                        dereference: true,
-                    },
-                },
-                err => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(destination);
-                    }
-                },
-            );
-        });
+    cacheDir(outputFilename: string) {
+        return outputFilename + '.cache';
+    }
+
+    override optionsForFilter(filters: ParseFilters, outputFilename, userOptions?): string[] {
+        if (!filters.binary) return ['execute', outputFilename];
+        return [outputFilename];
+    }
+
+    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath: string) {
+        return [];
+    }
+    override getArgumentParser() {
+        return ToitParser;
+    }
+    override isCfgCompiler() {
+        return true;
     }
 }
