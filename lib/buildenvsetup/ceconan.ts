@@ -181,7 +181,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     async findMatchingHash(buildProperties, possibleBuilds) {
         return _.findKey(possibleBuilds, elem => {
             return _.all(buildProperties, (val, key) => {
-                return val === elem.settings[key];
+                if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
+                    return true;
+                } else {
+                    return val === elem.settings[key];
+                }
             });
         });
     }
