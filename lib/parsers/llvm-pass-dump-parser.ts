@@ -31,7 +31,7 @@ import {
     Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
+import {logger} from '../logger';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -45,8 +45,7 @@ function assert(condition: boolean, message?: string, ...args: any[]): asserts c
         const error = message
             ? `Assertion error in llvm-print-after-all-parser: ${message}`
             : `Assertion error in llvm-print-after-all-parser`;
-        console.log(error, ...args);
-        console.trace();
+        logger.error(error + ' ' + JSON.stringify(args));
         throw error;
     }
 }
@@ -102,7 +101,7 @@ export class LlvmPassDumpParser {
         // Ir dump headers look like "*** IR Dump After XYZ ***"
         // Machine dump headers look like "# *** IR Dump After XYZ ***:", possibly with a comment or "(function: xyz)"
         // or "(loop: %x)" at the end
-        this.irDumpHeader = /^\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?\w+)\))?(?:;.+)?$/;
+        this.irDumpHeader = /^\*{3} (.+) \*{3}(?:\s+\((?:function: |loop: )(%?[\w$.]+)\))?(?:;.+)?$/;
         this.machineCodeDumpHeader = /^# \*{3} (.+) \*{3}:$/;
         // Ir dumps are "define T @_Z3fooi(...) . .. {" or "# Machine code for function _Z3fooi: <attributes>"
         // Some interesting edge cases found when testing:
@@ -229,7 +228,7 @@ export class LlvmPassDumpParser {
                             // may be a blank line
                             continue;
                         } else {
-                            console.log('ignoring ------>', line.text);
+                            ///console.log('ignoring ------>', line.text);
                             // ignore
                             continue;
                         }
@@ -315,7 +314,6 @@ export class LlvmPassDumpParser {
                     assert(previousFunction !== null);
                     fn = previousFunction;
                 }
-                console.log(fn);
                 assert(fn in passDumpsByFunction);
                 [passDumpsByFunction[fn], passDumpsByFunction['<Full Module>']].map(entry =>
                     entry.push({
@@ -406,7 +404,7 @@ export class LlvmPassDumpParser {
     breakdownOutput(ir: OutputLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         // break down output by "*** IR Dump After XYZ ***" markers
         const raw_passes = this.breakdownOutputIntoPassDumps(ir);
-        if (llvmOptPipelineOptions['dump-full-module']) {
+        if (llvmOptPipelineOptions.fullModule) {
             const passDumpsByFunction = this.associateFullDumpsWithFunctions(raw_passes);
             // Match before / after pass dumps and we're done
             return this.matchPassDumps(passDumpsByFunction);
