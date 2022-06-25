@@ -973,6 +973,7 @@ html[data-theme='dark'] {
             padding: 2px 3px;
             border: 1px solid black;
             cursor: pointer;
+            word-wrap: anywhere;
             &.firstMachinePass {
                 margin-top: 5px;
                 position: relative;

@@ -36,6 +36,7 @@ export type Pass = {
 export type LLVMOptPipelineOutput = Record<string, Pass[]>;
 
 export type LLVMOptPipelineBackendOptions = {
-    'dump-full-module': boolean;
+    fullModule: boolean;
     demangle: boolean;
+    libraryFunctions: boolean;
 };
