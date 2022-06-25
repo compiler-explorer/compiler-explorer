@@ -554,11 +554,3 @@ a {
     color: #17a2b8;
     background-color: rgba(49, 54, 60, 0.85);
 }
-
-.llvm-opt-pipeline-body .passes-column .passes-list div {
-    background: rgba(255, 255, 255, 0.1);
-    &:hover,
-    &.active {
-        background: rgba(255, 255, 255, 0.2);
-    }
-}
