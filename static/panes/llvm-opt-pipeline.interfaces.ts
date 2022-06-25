@@ -23,5 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface LLVMOptPipelineViewState {
-    ppOutput: any;
+    selectedFunction: string;
+    selectedIndex: number;
+    // may be 0 when first initialized
+    sidebarWidth: number;
 }

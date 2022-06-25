@@ -25,33 +25,26 @@
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
+import TomSelect from 'tom-select';
+import scrollIntoView from 'scroll-into-view-if-needed';
 
 import {MonacoPane} from './pane';
-import {IrState} from './ir-view.interfaces';
+import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces';
 import {MonacoPaneState} from './pane.interfaces';
 
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
-import {applyColours} from '../colour';
-
 import {Hub} from '../hub';
-
 import * as utils from '../utils';
+import {Toggles} from '../widgets/toggles';
 
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
-    OutputLine,
-    Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import TomSelect from 'tom-select';
 
-import scrollIntoView from 'scroll-into-view-if-needed';
-import {Toggles} from '../widgets/toggles';
-
-export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, IrState> {
+export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, LLVMOptPipelineViewState> {
     results: LLVMOptPipelineOutput = {};
-    irCode: any[] = [];
     passesColumn: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
@@ -60,23 +53,29 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     keydownCallback: (e: JQuery.KeyDownEvent) => void;
     isPassListSelected = false;
     functionSelector: TomSelect;
-    selectedFunction = '';
-    selectedIndex = 0;
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
-    // todo: can probably get rid of this and just use state?
+    state: LLVMOptPipelineViewState;
     lastOptions: LLVMOptPipelineBackendOptions = {fullModule: false, demangle: true, libraryFunctions: true};
     resizeStartX: number;
     resizeStartWidth: number;
     resizeDragMoveBind: (e: MouseEvent) => void;
     resizeDragEndBind: (e: MouseEvent) => void;
 
-    constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
+    constructor(hub: Hub, container: Container, state: LLVMOptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
         this.passesColumn = this.domRoot.find('.passes-column');
         this.passesList = this.domRoot.find('.passes-list');
         this.body = this.domRoot.find('.llvm-opt-pipeline-body');
+        if (state.sidebarWidth === 0) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            state.sidebarWidth = parseInt(document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width, 10);
+            this.resize();
+        } else {
+            this.passesColumn.get()[0].style.width = state.sidebarWidth + 'px';
+        }
+        this.state = state;
         const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
         if (!(selector instanceof HTMLSelectElement)) {
             throw new Error('.function-selector is not an HTMLSelectElement');
@@ -94,7 +93,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.keydownCallback = this.onKeydownCallback.bind(this);
         $(document).on('click', this.clickCallback);
         $(document).on('keydown', this.keydownCallback);
-
+        this.eventHub.emit('llvmOptPipelineViewOpened', this.compilerInfo.compilerId);
+        this.eventHub.emit('requestSettings');
         this.emitOptions(true);
     }
 
@@ -130,34 +130,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         return 'LLVM Opt Pipeline Viewer';
     }
 
-    override registerEditorActions(): void {
-        this.editor.addAction({
-            id: 'viewsource',
-            label: 'Scroll to source',
-            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
-            contextMenuGroupId: 'navigation',
-            contextMenuOrder: 1.5,
-            run: editor => {
-                const position = editor.getPosition();
-                if (position != null) {
-                    const desiredLine = position.lineNumber - 1;
-                    const source = this.irCode[desiredLine].source;
-                    if (source !== null && source.file !== null) {
-                        this.eventHub.emit(
-                            'editorLinkLine',
-                            this.compilerInfo.editorId as number,
-                            source.line,
-                            -1,
-                            -1,
-                            true
-                        );
-                    }
-                }
-            },
-        });
-    }
-
-    override registerButtons(state: IrState) {
+    override registerButtons(state: LLVMOptPipelineViewState) {
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
@@ -184,20 +157,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             width = 50;
         }
         this.passesColumn.get()[0].style.width = width + 'px';
+        this.state.sidebarWidth = width;
         this.resize();
     }
 
     resizeDragEnd(e: MouseEvent) {
         document.documentElement.removeEventListener('mousemove', this.resizeDragMoveBind, false);
         document.documentElement.removeEventListener('mouseup', this.resizeDragEndBind, false);
-    }
-
-    override registerCallbacks(): void {
-        super.registerCallbacks();
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
-
-        this.eventHub.emit('llvmOptPipelineViewOpened', this.compilerInfo.compilerId);
-        this.eventHub.emit('requestSettings');
     }
 
     emitOptions(force = false) {
@@ -224,7 +190,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
 
     onOptionsChange() {
         // Redo pass sidebar
-        this.selectFunction(this.selectedFunction);
+        this.selectFunction(this.state.selectedFunction);
         // Inform compiler of the options
         this.emitOptions();
     }
@@ -254,7 +220,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     updateResults(results: LLVMOptPipelineOutput): void {
         this.results = results;
         //const functions = Object.keys(result);
-        let selectedFunction = this.selectedFunction; // one of the .clear calls below will end up resetting this
+        let selectedFunction = this.state.selectedFunction; // one of the .clear calls below will end up resetting this
         this.functionSelector.clear();
         this.functionSelector.clearOptions();
         const keys = Object.keys(results);
@@ -279,12 +245,12 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         } else {
             // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
             // still be the same
-            this.selectedFunction = selectedFunction;
+            this.state.selectedFunction = selectedFunction;
         }
     }
 
     selectFunction(name: string) {
-        this.selectedFunction = name;
+        this.state.selectedFunction = name;
         if (!(name in this.results)) {
             return;
         }
@@ -311,21 +277,25 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             this.displayPass(parseInt(target.getAttribute('data-i') as string));
         });
         // try to select a pass
-        if (this.selectedIndex >= passes.length) {
-            this.selectedIndex = 0;
+        if (this.state.selectedIndex >= passes.length) {
+            this.state.selectedIndex = 0;
         }
-        const selectedPassDiv = this.passesList.find(`[data-i=${this.selectedIndex}]`);
+        const selectedPassDiv = this.passesList.find(`[data-i=${this.state.selectedIndex}]`);
         selectedPassDiv.addClass('active');
-        this.displayPass(this.selectedIndex);
+        // displayPass updates state
+        this.displayPass(this.state.selectedIndex);
     }
 
     displayPass(i: number) {
-        this.selectedIndex = i;
-        const pass = this.results[this.selectedFunction][i];
-        const before = pass.before.map(x => x.text).join('\n');
-        const after = pass.after.map(x => x.text).join('\n');
-        this.editor.getModel()?.original.setValue(before);
-        this.editor.getModel()?.modified.setValue(after);
+        if (this.state.selectedFunction in this.results && i < this.results[this.state.selectedFunction].length) {
+            this.state.selectedIndex = i;
+            const pass = this.results[this.state.selectedFunction][i];
+            const before = pass.before.map(x => x.text).join('\n');
+            const after = pass.after.map(x => x.text).join('\n');
+            this.editor.getModel()?.original.setValue(before);
+            this.editor.getModel()?.modified.setValue(after);
+            this.updateState();
+        }
     }
 
     onClickCallback(e: JQuery.ClickEvent) {
@@ -363,6 +333,16 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 }
             }
         }
+    }
+
+    override getCurrentState() {
+        return {
+            ...this.options.get(),
+            ...super.getCurrentState(),
+            selectedFunction: this.state.selectedFunction,
+            selectedIndex: this.state.selectedIndex,
+            sidebarWidth: this.state.sidebarWidth,
+        };
     }
 
     override resize() {
