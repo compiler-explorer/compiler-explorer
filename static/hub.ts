@@ -42,6 +42,7 @@ import {
     HASKELL_CORE_VIEW_COMPONENT_NAME,
     HASKELL_STG_VIEW_COMPONENT_NAME,
     IR_VIEW_COMPONENT_NAME,
+    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     OPT_VIEW_COMPONENT_NAME,
     OUTPUT_COMPONENT_NAME,
     PP_VIEW_COMPONENT_NAME,
@@ -118,6 +119,7 @@ export class Hub {
         layout.registerComponent(PP_VIEW_COMPONENT_NAME, (c, s) => this.ppViewFactory(c, s));
         layout.registerComponent(AST_VIEW_COMPONENT_NAME, (c, s) => this.astViewFactory(c, s));
         layout.registerComponent(IR_VIEW_COMPONENT_NAME, (c, s) => this.irViewFactory(c, s));
+        layout.registerComponent(LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME, (c, s) => this.llvmOptPipelineFactory(c, s));
         layout.registerComponent(DEVICE_VIEW_COMPONENT_NAME, (c, s) => this.deviceViewFactory(c, s));
         layout.registerComponent(RUST_MIR_VIEW_COMPONENT_NAME, (c, s) => this.rustMirViewFactory(c, s));
         layout.registerComponent(HASKELL_CORE_VIEW_COMPONENT_NAME, (c, s) => this.haskellCoreViewFactory(c, s));

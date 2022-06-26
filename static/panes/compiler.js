@@ -300,8 +300,6 @@ Compiler.prototype.initPanerButtons = function () {
     var createLLVMOptPipelineView = _.bind(function () {
         return Components.getLLVMOptPipelineViewWith(
             this.id,
-            this.source,
-            this.lastResult.irOutput,
             this.getCompilerName(),
             this.sourceEditorId,
             this.sourceTreeId
