@@ -39,6 +39,7 @@ import * as monacoConfig from '../monaco-config';
 import {GccDumpFilters, GccDumpState} from './gccdump-view.interfaces';
 
 import {ga} from '../analytics';
+import {CompilerFilters} from '../../types/features/filters.interfaces';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpState> {
     selectize: TomSelect;
@@ -109,7 +110,12 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.uiIsReady = false;
         this.onUiNotReady();
 
-        this.eventHub.emit('gccDumpFiltersChanged', this.compilerInfo.compilerId, this.getEffectiveFilters(), false);
+        this.eventHub.emit(
+            'gccDumpFiltersChanged',
+            this.compilerInfo.compilerId,
+            this.getEffectiveFilters() as CompilerFilters,
+            false
+        );
 
         this.updateButtons();
         this.updateState();
@@ -255,7 +261,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     }
 
     onPassSelect(passId: string) {
-        const selectedPass = this.selectize.options[passId];
+        const selectedPass = this.selectize.options[passId] as unknown as any;
+        console.log(selectedPass);
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
@@ -387,7 +394,12 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.updateButtons();
 
         if (this.inhibitPassSelect !== true) {
-            this.eventHub.emit('gccDumpFiltersChanged', this.compilerInfo.compilerId, this.getEffectiveFilters(), true);
+            this.eventHub.emit(
+                'gccDumpFiltersChanged',
+                this.compilerInfo.compilerId,
+                this.getEffectiveFilters() as unknown as CompilerFilters,
+                true
+            );
         }
     }
 

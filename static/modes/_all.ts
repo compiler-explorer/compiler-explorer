@@ -42,6 +42,7 @@ import './gccdump-rtl-gimple-mode';
 import './haskell-mode';
 import './ispc-mode';
 import './llvm-ir-mode';
+import './mlir-mode';
 import './nc-mode';
 import './nim-mode';
 import './ocaml-mode';

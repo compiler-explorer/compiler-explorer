@@ -41,6 +41,7 @@ var codeLensHandler = require('../codelens-handler');
 var monacoConfig = require('../monaco-config');
 var TimingWidget = require('../widgets/timing-info-widget');
 var CompilerPicker = require('../compiler-picker').CompilerPicker;
+var CompilerService = require('../compiler-service').CompilerService;
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
@@ -127,9 +128,19 @@ function Compiler(hub, container, state) {
     this.initButtons(state);
 
     var monacoDisassembly = 'asm';
-    if (languages[this.currentLangId] && languages[this.currentLangId].monacoDisassembly) {
-        // TODO: If languages[this.currentLangId] is not valid, something went wrong. Find out what
-        monacoDisassembly = languages[this.currentLangId].monacoDisassembly;
+    // Bandaid fix to not have to include monacoDisassembly everywhere in languages.js
+    if (languages[this.currentLangId]) {
+        switch (languages[this.currentLangId].id) {
+            case 'cuda':
+                monacoDisassembly = 'ptx';
+                break;
+            case 'ruby':
+                monacoDisassembly = 'asmruby';
+                break;
+            case 'mlir':
+                monacoDisassembly = 'mlir';
+                break;
+        }
     }
 
     this.outputEditor = monaco.editor.create(
@@ -205,7 +216,7 @@ Compiler.prototype.initLangAndCompiler = function (state) {
 Compiler.prototype.close = function () {
     codeLensHandler.unregister(this.id);
     this.eventHub.unsubscribe();
-    this.eventHub.emit('compilerClose', this.id);
+    this.eventHub.emit('compilerClose', this.id, this.sourceTreeId);
     this.outputEditor.dispose();
 };
 
@@ -973,33 +984,50 @@ Compiler.prototype.compileFromTree = function (options, bypassCache) {
         return;
     }
 
-    var mainsource = tree.multifileService.getMainSource();
-
     var request = {
-        source: mainsource,
+        source: tree.multifileService.getMainSource(),
         compiler: this.compiler ? this.compiler.id : '',
         options: options,
         lang: this.currentLangId,
         files: tree.multifileService.getFiles(),
     };
 
-    var treeState = tree.currentState();
-    var cmakeProject = tree.multifileService.isACMakeProject();
+    var fetches = [];
+    fetches.push(
+        this.compilerService.expand(request.source).then(function (contents) {
+            request.source = contents;
+        })
+    );
 
-    if (bypassCache) request.bypassCache = true;
-    if (!this.compiler) {
-        this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
-    } else if (cmakeProject && request.source === '') {
-        this.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
-    } else {
-        if (cmakeProject) {
-            request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
-            request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
-            this.sendCMakeCompile(request);
-        } else {
-            this.sendCompile(request);
-        }
+    for (var i = 0; i < request.files.length; i++) {
+        var file = request.files[i];
+        fetches.push(
+            this.compilerService.expand(file.contents).then(function (contents) {
+                file.contents = contents;
+            })
+        );
     }
+
+    var self = this;
+    Promise.all(fetches).then(function () {
+        var treeState = tree.currentState();
+        var cmakeProject = tree.multifileService.isACMakeProject();
+
+        if (bypassCache) request.bypassCache = true;
+        if (!self.compiler) {
+            self.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        } else if (cmakeProject && request.source === '') {
+            self.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
+        } else {
+            if (cmakeProject) {
+                request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                self.sendCMakeCompile(request);
+            } else {
+                self.sendCompile(request);
+            }
+        }
+    });
 };
 
 Compiler.prototype.compileFromEditorSource = function (options, bypassCache) {
@@ -1184,7 +1212,7 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     this.updateDecorations();
 
     var codeLenses = [];
-    if (this.getEffectiveFilters().binary) {
+    if (this.getEffectiveFilters().binary || result.forceBinaryView) {
         this.setBinaryMargin();
         _.each(
             this.assembly,
@@ -1286,6 +1314,9 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
         this.setAssembly(result, result.filteredCount || 0);
     } else if (result.result && result.result.asm) {
         this.setAssembly(result.result, result.result.filteredCount || 0);
+    } else {
+        result.asm = fakeAsm('<Compilation failed>');
+        this.setAssembly(result, 0);
     }
 
     var stdout = result.stdout || [];
@@ -1300,13 +1331,13 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
         });
     }
 
-    this.handleCompilationStatus(this.compilerService.calculateStatusIcon(result));
+    this.handleCompilationStatus(CompilerService.calculateStatusIcon(result));
     this.outputTextCount.text(stdout.length);
     this.outputErrorCount.text(stderr.length);
     if (this.isOutputOpened || (stdout.length === 0 && stderr.length === 0)) {
         this.outputBtn.prop('title', '');
     } else {
-        this.compilerService.handleOutputButtonTitle(this.outputBtn, result);
+        CompilerService.handleOutputButtonTitle(this.outputBtn, result);
     }
     var infoLabelText = '';
     if (cached) {
@@ -1326,7 +1357,12 @@ Compiler.prototype.handleCompileRequestAndResult = function (request, result, ca
     this.compileInfoLabel.text(infoLabelText);
 
     if (result.result) {
-        this.postCompilationResult(request, result.result);
+        var wasCmake =
+            result.buildsteps &&
+            _.any(result.buildsteps, function (step) {
+                return step.step === 'cmake';
+            });
+        this.postCompilationResult(request, result.result, wasCmake);
     } else {
         this.postCompilationResult(request, result);
     }
@@ -1348,7 +1384,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
     this.doNextCompileRequest();
 };
 
-Compiler.prototype.postCompilationResult = function (request, result) {
+Compiler.prototype.postCompilationResult = function (request, result, wasCmake) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
     } else {
@@ -1363,8 +1399,37 @@ Compiler.prototype.postCompilationResult = function (request, result) {
 
     this.updateButtons();
 
-    this.checkForUnwiseArguments(result.compilationOptions);
+    this.checkForUnwiseArguments(result.compilationOptions, wasCmake);
     this.setCompilationOptionsPopover(result.compilationOptions ? result.compilationOptions.join(' ') : '');
+
+    this.checkForHints(result);
+
+    if (result.bbcdiskimage) {
+        this.emulateBbcDisk(result.bbcdiskimage);
+    }
+};
+
+Compiler.prototype.emulateBbcDisk = function (bbcdiskimage) {
+    var dialog = $('#jsbeebemu');
+
+    this.alertSystem.notify(
+        'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+        {
+            group: 'emulation',
+            collapseSimilar: true,
+            dismissTime: 10000,
+            onBeforeShow: function (elem) {
+                elem.find('#emulink').on('click', function () {
+                    dialog.modal();
+
+                    var emuwindow = dialog.find('#jsbeebemuframe')[0].contentWindow;
+                    var tmstr = Date.now();
+                    emuwindow.location =
+                        'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                });
+            },
+        }
+    );
 };
 
 Compiler.prototype.onEditorChange = function (editor, source, langId, compilerId) {
@@ -2150,6 +2215,13 @@ Compiler.prototype.onFontScale = function () {
 Compiler.prototype.initListeners = function () {
     this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.eventHub.on(
+        'broadcastFontScale',
+        _.bind(function (scale) {
+            this.fontScale.setScale(scale);
+            this.saveState();
+        }, this)
+    );
     this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
     this.container.on('destroy', this.close, this);
@@ -2325,7 +2397,25 @@ Compiler.prototype.onOptionsChange = function (options) {
     }
 };
 
-Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
+function htmlEncode(rawStr) {
+    return rawStr.replace(/[\u00A0-\u9999<>&]/g, function (i) {
+        return '&#' + i.charCodeAt(0) + ';';
+    });
+}
+
+Compiler.prototype.checkForHints = function (result) {
+    if (result.hints) {
+        var self = this;
+        result.hints.forEach(function (hint) {
+            self.alertSystem.notify(htmlEncode(hint), {
+                group: 'hints',
+                collapseSimilar: false,
+            });
+        });
+    }
+};
+
+Compiler.prototype.checkForUnwiseArguments = function (optionsArray, wasCmake) {
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(
         optionsArray,
@@ -2339,7 +2429,7 @@ Compiler.prototype.checkForUnwiseArguments = function (optionsArray) {
     var are = unwiseOptions.length === 1 ? ' is ' : ' are ';
     var msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
-    if (_.contains(optionsArray, '-flto') && !this.filters.state.binary) {
+    if (_.contains(optionsArray, '-flto') && !this.filters.state.binary && !wasCmake) {
         this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
             group: 'unwiseOption',
             collapseSimilar: true,
@@ -2568,10 +2658,7 @@ Compiler.prototype.onPanesLinkLine = function (compilerId, lineNumber, colBegin,
 
         if (revealLine && lineNums[0]) {
             this.pushRevealJump();
-            var tab = this.container.tab;
-            if (tab !== null) {
-                tab.header.setActiveContentItem(tab.contentItem);
-            }
+            this.hub.activateTabForContainer(this.container);
             this.outputEditor.revealLineInCenter(lineNums[0]);
         }
 
@@ -2863,7 +2950,7 @@ Compiler.prototype.onMouseMove = function (e) {
             this.updateDecorations();
         }
         var hoverShowAsmDoc = this.settings.hoverShowAsmDoc === true;
-        if (hoverShowAsmDoc && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
+        if (hoverShowAsmDoc && this.compiler && this.compiler.supportsAsmDocs && this.isWordAsmKeyword(currentWord)) {
             getAsmInfo(currentWord.word, this.compiler.instructionSet).then(
                 _.bind(function (response) {
                     if (!response) return;
@@ -2965,7 +3052,7 @@ Compiler.prototype.onAsmToolTip = function (ed) {
 };
 
 Compiler.prototype.handleCompilationStatus = function (status) {
-    this.compilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
+    CompilerService.handleCompilationStatus(this.statusLabel, this.statusIcon, status);
 };
 
 Compiler.prototype.onLanguageChange = function (editorId, newLangId, treeId) {

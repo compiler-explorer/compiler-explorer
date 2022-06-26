@@ -51,8 +51,11 @@ var SimpleCook = require('./widgets/simplecook').SimpleCook;
 var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
 var Presentation = require('./presentation').Presentation;
+var setupSiteTemplateWidgetButton = require('./widgets/site-templates-widget').setupSiteTemplateWidgetButton;
 
 var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+
+var siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
 
 if (!window.PRODUCTION) {
     require('./tests/_all');
@@ -110,7 +113,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var SettingsObject = new Settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
@@ -130,7 +133,8 @@ function calcLocaleChangedDate(policyModal) {
     timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
 }
 
-function setupButtons(options) {
+function setupButtons(options, hub) {
+    var eventHub = hub.createEventHub();
     var alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
@@ -221,6 +225,13 @@ function setupButtons(options) {
 
         $('#history').modal();
     });
+
+    $('#ui-apply-default-font-scale').on('click', function () {
+        var defaultFontScale = Settings.getStoredSettings().defaultFontScale;
+        if (defaultFontScale !== undefined) {
+            eventHub.emit('broadcastFontScale', defaultFontScale);
+        }
+    });
 }
 
 function configFromEmbedded(embeddedUrl) {
@@ -294,7 +305,16 @@ function findConfig(defaultConfig, options) {
                 try {
                     config = url.deserialiseState(window.location.hash.substring(1));
                 } catch (e) {
-                    // Ignore so we at least load the site, but it would be good to notify the user
+                    // #3518 Alert the user that the url is invalid
+                    var alertSystem = new Alert();
+                    alertSystem.notify(
+                        'Unable to load custom configuration from URL,\
+                     the last locally saved configuration will be used if present.',
+                        {
+                            alertClass: 'notification-error',
+                            dismissTime: 5000,
+                        }
+                    );
                 }
             }
 
@@ -444,7 +464,7 @@ function setupLanguageLogos(languages) {
         function (lang) {
             try {
                 lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark) {
+                if (lang.logoUrlDark !== null) {
                     lang.logoDataDark = logos('./' + lang.logoUrlDark);
                 }
             } catch (ignored) {
@@ -463,6 +483,7 @@ function earlyGetDefaultLangSetting() {
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     var options = require('options').options;
 
@@ -571,7 +592,7 @@ function start() {
 
     // We assume no consent for embed users
     if (!options.embedded) {
-        setupButtons(options);
+        setupButtons(options, hub);
     }
 
     var addDropdown = $('#addDropdown');
@@ -594,7 +615,7 @@ function start() {
         return Components.getEditor();
     });
     setupAdd($('#add-diff'), function () {
-        return Components.getDiff();
+        return Components.getDiffView();
     });
     setupAdd($('#add-tree'), function () {
         $('#add-tree').prop('disabled', true);

@@ -23,23 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces';
+import {Compiler} from '../types/compiler.interfaces';
 
-export interface LibraryVersion {
+export type LibraryVersion = {
     alias: string[];
     hidden: boolean;
     libId: string;
     used: boolean;
     version?: string;
-}
+};
 
-export interface Library {
+export type Library = {
     dependencies: string[];
     description?: string;
     examples?: string[];
     name?: string;
     url?: string;
     versions: Record<string, LibraryVersion>;
-}
+};
 
 export type LanguageLibs = Record<string, Library>;
 
@@ -47,13 +48,15 @@ export type Libs = Record<string, LanguageLibs>;
 
 export type LibsPerRemote = Record<string, LanguageLibs>;
 
-export interface Options {
+export type Options = {
     libs: Libs;
     remoteLibs: LibsPerRemote;
     languages: Record<string, Language>;
+    compilers: Compiler[];
+    defaultCompiler: Record<string, string>;
     defaultLibs: Record<string, string | null>;
     defaultFontScale: number;
     sentryDsn?: string;
     release?: string;
     sentryEnvironment?: string;
-}
+};

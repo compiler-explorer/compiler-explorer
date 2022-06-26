@@ -197,6 +197,38 @@ describe('Basic demangling', function () {
         const output = demangler.othersymbols.listSymbols();
         output.should.deep.equal(['_Z1fP6mytype']);
     });
+
+    it('Should support CUDA PTX', function () {
+        const result = {
+            asm: [
+                {text: '  .visible .entry _Z6squarePii('},
+                {text: '  .param .u64 _Z6squarePii_param_0,'},
+                {text: '  ld.param.u64    %rd1, [_Z6squarePii_param_0];'},
+                {text: '  .func  (.param .b32 func_retval0) _Z4cubePii('},
+                {text: '.global .attribute(.managed) .align 4 .b8 _ZN2ns9mymanagedE[16];'},
+                {text: '.global .texref _ZN2ns6texRefE;'},
+                {text: '.const .align 8 .u64 _ZN2ns5mystrE = generic($str);'},
+            ],
+        };
+
+        const demangler = new CppDemangler(cppfiltpath, new DummyCompiler());
+        demangler.demanglerArguments = ['-n'];
+
+        return Promise.all([
+            demangler
+                .process(result)
+                .then(output => {
+                    output.asm[0].text.should.equal('  .visible .entry square(int*, int)(');
+                    output.asm[1].text.should.equal('  .param .u64 square(int*, int)_param_0,');
+                    output.asm[2].text.should.equal('  ld.param.u64    %rd1, [square(int*, int)_param_0];');
+                    output.asm[3].text.should.equal('  .func  (.param .b32 func_retval0) cube(int*, int)(');
+                    output.asm[4].text.should.equal('.global .attribute(.managed) .align 4 .b8 ns::mymanaged[16];');
+                    output.asm[5].text.should.equal('.global .texref ns::texRef;');
+                    output.asm[6].text.should.equal('.const .align 8 .u64 ns::mystr = generic($str);');
+                })
+                .catch(catchCppfiltNonexistence),
+        ]);
+    });
 });
 
 async function readResultFile(filename) {

@@ -61,7 +61,7 @@ important you can quickly and easily get running. Currently, **Compiler Explorer
 variable or `make` parameter).
 
 Running with `make EXTRA_ARGS='--language LANG'` will allow you to load `LANG` exclusively, where `LANG` is one for the
-language ids/aliases defined in `lib/languages.js`. For example, to only run **Compiler Explorer** with C++ support,
+language ids/aliases defined in `lib/languages.ts`. For example, to only run **Compiler Explorer** with C++ support,
 you'd run `make EXTRA_ARGS='--language c++'`. The `Makefile` will automatically install all the third party libraries
 needed to run; using `npm` to install server-side and client side components.
 

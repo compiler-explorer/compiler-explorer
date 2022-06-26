@@ -89,7 +89,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange(false);
         });
-        this.eventHub.on('initialised', this.maybeEmitChange, this);
+        this.eventHub.on('initialised', () => this.maybeEmitChange(false), this);
 
         this.editor.getModel()?.onDidChangeContent(() => {
             this.debouncedEmitChange();
@@ -195,7 +195,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         if (!this.editor.getModel()) {
             return '';
         }
-        return this.editor.getModel()?.getValue();
+        return this.editor.getModel()?.getValue() ?? '';
     }
 
     maybeEmitChange(force) {

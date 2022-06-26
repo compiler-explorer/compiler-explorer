@@ -63,7 +63,7 @@ const FindDocumentEnd = (x: string) => {
 
 export class LLVMOptTransformer extends Transform {
     _buffer: string;
-    constructor(options: object) {
+    constructor(options?: object) {
         super(R.merge(options || {}, {objectMode: true}));
         this._buffer = '';
     }

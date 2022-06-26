@@ -26,7 +26,6 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-/// <reference types="../base-compiler" />
 import {BaseCompiler} from '../base-compiler';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 

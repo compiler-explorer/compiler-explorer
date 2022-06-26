@@ -30,7 +30,7 @@ import {PaneRenaming} from '../widgets/pane-renaming';
 import {Hub} from '../hub';
 import {EventHub} from '../event-hub';
 import {Alert} from '../alert';
-import Components from '../components';
+import * as Components from '../components';
 import {ga} from '../analytics';
 import TomSelect from 'tom-select';
 import {Toggles} from '../widgets/toggles';
@@ -262,14 +262,14 @@ export class Tree {
         }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number) {
+    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
         }
     }
 
-    private onCompilerClose(compilerId: number, unused, treeId: number) {
+    private onCompilerClose(compilerId: number, treeId: number | boolean) {
         if (treeId === this.id) {
             delete this.ourCompilers[compilerId];
         }

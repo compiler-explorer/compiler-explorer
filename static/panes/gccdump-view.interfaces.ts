@@ -46,3 +46,9 @@ export interface GccDumpState extends GccDumpFilters {
     _editorid?: number;
     _treeid?: number;
 }
+
+export type GccSelectedPass = {
+    filename_suffix: string;
+    name: string;
+    command_prefix: string;
+};

@@ -71,4 +71,8 @@ export interface AlertNotifyOptions {
      * Default: 5000
      */
     dismissTime?: number;
+    /**
+     * onLoadHandler(element)
+     */
+    onBeforeShow?: (any) => void;
 }

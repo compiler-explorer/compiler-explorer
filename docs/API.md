@@ -146,7 +146,9 @@ structure:
 }
 ```
 
-The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`
+The name property corresponds to the `<formatter>` when requesting `POST /api/format/<formatter>`. The `type` key in the
+JSON request corresponds to one of the `formatters.<key>.type` found in
+https://github.com/compiler-explorer/compiler-explorer/blob/main/etc/config/compiler-explorer.amazon.properties#L43
 
 ### `POST /api/format/<formatter>` - perform a formatter run
 

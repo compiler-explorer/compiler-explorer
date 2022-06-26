@@ -92,13 +92,10 @@ export class Alert {
             alertClass = '',
             autoDismiss = true,
             dismissTime = 5000,
+            onBeforeShow = () => {},
         }: AlertNotifyOptions
     ) {
         const container = $('#notifications');
-        if (container.length === 0) {
-            Sentry.captureMessage('#notifications not found');
-            return;
-        }
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
@@ -126,6 +123,7 @@ export class Alert {
             }
             newElement.attr('data-group', group);
         }
+        onBeforeShow(newElement);
         newElement.toast('show');
     }
 

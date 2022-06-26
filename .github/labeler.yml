@@ -52,6 +52,7 @@ lang-dart:
   - lib/compilers/dart.js
   - etc/config/dart.*.properties
 lang-fortran:
+  - lib/compilers/flang.ts
   - lib/compilers/fortran.js
   - etc/config/fortran.*.properties
 lang-go:
@@ -63,12 +64,24 @@ lang-haskell:
 lang-ispc:
   - lib/compilers/ispc.js
   - etc/config/ispc.*.properties
+lang-mlir:
+  - lib/compilers/mlir.ts
+  - etc/config/mlir.*.properties
 lang-java:
   - lib/compilers/java.js
   - etc/config/java.*.properties
 lang-kotlin:
   - lib/compilers/kotlin.js
   - etc/config/kotlin.*.properties
+lang-llvm:
+  - lib/llvm-ast.js
+  - lib/llvm-ir.js
+  - lib/llvm-opt-transformer.ts
+  - lib/compilers/llc.js
+  - lib/compilers/llvm-mca.js
+  - lib/objdumper/llvm.js
+  - lib/tooling/llvm-mca-tool.js
+  - etc/config/llvm.*.properties
 lang-nim:
   - lib/compilers/nim.js
   - etc/config/nim.*.properties
@@ -98,6 +111,9 @@ lang-solidity:
 lang-swift:
   - lib/compilers/swift.js
   - etc/config/swift.*.properties
+lang-toit:
+  - lib/compilers/toit.ts
+  - etc/config/toit.*.properties
 lang-typescript:
   - lib/compilers/typescript.js
   - etc/config/typescript.*.properties

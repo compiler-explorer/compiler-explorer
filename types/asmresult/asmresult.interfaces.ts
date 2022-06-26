@@ -6,4 +6,6 @@ export type ParsedAsmResult = {
     parsingTime: string;
     filteredCount: number;
     externalParserUsed?: boolean;
+    objdumpTime?: number;
+    execTime?: string;
 };

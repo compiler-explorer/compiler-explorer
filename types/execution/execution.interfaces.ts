@@ -9,4 +9,8 @@ export type UnprocessedExecResult = {
     execTime: string;
 };
 
-export type TypicalExecutionFunc = (executable: string, args: string[], execOptions: object) => UnprocessedExecResult;
+export type TypicalExecutionFunc = (
+    executable: string,
+    args: string[],
+    execOptions: object,
+) => Promise<UnprocessedExecResult>;
