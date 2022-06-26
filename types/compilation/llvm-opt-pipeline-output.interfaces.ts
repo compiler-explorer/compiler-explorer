@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type OutputLine = {text: string};
+import {ResultLine} from '../resultline/resultline.interfaces';
 
 // Pass name with before / after dump
 export type Pass = {
     name: string;
     machine: boolean;
-    after: OutputLine[];
-    before: OutputLine[];
+    after: ResultLine[];
+    before: ResultLine[];
     irChanged: boolean;
 };
 

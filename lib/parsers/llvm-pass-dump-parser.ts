@@ -27,10 +27,10 @@ import _ from 'underscore';
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
-    OutputLine,
     Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {logger} from '../logger';
 
 // Note(jeremy-rifkin):
@@ -55,13 +55,13 @@ type PassDump = {
     header: string;
     affectedFunction: string | undefined;
     machine: boolean;
-    lines: OutputLine[];
+    lines: ResultLine[];
 };
 // Ir Dump for a pass with raw lines broken into affected functions (or "<loop>")
 type SplitPassDump = {
     header: string;
     machine: boolean;
-    functions: Record<string, OutputLine[]>;
+    functions: Record<string, ResultLine[]>;
 };
 
 export class LlvmPassDumpParser {
@@ -117,7 +117,7 @@ export class LlvmPassDumpParser {
         //this.instruction = /^\s+.+$/;
     }
 
-    breakdownOutputIntoPassDumps(ir: OutputLine[]) {
+    breakdownOutputIntoPassDumps(ir: ResultLine[]) {
         // break down output by "*** IR Dump After XYZ ***" markers
         const raw_passes: PassDump[] = [];
         let pass: PassDump | null = null;
@@ -178,7 +178,7 @@ export class LlvmPassDumpParser {
         };
         let func: {
             name: string;
-            lines: OutputLine[];
+            lines: ResultLine[];
         } | null = null;
         for (const line of dump.lines) {
             const irFnMatch = line.text.match(this.functionDefine);
@@ -401,7 +401,7 @@ export class LlvmPassDumpParser {
         return final_output;
     }
 
-    breakdownOutput(ir: OutputLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    breakdownOutput(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         // break down output by "*** IR Dump After XYZ ***" markers
         const raw_passes = this.breakdownOutputIntoPassDumps(ir);
         if (llvmOptPipelineOptions.fullModule) {
@@ -419,7 +419,7 @@ export class LlvmPassDumpParser {
         }
     }
 
-    process(ir: OutputLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         // Filter a lot of junk before processing
         const preprocessed_lines = ir
             .slice(
