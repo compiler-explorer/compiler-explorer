@@ -348,7 +348,7 @@ Conformance.prototype.onCompileResponse = function (compilerEntry, result) {
 
     this.handleCompileOutIcon(compilerEntry.parent.find('.compiler-out'), result);
 
-    this.handleStatusIcon(compilerEntry.statusIcon, this.compilerService.calculateStatusIcon(result));
+    this.handleStatusIcon(compilerEntry.statusIcon, CompilerService.calculateStatusIcon(result));
     this.saveState();
 };
 
