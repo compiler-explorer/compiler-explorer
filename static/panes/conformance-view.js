@@ -35,6 +35,7 @@ var CompilerPicker = require('../compiler-picker').CompilerPicker;
 var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var CompilerService = require('../compiler-service').CompilerService;
 
 function Conformance(hub, container, state) {
     this.hub = hub;
@@ -427,7 +428,7 @@ Conformance.prototype.handleToolbarUI = function () {
 };
 
 Conformance.prototype.handleStatusIcon = function (statusIcon, status) {
-    this.compilerService.handleCompilationStatus(null, statusIcon, status);
+    CompilerService.handleCompilationStatus(null, statusIcon, status);
 };
 
 Conformance.prototype.currentState = function () {
