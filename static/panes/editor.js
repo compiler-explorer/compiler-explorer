@@ -1410,6 +1410,13 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                         if (colEnd === obj.tag.column) colEnd = -1;
                     }
                 }
+                let link;
+                if (obj.tag.link) {
+                    link = {
+                        value: obj.tag.link.text,
+                        target: obj.tag.link.url,
+                    };
+                }
                 return {
                     severity: obj.tag.severity,
                     message: obj.tag.text,
@@ -1418,6 +1425,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     startColumn: colBegin,
                     endLineNumber: lineEnd,
                     endColumn: colEnd,
+                    code: link,
                 };
             },
             this
