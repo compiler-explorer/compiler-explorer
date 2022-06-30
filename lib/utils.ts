@@ -84,6 +84,12 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
     return line;
 }
 
+function parseSeverity(message: string): number {
+    if (message.startsWith('warning')) return 2;
+    if (message.startsWith('note')) return 1;
+    return 3;
+}
+
 export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
     const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
@@ -98,19 +104,23 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
             const filteredline = line.replace(ansiColoursRe, '');
             let match = filteredline.match(re);
             if (match) {
+                const message = match[4].trim();
                 lineObj.tag = {
                     line: parseInt(match[1]),
                     column: parseInt(match[3] || '0'),
-                    text: match[4].trim(),
+                    text: message,
+                    severity: parseSeverity(message),
                 };
             } else {
                 match = filteredline.match(reWithFilename);
                 if (match) {
+                    const message = match[5].trim();
                     lineObj.tag = {
                         file: match[1],
                         line: parseInt(match[2]),
                         column: parseInt(match[4] || '0'),
-                        text: match[5].trim(),
+                        text: message,
+                        severity: parseSeverity(message),
                     };
                 }
             }
@@ -135,10 +145,12 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 
                 const previous = result.pop();
                 if (previous !== undefined) {
+                    const text = previous.text.replace(ansiColoursRe, '');
                     previous.tag = {
                         line,
                         column,
-                        text: previous.text.replace(ansiColoursRe, ''),
+                        text,
+                        severity: parseSeverity(text),
                     };
                     result.push(previous);
                 }
@@ -147,6 +159,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     line,
                     column,
                     text: '', // Left empty so that it does not show up in the editor
+                    severity: 3,
                 };
             }
             result.push(lineObj);
