@@ -99,6 +99,9 @@ import {
     RUST_MACRO_EXP_VIEW_COMPONENT_NAME,
     RUST_HIR_VIEW_COMPONENT_NAME,
     DEVICE_VIEW_COMPONENT_NAME,
+    LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+    EmptyLLVMOptPipelineViewState,
+    PopulatedLLVMOptPipelineViewState,
 } from './components.interfaces';
 
 /** Get an empty compiler component. */
@@ -573,6 +576,37 @@ export function getIrViewWith(
             compilerName,
             editorid,
             treeid,
+        },
+    };
+}
+
+/** Get an empty ir view component. */
+export function getLLVMOptPipelineView(): ComponentConfig<EmptyLLVMOptPipelineViewState> {
+    return {
+        type: 'component',
+        componentName: LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+        componentState: {},
+    };
+}
+
+/** Get a ir view with the given configuration. */
+export function getLLVMOptPipelineViewWith(
+    id: number,
+    compilerName: string,
+    editorid: number,
+    treeid: number
+): ComponentConfig<PopulatedLLVMOptPipelineViewState> {
+    return {
+        type: 'component',
+        componentName: LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
+        componentState: {
+            id,
+            compilerName,
+            editorid,
+            treeid,
+            selectedFunction: '',
+            selectedIndex: 0,
+            sidebarWidth: 0,
         },
     };
 }

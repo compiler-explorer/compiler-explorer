@@ -59,6 +59,9 @@ export type CompilationResult = {
     hasIrOutput?: boolean;
     irOutput?: any;
 
+    hasLLVMOptPipelineOutput?: boolean;
+    llvmOptPipelineOutput?: any;
+
     hasRustMirOutput?: boolean;
     rustMirOutput?: any;
 

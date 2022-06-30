@@ -104,6 +104,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-ir(title="Show LLVM Intermediate Representation")
             span.dropdown-icon.fas.fa-align-center
             | LLVM IR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-llvm-opt-pipeline(title="Show LLVM Optimization Pipeline Output")
+            span.dropdown-icon.fas.fa-compass
+            | LLVM Opt Pipeline output
           button.dropdown-item.btn.btn-sm.btn-light.view-device(title="Show Device output")
             span.dropdown-icon.fas.fa-tv
             | Device output
@@ -322,6 +325,43 @@
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size.pug
     .monaco-placeholder
+
+  #llvm-opt-pipeline
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+      .btn-group.btn-group-sm.options(role="group")
+        button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+          span.fas.fa-anchor
+          span.hideable Options
+        .dropdown-menu
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.filter-inconsequential-passes(type="button" title="Filter passes which do not make changes" data-bind="filter-inconsequential-passes" aria-pressed="false" aria-label="Filter Inconsequential Passes")
+              span Filter Inconsequential Passes
+            input.d-none(type="checkbox" checked=false)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Dump the entire module for each pass" data-bind="dump-full-module" aria-pressed="false" aria-label="Filter Inconsequential Passes")
+              span Dump Full Module
+            input.d-none(type="checkbox" checked=false)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Demangle Symbols" data-bind="demangle-symbols" aria-pressed="false" aria-label="Demangle Symbols")
+              span Demangle Symbols
+            input.d-none(type="checkbox" checked=true)
+          //.button-checkbox
+          //  button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Filter Library Functions" data-bind="library-functions" aria-pressed="false" aria-label="Filter Library Functions")
+          //    span Filter Library Functions
+          //  input.d-none(type="checkbox" checked=true)
+      .btn-group.btn-group-sm
+        .input-group.input-group-sm.mb-auto
+          .input-group-prepend
+            label.input-group-text
+              | Function:&nbsp;
+          select.llvm-opt-function-picker.function-selector(placeholder="Select function")
+    div.llvm-opt-pipeline-body
+      .passes-column(style="width: 250px;") Passes:
+        .passes-list
+      .passes-column-resizer
+        .passes-column-resizer-handle
+      .monaco-placeholder
 
   #device
     .top-bar.btn-toolbar.bg-light(role="toolbar")

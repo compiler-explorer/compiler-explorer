@@ -35,6 +35,7 @@ import {
     ExecutionOptions,
     ToolResult,
 } from '../types/compilation/compilation.interfaces';
+import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
@@ -47,6 +48,7 @@ import * as cfg from './cfg';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
 import {getDemanglerTypeByKey} from './demangler';
+import {LLVMIRDemangler} from './demangler/llvm';
 import * as exec from './exec';
 import {getExternalParserByKey} from './external-parsers';
 import {ExternalParserBase} from './external-parsers/base';
@@ -60,6 +62,7 @@ import {getObjdumperTypeByKey} from './objdumper';
 import {Packager} from './packager';
 import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
+import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
 
@@ -76,6 +79,7 @@ export class BaseCompiler {
     protected compilerWrapper: any;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
+    protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
     protected possibleArguments: CompilerArguments;
@@ -124,6 +128,7 @@ export class BaseCompiler {
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIr = new LlvmIrParser(this.compilerProps);
+        this.llvmPassDumpParser = new LlvmPassDumpParser(this.compilerProps);
         this.llvmAst = new LlvmAstParser(this.compilerProps);
 
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
@@ -966,6 +971,43 @@ export class BaseCompiler {
         };
     }
 
+    async generateLLVMOptPipeline(
+        inputFilename,
+        options,
+        filters: ParseFilters,
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+    ) {
+        // These options make Clang produce the pass dumps
+        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
+            .concat(this.compiler.llvmOptArg)
+            .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : []);
+
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = 1024 * 1024 * 1024;
+
+        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        if (output.code !== 0) {
+            return;
+        }
+
+        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+
+        if (llvmOptPipelineOptions.demangle) {
+            // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
+            // new this.demanglerClass(this.compiler.demangler, this);
+            const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+            // collect labels off the raw input
+            await demangler.collect({asm: output.stderr});
+            return await demangler.demangleLLVMPasses(llvmOptPipeline);
+        } else {
+            return llvmOptPipeline;
+        }
+    }
+
+    async processLLVMOptPipeline(output, filters: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        return this.llvmPassDumpParser.process(output.stderr, filters, llvmOptPipelineOptions);
+    }
+
     getRustMacroExpansionOutputFilename(inputFilename) {
         return inputFilename.replace(path.extname(inputFilename), '.expanded.rs');
     }
@@ -1540,6 +1582,8 @@ export class BaseCompiler {
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
+        const makeLLVMOptPipeline =
+            typeof backendOptions.produceLLVMOptPipeline == 'object' && this.compiler.supportsLLVMOptPipelineView;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -1550,26 +1594,37 @@ export class BaseCompiler {
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
         const downloads = await buildEnvironment;
-        const [asmResult, astResult, ppResult, irResult, rustHirResult, rustMacroExpResult, toolsResult] =
-            await Promise.all([
-                this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
-                makeAst ? this.generateAST(inputFilename, options) : '',
-                makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
-                makeIr ? this.generateIR(inputFilename, options, filters) : '',
-                makeRustHir ? this.generateRustHir(inputFilename, options) : '',
-                makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
-                Promise.all(
-                    this.runToolsOfType(
-                        tools,
-                        'independent',
-                        this.getCompilationInfo(key, {
-                            inputFilename,
-                            dirPath,
-                            outputFilename,
-                        }),
-                    ),
+        const [
+            asmResult,
+            astResult,
+            ppResult,
+            irResult,
+            llvmOptPipelineResult,
+            rustHirResult,
+            rustMacroExpResult,
+            toolsResult,
+        ] = await Promise.all([
+            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
+            makeAst ? this.generateAST(inputFilename, options) : '',
+            makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
+            makeIr ? this.generateIR(inputFilename, options, filters) : '',
+            makeLLVMOptPipeline
+                ? this.generateLLVMOptPipeline(inputFilename, options, filters, backendOptions.produceLLVMOptPipeline)
+                : '',
+            makeRustHir ? this.generateRustHir(inputFilename, options) : '',
+            makeRustMacroExp ? this.generateRustMacroExpansion(inputFilename, options) : '',
+            Promise.all(
+                this.runToolsOfType(
+                    tools,
+                    'independent',
+                    this.getCompilationInfo(key, {
+                        inputFilename,
+                        dirPath,
+                        outputFilename,
+                    }),
                 ),
-            ]);
+            ),
+        ]);
 
         // GNAT, GCC and rustc can produce their extra output files along
         // with the main compilation command.
@@ -1646,6 +1701,10 @@ export class BaseCompiler {
         if (irResult) {
             asmResult.hasIrOutput = true;
             asmResult.irOutput = irResult;
+        }
+        if (llvmOptPipelineResult) {
+            asmResult.hasLLVMOptPipelineOutput = true;
+            asmResult.llvmOptPipelineOutput = llvmOptPipelineResult;
         }
         if (rustMirResult) {
             asmResult.hasRustMirOutput = true;

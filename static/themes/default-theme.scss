@@ -351,3 +351,37 @@ div.argmenuitem span.argdescription {
     background-color: darken(rgba(248, 249, 250, 0.85), 3%);
     border: 1px solid #d2d3d4;
 }
+
+.llvm-opt-pipeline-body {
+    .passes-column {
+        color: black;
+        border-right: 1px solid #d2d3d4;
+        background: #f5f5f5;
+        .passes-list div {
+            background: #f5f5f5;
+            border: 1px solid #d2d3d4;
+            &.firstMachinePass {
+                &:before {
+                    background: white;
+                }
+            }
+            &:hover,
+            &.active {
+                background: lighten(#f5f5f5, 5%);
+            }
+            &.changed {
+                color: #148624;
+            }
+        }
+    }
+    .passes-column-resizer {
+        background-color: #f4f4f4;
+        transition: background-color 200ms ease;
+        &:hover {
+            background-color: #bbbbbb;
+        }
+    }
+    .monaco-placeholder {
+        border-left: 1px solid #d2d3d4;
+    }
+}
