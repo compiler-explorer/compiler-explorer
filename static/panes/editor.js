@@ -1393,9 +1393,6 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     }
                 }
 
-                var severity = 3; // error
-                if (obj.tag.text.match(/^warning/)) severity = 2;
-                if (obj.tag.text.match(/^note/)) severity = 1;
                 var colBegin = 0;
                 var colEnd = Infinity;
                 if (obj.tag.column) {
@@ -1405,7 +1402,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     if (colEnd === obj.tag.column) colEnd = -1;
                 }
                 return {
-                    severity: severity,
+                    severity: obj.tag.severity,
                     message: obj.tag.text,
                     source: obj.source,
                     startLineNumber: obj.tag.line,

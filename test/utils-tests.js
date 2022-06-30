@@ -86,14 +86,14 @@ describe('Parses compiler output', () => {
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 0, line: 1, text: 'Line two'},
+                tag: {column: 0, line: 1, text: 'Line two', severity: 3},
                 text: '<source>:1 Line two',
             },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 5, line: 1, text: 'Line two'},
+                tag: {column: 5, line: 1, text: 'Line two', severity: 3},
                 text: '<source>:1:5: Line two',
             },
         ]);
@@ -101,7 +101,7 @@ describe('Parses compiler output', () => {
     it('handles windows output', () => {
         utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'Oh noes'},
+                tag: {column: 0, line: 1, text: 'Oh noes', severity: 3},
                 text: '<source>(1) Oh noes',
             },
         ]);
@@ -109,8 +109,24 @@ describe('Parses compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'error in <source>'},
+                tag: {column: 0, line: 1, text: 'error in <source>', severity: 3},
                 text: '<source>:1 error in <source>',
+            },
+        ]);
+    });
+    it('treats warnings and notes as the correct severity', () => {
+        utils.parseOutput('Line one\nbob.cpp:1:5: warning Line two', 'bob.cpp').should.deep.equals([
+            {text: 'Line one'},
+            {
+                tag: {column: 5, line: 1, text: 'warning Line two', severity: 2},
+                text: '<source>:1:5: warning Line two',
+            },
+        ]);
+        utils.parseOutput('Line one\nbob.cpp:1:5: note Line two', 'bob.cpp').should.deep.equals([
+            {text: 'Line one'},
+            {
+                tag: {column: 5, line: 1, text: 'note Line two', severity: 1},
+                text: '<source>:1:5: note Line two',
             },
         ]);
     });
@@ -123,6 +139,7 @@ describe('Parses compiler output', () => {
                         column: 25,
                         line: 120,
                         text: "error: variable or field 'transform_data' declared void",
+                        severity: 3,
                     },
                     text: "<source>:120:25: error: variable or field 'transform_data' declared void",
                 },
@@ -138,6 +155,7 @@ describe('Pascal compiler output', () => {
                     column: 23,
                     line: 13,
                     text: 'Error: Identifier not found "adsadasd"',
+                    severity: 3,
                 },
                 text: '<source>(13,23) Error: Identifier not found "adsadasd"',
             },
@@ -153,6 +171,7 @@ describe('Pascal compiler output', () => {
                         column: 0,
                         line: 17,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
+                        severity: 3,
                     },
                     text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
                 },
@@ -175,6 +194,7 @@ describe('Pascal compiler output', () => {
                         column: 0,
                         line: 17,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
+                        severity: 3,
                     },
                     text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
                 },
@@ -190,22 +210,22 @@ describe('Rust compiler output', () => {
         utils.parseRustOutput('Unrelated\nLine one\n --> bob.rs:1\nUnrelated', 'bob.rs').should.deep.equals([
             {text: 'Unrelated'},
             {
-                tag: {column: 0, line: 1, text: 'Line one'},
+                tag: {column: 0, line: 1, text: 'Line one', severity: 3},
                 text: 'Line one',
             },
             {
-                tag: {column: 0, line: 1, text: ''},
+                tag: {column: 0, line: 1, text: '', severity: 3},
                 text: ' --> <source>:1',
             },
             {text: 'Unrelated'},
         ]);
         utils.parseRustOutput('Line one\n --> bob.rs:1:5', 'bob.rs').should.deep.equals([
             {
-                tag: {column: 5, line: 1, text: 'Line one'},
+                tag: {column: 5, line: 1, text: 'Line one', severity: 3},
                 text: 'Line one',
             },
             {
-                tag: {column: 5, line: 1, text: ''},
+                tag: {column: 5, line: 1, text: '', severity: 3},
                 text: ' --> <source>:1:5',
             },
         ]);
@@ -214,11 +234,11 @@ describe('Rust compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseRustOutput('error: Error in bob.rs\n --> bob.rs:1', 'bob.rs').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'error: Error in <source>'},
+                tag: {column: 0, line: 1, text: 'error: Error in <source>', severity: 3},
                 text: 'error: Error in <source>',
             },
             {
-                tag: {column: 0, line: 1, text: ''},
+                tag: {column: 0, line: 1, text: '', severity: 3},
                 text: ' --> <source>:1',
             },
         ]);
@@ -227,11 +247,11 @@ describe('Rust compiler output', () => {
     it('treats <stdin> as if it were the compiler source', () => {
         utils.parseRustOutput('error: <stdin> is sad\n --> <stdin>:120:25', 'bob.rs').should.deep.equals([
             {
-                tag: {column: 25, line: 120, text: 'error: <source> is sad'},
+                tag: {column: 25, line: 120, text: 'error: <source> is sad', severity: 3},
                 text: 'error: <source> is sad',
             },
             {
-                tag: {column: 25, line: 120, text: ''},
+                tag: {column: 25, line: 120, text: '', severity: 3},
                 text: ' --> <source>:120:25',
             },
         ]);
@@ -248,6 +268,7 @@ describe('Tool output', () => {
                         column: 1,
                         line: 1,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
+                        severity: 3,
                     },
                     text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
                 },
@@ -263,6 +284,7 @@ describe('Tool output', () => {
                         column: 22,
                         line: 5,
                         text: "error: No explicit type declared for 'y'",
+                        severity: 3,
                     },
                     text: "<source>:5:22: error: No explicit type declared for 'y'",
                 },
@@ -281,6 +303,7 @@ describe('Tool output', () => {
                         column: 1,
                         line: 1,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
+                        severity: 3,
                     },
                     text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
                 },
