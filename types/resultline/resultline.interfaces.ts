@@ -3,15 +3,19 @@ export type Link = {
     url: string;
 };
 
-export type ResultLineTag = {
+export type MessageWithLocation = {
     line?: number;
     column?: number;
     file?: string;
     text: string;
-    severity: number;
     endline?: number;
     endcolumn?: number;
+};
+
+export type ResultLineTag = MessageWithLocation & {
+    severity: number;
     link?: Link;
+    flow?: MessageWithLocation[];
 };
 
 export type ResultLine = {
