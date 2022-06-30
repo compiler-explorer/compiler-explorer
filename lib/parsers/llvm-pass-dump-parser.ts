@@ -189,8 +189,8 @@ export class LlvmPassDumpParser {
                 if (func !== null) {
                     throw 'Internal error during breakdownPass (1)';
                 }
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 func = {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     name: (irFnMatch || machineFnMatch)![1],
                     lines: [line], // include the current line
                 };

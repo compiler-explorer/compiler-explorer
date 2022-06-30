@@ -22,10 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {LLVMOptPipelineOutput} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
-
 import {logger} from '../logger';
 import {SymbolStore} from '../symbol-store';
 import * as utils from '../utils';
