@@ -4,6 +4,8 @@ export type ResultLineTag = {
     file?: string;
     text: string;
     severity: number;
+    endline?: number;
+    endcolumn?: number;
 };
 
 export type ResultLine = {
