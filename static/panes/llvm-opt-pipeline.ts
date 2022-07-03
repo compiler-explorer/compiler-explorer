@@ -43,6 +43,8 @@ import {
     LLVMOptPipelineOutput,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 
+const MIN_SIDEBAR_WIDTH = 100;
+
 export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, LLVMOptPipelineViewState> {
     results: LLVMOptPipelineOutput = {};
     passesColumn: JQuery;
@@ -62,6 +64,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     resizeStartWidth: number;
     resizeDragMoveBind: (e: MouseEvent) => void;
     resizeDragEndBind: (e: MouseEvent) => void;
+    firstResults = true;
 
     constructor(hub: Hub, container: Container, state: LLVMOptPipelineViewState & MonacoPaneState) {
         super(hub, container, state);
@@ -69,10 +72,18 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.passesList = this.domRoot.find('.passes-list');
         this.body = this.domRoot.find('.llvm-opt-pipeline-body');
         if (state.sidebarWidth === 0) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            state.sidebarWidth = parseInt(document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width, 10);
-            this.resize();
+            _.defer(() => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                state.sidebarWidth = parseInt(
+                    document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width,
+                    10
+                );
+                state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
+                this.resize();
+                this.updateState();
+            });
         } else {
+            state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
             this.passesColumn.get()[0].style.width = state.sidebarWidth + 'px';
         }
         this.state = state;
@@ -153,8 +164,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
 
     resizeDragMove(e: MouseEvent) {
         let width = this.resizeStartWidth + e.clientX - this.resizeStartX;
-        if (width < 50) {
-            width = 50;
+        if (width < MIN_SIDEBAR_WIDTH) {
+            width = MIN_SIDEBAR_WIDTH;
         }
         this.passesColumn.get()[0].style.width = width + 'px';
         this.state.sidebarWidth = width;
@@ -284,6 +295,17 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         selectedPassDiv.addClass('active');
         // displayPass updates state
         this.displayPass(this.state.selectedIndex);
+        // if loading from a url center the active pass
+        if (this.firstResults) {
+            this.firstResults = false;
+            const activePass = this.passesList.find('.active').get(0);
+            if (activePass) {
+                scrollIntoView(activePass, {
+                    scrollMode: 'if-needed',
+                    block: 'center',
+                });
+            }
+        }
     }
 
     displayPass(i: number) {
