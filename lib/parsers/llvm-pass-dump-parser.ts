@@ -58,7 +58,7 @@ function passesMatch(before: string, after: string) {
     assert(after.startsWith('IR Dump After '));
     before = before.slice('IR Dump Before '.length);
     after = after.slice('IR Dump After '.length);
-    // Observed happen in clang 13+ for LoopDeletionPass
+    // Observed to happen in clang 13+ for LoopDeletionPass
     if (after.endsWith(' (invalidated)')) {
         after = after.slice(0, after.length - ' (invalidated)'.length);
     }
