@@ -26,9 +26,9 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {BaseCompiler} from '../base-compiler';
-import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
-import * as utils from '../utils';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm.js';
+import * as utils from '../utils.js';
 
 export class BeebAsmCompiler extends BaseCompiler {
     static get key() {

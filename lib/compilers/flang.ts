@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {FortranCompiler} from './fortran';
+import {FortranCompiler} from './fortran.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {

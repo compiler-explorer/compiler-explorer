@@ -24,10 +24,10 @@
 
 import path from 'path';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {TurboCParser} from './argument-parsers';
-import {DosboxCompiler} from './dosbox-compiler';
+import {TurboCParser} from './argument-parsers.js';
+import {DosboxCompiler} from './dosbox-compiler.js';
 
 export class TurboCCompiler extends DosboxCompiler {
     static get key() {

@@ -31,7 +31,9 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+// import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+import webpack from 'webpack';
+const { DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin } = webpack;
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));

@@ -26,8 +26,8 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {BaseCompiler} from '../base-compiler';
-import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
+import {BaseCompiler} from '../base-compiler.js';
+import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
 
 class DotNetCompiler extends BaseCompiler {
     private rID: string;

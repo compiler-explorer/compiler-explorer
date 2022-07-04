@@ -1,5 +1,5 @@
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFilters} from '../../types/features/filters.interfaces.js';
 
 export interface IExternalParser {
     objdumpAndParseAssembly(

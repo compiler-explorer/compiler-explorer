@@ -28,10 +28,10 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
     Pass,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {logger} from '../logger';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {ParseFilters} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {logger} from '../logger.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in

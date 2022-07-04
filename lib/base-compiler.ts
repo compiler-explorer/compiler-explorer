@@ -34,37 +34,37 @@ import {
     CompilationResult,
     ExecutionOptions,
     ToolResult,
-} from '../types/compilation/compilation.interfaces';
-import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
-import {ParseFilters} from '../types/features/filters.interfaces';
-import {Language} from '../types/languages.interfaces';
-import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+} from '../types/compilation/compilation.interfaces.js';
+import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
+import {ParseFilters} from '../types/features/filters.interfaces.js';
+import {Language} from '../types/languages.interfaces.js';
+import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
-import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
-import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
-import * as cfg from './cfg';
-import {CompilerArguments} from './compiler-arguments';
-import {ClangParser, GCCParser} from './compilers/argument-parsers';
-import {getDemanglerTypeByKey} from './demangler';
-import {LLVMIRDemangler} from './demangler/llvm';
-import * as exec from './exec';
-import {getExternalParserByKey} from './external-parsers';
-import {ExternalParserBase} from './external-parsers/base';
-import {InstructionSets} from './instructionsets';
-import {languages} from './languages';
-import {LlvmAstParser} from './llvm-ast';
-import {LlvmIrParser} from './llvm-ir';
-import * as compilerOptInfo from './llvm-opt-transformer';
-import {logger} from './logger';
-import {getObjdumperTypeByKey} from './objdumper';
-import {Packager} from './packager';
-import {AsmParser} from './parsers/asm-parser';
-import {IAsmParser} from './parsers/asm-parser.interfaces';
-import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
-import {getToolchainPath} from './toolchain-utils';
-import * as utils from './utils';
+import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
+import * as cfg from './cfg.js';
+import {CompilerArguments} from './compiler-arguments.js';
+import {ClangParser, GCCParser} from './compilers/argument-parsers.js';
+import {getDemanglerTypeByKey} from './demangler/index.js';
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import * as exec from './exec.js';
+import {getExternalParserByKey} from './external-parsers/index.js';
+import {ExternalParserBase} from './external-parsers/base.js';
+import {InstructionSets} from './instructionsets.js';
+import {languages} from './languages.js';
+import {LlvmAstParser} from './llvm-ast.js';
+import {LlvmIrParser} from './llvm-ir.js';
+import * as compilerOptInfo from './llvm-opt-transformer.js';
+import {logger} from './logger.js';
+import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {Packager} from './packager.js';
+import {AsmParser} from './parsers/asm-parser.js';
+import {IAsmParser} from './parsers/asm-parser.interfaces.js';
+import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
+import {getToolchainPath} from './toolchain-utils.js';
+import * as utils from './utils.js';
 
 export class BaseCompiler {
     public compiler: any;

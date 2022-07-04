@@ -7,7 +7,7 @@
     /* Module resolution */
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     /* Code generation */
     "outDir": "./out/dist",
     "typeRoots": ["./typings", "./node_modules/@types"],

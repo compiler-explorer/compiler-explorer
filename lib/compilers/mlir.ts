@@ -24,10 +24,10 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import {ParseFilters} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class MLIRCompiler extends BaseCompiler {
     static get key() {

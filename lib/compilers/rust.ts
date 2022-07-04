@@ -26,12 +26,12 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {BaseCompiler} from '../base-compiler';
-import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
-import {logger} from '../logger';
-import {parseRustOutput} from '../utils';
+import {BaseCompiler} from '../base-compiler.js';
+import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
+import {logger} from '../logger.js';
+import {parseRustOutput} from '../utils.js';
 
-import {RustParser} from './argument-parsers';
+import {RustParser} from './argument-parsers.js';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;

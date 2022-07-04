@@ -26,9 +26,9 @@ import fs from 'fs';
 import fsp from 'fs/promises';
 import path from 'path';
 
-import * as props from '../properties';
+import * as props from '../properties.js';
 
-import type {Source, SourceEntry} from './index';
+import type {Source, SourceEntry} from './index.js';
 
 const EXAMPLES_PATH = props.get('builtin', 'sourcePath', './examples/');
 const NAME_SUBSTUTION_PATTERN = new RegExp('_', 'g');
