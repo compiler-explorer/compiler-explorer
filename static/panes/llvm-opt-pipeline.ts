@@ -59,7 +59,12 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     modifiedModel: any;
     options: Toggles;
     state: LLVMOptPipelineViewState;
-    lastOptions: LLVMOptPipelineBackendOptions = {fullModule: false, demangle: true, libraryFunctions: true};
+    lastOptions: LLVMOptPipelineBackendOptions = {
+        fullModule: false,
+        noDiscardValueNames: true,
+        demangle: true,
+        libraryFunctions: true,
+    };
     resizeStartX: number;
     resizeStartWidth: number;
     resizeDragMoveBind: (e: MouseEvent) => void;
@@ -184,6 +189,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
             fullModule: options['dump-full-module'],
+            noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
             libraryFunctions: options['library-functions'],
         };
