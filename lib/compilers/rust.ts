@@ -55,6 +55,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.irArg = ['--emit', 'llvm-ir'];
         this.compiler.llvmOptArg = ['-C', 'llvm-args=-print-after-all -print-before-all'];
         this.compiler.llvmOptModuleScopeArg = ['-C', 'llvm-args=-print-module-scope'];
+        this.compiler.llvmOptNoDiscardValueNamesArg = isNightly ? ['-Z', 'fewer-names=no'] : [];
         this.linker = this.compilerProps('linker');
     }
 
