@@ -554,3 +554,10 @@ a {
     color: #17a2b8;
     background-color: rgba(49, 54, 60, 0.85);
 }
+
+::-webkit-scrollbar {
+    background: lighten(#1e1e1e, 10%);
+}
+::-webkit-scrollbar-thumb {
+    background: lighten(#1e1e1e, 20%);
+}
