@@ -1570,11 +1570,13 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
     }
 };
 
-Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
+Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal, column) {
     if (Number(id) === this.id) {
         if (reveal && lineNum) {
             this.pushRevealJump();
             this.editor.revealLineInCenter(lineNum);
+            this.editor.focus();
+            this.editor.setPosition({column: column || 0, lineNumber: lineNum});
         }
         this.decorations.linkedCode = [];
         if (lineNum && lineNum !== -1) {
