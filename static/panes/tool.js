@@ -403,6 +403,14 @@ Tool.prototype.setLanguage = function (languageId) {
     }
 };
 
+Tool.prototype.clickableUrls = function (text) {
+    return text.replace(
+        // URL detection regex grabbed from https://stackoverflow.com/a/3809435
+        /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
+        '<a href="$1" target="_blank">$1</a>'
+    );
+};
+
 Tool.prototype.onCompileResult = function (id, compiler, result) {
     try {
         if (id !== this.compilerId) return;
@@ -485,7 +493,10 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                         if (obj.text === '') {
                             this.add('<br/>');
                         } else {
-                            this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+                            this.add(
+                                this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
+                                obj.tag ? obj.tag.line : obj.line
+                            );
                         }
                     },
                     this
