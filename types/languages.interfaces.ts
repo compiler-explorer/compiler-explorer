@@ -24,6 +24,7 @@
 
 export type LanguageKey =
     | 'mlir'
+    | 'jakt'
     | 'c++'
     | 'llvm'
     | 'cppx'

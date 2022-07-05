@@ -33,6 +33,16 @@ type DefKeys = 'name' | 'monaco' | 'extensions' | 'alias' | 'previewFilter' | 'f
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
+    jakt: {
+        name: 'Jakt',
+        monaco: 'jakt',
+        extensions: ['.jakt'],
+        alias: [],
+        logoUrl: '',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     'c++': {
         name: 'C++',
         monaco: 'cppp',
