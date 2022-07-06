@@ -1,3 +1,9 @@
+mixin monacopane(id)
+  div(id=id)
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include font-size.pug
+    .monaco-placeholder
+
 .gl_keep.template
 
   #codeEditor
@@ -242,10 +248,7 @@
           span Select all
     pre.content.output-content
 
-  #tool-input
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size.pug
-    .monaco-placeholder
+  +monacopane("tool-input")
 
   #tool-output
     .top-bar.bad-lang.bg-warning(role="toolbar" style="display: none")
@@ -290,15 +293,9 @@
           select.difftype-picker.rhsdifftype(placeholder="...")
     .monaco-placeholder
 
-  #opt
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size.pug
-    .monaco-placeholder
+  +monacopane("opt")
 
-  #flags
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size.pug
-    .monaco-placeholder
+  +monacopane("flags")
 
   #pp
     .top-bar.btn-toolbar.bg-light(role="toolbar")
@@ -316,15 +313,9 @@
             input.d-none(type="checkbox" checked=false)
     .monaco-placeholder
 
-  #ast
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size.pug
-    .monaco-placeholder
+  +monacopane("ast")
 
-  #ir
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size.pug
-    .monaco-placeholder
+  +monacopane("ir")
 
   #llvm-opt-pipeline
     .top-bar.btn-toolbar.bg-light(role="toolbar")
@@ -374,45 +365,21 @@
         select.change-device(placeholder="Select a device...")
     .monaco-placeholder
 
-  #gnatdebugtree
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("gnatdebugtree")
 
-  #gnatdebug
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("gnatdebug")
 
-  #rustmir
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("rustmir")
 
-  #haskellCore
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("haskellCore")
 
-  #haskellStg
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("haskellStg")
 
-  #haskellCmm
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("haskellCmm")
 
-  #rustmacroexp
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("rustmacroexp")
 
-  #rusthir
-    .top-bar.btn-toolbar.bg-light(role="toolbar")
-      include font-size
-    .monaco-placeholder
+  +monacopane("rusthir")
 
   #gccdump
     .top-bar.btn-toolbar.bg-light(role="toolbar")
