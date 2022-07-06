@@ -37,6 +37,7 @@ export type LLVMOptPipelineOutput = Record<string, Pass[]>;
 
 export type LLVMOptPipelineBackendOptions = {
     fullModule: boolean;
+    noDiscardValueNames: boolean;
     demangle: boolean;
     libraryFunctions: boolean;
 };

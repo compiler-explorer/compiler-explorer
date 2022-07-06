@@ -346,6 +346,10 @@
             button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Demangle Symbols" data-bind="demangle-symbols" aria-pressed="false" aria-label="Demangle Symbols")
               span Demangle Symbols
             input.d-none(type="checkbox" checked=true)
+          .button-checkbox
+            button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Keep value names instead of llvm value numbers" data-bind="-fno-discard-value-names" aria-pressed="false" aria-label="-fno-discard-value-names")
+              span -fno-discard-value-names
+            input.d-none(type="checkbox" checked=true)
           //.button-checkbox
           //  button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Filter Library Functions" data-bind="library-functions" aria-pressed="false" aria-label="Filter Library Functions")
           //    span Filter Library Functions
@@ -521,6 +525,7 @@
           button.btn.btn-sm.fas.fa-receipt.d-none.compiler-out.compiler-selector-icon(disabled=true style="cursor: help;" title="This compiler has generated some output. Open its associated pane to read it.")
           button.btn.btn-sm.fas.fa-times.close.compiler-selector-icon(aria-label="Close" title="Close")
           button.btn.btn-sm.fas.fa-share.close.extract-compiler.compiler-selector-icon(aria-label="Pop compiler" title="Show compiler")
+          button.btn.btn-sm.fas.fa-copy.close.copy-compiler.compiler-selector-icon(aria-label="Copy compiler" title="Copy compiler")
 
   #libs-dropdown
     .no-libs

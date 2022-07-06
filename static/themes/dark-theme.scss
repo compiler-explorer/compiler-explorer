@@ -127,7 +127,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .linked-code-decoration-inline {
-    background: #121212;
+    background: #444444;
 }
 
 .linked-code-decoration-margin {
@@ -553,4 +553,11 @@ a {
 .currentCursorPosition {
     color: #17a2b8;
     background-color: rgba(49, 54, 60, 0.85);
+}
+
+::-webkit-scrollbar {
+    background: lighten(#1e1e1e, 10%);
+}
+::-webkit-scrollbar-thumb {
+    background: lighten(#1e1e1e, 20%);
 }

@@ -980,7 +980,8 @@ export class BaseCompiler {
         // These options make Clang produce the pass dumps
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
-            .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : []);
+            .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
+            .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : []);
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
