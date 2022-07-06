@@ -1,3 +1,8 @@
+mixin newPaneButton(classId, text, title, label, icon)
+  button(class="dropdown-item btn btn-sm btn-light " + classId title=title)
+    span(class="dropdown-icon " + icon)
+    | #{text}
+
 #codeEditor
   .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar" name="editor-btn-toolbar")
     include ../../font-size
@@ -9,18 +14,10 @@
         span.fa.fa-plus
         span.hideable Add new...
       .dropdown-menu
-        button.dropdown-item.btn.btn-sm.btn-light.add-compiler(title="Add a new compiler for this source" aria-label="New compiler")
-          span.dropdown-icon.fa.fa-cogs
-          | Compiler
-        button.dropdown-item.btn.btn-sm.btn-light.add-executor(title="Add a new executor for this source" aria-label="New executor")
-          span.dropdown-icon.fas.fa-microchip
-          | Execution only
-        button.dropdown-item.btn.btn-sm.btn-light.conformance(title="Add a new conformance view" aria-label="New conformance view")
-          span.dropdown-icon.fa.fa-list
-          | Conformance view
-        button.dropdown-item.btn.btn-sm.btn-light.add-editor(title="Add a new source editor view" aria-label="New source editor")
-          span.dropdown-icon.fa.fa-code
-          | Source editor
+        +newPaneButton("add-compiler", "Compiler", "Add a new compiler for this source", "New compiler", "fa fa-cogs")
+        +newPaneButton("add-executor", "Execution Only", "Add a new executor for this source", "New executor", "fas fa-microchip")
+        +newPaneButton("conformance", "Conformance View", "Add a new conformance view", "New conformance view", "fa fa-list")
+        +newPaneButton("add-editor", "Source Editor", "Add a new source editor", "New source editor", "fa fa-code")
       button#vim-flag.btn.btn-sm.btn-light(title="Toggle Vim Keybindings")
         span.fab.fa-vimeo-v
         span.hideable Vim
