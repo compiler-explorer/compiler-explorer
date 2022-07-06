@@ -21,7 +21,6 @@ jobs:
         run: |
           npm run lint-check
           npm run ci-test
-          npm run format-check
           npm run ts-check
           python3 ./etc/scripts/util/orphancompiler.py
       - name: Code coverage

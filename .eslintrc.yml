@@ -6,6 +6,7 @@ plugins:
   - node
   - promise
   - sonarjs
+  - prettier
   - unicorn
   - '@typescript-eslint'
 extends:
@@ -23,6 +24,7 @@ env:
   node: true
   es6: true
 rules:
+  prettier/prettier: error
   comma-dangle:
     - error
     - arrays: always-multiline

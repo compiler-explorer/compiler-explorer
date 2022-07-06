@@ -39,7 +39,6 @@ $(NODE_MODULES): package.json | node-installed
 
 .PHONY: lint
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
-	$(NPM) run format-check
 	$(NPM) run ts-check
 	$(NPM) run lint-check
 
