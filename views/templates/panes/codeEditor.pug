@@ -1,6 +1,6 @@
 #codeEditor
   .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar" name="editor-btn-toolbar")
-    include ../font-size
+    include ../../font-size
     .btn-group.btn-group-sm(role="group" aria-label="Editor settings")
       button.btn.btn-sm.btn-light.load-save(title="Load or save text" aria-label="Load or save text")
         span.fa.fa-save
@@ -28,11 +28,11 @@
       .btn-group.btn-group-sm(role="group" aria-label="External Sites")
         a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" aria-label="Open in Cppinsights")
           svg(height="16" width="16")
-            include ../resources/cppinsights.svg
+            include ../../resources/cppinsights.svg
           span.hideable CppInsights
         a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
           svg(height="16" width="16")
-            include ../resources/quickbench.svg
+            include ../../resources/quickbench.svg
           span.hideable Quick-bench
     .btn-group.btn-group-sm.mx-auto
       button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")

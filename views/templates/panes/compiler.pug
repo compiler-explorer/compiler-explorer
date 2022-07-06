@@ -22,19 +22,19 @@ mixin addNew(classId, text, title, icon)
               .argmenuitem
                 span.argtitle Detailed Compiler Flags
                 span.argdescription Open a new window to edit verbose compiler flags
-    include ../font-size
+    include ../../font-size
     .btn-group.btn-group-sm.filters(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
         span.fas.fa-cog
         span.hideable Output...
       .dropdown-menu
-        include ../options-output
+        include ../../options-output
     .btn-group.btn-group-sm.filters(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
         span.fas.fa-filter
         span.hideable Filter...
       .dropdown-menu
-        include ../options-filters
+        include ../../options-filters
     .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
       button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
         span.fas.fa-book
