@@ -1,0 +1,35 @@
+#history.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title History
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            ul.nav.nav-tabs(role="tablist")
+              li.nav-item
+                a.nav-link.active(data-toggle="tab" role="tab" href="#load-history" aria-controls="load-history" aria-selected="true")
+                  | History
+              li.nav-item
+                a.nav-link(data-toggle="tab" role="tab" href="#load-history-diff-display" aria-controls="load-history-diff-display" aria-selected="false")
+                  | Diff
+
+            div.tab-content#historyTabs(style="height:600px;overflow-y:scroll")
+              div.tab-pane.show.active#load-history(role="tabpanel")
+                ul.historiccode
+                  li.template
+                    input.base(type="radio" name="base")
+                    input.comp(type="radio" name="comp")
+                    | &nbsp;
+                    a(href="javascript:;")
+              div.tab-pane#load-history-diff-display(role="tabpanel")
+                .checkbox
+                  label.control-label
+                    input.inline-diff-checkbox(type="checkbox" value="")
+                    | Inline diff
+                div.monaco-placeholder#history-diff
+      .modal-footer
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close
