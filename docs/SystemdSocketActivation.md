@@ -24,7 +24,6 @@ WorkingDirectory={{path_to_installation_directory}}/compiler-explorer
 ExecStart=/usr/bin/node {{path_to_installation_directory}}/compiler-explorer/app.js
 TimeoutStartSec=60
 TimeoutStopSec=60
-StandardOutput=syslog
 User={{run_as_this_user}}
 Group={{run_as_this_group}}
 ```
