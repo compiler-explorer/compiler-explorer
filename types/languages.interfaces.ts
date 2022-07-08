@@ -42,6 +42,7 @@ export type LanguageKey =
     | 'kotlin'
     | 'scala'
     | 'ocaml'
+    | 'pony'
     | 'python'
     | 'swift'
     | 'pascal'
