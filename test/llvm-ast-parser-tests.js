@@ -71,11 +71,11 @@ describe('llvm-ast', function () {
     });
 
     it('keeps reasonable-sized output', () => {
-        astDumpWithCTime.length.should.be.above(100);
+        astDumpWithCTime.length.should.be.above(200);
 
         let output = mockAstOutput(astDumpWithCTime);
         let processed = astParser.processAst(output);
-        processed.length.should.be.below(100);
+        processed.length.should.be.below(200);
     });
 
     it('links some source lines', () => {
@@ -104,5 +104,26 @@ describe('llvm-ast', function () {
         should.exist(processed.find(l => l.text.match(/ElaboratedType/)));
         should.exist(processed.find(l => l.text.match(/RecordType/)));
         should.exist(processed.find(l => l.text.match(/CXXRecord/)));
+    });
+});
+
+describe('llvm-ast bug-3849', function () {
+    let compilerProps;
+    let astParser;
+    let astDump;
+    let compilerOutput;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+
+        astParser = new LlvmAstParser(compilerProps);
+        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849.ast').toString());
+        compilerOutput = mockAstOutput(astDump);
+    });
+
+    it('should have more than lines', () => {
+        let processed = astParser.processAst(compilerOutput);
+        processed.length.should.be.above(2);
     });
 });
