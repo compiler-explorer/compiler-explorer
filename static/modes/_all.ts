@@ -41,6 +41,7 @@ import './fortran-mode';
 import './gccdump-rtl-gimple-mode';
 import './haskell-mode';
 import './ispc-mode';
+import './jakt-mode';
 import './llvm-ir-mode';
 import './mlir-mode';
 import './nc-mode';

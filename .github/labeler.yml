@@ -55,6 +55,9 @@ lang-fortran:
   - lib/compilers/flang.ts
   - lib/compilers/fortran.js
   - etc/config/fortran.*.properties
+lang-jakt:
+  - lib/compilers/jakt.ts
+  - etc/config/jakt.*.properties
 lang-go:
   - lib/compilers/golang.js
   - etc/config/go.*.properties
