@@ -348,7 +348,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'pony',
         extensions: ['.pony'],
         alias: [],
-        logoUrl: 'pony.png',
+        logoUrl: 'pony.svg',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
