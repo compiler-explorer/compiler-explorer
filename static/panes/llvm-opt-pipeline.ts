@@ -78,9 +78,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.body = this.domRoot.find('.llvm-opt-pipeline-body');
         if (state.sidebarWidth === 0) {
             _.defer(() => {
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 state.sidebarWidth = parseInt(
-                    document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width,
+                    (document.defaultView as Window).getComputedStyle(this.passesColumn.get()[0]).width,
                     10
                 );
                 state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
