@@ -3,7 +3,6 @@ import path from 'path';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {logger} from '../logger';
 import _ from 'underscore';
 
 export class PonyCompiler extends BaseCompiler {
@@ -11,12 +10,12 @@ export class PonyCompiler extends BaseCompiler {
         return 'pony';
     }
 
-    constructor(info: any, env: any) {
+    /* constructor(info: any, env: any) {
         super(info, env);
 
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--pass', 'ir'];
-    }
+    } */
 
     override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): string[] {
         let options = ['-d', '-b', path.parse(outputFilename).name];
