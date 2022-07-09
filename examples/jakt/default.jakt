@@ -1,7 +1,7 @@
-function hello() throws -> String  {
-    return "Well, hello friends."
+function square(num: i32) -> i32 {
+    return num * num
 }
 
 function main() {
-    println("{}", hello())
+    return square(num: 3)
 }
