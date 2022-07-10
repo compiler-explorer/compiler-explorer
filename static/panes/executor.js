@@ -688,6 +688,8 @@ Executor.prototype.initButtons = function (state) {
     this.wrapButton = this.domRoot.find('.wrap-lines');
     this.wrapTitle = this.wrapButton.prop('title');
 
+    this.triggerCompilationButton = this.bottomBar.find('.trigger-compilation');
+
     this.initToggleButtons(state);
 };
 
@@ -804,21 +806,27 @@ Executor.prototype.initCallbacks = function () {
 
     var optionsChange = _.debounce(
         _.bind(function (e) {
-            this.onOptionsChange($(e.target).val());
+            if (this.settings.executorCompileOnChange) {
+                this.onOptionsChange($(e.target).val());
+            }
         }, this),
         800
     );
 
     var execArgsChange = _.debounce(
         _.bind(function (e) {
-            this.onExecArgsChange($(e.target).val());
+            if (this.settings.executorCompileOnChange) {
+                this.onExecArgsChange($(e.target).val());
+            }
         }, this),
         800
     );
 
     var execStdinChange = _.debounce(
         _.bind(function (e) {
-            this.onExecStdinChange($(e.target).val());
+            if (this.settings.executorCompileOnChange) {
+                this.onExecStdinChange($(e.target).val());
+            }
         }, this),
         800
     );
@@ -872,6 +880,13 @@ Executor.prototype.initCallbacks = function () {
         'click',
         _.bind(function () {
             this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
+        }, this)
+    );
+
+    this.triggerCompilationButton.on(
+        'click',
+        _.bind(function () {
+            this.compile(true);
         }, this)
     );
 
