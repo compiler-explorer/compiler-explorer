@@ -353,6 +353,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
     },
+    pony: {
+        name: 'Pony',
+        monaco: 'pony',
+        extensions: ['.pony'],
+        alias: [],
+        logoUrl: 'pony.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     python: {
         name: 'Python',
         monaco: 'python',
