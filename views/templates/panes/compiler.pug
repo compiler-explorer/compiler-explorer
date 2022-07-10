@@ -1,0 +1,94 @@
+mixin newPaneButton(classId, text, title, icon)
+  button(class="dropdown-item btn btn-sm btn-light " + classId title=title)
+    span(class="dropdown-icon " + icon)
+    | #{text}
+
+#compiler
+  .top-bar.btn-toolbar.bg-light(role="toolbar")
+    .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
+      .input-group
+        .input-group-prepend
+          .input-group
+            select.compiler-picker
+            .input-group-append
+              button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+                span.status-icon
+        input.options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+        .input-group-append.populararguments(title="Popular arguments")
+          button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+            span.sr-only Popular arguments
+          div.dropdown-menu.dropdown-menu-right
+            button.dropdown-item.btn.btn-light.btn-sm
+              .argmenuitem
+                span.argtitle Detailed Compiler Flags
+                span.argdescription Open a new window to edit verbose compiler flags
+    include ../../font-size
+    .btn-group.btn-group-sm.filters(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
+        span.fas.fa-cog
+        span.hideable Output...
+      .dropdown-menu
+        include ../../options-output
+    .btn-group.btn-group-sm.filters(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler output is filtered")
+        span.fas.fa-filter
+        span.hideable Filter...
+      .dropdown-menu
+        include ../../options-filters
+    .btn-group.btn-group-sm(role="group" aria-label="Compiler additions")
+      button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
+        span.fas.fa-book
+        span.dp-text.hideable Libraries
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
+        span.fas.fa-plus
+        span.hideable Add new...
+      .dropdown-menu.dropdown-menu-right
+        +newPaneButton("add-compiler", "Clone Compiler", "Clone this compiler window (click or drag)", "far fa-clone")
+        +newPaneButton("create-executor", "Executor From This", "Create executor from this compiler", "fas fa-microchip")
+        +newPaneButton("view-optimization", "Optimization", "Show optimization output", "fas fa-weight")
+        +newPaneButton("view-pp", "Preprocessor", "Show preprocessor output", "fas fa-hashtag")
+        +newPaneButton("view-ast", "AST", "Show AST output", "fas fa-leaf")
+        +newPaneButton("view-ir", "LLVM IR", "Show LLVM Intermediate Representation", "fas fa-align-center")
+        +newPaneButton("view-llvm-opt-pipeline", "LLVM Opt Pipeline", "Show LLVM optimization pipeline output", "fas fa-compass")
+        +newPaneButton("view-device", "Device", "Show device output", "fas fa-tv")
+        +newPaneButton("view-rustmir", "Rust MIR", "Show Rust Mid-level Intermediate Representation", "fas fa-water")
+        +newPaneButton("view-rusthir", "Rust HIR", "Show Rust High-level Intermediate Representation", "fas fa-arrows-alt")
+        +newPaneButton("view-rustmacroexp", "Rust Macro Expansion", "Show Rust macro expansion", "fas fa-arrows-alt")
+        +newPaneButton("view-haskellCore", "GHC Core", "Show GHC Core Intermediate Representation", "fas fa-water")
+        +newPaneButton("view-haskellStg", "GHC STG", "Show GHC STG Intermediate Representation", "fas fa-water")
+        +newPaneButton("view-haskellCmm", "GHC Cmm", "Show GHC Cmm Intermediate Representation", "fas fa-water")
+        +newPaneButton("view-gccdump", "GCC Tree/RTL", "Show GCC Tree/RTL dump", "fas fa-tree")
+        +newPaneButton("view-gnatdebugtree", "GNAT Debug Tree", "Show GNAT debug tree", "fas fa-tree")
+        +newPaneButton("view-gnatdebug", "GNAT Debug Expanded Code", "Show GNAT debug expanded code", "fas fa-tree")
+        +newPaneButton("view-cfg", "Graph", "Shpw graph output", "fas fa-exchange-alt")
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
+        span.fas.fa-screwdriver
+        span.hideable Add tool...
+      .dropdown-menu.dropdown-menu-right.toolsmenu
+  .monaco-placeholder
+  .bottom-bar.bg-light
+    if !embedded
+      .btn-group.btn-group-sm
+        .input-group
+          .input-group-prepend
+            button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
+              span.fas.fa-redo
+          button.btn.btn-sm.btn-light.output-btn
+            span.fas.fa-receipt.status-text
+            | &nbsp;Output
+            span.output-count
+              | &nbsp;(
+              span.text-count
+                | 0
+              | /
+              span.err-count
+                | 0
+              | )
+      span.short-compiler-name.mr-1
+      button.btn.btn-sm.btn-light.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+        span.fas.fa-info
+      span.compile-info.mr-1(title="Compilation info")
+      button.btn.btn-sm.btn-light.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")
+        span.fas.fa-chart-bar

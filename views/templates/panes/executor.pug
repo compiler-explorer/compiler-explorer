@@ -1,0 +1,57 @@
+#executor
+  .top-bar.btn-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.options(role="group" aria-label="Output options")
+      .button-checkbox
+        button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+          span Wrap lines
+        input.d-none(type="checkbox" checked=false)
+      button.btn.btn-sm.btn-light.show-libs(title="Include libs" aria-label="Toggle libraries dropdown")
+        span.fas.fa-book
+        span.dp-text.hideable Libraries
+    button.btn.btn-sm.btn-light.toggle-compilation.active(title="Compiler options" aria-label="Toggle compiler options input")
+      span.fas.fa-cogs
+      span.hideable Compilation
+    button.btn.btn-sm.btn-light.toggle-args(title="Execution arguments" aria-label="Toggle execution arguments input")
+      span.fas.fa-terminal
+      span.hideable Arguments
+    button.btn.btn-sm.btn-light.toggle-stdin(title="Execution stdin" aria-label="Toggle execution stdin input")
+      span.fas.fa-sign-in-alt
+      span.hideable Stdin
+    button.btn.btn-sm.btn-light.toggle-compilerout.active(title="Compiler output" aria-label="Toggle showing compiler output")
+      span.fas.fa-sign-out-alt
+      span.hideable Compiler output
+    button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
+      span.fas.fa-redo
+  .top-bar.btn-toolbar.bg-light.panel-compilation(role="toolbar")
+    .btn-group.btn-group-sm(role="group" aria-label="Compiler picker")
+      .input-group
+        .input-group-prepend
+          .input-group
+            select.compiler-picker
+            .input-group-append
+              button.btn.btn-sm.btn-light.input-group-text.prepend-options(data-trigger="click" style="cursor: pointer;" role="button" title="All compilation options")
+                span.btn.btn-sm.btn-light.status-icon
+        input.compilation-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+        // TODO: Maybe enable this in the future?
+        //.input-group-append.populararguments(title="Popular arguments")
+          button.btn.btn-sm.btn-light.btn-outline-secondary.dropdown-toggle.dropdown-toggle-split.popular-arguments-btn(type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+            span.sr-only Popular arguments
+          div.dropdown-menu.dropdown-menu-right
+            button.dropdown-item.btn.btn-light.btn-sm
+              .argmenuitem
+                span.argtitle Detailed Compiler Flags
+                span.argdescription Open a new window to edit verbose compiler flags
+  .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
+    input.execution-arguments.form-control(type="text" placeholder="Execution arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+  .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
+    textarea.execution-stdin.form-control(placeholder="Execution stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: vertical")
+  pre.content
+    .execution-status
+    .compiler-output
+    .execution-output
+  .bottom-bar.bg-light
+    span.short-compiler-name
+    button.btn.btn-sm.btn-light.fas.fa-info.full-compiler-name(data-trigger="click" style="cursor: pointer;" role="button")
+    span.compile-time(title="Compilation time (Result size)")
+    button.btn.btn-sm.btn-light.fas.fa-chart-bar.full-timing-info(data-trigger="click" style="cursor: pointer;" role="button")

@@ -1,0 +1,14 @@
+#enter-something.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Enter something here
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .question
+        input.question-answer
+      .modal-footer
+        button.btn.btn-light.no(type="button" data-dismiss="modal") Cancel
+        button.btn.btn-light.yes(type="button" data-dismiss="modal") Ok
