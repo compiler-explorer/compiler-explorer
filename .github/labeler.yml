@@ -96,6 +96,9 @@ lang-opencl-c:
 lang-pascal:
   - lib/compilers/pascal.js
   - etc/config/pascal.*.properties
+lang-pony:
+  - lib/compilers/pony.ts
+  - etc/config/pony.*.properties
 lang-python:
   - lib/compilers/python.js
   - etc/config/python.*.properties
