@@ -536,7 +536,7 @@ async function main() {
     await onCompilerChange(initialCompilers);
 
     const rescanCompilerSecs = ceProps('rescanCompilerSecs', 0);
-    if (rescanCompilerSecs && !opts.prediscovered) {
+    if (rescanCompilerSecs) {
         logger.info(`Rescanning compilers every ${rescanCompilerSecs} secs`);
         setInterval(
             () => compilerFinder.find().then(result => onCompilerChange(result.compilers)),
