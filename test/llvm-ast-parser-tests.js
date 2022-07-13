@@ -107,7 +107,7 @@ describe('llvm-ast', function () {
     });
 });
 
-describe('llvm-ast bug-3849', function () {
+describe('llvm-ast bug-3849a', function () {
     let compilerProps;
     let astParser;
     let astDump;
@@ -118,12 +118,34 @@ describe('llvm-ast bug-3849', function () {
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
-        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849.ast').toString());
+        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849a.ast').toString());
         compilerOutput = mockAstOutput(astDump);
     });
 
-    it('should have more than lines', () => {
+    it('should have more than 2 lines', () => {
         let processed = astParser.processAst(compilerOutput);
         processed.length.should.be.above(2);
+    });
+});
+
+describe('llvm-ast bug-3849b', function () {
+    let compilerProps;
+    let astParser;
+    let astDump;
+    let compilerOutput;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+
+        astParser = new LlvmAstParser(compilerProps);
+        astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849b.ast').toString());
+        compilerOutput = mockAstOutput(astDump);
+    });
+
+    it('should have not too many lines', () => {
+        let processed = astParser.processAst(compilerOutput);
+        processed.length.should.be.above(200);
+        processed.length.should.be.below(300);
     });
 });
