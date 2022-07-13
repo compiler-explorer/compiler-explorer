@@ -29,6 +29,7 @@ import ClipboardJS from 'clipboard';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
+import {Settings, SiteSettings} from './settings';
 
 const ga = require('./analytics').ga;
 const options = require('./options').options;
@@ -80,6 +81,8 @@ export class Sharing {
     private shareFull: JQuery;
     private shareEmbed: JQuery;
 
+    private settings: SiteSettings;
+
     private clippyButton: ClipboardJS | null;
 
     constructor(layout: any) {
@@ -90,6 +93,8 @@ export class Sharing {
         this.shareShort = $('#shareShort');
         this.shareFull = $('#shareFull');
         this.shareEmbed = $('#shareEmbed');
+
+        this.settings = Settings.getStoredSettings();
 
         this.clippyButton = null;
 
@@ -109,6 +114,22 @@ export class Sharing {
         $('#sharelinkdialog')
             .on('show.bs.modal', this.onOpenModalPane.bind(this))
             .on('hidden.bs.modal', this.onCloseModalPane.bind(this));
+
+        this.layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
+            this.settings = newSettings;
+        });
+
+        $(window).on('blur', async () => {
+            if (this.settings.keepMultipleTabs) {
+                try {
+                    const link = await this.getLinkOfType(LinkType.Full);
+                    window.history.replaceState(null, '', link);
+                } catch (e) {
+                    // This is probably caused by a link that is too long
+                    Sentry.captureException(e);
+                }
+            }
+        });
     }
 
     private onStateChanged(): void {
@@ -242,6 +263,25 @@ export class Sharing {
             // As we prevented bubbling, the dropdown won't close by itself. We need to trigger it manually
             this.share.dropdown('hide');
         }
+    }
+
+    private getLinkOfType(type: LinkType): Promise<string> {
+        const config = this.layout.toConfig();
+        return new Promise<string>((resolve, reject) => {
+            Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
+                if (error || !newUrl) {
+                    this.displayTooltip(this.share, 'Oops, something went wrong');
+                    Sentry.captureException(error);
+                    reject();
+                } else {
+                    if (updateState) {
+                        Sharing.storeCurrentConfig(config, extra);
+                    }
+                    resolve(newUrl);
+                }
+            });
+        });
+
     }
 
     private copyLinkTypeToClipboard(type: LinkType): void {
