@@ -95,7 +95,10 @@ export class LoadSave {
         this.modal?.modal('hide');
     }
 
-    private static populate(root: JQuery, list: {name: string; load: () => void; delete?: () => void, overwrite?: () => void}[]) {
+    private static populate(
+        root: JQuery,
+        list: {name: string; load: () => void; delete?: () => void; overwrite?: () => void}[]
+    ) {
         root.find('li:not(.template)').remove();
         const template = root.find('.template');
         for (const elem of list) {
