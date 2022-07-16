@@ -93,6 +93,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
     },
+    quetzal: {
+        name: 'quetzal',
+        monaco: 'quetzal',
+        extensions: ['.quetzal'],
+        alias: [],
+        logoUrl: 'quetzal.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     circle: {
         name: 'C++ (Circle)',
         monaco: 'cppcircle',

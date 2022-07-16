@@ -65,7 +65,8 @@ export type LanguageKey =
     | 'dart'
     | 'typescript'
     | 'solidity'
-    | 'toit';
+    | 'toit'
+    | 'quetzal';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */
