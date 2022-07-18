@@ -25,6 +25,7 @@
 'use strict';
 
 const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
 function definition() {
     return {
@@ -132,7 +133,7 @@ function definition() {
                 [/[;,.]/, 'delimiter'],
 
                 // strings
-                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-teminated string
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
                 [/"/, {token: 'string.quote', bracket: '@open', next: '@string'}],
 
                 // characters
@@ -167,5 +168,6 @@ function definition() {
 const def = definition();
 monaco.languages.register({id: 'quetzal'});
 monaco.languages.setMonarchTokensProvider('quetzal', def);
+monaco.languages.setLanguageConfiguration('quetzal', cpp.conf);
 
 export = def;
