@@ -24,6 +24,7 @@
 
 export type LanguageKey =
     | 'mlir'
+    | 'jakt'
     | 'c++'
     | 'llvm'
     | 'cppx'
@@ -42,6 +43,7 @@ export type LanguageKey =
     | 'kotlin'
     | 'scala'
     | 'ocaml'
+    | 'pony'
     | 'python'
     | 'swift'
     | 'pascal'

@@ -1,0 +1,15 @@
+#compiler-selector
+  .form-row
+    .input-group
+      .input-group-prepend
+        .input-group
+          select.compiler-picker
+          .input-group-append
+            button.btn.btn-sm.btn-light.input-group-text.prepend-options(tabindex="0" data-trigger="focus" style="cursor: pointer;" role="button" title="All compilation options")
+              span.btn.btn-sm.btn-light.status-icon
+      input.conformance-options.form-control(type="text" placeholder="Compiler options..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+      .input-group-append
+        button.btn.btn-sm.fas.fa-receipt.d-none.compiler-out.compiler-selector-icon(disabled=true style="cursor: help;" title="This compiler has generated some output. Open its associated pane to read it.")
+        button.btn.btn-sm.fas.fa-times.close.compiler-selector-icon(aria-label="Close" title="Close")
+        button.btn.btn-sm.fas.fa-share.close.extract-compiler.compiler-selector-icon(aria-label="Pop compiler" title="Show compiler")
+        button.btn.btn-sm.fas.fa-copy.close.copy-compiler.compiler-selector-icon(aria-label="Copy compiler" title="Copy compiler")

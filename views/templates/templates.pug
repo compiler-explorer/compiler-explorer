@@ -1,0 +1,75 @@
+mixin monacopane(id)
+  div(id=id)
+    .top-bar.btn-toolbar.bg-light(role="toolbar")
+      include ../font-size
+    .monaco-placeholder
+
+.gl_keep.template
+
+  include panes/codeEditor
+
+  include panes/compiler
+
+  include panes/executor
+
+  include panes/compiler-output
+
+  include panes/tool-output
+
+  include panes/diff
+
+  include panes/pp
+
+  include panes/llvm-opt-pipeline
+
+  include panes/device
+
+  include panes/gccdump
+
+  include panes/cfg
+
+  include panes/conformance
+
+  include panes/tree
+
+  include widgets/compiler-selector
+
+  include widgets/libs-dropdown
+
+  include widgets/libs-entry
+
+  include widgets/share-item
+
+  include widgets/lib-selected-tpl
+
+  include widgets/lib-favorite-tpl
+
+  include widgets/lib-search-result-tpl
+
+  include widgets/tree-editor-tpl
+
+  +monacopane("opt")
+
+  +monacopane("flags")
+
+  +monacopane("ast")
+
+  +monacopane("ir")
+
+  +monacopane("tool-input")
+
+  +monacopane("gnatdebugtree")
+
+  +monacopane("gnatdebug")
+
+  +monacopane("rustmir")
+
+  +monacopane("haskellCore")
+
+  +monacopane("haskellStg")
+
+  +monacopane("haskellCmm")
+
+  +monacopane("rustmacroexp")
+
+  +monacopane("rusthir")
