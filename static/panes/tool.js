@@ -496,6 +496,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                             this.add(
                                 this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
                                 obj.tag ? obj.tag.line : obj.line,
+                                obj.tag ? obj.tag.column : 0,
                                 obj.tag ? obj.tag.flow : null
                             );
                         }
@@ -519,7 +520,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
-Tool.prototype.add = function (msg, lineNum, flow) {
+Tool.prototype.add = function (msg, lineNum, column, flow) {
     var elem = $('<div/>').appendTo(this.plainContentRoot);
     if (lineNum && this.editorId) {
         elem.html(
@@ -529,7 +530,7 @@ Tool.prototype.add = function (msg, lineNum, flow) {
                 .on(
                     'click',
                     _.bind(function (e) {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true, column);
                         if (flow) {
                             this.eventHub.emit('editorDisplayFlow', this.editorId, flow);
                         }
@@ -540,7 +541,7 @@ Tool.prototype.add = function (msg, lineNum, flow) {
                 .on(
                     'mouseover',
                     _.bind(function () {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false, column);
                     }, this)
                 )
         );

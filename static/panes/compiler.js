@@ -2789,7 +2789,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     var bodyContent = $('<div>');
     var versionContent = $('<div>').html(_.escape(version.version));
     bodyContent.append(versionContent);
-    if (version.fullVersion) {
+    if (version.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
         var hiddenSection = $('<div>');
         var lines = _.map(version.fullVersion.split('\n'), function (line) {
             return _.escape(line);
