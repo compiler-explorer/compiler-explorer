@@ -912,25 +912,25 @@ Executor.prototype.shouldEmitExecutionOnFieldChange = function () {
 };
 
 Executor.prototype.onOptionsChange = function (options) {
+    this.options = options;
+    this.saveState();
     if (this.shouldEmitExecutionOnFieldChange()) {
-        this.options = options;
-        this.saveState();
         this.compile();
     }
 };
 
 Executor.prototype.onExecArgsChange = function (args) {
+    this.executionArguments = args;
+    this.saveState();
     if (this.shouldEmitExecutionOnFieldChange()) {
-        this.executionArguments = args;
-        this.saveState();
         this.compile();
     }
 };
 
 Executor.prototype.onExecStdinChange = function (newStdin) {
+    this.executionStdin = newStdin;
+    this.saveState();
     if (this.shouldEmitExecutionOnFieldChange()) {
-        this.executionStdin = newStdin;
-        this.saveState();
         this.compile();
     }
 };
