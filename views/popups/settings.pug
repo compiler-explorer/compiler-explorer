@@ -148,10 +148,6 @@
                   label
                     input.compileOnChange(type="checkbox")
                     | Compile automatically when source changes
-                .checkbox
-                  label
-                    input.formatOnCompile(type="checkbox")
-                    | Enable formatting on compilation (for supported languages)
                 div
                   label Delay before compiling:&nbsp;
                     span.delay-current-value &nbsp;
@@ -159,5 +155,13 @@
                     b 0.25s
                     input.delay(type="range")
                     b 3s
+                .checkbox
+                  label
+                    input.formatOnCompile(type="checkbox")
+                    | Enable formatting on compilation (for supported languages)
+                .checkbox
+                  label
+                    input.executorCompileOnChange(type="checkbox")
+                    | Compile executor automatically when arguments change
       .modal-footer
         button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close

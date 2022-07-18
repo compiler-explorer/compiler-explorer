@@ -23,9 +23,13 @@
               h4.card-title Load from browser-local storage:
               ul.local-storage.small-v-scrollable
                 li.template
-                  a(href="javascript:;")
-                  button.btn.btn-sm.ml-5
-                    span.fa.fa-trash
+                  a.mr-3(href="javascript:;")
+                  button.overwrite.btn.btn-sm.btn-light.mr-1
+                    span.fa.fa-edit.mr-1
+                    | Overwrite
+                  button.delete.btn.btn-sm.btn-light
+                    span.fa.fa-trash.mr-1
+                    | Delete
               .input-group
                 input.save-name(type="text" size="20" placeholder="Set name of state")
                 .input-group-append
