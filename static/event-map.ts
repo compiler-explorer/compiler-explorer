@@ -24,6 +24,7 @@
 
 import {Language} from '../types/languages.interfaces';
 import {CompilerFilters} from '../types/features/filters.interfaces';
+import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
@@ -58,6 +59,7 @@ export type EventMap = {
     displaySharingPopover: () => void;
     editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
     editorClose: (editorId: number) => void;
+    editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
