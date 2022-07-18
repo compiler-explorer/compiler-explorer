@@ -495,7 +495,8 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                         } else {
                             this.add(
                                 this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
-                                obj.tag ? obj.tag.line : obj.line
+                                obj.tag ? obj.tag.line : obj.line,
+                                obj.tag ? obj.tag.column : 0
                             );
                         }
                     },
@@ -518,7 +519,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
-Tool.prototype.add = function (msg, lineNum) {
+Tool.prototype.add = function (msg, lineNum, column) {
     var elem = $('<div/>').appendTo(this.plainContentRoot);
     if (lineNum && this.editorId) {
         elem.html(
@@ -528,7 +529,7 @@ Tool.prototype.add = function (msg, lineNum) {
                 .on(
                     'click',
                     _.bind(function (e) {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true, column);
                         e.preventDefault();
                         return false;
                     }, this)
@@ -536,7 +537,7 @@ Tool.prototype.add = function (msg, lineNum) {
                 .on(
                     'mouseover',
                     _.bind(function () {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false, column);
                     }, this)
                 )
         );
