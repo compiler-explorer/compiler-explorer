@@ -1,0 +1,163 @@
+#settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg(role="document")
+    .modal-content
+      .modal-header
+        h5.modal-title
+          | Compiler Explorer Settings
+        button.close(type="button" data-dismiss="modal" aria-label="Close")
+          span(aria-hidden="true") &times;
+      .modal-body
+        .card
+          .card-header
+            | These settings control how Compiler Explorer acts for you. They are not
+            | preserved as part of shared URLs, and are persisted locally using browser
+            | local storage.
+            ul.nav.nav-tabs.card-header-tabs(role="tablist")
+              li.nav-item(role="presentation"): a.nav-link.active(href="#colouring" role="tab" data-toggle="tab") Colouring
+              li.nav-item(role="presentation"): a.nav-link(href="#site-behaviour" role="tab" data-toggle="tab") Site behaviour
+              li.nav-item(role="presentation"): a.nav-link(href="#keybindings" role="tab" data-toggle="tab") Keybindings
+              li.nav-item(role="presentation"): a.nav-link(href="#editor" role="tab" data-toggle="tab") Editor
+              li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-toggle="tab") Compilation
+          .card-body.tab-content
+            #colouring.tab-pane.active.form-group(role="group")
+              div
+                label
+                  | Site theme
+                select.theme
+              .checkbox
+                label
+                  input.colourise(type="checkbox")
+                  | Colourise lines to show how the source maps to the output
+              .checkbox
+                label
+                  input.alwaysEnableAllSchemes(type="checkbox")
+                  | Make all colour schemes available regardless of theme
+              label
+                | Line highlighting colour scheme&nbsp;
+                select.colourScheme
+            #site-behaviour.tab-pane.form-group(role="group")
+              label
+                | Default language
+                small(style="margin-left: 3px")
+                  span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
+              select.defaultLanguage
+              .checkbox
+                label
+                  input.allowStoreCodeDebug(type="checkbox")
+                  | Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
+              .checkbox
+                label
+                  input.newEditorLastLang(type="checkbox")
+                  | Use last selected language when opening new Editors
+              .checkbox
+                label
+                  input.enableCommunityAds(type="checkbox")
+                  | Show community events
+            #keybindings.tab-pane.form-group(role="group")
+              .checkbox
+                label
+                  input.useVim(type="checkbox")
+                  | Vim editor mode
+              .the-save-option-to-auto-share
+                label
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;behaviour
+                select.enableCtrlS
+              .checkbox.the-save-option-to-tree-save
+                label
+                  input.enableCtrlStree(type="checkbox")
+                  | Make
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp;include and save the file to a Tree if that's added to the UI
+              .checkbox.the-popup-dialog-box-option
+                label
+                  input.enableSharingPopover(type="checkbox")
+                  | Pop up a dialog box when
+                  kbd Ctrl
+                  | +
+                  kbd S
+                  | &nbsp; is set to create a short link.
+            #editor.tab-pane.form-group(role="group")
+              div
+                label
+                  | Desired Font Family in editors
+                input.editorsFFont(type="text" style="width:100%")
+              label Default font scale
+              select.defaultFontScale
+              .checkbox
+                label
+                  input.editorsFLigatures(type="checkbox")
+                  | Enable font ligatures
+              .checkbox
+                label
+                  input.autoCloseBrackets(type="checkbox")
+                  | Automatically insert matching brackets and parentheses
+              .checkbox
+                label
+                  input.autoIndent(type="checkbox")
+                  | Automatically indent code (reload page after changing)
+              .checkbox
+                label
+                  input.hoverShowSource(type="checkbox")
+                  | Highlight linked code lines on hover
+              .checkbox
+                label
+                  input.hoverShowAsmDoc(type="checkbox")
+                  | Show asm description on hover
+              .checkbox
+                label
+                  input.showQuickSuggestions(type="checkbox")
+                  | Show quick suggestions
+              .checkbox
+                label
+                  input.useCustomContextMenu(type="checkbox")
+                  | Use custom context menu
+              .checkbox
+                label
+                  input.showMinimap(type="checkbox")
+                  | Show editor minimap
+              .checkbox
+                label
+                  input.keepSourcesOnLangChange(type="checkbox")
+                  | Keep editor source on language change
+              .checkbox
+                label
+                  input.useSpaces(type="checkbox")
+                  | Use spaces for indentation
+              div
+                label Tab width
+                input.tabWidth(type="number")
+              div
+                label Format based on
+                select.formatBase
+              .checkbox
+                label
+                  input.wordWrap(type="checkbox")
+                  | Enable Word Wrapping
+              .checkbox
+                label
+                  input.enableCodeLens(type="checkbox")
+                  | Enable CodeLens features (requires refresh to take effect)
+            #compilation.tab-pane.form-group(role="group")
+              div
+                .checkbox
+                  label
+                    input.compileOnChange(type="checkbox")
+                    | Compile automatically when source changes
+                .checkbox
+                  label
+                    input.formatOnCompile(type="checkbox")
+                    | Enable formatting on compilation (for supported languages)
+                div
+                  label Delay before compiling:&nbsp;
+                    span.delay-current-value &nbsp;
+                  .slider-input
+                    b 0.25s
+                    input.delay(type="range")
+                    b 3s
+      .modal-footer
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close

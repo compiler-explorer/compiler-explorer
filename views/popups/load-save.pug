@@ -1,0 +1,44 @@
+#load-save.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg(style="max-width: unset")
+    .modal-content(style="max-width: unset")
+      .modal-header
+        h5.modal-title Load and save editor text
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-header
+            ul.nav.nav-tabs.card-header-tabs(role="tablist")
+              li.nav-item(role="presentation"): a.nav-link.active(href="#load-examples" role="tab" data-toggle="tab") Examples
+              li.nav-item(role="presentation"): a.nav-link(href="#load-browser-local" role="tab" data-toggle="tab") Browser-local storage
+              li.nav-item(role="presentation"): a.nav-link(href="#load-browser-local-history" role="tab" data-toggle="tab") Browser-local history
+              li.nav-item(role="presentation"): a.nav-link(href="#load-file-system" role="tab" data-toggle="tab") File system
+          .card-body.tab-content
+            #load-examples.tab-pane.active(role="tabpanel")
+              h4.card-title Load from examples:
+              ul.examples.small-v-scrollable
+                li.template: a(href="javascript:;")
+            #load-browser-local.tab-pane(role="tabpanel")
+              h4.card-title Load from browser-local storage:
+              ul.local-storage.small-v-scrollable
+                li.template
+                  a(href="javascript:;")
+                  button.btn.btn-sm.ml-5
+                    span.fa.fa-trash
+              .input-group
+                input.save-name(type="text" size="20" placeholder="Set name of state")
+                .input-group-append
+                  button.btn.btn-light.save-button(type="button") Save to browser-local storage
+            #load-browser-local-history.tab-pane(role="tabpanel")
+              h4.card-title Load from browser-local history:
+              ul.local-history.small-v-scrollable
+                li.template: a(href="javascript:;")
+            #load-file-system.tab-pane(role="tabpanel")
+              h4.card-title Load/save to your system
+              label.btn.btn-outline-secondary.btn-file(role="button") Load from a local file
+                input.local-file(type="file")
+              label.btn.btn-outline-secondary.btn-file.save-btn(role="button") Save to file
+                input.save-file(type="button")
+      .modal-footer
+        button.btn.btn-outline-primary(type="button" data-dismiss="modal" aria-label="Close") Close

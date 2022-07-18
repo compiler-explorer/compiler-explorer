@@ -1,0 +1,12 @@
+#compiler-output
+  .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.options(role="group" aria-label="Output options")
+      .button-checkbox
+        button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+          span Wrap lines
+        input.d-none(type="checkbox" checked=false)
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.select-all(type="button" title="Select all lines")
+        span Select all
+  pre.content.output-content

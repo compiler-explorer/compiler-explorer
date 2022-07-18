@@ -942,7 +942,7 @@ export class BaseCompiler {
         }
     }
 
-    async generateIR(inputFilename, options, filters: ParseFilters) {
+    async generateIR(inputFilename: string, options: string[], filters: ParseFilters) {
         // These options make Clang produce an IR
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
 

@@ -2191,6 +2191,7 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
     this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
+    this.irButton.toggle(!!this.compiler.supportsIrView);
     this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);

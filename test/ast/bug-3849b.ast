@@ -1,0 +1,571 @@
+TranslationUnitDecl 0x560fa93d3228 <<invalid sloc>> <invalid sloc>
+|-TypedefDecl 0x560fa93d3ab0 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'
+| `-BuiltinType 0x560fa93d37f0 '__int128'
+|-TypedefDecl 0x560fa93d3b28 <<invalid sloc>> <invalid sloc> implicit __uint128_t 'unsigned __int128'
+| `-BuiltinType 0x560fa93d3810 'unsigned __int128'
+|-TypedefDecl 0x560fa93d3ee0 <<invalid sloc>> <invalid sloc> implicit __NSConstantString '__NSConstantString_tag'
+| `-RecordType 0x560fa93d3c30 '__NSConstantString_tag'
+|   `-CXXRecord 0x560fa93d3b88 '__NSConstantString_tag'
+|-TypedefDecl 0x560fa93d3f88 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'
+| `-PointerType 0x560fa93d3f40 'char *'
+|   `-BuiltinType 0x560fa93d32d0 'char'
+|-TypedefDecl 0x560fa941e340 <<invalid sloc>> <invalid sloc> implicit __builtin_va_list '__va_list_tag[1]'
+| `-ConstantArrayType 0x560fa941e2e0 '__va_list_tag[1]' 1 
+|   `-RecordType 0x560fa93d4090 '__va_list_tag'
+|     `-CXXRecord 0x560fa93d3fe8 '__va_list_tag'
+|-FunctionTemplateDecl 0x560fa941e6c8 <<invalid sloc>, /app/hell.hpp:5:1> line:3:6 Bar
+| |-TemplateTypeParmDecl 0x560fa941e3d8 <col:10, col:15> col:15 implicit class depth 0 index 0 auto:1
+| |-FunctionDecl 0x560fa941e620 <col:1, line:5:1> line:3:6 Bar 'char (auto)'
+| | |-ParmVarDecl 0x560fa941e4f0 <col:10> col:15 'auto'
+| | `-CompoundStmt 0x560fa941e898 <col:17, line:5:1>
+| |   `-ReturnStmt 0x560fa941e888 <line:4:5, col:13>
+| |     `-InitListExpr 0x560fa941e848 <col:12, col:13> 'char'
+| `-FunctionDecl 0x560fa944b770 <line:3:1, line:5:1> line:3:6 used Bar 'char ((lambda at <source>:4:18))'
+|   |-TemplateArgument type '(lambda at <source>:4:18)'
+|   | `-RecordType 0x560fa941edb0 '(lambda at <source>:4:18)'
+|   |   `-CXXRecord 0x560fa941ec80 ''
+|   |-ParmVarDecl 0x560fa944b670 <col:10> col:15 '(lambda at <source>:4:18)':'(lambda at <source>:4:18)'
+|   `-CompoundStmt 0x560fa94d1f48 <col:17, line:5:1>
+|     `-ReturnStmt 0x560fa94d1f38 <line:4:5, col:13>
+|       `-InitListExpr 0x560fa94d1ef8 <col:12, col:13> 'char'
+|-FunctionDecl 0x560fa941e900 <line:7:1, col:8> col:6 f 'void ()'
+|-FunctionDecl 0x560fa941ea18 <<source>:3:1, line:6:1> line:3:5 main 'int ()'
+| `-CompoundStmt 0x560fa944b9d8 <col:12, line:6:1>
+|   |-DeclStmt 0x560fa944b960 <line:4:5, col:23>
+|   | `-VarDecl 0x560fa941eb18 <col:5, col:22> col:10 used c 'char' cinit
+|   |   `-CallExpr 0x560fa944b920 <col:14, col:22> 'char'
+|   |     |-ImplicitCastExpr 0x560fa944b908 <col:14> 'char (*)((lambda at <source>:4:18))' <FunctionToPointerDecay>
+|   |     | `-DeclRefExpr 0x560fa944b870 <col:14> 'char ((lambda at <source>:4:18))' lvalue Function 0x560fa944b770 'Bar' 'char ((lambda at <source>:4:18))' (FunctionTemplate 0x560fa941e6c8 'Bar')
+|   |     `-LambdaExpr 0x560fa944b478 <col:18, col:21> '(lambda at <source>:4:18)'
+|   |       |-CXXRecordDecl 0x560fa941ec80 <col:18> col:18 implicit class definition
+|   |       | |-DefinitionData lambda pass_in_registers empty standard_layout trivially_copyable trivial literal has_constexpr_non_copy_move_ctor can_const_default_init
+|   |       | | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+|   |       | | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+|   |       | | |-MoveConstructor exists simple trivial needs_implicit
+|   |       | | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+|   |       | | |-MoveAssignment exists simple trivial needs_implicit
+|   |       | | `-Destructor simple irrelevant trivial constexpr
+|   |       | |-CXXMethodDecl 0x560fa941edd8 <col:19, col:21> col:18 constexpr operator() 'auto () const -> void' inline
+|   |       | | `-CompoundStmt 0x560fa941ee88 <col:20, col:21>
+|   |       | |-CXXConversionDecl 0x560fa944b2d8 <col:18, col:21> col:18 implicit constexpr operator void (*)() 'auto (*() const noexcept)() -> void' inline
+|   |       | |-CXXMethodDecl 0x560fa944b390 <col:18, col:21> col:18 implicit __invoke 'auto () -> void' static inline
+|   |       | `-CXXDestructorDecl 0x560fa944b4a8 <col:18> col:18 implicit referenced constexpr ~ 'void () noexcept' inline default trivial
+|   |       `-CompoundStmt 0x560fa941ee88 <col:20, col:21>
+|   `-ReturnStmt 0x560fa944b9c8 <line:5:5, col:12>
+|     `-ImplicitCastExpr 0x560fa944b9b0 <col:12> 'int' <IntegralCast>
+|       `-ImplicitCastExpr 0x560fa944b998 <col:12> 'char' <LValueToRValue>
+|         `-DeclRefExpr 0x560fa944b978 <col:12> 'char' lvalue Var 0x560fa941eb18 'c' 'char'
+|-NamespaceDecl 0x560fa944ba00 </opt/compiler-explorer/gcc-11.2.0/lib/gcc/x86_64-linux-gnu/11.2.0/../../../../include/c++/11.2.0/x86_64-linux-gnu/bits/c++config.h:278:1, line:286:1> line:278:11 std
+| |-TypedefDecl 0x560fa944baa8 <line:280:3, col:26> col:26 size_t 'unsigned long'
+| | `-BuiltinType 0x560fa93d33f0 'unsigned long'
+| |-TypedefDecl 0x560fa944bb20 <line:281:3, col:28> col:28 ptrdiff_t 'long'
+| | `-BuiltinType 0x560fa93d3350 'long'
+| `-TypedefDecl 0x560fa944bbd0 <line:284:3, col:29> col:29 nullptr_t 'decltype(nullptr)':'std::nullptr_t'
+|   `-DecltypeType 0x560fa944bb90 'decltype(nullptr)' sugar
+|     |-CXXNullPtrLiteralExpr 0x560fa944bb78 <col:20> 'std::nullptr_t'
+|     `-BuiltinType 0x560fa93d3a20 'std::nullptr_t'
+|-NamespaceDecl 0x560fa944bc78 prev 0x560fa944ba00 <line:300:1, line:303:1> line:300:11 std
+| |-original Namespace 0x560fa944ba00 'std'
+| `-NamespaceDecl 0x560fa944bd90 <line:302:3, col:69> col:20 __cxx11 inline
+|   `-AbiTagAttr 0x560fa944be18 <col:43, col:63> cxx11
+|-NamespaceDecl 0x560fa944bea0 <line:304:1, line:307:1> line:304:11 __gnu_cxx
+| `-NamespaceDecl 0x560fa944bf50 <line:306:3, col:69> col:20 __cxx11 inline
+|   `-AbiTagAttr 0x560fa944bfd8 <col:43, col:63> cxx11
+|-TypedefDecl 0x560fa944c078 </opt/compiler-explorer/clang-14.0.0/lib/clang/14.0.0/include/stddef.h:46:1, col:23> col:23 referenced size_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa944c0f0 </usr/include/x86_64-linux-gnu/bits/types.h:31:1, col:23> col:23 __u_char 'unsigned char'
+| `-BuiltinType 0x560fa93d3390 'unsigned char'
+|-TypedefDecl 0x560fa944c168 <line:32:1, col:28> col:28 __u_short 'unsigned short'
+| `-BuiltinType 0x560fa93d33b0 'unsigned short'
+|-TypedefDecl 0x560fa944c1e0 <line:33:1, col:22> col:22 __u_int 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa944c258 <line:34:1, col:27> col:27 __u_long 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa949fca8 <line:37:1, col:21> col:21 referenced __int8_t 'signed char'
+| `-BuiltinType 0x560fa93d32f0 'signed char'
+|-TypedefDecl 0x560fa949fd20 <line:38:1, col:23> col:23 referenced __uint8_t 'unsigned char'
+| `-BuiltinType 0x560fa93d3390 'unsigned char'
+|-TypedefDecl 0x560fa949fd98 <line:39:1, col:26> col:26 referenced __int16_t 'short'
+| `-BuiltinType 0x560fa93d3310 'short'
+|-TypedefDecl 0x560fa949fe10 <line:40:1, col:28> col:28 referenced __uint16_t 'unsigned short'
+| `-BuiltinType 0x560fa93d33b0 'unsigned short'
+|-TypedefDecl 0x560fa949fe88 <line:41:1, col:20> col:20 referenced __int32_t 'int'
+| `-BuiltinType 0x560fa93d3330 'int'
+|-TypedefDecl 0x560fa949ff00 <line:42:1, col:22> col:22 referenced __uint32_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa949ff78 <line:44:1, col:25> col:25 referenced __int64_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa949fff0 <line:45:1, col:27> col:27 referenced __uint64_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a0088 <line:52:1, col:18> col:18 __int_least8_t '__int8_t':'signed char'
+| `-TypedefType 0x560fa94a0050 '__int8_t' sugar
+|   |-Typedef 0x560fa949fca8 '__int8_t'
+|   `-BuiltinType 0x560fa93d32f0 'signed char'
+|-TypedefDecl 0x560fa94a0118 <line:53:1, col:19> col:19 __uint_least8_t '__uint8_t':'unsigned char'
+| `-TypedefType 0x560fa94a00e0 '__uint8_t' sugar
+|   |-Typedef 0x560fa949fd20 '__uint8_t'
+|   `-BuiltinType 0x560fa93d3390 'unsigned char'
+|-TypedefDecl 0x560fa94a01a8 <line:54:1, col:19> col:19 __int_least16_t '__int16_t':'short'
+| `-TypedefType 0x560fa94a0170 '__int16_t' sugar
+|   |-Typedef 0x560fa949fd98 '__int16_t'
+|   `-BuiltinType 0x560fa93d3310 'short'
+|-TypedefDecl 0x560fa94a0238 <line:55:1, col:20> col:20 __uint_least16_t '__uint16_t':'unsigned short'
+| `-TypedefType 0x560fa94a0200 '__uint16_t' sugar
+|   |-Typedef 0x560fa949fe10 '__uint16_t'
+|   `-BuiltinType 0x560fa93d33b0 'unsigned short'
+|-TypedefDecl 0x560fa94a02c8 <line:56:1, col:19> col:19 __int_least32_t '__int32_t':'int'
+| `-TypedefType 0x560fa94a0290 '__int32_t' sugar
+|   |-Typedef 0x560fa949fe88 '__int32_t'
+|   `-BuiltinType 0x560fa93d3330 'int'
+|-TypedefDecl 0x560fa94a0358 <line:57:1, col:20> col:20 __uint_least32_t '__uint32_t':'unsigned int'
+| `-TypedefType 0x560fa94a0320 '__uint32_t' sugar
+|   |-Typedef 0x560fa949ff00 '__uint32_t'
+|   `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94a03e8 <line:58:1, col:19> col:19 __int_least64_t '__int64_t':'long'
+| `-TypedefType 0x560fa94a03b0 '__int64_t' sugar
+|   |-Typedef 0x560fa949ff78 '__int64_t'
+|   `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a0478 <line:59:1, col:20> col:20 __uint_least64_t '__uint64_t':'unsigned long'
+| `-TypedefType 0x560fa94a0440 '__uint64_t' sugar
+|   |-Typedef 0x560fa949fff0 '__uint64_t'
+|   `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a04f0 <line:63:1, col:18> col:18 __quad_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a0568 <line:64:1, col:27> col:27 __u_quad_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a05e0 <line:72:1, col:18> col:18 __intmax_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a0658 <line:73:1, col:27> col:27 __uintmax_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a06d0 <line:137:22, line:145:25> col:25 __dev_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a0748 <line:137:22, line:146:25> col:25 __uid_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94a07c0 <line:137:22, line:147:25> col:25 __gid_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94a0838 <line:137:22, line:148:25> col:25 __ino_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a08b0 <line:137:22, line:149:27> col:27 __ino64_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a0928 <line:137:22, line:150:26> col:26 __mode_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94a09a0 <line:137:22, line:151:27> col:27 __nlink_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a0a18 <line:137:22, line:152:25> col:25 __off_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a0a90 <line:137:22, line:153:27> col:27 referenced __off64_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a0b08 <line:137:22, line:154:25> col:25 referenced __pid_t 'int'
+| `-BuiltinType 0x560fa93d3330 'int'
+|-CXXRecordDecl 0x560fa94a0b68 </usr/include/x86_64-linux-gnu/bits/typesizes.h:72:24, col:47> col:24 struct definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| `-FieldDecl 0x560fa94a92a8 <col:33, col:44> col:37 __val 'int[2]'
+|-TypedefDecl 0x560fa94a9370 </usr/include/x86_64-linux-gnu/bits/types.h:137:22, line:155:26> col:26 __fsid_t 'struct __fsid_t':'__fsid_t'
+| `-ElaboratedType 0x560fa94a9310 'struct __fsid_t' sugar
+|   `-RecordType 0x560fa94a0c10 '__fsid_t'
+|     `-CXXRecord 0x560fa94a0b68 ''
+|-TypedefDecl 0x560fa94a9400 <line:137:22, line:156:27> col:27 referenced __clock_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9478 <line:137:22, line:157:26> col:26 __rlim_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a94f0 <line:137:22, line:158:28> col:28 __rlim64_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a9568 <line:137:22, line:159:24> col:24 __id_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94a95e0 <line:137:22, line:160:26> col:26 referenced __time_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9658 <line:137:22, line:161:30> col:30 __useconds_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94a96d0 <line:137:22, line:162:31> col:31 referenced __suseconds_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9748 <line:137:22, line:164:27> col:27 __daddr_t 'int'
+| `-BuiltinType 0x560fa93d3330 'int'
+|-TypedefDecl 0x560fa94a97c0 <line:137:22, line:165:25> col:25 __key_t 'int'
+| `-BuiltinType 0x560fa93d3330 'int'
+|-TypedefDecl 0x560fa94a9838 <line:137:22, line:168:29> col:29 referenced __clockid_t 'int'
+| `-BuiltinType 0x560fa93d3330 'int'
+|-TypedefDecl 0x560fa94a98b0 <line:137:22, line:171:27> col:27 referenced __timer_t 'void *'
+| `-PointerType 0x560fa93d39f0 'void *'
+|   `-BuiltinType 0x560fa93d3290 'void'
+|-TypedefDecl 0x560fa94a9928 <line:137:22, line:174:29> col:29 __blksize_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a99a0 <line:137:22, line:179:28> col:28 __blkcnt_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9a18 <line:137:22, line:180:30> col:30 __blkcnt64_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9a90 <line:137:22, line:183:30> col:30 __fsblkcnt_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a9b08 <line:137:22, line:184:32> col:32 __fsblkcnt64_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a9b80 <line:137:22, line:187:30> col:30 __fsfilcnt_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a9bf8 <line:137:22, line:188:32> col:32 __fsfilcnt64_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a9c70 <line:137:22, line:191:28> col:28 __fsword_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9ce8 <line:137:22, line:193:27> col:27 __ssize_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9d60 <line:137:22, line:196:33> col:33 referenced __syscall_slong_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9dd8 <line:137:22, line:198:33> col:33 __syscall_ulong_t 'unsigned long'
+| `-BuiltinType 0x560fa93d33f0 'unsigned long'
+|-TypedefDecl 0x560fa94a9e68 <line:202:1, col:19> col:19 __loff_t '__off64_t':'long'
+| `-TypedefType 0x560fa94a9e30 '__off64_t' sugar
+|   |-Typedef 0x560fa94a0a90 '__off64_t'
+|   `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9ee0 <line:203:1, col:15> col:15 __caddr_t 'char *'
+| `-PointerType 0x560fa93d3f40 'char *'
+|   `-BuiltinType 0x560fa93d32d0 'char'
+|-TypedefDecl 0x560fa94a9f58 <line:137:22, line:206:25> col:25 __intptr_t 'long'
+| `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94a9fd0 <line:137:22, line:209:23> col:23 __socklen_t 'unsigned int'
+| `-BuiltinType 0x560fa93d33d0 'unsigned int'
+|-TypedefDecl 0x560fa94aa048 <line:214:1, col:13> col:13 __sig_atomic_t 'int'
+| `-BuiltinType 0x560fa93d3330 'int'
+|-CXXRecordDecl 0x560fa94aa0a8 </usr/include/x86_64-linux-gnu/bits/types/struct_timeval.h:8:1, line:12:1> line:8:8 struct timeval definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| |-CXXRecordDecl 0x560fa94b02b8 <col:1, col:8> col:8 implicit struct timeval
+| |-FieldDecl 0x560fa94b0398 <line:10:3, col:12> col:12 tv_sec '__time_t':'long'
+| `-FieldDecl 0x560fa94b0428 <line:11:3, col:17> col:17 tv_usec '__suseconds_t':'long'
+|-CXXRecordDecl 0x560fa94b0498 </usr/include/x86_64-linux-gnu/bits/timex.h:26:1, line:54:1> line:26:8 struct timex definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| |-CXXRecordDecl 0x560fa94b05d0 <col:1, col:8> col:8 implicit struct timex
+| |-FieldDecl 0x560fa94b0698 <line:28:3, col:16> col:16 modes 'unsigned int'
+| |-FieldDecl 0x560fa94b0728 <line:29:3, col:21> col:21 offset '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0790 <line:30:3, col:21> col:21 freq '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b07f8 <line:31:3, col:21> col:21 maxerror '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0860 <line:32:3, col:21> col:21 esterror '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b08d0 <line:33:3, col:7> col:7 status 'int'
+| |-FieldDecl 0x560fa94b0938 <line:34:3, col:21> col:21 constant '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b09a0 <line:35:3, col:21> col:21 precision '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0a08 <line:36:3, col:21> col:21 tolerance '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0ab8 <line:37:3, col:18> col:18 time 'struct timeval':'timeval'
+| |-FieldDecl 0x560fa94b0b20 <line:38:3, col:21> col:21 tick '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0b88 <line:39:3, col:21> col:21 ppsfreq '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0bf0 <line:40:3, col:21> col:21 jitter '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0c60 <line:41:3, col:7> col:7 shift 'int'
+| |-FieldDecl 0x560fa94b0cc8 <line:42:3, col:21> col:21 stabil '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0d30 <line:43:3, col:21> col:21 jitcnt '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0d98 <line:44:3, col:21> col:21 calcnt '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0e00 <line:45:3, col:21> col:21 errcnt '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0e68 <line:46:3, col:21> col:21 stbcnt '__syscall_slong_t':'long'
+| |-FieldDecl 0x560fa94b0ed8 <line:48:3, col:7> col:7 tai 'int'
+| |-FieldDecl 0x560fa94b0f88 <line:51:3, col:9> col:8 'int'
+| | `-ConstantExpr 0x560fa94b0f60 <col:9> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b0f28 <col:9> 'int' 32
+| |-FieldDecl 0x560fa94b1038 <col:13, col:19> col:18 'int'
+| | `-ConstantExpr 0x560fa94b1010 <col:19> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b0fd8 <col:19> 'int' 32
+| |-FieldDecl 0x560fa94b10e8 <col:23, col:29> col:28 'int'
+| | `-ConstantExpr 0x560fa94b10c0 <col:29> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b1088 <col:29> 'int' 32
+| |-FieldDecl 0x560fa94b1198 <col:33, col:39> col:38 'int'
+| | `-ConstantExpr 0x560fa94b1170 <col:39> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b1138 <col:39> 'int' 32
+| |-FieldDecl 0x560fa94b1248 <line:52:3, col:9> col:8 'int'
+| | `-ConstantExpr 0x560fa94b1220 <col:9> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b11e8 <col:9> 'int' 32
+| |-FieldDecl 0x560fa94b5740 <col:13, col:19> col:18 'int'
+| | `-ConstantExpr 0x560fa94b5718 <col:19> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b56e0 <col:19> 'int' 32
+| |-FieldDecl 0x560fa94b57f0 <col:23, col:29> col:28 'int'
+| | `-ConstantExpr 0x560fa94b57c8 <col:29> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b5790 <col:29> 'int' 32
+| |-FieldDecl 0x560fa94b58a0 <col:33, col:39> col:38 'int'
+| | `-ConstantExpr 0x560fa94b5878 <col:39> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b5840 <col:39> 'int' 32
+| |-FieldDecl 0x560fa94b5950 <line:53:3, col:9> col:8 'int'
+| | `-ConstantExpr 0x560fa94b5928 <col:9> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b58f0 <col:9> 'int' 32
+| |-FieldDecl 0x560fa94b5a00 <col:13, col:19> col:18 'int'
+| | `-ConstantExpr 0x560fa94b59d8 <col:19> 'int'
+| |   |-value: Int 32
+| |   `-IntegerLiteral 0x560fa94b59a0 <col:19> 'int' 32
+| `-FieldDecl 0x560fa94b5ab0 <col:23, col:29> col:28 'int'
+|   `-ConstantExpr 0x560fa94b5a88 <col:29> 'int'
+|     |-value: Int 32
+|     `-IntegerLiteral 0x560fa94b5a50 <col:29> 'int' 32
+|-LinkageSpecDecl 0x560fa94b5bc0 </usr/include/x86_64-linux-gnu/sys/cdefs.h:114:24, line:115:22> line:114:31 C
+| `-FunctionDecl 0x560fa94b5ec0 </usr/include/x86_64-linux-gnu/bits/time.h:78:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/x86_64-linux-gnu/bits/time.h:78:12 clock_adjtime 'int (__clockid_t, struct timex *) throw()' extern
+|   |-ParmVarDecl 0x560fa94b5c48 <col:27, col:39> col:39 __clock_id '__clockid_t':'int'
+|   `-ParmVarDecl 0x560fa94b5d68 <col:51, col:65> col:65 __utx 'struct timex *'
+|-TypedefDecl 0x560fa94b5fc8 </usr/include/x86_64-linux-gnu/bits/types/clock_t.h:7:1, col:19> col:19 referenced clock_t '__clock_t':'long'
+| `-TypedefType 0x560fa94b5f90 '__clock_t' sugar
+|   |-Typedef 0x560fa94a9400 '__clock_t'
+|   `-BuiltinType 0x560fa93d3350 'long'
+|-TypedefDecl 0x560fa94b6038 </usr/include/x86_64-linux-gnu/bits/types/time_t.h:7:1, col:18> col:18 referenced time_t '__time_t':'long'
+| `-TypedefType 0x560fa94b0360 '__time_t' sugar
+|   |-Typedef 0x560fa94a95e0 '__time_t'
+|   `-BuiltinType 0x560fa93d3350 'long'
+|-CXXRecordDecl 0x560fa94b6098 </usr/include/x86_64-linux-gnu/bits/types/struct_tm.h:7:1, line:26:1> line:7:8 struct tm definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| |-CXXRecordDecl 0x560fa94b61d0 <col:1, col:8> col:8 implicit struct tm
+| |-FieldDecl 0x560fa94b6298 <line:9:3, col:7> col:7 tm_sec 'int'
+| |-FieldDecl 0x560fa94b6308 <line:10:3, col:7> col:7 tm_min 'int'
+| |-FieldDecl 0x560fa94b6378 <line:11:3, col:7> col:7 tm_hour 'int'
+| |-FieldDecl 0x560fa94b63e8 <line:12:3, col:7> col:7 tm_mday 'int'
+| |-FieldDecl 0x560fa94b6458 <line:13:3, col:7> col:7 tm_mon 'int'
+| |-FieldDecl 0x560fa94b64c8 <line:14:3, col:7> col:7 tm_year 'int'
+| |-FieldDecl 0x560fa94b6538 <line:15:3, col:7> col:7 tm_wday 'int'
+| |-FieldDecl 0x560fa94b65a8 <line:16:3, col:7> col:7 tm_yday 'int'
+| |-FieldDecl 0x560fa94b6618 <line:17:3, col:7> col:7 tm_isdst 'int'
+| |-FieldDecl 0x560fa94b6688 <line:20:3, col:12> col:12 tm_gmtoff 'long'
+| `-FieldDecl 0x560fa94bb390 <line:21:3, col:15> col:15 tm_zone 'const char *'
+|-CXXRecordDecl 0x560fa94bb400 </usr/include/x86_64-linux-gnu/bits/types/struct_timespec.h:10:1, line:26:1> line:10:8 struct timespec definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| |-CXXRecordDecl 0x560fa94bb540 <col:1, col:8> col:8 implicit struct timespec
+| |-FieldDecl 0x560fa94bb600 <line:12:3, col:12> col:12 tv_sec '__time_t':'long'
+| `-FieldDecl 0x560fa94bb668 <line:16:3, col:21> col:21 tv_nsec '__syscall_slong_t':'long'
+|-TypedefDecl 0x560fa94bb6e8 </usr/include/x86_64-linux-gnu/bits/types/clockid_t.h:7:1, col:21> col:21 referenced clockid_t '__clockid_t':'int'
+| `-TypedefType 0x560fa94b5c10 '__clockid_t' sugar
+|   |-Typedef 0x560fa94a9838 '__clockid_t'
+|   `-BuiltinType 0x560fa93d3330 'int'
+|-TypedefDecl 0x560fa94bb778 </usr/include/x86_64-linux-gnu/bits/types/timer_t.h:7:1, col:19> col:19 referenced timer_t '__timer_t':'void *'
+| `-TypedefType 0x560fa94bb740 '__timer_t' sugar
+|   |-Typedef 0x560fa94a98b0 '__timer_t'
+|   `-PointerType 0x560fa93d39f0 'void *'
+|     `-BuiltinType 0x560fa93d3290 'void'
+|-CXXRecordDecl 0x560fa94bb7d8 </usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h:8:1, line:12:3> line:8:8 struct itimerspec definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| |-CXXRecordDecl 0x560fa94bb910 <col:1, col:8> col:8 implicit struct itimerspec
+| |-FieldDecl 0x560fa94bba18 <line:10:5, col:21> col:21 it_interval 'struct timespec':'timespec'
+| `-FieldDecl 0x560fa94bba90 <line:11:5, col:21> col:21 it_value 'struct timespec':'timespec'
+|-CXXRecordDecl 0x560fa94bbb00 </usr/include/time.h:49:1, col:8> col:8 struct sigevent
+|-TypedefDecl 0x560fa94bbc08 <line:54:1, col:17> col:17 referenced pid_t '__pid_t':'int'
+| `-TypedefType 0x560fa94bbbd0 '__pid_t' sugar
+|   |-Typedef 0x560fa94a0b08 '__pid_t'
+|   `-BuiltinType 0x560fa93d3330 'int'
+|-CXXRecordDecl 0x560fa94bbc68 </usr/include/x86_64-linux-gnu/bits/types/__locale_t.h:28:1, line:40:1> line:28:8 struct __locale_struct definition
+| |-DefinitionData pass_in_registers aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor
+| | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr
+| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveConstructor exists simple trivial needs_implicit
+| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param
+| | |-MoveAssignment exists simple trivial needs_implicit
+| | `-Destructor simple irrelevant trivial constexpr needs_implicit
+| |-CXXRecordDecl 0x560fa94bbda0 <col:1, col:8> col:8 implicit struct __locale_struct
+| |-CXXRecordDecl 0x560fa94bbe50 parent 0x560fa93d3228 <line:31:3, col:10> col:10 struct __locale_data
+| |-FieldDecl 0x560fa94bc0c8 <col:3, col:37> col:25 __locales 'struct __locale_data *[13]'
+| |-FieldDecl 0x560fa94bc178 <line:34:3, col:29> col:29 __ctype_b 'const unsigned short *'
+| |-FieldDecl 0x560fa94bc1e8 <line:35:3, col:14> col:14 __ctype_tolower 'const int *'
+| |-FieldDecl 0x560fa94bc258 <line:36:3, col:14> col:14 __ctype_toupper 'const int *'
+| `-FieldDecl 0x560fa949c1c8 <line:39:3, col:25> col:15 __names 'const char *[13]'
+|-TypedefDecl 0x560fa949c2e8 <line:42:1, col:33> col:33 referenced __locale_t 'struct __locale_struct *'
+| `-PointerType 0x560fa949c290 'struct __locale_struct *'
+|   `-ElaboratedType 0x560fa949c230 'struct __locale_struct' sugar
+|     `-RecordType 0x560fa94bbd10 '__locale_struct'
+|       `-CXXRecord 0x560fa94bbc68 '__locale_struct'
+|-TypedefDecl 0x560fa949c378 </usr/include/x86_64-linux-gnu/bits/types/locale_t.h:24:1, col:20> col:20 referenced locale_t '__locale_t':'struct __locale_struct *'
+| `-TypedefType 0x560fa949c340 '__locale_t' sugar
+|   |-Typedef 0x560fa949c2e8 '__locale_t'
+|   `-PointerType 0x560fa949c290 'struct __locale_struct *'
+|     `-ElaboratedType 0x560fa949c230 'struct __locale_struct' sugar
+|       `-RecordType 0x560fa94bbd10 '__locale_struct'
+|         `-CXXRecord 0x560fa94bbc68 '__locale_struct'
+|-LinkageSpecDecl 0x560fa949c3f8 </usr/include/x86_64-linux-gnu/sys/cdefs.h:114:24, line:115:22> line:114:31 C
+| |-FunctionDecl 0x560fa949c598 </usr/include/time.h:72:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:72:16 used clock 'clock_t () throw()' extern
+| |-FunctionDecl 0x560fa949c7f8 <line:75:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:75:15 time 'time_t (time_t *) throw()' extern
+| | `-ParmVarDecl 0x560fa949c6e0 <col:21, col:29> col:29 __timer 'time_t *'
+| |-FunctionDecl 0x560fa949cab0 <line:78:1, line:79:40> line:78:15 difftime 'double (time_t, time_t) throw()' extern
+| | |-ParmVarDecl 0x560fa949c8d0 <col:25, col:32> col:32 __time1 'time_t':'long'
+| | |-ParmVarDecl 0x560fa949c950 <col:41, col:48> col:48 __time0 'time_t':'long'
+| | `-ConstAttr 0x560fa949cb60 <line:79:30>
+| |-FunctionDecl 0x560fa949cda8 <line:82:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:82:15 mktime 'time_t (struct tm *) throw()' extern
+| | `-ParmVarDecl 0x560fa949cc88 <col:23, col:34> col:34 __tp 'struct tm *'
+| |-FunctionDecl 0x560fa94c9438 <line:88:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:88:15 strftime 'size_t (char *__restrict, size_t, const char *__restrict, const struct tm *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa949ceb0 <col:25, col:42> col:42 __s 'char *__restrict'
+| | |-ParmVarDecl 0x560fa949cf30 <col:47, col:54> col:54 __maxsize 'size_t':'unsigned long'
+| | |-ParmVarDecl 0x560fa949cfb8 <line:89:4, col:27> col:27 __format 'const char *__restrict'
+| | `-ParmVarDecl 0x560fa949d0a8 <line:90:4, col:32> col:32 __tp 'const struct tm *__restrict'
+| |-FunctionDecl 0x560fa94c97d0 <line:95:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:95:14 strptime 'char *(const char *__restrict, const char *__restrict, struct tm *) throw()' extern
+| | |-ParmVarDecl 0x560fa94c9530 <col:24, col:47> col:47 __s 'const char *__restrict'
+| | |-ParmVarDecl 0x560fa94c95b8 <line:96:10, col:33> col:33 __fmt 'const char *__restrict'
+| | `-ParmVarDecl 0x560fa94c9650 <col:40, col:51> col:51 __tp 'struct tm *'
+| |-FunctionDecl 0x560fa94c9ce8 <line:104:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:104:15 strftime_l 'size_t (char *__restrict, size_t, const char *__restrict, const struct tm *__restrict, locale_t) throw()' extern
+| | |-ParmVarDecl 0x560fa94c98c0 <col:27, col:44> col:44 __s 'char *__restrict'
+| | |-ParmVarDecl 0x560fa94c9940 <col:49, col:56> col:56 __maxsize 'size_t':'unsigned long'
+| | |-ParmVarDecl 0x560fa94c99c8 <line:105:6, col:29> col:29 __format 'const char *__restrict'
+| | |-ParmVarDecl 0x560fa94c9a60 <line:106:6, col:34> col:34 __tp 'const struct tm *__restrict'
+| | `-ParmVarDecl 0x560fa94c9b08 <line:107:6, col:15> col:15 __loc 'locale_t':'struct __locale_struct *'
+| |-FunctionDecl 0x560fa94ca140 <line:111:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:111:14 strptime_l 'char *(const char *__restrict, const char *__restrict, struct tm *, locale_t) throw()' extern
+| | |-ParmVarDecl 0x560fa94c9de8 <col:26, col:49> col:49 __s 'const char *__restrict'
+| | |-ParmVarDecl 0x560fa94c9e70 <line:112:5, col:28> col:28 __fmt 'const char *__restrict'
+| | |-ParmVarDecl 0x560fa94c9f08 <col:35, col:46> col:46 __tp 'struct tm *'
+| | `-ParmVarDecl 0x560fa94c9f88 <line:113:5, col:14> col:14 __loc 'locale_t':'struct __locale_struct *'
+| |-FunctionDecl 0x560fa94cb410 <line:119:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:119:19 gmtime 'struct tm *(const time_t *) throw()' extern
+| | `-ParmVarDecl 0x560fa94ca290 <col:27, col:41> col:41 __timer 'const time_t *'
+| |-FunctionDecl 0x560fa94cb5b8 <line:123:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:123:19 localtime 'struct tm *(const time_t *) throw()' extern
+| | `-ParmVarDecl 0x560fa94cb4e8 <col:30, col:44> col:44 __timer 'const time_t *'
+| |-FunctionDecl 0x560fa94cb890 <line:128:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:128:19 gmtime_r 'struct tm *(const time_t *__restrict, struct tm *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa94cb690 <col:29, col:54> col:54 __timer 'const time_t *__restrict'
+| | `-ParmVarDecl 0x560fa94cb728 <line:129:8, col:30> col:30 __tp 'struct tm *__restrict'
+| |-FunctionDecl 0x560fa94cbaf8 <line:133:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:133:19 localtime_r 'struct tm *(const time_t *__restrict, struct tm *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa94cb970 <col:32, col:57> col:57 __timer 'const time_t *__restrict'
+| | `-ParmVarDecl 0x560fa94cba08 <line:134:11, col:33> col:33 __tp 'struct tm *__restrict'
+| |-FunctionDecl 0x560fa94cbd10 <line:139:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:139:14 asctime 'char *(const struct tm *) throw()' extern
+| | `-ParmVarDecl 0x560fa94cbbf0 <col:23, col:40> col:40 __tp 'const struct tm *'
+| |-FunctionDecl 0x560fa94cbf10 <line:142:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:142:14 ctime 'char *(const time_t *) throw()' extern
+| | `-ParmVarDecl 0x560fa94cbde8 <col:21, col:35> col:35 __timer 'const time_t *'
+| |-FunctionDecl 0x560fa94cc1e0 <line:149:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:149:14 asctime_r 'char *(const struct tm *__restrict, char *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa94cc000 <col:25, col:53> col:53 __tp 'const struct tm *__restrict'
+| | `-ParmVarDecl 0x560fa94cc088 <line:150:4, col:21> col:21 __buf 'char *__restrict'
+| |-FunctionDecl 0x560fa94cc4c0 <line:153:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:153:14 ctime_r 'char *(const time_t *__restrict, char *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa94cc2c0 <col:23, col:48> col:48 __timer 'const time_t *__restrict'
+| | `-ParmVarDecl 0x560fa94cc348 <line:154:9, col:26> col:26 __buf 'char *__restrict'
+| |-VarDecl 0x560fa94cc638 <line:159:1, col:24> col:14 __tzname 'char *[2]' extern
+| |-VarDecl 0x560fa94cc6d8 <line:160:1, col:12> col:12 __daylight 'int' extern
+| |-VarDecl 0x560fa94cc778 <line:161:1, col:17> col:17 __timezone 'long' extern
+| |-VarDecl 0x560fa94cc868 <line:166:1, col:22> col:14 tzname 'char *[2]' extern
+| |-FunctionDecl 0x560fa94cc9d8 <line:170:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:170:13 tzset 'void () throw()' extern
+| |-VarDecl 0x560fa94ccab0 <line:174:1, col:12> col:12 daylight 'int' extern
+| |-VarDecl 0x560fa94ccb50 <line:175:1, col:17> col:17 timezone 'long' extern
+| |-FunctionDecl 0x560fa94cccb8 <line:190:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:190:15 timegm 'time_t (struct tm *) throw()' extern
+| | `-ParmVarDecl 0x560fa94ccc00 <col:23, col:34> col:34 __tp 'struct tm *'
+| |-FunctionDecl 0x560fa94cce60 <line:193:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:193:15 timelocal 'time_t (struct tm *) throw()' extern
+| | `-ParmVarDecl 0x560fa94ccda8 <col:26, col:37> col:37 __tp 'struct tm *'
+| |-FunctionDecl 0x560fa94cd060 <line:196:1, col:67> col:12 dysize 'int (int) throw()' extern
+| | |-ParmVarDecl 0x560fa94ccf40 <col:20, col:24> col:24 __year 'int'
+| | `-ConstAttr 0x560fa94cd108 <col:57>
+| |-FunctionDecl 0x560fa94cd458 <line:205:1, line:206:37> line:205:12 nanosleep 'int (const struct timespec *, struct timespec *)' extern
+| | |-ParmVarDecl 0x560fa94cd208 <col:23, col:46> col:46 __requested_time 'const struct timespec *'
+| | `-ParmVarDecl 0x560fa94cd2f8 <line:206:9, col:26> col:26 __remaining 'struct timespec *'
+| |-FunctionDecl 0x560fa94cd750 <line:210:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:210:12 clock_getres 'int (clockid_t, struct timespec *) throw()' extern
+| | |-ParmVarDecl 0x560fa94cd558 <col:26, col:36> col:36 __clock_id 'clockid_t':'int'
+| | `-ParmVarDecl 0x560fa94cd5f0 <col:48, col:65> col:65 __res 'struct timespec *'
+| |-FunctionDecl 0x560fa94cd9a8 <line:213:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:213:12 clock_gettime 'int (clockid_t, struct timespec *) throw()' extern
+| | |-ParmVarDecl 0x560fa94cd830 <col:27, col:37> col:37 __clock_id 'clockid_t':'int'
+| | `-ParmVarDecl 0x560fa94cd8c8 <col:49, col:66> col:66 __tp 'struct timespec *'
+| |-FunctionDecl 0x560fa94cdc80 <line:216:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:216:12 clock_settime 'int (clockid_t, const struct timespec *) throw()' extern
+| | |-ParmVarDecl 0x560fa94cda88 <col:27, col:37> col:37 __clock_id 'clockid_t':'int'
+| | `-ParmVarDecl 0x560fa94cdb20 <col:49, col:72> col:72 __tp 'const struct timespec *'
+| |-FunctionDecl 0x560fa94ce0c8 <line:224:1, line:226:30> line:224:12 clock_nanosleep 'int (clockid_t, int, const struct timespec *, struct timespec *)' extern
+| | |-ParmVarDecl 0x560fa94cdd60 <col:29, col:39> col:39 __clock_id 'clockid_t':'int'
+| | |-ParmVarDecl 0x560fa94cdde8 <col:51, col:55> col:55 __flags 'int'
+| | |-ParmVarDecl 0x560fa94cde80 <line:225:8, col:31> col:31 __req 'const struct timespec *'
+| | `-ParmVarDecl 0x560fa94cdf18 <line:226:8, col:25> col:25 __rem 'struct timespec *'
+| |-FunctionDecl 0x560fa94ce438 <line:229:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:229:12 clock_getcpuclockid 'int (pid_t, clockid_t *) throw()' extern
+| | |-ParmVarDecl 0x560fa94ce1d8 <col:33, col:39> col:39 __pid 'pid_t':'int'
+| | `-ParmVarDecl 0x560fa94ce2b0 <col:46, col:57> col:57 __clock_id 'clockid_t *'
+| |-FunctionDecl 0x560fa94ce8b0 <line:234:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:234:12 timer_create 'int (clockid_t, struct sigevent *__restrict, timer_t *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa94ce518 <col:26, col:36> col:36 __clock_id 'clockid_t':'int'
+| | |-ParmVarDecl 0x560fa94ce638 <line:235:5, col:33> col:33 __evp 'struct sigevent *__restrict'
+| | `-ParmVarDecl 0x560fa94ce730 <line:236:5, col:25> col:25 __timerid 'timer_t *__restrict'
+| |-FunctionDecl 0x560fa94ceac0 <line:239:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:239:12 timer_delete 'int (timer_t) throw()' extern
+| | `-ParmVarDecl 0x560fa94ce998 <col:26, col:34> col:34 __timerid 'timer_t':'void *'
+| |-FunctionDecl 0x560fa94ceff0 <line:242:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:242:12 timer_settime 'int (timer_t, int, const struct itimerspec *__restrict, struct itimerspec *__restrict) throw()' extern
+| | |-ParmVarDecl 0x560fa94ceb98 <col:27, col:35> col:35 __timerid 'timer_t':'void *'
+| | |-ParmVarDecl 0x560fa94cec20 <col:46, col:50> col:50 __flags 'int'
+| | |-ParmVarDecl 0x560fa94ced48 <line:243:6, col:42> col:42 __value 'const struct itimerspec *__restrict'
+| | `-ParmVarDecl 0x560fa94cee38 <line:244:6, col:36> col:36 __ovalue 'struct itimerspec *__restrict'
+| |-FunctionDecl 0x560fa94cf2d0 <line:247:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:247:12 timer_gettime 'int (timer_t, struct itimerspec *) throw()' extern
+| | |-ParmVarDecl 0x560fa94cf0e0 <col:27, col:35> col:35 __timerid 'timer_t':'void *'
+| | `-ParmVarDecl 0x560fa94cf178 <col:46, col:65> col:65 __value 'struct itimerspec *'
+| |-FunctionDecl 0x560fa94d04d8 <line:251:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:61:27> /usr/include/time.h:251:12 timer_getoverrun 'int (timer_t) throw()' extern
+| | `-ParmVarDecl 0x560fa94d0418 <col:30, col:38> col:38 __timerid 'timer_t':'void *'
+| |-FunctionDecl 0x560fa94d07d0 <line:257:1, /usr/include/x86_64-linux-gnu/sys/cdefs.h:293:63> /usr/include/time.h:257:12 timespec_get 'int (struct timespec *, int) throw()' extern
+| | |-ParmVarDecl 0x560fa94d05c8 <col:26, col:43> col:43 __ts 'struct timespec *'
+| | |-ParmVarDecl 0x560fa94d0650 <col:49, col:53> col:53 __base 'int'
+| | `-NonNullAttr 0x560fa94d0880 </usr/include/x86_64-linux-gnu/sys/cdefs.h:293:44, /usr/include/time.h:258:27> 1
+| |-VarDecl 0x560fa94d0920 <line:274:1, col:12> col:12 getdate_err 'int' extern
+| |-FunctionDecl 0x560fa94d0ae8 <line:283:1, col:48> col:19 getdate 'struct tm *(const char *)' extern
+| | `-ParmVarDecl 0x560fa94d09c0 <col:28, col:40> col:40 __string 'const char *'
+| `-FunctionDecl 0x560fa94d0db8 <line:297:1, line:298:40> line:297:12 getdate_r 'int (const char *__restrict, struct tm *__restrict)' extern
+|   |-ParmVarDecl 0x560fa94d0bc8 <col:23, col:46> col:46 __string 'const char *__restrict'
+|   `-ParmVarDecl 0x560fa94d0c60 <line:298:9, col:31> col:31 __resbufp 'struct tm *__restrict'
+|-NamespaceDecl 0x560fa94d0e88 prev 0x560fa944bc78 </opt/compiler-explorer/gcc-11.2.0/lib/gcc/x86_64-linux-gnu/11.2.0/../../../../include/c++/11.2.0/ctime:58:1, line:73:1> line:58:11 std
+| |-original Namespace 0x560fa944ba00 'std'
+| |-UsingDecl 0x560fa94d0f20 <line:60:3, col:11> col:11 ::clock_t
+| |-UsingShadowDecl 0x560fa94d0f80 <col:11> col:11 implicit Typedef 0x560fa94b5fc8 'clock_t'
+| | `-TypedefType 0x560fa949c450 'clock_t' sugar
+| |   |-Typedef 0x560fa94b5fc8 'clock_t'
+| |   `-TypedefType 0x560fa94b5f90 '__clock_t' sugar
+| |     |-Typedef 0x560fa94a9400 '__clock_t'
+| |     `-BuiltinType 0x560fa93d3350 'long'
+| |-UsingDecl 0x560fa94d1008 <line:61:3, col:11> col:11 ::time_t
+| |-UsingShadowDecl 0x560fa94d1068 <col:11> col:11 implicit Typedef 0x560fa94b6038 'time_t'
+| | `-TypedefType 0x560fa949c650 'time_t' sugar
+| |   |-Typedef 0x560fa94b6038 'time_t'
+| |   `-TypedefType 0x560fa94b0360 '__time_t' sugar
+| |     |-Typedef 0x560fa94a95e0 '__time_t'
+| |     `-BuiltinType 0x560fa93d3350 'long'
+| |-UsingDecl 0x560fa94d10f0 <line:62:3, col:11> col:11 ::tm
+| |-UsingShadowDecl 0x560fa94d1150 <col:11> col:11 implicit CXXRecord 0x560fa94b6098 'tm'
+| | `-RecordType 0x560fa94b6140 'tm'
+| |   `-CXXRecord 0x560fa94b6098 'tm'
+| |-UsingDecl 0x560fa94d11d8 <line:64:3, col:11> col:11 ::clock
+| |-UsingShadowDecl 0x560fa94d1238 <col:11> col:11 implicit Function 0x560fa949c598 'clock' 'clock_t () throw()'
+| |-UsingDecl 0x560fa94d12c0 <line:65:3, col:11> col:11 ::difftime
+| |-UsingShadowDecl 0x560fa94d1320 <col:11> col:11 implicit Function 0x560fa949cab0 'difftime' 'double (time_t, time_t) throw()'
+| |-UsingDecl 0x560fa94d13a8 <line:66:3, col:11> col:11 ::mktime
+| |-UsingShadowDecl 0x560fa94d1428 <col:11> col:11 implicit Function 0x560fa949cda8 'mktime' 'time_t (struct tm *) throw()'
+| |-UsingDecl 0x560fa94d14b0 <line:67:3, col:11> col:11 ::time
+| |-UsingShadowDecl 0x560fa94d1510 <col:11> col:11 implicit Function 0x560fa949c7f8 'time' 'time_t (time_t *) throw()'
+| |-UsingDecl 0x560fa94d1598 <line:68:3, col:11> col:11 ::asctime
+| |-UsingShadowDecl 0x560fa94d15f8 <col:11> col:11 implicit Function 0x560fa94cbd10 'asctime' 'char *(const struct tm *) throw()'
+| |-UsingDecl 0x560fa94d1680 <line:69:3, col:11> col:11 ::ctime
+| |-UsingShadowDecl 0x560fa94d16e0 <col:11> col:11 implicit Function 0x560fa94cbf10 'ctime' 'char *(const time_t *) throw()'
+| |-UsingDecl 0x560fa94d1768 <line:70:3, col:11> col:11 ::gmtime
+| |-UsingShadowDecl 0x560fa94d17c8 <col:11> col:11 implicit Function 0x560fa94cb410 'gmtime' 'struct tm *(const time_t *) throw()'
+| |-UsingDecl 0x560fa94d1850 <line:71:3, col:11> col:11 ::localtime
+| |-UsingShadowDecl 0x560fa94d18b0 <col:11> col:11 implicit Function 0x560fa94cb5b8 'localtime' 'struct tm *(const time_t *) throw()'
+| |-UsingDecl 0x560fa94d1938 <line:72:3, col:11> col:11 ::strftime
+| `-UsingShadowDecl 0x560fa94d1998 <col:11> col:11 implicit Function 0x560fa94c9438 'strftime' 'size_t (char *__restrict, size_t, const char *__restrict, const struct tm *__restrict) throw()'
+|-NamespaceDecl 0x560fa94d1a18 prev 0x560fa94d0e88 <line:77:1, line:81:1> line:77:11 std
+| |-original Namespace 0x560fa944ba00 'std'
+| |-UsingDecl 0x560fa94d1a98 <line:79:3, col:11> col:11 ::timespec
+| |-UsingShadowDecl 0x560fa94d1af8 <col:11> col:11 implicit CXXRecord 0x560fa94bb400 'timespec'
+| | `-RecordType 0x560fa94bb4b0 'timespec'
+| |   `-CXXRecord 0x560fa94bb400 'timespec'
+| |-UsingDecl 0x560fa94d1b80 <line:80:3, col:11> col:11 ::timespec_get
+| `-UsingShadowDecl 0x560fa94d1be0 <col:11> col:11 implicit Function 0x560fa94d07d0 'timespec_get' 'int (struct timespec *, int) throw()'
+`-FunctionDecl 0x560fa94d1ce0 <<source>:10:1, line:12:1> line:10:9 myClock 'clock_t ()'
+  `-CompoundStmt 0x560fa94d1ea0 <col:19, line:12:1>
+    `-ReturnStmt 0x560fa94d1e90 <line:11:3, col:16>
+      `-CallExpr 0x560fa94d1e70 <col:10, col:16> 'clock_t':'long'
+        `-ImplicitCastExpr 0x560fa94d1e58 <col:10> 'clock_t (*)() throw()' <FunctionToPointerDecay>
+          `-DeclRefExpr 0x560fa94d1de0 <col:10> 'clock_t () throw()' lvalue Function 0x560fa949c598 'clock' 'clock_t () throw()'

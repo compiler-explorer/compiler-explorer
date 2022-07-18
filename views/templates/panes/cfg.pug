@@ -1,0 +1,14 @@
+#cfg
+  .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
+    .btn-group.btn-group-sm(role="group")
+      select.function-picker
+    .btn-group.btn-group-sm.options(role="group")
+      .button-checkbox
+        button.btn.btn-sm.btn-light.toggle-navigation(type="button" title="Toggle navigation buttons" aria-pressed="false" data-bind="navigation")
+          span Nav
+        input.d-none(type="checkbox")
+      .button-checkbox
+        button.btn.btn-sm.btn-light.toggle-physics(type="button" title="Toggle physics to nodes" aria-pressed="false" data-bind="physics")
+          span Physics
+        input.d-none(type="checkbox")
+  .graph-placeholder

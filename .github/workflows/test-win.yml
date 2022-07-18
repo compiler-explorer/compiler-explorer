@@ -21,5 +21,4 @@ jobs:
         run: |
           npm run lint-check
           npm run ci-test
-          npm run format-check
           npm run ts-check
