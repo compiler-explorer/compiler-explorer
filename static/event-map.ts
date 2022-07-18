@@ -48,7 +48,7 @@ export type EventMap = {
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
     // Right now nothing emits this event, but it might be useful at some point so we keep it
-    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean) => void;
+    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
     compiling: (compilerId: number, compiler: unknown) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
