@@ -806,27 +806,21 @@ Executor.prototype.initCallbacks = function () {
 
     var optionsChange = _.debounce(
         _.bind(function (e) {
-            if (this.settings.executorCompileOnChange) {
-                this.onOptionsChange($(e.target).val());
-            }
+            this.onOptionsChange($(e.target).val());
         }, this),
         800
     );
 
     var execArgsChange = _.debounce(
         _.bind(function (e) {
-            if (this.settings.executorCompileOnChange) {
-                this.onExecArgsChange($(e.target).val());
-            }
+            this.onExecArgsChange($(e.target).val());
         }, this),
         800
     );
 
     var execStdinChange = _.debounce(
         _.bind(function (e) {
-            if (this.settings.executorCompileOnChange) {
-                this.onExecStdinChange($(e.target).val());
-            }
+            this.onExecStdinChange($(e.target).val());
         }, this),
         800
     );
@@ -913,22 +907,32 @@ Executor.prototype.initCallbacks = function () {
     }
 };
 
+Executor.prototype.shouldEmitExecutionOnFieldChange = function () {
+    return this.settings.executorCompileOnChange;
+};
+
 Executor.prototype.onOptionsChange = function (options) {
-    this.options = options;
-    this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.options = options;
+        this.saveState();
+        this.compile();
+    }
 };
 
 Executor.prototype.onExecArgsChange = function (args) {
-    this.executionArguments = args;
-    this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.executionArguments = args;
+        this.saveState();
+        this.compile();
+    }
 };
 
 Executor.prototype.onExecStdinChange = function (newStdin) {
-    this.executionStdin = newStdin;
-    this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.executionStdin = newStdin;
+        this.saveState();
+        this.compile();
+    }
 };
 
 Executor.prototype.onRequestCompilation = function (editorId, treeId) {
