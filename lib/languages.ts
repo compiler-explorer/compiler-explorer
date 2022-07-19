@@ -93,6 +93,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
     },
+    carbon: {
+        name: 'Carbon',
+        monaco: 'carbon',
+        extensions: ['.carbon'],
+        alias: [],
+        logoUrl: 'carbon.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     circle: {
         name: 'C++ (Circle)',
         monaco: 'cppcircle',
