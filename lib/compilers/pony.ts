@@ -24,10 +24,11 @@
 
 import path from 'path';
 
+import _ from 'underscore';
+
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import _ from 'underscore';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
