@@ -1,6 +1,6 @@
 package sample api;
 
-fn Square(x : i32) -> i32 {
+fn Square(x: i32) -> i32 {
   return x * x;
 }
 
