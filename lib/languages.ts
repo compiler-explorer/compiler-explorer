@@ -94,7 +94,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: /^\s*#include/,
     },
     carbon: {
-        name: 'carbon',
+        name: 'Carbon',
         monaco: 'carbon',
         extensions: ['.carbon'],
         alias: [],
