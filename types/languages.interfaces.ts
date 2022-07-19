@@ -66,7 +66,7 @@ export type LanguageKey =
     | 'typescript'
     | 'solidity'
     | 'toit'
-    | 'quetzal';
+    | 'carbon';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */

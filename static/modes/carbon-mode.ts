@@ -166,8 +166,8 @@ function definition() {
 }
 
 const def = definition();
-monaco.languages.register({id: 'quetzal'});
-monaco.languages.setMonarchTokensProvider('quetzal', def);
-monaco.languages.setLanguageConfiguration('quetzal', cpp.conf);
+monaco.languages.register({id: 'carbon'});
+monaco.languages.setMonarchTokensProvider('carbon', def);
+monaco.languages.setLanguageConfiguration('carbon', cpp.conf);
 
 export = def;

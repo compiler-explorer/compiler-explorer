@@ -93,12 +93,12 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
     },
-    quetzal: {
-        name: 'quetzal',
-        monaco: 'quetzal',
-        extensions: ['.quetzal'],
+    carbon: {
+        name: 'carbon',
+        monaco: 'carbon',
+        extensions: ['.carbon'],
         alias: [],
-        logoUrl: 'quetzal.svg',
+        logoUrl: 'carbon.svg',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
