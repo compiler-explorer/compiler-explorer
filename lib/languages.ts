@@ -33,6 +33,16 @@ type DefKeys = 'name' | 'monaco' | 'extensions' | 'alias' | 'previewFilter' | 'f
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
+    jakt: {
+        name: 'Jakt',
+        monaco: 'jakt',
+        extensions: ['.jakt'],
+        alias: [],
+        logoUrl: '',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     'c++': {
         name: 'C++',
         monaco: 'cppp',
@@ -82,6 +92,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
+    },
+    carbon: {
+        name: 'Carbon',
+        monaco: 'carbon',
+        extensions: ['.carbon'],
+        alias: [],
+        logoUrl: 'carbon.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
     },
     circle: {
         name: 'C++ (Circle)',
@@ -340,6 +360,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         alias: [],
         logoUrl: 'pascal.svg', // TODO: Find a better alternative
         logoUrlDark: 'pascal-dark.svg',
+        formatter: null,
+        previewFilter: null,
+    },
+    pony: {
+        name: 'Pony',
+        monaco: 'pony',
+        extensions: ['.pony'],
+        alias: [],
+        logoUrl: 'pony.svg',
+        logoUrlDark: null,
         formatter: null,
         previewFilter: null,
     },

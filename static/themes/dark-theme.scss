@@ -127,7 +127,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .linked-code-decoration-inline {
-    background: #121212;
+    background: #444444;
 }
 
 .linked-code-decoration-margin {
@@ -140,6 +140,16 @@ a.navbar-brand img.logo.normal {
 
 .linked-compiler-output-line {
     color: #007bfd !important;
+}
+
+.flow-decoration {
+    background-color: #b4131f !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.flow-highlight {
+    background-color: rgba(180, 19, 31, 0.4) !important;
 }
 
 .rainbow-decoration {

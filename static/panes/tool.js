@@ -403,6 +403,14 @@ Tool.prototype.setLanguage = function (languageId) {
     }
 };
 
+Tool.prototype.clickableUrls = function (text) {
+    return text.replace(
+        // URL detection regex grabbed from https://stackoverflow.com/a/3809435
+        /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
+        '<a href="$1" target="_blank">$1</a>'
+    );
+};
+
 Tool.prototype.onCompileResult = function (id, compiler, result) {
     try {
         if (id !== this.compilerId) return;
@@ -485,7 +493,12 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                         if (obj.text === '') {
                             this.add('<br/>');
                         } else {
-                            this.add(this.normalAnsiToHtml.toHtml(obj.text), obj.tag ? obj.tag.line : obj.line);
+                            this.add(
+                                this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
+                                obj.tag ? obj.tag.line : obj.line,
+                                obj.tag ? obj.tag.column : 0,
+                                obj.tag ? obj.tag.flow : null
+                            );
                         }
                     },
                     this
@@ -507,7 +520,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
-Tool.prototype.add = function (msg, lineNum) {
+Tool.prototype.add = function (msg, lineNum, column, flow) {
     var elem = $('<div/>').appendTo(this.plainContentRoot);
     if (lineNum && this.editorId) {
         elem.html(
@@ -517,7 +530,10 @@ Tool.prototype.add = function (msg, lineNum) {
                 .on(
                     'click',
                     _.bind(function (e) {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true);
+                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true, column);
+                        if (flow) {
+                            this.eventHub.emit('editorDisplayFlow', this.editorId, flow);
+                        }
                         e.preventDefault();
                         return false;
                     }, this)
@@ -525,7 +541,7 @@ Tool.prototype.add = function (msg, lineNum) {
                 .on(
                     'mouseover',
                     _.bind(function () {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false);
+                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false, column);
                     }, this)
                 )
         );

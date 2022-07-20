@@ -1,0 +1,23 @@
+#tool-output
+  .top-bar.bad-lang.bg-warning(role="toolbar" style="display: none")
+    p The current language or compiler does not support this tool
+  .top-bar.btn-toolbar.options-toolbar.bg-light(role="toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm.options(role="group" aria-label="Tool options")
+      .input-group.input-group-sm.mb-auto
+        .button-checkbox
+          button.btn.btn-sm.btn-light.wrap-lines(type="button" title="Wrap lines" data-bind="wrap" aria-pressed="false" aria-label="Wrap lines")
+            span Wrap lines
+          input.d-none(type="checkbox" checked=false)
+      button.btn.btn-sm.btn-light.toggle-args
+        span.fas.fa-terminal
+        span.hideable Arguments
+      button.btn.btn-sm.btn-light.toggle-stdin
+        span.fas.fa-sign-in-alt
+        span.hideable Stdin
+  .top-bar.btn-toolbar.bg-light.panel-args.d-none(role="toolbar")
+    input.options.form-control(type="text" placeholder="Tool arguments..." size="256" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false")
+  .top-bar.btn-toolbar.bg-light.panel-stdin.d-none(role="toolbar")
+    textarea.tool-stdin.form-control(placeholder="Tool stdin..." cols="1024" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-multiline="false" style="resize: vertical")
+  pre.content
+  .monaco-placeholder

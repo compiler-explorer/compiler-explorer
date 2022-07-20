@@ -31,7 +31,6 @@ import {
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {logger} from '../logger';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -42,12 +41,28 @@ import {logger} from '../logger';
 // TODO(jeremy-rifkin): Doe we already have an assert utility
 function assert(condition: boolean, message?: string, ...args: any[]): asserts condition {
     if (!condition) {
-        const error = message
-            ? `Assertion error in llvm-print-after-all-parser: ${message}`
-            : `Assertion error in llvm-print-after-all-parser`;
-        logger.error(error + ' ' + JSON.stringify(args));
-        throw error;
+        const stack = new Error('Assertion Error').stack;
+        throw (
+            (message
+                ? `Assertion error in llvm-print-after-all-parser: ${message}`
+                : `Assertion error in llvm-print-after-all-parser`) +
+            (args.length > 0 ? `\n${JSON.stringify(args)}\n` : '') +
+            `\n${stack}`
+        );
     }
+}
+
+// Just a sanity check
+function passesMatch(before: string, after: string) {
+    assert(before.startsWith('IR Dump Before '));
+    assert(after.startsWith('IR Dump After '));
+    before = before.slice('IR Dump Before '.length);
+    after = after.slice('IR Dump After '.length);
+    // Observed to happen in clang 13+ for LoopDeletionPass
+    if (after.endsWith(' (invalidated)')) {
+        after = after.slice(0, after.length - ' (invalidated)'.length);
+    }
+    return before === after;
 }
 
 // Ir Dump for a pass with raw lines
@@ -367,8 +382,8 @@ export class LlvmPassDumpParser {
                 } else if (current_dump.header.startsWith('IR Dump Before ')) {
                     if (next_dump !== null && next_dump.header.startsWith('IR Dump After ')) {
                         assert(
-                            current_dump.header.slice('IR Dump Before '.length) ===
-                                next_dump.header.slice('IR Dump After '.length),
+                            passesMatch(current_dump.header, next_dump.header),
+                            '',
                             current_dump.header,
                             next_dump.header,
                         );

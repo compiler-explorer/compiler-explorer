@@ -311,6 +311,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('selectLine', this.onSelectLine, this);
     this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
+    this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
     this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
@@ -1410,6 +1411,13 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                         if (colEnd === obj.tag.column) colEnd = -1;
                     }
                 }
+                let link;
+                if (obj.tag.link) {
+                    link = {
+                        value: obj.tag.link.text,
+                        target: obj.tag.link.url,
+                    };
+                }
                 return {
                     severity: obj.tag.severity,
                     message: obj.tag.text,
@@ -1418,6 +1426,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     startColumn: colBegin,
                     endLineNumber: lineEnd,
                     endColumn: colEnd,
+                    code: link,
                 };
             },
             this
@@ -1562,11 +1571,13 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
     }
 };
 
-Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
+Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal, column) {
     if (Number(id) === this.id) {
         if (reveal && lineNum) {
             this.pushRevealJump();
             this.editor.revealLineInCenter(lineNum);
+            this.editor.focus();
+            this.editor.setPosition({column: column || 0, lineNumber: lineNum});
         }
         this.decorations.linkedCode = [];
         if (lineNum && lineNum !== -1) {
@@ -1577,6 +1588,31 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
                     linesDecorationsClassName: 'linked-code-decoration-margin',
                     inlineClassName: 'linked-code-decoration-inline',
                 },
+            });
+        }
+        this.updateDecorations();
+    }
+};
+
+Editor.prototype.onEditorDisplayFlow = function (id, flow) {
+    if (Number(id) === this.id) {
+        if (this.decorations.flows && this.decorations.flows.length) {
+            this.decorations.flows = [];
+        } else {
+            this.decorations.flows = flow.map((ri, ind) => {
+                return {
+                    range: new monaco.Range(ri.line, ri.column, ri.endline || ri.line, ri.endcolumn || ri.column),
+                    options: {
+                        before: {
+                            content: ' ' + (ind + 1).toString() + ' ',
+                            inlineClassName: 'flow-decoration',
+                            cursorStops: monaco.editor.InjectedTextCursorStops.None,
+                        },
+                        inlineClassName: 'flow-highlight',
+                        isWholeLine: false,
+                        hoverMessage: {value: ri.text},
+                    },
+                };
             });
         }
         this.updateDecorations();

@@ -688,6 +688,8 @@ Executor.prototype.initButtons = function (state) {
     this.wrapButton = this.domRoot.find('.wrap-lines');
     this.wrapTitle = this.wrapButton.prop('title');
 
+    this.triggerCompilationButton = this.bottomBar.find('.trigger-compilation');
+
     this.initToggleButtons(state);
 };
 
@@ -875,6 +877,13 @@ Executor.prototype.initCallbacks = function () {
         }, this)
     );
 
+    this.triggerCompilationButton.on(
+        'click',
+        _.bind(function () {
+            this.compile(true);
+        }, this)
+    );
+
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
     $(document).on(
@@ -898,22 +907,32 @@ Executor.prototype.initCallbacks = function () {
     }
 };
 
+Executor.prototype.shouldEmitExecutionOnFieldChange = function () {
+    return this.settings.executorCompileOnChange;
+};
+
 Executor.prototype.onOptionsChange = function (options) {
     this.options = options;
     this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.compile();
+    }
 };
 
 Executor.prototype.onExecArgsChange = function (args) {
     this.executionArguments = args;
     this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.compile();
+    }
 };
 
 Executor.prototype.onExecStdinChange = function (newStdin) {
     this.executionStdin = newStdin;
     this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.compile();
+    }
 };
 
 Executor.prototype.onRequestCompilation = function (editorId, treeId) {

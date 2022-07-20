@@ -2191,6 +2191,7 @@ Compiler.prototype.updateButtons = function () {
     this.optButton.toggle(!!this.compiler.supportsOptOutput);
     this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
+    this.irButton.toggle(!!this.compiler.supportsIrView);
     this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
@@ -2788,7 +2789,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     var bodyContent = $('<div>');
     var versionContent = $('<div>').html(_.escape(version.version));
     bodyContent.append(versionContent);
-    if (version.fullVersion) {
+    if (version.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
         var hiddenSection = $('<div>');
         var lines = _.map(version.fullVersion.split('\n'), function (line) {
             return _.escape(line);
