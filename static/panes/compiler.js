@@ -168,6 +168,10 @@ function Compiler(hub, container, state) {
 
     this.initLibraries(state);
 
+    this.overridesButton.on('click', () => {
+        $('#overrides-selection').modal();
+    });
+
     this.initEditorActions();
     this.initEditorCommands();
 
@@ -1935,6 +1939,7 @@ Compiler.prototype.initButtons = function (state) {
     this.cfgButton = this.domRoot.find('.btn.view-cfg');
     this.executorButton = this.domRoot.find('.create-executor');
     this.libsButton = this.domRoot.find('.btn.show-libs');
+    this.overridesButton = this.domRoot.find('.btn.show-overrides');
 
     this.compileInfoLabel = this.domRoot.find('.compile-info');
     this.compileClearCache = this.domRoot.find('.clear-cache');

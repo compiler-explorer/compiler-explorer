@@ -1,0 +1,64 @@
+#overrides-selection.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Overrides
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg.overrides-how-to-use
+                  | To override a compiler default, select one of the options.
+                  | Note that this might lead to errors and unsupported situations.
+              .row
+                .col-lg &nbsp;
+              .row
+                .overrides-selected-col.col-md
+                  div
+                    h6 Selected
+                  .overrides-selected-items
+                .overrides-results-col.col-md
+                  h6 Results
+                  .override-results-items
+                    .card
+                        .card-header
+                            span
+                                b.override-name Standard Library
+                            span.override
+                                select.custom-select.custom-select-sm.override-select
+                                    option -
+                                    option libc++
+                    .card
+                        .card-header
+                            span
+                                b.override-name GCC Toolchain
+                            span.override
+                                select.custom-select.custom-select-sm.override-select
+                                    option -
+                                    option 12.1
+                                    option 10.3
+                                    option 10.2
+                                    option 9.2
+                    .card
+                        .card-header
+                            span
+                                b.override-name Architecture/Target
+                            span.override
+                                select.custom-select.custom-select-sm.override-select
+                                    option -
+                                    option aarch64 
+                                    option aarch64_32
+                                    option aarch64_be
+                                    option amdgcn
+                                    option arm
+                                    option arm64
+                                    option arm64_32
+                                    option armeb
+                                    option avr
+                .overrides-favorites-col.col-md
+                  h6 Favorites
+                  .overrides-favorites
