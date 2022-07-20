@@ -22,7 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface CfgState {
-    selectedFn?: string;
-    scale: number;
-}
+export type EdgeDescriptor = {
+    from: string,
+    to: string,
+    arrows: string, // <- useless
+    color: string
+};
+
+export type NodeDescriptor = {
+    color: string; // <- useless
+    id: string, // typically label for the bb
+    label: string, // really the source
+    shape: string // <- useless
+};
+
+export type AnnotatedNodeDescriptor = NodeDescriptor & {
+    width: number, // in pixels
+    height: number, // in pixels
+};
+
+type CfgDescriptor_<ND> = {
+    edges: EdgeDescriptor[],
+    nodes: ND[]
+};
+
+export type CfgDescriptor = CfgDescriptor_<NodeDescriptor>;
+export type AnnotatedCfgDescriptor = CfgDescriptor_<AnnotatedNodeDescriptor>;
+
+// function name -> cfg data
+export type CFGResult = Record<string, CfgDescriptor>;
+export type AnnotatedCFGResult = Record<string, AnnotatedCfgDescriptor>;
