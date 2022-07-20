@@ -496,7 +496,8 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                             this.add(
                                 this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
                                 obj.tag ? obj.tag.line : obj.line,
-                                obj.tag ? obj.tag.column : 0
+                                obj.tag ? obj.tag.column : 0,
+                                obj.tag ? obj.tag.flow : null
                             );
                         }
                     },
@@ -519,7 +520,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
     }
 };
 
-Tool.prototype.add = function (msg, lineNum, column) {
+Tool.prototype.add = function (msg, lineNum, column, flow) {
     var elem = $('<div/>').appendTo(this.plainContentRoot);
     if (lineNum && this.editorId) {
         elem.html(
@@ -530,6 +531,9 @@ Tool.prototype.add = function (msg, lineNum, column) {
                     'click',
                     _.bind(function (e) {
                         this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true, column);
+                        if (flow) {
+                            this.eventHub.emit('editorDisplayFlow', this.editorId, flow);
+                        }
                         e.preventDefault();
                         return false;
                     }, this)

@@ -97,10 +97,7 @@ export class LoadSave {
         this.modal?.modal('hide');
     }
 
-    private static populate(
-        root: JQuery,
-        list: PopulateItem[]
-    ) {
+    private static populate(root: JQuery, list: PopulateItem[]) {
         root.find('li:not(.template)').remove();
         const template = root.find('.template');
         for (const elem of list) {

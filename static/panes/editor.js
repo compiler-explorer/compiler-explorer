@@ -311,6 +311,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('selectLine', this.onSelectLine, this);
     this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
+    this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
     this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
@@ -1587,6 +1588,31 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal, column) 
                     linesDecorationsClassName: 'linked-code-decoration-margin',
                     inlineClassName: 'linked-code-decoration-inline',
                 },
+            });
+        }
+        this.updateDecorations();
+    }
+};
+
+Editor.prototype.onEditorDisplayFlow = function (id, flow) {
+    if (Number(id) === this.id) {
+        if (this.decorations.flows && this.decorations.flows.length) {
+            this.decorations.flows = [];
+        } else {
+            this.decorations.flows = flow.map((ri, ind) => {
+                return {
+                    range: new monaco.Range(ri.line, ri.column, ri.endline || ri.line, ri.endcolumn || ri.column),
+                    options: {
+                        before: {
+                            content: ' ' + (ind + 1).toString() + ' ',
+                            inlineClassName: 'flow-decoration',
+                            cursorStops: monaco.editor.InjectedTextCursorStops.None,
+                        },
+                        inlineClassName: 'flow-highlight',
+                        isWholeLine: false,
+                        hoverMessage: {value: ri.text},
+                    },
+                };
             });
         }
         this.updateDecorations();
