@@ -36,6 +36,7 @@ var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options').options;
 var utils = require('../utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var {saveAs} = require('file-saver');
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -510,6 +511,18 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
 
             if (toolResult.sourcechanged && this.editorId) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
+            }
+            if (toolResult.artifactGenerated) {
+                if (toolResult.artifactGenerated.type === 'application/octet-stream') {
+                    fetch('data:image/jpeg;base64,' + toolResult.artifactGenerated.content)
+                        .then(res => res.blob())
+                        .then(blob => saveAs(blob, toolResult.artifactGenerated.name));
+                } else {
+                    saveAs(
+                        new Blob([toolResult.artifactGenerated.content], {type: toolResult.artifactGenerated.type}),
+                        toolResult.artifactGenerated.name
+                    );
+                }
             }
         } else {
             this.setEditorContent('No tool result');
