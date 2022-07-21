@@ -1432,8 +1432,8 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     code: link,
                 };
                 if (obj.tag.fixes) {
-                    fixes.push(
-                        ...obj.tag.fixes.map((fs, ind) => {
+                    fixes = fixes.concat(
+                        obj.tag.fixes.map(function (fs, ind) {
                             return {
                                 title: fs.title,
                                 diagnostics: [diag],
