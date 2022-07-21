@@ -1439,13 +1439,15 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                                 diagnostics: [diag],
                                 kind: 'quickfix',
                                 edit: {
-                                    edits: fs.edits.map(f => ({
-                                        resource: editorModel.uri,
-                                        edit: {
-                                            range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
-                                            text: f.text,
-                                        },
-                                    })),
+                                    edits: fs.edits.map(function (f) {
+                                        return {
+                                            resource: editorModel.uri,
+                                            edit: {
+                                                range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
+                                                text: f.text,
+                                            },
+                                        };
+                                    }),
                                 },
                                 isPreferred: ind === 0,
                             };
