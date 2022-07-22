@@ -2416,7 +2416,7 @@ but nothing was dumped. Possible causes are:
 
     protected getArgumentParser(): any {
         const exe = this.compiler.exe.toLowerCase();
-        if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
+        if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx') || exe.includes('ldc2')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;
         } else if (exe.includes('g++') || exe.includes('gcc')) {
