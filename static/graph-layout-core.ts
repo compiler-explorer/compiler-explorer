@@ -30,25 +30,31 @@ import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor } from "./compilation/c
 
 enum EdgeType { Horizontal, Vertical };
 
-type EdgePoint = {
-    row: number;
-    col: number;
-    offsetX: number;
-    offsetY: number;
-    type: EdgeType; // is this point the end of a horizontal or vertical segment
-};
-
 type Coordinate = {
     x: number;
     y: number;
+};
+
+type GridCoordinate = {
+    row: number;
+    col: number;
+};
+
+type EdgeCoordinate = Coordinate & GridCoordinate;
+
+type EdgeSegment = {
+    start: EdgeCoordinate;
+    end: EdgeCoordinate;
+    horizontalOffset: number;
+    verticalOffset: number;
+    type: EdgeType; // is this point the end of a horizontal or vertical segment
 };
 
 type Edge = {
     color: string;
     dest: number;
     mainColumn: number;
-    points: EdgePoint[],
-    path: Coordinate[]
+    path: EdgeSegment[]
 };
 
 type BoundingBox = {
@@ -111,13 +117,23 @@ export class GraphLayoutCore {
             blockMap[node.id] = this.blocks.length - 1;
         }
         for(const {from, to, color} of cfg.edges) {
-            this.blocks[blockMap[from]].edges.push({
-                color,
-                dest: blockMap[to],
-                mainColumn: -1,
-                points: [],
-                path: []
-            });
+            // TODO: Backend can return dest: "null"
+            // e.g. for the simple program
+            // void baz(int n) {
+            //     if(n % 2 == 0) {
+            //         foo();
+            //     } else {
+            //         bar();
+            //     }
+            // }
+            if(from in blockMap && to in blockMap) {
+                this.blocks[blockMap[from]].edges.push({
+                    color,
+                    dest: blockMap[to],
+                    mainColumn: -1,
+                    path: []
+                });
+            }
         }
         //console.log(this.blocks);
         this.layout();
@@ -167,6 +183,7 @@ export class GraphLayoutCore {
     assignRows(topologicalOrder) {
         for(const i of topologicalOrder) {
             const block = this.blocks[i];
+            //console.log(block);
             for(const j of block.dagEdges) {
                 const target = this.blocks[j];
                 target.row = Math.max(target.row, block.row + 1);
@@ -274,6 +291,30 @@ export class GraphLayoutCore {
         }
     }
 
+    setupRowsAndColumns() {
+        //console.log(this.blocks);
+        this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
+        this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
+        this.blockRows = Array(this.rowCount).fill(0).map(() => ({
+            height: 0,
+            totalOffset: 0
+        }));
+        this.blockColumns = Array(this.columnCount).fill(0).map(() => ({
+            width: 0,
+            totalOffset: 0
+        }));
+        this.edgeRows = Array(this.rowCount + 1).fill(0).map(() => ({
+            height: 20,
+            totalOffset: 0,
+            currentOffset: 0
+        }));
+        this.edgeColumns = Array(this.columnCount + 1).fill(0).map(() => ({
+            width: 20,
+            totalOffset: 0,
+            currentOffset: 0
+        }));
+    }
+
     computeEdgeMainColumns() {
         // This is heavily inspired by Cutter
         // We use a sweep line algorithm processing the CFG top to bottom keeping track of when columns are most
@@ -346,78 +387,154 @@ export class GraphLayoutCore {
     }
 
     addEdgePaths() {
+        // (start: GridCoordinate, end: GridCoordinate) => ({
+        const makeSegment = (start: [number, number], end: [number, number]): EdgeSegment => ({
+            start: {
+                //...start,
+                row: start[0],
+                col: start[1],
+                x: 0,
+                y: 0
+            },
+            end: {
+                //...end,
+                row: end[0],
+                col: end[1],
+                x: 0,
+                y: 0
+            },
+            horizontalOffset: 0,
+            verticalOffset: 0,
+            type: start[1] == end[1] ? EdgeType.Vertical : EdgeType.Horizontal
+        });
         for(const block of this.blocks) {
             for(const edge of block.edges) {
                 const target = this.blocks[edge.dest];
                 // start just below the source block
-                edge.points.push({
-                    row: block.row + 1,
-                    col: block.col + 1,
-                    offsetX: 0,
-                    offsetY: 0,
-                    type: EdgeType.Vertical
-                });
+                edge.path.push(makeSegment([block.row + 1, block.col + 1], [block.row + 1, block.col + 1]));
                 // horizontal segment over to main column
-                edge.points.push({
-                    row: block.row + 1,
-                    col: edge.mainColumn,
-                    offsetX: 0,
-                    offsetY: 0,
-                    type: EdgeType.Horizontal
-                });
+                edge.path.push(makeSegment([block.row + 1, block.col + 1], [block.row + 1, edge.mainColumn]));
                 // vertical segment down the main column
-                edge.points.push({
-                    row: target.row,
-                    col: edge.mainColumn,
-                    offsetX: 0,
-                    offsetY: 0,
-                    type: EdgeType.Vertical
-                });
+                edge.path.push(makeSegment([block.row + 1, edge.mainColumn], [target.row, edge.mainColumn]));
                 // horizontal segment over to the target column
-                edge.points.push({
-                    row: target.row,
-                    col: target.col + 1,
-                    offsetX: 0,
-                    offsetY: 0,
-                    type: EdgeType.Horizontal
-                });
-                // TODO: Merge redundant segments
+                edge.path.push(makeSegment([target.row, edge.mainColumn], [target.row, target.col + 1]));
+                // finish at the target block
+                edge.path.push(makeSegment([target.row, target.col + 1], [target.row, target.col + 1]));
+                // Merge redundant segments
+                // Folds are V H -> V, H V -> H, V V -> V, H H -> H
+                let movement;
+                do {
+                    movement = false;
+                    // skip first and last segments, i needs to start one into the range since we compare with i - 1
+                    for(let i = 1; i < edge.path.length - 1; i++) {
+                        const prevSegment = edge.path[i - 1];
+                        const segment = edge.path[i];
+                        // sanity checks
+                        for(let j = 0; j < edge.path.length; j++) {
+                            const segment = edge.path[j];
+                            if((segment.type == EdgeType.Vertical && segment.start.col != segment.end.col)
+                                || (segment.type == EdgeType.Horizontal && segment.start.row != segment.end.row)) {
+                                //console.log(prevSegment, segment, block);
+                                throw Error("foobar");
+                            }
+                            if(j > 0) {
+                                const prev = edge.path[j - 1];
+                                if(prev.end.row != segment.start.row || prev.end.col != segment.start.col) {
+                                    throw Error("foobar");
+                                }
+                            }
+                            if(j < edge.path.length - 1) {
+                                const next = edge.path[j + 1];
+                                if(segment.end.row != next.start.row || segment.end.col != next.start.col) {
+                                    throw Error("foobar");
+                                }
+                            }
+                        }
+                        // V H -> V
+                        // H V -> H
+                        //if(prevSegment.type != segment.type && (prevSegment.start.col == segment.end.col && prevSegment.start.row == segment.end.row)) {
+                        if(segment.start.col == segment.end.col && segment.start.row == segment.end.row) {
+                            //console.log("-->", JSON.stringify(prevSegment), JSON.stringify(segment));
+                            //prevSegment.end = segment.end;
+                            edge.path.splice(i, 1);
+                            movement = true;
+                            //console.log("-->", JSON.stringify(prevSegment));
+                            continue;
+                        }
+                        // V V -> V
+                        // H H -> H
+                        if(prevSegment.type == segment.type) {
+                            if((prevSegment.type == EdgeType.Vertical && prevSegment.start.col != segment.start.col)
+                                || (prevSegment.type == EdgeType.Horizontal && prevSegment.start.row != segment.start.row)) {
+                                throw Error("foobar");
+                            }
+                            prevSegment.end = segment.end;
+                            edge.path.splice(i, 1);
+                            movement = true;
+                            continue;
+                        }
+                    }
+                } while(movement);
+                /*if(edge.path.length == 2) {
+                    if(!(edge.path[0].type == EdgeType.Vertical && edge.path[1].type == EdgeType.Vertical)) {
+                        throw "foobar";
+                    }
+                }*/
+                // sanity checks
+                for(let j = 0; j < edge.path.length; j++) {
+                    const segment = edge.path[j];
+                    if((segment.type == EdgeType.Vertical && segment.start.col != segment.end.col)
+                        || (segment.type == EdgeType.Horizontal && segment.start.row != segment.end.row)) {
+                        //console.log(prevSegment, segment, block);
+                        throw Error("foobar");
+                    }
+                    if(j > 0) {
+                        const prev = edge.path[j - 1];
+                        if(prev.end.row != segment.start.row || prev.end.col != segment.start.col) {
+                            throw Error("foobar");
+                        }
+                    }
+                    if(j < edge.path.length - 1) {
+                        const next = edge.path[j + 1];
+                        if(segment.end.row != next.start.row || segment.end.col != next.start.col) {
+                            throw Error("foobar");
+                        }
+                    }
+                }
                 // Compute offsets
+                if(edge.path.length == 2) {
+                    // Special case: both segments are sentinels
+                    const col = this.edgeColumns[edge.path[0].start.col];
+                    col.currentOffset += 10;
+                    edge.path[0].horizontalOffset = col.currentOffset;
+                    edge.path[1].horizontalOffset = col.currentOffset;
+                    col.width += 10;
+                } else {
+                    for(const segment of edge.path) {
+                        if(segment.type == EdgeType.Vertical) {
+                            if(segment.start.col != segment.end.col) { console.log(segment); throw Error("foobar"); };
+                            const col = this.edgeColumns[segment.start.col];
+                            segment.horizontalOffset = (col.currentOffset += 10);
+                            col.width += 10;
+                        } else { // horizontal
+                            if(segment.start.row != segment.end.row) { console.log(segment); throw Error("foobar"); };
+                            const row = this.edgeRows[segment.start.row];
+                            segment.verticalOffset = (row.currentOffset += 10);
+                            row.height += 10;
+                        }
+                    }
+                }
             }
         }
-    }
-
-    setupRowsAndColumns() {
-        console.log(this.blocks);
-        this.rowCount = Math.max(...this.blocks.map(block => block.row)) + 1; // one more row for zero offset
-        this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
-        this.blockRows = Array(this.rowCount).fill(0).map(() => ({
-            height: 0,
-            totalOffset: 0
-        }));
-        this.blockColumns = Array(this.columnCount).fill(0).map(() => ({
-            width: 0,
-            totalOffset: 0
-        }));
-        this.edgeRows = Array(this.rowCount + 1).fill(0).map(() => ({
-            height: 20,
-            totalOffset: 0,
-            currentOffset: 0
-        }));
-        this.edgeColumns = Array(this.columnCount + 1).fill(0).map(() => ({
-            width: 20,
-            totalOffset: 0,
-            currentOffset: 0
-        }));
     }
 
     computeCoordinates() {
         // Compute block row widths and heights
         for(const block of this.blocks) {
-            console.log(this.blockRows[block.row].height, block.data.height, block.row);
+            //console.log(this.blockRows[block.row].height, block.data.height, block.row);
             //console.log(this.blockRows);
-            const halfWidth = (block.data.width - 20) / 2;
-            console.log("--->", block.col, this.columnCount);
+            const halfWidth = (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
+            //console.log("--->", block.col, this.columnCount);
             this.blockRows[block.row].height = Math.max(this.blockRows[block.row].height, block.data.height);
             this.blockColumns[block.col].width = Math.max(this.blockColumns[block.col].width, halfWidth);
             this.blockColumns[block.col + 1].width = Math.max(this.blockColumns[block.col + 1].width, halfWidth);
@@ -437,27 +554,78 @@ export class GraphLayoutCore {
         }
         // Compute block coordinates and edge paths
         for(const block of this.blocks) {
-            block.coordinates.x = this.edgeColumns[block.col + 1].totalOffset - (block.data.width - 20) / 2;
+            block.coordinates.x = this.edgeColumns[block.col + 1].totalOffset - (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
             block.coordinates.y = this.blockRows[block.row].totalOffset;
             for(const edge of block.edges) {
-                // push initial point
-                edge.path.push({
-                    x: this.edgeColumns[block.col + 1].totalOffset + 10,
-                    y: block.coordinates.y + block.data.height
-                });
-                for(const point of edge.points) {
-                    edge.path.push({
-                        x: this.edgeColumns[point.col].totalOffset + 10,
-                        y: this.edgeRows[point.row].totalOffset + 10
-                    });
+                if(edge.path.length == 2) {
+                    // Special case: both segments are sentinels
+                    // push initial point
+                    {
+                        const segment = edge.path[0];
+                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.start.y = block.coordinates.y + block.data.height;
+                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                        segment.end.y = this.edgeRows[segment.start.row].totalOffset;
+                    }
+                    // push final point
+                    {
+                        const target = this.blocks[edge.dest];
+                        const segment = edge.path[edge.path.length - 1];
+                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.start.y = this.edgeRows[segment.start.row].totalOffset;
+                        segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+                    }
+                } else {
+                    // push initial point
+                    {
+                        const segment = edge.path[0];
+                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.start.y = block.coordinates.y + block.data.height;
+                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                        segment.end.y = 0; // this is something we need from the next segment
+                    }
+                    for(const segment of edge.path.slice(1, edge.path.length - 1)) { // first and last handled specially
+                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.start.y = this.edgeRows[segment.start.row].totalOffset + segment.verticalOffset;
+                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                        segment.end.y = this.edgeRows[segment.end.row].totalOffset + segment.verticalOffset;
+                    }
+                    // push final point
+                    {
+                        const target = this.blocks[edge.dest];
+                        const segment = edge.path[edge.path.length - 1];
+                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.start.y = 0; // something we need from the previous segment
+                        segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                        segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
+                    }
+                    // apply offsets to neighbor segments
+                    for(let i = 0; i < edge.path.length; i++) {
+                        const segment = edge.path[i];
+                        if(segment.type == EdgeType.Vertical) {
+                            if(i > 0) {
+                                const prev = edge.path[i - 1];
+                                prev.end.x = segment.start.x;
+                            }
+                            if(i < edge.path.length - 1) {
+                                const next = edge.path[i + 1];
+                                next.start.x = segment.end.x;
+                            }
+                        } else { // Horizontal
+                            if(i > 0) {
+                                const prev = edge.path[i - 1];
+                                prev.end.y = segment.start.y;
+                            }
+                            if(i < edge.path.length - 1) {
+                                const next = edge.path[i + 1];
+                                next.start.y = segment.end.y;
+                            }
+                        }
+                    }
                 }
-                // push final point
-                const target = this.blocks[edge.dest];
-                edge.path.push({
-                    x: this.edgeColumns[target.col + 1].totalOffset + 10,
-                    y: this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height
-                });
             }
+            //console.log(block.edges);
         }
     }
 
@@ -477,7 +645,7 @@ export class GraphLayoutCore {
         // Add pixel coordinates
         this.computeCoordinates();
         //
-        console.log(this);
+        //console.log(this);
     }
 
     getWidth() {

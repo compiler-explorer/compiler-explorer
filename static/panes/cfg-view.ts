@@ -36,6 +36,13 @@ import { ga } from "../analytics";
 import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult } from "../../types/compilation/cfg.interfaces";
 import { GraphLayoutCore } from "../graph-layout-core";
 
+const ColorTable = {
+    "red": "#fe4444",
+    "green": "#42da57",
+    "blue": "#39a1f3",
+    "grey": "#999999"
+};
+
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
     canvas: HTMLCanvasElement;
@@ -104,22 +111,28 @@ export class Cfg extends Pane<CfgState> {
             this.blockContainer.style.width = x.getWidth() + "px";
             const ctx = this.canvas.getContext("2d")!;
             ctx.lineWidth = 2;
-            ctx.strokeStyle = "#ffffff";
-            ctx.fillStyle = "#ffffff";
+            //ctx.strokeStyle = "#ffffff";
+            //ctx.fillStyle = "#ffffff";
             for(const block of x.blocks) {
                 const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
                 elem.style.top = block.coordinates.y + "px";
                 elem.style.left = block.coordinates.x + "px";
                 for(const edge of block.edges) {
+                    ctx.strokeStyle = ColorTable[edge.color];
+                    ctx.fillStyle = ColorTable[edge.color];
                     ctx.beginPath();
-                    ctx.moveTo(edge.path[0].x, edge.path[0].y);
-                    for(const pathPoint of edge.path.slice(1)) {
-                        ctx.lineTo(pathPoint.x, pathPoint.y);
+                    for(const segment of edge.path) {
+                        ctx.moveTo(segment.start.x, segment.start.y);
+                        ctx.lineTo(segment.end.x, segment.end.y);
                     }
+                    //ctx.moveTo(edge.path[0].x, edge.path[0].y);
+                    //for(const pathPoint of edge.path.slice(1)) {
+                    //    ctx.lineTo(pathPoint.x, pathPoint.y);
+                    //}
                     ctx.stroke();
-                    const endpoint = edge.path[edge.path.length - 1];
-                    const triangleHeight = 5;
-                    const triangleWidth = 5;
+                    const endpoint = edge.path[edge.path.length - 1].end;
+                    const triangleHeight = 7;
+                    const triangleWidth = 7;
                     ctx.beginPath();
                     ctx.moveTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
                     ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
@@ -127,12 +140,16 @@ export class Cfg extends Pane<CfgState> {
                     ctx.lineTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
                     ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
                     ctx.fill();
-                    ctx.stroke();
+                    //ctx.stroke();
                     //ctx.fillRect(edge.path[edge.path.length - 1].x - 5, edge.path[edge.path.length - 1].y - 5, 10, 10);
                 }
             }
+            //ctx.strokeStyle = "red";
             //for(const blockRow of x.blockRows) {
             //    ctx.strokeRect(0, blockRow.totalOffset, 100, blockRow.height);
+            //}
+            //for(const blockRow of x.blockColumns) {
+            //    ctx.strokeRect(blockRow.totalOffset, 0, blockRow.width, 100);
             //}
         }
         //console.log(result);
