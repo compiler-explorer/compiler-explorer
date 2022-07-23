@@ -413,7 +413,36 @@ export class GraphLayoutCore {
                         Math.abs(sourceColumn - leftCandidate) + Math.abs(targetColumn - leftCandidate);
                     const distanceRight =
                         Math.abs(sourceColumn - rightCandidate) + Math.abs(targetColumn - rightCandidate);
+                    // "figure 8" logic from cutter
+                    // Takes a longer path that produces less crossing
+                    if (target.row < source.row) {
+                        if (
+                            targetColumn < sourceColumn &&
+                            blockedColumns[sourceColumn + 1] < topRow &&
+                            sourceColumn - targetColumn <= distanceLeft + 2
+                        ) {
+                            edge.mainColumn = sourceColumn + 1;
+                            continue;
+                        } else if (
+                            targetColumn > sourceColumn &&
+                            blockedColumns[sourceColumn - 1] < topRow &&
+                            targetColumn - sourceColumn <= distanceRight + 2
+                        ) {
+                            edge.mainColumn = sourceColumn - 1;
+                            continue;
+                        }
+                    }
                     if (distanceLeft === distanceRight) {
+                        // TODO: Could also try this
+                        /*if(target.row <= source.row) {
+                            if(leftCandidate == sourceColumn - 1) {
+                                edge.mainColumn = leftCandidate;
+                                continue;
+                            } else if(rightCandidate == sourceColumn + 1) {
+                                edge.mainColumn = rightCandidate;
+                                continue;
+                            }
+                        }*/
                         // Place true branches on the left
                         // TODO: Need to investigate further block placement stuff here
                         // TODO: Need to investigate further offset placement stuff for the start segments
