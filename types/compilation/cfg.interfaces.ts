@@ -23,27 +23,27 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export type EdgeDescriptor = {
-    from: string,
-    to: string,
-    arrows: string, // <- useless
-    color: string
+    from: string;
+    to: string;
+    arrows: string; // <- useless
+    color: string;
 };
 
 export type NodeDescriptor = {
     color: string; // <- useless
-    id: string, // typically label for the bb
-    label: string, // really the source
-    shape: string // <- useless
+    id: string; // typically label for the bb
+    label: string; // really the source
+    shape: string; // <- useless
 };
 
 export type AnnotatedNodeDescriptor = NodeDescriptor & {
-    width: number, // in pixels
-    height: number, // in pixels
+    width: number; // in pixels
+    height: number; // in pixels
 };
 
 type CfgDescriptor_<ND> = {
-    edges: EdgeDescriptor[],
-    nodes: ND[]
+    edges: EdgeDescriptor[];
+    nodes: ND[];
 };
 
 export type CfgDescriptor = CfgDescriptor_<NodeDescriptor>;

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor } from "./compilation/cfg.interfaces";
+import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor } from '../types/compilation/cfg.interfaces';
 
 import IntervalTree from '@flatten-js/interval-tree';
 
@@ -30,7 +30,7 @@ import IntervalTree from '@flatten-js/interval-tree';
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
 // Thanks to the cutter team for their great documentation!
 
-enum EdgeType { Horizontal, Vertical };
+enum EdgeType { Horizontal, Vertical }
 
 type Coordinate = {
     x: number;
@@ -76,7 +76,7 @@ type Block = {
     coordinates: Coordinate;
 };
 
-enum DfsState { NotVisited, Pending, Visited };
+enum DfsState { NotVisited, Pending, Visited }
 
 type ColumnDescriptor = {
     width: number;
@@ -119,7 +119,7 @@ export class GraphLayoutCore {
                 row: 0,
                 col: 0,
                 boundingBox: {rows: 0, cols: 0},
-                coordinates: {x: 0, y: 0}
+                coordinates: {x: 0, y: 0},
             };
             this.blocks.push(block);
             blockMap[node.id] = this.blocks.length - 1;
@@ -139,7 +139,7 @@ export class GraphLayoutCore {
                     color,
                     dest: blockMap[to],
                     mainColumn: -1,
-                    path: []
+                    path: [],
                 });
             }
         }
@@ -148,16 +148,16 @@ export class GraphLayoutCore {
     }
 
     dfs(visited: DfsState[], order: number[], node: number) {
-        if(visited[node] == DfsState.Visited) {
+        if(visited[node] === DfsState.Visited) {
             return;
         }
-        if(visited[node] == DfsState.NotVisited) {
+        if(visited[node] === DfsState.NotVisited) {
             visited[node] = DfsState.Pending;
             const block = this.blocks[node];
             for(const edge of block.edges) {
                 // If we reach another pending node it's a loop edge.
                 // If we reach an unvisited node it's fine, if we reach a visited node that's also part of the dag
-                if(visited[edge.dest] != DfsState.Pending) {
+                if(visited[edge.dest] !== DfsState.Pending) {
                     block.dagEdges.push(edge.dest);
                 }
                 this.dfs(visited, order, edge.dest);
@@ -230,7 +230,7 @@ export class GraphLayoutCore {
             const block = this.blocks[i];
             for(const j of block.dagEdges) {
                 const target = this.blocks[j];
-                if(target.treeParent == null && target.row == block.row + 1) {
+                if(target.treeParent === null && target.row === block.row + 1) {
                     block.treeEdges.push(j);
                     target.treeParent = i;
                 }
@@ -250,21 +250,21 @@ export class GraphLayoutCore {
     // Note: Currently O(n^2)
     computeTreeColumnPositions(node: number) {
         const block = this.blocks[node];
-        if(block.treeEdges.length == 0) {
+        if(block.treeEdges.length === 0) {
             block.row = 0;
             block.col = 0;
             block.boundingBox = {
                 rows: 1,
-                cols: 2
+                cols: 2,
             };
-        } else if(block.treeEdges.length == 1) {
+        } else if(block.treeEdges.length === 1) {
             const childIndex = block.treeEdges[0];
             const child = this.blocks[childIndex];
             block.row = 0;
             block.col = child.col;
             block.boundingBox = {
                 rows: 1 + child.boundingBox.rows,
-                cols: child.boundingBox.cols
+                cols: child.boundingBox.cols,
             };
             this.adjustSubtree(childIndex, 1, 0);
         } else {
@@ -272,7 +272,7 @@ export class GraphLayoutCore {
             //let selectedTreeEdges = block.treeEdges.slice(0, 2);
             const boundingBox = {
                 rows: 0,
-                cols: 0
+                cols: 0,
             };
             // Compute bounding box of all the subtrees and adjust
             for(const i of block.treeEdges) {
@@ -305,23 +305,23 @@ export class GraphLayoutCore {
         this.columnCount = Math.max(...this.blocks.map(block => block.col)) + 2; // blocks are two-wide
         this.blockRows = Array(this.rowCount).fill(0).map(() => ({
             height: 0,
-            totalOffset: 0
+            totalOffset: 0,
         }));
         this.blockColumns = Array(this.columnCount).fill(0).map(() => ({
             width: 0,
-            totalOffset: 0
+            totalOffset: 0,
         }));
         this.edgeRows = Array(this.rowCount + 1).fill(0).map(() => ({
             height: 20,
             totalOffset: 0,
             subrows: 0,
-            intervals: []
+            intervals: [],
         }));
         this.edgeColumns = Array(this.columnCount + 1).fill(0).map(() => ({
             width: 20,
             totalOffset: 0,
             subcolumns: 0,
-            intervals: []
+            intervals: [],
         }));
     }
 
@@ -330,7 +330,7 @@ export class GraphLayoutCore {
         // We use a sweep line algorithm processing the CFG top to bottom keeping track of when columns are most
         // recently blocked. Cutter uses an augmented binary tree to assist with finding empty columns, for now this
         // just naively iterates.
-        enum EventType { Edge = 0, Block = 1 };
+        enum EventType { Edge = 0, Block = 1 }
         type Event = {
             blockIndex: number;
             edgeIndex: number;
@@ -343,20 +343,20 @@ export class GraphLayoutCore {
                 blockIndex: i,
                 edgeIndex: -1,
                 row: block.row,
-                type: EventType.Block
+                type: EventType.Block,
             });
             for(const [j, edge] of block.edges.entries()) {
                 events.push({
                     blockIndex: i,
                     edgeIndex: j,
                     row: Math.max(block.row + 1, this.blocks[edge.dest].row),
-                    type: EventType.Edge
-                })
+                    type: EventType.Edge,
+                });
             }
         }
         // Sort by row (max(src row, target row) for edges), edge row n is before block row n
         events.sort((a: Event, b: Event) => {
-            if(a.row == b.row) {
+            if(a.row === b.row) {
                 return a.type - b.type;
             } else {
                 return a.row - b.row;
@@ -365,7 +365,7 @@ export class GraphLayoutCore {
         //
         const blockedColumns = Array(this.columnCount + 1).fill(-1);
         for(const event of events) {
-            if(event.type == EventType.Block) {
+            if(event.type === EventType.Block) {
                 const block = this.blocks[event.blockIndex];
                 blockedColumns[block.col + 1] = block.row;
             } else {
@@ -385,11 +385,11 @@ export class GraphLayoutCore {
                     // hamming distance
                     const distanceLeft = Math.abs(sourceColumn - leftCandidate) + Math.abs(sourceColumn - rightCandidate);
                     const distanceRight = Math.abs(targetColumn - leftCandidate) + Math.abs(targetColumn - rightCandidate);
-                    if(distanceLeft == distanceRight) {
+                    if(distanceLeft === distanceRight) {
                         // Place true branches on the left
                         // TODO: Need to investigate further block placement stuff here
                         // TODO: Need to investigate further offset placement stuff for the start segments
-                        if(edge.color == "green") {
+                        if(edge.color === 'green') {
                             edge.mainColumn = leftCandidate;
                         } else {
                             edge.mainColumn = rightCandidate;
@@ -404,6 +404,7 @@ export class GraphLayoutCore {
         }
     }
 
+    // eslint-disable-next-line max-statements
     addEdgePaths() {
         // (start: GridCoordinate, end: GridCoordinate) => ({
         const makeSegment = (start: [number, number], end: [number, number]): EdgeSegment => ({
@@ -412,18 +413,18 @@ export class GraphLayoutCore {
                 row: start[0],
                 col: start[1],
                 x: 0,
-                y: 0
+                y: 0,
             },
             end: {
                 //...end,
                 row: end[0],
                 col: end[1],
                 x: 0,
-                y: 0
+                y: 0,
             },
             horizontalOffset: 0,
             verticalOffset: 0,
-            type: start[1] == end[1] ? EdgeType.Vertical : EdgeType.Horizontal
+            type: start[1] === end[1] ? EdgeType.Vertical : EdgeType.Horizontal,
         });
         for(const block of this.blocks) {
             for(const edge of block.edges) {
@@ -450,28 +451,28 @@ export class GraphLayoutCore {
                         // sanity checks
                         for(let j = 0; j < edge.path.length; j++) {
                             const segment = edge.path[j];
-                            if((segment.type == EdgeType.Vertical && segment.start.col != segment.end.col)
-                                || (segment.type == EdgeType.Horizontal && segment.start.row != segment.end.row)) {
+                            if((segment.type === EdgeType.Vertical && segment.start.col !== segment.end.col)
+                                || (segment.type === EdgeType.Horizontal && segment.start.row !== segment.end.row)) {
                                 //console.log(prevSegment, segment, block);
-                                throw Error("foobar");
+                                throw Error('foobar');
                             }
                             if(j > 0) {
                                 const prev = edge.path[j - 1];
-                                if(prev.end.row != segment.start.row || prev.end.col != segment.start.col) {
-                                    throw Error("foobar");
+                                if(prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
+                                    throw Error('foobar');
                                 }
                             }
                             if(j < edge.path.length - 1) {
                                 const next = edge.path[j + 1];
-                                if(segment.end.row != next.start.row || segment.end.col != next.start.col) {
-                                    throw Error("foobar");
+                                if(segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
+                                    throw Error('foobar');
                                 }
                             }
                         }
                         // V H -> V
                         // H V -> H
                         //if(prevSegment.type != segment.type && (prevSegment.start.col == segment.end.col && prevSegment.start.row == segment.end.row)) {
-                        if(segment.start.col == segment.end.col && segment.start.row == segment.end.row) {
+                        if(segment.start.col === segment.end.col && segment.start.row === segment.end.row) {
                             //console.log("-->", JSON.stringify(prevSegment), JSON.stringify(segment));
                             //prevSegment.end = segment.end;
                             edge.path.splice(i, 1);
@@ -481,10 +482,10 @@ export class GraphLayoutCore {
                         }
                         // V V -> V
                         // H H -> H
-                        if(prevSegment.type == segment.type) {
-                            if((prevSegment.type == EdgeType.Vertical && prevSegment.start.col != segment.start.col)
-                                || (prevSegment.type == EdgeType.Horizontal && prevSegment.start.row != segment.start.row)) {
-                                throw Error("foobar");
+                        if(prevSegment.type === segment.type) {
+                            if((prevSegment.type === EdgeType.Vertical && prevSegment.start.col !== segment.start.col)
+                                || (prevSegment.type === EdgeType.Horizontal && prevSegment.start.row !== segment.start.row)) {
+                                throw Error('foobar');
                             }
                             prevSegment.end = segment.end;
                             edge.path.splice(i, 1);
@@ -501,26 +502,26 @@ export class GraphLayoutCore {
                 // sanity checks
                 for(let j = 0; j < edge.path.length; j++) {
                     const segment = edge.path[j];
-                    if((segment.type == EdgeType.Vertical && segment.start.col != segment.end.col)
-                        || (segment.type == EdgeType.Horizontal && segment.start.row != segment.end.row)) {
+                    if((segment.type === EdgeType.Vertical && segment.start.col !== segment.end.col)
+                        || (segment.type === EdgeType.Horizontal && segment.start.row !== segment.end.row)) {
                         //console.log(prevSegment, segment, block);
-                        throw Error("foobar");
+                        throw Error('foobar');
                     }
                     if(j > 0) {
                         const prev = edge.path[j - 1];
-                        if(prev.end.row != segment.start.row || prev.end.col != segment.start.col) {
-                            throw Error("foobar");
+                        if(prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
+                            throw Error('foobar');
                         }
                     }
                     if(j < edge.path.length - 1) {
                         const next = edge.path[j + 1];
-                        if(segment.end.row != next.start.row || segment.end.col != next.start.col) {
-                            throw Error("foobar");
+                        if(segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
+                            throw Error('foobar');
                         }
                     }
                 }
                 // Compute offsets
-                if(edge.path.length == 2) {
+                if(edge.path.length === 2) {
                     // Special case: both segments are sentinels
                     const col = this.edgeColumns[edge.path[0].start.col];
                     //col.currentOffset += 10;
@@ -544,8 +545,8 @@ export class GraphLayoutCore {
                     }
                 } else {
                     for(const segment of edge.path) {
-                        if(segment.type == EdgeType.Vertical) {
-                            if(segment.start.col != segment.end.col) { console.log(segment); throw Error("foobar"); };
+                        if(segment.type === EdgeType.Vertical) {
+                            if(segment.start.col !== segment.end.col) { console.log(segment); throw Error('foobar'); }
                             const col = this.edgeColumns[segment.start.col];
                             let inserted = false;
                             for(const tree of col.intervals) {
@@ -562,7 +563,7 @@ export class GraphLayoutCore {
                                 tree.insert([segment.start.row, segment.end.row], segment);
                             }
                         } else { // horizontal
-                            if(segment.start.row != segment.end.row) { console.log(segment); throw Error("foobar"); };
+                            if(segment.start.row !== segment.end.row) { console.log(segment); throw Error('foobar'); }
                             const row = this.edgeRows[segment.start.row];
                             let inserted = false;
                             for(const tree of row.intervals) {
@@ -602,6 +603,7 @@ export class GraphLayoutCore {
         }
     }
 
+    // eslint-disable-next-line max-statements
     computeCoordinates() {
         // Compute block row widths and heights
         for(const block of this.blocks) {
@@ -631,7 +633,7 @@ export class GraphLayoutCore {
             block.coordinates.x = this.edgeColumns[block.col + 1].totalOffset - (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
             block.coordinates.y = this.blockRows[block.row].totalOffset;
             for(const edge of block.edges) {
-                if(edge.path.length == 2) {
+                if(edge.path.length === 2) {
                     // Special case: both segments are sentinels
                     // push initial point
                     {
@@ -677,7 +679,7 @@ export class GraphLayoutCore {
                     // apply offsets to neighbor segments
                     for(let i = 0; i < edge.path.length; i++) {
                         const segment = edge.path[i];
-                        if(segment.type == EdgeType.Vertical) {
+                        if(segment.type === EdgeType.Vertical) {
                             if(i > 0) {
                                 const prev = edge.path[i - 1];
                                 prev.end.x = segment.start.x;

@@ -22,25 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Pane } from "./pane";
+import { Pane } from './pane';
 import * as monaco from 'monaco-editor';
 
 import _ from 'underscore';
 
-import { CfgState } from "./cfg-view.interfaces";
-import { Hub } from "../hub";
-import { Container } from "golden-layout";
-import { PaneState } from "./pane.interfaces";
-import { ga } from "../analytics";
+import { CfgState } from './cfg-view.interfaces';
+import { Hub } from '../hub';
+import { Container } from 'golden-layout';
+import { PaneState } from './pane.interfaces';
+import { ga } from '../analytics';
 
-import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult } from "../../types/compilation/cfg.interfaces";
-import { GraphLayoutCore } from "../graph-layout-core";
+import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult } from '../../types/compilation/cfg.interfaces';
+import { GraphLayoutCore } from '../graph-layout-core';
 
 const ColorTable = {
-    "red": "#fe4444",
-    "green": "#42da57",
-    "blue": "#39a1f3",
-    "grey": "#999999"
+    red: '#fe4444',
+    green: '#42da57',
+    blue: '#39a1f3',
+    grey: '#999999',
 };
 
 export class Cfg extends Pane<CfgState> {
@@ -52,15 +52,15 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
-        this.graphDiv = this.domRoot.find(".graph")[0];
-        this.canvas = this.domRoot.find("canvas")[0] as HTMLCanvasElement;
-        this.blockContainer = this.domRoot.find(".block-container")[0];
+        this.graphDiv = this.domRoot.find('.graph')[0];
+        this.canvas = this.domRoot.find('canvas')[0] as HTMLCanvasElement;
+        this.blockContainer = this.domRoot.find('.block-container')[0];
     }
     override getInitialHTML() {
         return $('#cfg').html();
     }
     override getDefaultPaneName() {
-        return "CFG";
+        return 'CFG';
     }
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
@@ -86,7 +86,7 @@ export class Cfg extends Pane<CfgState> {
             const cfg = result.cfg as CFGResult;
             const fn = cfg[Object.keys(cfg)[0]];
             for(const node of fn.nodes) {
-                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/g, "<br/>")}</div>`;
+                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/g, '<br/>')}</div>`;
             }
             for(const node of fn.nodes) {
                 //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];
@@ -101,22 +101,25 @@ export class Cfg extends Pane<CfgState> {
             //console.log("test");
             //console.log(fn.nodes);
             const x = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
-            this.graphDiv.style.height = x.getHeight() + "px";
-            this.graphDiv.style.width = x.getWidth() + "px";
-            this.canvas.style.height = x.getHeight() + "px";
-            this.canvas.style.width = x.getWidth() + "px";
+            this.graphDiv.style.height = x.getHeight() + 'px';
+            this.graphDiv.style.width = x.getWidth() + 'px';
+            this.canvas.style.height = x.getHeight() + 'px';
+            this.canvas.style.width = x.getWidth() + 'px';
             this.canvas.height = x.getHeight();
             this.canvas.width = x.getWidth();
-            this.blockContainer.style.height = x.getHeight() + "px";
-            this.blockContainer.style.width = x.getWidth() + "px";
-            const ctx = this.canvas.getContext("2d")!;
+            this.blockContainer.style.height = x.getHeight() + 'px';
+            this.blockContainer.style.width = x.getWidth() + 'px';
+            const ctx = this.canvas.getContext('2d');
+            if(!ctx) {
+                throw Error('foobar');
+            }
             ctx.lineWidth = 2;
             //ctx.strokeStyle = "#ffffff";
             //ctx.fillStyle = "#ffffff";
             for(const block of x.blocks) {
                 const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
-                elem.style.top = block.coordinates.y + "px";
-                elem.style.left = block.coordinates.x + "px";
+                elem.style.top = block.coordinates.y + 'px';
+                elem.style.left = block.coordinates.x + 'px';
                 for(const edge of block.edges) {
                     ctx.strokeStyle = ColorTable[edge.color];
                     ctx.fillStyle = ColorTable[edge.color];
@@ -172,4 +175,4 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.unsubscribe();
         this.eventHub.emit('cfgViewClosed', this.compilerInfo.compilerId);
     }
-};
+}
