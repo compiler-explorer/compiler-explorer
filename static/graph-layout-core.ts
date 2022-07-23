@@ -467,13 +467,14 @@ export class GraphLayoutCore {
                 edge.path.push(makeSegment([target.row, edge.mainColumn], [target.row, target.col + 1]));
                 // finish at the target block
                 edge.path.push(makeSegment([target.row, target.col + 1], [target.row, target.col + 1]));
-                // Merge redundant segments
-                // Folds are V H -> V, H V -> H, V V -> V, H H -> H
+                // Simplify segments
+                // Simplifications performed are eliminating (non-sentinel) edges which don't move anywhere and folding
+                // VV -> V and HH -> H.
                 let movement;
                 do {
                     movement = false;
-                    // skip first and last segments, i needs to start one into the range since we compare with i - 1
-                    for (let i = 1; i < edge.path.length - 1; i++) {
+                    // i needs to start one into the range since we compare with i - 1
+                    for (let i = 1; i < edge.path.length; i++) {
                         const prevSegment = edge.path[i - 1];
                         const segment = edge.path[i];
                         // sanity checks
@@ -483,7 +484,6 @@ export class GraphLayoutCore {
                                 (segment.type === EdgeType.Vertical && segment.start.col !== segment.end.col) ||
                                 (segment.type === EdgeType.Horizontal && segment.start.row !== segment.end.row)
                             ) {
-                                //console.log(prevSegment, segment, block);
                                 throw Error('foobar');
                             }
                             if (j > 0) {
@@ -499,19 +499,18 @@ export class GraphLayoutCore {
                                 }
                             }
                         }
-                        // V H -> V
-                        // H V -> H
-                        //if(prevSegment.type != segment.type && (prevSegment.start.col == segment.end.col && prevSegment.start.row == segment.end.row)) {
-                        if (segment.start.col === segment.end.col && segment.start.row === segment.end.row) {
-                            //console.log("-->", JSON.stringify(prevSegment), JSON.stringify(segment));
-                            //prevSegment.end = segment.end;
+                        // If a segment doesn't go anywhere and is not a sentinel it can be eliminated
+                        if (
+                            segment.start.col === segment.end.col &&
+                            segment.start.row === segment.end.row &&
+                            i !== edge.path.length - 1
+                        ) {
                             edge.path.splice(i, 1);
                             movement = true;
-                            //console.log("-->", JSON.stringify(prevSegment));
                             continue;
                         }
-                        // V V -> V
-                        // H H -> H
+                        // VV -> V
+                        // HH -> H
                         if (prevSegment.type === segment.type) {
                             if (
                                 (prevSegment.type === EdgeType.Vertical &&
@@ -528,11 +527,6 @@ export class GraphLayoutCore {
                         }
                     }
                 } while (movement);
-                /*if(edge.path.length == 2) {
-                    if(!(edge.path[0].type == EdgeType.Vertical && edge.path[1].type == EdgeType.Vertical)) {
-                        throw "foobar";
-                    }
-                }*/
                 // sanity checks
                 for (let j = 0; j < edge.path.length; j++) {
                     const segment = edge.path[j];
@@ -557,71 +551,47 @@ export class GraphLayoutCore {
                     }
                 }
                 // Compute offsets
-                if (edge.path.length === 2) {
-                    // Special case: both segments are sentinels
-                    const col = this.edgeColumns[edge.path[0].start.col];
-                    //col.currentOffset += 10;
-                    //edge.path[0].horizontalOffset = col.currentOffset;
-                    //edge.path[1].horizontalOffset = col.currentOffset;
-                    //col.width += 10;
-                    const interval: [number, number] = [edge.path[0].start.row, edge.path[1].end.row];
-                    let inserted = false;
-                    for (const tree of col.intervals) {
-                        if (!tree.intersect_any(interval)) {
-                            tree.insert(interval, edge.path[0]); // TODO, path[1] too.....
-                            inserted = true;
-                            break;
+                for (const segment of edge.path) {
+                    if (segment.type === EdgeType.Vertical) {
+                        if (segment.start.col !== segment.end.col) {
+                            console.log(segment);
+                            throw Error('foobar');
                         }
-                    }
-                    if (!inserted) {
-                        const tree = new IntervalTree<EdgeSegment>();
-                        col.intervals.push(tree);
-                        col.subcolumns++;
-                        tree.insert(interval, edge.path[0]); // TODO, path[1] too.....
-                    }
-                } else {
-                    for (const segment of edge.path) {
-                        if (segment.type === EdgeType.Vertical) {
-                            if (segment.start.col !== segment.end.col) {
-                                console.log(segment);
-                                throw Error('foobar');
-                            }
-                            const col = this.edgeColumns[segment.start.col];
-                            let inserted = false;
-                            for (const tree of col.intervals) {
-                                if (!tree.intersect_any([segment.start.row, segment.end.row])) {
-                                    tree.insert([segment.start.row, segment.end.row], segment);
-                                    inserted = true;
-                                    break;
-                                }
-                            }
-                            if (!inserted) {
-                                const tree = new IntervalTree<EdgeSegment>();
-                                col.intervals.push(tree);
-                                col.subcolumns++;
+                        const col = this.edgeColumns[segment.start.col];
+                        let inserted = false;
+                        for (const tree of col.intervals) {
+                            if (!tree.intersect_any([segment.start.row, segment.end.row])) {
                                 tree.insert([segment.start.row, segment.end.row], segment);
+                                inserted = true;
+                                break;
                             }
-                        } else {
-                            // horizontal
-                            if (segment.start.row !== segment.end.row) {
-                                console.log(segment);
-                                throw Error('foobar');
-                            }
-                            const row = this.edgeRows[segment.start.row];
-                            let inserted = false;
-                            for (const tree of row.intervals) {
-                                if (!tree.intersect_any([segment.start.col, segment.end.col])) {
-                                    tree.insert([segment.start.col, segment.end.col], segment);
-                                    inserted = true;
-                                    break;
-                                }
-                            }
-                            if (!inserted) {
-                                const tree = new IntervalTree<EdgeSegment>();
-                                row.intervals.push(tree);
-                                row.subrows++;
+                        }
+                        if (!inserted) {
+                            const tree = new IntervalTree<EdgeSegment>();
+                            col.intervals.push(tree);
+                            col.subcolumns++;
+                            tree.insert([segment.start.row, segment.end.row], segment);
+                        }
+                    } else {
+                        // horizontal
+                        if (segment.start.row !== segment.end.row) {
+                            console.log(segment);
+                            throw Error('foobar');
+                        }
+                        const row = this.edgeRows[segment.start.row];
+                        let inserted = false;
+                        for (const tree of row.intervals) {
+                            if (!tree.intersect_any([segment.start.col, segment.end.col])) {
                                 tree.insert([segment.start.col, segment.end.col], segment);
+                                inserted = true;
+                                break;
                             }
+                        }
+                        if (!inserted) {
+                            const tree = new IntervalTree<EdgeSegment>();
+                            row.intervals.push(tree);
+                            row.subrows++;
+                            tree.insert([segment.start.col, segment.end.col], segment);
                         }
                     }
                 }
@@ -678,25 +648,14 @@ export class GraphLayoutCore {
                 (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
             block.coordinates.y = this.blockRows[block.row].totalOffset;
             for (const edge of block.edges) {
-                if (edge.path.length === 2) {
-                    // Special case: both segments are sentinels
-                    // push initial point
-                    {
-                        const segment = edge.path[0];
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = block.coordinates.y + block.data.height;
-                        segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = this.edgeRows[segment.start.row].totalOffset;
-                    }
-                    // push final point
-                    {
-                        const target = this.blocks[edge.dest];
-                        const segment = edge.path[edge.path.length - 1];
-                        segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.start.y = this.edgeRows[segment.start.row].totalOffset;
-                        segment.end.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
-                        segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
-                    }
+                if (edge.path.length === 1) {
+                    // Special case: Direct dropdown
+                    const segment = edge.path[0];
+                    const target = this.blocks[edge.dest];
+                    segment.start.x = this.edgeColumns[segment.start.col].totalOffset + segment.horizontalOffset;
+                    segment.start.y = block.coordinates.y + block.data.height;
+                    segment.end.x = this.edgeColumns[segment.end.col].totalOffset + segment.horizontalOffset;
+                    segment.end.y = this.edgeRows[target.row].totalOffset + this.edgeRows[target.row].height;
                 } else {
                     // push initial point
                     {
