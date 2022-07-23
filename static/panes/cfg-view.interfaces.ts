@@ -23,6 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface CfgState {
-    selectedFn?: string;
+    selectedFunction: string;
     scale: number;
 }

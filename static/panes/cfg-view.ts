@@ -36,6 +36,7 @@ import {ga} from '../analytics';
 import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult} from '../../types/compilation/cfg.interfaces';
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
+import TomSelect from 'tom-select';
 
 const ColorTable = {
     red: '#fe4444',
@@ -63,11 +64,30 @@ export class Cfg extends Pane<CfgState> {
     dragStart: Coordinate = {x: 0, y: 0};
     dragStartPosition: Coordinate = {x: 0, y: 0};
     zoom = 1;
+    functionSelector: TomSelect;
+    results: CFGResult;
+    state: CfgState & PaneState;
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         super(hub, container, state);
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
+        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        if (!(selector instanceof HTMLSelectElement)) {
+            throw new Error('.function-selector is not an HTMLSelectElement');
+        }
+        this.functionSelector = new TomSelect(selector, {
+            valueField: 'value',
+            labelField: 'title',
+            searchField: ['title'],
+            dropdownParent: 'body',
+            plugins: ['input_autogrow'],
+            sortField: 'title',
+            onChange: e => {
+                this.selectFunction(e as any as string);
+            },
+        });
+        this.state = state;
     }
     override getInitialHTML() {
         return $('#cfg').html();
@@ -91,10 +111,14 @@ export class Cfg extends Pane<CfgState> {
     }
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
-            console.log('down');
-            this.dragging = true;
-            this.dragStart = {x: e.clientX, y: e.clientY};
-            this.dragStartPosition = {...this.currentPosition};
+            const div = (e.target as Element).closest('div');
+            if (div && div.classList.contains('block')) {
+                // pass, let the user select block contents
+            } else {
+                this.dragging = true;
+                this.dragStart = {x: e.clientX, y: e.clientY};
+                this.dragStartPosition = {...this.currentPosition};
+            }
         });
         this.graphContainer.addEventListener('mouseup', e => {
             this.dragging = false;
@@ -125,92 +149,116 @@ export class Cfg extends Pane<CfgState> {
             //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }
-    override async onCompileResult(compilerId: number, compiler: any, result: any): Promise<void> {
+    override onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         //console.log(result);
         if (result.cfg) {
             const cfg = result.cfg as CFGResult;
-            const fn = cfg[Object.keys(cfg)[0]];
-            this.blockContainer.innerHTML = '';
-            for (const node of fn.nodes) {
-                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${
-                    node.id
-                }">${await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}))}</div>`;
+            this.results = cfg;
+            let selectedFunction = this.state.selectedFunction;
+            this.functionSelector.clear();
+            this.functionSelector.clearOptions();
+            const keys = Object.keys(cfg);
+            if (keys.length === 0) {
+                this.functionSelector.addOption({
+                    title: '<No functions available>',
+                    value: '<No functions available>',
+                });
             }
-            for (const node of fn.nodes) {
-                //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];
-                //(node as AnnotatedNodeDescriptor).width = elem.getBoundingClientRect().width;
-                //(node as AnnotatedNodeDescriptor).height = elem.getBoundingClientRect().height;
-                const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`);
-                void elem[0].offsetHeight;
-                (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
-                (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
-                //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
+            for (const fn of keys) {
+                this.functionSelector.addOption({
+                    title: fn,
+                    value: fn,
+                });
             }
-            //console.log("test");
-            //console.log(fn.nodes);
-            const x = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
-            this.graphDiv.style.height = x.getHeight() + 'px';
-            this.graphDiv.style.width = x.getWidth() + 'px';
-            this.canvas.style.height = x.getHeight() + 'px';
-            this.canvas.style.width = x.getWidth() + 'px';
-            this.canvas.height = x.getHeight();
-            this.canvas.width = x.getWidth();
-            this.blockContainer.style.height = x.getHeight() + 'px';
-            this.blockContainer.style.width = x.getWidth() + 'px';
-            const ctx = this.canvas.getContext('2d');
-            if (!ctx) {
-                throw Error('foobar');
-            }
-            ctx.lineWidth = 2;
-            //ctx.strokeStyle = "#ffffff";
-            //ctx.fillStyle = "#ffffff";
-            for (const block of x.blocks) {
-                const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
-                elem.style.top = block.coordinates.y + 'px';
-                elem.style.left = block.coordinates.x + 'px';
-                for (const edge of block.edges) {
-                    ctx.strokeStyle = ColorTable[edge.color];
-                    ctx.fillStyle = ColorTable[edge.color];
-                    ctx.beginPath();
-                    for (const segment of edge.path) {
-                        ctx.moveTo(segment.start.x, segment.start.y);
-                        ctx.lineTo(segment.end.x, segment.end.y);
-                    }
-                    //ctx.moveTo(edge.path[0].x, edge.path[0].y);
-                    //for(const pathPoint of edge.path.slice(1)) {
-                    //    ctx.lineTo(pathPoint.x, pathPoint.y);
-                    //}
-                    ctx.stroke();
-                    const endpoint = edge.path[edge.path.length - 1].end;
-                    const triangleHeight = 7;
-                    const triangleWidth = 7;
-                    ctx.beginPath();
-                    ctx.moveTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
-                    ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
-                    ctx.lineTo(endpoint.x, endpoint.y);
-                    ctx.lineTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
-                    ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
-                    ctx.fill();
-                    //ctx.stroke();
-                    //ctx.fillRect(edge.path[edge.path.length - 1].x - 5, edge.path[edge.path.length - 1].y - 5, 10, 10);
+            if (keys.length > 0) {
+                if (selectedFunction === '' || !(selectedFunction in cfg)) {
+                    selectedFunction = keys[0];
                 }
+                this.functionSelector.setValue(selectedFunction);
+            } else {
+                // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
+                // still be the same
+                this.state.selectedFunction = selectedFunction;
             }
-            //ctx.strokeStyle = "red";
-            //for(const blockRow of x.blockRows) {
-            //    ctx.strokeRect(0, blockRow.totalOffset, 100, blockRow.height);
-            //}
-            //for(const blockRow of x.blockColumns) {
-            //    ctx.strokeRect(blockRow.totalOffset, 0, blockRow.width, 100);
-            //}
+            this.selectFunction(this.state.selectedFunction);
         }
-        //console.log(result);
-        //if (result.hasLLVMOptPipelineOutput) {
-        //    this.updateResults(result.llvmOptPipelineOutput as LLVMOptPipelineOutput);
-        //} else if (compiler.supportsLLVMOptPipelineView) {
-        //    this.updateResults({});
-        //    this.editor.getModel()?.original.setValue('<Error>');
-        //    this.editor.getModel()?.modified.setValue('');
+    }
+    async selectFunction(name: string) {
+        const fn = this.results[name];
+        this.blockContainer.innerHTML = '';
+        for (const node of fn.nodes) {
+            this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${await monaco.editor.colorize(
+                node.label,
+                'asm',
+                MonacoConfig.extendConfig({})
+            )}</div>`;
+        }
+        for (const node of fn.nodes) {
+            //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];
+            //(node as AnnotatedNodeDescriptor).width = elem.getBoundingClientRect().width;
+            //(node as AnnotatedNodeDescriptor).height = elem.getBoundingClientRect().height;
+            const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`);
+            void elem[0].offsetHeight;
+            (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
+            (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
+            //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
+        }
+        //console.log("test");
+        //console.log(fn.nodes);
+        const x = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.graphDiv.style.height = x.getHeight() + 'px';
+        this.graphDiv.style.width = x.getWidth() + 'px';
+        this.canvas.style.height = x.getHeight() + 'px';
+        this.canvas.style.width = x.getWidth() + 'px';
+        this.canvas.height = x.getHeight();
+        this.canvas.width = x.getWidth();
+        this.blockContainer.style.height = x.getHeight() + 'px';
+        this.blockContainer.style.width = x.getWidth() + 'px';
+        const ctx = this.canvas.getContext('2d');
+        if (!ctx) {
+            throw Error('foobar');
+        }
+        ctx.lineWidth = 2;
+        //ctx.strokeStyle = "#ffffff";
+        //ctx.fillStyle = "#ffffff";
+        for (const block of x.blocks) {
+            const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
+            elem.style.top = block.coordinates.y + 'px';
+            elem.style.left = block.coordinates.x + 'px';
+            for (const edge of block.edges) {
+                ctx.strokeStyle = ColorTable[edge.color];
+                ctx.fillStyle = ColorTable[edge.color];
+                ctx.beginPath();
+                for (const segment of edge.path) {
+                    ctx.moveTo(segment.start.x, segment.start.y);
+                    ctx.lineTo(segment.end.x, segment.end.y);
+                }
+                //ctx.moveTo(edge.path[0].x, edge.path[0].y);
+                //for(const pathPoint of edge.path.slice(1)) {
+                //    ctx.lineTo(pathPoint.x, pathPoint.y);
+                //}
+                ctx.stroke();
+                const endpoint = edge.path[edge.path.length - 1].end;
+                const triangleHeight = 7;
+                const triangleWidth = 7;
+                ctx.beginPath();
+                ctx.moveTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
+                ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
+                ctx.lineTo(endpoint.x, endpoint.y);
+                ctx.lineTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
+                ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
+                ctx.fill();
+                //ctx.stroke();
+                //ctx.fillRect(edge.path[edge.path.length - 1].x - 5, edge.path[edge.path.length - 1].y - 5, 10, 10);
+            }
+        }
+        //ctx.strokeStyle = "red";
+        //for(const blockRow of x.blockRows) {
+        //    ctx.strokeRect(0, blockRow.totalOffset, 100, blockRow.height);
+        //}
+        //for(const blockRow of x.blockColumns) {
+        //    ctx.strokeRect(blockRow.totalOffset, 0, blockRow.width, 100);
         //}
     }
     override resize() {
