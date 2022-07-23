@@ -392,38 +392,38 @@ pre.content.wrap * {
 //    width: 100%;
 //    height: 100%;
 //    position: relative;
-    .graph-container {
-        position: relative;
-        //top: 0;
-        //left: 0;
-        width: 100%;
-        height: 100%;
-        .graph {
+.graph-container {
+    position: relative;
+    //top: 0;
+    //left: 0;
+    width: 100%;
+    height: 100%;
+    .graph {
+        position: absolute;
+        top: 0;
+        left: 0;
+        canvas {
             position: absolute;
             top: 0;
             left: 0;
-            canvas {
+        }
+        .block-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            .block {
                 position: absolute;
-                top: 0;
-                left: 0;
-            }
-            .block-container {
-                position: absolute;
-                top: 0;
-                left: 0;
-                .block {
-                    position: absolute;
-                    background: black;
-                    border: 1px solid white;
-                    padding: 5px;
-                    color: white;
-                    display: inline-block;
-                    font-family: "Courier New";
-                    white-space: nowrap;
-                }
+                background: black;
+                border: 1px solid white;
+                padding: 5px;
+                color: white;
+                display: inline-block;
+                font-family: 'Courier New';
+                white-space: nowrap;
             }
         }
     }
+}
 //}
 
 .clear-cache {

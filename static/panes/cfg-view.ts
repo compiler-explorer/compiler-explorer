@@ -22,19 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { Pane } from './pane';
+import {Pane} from './pane';
 import * as monaco from 'monaco-editor';
 
 import _ from 'underscore';
 
-import { CfgState } from './cfg-view.interfaces';
-import { Hub } from '../hub';
-import { Container } from 'golden-layout';
-import { PaneState } from './pane.interfaces';
-import { ga } from '../analytics';
+import {CfgState} from './cfg-view.interfaces';
+import {Hub} from '../hub';
+import {Container} from 'golden-layout';
+import {PaneState} from './pane.interfaces';
+import {ga} from '../analytics';
 
-import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult } from '../../types/compilation/cfg.interfaces';
-import { GraphLayoutCore } from '../graph-layout-core';
+import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult} from '../../types/compilation/cfg.interfaces';
+import {GraphLayoutCore} from '../graph-layout-core';
 
 const ColorTable = {
     red: '#fe4444',
@@ -82,18 +82,21 @@ export class Cfg extends Pane<CfgState> {
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         //console.log(result);
-        if(result.cfg) {
+        if (result.cfg) {
             const cfg = result.cfg as CFGResult;
             const fn = cfg[Object.keys(cfg)[0]];
-            for(const node of fn.nodes) {
-                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/g, '<br/>')}</div>`;
+            for (const node of fn.nodes) {
+                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(
+                    /\n/g,
+                    '<br/>'
+                )}</div>`;
             }
-            for(const node of fn.nodes) {
+            for (const node of fn.nodes) {
                 //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];
                 //(node as AnnotatedNodeDescriptor).width = elem.getBoundingClientRect().width;
                 //(node as AnnotatedNodeDescriptor).height = elem.getBoundingClientRect().height;
                 const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`);
-                void(elem[0].offsetHeight);
+                void elem[0].offsetHeight;
                 (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
                 (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
                 //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
@@ -110,21 +113,21 @@ export class Cfg extends Pane<CfgState> {
             this.blockContainer.style.height = x.getHeight() + 'px';
             this.blockContainer.style.width = x.getWidth() + 'px';
             const ctx = this.canvas.getContext('2d');
-            if(!ctx) {
+            if (!ctx) {
                 throw Error('foobar');
             }
             ctx.lineWidth = 2;
             //ctx.strokeStyle = "#ffffff";
             //ctx.fillStyle = "#ffffff";
-            for(const block of x.blocks) {
+            for (const block of x.blocks) {
                 const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
                 elem.style.top = block.coordinates.y + 'px';
                 elem.style.left = block.coordinates.x + 'px';
-                for(const edge of block.edges) {
+                for (const edge of block.edges) {
                     ctx.strokeStyle = ColorTable[edge.color];
                     ctx.fillStyle = ColorTable[edge.color];
                     ctx.beginPath();
-                    for(const segment of edge.path) {
+                    for (const segment of edge.path) {
                         ctx.moveTo(segment.start.x, segment.start.y);
                         ctx.lineTo(segment.end.x, segment.end.y);
                     }
