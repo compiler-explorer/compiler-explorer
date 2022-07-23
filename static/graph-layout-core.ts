@@ -534,7 +534,6 @@ export class GraphLayoutCore {
                         (segment.type === EdgeType.Vertical && segment.start.col !== segment.end.col) ||
                         (segment.type === EdgeType.Horizontal && segment.start.row !== segment.end.row)
                     ) {
-                        //console.log(prevSegment, segment, block);
                         throw Error('foobar');
                     }
                     if (j > 0) {
@@ -707,7 +706,6 @@ export class GraphLayoutCore {
                     }
                 }
             }
-            //console.log(block.edges);
         }
     }
 
@@ -740,3 +738,112 @@ export class GraphLayoutCore {
         return lastRow.totalOffset + lastRow.height;
     }
 }
+
+/*
+
+-Os, -O3
+
+int sum(int* arr, int n) {
+    int s = 0;
+    for(int i = 0; i < n; i++) {
+        s += arr[i];
+    }
+    if(s % 2 == 0) {
+        return s / 2;
+    } else {
+        return s;
+    }
+}
+
+-O2, -O3
+
+void foo(), bar();
+
+int baz(int n) {
+    if(n % 2 == 0) {
+        foo();
+    } else {
+        bar();
+    }
+    return 4;
+}
+
+-O3 -march=skylake on clang
+
+int fact(int n) {
+    if(n == 0) return 1;
+    else return n * fact(n - 1);
+}
+
+-O0
+
+int foo(int n) {
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    if(n > 0) {
+        goto bar;
+    }
+    return 2;
+    bar:
+    return 1;
+}
+
+*/

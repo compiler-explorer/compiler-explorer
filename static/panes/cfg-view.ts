@@ -44,18 +44,30 @@ const ColorTable = {
     grey: '#999999',
 };
 
+type Coordinate = {
+    x: number;
+    y: number;
+};
+
+const DZOOM = 0.1;
+const MINZOOM = 0.1;
+
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
     canvas: HTMLCanvasElement;
     blockContainer: HTMLElement;
+    graphContainer: HTMLElement;
+    graphElement: HTMLElement;
+    currentPosition: Coordinate = {x: 0, y: 0};
+    dragging = false;
+    dragStart: Coordinate = {x: 0, y: 0};
+    dragStartPosition: Coordinate = {x: 0, y: 0};
+    zoom = 1;
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         super(hub, container, state);
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
-        this.graphDiv = this.domRoot.find('.graph')[0];
-        this.canvas = this.domRoot.find('canvas')[0] as HTMLCanvasElement;
-        this.blockContainer = this.domRoot.find('.block-container')[0];
     }
     override getInitialHTML() {
         return $('#cfg').html();
@@ -68,6 +80,39 @@ export class Cfg extends Pane<CfgState> {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
             eventAction: 'CFGViewPane',
+        });
+    }
+    override registerDynamicElements(state: CfgState) {
+        this.graphDiv = this.domRoot.find('.graph')[0];
+        this.canvas = this.domRoot.find('canvas')[0] as HTMLCanvasElement;
+        this.blockContainer = this.domRoot.find('.block-container')[0];
+        this.graphContainer = this.domRoot.find('.graph-container')[0];
+        this.graphElement = this.domRoot.find('.graph')[0];
+    }
+    override registerCallbacks() {
+        this.graphContainer.addEventListener('mousedown', e => {
+            console.log('down');
+            this.dragging = true;
+            this.dragStart = {x: e.clientX, y: e.clientY};
+            this.dragStartPosition = {...this.currentPosition};
+        });
+        this.graphContainer.addEventListener('mouseup', e => {
+            this.dragging = false;
+        });
+        this.graphContainer.addEventListener('mousemove', e => {
+            if (this.dragging) {
+                this.currentPosition = {
+                    x: e.clientX - this.dragStart.x + this.dragStartPosition.x,
+                    y: e.clientY - this.dragStart.y + this.dragStartPosition.y,
+                };
+                this.graphElement.style.left = this.currentPosition.x + 'px';
+                this.graphElement.style.top = this.currentPosition.y + 'px';
+            }
+        });
+        this.graphContainer.addEventListener('wheel', e => {
+            this.zoom += DZOOM * -Math.sign(e.deltaY);
+            this.zoom = Math.max(this.zoom, MINZOOM);
+            this.graphElement.style.transform = `scale(${this.zoom})`;
         });
     }
     override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
