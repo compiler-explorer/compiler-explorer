@@ -64,6 +64,7 @@ export class Cfg extends Pane<CfgState> {
     dragStart: Coordinate = {x: 0, y: 0};
     dragStartPosition: Coordinate = {x: 0, y: 0};
     zoom = 1;
+    graphDimensions = {width: 0, height: 0};
     functionSelector: TomSelect;
     results: CFGResult;
     state: CfgState & PaneState;
@@ -134,9 +135,21 @@ export class Cfg extends Pane<CfgState> {
             }
         });
         this.graphContainer.addEventListener('wheel', e => {
-            this.zoom += DZOOM * -Math.sign(e.deltaY);
-            this.zoom = Math.max(this.zoom, MINZOOM);
-            this.graphElement.style.transform = `scale(${this.zoom})`;
+            const delta = DZOOM * -Math.sign(e.deltaY);
+            this.zoom += delta;
+            if (this.zoom >= MINZOOM) {
+                this.graphElement.style.transform = `scale(${this.zoom})`;
+                const mouseX = e.clientX - this.graphElement.getBoundingClientRect().x;
+                const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
+                // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
+                // And same for y. The width / height terms cancel.
+                this.currentPosition.x -= (mouseX / (this.zoom - delta)) * delta;
+                this.currentPosition.y -= (mouseY / (this.zoom - delta)) * delta;
+                this.graphElement.style.left = this.currentPosition.x + 'px';
+                this.graphElement.style.top = this.currentPosition.y + 'px';
+            } else {
+                this.zoom = MINZOOM;
+            }
         });
     }
     override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
@@ -207,6 +220,8 @@ export class Cfg extends Pane<CfgState> {
         //console.log("test");
         //console.log(fn.nodes);
         const x = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.graphDimensions.width = x.getWidth();
+        this.graphDimensions.height = x.getHeight();
         this.graphDiv.style.height = x.getHeight() + 'px';
         this.graphDiv.style.width = x.getWidth() + 'px';
         this.canvas.style.height = x.getHeight() + 'px';

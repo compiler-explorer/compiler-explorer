@@ -397,6 +397,7 @@ pre.content.wrap * {
         position: absolute;
         top: 0;
         left: 0;
+        transform-origin: top left;
         canvas {
             position: absolute;
             top: 0;
