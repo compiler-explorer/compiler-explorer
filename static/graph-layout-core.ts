@@ -24,6 +24,8 @@
 
 import { AnnotatedCfgDescriptor, AnnotatedNodeDescriptor } from "./compilation/cfg.interfaces";
 
+import IntervalTree from '@flatten-js/interval-tree';
+
 // Much of the algorithm is inspired from
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
 // Thanks to the cutter team for their great documentation!
@@ -84,9 +86,15 @@ type RowDescriptor = {
     height: number;
     totalOffset: number;
 };
-type EdgeColumnRowMetadata = {
-    currentOffset: number;
+type EdgeColumnMetadata = {
+    subcolumns: number;
+    intervals: IntervalTree<EdgeSegment>[]; // pointers to segments
 };
+type EdgeRowMetadata = {
+    subrows: number;
+    intervals: IntervalTree<EdgeSegment>[]; // pointers to segments
+};
+
 
 export class GraphLayoutCore {
     // We use an adjacency list here
@@ -95,8 +103,8 @@ export class GraphLayoutCore {
     rowCount: number;
     blockColumns: ColumnDescriptor[];
     blockRows: RowDescriptor[];
-    edgeColumns: (ColumnDescriptor & EdgeColumnRowMetadata)[];
-    edgeRows: (RowDescriptor & EdgeColumnRowMetadata)[];
+    edgeColumns: (ColumnDescriptor & EdgeColumnMetadata)[];
+    edgeRows: (RowDescriptor & EdgeRowMetadata)[];
 
     constructor(cfg: AnnotatedCfgDescriptor) {
         // block id -> block
@@ -306,12 +314,14 @@ export class GraphLayoutCore {
         this.edgeRows = Array(this.rowCount + 1).fill(0).map(() => ({
             height: 20,
             totalOffset: 0,
-            currentOffset: 0
+            subrows: 0,
+            intervals: []
         }));
         this.edgeColumns = Array(this.columnCount + 1).fill(0).map(() => ({
             width: 20,
             totalOffset: 0,
-            currentOffset: 0
+            subcolumns: 0,
+            intervals: []
         }));
     }
 
@@ -375,8 +385,16 @@ export class GraphLayoutCore {
                     // hamming distance
                     const distanceLeft = Math.abs(sourceColumn - leftCandidate) + Math.abs(sourceColumn - rightCandidate);
                     const distanceRight = Math.abs(targetColumn - leftCandidate) + Math.abs(targetColumn - rightCandidate);
-                    // TODO: Handle if they are both equally close
-                    if(distanceLeft < distanceRight) {
+                    if(distanceLeft == distanceRight) {
+                        // Place true branches on the left
+                        // TODO: Need to investigate further block placement stuff here
+                        // TODO: Need to investigate further offset placement stuff for the start segments
+                        if(edge.color == "green") {
+                            edge.mainColumn = leftCandidate;
+                        } else {
+                            edge.mainColumn = rightCandidate;
+                        }
+                    } else if(distanceLeft < distanceRight) {
                         edge.mainColumn = leftCandidate;
                     } else {
                         edge.mainColumn = rightCandidate;
@@ -505,24 +523,80 @@ export class GraphLayoutCore {
                 if(edge.path.length == 2) {
                     // Special case: both segments are sentinels
                     const col = this.edgeColumns[edge.path[0].start.col];
-                    col.currentOffset += 10;
-                    edge.path[0].horizontalOffset = col.currentOffset;
-                    edge.path[1].horizontalOffset = col.currentOffset;
-                    col.width += 10;
+                    //col.currentOffset += 10;
+                    //edge.path[0].horizontalOffset = col.currentOffset;
+                    //edge.path[1].horizontalOffset = col.currentOffset;
+                    //col.width += 10;
+                    const interval: [number, number] = [edge.path[0].start.row, edge.path[1].end.row];
+                    let inserted = false;
+                    for(const tree of col.intervals) {
+                        if(!tree.intersect_any(interval)) {
+                            tree.insert(interval, edge.path[0]); // TODO, path[1] too.....
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if(!inserted) {
+                        const tree = new IntervalTree<EdgeSegment>();
+                        col.intervals.push(tree);
+                        col.subcolumns++;
+                        tree.insert(interval, edge.path[0]); // TODO, path[1] too.....
+                    }
                 } else {
                     for(const segment of edge.path) {
                         if(segment.type == EdgeType.Vertical) {
                             if(segment.start.col != segment.end.col) { console.log(segment); throw Error("foobar"); };
                             const col = this.edgeColumns[segment.start.col];
-                            segment.horizontalOffset = (col.currentOffset += 10);
-                            col.width += 10;
+                            let inserted = false;
+                            for(const tree of col.intervals) {
+                                if(!tree.intersect_any([segment.start.row, segment.end.row])) {
+                                    tree.insert([segment.start.row, segment.end.row], segment);
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                            if(!inserted) {
+                                const tree = new IntervalTree<EdgeSegment>();
+                                col.intervals.push(tree);
+                                col.subcolumns++;
+                                tree.insert([segment.start.row, segment.end.row], segment);
+                            }
                         } else { // horizontal
                             if(segment.start.row != segment.end.row) { console.log(segment); throw Error("foobar"); };
                             const row = this.edgeRows[segment.start.row];
-                            segment.verticalOffset = (row.currentOffset += 10);
-                            row.height += 10;
+                            let inserted = false;
+                            for(const tree of row.intervals) {
+                                if(!tree.intersect_any([segment.start.col, segment.end.col])) {
+                                    tree.insert([segment.start.col, segment.end.col], segment);
+                                    inserted = true;
+                                    break;
+                                }
+                            }
+                            if(!inserted) {
+                                const tree = new IntervalTree<EdgeSegment>();
+                                row.intervals.push(tree);
+                                row.subrows++;
+                                tree.insert([segment.start.col, segment.end.col], segment);
+                            }
                         }
                     }
+                }
+            }
+        }
+        for(const edgeColumn of this.edgeColumns) {
+            edgeColumn.width = Math.max(10 + edgeColumn.intervals.length * 10, 20);
+            console.log(JSON.stringify(edgeColumn.intervals.map(tree => tree.keys)));
+            for(const [i, intervalTree] of edgeColumn.intervals.entries()) {
+                for(const segment of intervalTree.values) {
+                    segment.horizontalOffset = 10 * (i + 1);
+                }
+            }
+        }
+        for(const edgeRow of this.edgeRows) {
+            edgeRow.height = Math.max(10 + edgeRow.intervals.length * 10, 20);
+            for(const [i, intervalTree] of edgeRow.intervals.entries()) {
+                for(const segment of intervalTree.values) {
+                    segment.verticalOffset = 10 * (i + 1);
                 }
             }
         }
@@ -645,7 +719,7 @@ export class GraphLayoutCore {
         // Add pixel coordinates
         this.computeCoordinates();
         //
-        //console.log(this);
+        console.log(this);
     }
 
     getWidth() {

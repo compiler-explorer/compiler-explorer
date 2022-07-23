@@ -20,6 +20,7 @@
     "cache": false
   },
   "dependencies": {
+    "@flatten-js/interval-tree": "^1.0.18",
     "@fortawesome/fontawesome-free": "^5.15.4",
     "@sentry/browser": "^6.16.1",
     "@sentry/node": "^6.16.1",
