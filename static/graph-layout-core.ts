@@ -410,9 +410,9 @@ export class GraphLayoutCore {
                     const rightCandidate = sourceColumn + blockedColumns.slice(sourceColumn).findIndex(v => v < topRow);
                     // hamming distance
                     const distanceLeft =
-                        Math.abs(sourceColumn - leftCandidate) + Math.abs(sourceColumn - rightCandidate);
+                        Math.abs(sourceColumn - leftCandidate) + Math.abs(targetColumn - leftCandidate);
                     const distanceRight =
-                        Math.abs(targetColumn - leftCandidate) + Math.abs(targetColumn - rightCandidate);
+                        Math.abs(sourceColumn - rightCandidate) + Math.abs(targetColumn - rightCandidate);
                     if (distanceLeft === distanceRight) {
                         // Place true branches on the left
                         // TODO: Need to investigate further block placement stuff here

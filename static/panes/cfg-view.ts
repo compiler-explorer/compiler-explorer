@@ -131,7 +131,7 @@ export class Cfg extends Pane<CfgState> {
         if (result.cfg) {
             const cfg = result.cfg as CFGResult;
             const fn = cfg[Object.keys(cfg)[0]];
-            this.blockContainer.innerHTML = "";
+            this.blockContainer.innerHTML = '';
             for (const node of fn.nodes) {
                 this.blockContainer.innerHTML += `<div class="block" data-bb-id="${
                     node.id
