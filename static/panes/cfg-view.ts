@@ -35,6 +35,7 @@ import {ga} from '../analytics';
 
 import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult} from '../../types/compilation/cfg.interfaces';
 import {GraphLayoutCore} from '../graph-layout-core';
+import * as MonacoConfig from '../monaco-config';
 
 const ColorTable = {
     red: '#fe4444',
@@ -79,17 +80,16 @@ export class Cfg extends Pane<CfgState> {
             //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override async onCompileResult(compilerId: number, compiler: any, result: any): Promise<void> {
         if (this.compilerInfo.compilerId !== compilerId) return;
         //console.log(result);
         if (result.cfg) {
             const cfg = result.cfg as CFGResult;
             const fn = cfg[Object.keys(cfg)[0]];
             for (const node of fn.nodes) {
-                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(
-                    /\n/g,
-                    '<br/>'
-                )}</div>`;
+                this.blockContainer.innerHTML += `<div class="block" data-bb-id="${
+                    node.id
+                }">${await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}))}</div>`;
             }
             for (const node of fn.nodes) {
                 //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];

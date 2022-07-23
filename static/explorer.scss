@@ -418,8 +418,9 @@ pre.content.wrap * {
                 padding: 5px;
                 color: white;
                 display: inline-block;
-                font-family: 'Courier New';
+                font-family: Consolas, 'Liberation Mono', Courier, monospace;
                 white-space: nowrap;
+                line-height: 100%;
             }
         }
     }
