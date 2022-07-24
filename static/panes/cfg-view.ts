@@ -39,10 +39,10 @@ import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
 
 const ColorTable = {
-    red: '#fe4444',
-    green: '#42da57',
-    blue: '#39a1f3',
-    grey: '#999999',
+    red: '#FE5D5D',
+    green: '#76E381',
+    blue: '#65B7F6',
+    grey: '#ADADAD',
 };
 
 type Coordinate = {
@@ -68,6 +68,8 @@ export class Cfg extends Pane<CfgState> {
     functionSelector: TomSelect;
     results: CFGResult;
     state: CfgState & PaneState;
+    ctx: CanvasRenderingContext2D;
+    layout: GraphLayoutCore;
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         super(hub, container, state);
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
@@ -109,6 +111,11 @@ export class Cfg extends Pane<CfgState> {
         this.blockContainer = this.domRoot.find('.block-container')[0];
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
+        const ctx = this.canvas.getContext('2d');
+        if (!ctx) {
+            throw Error('foobar');
+        }
+        this.ctx = ctx;
     }
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
@@ -135,7 +142,7 @@ export class Cfg extends Pane<CfgState> {
             }
         });
         this.graphContainer.addEventListener('wheel', e => {
-            const delta = DZOOM * -Math.sign(e.deltaY);
+            const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.zoom - 1);
             this.zoom += delta;
             if (this.zoom >= MINZOOM) {
                 this.graphElement.style.transform = `scale(${this.zoom})`;
@@ -147,8 +154,7 @@ export class Cfg extends Pane<CfgState> {
                 this.currentPosition.y -= (mouseY / (this.zoom - delta)) * delta;
                 this.graphElement.style.left = this.currentPosition.x + 'px';
                 this.graphElement.style.top = this.currentPosition.y + 'px';
-            } else {
-                this.zoom = MINZOOM;
+                this.renderEdges();
             }
         });
     }
@@ -198,14 +204,19 @@ export class Cfg extends Pane<CfgState> {
         }
     }
     async selectFunction(name: string) {
-        const fn = this.results[name];
         this.blockContainer.innerHTML = '';
+        if(!(name in this.results)) {
+            return;
+        }
+        const fn = this.results[name];
         for (const node of fn.nodes) {
             this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${await monaco.editor.colorize(
                 node.label,
                 'asm',
                 MonacoConfig.extendConfig({})
             )}</div>`;
+            //console.log(`<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/gi, "<br/>")}</div>`);
+            //this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/gi, "<br/>")}</div>`;
         }
         for (const node of fn.nodes) {
             //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];
@@ -215,55 +226,66 @@ export class Cfg extends Pane<CfgState> {
             void elem[0].offsetHeight;
             (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
             (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
+            elem[0].style.width = (node as AnnotatedNodeDescriptor).width + "px";
+            elem[0].style.height = (node as AnnotatedNodeDescriptor).height + "px";
             //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
         }
         //console.log("test");
         //console.log(fn.nodes);
-        const x = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
-        this.graphDimensions.width = x.getWidth();
-        this.graphDimensions.height = x.getHeight();
-        this.graphDiv.style.height = x.getHeight() + 'px';
-        this.graphDiv.style.width = x.getWidth() + 'px';
-        this.canvas.style.height = x.getHeight() + 'px';
-        this.canvas.style.width = x.getWidth() + 'px';
-        this.canvas.height = x.getHeight();
-        this.canvas.width = x.getWidth();
-        this.blockContainer.style.height = x.getHeight() + 'px';
-        this.blockContainer.style.width = x.getWidth() + 'px';
-        const ctx = this.canvas.getContext('2d');
-        if (!ctx) {
-            throw Error('foobar');
-        }
-        ctx.lineWidth = 2;
-        //ctx.strokeStyle = "#ffffff";
-        //ctx.fillStyle = "#ffffff";
-        for (const block of x.blocks) {
+        const layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.graphDimensions.width = layout.getWidth();
+        this.graphDimensions.height = layout.getHeight();
+        this.graphDiv.style.height = layout.getHeight() + 'px';
+        this.graphDiv.style.width = layout.getWidth() + 'px';
+        this.canvas.style.height = layout.getHeight() + 'px';
+        this.canvas.style.width = layout.getWidth() + 'px';
+        this.blockContainer.style.height = layout.getHeight() + 'px';
+        this.blockContainer.style.width = layout.getWidth() + 'px';
+        this.layout = layout;
+        for (const block of this.layout.blocks) {
             const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
             elem.style.top = block.coordinates.y + 'px';
             elem.style.left = block.coordinates.x + 'px';
+        }
+        this.renderEdges();
+    }
+    renderEdges() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const rawWidth = this.layout.getWidth();
+        const rawHeight = this.layout.getHeight();
+        this.canvas.width = rawWidth * this.zoom;
+        this.canvas.height = rawHeight * this.zoom;
+        this.ctx.lineWidth = 2 * this.zoom;
+        const S = (x: number, y: number): [number, number] => [
+            x / rawWidth * rawWidth * this.zoom,
+            y / rawHeight * rawHeight * this.zoom
+        ];
+        //ctx.strokeStyle = "#ffffff";
+        //ctx.fillStyle = "#ffffff";
+        for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
-                ctx.strokeStyle = ColorTable[edge.color];
-                ctx.fillStyle = ColorTable[edge.color];
-                ctx.beginPath();
-                for (const segment of edge.path) {
-                    ctx.moveTo(segment.start.x, segment.start.y);
-                    ctx.lineTo(segment.end.x, segment.end.y);
+                this.ctx.strokeStyle = ColorTable[edge.color];
+                this.ctx.fillStyle = ColorTable[edge.color];
+                this.ctx.beginPath();
+                if(edge.path.length == 0) {
+                    throw Error("foobar");
                 }
-                //ctx.moveTo(edge.path[0].x, edge.path[0].y);
-                //for(const pathPoint of edge.path.slice(1)) {
-                //    ctx.lineTo(pathPoint.x, pathPoint.y);
-                //}
-                ctx.stroke();
+                this.ctx.moveTo(...S(edge.path[0].start.x, edge.path[0].start.y));
                 const endpoint = edge.path[edge.path.length - 1].end;
                 const triangleHeight = 7;
                 const triangleWidth = 7;
-                ctx.beginPath();
-                ctx.moveTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
-                ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
-                ctx.lineTo(endpoint.x, endpoint.y);
-                ctx.lineTo(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight);
-                ctx.lineTo(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight);
-                ctx.fill();
+                for (const segment of edge.path.slice(0, edge.path.length - 1)) {
+                    this.ctx.lineTo(...S(segment.end.x, segment.end.y));
+                }
+                this.ctx.lineTo(...S(endpoint.x, endpoint.y - triangleHeight + 1));
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.moveTo(...S(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight));
+                this.ctx.lineTo(...S(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight));
+                this.ctx.lineTo(...S(endpoint.x, endpoint.y));
+                this.ctx.lineTo(...S(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight));
+                this.ctx.lineTo(...S(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight));
+                this.ctx.fill();
                 //ctx.stroke();
                 //ctx.fillRect(edge.path[edge.path.length - 1].x - 5, edge.path[edge.path.length - 1].y - 5, 10, 10);
             }
