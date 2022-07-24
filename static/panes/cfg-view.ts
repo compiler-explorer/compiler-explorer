@@ -55,7 +55,7 @@ const MINZOOM = 0.1;
 
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
-    canvas: HTMLCanvasElement;
+    svg: SVGElement;
     blockContainer: HTMLElement;
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
@@ -68,7 +68,6 @@ export class Cfg extends Pane<CfgState> {
     functionSelector: TomSelect;
     results: CFGResult;
     state: CfgState & PaneState;
-    ctx: CanvasRenderingContext2D;
     layout: GraphLayoutCore;
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         super(hub, container, state);
@@ -107,15 +106,10 @@ export class Cfg extends Pane<CfgState> {
     }
     override registerDynamicElements(state: CfgState) {
         this.graphDiv = this.domRoot.find('.graph')[0];
-        this.canvas = this.domRoot.find('canvas')[0] as HTMLCanvasElement;
+        this.svg = this.domRoot.find('svg')[0] as SVGElement;
         this.blockContainer = this.domRoot.find('.block-container')[0];
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
-        const ctx = this.canvas.getContext('2d');
-        if (!ctx) {
-            throw Error('foobar');
-        }
-        this.ctx = ctx;
     }
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
@@ -155,7 +149,6 @@ export class Cfg extends Pane<CfgState> {
                 this.currentPosition.y -= (mouseY / prevZoom) * delta;
                 this.graphElement.style.left = this.currentPosition.x + 'px';
                 this.graphElement.style.top = this.currentPosition.y + 'px';
-                this.renderEdges();
             } else {
                 this.zoom = MINZOOM;
             }
@@ -208,7 +201,7 @@ export class Cfg extends Pane<CfgState> {
     }
     async selectFunction(name: string) {
         this.blockContainer.innerHTML = '';
-        if(!(name in this.results)) {
+        if (!(name in this.results)) {
             return;
         }
         const fn = this.results[name];
@@ -229,80 +222,62 @@ export class Cfg extends Pane<CfgState> {
             void elem[0].offsetHeight;
             (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
             (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
-            elem[0].style.width = (node as AnnotatedNodeDescriptor).width + "px";
-            elem[0].style.height = (node as AnnotatedNodeDescriptor).height + "px";
+            elem[0].style.width = (node as AnnotatedNodeDescriptor).width + 'px';
+            elem[0].style.height = (node as AnnotatedNodeDescriptor).height + 'px';
             //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
         }
         //console.log("test");
         //console.log(fn.nodes);
         const layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
-        this.graphDimensions.width = layout.getWidth();
-        this.graphDimensions.height = layout.getHeight();
-        this.graphDiv.style.height = layout.getHeight() + 'px';
-        this.graphDiv.style.width = layout.getWidth() + 'px';
-        this.canvas.style.height = layout.getHeight() + 'px';
-        this.canvas.style.width = layout.getWidth() + 'px';
-        this.blockContainer.style.height = layout.getHeight() + 'px';
-        this.blockContainer.style.width = layout.getWidth() + 'px';
+        const width = layout.getWidth();
+        const height = layout.getHeight();
+        this.graphDimensions.width = width;
+        this.graphDimensions.height = height;
+        this.graphDiv.style.height = height + 'px';
+        this.graphDiv.style.width = width + 'px';
+        this.svg.style.height = height + 'px';
+        this.svg.style.width = width + 'px';
+        this.blockContainer.style.height = height + 'px';
+        this.blockContainer.style.width = width + 'px';
         this.layout = layout;
         for (const block of this.layout.blocks) {
             const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
             elem.style.top = block.coordinates.y + 'px';
             elem.style.left = block.coordinates.x + 'px';
         }
-        this.renderEdges();
-    }
-    renderEdges() {
-        const start = performance.now();
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        const rawWidth = this.layout.getWidth();
-        const rawHeight = this.layout.getHeight();
-        this.canvas.width = rawWidth * this.zoom;
-        this.canvas.height = rawHeight * this.zoom;
-        this.ctx.lineWidth = 2 * this.zoom;
-        const S = (x: number, y: number): [number, number] => [
-            x / rawWidth * rawWidth * this.zoom,
-            y / rawHeight * rawHeight * this.zoom
-        ];
-        //ctx.strokeStyle = "#ffffff";
-        //ctx.fillStyle = "#ffffff";
+
+        this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        this.svg.innerHTML = '';
+
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
-                this.ctx.strokeStyle = ColorTable[edge.color];
-                this.ctx.fillStyle = ColorTable[edge.color];
-                this.ctx.beginPath();
-                if(edge.path.length == 0) {
-                    throw Error("foobar");
+                if (edge.path.length == 0) {
+                    throw Error('foobar');
                 }
-                this.ctx.moveTo(...S(edge.path[0].start.x, edge.path[0].start.y));
+                const points: [number, number][] = [];
+                points.push([edge.path[0].start.x, edge.path[0].start.y - 1]);
                 const endpoint = edge.path[edge.path.length - 1].end;
                 const triangleHeight = 7;
                 const triangleWidth = 7;
                 for (const segment of edge.path.slice(0, edge.path.length - 1)) {
-                    this.ctx.lineTo(...S(segment.end.x, segment.end.y));
+                    points.push([segment.end.x, segment.end.y]);
                 }
-                this.ctx.lineTo(...S(endpoint.x, endpoint.y - triangleHeight + 1));
-                this.ctx.stroke();
-                this.ctx.beginPath();
-                this.ctx.moveTo(...S(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight));
-                this.ctx.lineTo(...S(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight));
-                this.ctx.lineTo(...S(endpoint.x, endpoint.y));
-                this.ctx.lineTo(...S(endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight));
-                this.ctx.lineTo(...S(endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight));
-                this.ctx.fill();
-                //ctx.stroke();
-                //ctx.fillRect(edge.path[edge.path.length - 1].x - 5, edge.path[edge.path.length - 1].y - 5, 10, 10);
+                points.push([endpoint.x, endpoint.y - triangleHeight + 1]);
+                this.svg.innerHTML += `<polyline points="${points
+                    .map(coord => coord.join(','))
+                    .join(' ')}" fill="none" stroke="${ColorTable[edge.color]}" stroke-width="2" />`;
+
+                const trianglePoints: [number, number][] = [];
+                trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
+                trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
+                trianglePoints.push([endpoint.x, endpoint.y]);
+                trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
+                trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
+                this.svg.innerHTML += `<polyline points="${trianglePoints
+                    .map(coord => coord.join(','))
+                    .join(' ')}" fill="${ColorTable[edge.color]}" />`;
             }
         }
-        const end = performance.now();
-        console.log("Render time:", end - start, "ms");
-        //ctx.strokeStyle = "red";
-        //for(const blockRow of x.blockRows) {
-        //    ctx.strokeRect(0, blockRow.totalOffset, 100, blockRow.height);
-        //}
-        //for(const blockRow of x.blockColumns) {
-        //    ctx.strokeRect(blockRow.totalOffset, 0, blockRow.width, 100);
-        //}
     }
     override resize() {
         //const topBarHeight = this.topBar.outerHeight(true) as number;

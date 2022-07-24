@@ -185,10 +185,6 @@ export class GraphLayoutCore {
         // TODO: Need an actual function entry point from the backend, or will it always be at index 0?
         this.dfs(visited, order, 0);
         for (let i = 0; i < this.blocks.length; i++) {
-            //// Let's assume one entry point for now.... No weird edge cases...
-            //if(visited[i] != DfsState.Visited) {
-            //    throw Error("");
-            //}
             this.dfs(visited, order, i);
         }
         // we've computed a post-DFS ordering which is always a reverse topological ordering
@@ -303,6 +299,14 @@ export class GraphLayoutCore {
         // Post DFS order means we compute all children before their parents
         for (const i of topologicalOrder.slice().reverse()) {
             this.computeTreeColumnPositions(i);
+        }
+        // We have a forrest, CFGs can have multiple source nodes
+        const trees = Array.from(this.blocks.entries()).filter(([_, block]) => block.treeParent === null);
+        // Place trees next to each other
+        let offset = 0;
+        for (const [i, tree] of trees) {
+            this.adjustSubtree(i, 0, offset);
+            offset += tree.boundingBox.cols;
         }
     }
 
