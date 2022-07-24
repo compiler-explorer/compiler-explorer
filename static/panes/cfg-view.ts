@@ -69,6 +69,7 @@ export class Cfg extends Pane<CfgState> {
     results: CFGResult;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
+
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         super(hub, container, state);
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
@@ -91,12 +92,15 @@ export class Cfg extends Pane<CfgState> {
         });
         this.state = state;
     }
+
     override getInitialHTML() {
         return $('#cfg').html();
     }
+
     override getDefaultPaneName() {
         return 'CFG';
     }
+
     override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -104,6 +108,7 @@ export class Cfg extends Pane<CfgState> {
             eventAction: 'CFGViewPane',
         });
     }
+
     override registerDynamicElements(state: CfgState) {
         this.graphDiv = this.domRoot.find('.graph')[0];
         this.svg = this.domRoot.find('svg')[0] as SVGElement;
@@ -111,6 +116,7 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
     }
+
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
             const div = (e.target as Element).closest('div');
@@ -154,6 +160,7 @@ export class Cfg extends Pane<CfgState> {
             }
         });
     }
+
     override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
@@ -164,6 +171,7 @@ export class Cfg extends Pane<CfgState> {
             //this.editor.setValue('<LLVM IR output is not supported for this compiler>');
         }
     }
+
     override onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerInfo.compilerId !== compilerId) return;
         //console.log(result);
@@ -199,6 +207,8 @@ export class Cfg extends Pane<CfgState> {
             this.selectFunction(this.state.selectedFunction);
         }
     }
+
+    // eslint-disable-next-line max-statements
     async selectFunction(name: string) {
         this.blockContainer.innerHTML = '';
         if (!(name in this.results)) {
@@ -247,11 +257,15 @@ export class Cfg extends Pane<CfgState> {
         }
 
         this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        this.svg.innerHTML = '';
+        this.svg.innerHTML = `
+        <filter id="shadow" x="0" y="0" width="200%" height="200%">
+            <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#000000" flood-opacity="1" />
+        </filter>
+        `;
 
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
-                if (edge.path.length == 0) {
+                if (edge.path.length === 0) {
                     throw Error('foobar');
                 }
                 const points: [number, number][] = [];
@@ -265,7 +279,9 @@ export class Cfg extends Pane<CfgState> {
                 points.push([endpoint.x, endpoint.y - triangleHeight + 1]);
                 this.svg.innerHTML += `<polyline points="${points
                     .map(coord => coord.join(','))
-                    .join(' ')}" fill="none" stroke="${ColorTable[edge.color]}" stroke-width="2" />`;
+                    .join(' ')}" fill="none" stroke="${
+                    ColorTable[edge.color]
+                }" stroke-width="2" filter="url(#shadow)" shape-rendering="crispEdges" />`;
 
                 const trianglePoints: [number, number][] = [];
                 trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
@@ -275,10 +291,11 @@ export class Cfg extends Pane<CfgState> {
                 trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
                 this.svg.innerHTML += `<polyline points="${trianglePoints
                     .map(coord => coord.join(','))
-                    .join(' ')}" fill="${ColorTable[edge.color]}" />`;
+                    .join(' ')}" fill="${ColorTable[edge.color]}" filter="url(#shadow)" />`;
             }
         }
     }
+
     override resize() {
         //const topBarHeight = this.topBar.outerHeight(true) as number;
         //this.editor.layout({
@@ -286,6 +303,7 @@ export class Cfg extends Pane<CfgState> {
         //    height: (this.domRoot.height() as number) - topBarHeight,
         //});
     }
+
     override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('cfgViewClosed', this.compilerInfo.compilerId);
