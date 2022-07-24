@@ -143,6 +143,7 @@ export class Cfg extends Pane<CfgState> {
         });
         this.graphContainer.addEventListener('wheel', e => {
             const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.zoom - 1);
+            const prevZoom = this.zoom;
             this.zoom += delta;
             if (this.zoom >= MINZOOM) {
                 this.graphElement.style.transform = `scale(${this.zoom})`;
@@ -150,11 +151,13 @@ export class Cfg extends Pane<CfgState> {
                 const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
                 // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
                 // And same for y. The width / height terms cancel.
-                this.currentPosition.x -= (mouseX / (this.zoom - delta)) * delta;
-                this.currentPosition.y -= (mouseY / (this.zoom - delta)) * delta;
+                this.currentPosition.x -= (mouseX / prevZoom) * delta;
+                this.currentPosition.y -= (mouseY / prevZoom) * delta;
                 this.graphElement.style.left = this.currentPosition.x + 'px';
                 this.graphElement.style.top = this.currentPosition.y + 'px';
                 this.renderEdges();
+            } else {
+                this.zoom = MINZOOM;
             }
         });
     }
@@ -250,6 +253,7 @@ export class Cfg extends Pane<CfgState> {
         this.renderEdges();
     }
     renderEdges() {
+        const start = performance.now();
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const rawWidth = this.layout.getWidth();
         const rawHeight = this.layout.getHeight();
@@ -290,6 +294,8 @@ export class Cfg extends Pane<CfgState> {
                 //ctx.fillRect(edge.path[edge.path.length - 1].x - 5, edge.path[edge.path.length - 1].y - 5, 10, 10);
             }
         }
+        const end = performance.now();
+        console.log("Render time:", end - start, "ms");
         //ctx.strokeStyle = "red";
         //for(const blockRow of x.blockRows) {
         //    ctx.strokeRect(0, blockRow.totalOffset, 100, blockRow.height);
