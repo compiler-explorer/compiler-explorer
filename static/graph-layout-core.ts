@@ -582,7 +582,6 @@ export class GraphLayoutCore {
                 for (const segment of edge.path) {
                     if (segment.type === EdgeType.Vertical) {
                         if (segment.start.col !== segment.end.col) {
-                            console.log(segment);
                             throw Error('foobar');
                         }
                         const col = this.edgeColumns[segment.start.col];
@@ -603,7 +602,6 @@ export class GraphLayoutCore {
                     } else {
                         // horizontal
                         if (segment.start.row !== segment.end.row) {
-                            console.log(segment);
                             throw Error('foobar');
                         }
                         const row = this.edgeRows[segment.start.row];
@@ -627,7 +625,6 @@ export class GraphLayoutCore {
         }
         for (const edgeColumn of this.edgeColumns) {
             edgeColumn.width = Math.max(10 + edgeColumn.intervals.length * 10, 20);
-            console.log(JSON.stringify(edgeColumn.intervals.map(tree => tree.keys)));
             for (const [i, intervalTree] of edgeColumn.intervals.entries()) {
                 for (const segment of intervalTree.values) {
                     segment.horizontalOffset = 10 * (i + 1);

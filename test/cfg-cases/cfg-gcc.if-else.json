@@ -1085,7 +1085,7 @@
       "nodes": [
         {
           "id": "_GLOBAL__sub_I_main:",
-          "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init(\n  add rsp, 8\n  jmp __cxa_atexit",
+          "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init()\n  add rsp, 8\n  jmp __cxa_atexit",
           "color": "#99ccff",
           "shape": "box"
         }
