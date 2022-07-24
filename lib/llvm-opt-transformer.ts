@@ -46,9 +46,15 @@ interface DebugLoc {
 
 function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return optInfo.Args.reduce((acc, x) => {
-        return (
-            acc + R.pipe(R.partial(R.pickBy, [(v: any, k: string) => k !== 'DebugLoc']), R.toPairs, R.head, R.last)(x)
-        );
+        let inc = '';
+        for (const [key, value] of Object.entries(x)) {
+            if (key === 'DebugLoc') {
+                inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+            } else {
+                inc += value;
+            }
+        }
+        return acc + inc;
     }, '');
 }
 
