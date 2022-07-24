@@ -232,8 +232,8 @@ export class Cfg extends Pane<CfgState> {
             void elem[0].offsetHeight;
             (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
             (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
-            elem[0].style.width = (node as AnnotatedNodeDescriptor).width + 'px';
-            elem[0].style.height = (node as AnnotatedNodeDescriptor).height + 'px';
+            //elem[0].style.width = (node as AnnotatedNodeDescriptor).width + 'px';
+            //elem[0].style.height = (node as AnnotatedNodeDescriptor).height + 'px';
             //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
         }
         //console.log("test");
@@ -254,14 +254,12 @@ export class Cfg extends Pane<CfgState> {
             const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
             elem.style.top = block.coordinates.y + 'px';
             elem.style.left = block.coordinates.x + 'px';
+            elem.style.width = block.data.width + 'px';
+            elem.style.height = block.data.height + 'px';
         }
 
         this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        this.svg.innerHTML = `
-        <filter id="shadow" x="0" y="0" width="200%" height="200%">
-            <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="#000000" flood-opacity="1" />
-        </filter>
-        `;
+        this.svg.innerHTML = '';
 
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
@@ -281,7 +279,7 @@ export class Cfg extends Pane<CfgState> {
                     .map(coord => coord.join(','))
                     .join(' ')}" fill="none" stroke="${
                     ColorTable[edge.color]
-                }" stroke-width="2" filter="url(#shadow)" shape-rendering="crispEdges" />`;
+                }" stroke-width="2" />`;
 
                 const trianglePoints: [number, number][] = [];
                 trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
@@ -291,7 +289,7 @@ export class Cfg extends Pane<CfgState> {
                 trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
                 this.svg.innerHTML += `<polyline points="${trianglePoints
                     .map(coord => coord.join(','))
-                    .join(' ')}" fill="${ColorTable[edge.color]}" filter="url(#shadow)" />`;
+                    .join(' ')}" fill="${ColorTable[edge.color]}" />`;
             }
         }
     }

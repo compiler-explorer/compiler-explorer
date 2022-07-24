@@ -77,6 +77,7 @@ type Block = {
     col: number;
     boundingBox: BoundingBox;
     coordinates: Coordinate;
+    incidentEdgeCount: number;
 };
 
 enum DfsState {
@@ -102,6 +103,8 @@ type EdgeRowMetadata = {
     intervals: IntervalTree<EdgeSegment>[]; // pointers to segments
 };
 
+const EDGE_SPACING = 10;
+
 export class GraphLayoutCore {
     // We use an adjacency list here
     blocks: Block[] = [];
@@ -126,6 +129,7 @@ export class GraphLayoutCore {
                 col: 0,
                 boundingBox: {rows: 0, cols: 0},
                 coordinates: {x: 0, y: 0},
+                incidentEdgeCount: 0
             };
             this.blocks.push(block);
             blockMap[node.id] = this.blocks.length - 1;
@@ -161,6 +165,7 @@ export class GraphLayoutCore {
             visited[node] = DfsState.Pending;
             const block = this.blocks[node];
             for (const edge of block.edges) {
+                this.blocks[edge.dest].incidentEdgeCount++;
                 // If we reach another pending node it's a loop edge.
                 // If we reach an unvisited node it's fine, if we reach a visited node that's also part of the dag
                 if (visited[edge.dest] !== DfsState.Pending) {
@@ -329,7 +334,7 @@ export class GraphLayoutCore {
         this.edgeRows = Array(this.rowCount + 1)
             .fill(0)
             .map(() => ({
-                height: 20,
+                height: 2 * EDGE_SPACING,
                 totalOffset: 0,
                 subrows: 0,
                 intervals: [],
@@ -337,7 +342,7 @@ export class GraphLayoutCore {
         this.edgeColumns = Array(this.columnCount + 1)
             .fill(0)
             .map(() => ({
-                width: 20,
+                width: 2 * EDGE_SPACING,
                 totalOffset: 0,
                 subcolumns: 0,
                 intervals: [],
@@ -582,7 +587,7 @@ export class GraphLayoutCore {
                         }
                     }
                 }
-                // Compute offsets
+                // Compute subrows/subcolumns
                 for (const segment of edge.path) {
                     if (segment.type === EdgeType.Vertical) {
                         if (segment.start.col !== segment.end.col) {
@@ -611,7 +616,7 @@ export class GraphLayoutCore {
                         const row = this.edgeRows[segment.start.row];
                         let inserted = false;
                         for (const tree of row.intervals) {
-                            if (!tree.intersect_any([segment.start.col, segment.end.col])) {
+                            if (!tree.intersect_any([segment.start.col - 1, segment.end.col])) {
                                 tree.insert([segment.start.col, segment.end.col], segment);
                                 inserted = true;
                                 break;
@@ -627,19 +632,20 @@ export class GraphLayoutCore {
                 }
             }
         }
+        // Assign offsets
         for (const edgeColumn of this.edgeColumns) {
-            edgeColumn.width = Math.max(10 + edgeColumn.intervals.length * 10, 20);
+            edgeColumn.width = Math.max(EDGE_SPACING + edgeColumn.intervals.length * EDGE_SPACING, 2 * EDGE_SPACING);
             for (const [i, intervalTree] of edgeColumn.intervals.entries()) {
                 for (const segment of intervalTree.values) {
-                    segment.horizontalOffset = 10 * (i + 1);
+                    segment.horizontalOffset = EDGE_SPACING * (i + 1);
                 }
             }
         }
         for (const edgeRow of this.edgeRows) {
-            edgeRow.height = Math.max(10 + edgeRow.intervals.length * 10, 20);
+            edgeRow.height = Math.max(EDGE_SPACING + edgeRow.intervals.length * EDGE_SPACING, 2 * EDGE_SPACING);
             for (const [i, intervalTree] of edgeRow.intervals.entries()) {
                 for (const segment of intervalTree.values) {
-                    segment.verticalOffset = 10 * (i + 1);
+                    segment.verticalOffset = EDGE_SPACING * (i + 1);
                 }
             }
         }
@@ -649,6 +655,8 @@ export class GraphLayoutCore {
     computeCoordinates() {
         // Compute block row widths and heights
         for (const block of this.blocks) {
+            // Update block width if it has a ton of incoming edges
+            block.data.width = Math.max(block.data.width, (block.incidentEdgeCount - 1) * EDGE_SPACING);
             //console.log(this.blockRows[block.row].height, block.data.height, block.row);
             //console.log(this.blockRows);
             const halfWidth = (block.data.width - this.edgeColumns[block.col + 1].width) / 2;
@@ -752,6 +760,7 @@ export class GraphLayoutCore {
         // Edge routing
         this.computeEdgeMainColumns();
         this.addEdgePaths();
+        // -- Nothing is pixel aware above this line ---
         // Add pixel coordinates
         this.computeCoordinates();
         //
