@@ -1372,12 +1372,8 @@ Editor.prototype.getAllOutputAndErrors = function (result, compilerName, compile
     return all;
 };
 
-Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-    if (!this.ourCompilers[compilerId]) return;
-
-    this.busyCompilers[compilerId] = false;
-    var output = this.getAllOutputAndErrors(result, compiler.name, compilerId);
-    var widgets = _.compact(
+Editor.prototype.collectOutputWidgets = function (output) {
+    return _.compact(
         _.map(
             output,
             function (obj) {
@@ -1434,7 +1430,11 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             this
         )
     );
+};
+
+Editor.prototype.setDecorationTags = function (widgets) {
     monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+
     this.decorations.tags = _.map(
         widgets,
         function (tag) {
@@ -1449,6 +1449,14 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         this
     );
     this.updateDecorations();
+};
+
+Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
+    if (!this.ourCompilers[compilerId]) return;
+
+    this.busyCompilers[compilerId] = false;
+
+    this.setDecorationTags(this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name,  compilerId)));
 
     if (result.result && result.result.asm) {
         this.asmByCompiler[compilerId] = result.result.asm;
@@ -1465,86 +1473,11 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     this.numberUsedLines();
 };
 
-Editor.prototype.handleExecuteResponse = function (id, compilerName, result) {
-
-};
-
 Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
     var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
     output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
-    var widgets = _.compact(
-        _.map(
-            output,
-            function (obj) {
-                if (!obj.tag) return;
 
-                var trees = this.hub.trees;
-                if (trees && trees.length > 0) {
-                    if (obj.tag.file) {
-                        if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
-                            return;
-                        }
-                    } else {
-                        if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
-                            return;
-                        }
-                    }
-                }
-
-                var colBegin = 0;
-                var colEnd = Infinity;
-                var lineBegin = obj.tag.line;
-                var lineEnd = obj.tag.line;
-                if (obj.tag.column) {
-                    if (obj.tag.endcolumn) {
-                        colBegin = obj.tag.column;
-                        colEnd = obj.tag.endcolumn;
-                        lineBegin = obj.tag.line;
-                        lineEnd = obj.tag.endline;
-                    } else {
-                        var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
-                        colBegin = obj.tag.column;
-                        colEnd = span.colEnd;
-                        if (colEnd === obj.tag.column) colEnd = -1;
-                    }
-                }
-                var link;
-                if (obj.tag.link) {
-                    link = {
-                        value: obj.tag.link.text,
-                        target: obj.tag.link.url,
-                    };
-                }
-                return {
-                    severity: obj.tag.severity,
-                    message: obj.tag.text,
-                    source: obj.source,
-                    startLineNumber: lineBegin,
-                    startColumn: colBegin,
-                    endLineNumber: lineEnd,
-                    endColumn: colEnd,
-                    code: link,
-                };
-            },
-            this
-        )
-    );
-
-    monaco.editor.setModelMarkers(this.editor.getModel(), 'Executor ' + executorId, widgets);
-    this.decorations.tags = _.map(
-        widgets,
-        function (tag) {
-            return {
-                range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
-                options: {
-                    isWholeLine: false,
-                    inlineClassName: 'error-code',
-                },
-            };
-        },
-        this
-    );
-    this.updateDecorations();
+    this.setDecorationTags(this.collectOutputWidgets(output));
 
     this.numberUsedLines();
 };
