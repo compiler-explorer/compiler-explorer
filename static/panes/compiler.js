@@ -47,6 +47,7 @@ var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -2084,11 +2085,23 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
 
     if (!this.compiler) return;
 
-    var addTool = _.bind(function (toolName, title) {
+    var addTool = _.bind(function (toolName, title, toolIcon, toolIconDark) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
+        if (toolIcon) {
+            const light = toolIcons(toolIcon);
+            const dark = toolIconDark ? toolIcons(toolIconDark) : light;
+            btn.append(
+                `<span class="dropdown-icon fas">
+                <img src="${light}" class="theme-light-only" width="16px" style="max-height: 16px"/>
+                <img src="${dark}" class="theme-dark-only" width="16px" style="max-height: 16px"/>
+                </span>`
+            );
+        } else {
+            btn.append("<span class='dropdown-icon fas fa-cog'></span>");
+        }
+        btn.append(title);
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
@@ -2103,7 +2116,7 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
             this.compiler.tools,
             _.bind(function (tool) {
                 if (this.isSupportedTool(tool)) {
-                    addTool(tool.tool.id, tool.tool.name);
+                    addTool(tool.tool.id, tool.tool.name, tool.tool.icon, tool.tool.darkIcon);
                 }
             }, this)
         );
