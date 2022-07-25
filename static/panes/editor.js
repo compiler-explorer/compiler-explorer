@@ -57,7 +57,6 @@ function Editor(hub, state, container) {
     this.ourCompilers = {};
     this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
-    this.widgetsByCompiler = {};
     this.asmByCompiler = {};
     this.defaultFileByCompiler = {};
     this.busyCompilers = {};
@@ -1323,8 +1322,7 @@ Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
     }
 
     if (this.ourCompilers[compilerId]) {
-        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
-        delete this.widgetsByCompiler[compilerId];
+        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);;
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
@@ -1336,6 +1334,7 @@ Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
 Editor.prototype.onExecutorClose = function (id) {
     if (this.ourExecutors[id]) {
         delete this.ourExecutors[id];
+        monaco.editor.setModelMarkers(this.editor.getModel(), 'Executor ' + id, []);
     }
 };
 
@@ -1352,7 +1351,7 @@ Editor.prototype.addSource = function (arr, source) {
 };
 
 Editor.prototype.getAllOutputAndErrors = function (result, compilerName, compilerId) {
-    const compilerTitle = compilerName + ' #' + compilerId;
+    var compilerTitle = compilerName + ' #' + compilerId;
     var all = this.addSource(result.stdout || [], compilerTitle);
 
     if (result.buildsteps) {
@@ -1432,8 +1431,8 @@ Editor.prototype.collectOutputWidgets = function (output) {
     );
 };
 
-Editor.prototype.setDecorationTags = function (widgets) {
-    monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+Editor.prototype.setDecorationTags = function (widgets, ownerId) {
+    monaco.editor.setModelMarkers(this.editor.getModel(), ownerId, widgets);
 
     this.decorations.tags = _.map(
         widgets,
@@ -1456,7 +1455,9 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 
     this.busyCompilers[compilerId] = false;
 
-    this.setDecorationTags(this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name,  compilerId)));
+    var widgets = this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name,  compilerId));
+
+    this.setDecorationTags(widgets, compilerId);
 
     if (result.result && result.result.asm) {
         this.asmByCompiler[compilerId] = result.result.asm;
@@ -1477,7 +1478,7 @@ Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
     var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
     output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
 
-    this.setDecorationTags(this.collectOutputWidgets(output));
+    this.setDecorationTags(this.collectOutputWidgets(output), 'Executor '+ executorId);
 
     this.numberUsedLines();
 };
