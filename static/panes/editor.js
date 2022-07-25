@@ -1677,6 +1677,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit('languageChange', this.id, newLangId);
+            this.decorations = {};
             this.maybeEmitChange(true);
             this.requestCompilation();
             ga.proxy('send', {
