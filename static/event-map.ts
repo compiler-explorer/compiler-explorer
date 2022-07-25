@@ -34,6 +34,7 @@ import {Motd} from './motd.interfaces';
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
 export type EventMap = {
+    activateOutputTab: (compilerId: number) => void;
     astViewClosed: (compilerId: number) => void;
     astViewOpened: (compilerId: number) => void;
     broadcastFontScale: (scale: number) => void;

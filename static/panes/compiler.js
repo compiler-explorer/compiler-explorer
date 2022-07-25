@@ -229,9 +229,13 @@ Compiler.prototype.initPanerButtons = function () {
     this.container.layoutManager.createDragSource(this.outputBtn, outputConfig);
     this.outputBtn.click(
         _.bind(function () {
-            var insertPoint =
-                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
-            insertPoint.addChild(outputConfig);
+            if (this.isOutputOpened) {
+                this.eventHub.emit('activateOutputTab', this.id);
+            } else {
+                var insertPoint =
+                    this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+                insertPoint.addChild(outputConfig);
+            }
         }, this)
     );
 
@@ -1525,7 +1529,7 @@ Compiler.prototype.onToolClosed = function (compilerId, toolSettings) {
 Compiler.prototype.onOutputOpened = function (compilerId) {
     if (this.id === compilerId) {
         this.isOutputOpened = true;
-        this.outputBtn.prop('disabled', true);
+        //this.outputBtn.prop('disabled', true);
         this.resendResult();
     }
 };
@@ -1533,7 +1537,7 @@ Compiler.prototype.onOutputOpened = function (compilerId) {
 Compiler.prototype.onOutputClosed = function (compilerId) {
     if (this.id === compilerId) {
         this.isOutputOpened = false;
-        this.outputBtn.prop('disabled', false);
+        //this.outputBtn.prop('disabled', false);
     }
 };
 
@@ -2126,6 +2130,8 @@ Compiler.prototype.enableToolButtons = function () {
 // eslint-disable-next-line max-statements
 Compiler.prototype.updateButtons = function () {
     if (!this.compiler) return;
+    //this.outputBtn.prop('disabled', this.isOutputOpened);
+
     var filters = this.getEffectiveFilters();
     // We can support intel output if the compiler supports it, or if we're compiling
     // to binary (as we can disassemble it however we like).

@@ -131,9 +131,17 @@ export class Output extends Pane<OutputState> {
             this.onKeydownCallback(e);
         };
 
+        this.eventHub.on('activateOutputTab', this.onActivateOutputTab.bind(this));
+
         $(document).on('click', this.clickCallback);
         // domRoot is not sufficient here
         $(document).on('keydown', this.keydownCallback);
+    }
+
+    onActivateOutputTab(compilerId: number) {
+        if (this.compilerInfo.compilerId === compilerId) {
+            this.hub.activateTabForContainer(this.container);
+        }
     }
 
     onOptionsChange() {
