@@ -1322,7 +1322,7 @@ Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
     }
 
     if (this.ourCompilers[compilerId]) {
-        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);;
+        monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
