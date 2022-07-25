@@ -24,7 +24,7 @@
 
 import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor} from '../types/compilation/cfg.interfaces';
 
-import IntervalTree from '@flatten-js/interval-tree';
+import IntervalTree, {Node} from '@flatten-js/interval-tree';
 
 // Much of the algorithm is inspired from
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
@@ -630,6 +630,91 @@ export class GraphLayoutCore {
                         }
                     }
                 }
+            }
+        }
+        // Throw everything away and do it all again, but smarter
+        for(const edgeColumn of this.edgeColumns) {
+            for(const intervalTree of edgeColumn.intervals) {
+                intervalTree.root = null as unknown as Node<EdgeSegment>;
+            }
+        }
+        for(const edgeRow of this.edgeRows) {
+            for(const intervalTree of edgeRow.intervals) {
+                intervalTree.root = null as unknown as Node<EdgeSegment>;
+            }
+        }
+        // Add edges in order of shortest edges first
+        const edges: (Edge & {length: number})[] = [];
+        for (const block of this.blocks) {
+            for (const edge of block.edges) {
+                edges.push({
+                    ...edge,
+                    length: edge.path
+                        .map(({start, end}) => Math.abs(start.col - end.col) + Math.abs(start.row - end.row))
+                        .reduce((A, x) => A + x)
+                });
+            }
+        }
+        edges.sort((a, b) => a.length - b.length);
+        for(const edge of edges) {
+            let previousSegment: EdgeSegment | null = null;
+            for(const segment of edge.path) {
+                if(segment.type === EdgeType.Vertical) {
+                    const col = this.edgeColumns[segment.start.col];
+                    const candidates = col.intervals.slice();
+                    if(previousSegment === null) {
+                        // This is the very first horizontal dropdown
+                        // Try to place at the center
+                        // Note: Will need to be changed if an edge can have multiple outgoing edges
+                        const center = Math.floor(candidates.length / 2);
+                        candidates.unshift(...candidates.slice(center, Math.min(center + 2, candidates.length)));
+                    } else {
+                        // Previous would be a horizontal segment
+                        if(previousSegment.start.col > segment.start.col) {
+                            // coming from the right
+                            candidates.reverse();
+                        } else {
+                            // coming from the left, pass
+                        }
+                    }
+                    let inserted = false;
+                    for (const tree of candidates) {
+                        if (!tree.intersect_any([segment.start.row, segment.end.row])) {
+                            tree.insert([segment.start.row, segment.end.row], segment);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if(!inserted) {
+                        throw Error("foobar");
+                    }
+                } else {
+                    // Horizontal
+                    const row = this.edgeRows[segment.start.row];
+                    const candidates = row.intervals.slice();
+                    if(previousSegment === null) {
+                        throw Error("Impossible");
+                    }
+                    // Previous would be a vertical segment
+                    if(previousSegment.start.row > segment.start.row) {
+                        // coming from below
+                        candidates.reverse();
+                    } else {
+                        // coming from above, pass
+                    }
+                    let inserted = false;
+                    for (const tree of candidates) {
+                        if (!tree.intersect_any([segment.start.col - 1, segment.end.col])) {
+                            tree.insert([segment.start.col, segment.end.col], segment);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if(!inserted) {
+                        throw Error("foobar");
+                    }
+                }
+                previousSegment = segment;
             }
         }
         // Assign offsets
