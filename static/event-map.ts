@@ -44,7 +44,7 @@ export type EventMap = {
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     compiler: (compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
-    compileResult: (compilerId: number, compiler: unknown, result: unknown) => void;
+    compileResult: (compilerId: number, compiler: unknown, result: unknown, language: Language) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
@@ -63,7 +63,7 @@ export type EventMap = {
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
-    executeResult: (executorId: number, compiler: any, result: any, languages?: Language) => void;
+    executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
         compiler: any,
