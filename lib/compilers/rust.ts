@@ -113,6 +113,13 @@ export class RustCompiler extends BaseCompiler {
         }
     }
 
+    override fixIncompatbleOptions(options, userOptions): any {
+        if (userOptions.includes(/--color=/)) {
+            options = options.filter(option => !option.startsWith('--color='));
+        }
+        return options;
+    }
+
     override optionsForBackend(backendOptions, outputFilename) {
         // The super class handles the GCC dump files that may be needed by
         // rustc-cg-gcc subclass.
