@@ -1421,7 +1421,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                         target: obj.tag.link.url,
                     };
                 }
-                const diag = {
+                var diag = {
                     severity: obj.tag.severity,
                     message: obj.tag.text,
                     source: obj.source,
