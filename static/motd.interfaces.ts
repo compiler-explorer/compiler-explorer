@@ -24,21 +24,23 @@
 
 import {editor} from 'monaco-editor/';
 
-interface Decoration {
+type Decoration = {
     decoration: editor.IModelDecorationOptions;
     filter: string[];
     name: string;
     regex: string;
-}
+};
 
-interface Ad {
-    filter?: string;
+export type Ad = {
+    filter: string[];
     html: string;
-}
+    valid_from?: string;
+    valid_until?: string;
+};
 
-export interface Motd {
+export type Motd = {
     ads?: Ad[];
     motd?: string;
     update?: string;
     decorations?: Decoration[];
-}
+};
