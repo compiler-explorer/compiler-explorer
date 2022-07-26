@@ -113,8 +113,8 @@ export class RustCompiler extends BaseCompiler {
         }
     }
 
-    override fixIncompatbleOptions(options: string[], userOptions: string[]): string[] {
-        if (userOptions.includes(/--color=/)) {
+    override fixIncompatibleOptions(options: string[], userOptions: string[]): string[] {
+        if (userOptions.filter(option => option.startsWith('--color=')).length > 0) {
             options = options.filter(option => !option.startsWith('--color='));
         }
         return options;
