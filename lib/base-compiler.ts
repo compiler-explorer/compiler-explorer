@@ -827,7 +827,7 @@ export class BaseCompiler {
         );
     }
 
-    fixIncompatbleOptions(options: string[], userOptions: string[]) {
+    protected fixIncompatbleOptions(options: string[], userOptions: string[]): string[] {
         return options;
     }
 
