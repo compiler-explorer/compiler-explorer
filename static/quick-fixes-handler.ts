@@ -25,11 +25,11 @@
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 
-interface RegisteredQuickFixes {
+type RegisteredQuickFixes = {
     compilerId: number;
     editorModel: monaco.editor.ITextModel;
     fixes: monaco.languages.CodeAction[];
-}
+};
 
 let registeredQuickFixes: RegisteredQuickFixes[] = [];
 const providersPerLanguage: Record<string, monaco.IDisposable> = {};

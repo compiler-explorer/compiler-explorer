@@ -1375,7 +1375,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
-    const editorModel = this.editor.getModel();
+    var editorModel = this.editor.getModel();
     var output = this.getAllOutputAndErrors(result, compiler.name, compilerId);
     var fixes = [];
     var widgets = _.compact(
