@@ -814,6 +814,7 @@ export class BaseCompiler {
         }
 
         userOptions = this.filterUserOptions(userOptions) || [];
+        options = this.fixIncompatibleOptions(options, userOptions);
         return this.orderArguments(
             options,
             inputFilename,
@@ -824,6 +825,10 @@ export class BaseCompiler {
             userOptions,
             staticLibLinks,
         );
+    }
+
+    protected fixIncompatibleOptions(options: string[], userOptions: string[]): string[] {
+        return options;
     }
 
     filterUserOptions(userOptions) {

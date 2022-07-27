@@ -525,6 +525,8 @@ describe('Options handler', () => {
                         options: [],
                         stdinHint: 'disabled',
                         type: 'independent',
+                        icon: undefined,
+                        darkIcon: undefined,
                     },
                 },
                 someothertool: {
@@ -543,6 +545,8 @@ describe('Options handler', () => {
                         options: [],
                         stdinHint: 'disabled',
                         type: 'independent',
+                        icon: undefined,
+                        darkIcon: undefined,
                     },
                 },
             },

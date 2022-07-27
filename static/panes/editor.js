@@ -35,6 +35,7 @@ var Alert = require('../alert').Alert;
 var ga = require('../analytics').ga;
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
+var quickFixesHandler = require('../quick-fixes-handler');
 var TomSelect = require('tom-select');
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
@@ -1374,7 +1375,9 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
+    var editorModel = this.editor.getModel();
     var output = this.getAllOutputAndErrors(result, compiler.name, compilerId);
+    var fixes = [];
     var widgets = _.compact(
         _.map(
             output,
@@ -1418,7 +1421,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                         target: obj.tag.link.url,
                     };
                 }
-                return {
+                var diag = {
                     severity: obj.tag.severity,
                     message: obj.tag.text,
                     source: obj.source,
@@ -1428,11 +1431,35 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     endColumn: colEnd,
                     code: link,
                 };
+                if (obj.tag.fixes) {
+                    fixes = fixes.concat(
+                        obj.tag.fixes.map(function (fs, ind) {
+                            return {
+                                title: fs.title,
+                                diagnostics: [diag],
+                                kind: 'quickfix',
+                                edit: {
+                                    edits: fs.edits.map(function (f) {
+                                        return {
+                                            resource: editorModel.uri,
+                                            edit: {
+                                                range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
+                                                text: f.text,
+                                            },
+                                        };
+                                    }),
+                                },
+                                isPreferred: ind === 0,
+                            };
+                        })
+                    );
+                }
+                return diag;
             },
             this
         )
     );
-    monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+    monaco.editor.setModelMarkers(editorModel, compilerId, widgets);
     this.decorations.tags = _.map(
         widgets,
         function (tag) {
@@ -1446,6 +1473,14 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         },
         this
     );
+
+    if (fixes.length) {
+        quickFixesHandler.registerQuickFixesForCompiler(this.id, editorModel, fixes);
+        quickFixesHandler.registerProviderForLanguage(editorModel.getLanguageId());
+    } else {
+        quickFixesHandler.unregister(this.id);
+    }
+
     this.updateDecorations();
 
     if (result.result && result.result.asm) {
@@ -1677,6 +1712,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit('languageChange', this.id, newLangId);
+            this.decorations = {};
             this.maybeEmitChange(true);
             this.requestCompilation();
             ga.proxy('send', {
