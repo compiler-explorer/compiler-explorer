@@ -48,8 +48,10 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return optInfo.Args.reduce((acc, x) => {
         let inc = '';
         for (const [key, value] of Object.entries(x)) {
-            if (key === 'DebugLoc' && value['Line'] !== 0) {
-                inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+            if (key === 'DebugLoc') {
+                if (value['Line'] !== 0) {
+                    inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                }
             } else {
                 inc += value;
             }
