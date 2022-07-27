@@ -318,12 +318,13 @@ Tool.prototype.initButtons = function (state) {
 
     this.hideable = this.domRoot.find('.hideable');
 
-    this.initToggleButtons(state);
+    this.initButtonsVisibility(state);
 };
 
-Tool.prototype.initToggleButtons = function (state) {
+Tool.prototype.initButtonsVisibility = function (state) {
     this.toggleArgs = this.domRoot.find('.toggle-args');
     this.toggleStdin = this.domRoot.find('.toggle-stdin');
+    this.artifactBtn = this.domRoot.find('.artifact-btn');
 
     if (state.argsPanelShown === true) {
         this.showPanel(this.toggleArgs, this.panelArgs);
@@ -338,6 +339,7 @@ Tool.prototype.initToggleButtons = function (state) {
             }
         }
     }
+    this.artifactBtn.addClass('d-none');
 };
 
 Tool.prototype.showPanel = function (button, panel) {
@@ -512,17 +514,27 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             if (toolResult.sourcechanged && this.editorId) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
             }
+            this.artifactBtn.off('click');
             if (toolResult.artifactGenerated) {
-                if (toolResult.artifactGenerated.type === 'application/octet-stream') {
-                    fetch('data:image/jpeg;base64,' + toolResult.artifactGenerated.content)
-                        .then(res => res.blob())
-                        .then(blob => saveAs(blob, toolResult.artifactGenerated.name));
-                } else {
-                    saveAs(
-                        new Blob([toolResult.artifactGenerated.content], {type: toolResult.artifactGenerated.type}),
-                        toolResult.artifactGenerated.name
-                    );
-                }
+                this.artifactBtn.removeClass('d-none');
+                this.artifactBtn.click(
+                    _.bind(function () {
+                        if (toolResult.artifactGenerated.type === 'application/octet-stream') {
+                            fetch('data:application/octet-stream;base64,' + toolResult.artifactGenerated.content)
+                                .then(res => res.blob())
+                                .then(blob => saveAs(blob, toolResult.artifactGenerated.name));
+                        } else {
+                            saveAs(
+                                new Blob([toolResult.artifactGenerated.content], {
+                                    type: toolResult.artifactGenerated.type,
+                                }),
+                                toolResult.artifactGenerated.name
+                            );
+                        }
+                    }, this)
+                );
+            } else {
+                this.artifactBtn.addClass('d-none');
             }
         } else {
             this.setEditorContent('No tool result');
