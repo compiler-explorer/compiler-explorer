@@ -325,6 +325,7 @@ Tool.prototype.initButtonsVisibility = function (state) {
     this.toggleArgs = this.domRoot.find('.toggle-args');
     this.toggleStdin = this.domRoot.find('.toggle-stdin');
     this.artifactBtn = this.domRoot.find('.artifact-btn');
+    this.artifactText = this.domRoot.find('.artifact-text');
 
     if (state.argsPanelShown === true) {
         this.showPanel(this.toggleArgs, this.panelArgs);
@@ -517,6 +518,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             this.artifactBtn.off('click');
             if (toolResult.artifactGenerated) {
                 this.artifactBtn.removeClass('d-none');
+                this.artifactText.text(`Download ${toolResult.artifactGenerated.title}`);
                 this.artifactBtn.click(
                     _.bind(function () {
                         if (toolResult.artifactGenerated.type === 'application/octet-stream') {
