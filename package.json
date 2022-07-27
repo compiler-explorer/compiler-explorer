@@ -95,6 +95,7 @@
     "@types/bootstrap": "^5.1.6",
     "@types/fs-extra": "^9.0.13",
     "@types/jquery": "^3.5.10",
+    "@types/mocha": "^9.1.1",
     "@types/shell-quote": "^1.7.1",
     "@types/tar-fs": "^2.0.1",
     "@types/underscore": "^1.11.4",

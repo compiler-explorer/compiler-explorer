@@ -11,5 +11,6 @@ describe('Frontendtestresults', () => {
         cy.visit('/');
     });
 
-    runFrontendTest('HelloWorld');
+    //runFrontendTest('HelloWorld');
+    runFrontendTest('Motd');
 });
