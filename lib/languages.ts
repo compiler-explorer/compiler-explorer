@@ -113,6 +113,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
     },
+    circt: {
+        name: 'CIRCT',
+        monaco: 'mlir',
+        extensions: ['.mlir'],
+        alias: [],
+        logoUrl: 'circt.svg',
+        formatter: null,
+        logoUrlDark: null,
+        previewFilter: null,
+    },
     clean: {
         name: 'Clean',
         monaco: 'clean',

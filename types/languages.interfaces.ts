@@ -57,6 +57,7 @@ export type LanguageKey =
     | 'nim'
     | 'crystal'
     | 'circle'
+    | 'circt'
     | 'ruby'
     | 'cmake'
     | 'csharp'
