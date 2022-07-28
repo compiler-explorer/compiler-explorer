@@ -36,7 +36,7 @@ var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options').options;
 var utils = require('../utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
-var {saveAs} = require('file-saver');
+var saveAs = require('file-saver').saveAs;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -521,7 +521,9 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.artifactText.text(`Download ${toolResult.artifactGenerated.title}`);
                 this.artifactBtn.click(
                     _.bind(function () {
+                        // The artifact content can be passed either as plain text or as a base64 encoded binary file
                         if (toolResult.artifactGenerated.type === 'application/octet-stream') {
+                            // Fetch is the most convenient non ES6 way to build a binary blob out of a base64 string
                             fetch('data:application/octet-stream;base64,' + toolResult.artifactGenerated.content)
                                 .then(res => res.blob())
                                 .then(blob => saveAs(blob, toolResult.artifactGenerated.name));
