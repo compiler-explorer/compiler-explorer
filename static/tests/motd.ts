@@ -31,81 +31,173 @@ const stub = global.sinon.stub;
 class MotdTests implements ITestable {
     public readonly description: string = 'motd';
 
+    private static assertAd(ad, subLang, expected, message) {
+        assert.equal(isValidAd(ad, subLang), expected, message);
+    }
+
+    private static assertAdWithDateNow(dateNow, ad, subLang, expected, message) {
+        const dateNowStub = stub(Date, 'now');
+        dateNowStub.returns(dateNow);
+        MotdTests.assertAd(ad, subLang, expected, message);
+        dateNowStub.restore();
+    }
+
     public async run() {
-        {
-            const ad = {
+        MotdTests.assertAd(
+            {
                 filter: [],
                 html: '',
-            };
-            assert.isTrue(isValidAd(ad, 'langForTest'), "Doesn't filter ads if no lang is set");
-        }
+            },
+            'langForTest',
+            true,
+            'Keep ad if no lang is set'
+        );
 
-        {
-            const ad = {
+        MotdTests.assertAd(
+            {
                 filter: ['anotherLang'],
                 html: '',
-            };
-            assert.isFalse(isValidAd(ad, 'langForTest'), 'Filters ad if not the correct language');
-        }
+            },
+            'langForTest',
+            false,
+            'Filters ad if not the correct language'
+        );
 
-        {
-            const ad = {
+        MotdTests.assertAd(
+            {
                 filter: ['langForTest'],
                 html: '',
-            };
-            assert.isTrue(isValidAd(ad, 'langForTest'), "Doesn't filter ad if the correct language is used");
-        }
+            },
+            'langForTest',
+            true,
+            'Keep ad if the correct language is used'
+        );
 
-        {
-            const dateNowStub = stub(Date, 'now');
-            dateNowStub.returns(1641596400000); // 2022-01-08T00:00:00
-            const ad = {
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
                 filter: [],
                 html: '',
                 valid_from: '2022-01-01T00:00:00',
-            };
-            assert.isTrue(isValidAd(ad, 'langForTest'), "Doesn't filter ad if now > from");
-            (Date.now as any).restore();
-        }
+            },
+            'langForTest',
+            true,
+            'Keep ad if now > from'
+        );
 
-        {
-            const dateNowStub = stub(Date, 'now');
-            dateNowStub.returns(1641596400000); // 2022-01-08T00:00:00
-            const ad = {
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
                 filter: [],
                 html: '',
                 valid_from: '2022-01-16T00:00:00',
-            };
-            assert.isFalse(
-                isValidAd(ad, 'langForTest'),
-                'Filter ad if now (' + Date.now() + ') < from (' + Date.parse(ad.valid_from) + ')'
-            );
-            (Date.now as any).restore();
-        }
+            },
+            'langForTest',
+            false,
+            'Filter ad if now < from'
+        );
 
-        {
-            const dateNowStub = stub(Date, 'now');
-            dateNowStub.returns(1641596400000); // 2022-01-08T00:00:00
-            const ad = {
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
                 filter: [],
                 html: '',
                 valid_until: '2022-01-16T00:00:00',
-            };
-            assert.isTrue(isValidAd(ad, 'langForTest'), "Doesn't filter ad if now < until");
-            (Date.now as any).restore();
-        }
+            },
+            'langForTest',
+            true,
+            'Keep ad if now < until'
+        );
 
-        {
-            const dateNowStub = stub(Date, 'now');
-            dateNowStub.returns(1641596400000); // 2022-01-08T00:00:00
-            const ad = {
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
                 filter: [],
                 html: '',
                 valid_from: '2022-01-16T00:00:00',
-            };
-            assert.equal(isValidAd(ad, 'langForTest'), false, 'Filter ad if now > until');
-            (Date.now as any).restore();
-        }
+            },
+            'langForTest',
+            false,
+            'Filter ad if now > until'
+        );
+
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
+                filter: [],
+                html: '',
+                valid_from: '2022-01-01T00:00:00',
+                valid_until: '2022-01-16T00:00:00',
+            },
+            'langForTest',
+            true,
+            'Keep ad if from < now < until'
+        );
+
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
+                filter: [],
+                html: '',
+                valid_from: '2022-01-10T00:00:00',
+                valid_until: '2022-01-16T00:00:00',
+            },
+            'langForTest',
+            false,
+            'Filter ad if now < from < until'
+        );
+
+        MotdTests.assertAdWithDateNow(
+            978307200000, // 2022-01-20T00:00:00
+            {
+                filter: [],
+                html: '',
+                valid_from: '2022-01-10T00:00:00',
+                valid_until: '2022-01-16T00:00:00',
+            },
+            'langForTest',
+            false,
+            'Filter ad if from < until < now'
+        );
+
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
+                filter: [],
+                html: '',
+                valid_from: '2022-01-16T00:00:00',
+                valid_until: '2022-01-10T00:00:00',
+            },
+            'langForTest',
+            false,
+            'Filter ad if until < now < from'
+        );
+
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
+                filter: ['fakeLang'],
+                html: '',
+                valid_from: '2022-01-01T00:00:00',
+                valid_until: '2022-01-16T00:00:00',
+            },
+            'langForTest',
+            false,
+            'Filter ad if from < now < until but filtered by lang'
+        );
+
+        MotdTests.assertAdWithDateNow(
+            1641596400000, // 2022-01-08T00:00:00
+            {
+                filter: ['langForTest'],
+                html: '',
+                valid_from: '2022-01-01T00:00:00',
+                valid_until: '2022-01-16T00:00:00',
+            },
+            'langForTest',
+            true,
+            'Keep ad if from < now < until and not filtered by lang'
+        );
     }
 }
 
