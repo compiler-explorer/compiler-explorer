@@ -516,7 +516,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
             }
             this.artifactBtn.off('click');
-            if (toolResult.artifactGenerated) {
+            if (toolResult.artifact) {
                 this.artifactBtn.removeClass('d-none');
                 this.artifactText.text('Download ' + toolResult.artifactGenerated.title);
                 this.artifactBtn.click(
@@ -526,13 +526,13 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
                             // Fetch is the most convenient non ES6 way to build a binary blob out of a base64 string
                             fetch('data:application/octet-stream;base64,' + toolResult.artifactGenerated.content)
                                 .then(res => res.blob())
-                                .then(blob => saveAs(blob, toolResult.artifactGenerated.name));
+                                .then(blob => saveAs(blob, toolResult.artifact.name));
                         } else {
                             saveAs(
-                                new Blob([toolResult.artifactGenerated.content], {
-                                    type: toolResult.artifactGenerated.type,
+                                new Blob([toolResult.artifact.content], {
+                                    type: toolResult.artifact.type,
                                 }),
-                                toolResult.artifactGenerated.name
+                                toolResult.artifact.name
                             );
                         }
                     }, this)
