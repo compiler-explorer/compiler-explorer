@@ -518,7 +518,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             this.artifactBtn.off('click');
             if (toolResult.artifactGenerated) {
                 this.artifactBtn.removeClass('d-none');
-                this.artifactText.text(`Download ${toolResult.artifactGenerated.title}`);
+                this.artifactText.text('Download ' + toolResult.artifactGenerated.title);
                 this.artifactBtn.click(
                     _.bind(function () {
                         // The artifact content can be passed either as plain text or as a base64 encoded binary file
