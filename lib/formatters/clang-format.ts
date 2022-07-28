@@ -36,6 +36,16 @@ export class ClangFormatFormatter extends BaseFormatter {
     override async format(source: string, options: FormatOptions): Promise<UnprocessedExecResult> {
         const tabText = options.useSpaces ? 'Never' : 'AlignWithSpaces';
         const arg = `{BasedOnStyle: ${options.baseStyle}, IndentWidth: ${options.tabWidth}, UseTab: ${tabText}}`;
-        return await exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source});
+        return exec.execute(this.formatterInfo.exe, [`--style=${arg}`], {input: source}).then(result => {
+            if (result.code === 0) {
+                // Repair http(s) includes, i.e., remove the spaces inserted before the hier-part of the URI
+                const includeFind = /^(\s*#\s*include\s*["<]https?:)\s+(\/\/[^">]+[">].*)/;
+                const includeReplacement = '$1$2';
+                const lines = result.stdout.split('\n');
+                for (const idx in lines) lines[idx] = lines[idx].replace(includeFind, includeReplacement);
+                result.stdout = lines.join('\n');
+            }
+            return new Promise((resolve, _reject) => resolve(result));
+        });
     }
 }
