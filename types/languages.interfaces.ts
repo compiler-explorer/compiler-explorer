@@ -24,6 +24,7 @@
 
 export type LanguageKey =
     | 'mlir'
+    | 'jakt'
     | 'c++'
     | 'llvm'
     | 'cppx'
@@ -42,6 +43,7 @@ export type LanguageKey =
     | 'kotlin'
     | 'scala'
     | 'ocaml'
+    | 'pony'
     | 'python'
     | 'swift'
     | 'pascal'
@@ -55,6 +57,7 @@ export type LanguageKey =
     | 'nim'
     | 'crystal'
     | 'circle'
+    | 'circt'
     | 'ruby'
     | 'cmake'
     | 'csharp'
@@ -63,7 +66,8 @@ export type LanguageKey =
     | 'dart'
     | 'typescript'
     | 'solidity'
-    | 'toit';
+    | 'toit'
+    | 'carbon';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */

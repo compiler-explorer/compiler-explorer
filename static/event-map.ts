@@ -24,6 +24,7 @@
 
 import {Language} from '../types/languages.interfaces';
 import {CompilerFilters} from '../types/features/filters.interfaces';
+import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
@@ -48,7 +49,7 @@ export type EventMap = {
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
     // Right now nothing emits this event, but it might be useful at some point so we keep it
-    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean) => void;
+    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
     compiling: (compilerId: number, compiler: unknown) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
@@ -58,6 +59,7 @@ export type EventMap = {
     displaySharingPopover: () => void;
     editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
     editorClose: (editorId: number) => void;
+    editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
@@ -95,6 +97,9 @@ export type EventMap = {
     initialised: () => void;
     irViewClosed: (compilerId: number) => void;
     irViewOpened: (compilerId: number) => void;
+    llvmOptPipelineViewClosed: (compilerId: number) => void;
+    llvmOptPipelineViewOpened: (compilerId: number) => void;
+    llvmOptPipelineViewOptionsUpdated: (compilerId: number, options: any, recompile: boolean) => void;
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;

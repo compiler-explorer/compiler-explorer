@@ -134,6 +134,10 @@ li.tweet {
     margin: 0 10px 0 0;
 }
 
+.llvm-opt-function-picker {
+    min-width: 10em;
+}
+
 #root {
     width: 100%;
     margin: 0;
@@ -949,6 +953,66 @@ html[data-theme='dark'] {
         cursor: pointer;
         &:hover {
             background: rgba(0, 0, 0, 0.4);
+        }
+    }
+}
+
+.llvm-opt-pipeline-body {
+    display: flex;
+    overflow: hidden;
+    align-items: stretch;
+    height: 100%;
+    .passes-column {
+        color: white;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 100%;
+        position: relative;
+        .passes-list div {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 3px;
+            border: 1px solid black;
+            cursor: pointer;
+            word-wrap: anywhere;
+            &.firstMachinePass {
+                margin-top: 5px;
+                position: relative;
+                &:before {
+                    position: absolute;
+                    top: -5px;
+                    left: 0;
+                    content: '';
+                    height: 4px;
+                    width: 100%;
+                    background: white;
+                }
+            }
+            &:hover,
+            &.active {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            &.changed {
+                color: #36ac46;
+            }
+        }
+    }
+    .passes-column-resizer {
+        position: relative;
+        width: 5px;
+        height: 100%;
+        background-color: #000000;
+        transition: background-color 200ms ease;
+        z-index: 1;
+        &:hover {
+            background-color: #444444;
+            cursor: ew-resize;
+        }
+        .passes-column-resizer-handle {
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 15px;
+            height: 100%;
         }
     }
 }

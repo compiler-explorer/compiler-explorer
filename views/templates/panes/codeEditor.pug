@@ -1,0 +1,41 @@
+mixin newPaneButton(classId, text, title, label, icon)
+  button(class="dropdown-item btn btn-sm btn-light " + classId title=title)
+    span(class="dropdown-icon " + icon)
+    | #{text}
+
+#codeEditor
+  .top-bar.btn-toolbar.bg-light(role="toolbar" aria-label="Editor toolbar" name="editor-btn-toolbar")
+    include ../../font-size
+    .btn-group.btn-group-sm(role="group" aria-label="Editor settings")
+      button.btn.btn-sm.btn-light.load-save(title="Load or save text" aria-label="Load or save text")
+        span.fa.fa-save
+        span.hideable Save/Load
+      button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+        span.fa.fa-plus
+        span.hideable Add new...
+      .dropdown-menu
+        +newPaneButton("add-compiler", "Compiler", "Add a new compiler for this source", "New compiler", "fa fa-cogs")
+        +newPaneButton("add-executor", "Execution Only", "Add a new executor for this source", "New executor", "fas fa-microchip")
+        +newPaneButton("conformance", "Conformance View", "Add a new conformance view", "New conformance view", "fa fa-list")
+        +newPaneButton("add-editor", "Source Editor", "Add a new source editor", "New source editor", "fa fa-code")
+      button#vim-flag.btn.btn-sm.btn-light(title="Toggle Vim Keybindings")
+        span.fab.fa-vimeo-v
+        span.hideable Vim
+    if thirdPartyIntegrationEnabled
+      .btn-group.btn-group-sm(role="group" aria-label="External Sites")
+        a.btn.btn-sm.btn-light.open-in-cppinsights(href="https://cppinsights.io/" target="_blank" title="Open in Cppinsights" aria-label="Open in Cppinsights")
+          svg(height="16" width="16")
+            include ../../resources/cppinsights.svg
+          span.hideable CppInsights
+        a.btn.btn-sm.btn-light.open-in-quickbench(href="http://quick-bench.com/" target="_blank" title="Open in Quick-bench" aria-label="Open in Quick-bench")
+          svg(height="16" width="16")
+            include ../../resources/quickbench.svg
+          span.hideable Quick-bench
+    .btn-group.btn-group-sm.mx-auto
+      button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")
+        span.fas.fa-smile
+    .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
+      select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
+  div.currentCursorPosition
+  div#v-status
+  .monaco-placeholder

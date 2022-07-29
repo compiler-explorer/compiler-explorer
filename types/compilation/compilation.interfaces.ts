@@ -59,6 +59,9 @@ export type CompilationResult = {
     hasIrOutput?: boolean;
     irOutput?: any;
 
+    hasLLVMOptPipelineOutput?: boolean;
+    llvmOptPipelineOutput?: any;
+
     hasRustMirOutput?: boolean;
     rustMirOutput?: any;
 
@@ -96,6 +99,13 @@ export type BuildResult = {
     compilationOptions: any[];
 };
 
+export type Artifact = {
+    content: string;
+    type: string;
+    name: string;
+    title: string;
+};
+
 export type ToolResult = {
     id: string;
     name: string;
@@ -103,4 +113,5 @@ export type ToolResult = {
     languageId: string;
     stderr: ResultLine[];
     stdout: ResultLine[];
+    artifact?: Artifact;
 };

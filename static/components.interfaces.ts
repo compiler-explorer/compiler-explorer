@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerFilters} from '../types/features/filters.interfaces';
+import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
 
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
@@ -41,6 +42,7 @@ export const GCC_DUMP_VIEW_COMPONENT_NAME = 'gccdump';
 export const CFG_VIEW_COMPONENT_NAME = 'cfg';
 export const CONFORMANCE_VIEW_COMPONENT_NAME = 'conformance';
 export const IR_VIEW_COMPONENT_NAME = 'ir';
+export const LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME = 'llvmOptPipelineView';
 export const RUST_MIR_VIEW_COMPONENT_NAME = 'rustmir';
 export const HASKELL_CORE_VIEW_COMPONENT_NAME = 'haskellCore';
 export const HASKELL_STG_VIEW_COMPONENT_NAME = 'haskellStg';
@@ -195,6 +197,14 @@ export type PopulatedIrViewState = StateWithId & {
     irOutput: unknown;
     compilerName: string;
 };
+
+export type EmptyLLVMOptPipelineViewState = EmptyState;
+export type PopulatedLLVMOptPipelineViewState = StateWithId &
+    LLVMOptPipelineViewState & {
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyRustMirViewState = EmptyState;
 export type PopulatedRustMirViewState = StateWithId & {

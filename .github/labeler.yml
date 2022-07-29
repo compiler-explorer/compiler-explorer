@@ -27,6 +27,9 @@ lang-c++-opencl:
 lang-circle:
   - lib/compilers/circle.js
   - etc/config/circle.*.properties
+lang-circt:
+  - lib/compilers/circt.ts
+  - etc/config/circt.*.properties
 lang-clean:
   - lib/compilers/clean.js
   - etc/config/clean.*.properties
@@ -55,6 +58,9 @@ lang-fortran:
   - lib/compilers/flang.ts
   - lib/compilers/fortran.js
   - etc/config/fortran.*.properties
+lang-jakt:
+  - lib/compilers/jakt.ts
+  - etc/config/jakt.*.properties
 lang-go:
   - lib/compilers/golang.js
   - etc/config/go.*.properties
@@ -93,6 +99,9 @@ lang-opencl-c:
 lang-pascal:
   - lib/compilers/pascal.js
   - etc/config/pascal.*.properties
+lang-pony:
+  - lib/compilers/pony.ts
+  - etc/config/pony.*.properties
 lang-python:
   - lib/compilers/python.js
   - etc/config/python.*.properties

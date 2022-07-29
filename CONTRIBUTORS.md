@@ -119,3 +119,5 @@ From oldest to newest contributor, we would like to thank:
 - [Anders-T](https://github.com/anders-torbjornsen)
 - [Adam Sandberg Eriksson](https://github.com/adamse)
 - [Ofek Shilon](https://github.com/ofekshilon)
+- [Ross Smyth](https://github.com/RossSmyth)
+- [Mike Urbach](https://github.com/mikeurbach)

@@ -214,12 +214,24 @@ Conformance.prototype.addCompilerPicker = function (config) {
     newSelector
         .find('.close')
         .not('.extract-compiler')
+        .not('.copy-compiler')
         .on(
             'click',
             _.bind(function () {
                 this.removeCompilerPicker(newCompilerEntry);
             }, this)
         );
+
+    newSelector.find('.close.copy-compiler').on(
+        'click',
+        _.bind(function () {
+            var config = {
+                compilerId: newCompilerEntry.picker.lastCompilerId,
+                options: newCompilerEntry.optionsField.val() || '',
+            };
+            this.copyCompilerPicker(config);
+        }, this)
+    );
 
     newCompilerEntry.statusIcon = newSelector.find('.status-icon');
     newCompilerEntry.prependOptions = newSelector.find('.prepend-options');
@@ -292,6 +304,12 @@ Conformance.prototype.removeCompilerPicker = function (compilerEntry) {
 
     this.updateLibraries();
     this.handleToolbarUI();
+    this.saveState();
+};
+
+Conformance.prototype.copyCompilerPicker = function (config) {
+    this.addCompilerPicker(config);
+    this.compileChild(this.compilerPickers.at(-1));
     this.saveState();
 };
 

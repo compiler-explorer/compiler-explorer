@@ -127,7 +127,7 @@ a.navbar-brand img.logo.normal {
 }
 
 .linked-code-decoration-inline {
-    background: #121212 !important;
+    background: #444444;
 }
 
 .linked-code-decoration-margin {
@@ -140,6 +140,16 @@ a.navbar-brand img.logo.normal {
 
 .linked-compiler-output-line {
     color: #007bfd !important;
+}
+
+.flow-decoration {
+    background-color: #b4131f !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.flow-highlight {
+    background-color: rgba(180, 19, 31, 0.4) !important;
 }
 
 .rainbow-decoration {
@@ -553,4 +563,11 @@ a {
 .currentCursorPosition {
     color: #17a2b8;
     background-color: rgba(49, 54, 60, 0.85);
+}
+
+::-webkit-scrollbar {
+    background: lighten(#1e1e1e, 10%);
+}
+::-webkit-scrollbar-thumb {
+    background: lighten(#1e1e1e, 20%);
 }

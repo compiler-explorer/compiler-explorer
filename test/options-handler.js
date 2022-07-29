@@ -29,6 +29,7 @@ import _ from 'underscore';
 import {BaseCompiler} from '../lib/base-compiler';
 import {ClientOptionsHandler} from '../lib/options-handler';
 import * as properties from '../lib/properties';
+import {parseOutput} from '../lib/utils';
 
 import {should} from './utils';
 
@@ -510,6 +511,7 @@ describe('Options handler', () => {
             fake: {
                 faketool: {
                     addOptionsToToolArgs: true,
+                    parseOutput: parseOutput,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -523,10 +525,13 @@ describe('Options handler', () => {
                         options: [],
                         stdinHint: 'disabled',
                         type: 'independent',
+                        icon: undefined,
+                        darkIcon: undefined,
                     },
                 },
                 someothertool: {
                     addOptionsToToolArgs: true,
+                    parseOutput: parseOutput,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -540,6 +545,8 @@ describe('Options handler', () => {
                         options: [],
                         stdinHint: 'disabled',
                         type: 'independent',
+                        icon: undefined,
+                        darkIcon: undefined,
                     },
                 },
             },

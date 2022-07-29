@@ -47,6 +47,7 @@ var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -297,6 +298,15 @@ Compiler.prototype.initPanerButtons = function () {
         );
     }, this);
 
+    var createLLVMOptPipelineView = _.bind(function () {
+        return Components.getLLVMOptPipelineViewWith(
+            this.id,
+            this.getCompilerName(),
+            this.sourceEditorId,
+            this.sourceTreeId
+        );
+    }, this);
+
     var createDeviceView = _.bind(function () {
         return Components.getDeviceViewWith(
             this.id,
@@ -503,6 +513,18 @@ Compiler.prototype.initPanerButtons = function () {
             var insertPoint =
                 this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
             insertPoint.addChild(createIrView);
+        }, this)
+    );
+
+    this.container.layoutManager
+        .createDragSource(this.llvmOptPipelineButton, createLLVMOptPipelineView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.llvmOptPipelineButton.click(
+        _.bind(function () {
+            var insertPoint =
+                this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
+            insertPoint.addChild(createLLVMOptPipelineView);
         }, this)
     );
 
@@ -949,6 +971,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceGnatDebugTree: this.gnatDebugTreeViewOpen,
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
+            produceLLVMOptPipeline: this.llvmOptPipelineViewOpen ? this.llvmOptPipelineOptions : false,
             produceDevice: this.deviceViewOpen,
             produceRustMir: this.rustMirViewOpen,
             produceRustMacroExp: this.rustMacroExpViewOpen,
@@ -1603,6 +1626,31 @@ Compiler.prototype.onIrViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onLLVMOptPipelineViewOpened = function (id) {
+    if (this.id === id) {
+        this.llvmOptPipelineButton.prop('disabled', true);
+        this.llvmOptPipelineViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onLLVMOptPipelineViewClosed = function (id) {
+    if (this.id === id) {
+        this.llvmOptPipelineButton.prop('disabled', false);
+        this.llvmOptPipelineViewOpen = false;
+    }
+};
+
+Compiler.prototype.onLLVMOptPipelineViewOptionsUpdated = function (id, options, recompile) {
+    if (this.id === id) {
+        console.log(options);
+        this.llvmOptPipelineOptions = options;
+        if (recompile) {
+            this.compile();
+        }
+    }
+};
+
 Compiler.prototype.onDeviceViewOpened = function (id) {
     if (this.id === id) {
         this.deviceButton.prop('disabled', true);
@@ -1874,6 +1922,7 @@ Compiler.prototype.initButtons = function (state) {
     this.ppButton = this.domRoot.find('.btn.view-pp');
     this.astButton = this.domRoot.find('.btn.view-ast');
     this.irButton = this.domRoot.find('.btn.view-ir');
+    this.llvmOptPipelineButton = this.domRoot.find('.btn.view-llvm-opt-pipeline');
     this.deviceButton = this.domRoot.find('.btn.view-device');
     this.gnatDebugTreeButton = this.domRoot.find('.btn.view-gnatdebugtree');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
@@ -2036,11 +2085,23 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
 
     if (!this.compiler) return;
 
-    var addTool = _.bind(function (toolName, title) {
+    var addTool = _.bind(function (toolName, title, toolIcon, toolIconDark) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
+        if (toolIcon) {
+            const light = toolIcons(toolIcon);
+            const dark = toolIconDark ? toolIcons(toolIconDark) : light;
+            btn.append(
+                `<span class="dropdown-icon fas">
+                <img src="${light}" class="theme-light-only" width="16px" style="max-height: 16px"/>
+                <img src="${dark}" class="theme-dark-only" width="16px" style="max-height: 16px"/>
+                </span>`
+            );
+        } else {
+            btn.append("<span class='dropdown-icon fas fa-cog'></span>");
+        }
+        btn.append(title);
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
@@ -2055,7 +2116,7 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
             this.compiler.tools,
             _.bind(function (tool) {
                 if (this.isSupportedTool(tool)) {
-                    addTool(tool.tool.id, tool.tool.name);
+                    addTool(tool.tool.id, tool.tool.name, tool.tool.icon, tool.tool.darkIcon);
                 }
             }, this)
         );
@@ -2125,6 +2186,7 @@ Compiler.prototype.updateButtons = function () {
     this.ppButton.prop('disabled', this.ppViewOpen);
     this.astButton.prop('disabled', this.astViewOpen);
     this.irButton.prop('disabled', this.irViewOpen);
+    this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
     this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
@@ -2143,6 +2205,7 @@ Compiler.prototype.updateButtons = function () {
     this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
+    this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
@@ -2262,6 +2325,9 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('astViewClosed', this.onAstViewClosed, this);
     this.eventHub.on('irViewOpened', this.onIrViewOpened, this);
     this.eventHub.on('irViewClosed', this.onIrViewClosed, this);
+    this.eventHub.on('llvmOptPipelineViewOpened', this.onLLVMOptPipelineViewOpened, this);
+    this.eventHub.on('llvmOptPipelineViewClosed', this.onLLVMOptPipelineViewClosed, this);
+    this.eventHub.on('llvmOptPipelineViewOptionsUpdated', this.onLLVMOptPipelineViewOptionsUpdated, this);
     this.eventHub.on('deviceViewOpened', this.onDeviceViewOpened, this);
     this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
@@ -2736,7 +2802,7 @@ Compiler.prototype.setCompilerVersionPopover = function (version, notification) 
     var bodyContent = $('<div>');
     var versionContent = $('<div>').html(_.escape(version.version));
     bodyContent.append(versionContent);
-    if (version.fullVersion) {
+    if (version.fullVersion && version.fullVersion.trim() !== version.version.trim()) {
         var hiddenSection = $('<div>');
         var lines = _.map(version.fullVersion.split('\n'), function (line) {
             return _.escape(line);

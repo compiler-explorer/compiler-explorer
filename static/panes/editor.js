@@ -35,6 +35,7 @@ var Alert = require('../alert').Alert;
 var ga = require('../analytics').ga;
 var monacoVim = require('monaco-vim');
 var monacoConfig = require('../monaco-config');
+var quickFixesHandler = require('../quick-fixes-handler');
 var TomSelect = require('tom-select');
 var Settings = require('../settings').Settings;
 var utils = require('../utils');
@@ -311,6 +312,7 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('compileResult', this.onCompileResponse, this);
     this.eventHub.on('selectLine', this.onSelectLine, this);
     this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
+    this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
     this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
     this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
@@ -1373,7 +1375,9 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     if (!this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
+    var editorModel = this.editor.getModel();
     var output = this.getAllOutputAndErrors(result, compiler.name, compilerId);
+    var fixes = [];
     var widgets = _.compact(
         _.map(
             output,
@@ -1393,31 +1397,69 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                     }
                 }
 
-                var severity = 3; // error
-                if (obj.tag.text.match(/^warning/)) severity = 2;
-                if (obj.tag.text.match(/^note/)) severity = 1;
                 var colBegin = 0;
                 var colEnd = Infinity;
+                var lineBegin = obj.tag.line;
+                var lineEnd = obj.tag.line;
                 if (obj.tag.column) {
-                    var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
-                    colBegin = obj.tag.column;
-                    colEnd = span.colEnd;
-                    if (colEnd === obj.tag.column) colEnd = -1;
+                    if (obj.tag.endcolumn) {
+                        colBegin = obj.tag.column;
+                        colEnd = obj.tag.endcolumn;
+                        lineBegin = obj.tag.line;
+                        lineEnd = obj.tag.endline;
+                    } else {
+                        var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
+                        colBegin = obj.tag.column;
+                        colEnd = span.colEnd;
+                        if (colEnd === obj.tag.column) colEnd = -1;
+                    }
                 }
-                return {
-                    severity: severity,
+                let link;
+                if (obj.tag.link) {
+                    link = {
+                        value: obj.tag.link.text,
+                        target: obj.tag.link.url,
+                    };
+                }
+                var diag = {
+                    severity: obj.tag.severity,
                     message: obj.tag.text,
                     source: obj.source,
-                    startLineNumber: obj.tag.line,
+                    startLineNumber: lineBegin,
                     startColumn: colBegin,
-                    endLineNumber: obj.tag.line,
+                    endLineNumber: lineEnd,
                     endColumn: colEnd,
+                    code: link,
                 };
+                if (obj.tag.fixes) {
+                    fixes = fixes.concat(
+                        obj.tag.fixes.map(function (fs, ind) {
+                            return {
+                                title: fs.title,
+                                diagnostics: [diag],
+                                kind: 'quickfix',
+                                edit: {
+                                    edits: fs.edits.map(function (f) {
+                                        return {
+                                            resource: editorModel.uri,
+                                            edit: {
+                                                range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
+                                                text: f.text,
+                                            },
+                                        };
+                                    }),
+                                },
+                                isPreferred: ind === 0,
+                            };
+                        })
+                    );
+                }
+                return diag;
             },
             this
         )
     );
-    monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, widgets);
+    monaco.editor.setModelMarkers(editorModel, compilerId, widgets);
     this.decorations.tags = _.map(
         widgets,
         function (tag) {
@@ -1431,6 +1473,14 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         },
         this
     );
+
+    if (fixes.length) {
+        quickFixesHandler.registerQuickFixesForCompiler(this.id, editorModel, fixes);
+        quickFixesHandler.registerProviderForLanguage(editorModel.getLanguageId());
+    } else {
+        quickFixesHandler.unregister(this.id);
+    }
+
     this.updateDecorations();
 
     if (result.result && result.result.asm) {
@@ -1556,11 +1606,13 @@ Editor.prototype.onEditorLinkLine = function (editorId, lineNum, columnBegin, co
     }
 };
 
-Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
+Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal, column) {
     if (Number(id) === this.id) {
         if (reveal && lineNum) {
             this.pushRevealJump();
             this.editor.revealLineInCenter(lineNum);
+            this.editor.focus();
+            this.editor.setPosition({column: column || 0, lineNumber: lineNum});
         }
         this.decorations.linkedCode = [];
         if (lineNum && lineNum !== -1) {
@@ -1571,6 +1623,31 @@ Editor.prototype.onEditorSetDecoration = function (id, lineNum, reveal) {
                     linesDecorationsClassName: 'linked-code-decoration-margin',
                     inlineClassName: 'linked-code-decoration-inline',
                 },
+            });
+        }
+        this.updateDecorations();
+    }
+};
+
+Editor.prototype.onEditorDisplayFlow = function (id, flow) {
+    if (Number(id) === this.id) {
+        if (this.decorations.flows && this.decorations.flows.length) {
+            this.decorations.flows = [];
+        } else {
+            this.decorations.flows = flow.map((ri, ind) => {
+                return {
+                    range: new monaco.Range(ri.line, ri.column, ri.endline || ri.line, ri.endcolumn || ri.column),
+                    options: {
+                        before: {
+                            content: ' ' + (ind + 1).toString() + ' ',
+                            inlineClassName: 'flow-decoration',
+                            cursorStops: monaco.editor.InjectedTextCursorStops.None,
+                        },
+                        inlineClassName: 'flow-highlight',
+                        isWholeLine: false,
+                        hoverMessage: {value: ri.text},
+                    },
+                };
             });
         }
         this.updateDecorations();
@@ -1635,6 +1712,7 @@ Editor.prototype.onLanguageChange = function (newLangId) {
             this.updateState();
             // Broadcast the change to other panels
             this.eventHub.emit('languageChange', this.id, newLangId);
+            this.decorations = {};
             this.maybeEmitChange(true);
             this.requestCompilation();
             ga.proxy('send', {

@@ -83,7 +83,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         if (state._treeid) state.treeid = state._treeid;
         super(hub, container, state);
 
-        if (state.selectedPass) {
+        if (state.selectedPass && typeof state.selectedPass === 'string') {
             // To keep URL format stable wrt GccDump, only a string of the form 'r.expand' is stored.
             // Old links also have the pass number prefixed but this can be ignored.
             // Create the object that will be used instead of this bare string.
@@ -290,7 +290,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = true;
 
         selectize.clear(true);
-        selectize.clearOptions(true);
+        selectize.clearOptions();
 
         for (const p of passes) {
             selectize.addOption(p);

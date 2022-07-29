@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import path from 'path';
+import path from 'path-browserify';
 import JSZip from 'jszip';
 import {Hub} from './hub';
 const languages = require('./options').options.languages;
