@@ -26,7 +26,7 @@ import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import {MonacoPaneState, PaneState} from './pane.interfaces';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
 
 import {FontScale} from '../widgets/fontscale';
 import {SiteSettings} from '../settings';
@@ -35,13 +35,6 @@ import * as utils from '../utils';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
-
-class PaneCompilerState {
-    compilerId: number;
-    compilerName: string;
-    editorId?: number;
-    treeId?: number;
-}
 
 /**
  * Basic container for a tool pane in Compiler Explorer.

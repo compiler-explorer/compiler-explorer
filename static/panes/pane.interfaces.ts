@@ -30,7 +30,7 @@ import * as monaco from 'monaco-editor';
  * Be aware this state, and any derived state is part of the public API of
  * Compiler Explorer, so don't rename or add anything without careful thought.
  */
-export class PaneState {
+export interface PaneState {
     id: number;
     compilerName: string;
     // editorid and treeid are truthy numbers: if they are truthy, then they
@@ -46,6 +46,13 @@ export class PaneState {
  *
  * See MonacoPane.
  */
-export class MonacoPaneState extends PaneState {
+export interface MonacoPaneState extends PaneState {
     selection: monaco.Selection | undefined;
+}
+
+export interface PaneCompilerState {
+    compilerId: number;
+    compilerName: string;
+    editorId?: number;
+    treeId?: number;
 }
