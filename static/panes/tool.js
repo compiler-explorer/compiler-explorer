@@ -36,6 +36,7 @@ var monacoConfig = require('../monaco-config');
 var ceoptions = require('../options').options;
 var utils = require('../utils');
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var saveAs = require('file-saver').saveAs;
 
 function makeAnsiToHtml(color) {
     return new AnsiToHtml({
@@ -317,12 +318,14 @@ Tool.prototype.initButtons = function (state) {
 
     this.hideable = this.domRoot.find('.hideable');
 
-    this.initToggleButtons(state);
+    this.initButtonsVisibility(state);
 };
 
-Tool.prototype.initToggleButtons = function (state) {
+Tool.prototype.initButtonsVisibility = function (state) {
     this.toggleArgs = this.domRoot.find('.toggle-args');
     this.toggleStdin = this.domRoot.find('.toggle-stdin');
+    this.artifactBtn = this.domRoot.find('.artifact-btn');
+    this.artifactText = this.domRoot.find('.artifact-text');
 
     if (state.argsPanelShown === true) {
         this.showPanel(this.toggleArgs, this.panelArgs);
@@ -337,6 +340,7 @@ Tool.prototype.initToggleButtons = function (state) {
             }
         }
     }
+    this.artifactBtn.addClass('d-none');
 };
 
 Tool.prototype.showPanel = function (button, panel) {
@@ -510,6 +514,31 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
 
             if (toolResult.sourcechanged && this.editorId) {
                 this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
+            }
+            this.artifactBtn.off('click');
+            if (toolResult.artifact) {
+                this.artifactBtn.removeClass('d-none');
+                this.artifactText.text('Download ' + toolResult.artifact.title);
+                this.artifactBtn.click(
+                    _.bind(function () {
+                        // The artifact content can be passed either as plain text or as a base64 encoded binary file
+                        if (toolResult.artifact.type === 'application/octet-stream') {
+                            // Fetch is the most convenient non ES6 way to build a binary blob out of a base64 string
+                            fetch('data:application/octet-stream;base64,' + toolResult.artifact.content)
+                                .then(res => res.blob())
+                                .then(blob => saveAs(blob, toolResult.artifact.name));
+                        } else {
+                            saveAs(
+                                new Blob([toolResult.artifact.content], {
+                                    type: toolResult.artifact.type,
+                                }),
+                                toolResult.artifact.name
+                            );
+                        }
+                    }, this)
+                );
+            } else {
+                this.artifactBtn.addClass('d-none');
             }
         } else {
             this.setEditorContent('No tool result');

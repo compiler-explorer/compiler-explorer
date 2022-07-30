@@ -24,7 +24,7 @@
 
 import {ga} from './analytics';
 
-import {Motd} from './motd.interfaces';
+import {Ad, Motd} from './motd.interfaces';
 
 function ensureShownMessage(message: string, motdNode: JQuery) {
     motdNode.find('.content').html(message);
@@ -37,15 +37,29 @@ function ensureShownMessage(message: string, motdNode: JQuery) {
         .prop('title', 'Hide message');
 }
 
+export function isValidAd(ad: Ad, subLang: string): boolean {
+    if (subLang && (ad.filter.length === 0 || ad.filter.includes(subLang))) {
+        const now = Date.now();
+        if (ad.valid_from && Date.parse(ad.valid_from) > now) {
+            return false;
+        }
+
+        if (ad.valid_until && Date.parse(ad.valid_until) < now) {
+            return false;
+        }
+
+        return true;
+    }
+    return false;
+}
+
 function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: boolean, onHide: () => void) {
     if (motd.update) {
         ensureShownMessage(motd.update, motdNode);
     } else if (motd.motd) {
         ensureShownMessage(motd.motd, motdNode);
     } else if (adsEnabled) {
-        const applicableAds = motd.ads?.filter(ad => {
-            return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
-        });
+        const applicableAds = motd.ads?.filter(ad => isValidAd(ad, subLang));
 
         if (applicableAds != null && applicableAds.length > 0) {
             const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];

@@ -27,6 +27,9 @@ lang-c++-opencl:
 lang-circle:
   - lib/compilers/circle.js
   - etc/config/circle.*.properties
+lang-circt:
+  - lib/compilers/circt.ts
+  - etc/config/circt.*.properties
 lang-clean:
   - lib/compilers/clean.js
   - etc/config/clean.*.properties

@@ -49,7 +49,9 @@ function DisplayOptInfo(optInfo: LLVMOptInfo) {
         let inc = '';
         for (const [key, value] of Object.entries(x)) {
             if (key === 'DebugLoc') {
-                inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                if (value['Line'] !== 0) {
+                    inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                }
             } else {
                 inc += value;
             }
