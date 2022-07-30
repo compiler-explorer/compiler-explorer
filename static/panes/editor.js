@@ -1375,89 +1375,90 @@ Editor.prototype.getAllOutputAndErrors = function (result, compilerName, compile
 Editor.prototype.collectOutputWidgets = function (output) {
     var fixes = [];
     var editorModel = this.editor.getModel();
+    var widgets = _.compact(
+        _.map(
+            output,
+            function (obj) {
+                if (!obj.tag) return;
+
+                var trees = this.hub.trees;
+                if (trees && trees.length > 0) {
+                    if (obj.tag.file) {
+                        if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
+                            return;
+                        }
+                    } else {
+                        if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
+                            return;
+                        }
+                    }
+                }
+
+                var colBegin = 0;
+                var colEnd = Infinity;
+                var lineBegin = obj.tag.line;
+                var lineEnd = obj.tag.line;
+                if (obj.tag.column) {
+                    if (obj.tag.endcolumn) {
+                        colBegin = obj.tag.column;
+                        colEnd = obj.tag.endcolumn;
+                        lineBegin = obj.tag.line;
+                        lineEnd = obj.tag.endline;
+                    } else {
+                        var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
+                        colBegin = obj.tag.column;
+                        colEnd = span.colEnd;
+                        if (colEnd === obj.tag.column) colEnd = -1;
+                    }
+                }
+                var link;
+                if (obj.tag.link) {
+                    link = {
+                        value: obj.tag.link.text,
+                        target: obj.tag.link.url,
+                    };
+                }
+                var diag = {
+                    severity: obj.tag.severity,
+                    message: obj.tag.text,
+                    source: obj.source,
+                    startLineNumber: lineBegin,
+                    startColumn: colBegin,
+                    endLineNumber: lineEnd,
+                    endColumn: colEnd,
+                    code: link,
+                };
+                if (obj.tag.fixes) {
+                    fixes = fixes.concat(
+                        obj.tag.fixes.map(function (fs, ind) {
+                            return {
+                                title: fs.title,
+                                diagnostics: [diag],
+                                kind: 'quickfix',
+                                edit: {
+                                    edits: fs.edits.map(function (f) {
+                                        return {
+                                            resource: editorModel.uri,
+                                            edit: {
+                                                range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
+                                                text: f.text,
+                                            },
+                                        };
+                                    }),
+                                },
+                                isPreferred: ind === 0,
+                            };
+                        })
+                    );
+                }
+                return diag;
+            },
+            this
+        )
+    );
     return {
         fixes: fixes,
-        widgets: _.compact(
-            _.map(
-                output,
-                function (obj) {
-                    if (!obj.tag) return;
-
-                    var trees = this.hub.trees;
-                    if (trees && trees.length > 0) {
-                        if (obj.tag.file) {
-                            if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
-                                return;
-                            }
-                        } else {
-                            if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
-                                return;
-                            }
-                        }
-                    }
-
-                    var colBegin = 0;
-                    var colEnd = Infinity;
-                    var lineBegin = obj.tag.line;
-                    var lineEnd = obj.tag.line;
-                    if (obj.tag.column) {
-                        if (obj.tag.endcolumn) {
-                            colBegin = obj.tag.column;
-                            colEnd = obj.tag.endcolumn;
-                            lineBegin = obj.tag.line;
-                            lineEnd = obj.tag.endline;
-                        } else {
-                            var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
-                            colBegin = obj.tag.column;
-                            colEnd = span.colEnd;
-                            if (colEnd === obj.tag.column) colEnd = -1;
-                        }
-                    }
-                    var link;
-                    if (obj.tag.link) {
-                        link = {
-                            value: obj.tag.link.text,
-                            target: obj.tag.link.url,
-                        };
-                    }
-                    var diag = {
-                        severity: obj.tag.severity,
-                        message: obj.tag.text,
-                        source: obj.source,
-                        startLineNumber: lineBegin,
-                        startColumn: colBegin,
-                        endLineNumber: lineEnd,
-                        endColumn: colEnd,
-                        code: link,
-                    };
-                    if (obj.tag.fixes) {
-                        fixes = fixes.concat(
-                            obj.tag.fixes.map(function (fs, ind) {
-                                return {
-                                    title: fs.title,
-                                    diagnostics: [diag],
-                                    kind: 'quickfix',
-                                    edit: {
-                                        edits: fs.edits.map(function (f) {
-                                            return {
-                                                resource: editorModel.uri,
-                                                edit: {
-                                                    range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
-                                                    text: f.text,
-                                                },
-                                            };
-                                        }),
-                                    },
-                                    isPreferred: ind === 0,
-                                };
-                            })
-                        );
-                    }
-                    return diag;
-                },
-                this
-            )
-        ),
+        widgets: widgets,
     };
 };
 
