@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
+import { Language, LanguageKey } from '../types/languages.interfaces';
 
 type DefKeys = 'name' | 'monaco' | 'extensions' | 'alias' | 'previewFilter' | 'formatter' | 'logoUrl' | 'logoUrlDark';
 type LanguageDefinition = Pick<Language, DefKeys>;
@@ -289,6 +289,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         extensions: ['.hs', '.haskell'],
         alias: [],
         logoUrl: 'haskell.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
+    hlsl: {
+        name: 'HLSL',
+        monaco: 'hlsl',
+        extensions: ['.hlsl', '.hlsli'],
+        alias: [],
+        logoUrl: 'dxc.png',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
