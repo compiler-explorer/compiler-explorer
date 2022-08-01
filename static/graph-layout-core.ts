@@ -168,7 +168,10 @@ export class GraphLayoutCore {
             }
         }
         //console.log(this.blocks);
+        const start = performance.now();
         this.layout();
+        const end = performance.now();
+        console.log(`Graph layout: ${end - start}ms`);
     }
 
     dfs(visited: DfsState[], order: number[], node: number) {
@@ -630,7 +633,7 @@ export class GraphLayoutCore {
                         const row = this.edgeRows[segment.start.row];
                         let inserted = false;
                         for (const tree of row.intervals) {
-                            if (!tree.intersect_any([segment.start.col - 1, segment.end.col])) {
+                            if (!tree.intersect_any([segment.start.col, segment.end.col])) {
                                 tree.insert([segment.start.col, segment.end.col], segment);
                                 inserted = true;
                                 break;
@@ -661,17 +664,18 @@ export class GraphLayoutCore {
         enum EdgeKind {
             LEFTU = -2,
             LEFTCORNER = -1,
-            VERTICAL = 0,
             RIGHTCORNER = 1,
             RIGHTU = 2,
-            NULL = 3,
+            // we want pure verticals in the center and not crossing with any corner segments if possible
+            // solution: place everything else first, let the pure verticals take what's left
+            VERTICAL = 3,
+            NULL = 4,
         }
         const segments: {
             segment: EdgeSegment;
             length: number;
             kind: EdgeKind;
             tiebreaker: number;
-            previousSegment: EdgeSegment | null;
         }[] = [];
         for (const block of this.blocks) {
             for (const edge of block.edges) {
@@ -679,7 +683,6 @@ export class GraphLayoutCore {
                     .map(({start, end}) => Math.abs(start.col - end.col) + Math.abs(start.row - end.row))
                     .reduce((A, x) => A + x);
                 const target = this.blocks[edge.dest];
-                let previousSegment: EdgeSegment | null = null;
                 for (const [i, segment] of edge.path.entries()) {
                     let kind = EdgeKind.NULL;
                     if (i === 0) {
@@ -738,9 +741,7 @@ export class GraphLayoutCore {
                             Math.abs(segment.start.col - segment.end.col) +
                             Math.abs(segment.start.row - segment.end.row),
                         tiebreaker: 2 * edgeLength + (target.row >= block.row ? 1 : 0),
-                        previousSegment,
                     });
-                    previousSegment = segment;
                 }
             }
         }
@@ -755,24 +756,16 @@ export class GraphLayoutCore {
         });
         console.log(segments);
         for (const segmentEntry of segments) {
-            const {segment, previousSegment} = segmentEntry;
+            const {segment} = segmentEntry;
             if (segment.type === SegmentType.Vertical) {
                 const col = this.edgeColumns[segment.start.col];
                 const candidates = col.intervals.slice();
-                if (previousSegment === null) {
-                    // This is the very first horizontal dropdown
-                    // Try to place at the center
-                    // Note: Will need to be changed if an edge can have multiple outgoing edges
-                    const center = Math.floor(candidates.length / 2);
-                    candidates.unshift(...candidates.slice(center, Math.min(center + 2, candidates.length)));
+                if (segmentEntry.kind < 0) {
+                    // if this is a left corner
+                    // take left subcolumns
                 } else {
-                    // Previous would be a horizontal segment
-                    if (previousSegment.start.col > segment.start.col) {
-                        // coming from the right
-                        candidates.reverse();
-                    } else {
-                        // coming from the left, pass
-                    }
+                    // otherwise take right subcolumns
+                    candidates.reverse();
                 }
                 let inserted = false;
                 for (const tree of candidates) {
@@ -789,7 +782,8 @@ export class GraphLayoutCore {
                 // Horizontal
                 const row = this.edgeRows[segment.start.row];
                 const candidates = row.intervals.slice();
-                if (previousSegment === null) {
+                // TODO
+                /*if (previousSegment === null) {
                     throw Error('Impossible');
                 }
                 // Previous would be a vertical segment
@@ -798,17 +792,18 @@ export class GraphLayoutCore {
                     candidates.reverse();
                 } else {
                     // coming from above, pass
-                }
+                }*/
                 let inserted = false;
                 for (const tree of candidates) {
-                    if (!tree.intersect_any([segment.start.col - 1, segment.end.col])) {
+                    if (!tree.intersect_any([segment.start.col, segment.end.col])) {
                         tree.insert([segment.start.col, segment.end.col], segment);
                         inserted = true;
                         break;
                     }
                 }
                 if (!inserted) {
-                    throw Error('foobar');
+                    console.log('ERROR: FOOBAR');
+                    //throw Error('foobar');
                 }
             }
         }
@@ -974,7 +969,7 @@ int sum(int* arr, int n) {
     }
 }
 
--O2, -O3
+-Os, -O3
 
 void foo(), bar();
 
