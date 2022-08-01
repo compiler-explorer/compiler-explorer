@@ -30,7 +30,21 @@ import IntervalTree, {Node} from '@flatten-js/interval-tree';
 // https://cutter.re/docs/api/widgets/classGraphGridLayout.html
 // Thanks to the cutter team for their great documentation!
 
-enum EdgeType {
+// TODO(jeremy-rifkin)
+function assert(condition: boolean, message?: string, ...args: any[]): asserts condition {
+    if (!condition) {
+        const stack = new Error('Assertion Error').stack;
+        throw (
+            (message
+                ? `Assertion error in llvm-print-after-all-parser: ${message}`
+                : `Assertion error in llvm-print-after-all-parser`) +
+            (args.length > 0 ? `\n${JSON.stringify(args)}\n` : '') +
+            `\n${stack}`
+        );
+    }
+}
+
+enum SegmentType {
     Horizontal,
     Vertical,
 }
@@ -52,7 +66,7 @@ type EdgeSegment = {
     end: EdgeCoordinate;
     horizontalOffset: number;
     verticalOffset: number;
-    type: EdgeType; // is this point the end of a horizontal or vertical segment
+    type: SegmentType; // is this point the end of a horizontal or vertical segment
 };
 
 type Edge = {
@@ -129,7 +143,7 @@ export class GraphLayoutCore {
                 col: 0,
                 boundingBox: {rows: 0, cols: 0},
                 coordinates: {x: 0, y: 0},
-                incidentEdgeCount: 0
+                incidentEdgeCount: 0,
             };
             this.blocks.push(block);
             blockMap[node.id] = this.blocks.length - 1;
@@ -444,10 +458,10 @@ export class GraphLayoutCore {
                     if (distanceLeft === distanceRight) {
                         // TODO: Could also try this
                         /*if(target.row <= source.row) {
-                            if(leftCandidate == sourceColumn - 1) {
+                            if(leftCandidate === sourceColumn - 1) {
                                 edge.mainColumn = leftCandidate;
                                 continue;
-                            } else if(rightCandidate == sourceColumn + 1) {
+                            } else if(rightCandidate === sourceColumn + 1) {
                                 edge.mainColumn = rightCandidate;
                                 continue;
                             }
@@ -490,7 +504,7 @@ export class GraphLayoutCore {
             },
             horizontalOffset: 0,
             verticalOffset: 0,
-            type: start[1] === end[1] ? EdgeType.Vertical : EdgeType.Horizontal,
+            type: start[1] === end[1] ? SegmentType.Vertical : SegmentType.Horizontal,
         });
         for (const block of this.blocks) {
             for (const edge of block.edges) {
@@ -519,8 +533,8 @@ export class GraphLayoutCore {
                         for (let j = 0; j < edge.path.length; j++) {
                             const segment = edge.path[j];
                             if (
-                                (segment.type === EdgeType.Vertical && segment.start.col !== segment.end.col) ||
-                                (segment.type === EdgeType.Horizontal && segment.start.row !== segment.end.row)
+                                (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
+                                (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                             ) {
                                 throw Error('foobar');
                             }
@@ -551,9 +565,9 @@ export class GraphLayoutCore {
                         // HH -> H
                         if (prevSegment.type === segment.type) {
                             if (
-                                (prevSegment.type === EdgeType.Vertical &&
+                                (prevSegment.type === SegmentType.Vertical &&
                                     prevSegment.start.col !== segment.start.col) ||
-                                (prevSegment.type === EdgeType.Horizontal &&
+                                (prevSegment.type === SegmentType.Horizontal &&
                                     prevSegment.start.row !== segment.start.row)
                             ) {
                                 throw Error('foobar');
@@ -569,8 +583,8 @@ export class GraphLayoutCore {
                 for (let j = 0; j < edge.path.length; j++) {
                     const segment = edge.path[j];
                     if (
-                        (segment.type === EdgeType.Vertical && segment.start.col !== segment.end.col) ||
-                        (segment.type === EdgeType.Horizontal && segment.start.row !== segment.end.row)
+                        (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
+                        (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                     ) {
                         throw Error('foobar');
                     }
@@ -589,7 +603,7 @@ export class GraphLayoutCore {
                 }
                 // Compute subrows/subcolumns
                 for (const segment of edge.path) {
-                    if (segment.type === EdgeType.Vertical) {
+                    if (segment.type === SegmentType.Vertical) {
                         if (segment.start.col !== segment.end.col) {
                             throw Error('foobar');
                         }
@@ -633,88 +647,169 @@ export class GraphLayoutCore {
             }
         }
         // Throw everything away and do it all again, but smarter
-        for(const edgeColumn of this.edgeColumns) {
-            for(const intervalTree of edgeColumn.intervals) {
+        for (const edgeColumn of this.edgeColumns) {
+            for (const intervalTree of edgeColumn.intervals) {
                 intervalTree.root = null as unknown as Node<EdgeSegment>;
             }
         }
-        for(const edgeRow of this.edgeRows) {
-            for(const intervalTree of edgeRow.intervals) {
+        for (const edgeRow of this.edgeRows) {
+            for (const intervalTree of edgeRow.intervals) {
                 intervalTree.root = null as unknown as Node<EdgeSegment>;
             }
         }
         // Add edges in order of shortest edges first
-        const edges: (Edge & {length: number})[] = [];
+        enum EdgeKind {
+            LEFTU = -2,
+            LEFTCORNER = -1,
+            VERTICAL = 0,
+            RIGHTCORNER = 1,
+            RIGHTU = 2,
+            NULL = 3,
+        }
+        const segments: {
+            segment: EdgeSegment;
+            length: number;
+            kind: EdgeKind;
+            tiebreaker: number;
+            previousSegment: EdgeSegment | null;
+        }[] = [];
         for (const block of this.blocks) {
             for (const edge of block.edges) {
-                edges.push({
-                    ...edge,
-                    length: edge.path
-                        .map(({start, end}) => Math.abs(start.col - end.col) + Math.abs(start.row - end.row))
-                        .reduce((A, x) => A + x)
-                });
+                const edgeLength = edge.path
+                    .map(({start, end}) => Math.abs(start.col - end.col) + Math.abs(start.row - end.row))
+                    .reduce((A, x) => A + x);
+                const target = this.blocks[edge.dest];
+                let previousSegment: EdgeSegment | null = null;
+                for (const [i, segment] of edge.path.entries()) {
+                    let kind = EdgeKind.NULL;
+                    if (i === 0) {
+                        // segment will be vertical
+                        if (edge.path.length === 1) {
+                            kind = EdgeKind.VERTICAL;
+                        } else {
+                            const next = edge.path[i + 1];
+                            if (next.end.col > segment.end.col) {
+                                kind = EdgeKind.RIGHTCORNER;
+                            } else {
+                                kind = EdgeKind.LEFTCORNER;
+                            }
+                        }
+                    } else if (i === edge.path.length - 1) {
+                        // there will be a previous
+                        const previous = edge.path[i - 1];
+                        if (previous.start.col > segment.end.col) {
+                            kind = EdgeKind.RIGHTCORNER;
+                        } else {
+                            kind = EdgeKind.LEFTCORNER;
+                        }
+                    } else {
+                        // there will be both a previous and a next
+                        const next = edge.path[i + 1];
+                        const previous = edge.path[i - 1];
+                        if (segment.type === SegmentType.Vertical) {
+                            if (previous.start.col < segment.start.col && next.end.col < segment.start.col) {
+                                kind = EdgeKind.LEFTU;
+                            } else if (previous.start.col > segment.start.col && next.end.col > segment.start.col) {
+                                kind = EdgeKind.RIGHTU;
+                            } else if (previous.start.col > segment.end.col) {
+                                kind = EdgeKind.RIGHTCORNER;
+                            } else {
+                                kind = EdgeKind.LEFTCORNER;
+                            }
+                        } else {
+                            // horizontal
+                            kind = EdgeKind.VERTICAL;
+                        }
+                    }
+                    /*if(segment.start.row > segment.end.row) {
+                        assert(segment.type === SegmentType.Vertical);
+                        assert(edge.path[i + 1].end.col !== segment.start.col);
+                        if(edge.path[i + 1].end.col > segment.start.col) {
+                            kind = EdgeKind.RIGHTU;
+                        } else {
+                            kind = EdgeKind.LEFTU;
+                        }
+                    }*/
+                    assert((kind as any) !== EdgeKind.NULL);
+                    segments.push({
+                        segment,
+                        kind,
+                        length:
+                            Math.abs(segment.start.col - segment.end.col) +
+                            Math.abs(segment.start.row - segment.end.row),
+                        tiebreaker: 2 * edgeLength + (target.row >= block.row ? 1 : 0),
+                        previousSegment,
+                    });
+                    previousSegment = segment;
+                }
             }
         }
-        edges.sort((a, b) => a.length - b.length);
-        for(const edge of edges) {
-            let previousSegment: EdgeSegment | null = null;
-            for(const segment of edge.path) {
-                if(segment.type === EdgeType.Vertical) {
-                    const col = this.edgeColumns[segment.start.col];
-                    const candidates = col.intervals.slice();
-                    if(previousSegment === null) {
-                        // This is the very first horizontal dropdown
-                        // Try to place at the center
-                        // Note: Will need to be changed if an edge can have multiple outgoing edges
-                        const center = Math.floor(candidates.length / 2);
-                        candidates.unshift(...candidates.slice(center, Math.min(center + 2, candidates.length)));
-                    } else {
-                        // Previous would be a horizontal segment
-                        if(previousSegment.start.col > segment.start.col) {
-                            // coming from the right
-                            candidates.reverse();
-                        } else {
-                            // coming from the left, pass
-                        }
-                    }
-                    let inserted = false;
-                    for (const tree of candidates) {
-                        if (!tree.intersect_any([segment.start.row, segment.end.row])) {
-                            tree.insert([segment.start.row, segment.end.row], segment);
-                            inserted = true;
-                            break;
-                        }
-                    }
-                    if(!inserted) {
-                        throw Error("foobar");
-                    }
+        segments.sort((a, b) => {
+            if (a.kind !== b.kind) {
+                return a.kind - b.kind;
+            } else if (a.length !== b.length) {
+                return a.length - b.length;
+            } else {
+                return a.tiebreaker - b.tiebreaker;
+            }
+        });
+        console.log(segments);
+        for (const segmentEntry of segments) {
+            const {segment, previousSegment} = segmentEntry;
+            if (segment.type === SegmentType.Vertical) {
+                const col = this.edgeColumns[segment.start.col];
+                const candidates = col.intervals.slice();
+                if (previousSegment === null) {
+                    // This is the very first horizontal dropdown
+                    // Try to place at the center
+                    // Note: Will need to be changed if an edge can have multiple outgoing edges
+                    const center = Math.floor(candidates.length / 2);
+                    candidates.unshift(...candidates.slice(center, Math.min(center + 2, candidates.length)));
                 } else {
-                    // Horizontal
-                    const row = this.edgeRows[segment.start.row];
-                    const candidates = row.intervals.slice();
-                    if(previousSegment === null) {
-                        throw Error("Impossible");
-                    }
-                    // Previous would be a vertical segment
-                    if(previousSegment.start.row > segment.start.row) {
-                        // coming from below
+                    // Previous would be a horizontal segment
+                    if (previousSegment.start.col > segment.start.col) {
+                        // coming from the right
                         candidates.reverse();
                     } else {
-                        // coming from above, pass
-                    }
-                    let inserted = false;
-                    for (const tree of candidates) {
-                        if (!tree.intersect_any([segment.start.col - 1, segment.end.col])) {
-                            tree.insert([segment.start.col, segment.end.col], segment);
-                            inserted = true;
-                            break;
-                        }
-                    }
-                    if(!inserted) {
-                        throw Error("foobar");
+                        // coming from the left, pass
                     }
                 }
-                previousSegment = segment;
+                let inserted = false;
+                for (const tree of candidates) {
+                    if (!tree.intersect_any([segment.start.row, segment.end.row])) {
+                        tree.insert([segment.start.row, segment.end.row], segment);
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    throw Error('foobar');
+                }
+            } else {
+                // Horizontal
+                const row = this.edgeRows[segment.start.row];
+                const candidates = row.intervals.slice();
+                if (previousSegment === null) {
+                    throw Error('Impossible');
+                }
+                // Previous would be a vertical segment
+                if (previousSegment.start.row > segment.start.row) {
+                    // coming from below
+                    candidates.reverse();
+                } else {
+                    // coming from above, pass
+                }
+                let inserted = false;
+                for (const tree of candidates) {
+                    if (!tree.intersect_any([segment.start.col - 1, segment.end.col])) {
+                        tree.insert([segment.start.col, segment.end.col], segment);
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    throw Error('foobar');
+                }
             }
         }
         // Assign offsets
@@ -806,7 +901,7 @@ export class GraphLayoutCore {
                     // apply offsets to neighbor segments
                     for (let i = 0; i < edge.path.length; i++) {
                         const segment = edge.path[i];
-                        if (segment.type === EdgeType.Vertical) {
+                        if (segment.type === SegmentType.Vertical) {
                             if (i > 0) {
                                 const prev = edge.path[i - 1];
                                 prev.end.x = segment.start.x;
