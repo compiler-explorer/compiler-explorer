@@ -215,29 +215,23 @@ export class Cfg extends Pane<CfgState> {
             return;
         }
         const fn = this.results[name];
+        const bbMap: Record<string, HTMLDivElement> = {};
         for (const node of fn.nodes) {
-            this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${await monaco.editor.colorize(
-                node.label,
-                'asm',
-                MonacoConfig.extendConfig({})
-            )}</div>`;
-            //console.log(`<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/gi, "<br/>")}</div>`);
-            //this.blockContainer.innerHTML += `<div class="block" data-bb-id="${node.id}">${node.label.replace(/\n/gi, "<br/>")}</div>`;
+            const div = document.createElement('div');
+            div.classList.add('block');
+            div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
+            if (node.id in bbMap) {
+                throw 'foobar';
+            }
+            bbMap[node.id] = div;
+            this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
-            //const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`)[0];
-            //(node as AnnotatedNodeDescriptor).width = elem.getBoundingClientRect().width;
-            //(node as AnnotatedNodeDescriptor).height = elem.getBoundingClientRect().height;
-            const elem = $(this.blockContainer).find(`.block[data-bb-id="${node.id}"]`);
-            void elem[0].offsetHeight;
+            const elem = $(bbMap[node.id]);
+            void bbMap[node.id].offsetHeight;
             (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
             (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
-            //elem[0].style.width = (node as AnnotatedNodeDescriptor).width + 'px';
-            //elem[0].style.height = (node as AnnotatedNodeDescriptor).height + 'px';
-            //console.log(elem, elem.outerWidth(), elem.outerHeight(), elem[0].offsetHeight,  node);
         }
-        //console.log("test");
-        //console.log(fn.nodes);
         const layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
         const width = layout.getWidth();
         const height = layout.getHeight();
@@ -251,7 +245,7 @@ export class Cfg extends Pane<CfgState> {
         this.blockContainer.style.width = width + 'px';
         this.layout = layout;
         for (const block of this.layout.blocks) {
-            const elem = $(this.blockContainer).find(`.block[data-bb-id="${block.data.id}"]`)[0];
+            const elem = bbMap[block.data.id];
             elem.style.top = block.coordinates.y + 'px';
             elem.style.left = block.coordinates.x + 'px';
             elem.style.width = block.data.width + 'px';
@@ -261,6 +255,7 @@ export class Cfg extends Pane<CfgState> {
         this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         this.svg.innerHTML = '';
 
+        const documentFragment = document.createDocumentFragment();
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
                 if (edge.path.length === 0) {
@@ -275,11 +270,12 @@ export class Cfg extends Pane<CfgState> {
                     points.push([segment.end.x, segment.end.y]);
                 }
                 points.push([endpoint.x, endpoint.y - triangleHeight + 1]);
-                this.svg.innerHTML += `<polyline points="${points
-                    .map(coord => coord.join(','))
-                    .join(' ')}" fill="none" stroke="${
-                    ColorTable[edge.color]
-                }" stroke-width="2" />`;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                line.setAttribute('points', points.map(coord => coord.join(',')).join(' '));
+                line.setAttribute('fill', 'none');
+                line.setAttribute('stroke', ColorTable[edge.color]);
+                line.setAttribute('stroke-width', '2');
+                documentFragment.appendChild(line);
 
                 const trianglePoints: [number, number][] = [];
                 trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
@@ -287,11 +283,13 @@ export class Cfg extends Pane<CfgState> {
                 trianglePoints.push([endpoint.x, endpoint.y]);
                 trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
                 trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
-                this.svg.innerHTML += `<polyline points="${trianglePoints
-                    .map(coord => coord.join(','))
-                    .join(' ')}" fill="${ColorTable[edge.color]}" />`;
+                const triangle = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                triangle.setAttribute('points', trianglePoints.map(coord => coord.join(',')).join(' '));
+                triangle.setAttribute('fill', ColorTable[edge.color]);
+                documentFragment.appendChild(triangle);
             }
         }
+        this.svg.appendChild(documentFragment);
     }
 
     override resize() {
