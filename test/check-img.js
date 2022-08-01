@@ -41,6 +41,8 @@ function checkImage(lang) {
 
 describe('Image-checks', () => {
     for (const lang in languages) {
-        it('check if ' + lang + ' image exists', () => assert.isOk(checkImage(languages[lang])));
+        if (lang.logoUrl !== null) {
+            it('check if ' + lang + ' image exists', () => assert.isOk(checkImage(languages[lang])));
+        }
     }
 });
