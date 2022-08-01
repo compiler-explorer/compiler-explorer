@@ -58,7 +58,6 @@ function Editor(hub, state, container) {
     this.ourCompilers = {};
     this.ourExecutors = {};
     this.httpRoot = window.httpRoot;
-    this.widgetsByCompiler = {};
     this.asmByCompiler = {};
     this.defaultFileByCompiler = {};
     this.busyCompilers = {};
@@ -307,9 +306,11 @@ Editor.prototype.initCallbacks = function () {
     this.eventHub.on('coloursForEditor', this.onColoursForEditor, this);
     this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
     this.eventHub.on('executorOpen', this.onExecutorOpen, this);
+    this.eventHub.on('executorClose', this.onExecutorClose, this);
     this.eventHub.on('compilerClose', this.onCompilerClose, this);
     this.eventHub.on('compiling', this.onCompiling, this);
     this.eventHub.on('compileResult', this.onCompileResponse, this);
+    this.eventHub.on('executeResult', this.onExecuteResponse, this);
     this.eventHub.on('selectLine', this.onSelectLine, this);
     this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
     this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
@@ -1323,7 +1324,6 @@ Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
 
     if (this.ourCompilers[compilerId]) {
         monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
-        delete this.widgetsByCompiler[compilerId];
         delete this.asmByCompiler[compilerId];
         delete this.busyCompilers[compilerId];
         delete this.ourCompilers[compilerId];
@@ -1335,6 +1335,7 @@ Editor.prototype.onCompilerClose = function (compilerId, unused, treeId) {
 Editor.prototype.onExecutorClose = function (id) {
     if (this.ourExecutors[id]) {
         delete this.ourExecutors[id];
+        monaco.editor.setModelMarkers(this.editor.getModel(), 'Executor ' + id, []);
     }
 };
 
@@ -1351,7 +1352,7 @@ Editor.prototype.addSource = function (arr, source) {
 };
 
 Editor.prototype.getAllOutputAndErrors = function (result, compilerName, compilerId) {
-    const compilerTitle = compilerName + ' #' + compilerId;
+    var compilerTitle = compilerName + ' #' + compilerId;
     var all = this.addSource(result.stdout || [], compilerTitle);
 
     if (result.buildsteps) {
@@ -1371,13 +1372,9 @@ Editor.prototype.getAllOutputAndErrors = function (result, compilerName, compile
     return all;
 };
 
-Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-    if (!this.ourCompilers[compilerId]) return;
-
-    this.busyCompilers[compilerId] = false;
-    var editorModel = this.editor.getModel();
-    var output = this.getAllOutputAndErrors(result, compiler.name, compilerId);
+Editor.prototype.collectOutputWidgets = function (output) {
     var fixes = [];
+    var editorModel = this.editor.getModel();
     var widgets = _.compact(
         _.map(
             output,
@@ -1414,7 +1411,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
                         if (colEnd === obj.tag.column) colEnd = -1;
                     }
                 }
-                let link;
+                var link;
                 if (obj.tag.link) {
                     link = {
                         value: obj.tag.link.text,
@@ -1459,7 +1456,15 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
             this
         )
     );
-    monaco.editor.setModelMarkers(editorModel, compilerId, widgets);
+    return {
+        fixes: fixes,
+        widgets: widgets,
+    };
+};
+
+Editor.prototype.setDecorationTags = function (widgets, ownerId) {
+    monaco.editor.setModelMarkers(this.editor.getModel(), ownerId, widgets);
+
     this.decorations.tags = _.map(
         widgets,
         function (tag) {
@@ -1474,14 +1479,30 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         this
     );
 
+
+    this.updateDecorations();
+};
+
+Editor.prototype.setQuickFixes = function (fixes) {
     if (fixes.length) {
+        var editorModel = this.editor.getModel();
         quickFixesHandler.registerQuickFixesForCompiler(this.id, editorModel, fixes);
         quickFixesHandler.registerProviderForLanguage(editorModel.getLanguageId());
     } else {
         quickFixesHandler.unregister(this.id);
     }
 
-    this.updateDecorations();
+};
+
+Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
+    if (!this.ourCompilers[compilerId]) return;
+
+    this.busyCompilers[compilerId] = false;
+
+    var collectedOutput = this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name,  compilerId));
+
+    this.setDecorationTags(collectedOutput.widgets, compilerId);
+    this.setQuickFixes(collectedOutput.fixes);
 
     if (result.result && result.result.asm) {
         this.asmByCompiler[compilerId] = result.result.asm;
@@ -1497,6 +1518,16 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 
     this.numberUsedLines();
 };
+
+Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
+    var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
+    output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
+
+    this.setDecorationTags(this.collectOutputWidgets(output), 'Executor '+ executorId);
+
+    this.numberUsedLines();
+};
+
 
 Editor.prototype.onSelectLine = function (id, lineNum) {
     if (Number(id) === this.id) {
