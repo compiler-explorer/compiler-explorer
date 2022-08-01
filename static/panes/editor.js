@@ -1794,25 +1794,27 @@ Editor.prototype.close = function () {
 function getSelectizeRenderHtml(data, escape, width, height) {
     var result =
         '<div class="d-flex" style="align-items: center">' +
-        '<div class="mr-1 d-flex" style="align-items: center">' +
-        '<img src="' +
-        data.logoData +
-        '" class="' +
-        (data.logoDataDark ? 'theme-light-only' : '') +
-        '" width="' +
-        width +
-        '" style="max-height: ' +
-        height +
-        'px"/>';
-    if (data.logoDataDark) {
-        result +=
-            '<img src="' +
-            data.logoDataDark +
-            '" class="theme-dark-only" width="' +
+        '<div class="mr-1 d-flex" style="align-items: center">';
+    if (data.logoData) {
+        result += '<img src="' +
+            data.logoData +
+            '" class="' +
+            (data.logoDataDark ? 'theme-light-only' : '') +
+            '" width="' +
             width +
             '" style="max-height: ' +
             height +
             'px"/>';
+        if (data.logoDataDark) {
+            result +=
+                '<img src="' +
+                data.logoDataDark +
+                '" class="theme-dark-only" width="' +
+                width +
+                '" style="max-height: ' +
+                height +
+                'px"/>';
+        }
     }
     result += '</div><div>' + escape(data.name) + '</div></div>';
     return result;

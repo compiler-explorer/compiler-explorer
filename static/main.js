@@ -463,9 +463,11 @@ function setupLanguageLogos(languages) {
         languages,
         function (lang) {
             try {
-                lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                if (lang.logoUrl !== null) {
+                    lang.logoData = logos('./' + lang.logoUrl);
+                    if (lang.logoUrlDark !== null) {
+                        lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                    }
                 }
             } catch (ignored) {
                 lang.logoData = '';
