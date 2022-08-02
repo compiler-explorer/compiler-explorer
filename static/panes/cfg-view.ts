@@ -33,7 +33,12 @@ import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces';
 import {ga} from '../analytics';
 
-import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor, CFGResult} from '../../types/compilation/cfg.interfaces';
+import {
+    AnnotatedCfgDescriptor,
+    AnnotatedNodeDescriptor,
+    CfgDescriptor,
+    CFGResult,
+} from '../../types/compilation/cfg.interfaces';
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
@@ -69,6 +74,7 @@ export class Cfg extends Pane<CfgState> {
     results: CFGResult;
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
+    bbMap: Record<string, HTMLDivElement> = {};
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         super(hub, container, state);
@@ -208,53 +214,30 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    // eslint-disable-next-line max-statements
-    async selectFunction(name: string) {
-        this.blockContainer.innerHTML = '';
-        if (!(name in this.results)) {
-            return;
-        }
-        const fn = this.results[name];
-        const bbMap: Record<string, HTMLDivElement> = {};
+    async createBasicBlocks(fn: CfgDescriptor) {
         for (const node of fn.nodes) {
             const div = document.createElement('div');
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
-            if (node.id in bbMap) {
+            if (node.id in this.bbMap) {
                 throw 'foobar';
             }
-            bbMap[node.id] = div;
+            this.bbMap[node.id] = div;
             this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
-            const elem = $(bbMap[node.id]);
-            void bbMap[node.id].offsetHeight;
+            const elem = $(this.bbMap[node.id]);
+            void this.bbMap[node.id].offsetHeight;
             (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
             (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
         }
-        const layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
-        const width = layout.getWidth();
-        const height = layout.getHeight();
-        this.graphDimensions.width = width;
-        this.graphDimensions.height = height;
-        this.graphDiv.style.height = height + 'px';
-        this.graphDiv.style.width = width + 'px';
-        this.svg.style.height = height + 'px';
-        this.svg.style.width = width + 'px';
-        this.blockContainer.style.height = height + 'px';
-        this.blockContainer.style.width = width + 'px';
-        this.layout = layout;
-        for (const block of this.layout.blocks) {
-            const elem = bbMap[block.data.id];
-            elem.style.top = block.coordinates.y + 'px';
-            elem.style.left = block.coordinates.x + 'px';
-            elem.style.width = block.data.width + 'px';
-            elem.style.height = block.data.height + 'px';
-        }
+    }
 
+    drawEdges() {
+        const width = this.layout.getWidth();
+        const height = this.layout.getHeight();
         this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         this.svg.innerHTML = '';
-
         const documentFragment = document.createDocumentFragment();
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
@@ -290,6 +273,40 @@ export class Cfg extends Pane<CfgState> {
             }
         }
         this.svg.appendChild(documentFragment);
+    }
+
+    applyLayout() {
+        const width = this.layout.getWidth();
+        const height = this.layout.getHeight();
+        this.graphDimensions.width = width;
+        this.graphDimensions.height = height;
+        this.graphDiv.style.height = height + 'px';
+        this.graphDiv.style.width = width + 'px';
+        this.svg.style.height = height + 'px';
+        this.svg.style.width = width + 'px';
+        this.blockContainer.style.height = height + 'px';
+        this.blockContainer.style.width = width + 'px';
+        for (const block of this.layout.blocks) {
+            const elem = this.bbMap[block.data.id];
+            elem.style.top = block.coordinates.y + 'px';
+            elem.style.left = block.coordinates.x + 'px';
+            elem.style.width = block.data.width + 'px';
+            elem.style.height = block.data.height + 'px';
+        }
+    }
+
+    // eslint-disable-next-line max-statements
+    async selectFunction(name: string) {
+        this.blockContainer.innerHTML = '';
+        if (!(name in this.results)) {
+            return;
+        }
+        const fn = this.results[name];
+        this.bbMap = {};
+        await this.createBasicBlocks(fn);
+        this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
+        this.applyLayout();
+        this.drawEdges();
     }
 
     override resize() {
