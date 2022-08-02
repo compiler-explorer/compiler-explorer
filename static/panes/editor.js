@@ -1531,7 +1531,7 @@ Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
 
 Editor.prototype.onSelectLine = function (id, lineNum) {
     if (Number(id) === this.id) {
-        this.editor.setSelection({line: lineNum - 1, ch: 0}, {line: lineNum, ch: 0});
+        this.editor.setSelection(new monaco.Selection(lineNum - 1, 0, lineNum, 0));
     }
 };
 
