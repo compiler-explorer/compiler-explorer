@@ -38,14 +38,19 @@ function ensureShownMessage(message: string, motdNode: JQuery) {
 }
 
 export function isValidAd(ad: Ad, subLang: string): boolean {
-    if (subLang && (ad.filter.length === 0 || ad.filter.includes(subLang))) {
+    if (!subLang || ad.filter.length === 0 || ad.filter.includes(subLang)) {
         const now = Date.now();
-        if (ad.valid_from && Date.parse(ad.valid_from) > now) {
-            return false;
-        }
+        try {
+            if (ad.valid_from && Date.parse(ad.valid_from) > now) {
+                return false;
+            }
 
-        if (ad.valid_until && Date.parse(ad.valid_until) < now) {
-            return false;
+            if (ad.valid_until && Date.parse(ad.valid_until) < now) {
+                return false;
+            }
+        } catch {
+            // Don't care if parsing fails (Which infra script makes sure it shouldn't, but you never know)
+            return true;
         }
 
         return true;

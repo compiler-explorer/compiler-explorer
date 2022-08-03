@@ -48,6 +48,26 @@ class MotdTests implements ITestable {
                 filter: [],
                 html: '',
             },
+            null,
+            true,
+            'Keep ad if sublang is not set'
+        );
+
+        MotdTests.assertAd(
+            {
+                filter: ['fakeLang'],
+                html: '',
+            },
+            true,
+            false,
+            'Keep ad if sublang is not set even if filtering for lang'
+        );
+
+        MotdTests.assertAd(
+            {
+                filter: [],
+                html: '',
+            },
             'langForTest',
             true,
             'Keep ad if no lang is set'
