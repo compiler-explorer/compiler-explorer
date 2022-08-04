@@ -660,16 +660,15 @@ export class GraphLayoutCore {
                 intervalTree.root = null as unknown as Node<EdgeSegment>;
             }
         }
-        // Add edges in order of shortest edges first
+        // Edge kind is the primary heuristic for subrow/column assignment
+        // For horizontal edges, think of left/vertical/right terminology rotated 90 degrees right
         enum EdgeKind {
             LEFTU = -2,
             LEFTCORNER = -1,
+            VERTICAL = 0,
             RIGHTCORNER = 1,
             RIGHTU = 2,
-            // we want pure verticals in the center and not crossing with any corner segments if possible
-            // solution: place everything else first, let the pure verticals take what's left
-            VERTICAL = 3,
-            NULL = 4,
+            NULL = NaN,
         }
         const segments: {
             segment: EdgeSegment;
@@ -698,7 +697,8 @@ export class GraphLayoutCore {
                             }
                         }
                     } else if (i === edge.path.length - 1) {
-                        // there will be a previous
+                        // segment will be vertical
+                        // there will be a previous segment, i !== 0
                         const previous = edge.path[i - 1];
                         if (previous.start.col > segment.end.col) {
                             kind = EdgeKind.RIGHTCORNER;
@@ -721,18 +721,18 @@ export class GraphLayoutCore {
                             }
                         } else {
                             // horizontal
-                            kind = EdgeKind.VERTICAL;
+                            // Same logic, think rotated 90 degrees right
+                            if (previous.start.row <= segment.start.row && next.end.row < segment.start.row) {
+                                kind = EdgeKind.LEFTU;
+                            } else if (previous.start.row > segment.start.row && next.end.row > segment.start.row) {
+                                kind = EdgeKind.RIGHTU;
+                            } else if (previous.start.row > segment.end.row) {
+                                kind = EdgeKind.RIGHTCORNER;
+                            } else {
+                                kind = EdgeKind.LEFTCORNER;
+                            }
                         }
                     }
-                    /*if(segment.start.row > segment.end.row) {
-                        assert(segment.type === SegmentType.Vertical);
-                        assert(edge.path[i + 1].end.col !== segment.start.col);
-                        if(edge.path[i + 1].end.col > segment.start.col) {
-                            kind = EdgeKind.RIGHTU;
-                        } else {
-                            kind = EdgeKind.LEFTU;
-                        }
-                    }*/
                     assert((kind as any) !== EdgeKind.NULL);
                     segments.push({
                         segment,
@@ -748,10 +748,25 @@ export class GraphLayoutCore {
         segments.sort((a, b) => {
             if (a.kind !== b.kind) {
                 return a.kind - b.kind;
-            } else if (a.length !== b.length) {
-                return a.length - b.length;
             } else {
-                return a.tiebreaker - b.tiebreaker;
+                const kind = a.kind; // a.kind == b.kind
+                if (a.length !== b.length) {
+                    if (kind <= 0) {
+                        // shortest first if coming from the left
+                        return a.length - b.length;
+                    } else {
+                        // coming from the right, shortest last
+                        // reverse edge length order
+                        return b.length - a.length;
+                    }
+                } else {
+                    if (kind <= 0) {
+                        return a.tiebreaker - b.tiebreaker;
+                    } else {
+                        // coming from the right, reverse
+                        return b.tiebreaker - a.tiebreaker;
+                    }
+                }
             }
         });
         console.log(segments);
@@ -759,16 +774,8 @@ export class GraphLayoutCore {
             const {segment} = segmentEntry;
             if (segment.type === SegmentType.Vertical) {
                 const col = this.edgeColumns[segment.start.col];
-                const candidates = col.intervals.slice();
-                if (segmentEntry.kind < 0) {
-                    // if this is a left corner
-                    // take left subcolumns
-                } else {
-                    // otherwise take right subcolumns
-                    candidates.reverse();
-                }
                 let inserted = false;
-                for (const tree of candidates) {
+                for (const tree of col.intervals) {
                     if (!tree.intersect_any([segment.start.row, segment.end.row])) {
                         tree.insert([segment.start.row, segment.end.row], segment);
                         inserted = true;
@@ -781,20 +788,8 @@ export class GraphLayoutCore {
             } else {
                 // Horizontal
                 const row = this.edgeRows[segment.start.row];
-                const candidates = row.intervals.slice();
-                // TODO
-                /*if (previousSegment === null) {
-                    throw Error('Impossible');
-                }
-                // Previous would be a vertical segment
-                if (previousSegment.start.row > segment.start.row) {
-                    // coming from below
-                    candidates.reverse();
-                } else {
-                    // coming from above, pass
-                }*/
                 let inserted = false;
-                for (const tree of candidates) {
+                for (const tree of row.intervals) {
                     if (!tree.intersect_any([segment.start.col, segment.end.col])) {
                         tree.insert([segment.start.col, segment.end.col], segment);
                         inserted = true;

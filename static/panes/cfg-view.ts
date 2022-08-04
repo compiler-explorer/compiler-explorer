@@ -47,7 +47,7 @@ const ColorTable = {
     red: '#FE5D5D',
     green: '#76E381',
     blue: '#65B7F6',
-    grey: '#ADADAD',
+    grey: '#c5c5c5',
 };
 
 type Coordinate = {
