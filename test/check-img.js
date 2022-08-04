@@ -26,21 +26,24 @@ import fs from 'fs';
 import path from 'path';
 
 import {assert} from 'chai';
-
 import {languages} from '../lib/languages';
 
 const img_dir = path.resolve('views/resources/logos');
 
-function checkImage(lang) {
-    let result = fs.existsSync(img_dir + '/' + lang.logoUrl);
-    if (lang.logoUrlDark !== null) {
-        result = result && fs.existsSync(img_dir + '/' + lang.logoUrlDark);
-    }
-    return result;
+function checkImage(logo) {
+    const logoPath = path.join(img_dir, logo);
+    assert.isTrue(fs.existsSync(logoPath), `${logoPath} logo missing`);
 }
 
-describe('Image-checks', () => {
-    for (const lang in languages) {
-        it('check if ' + lang + ' image exists', () => assert.isOk(checkImage(languages[lang])));
+describe('Language logo check', () => {
+    for (const langId in languages) {
+        const language = languages[langId];
+        if (language.logoUrl !== null) {
+            it(`check if default ${language.name} logo exists`, () => checkImage(language.logoUrl));
+        }
+
+        if (language.logoUrlDark !== null) {
+            it(`check if dark ${language.name} logo exists`, () => checkImage(language.logoUrlDark));
+        }
     }
 });

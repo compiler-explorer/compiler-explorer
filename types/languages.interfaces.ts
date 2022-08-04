@@ -85,7 +85,7 @@ export interface Language {
     /** Whether there's at least 1 compiler in this language that supportsExecute */
     supportsExecute: boolean | null;
     /** Path in /views/resources/logos to the logo of the language */
-    logoUrl: string;
+    logoUrl: string | null;
     /** Path in /views/resources/logos to the logo of the language for dark mode use */
     logoUrlDark: string | null;
     /** Example code to show in the language's editor */
