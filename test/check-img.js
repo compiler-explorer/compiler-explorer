@@ -26,6 +26,7 @@ import fs from 'fs';
 import path from 'path';
 
 import {assert} from 'chai';
+
 import {languages} from '../lib/languages';
 
 const img_dir = path.resolve('views/resources/logos');
