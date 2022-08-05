@@ -24,6 +24,8 @@
 
 import {EventEmitter} from 'events';
 
+import $ from 'jquery';
+
 const settings = {
     on: {
         icon: 'far fa-check-square',

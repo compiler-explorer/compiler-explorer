@@ -22,8 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ga} from './analytics';
+import $ from 'jquery';
 
+import {ga} from './analytics';
 import {Ad, Motd} from './motd.interfaces';
 
 function ensureShownMessage(message: string, motdNode: JQuery) {
