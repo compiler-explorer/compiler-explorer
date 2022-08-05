@@ -298,7 +298,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'hlsl',
         extensions: ['.hlsl', '.hlsli'],
         alias: [],
-        logoUrl: 'c++.svg',
+        logoUrl: null,
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
