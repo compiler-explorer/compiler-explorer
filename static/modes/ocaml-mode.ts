@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 function definition() {
     return {
@@ -127,6 +126,7 @@ function definition() {
 }
 
 monaco.languages.register({id: 'ocaml'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('ocaml', definition());
 
 export {};

@@ -23,11 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import lzstring from 'lz-string';
+import rison from './rison';
 import GoldenLayout from 'golden-layout';
-
-const lzstring = require('lz-string');
-const rison = require('rison');
-const Components = require('./components');
+import * as Components from './components';
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];

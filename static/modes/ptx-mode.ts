@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
-const asm = require('./asm-mode');
+import * as monaco from 'monaco-editor';
+import asm from './asm-mode';
 
 function definition() {
     const ptx = $.extend(true, {}, asm); // deep copy
@@ -57,6 +56,7 @@ function definition() {
 }
 
 monaco.languages.register({id: 'ptx'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('ptx', definition());
 
 export {};

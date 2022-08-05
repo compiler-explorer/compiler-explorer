@@ -30,11 +30,11 @@ import {EventEmitter} from 'golden-layout';
 import {options} from './options';
 
 import {ResultLine} from '../types/resultline/resultline.interfaces';
-
-import jqXHR = JQuery.jqXHR;
-import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 import {Compiler} from '../types/compiler.interfaces';
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
+
+type jqXHR = JQuery.jqXHR;
+type ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 
 type CompilationStatus = {
     code: 0 | 1 | 2 | 3 | 4;

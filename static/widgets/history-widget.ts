@@ -25,10 +25,10 @@
 import {pluck} from 'underscore';
 import {ga} from '../analytics';
 import {sortedList, HistoryEntry, EditorSource} from '../history';
-import {editor} from 'monaco-editor';
+import * as monaco from 'monaco-editor';
 
-import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
-import ITextModel = editor.ITextModel;
+type IStandaloneDiffEditor = monaco.editor.IStandaloneDiffEditor;
+type ITextModel = monaco.editor.ITextModel;
 
 export class HistoryDiffState {
     public model: ITextModel;
@@ -78,7 +78,7 @@ export class HistoryWidget {
             this.modal = $('#history');
 
             const placeholder = this.modal.find('.monaco-placeholder');
-            this.diffEditor = editor.createDiffEditor(placeholder[0], {
+            this.diffEditor = monaco.editor.createDiffEditor(placeholder[0], {
                 fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
                 scrollBeyondLastLine: true,
                 readOnly: true,
@@ -88,8 +88,8 @@ export class HistoryWidget {
                 },
             });
 
-            this.lhs = new HistoryDiffState(editor.createModel('', 'c++'));
-            this.rhs = new HistoryDiffState(editor.createModel('', 'c++'));
+            this.lhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
+            this.rhs = new HistoryDiffState(monaco.editor.createModel('', 'c++'));
             this.diffEditor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
             this.modal.find('.inline-diff-checkbox').on('click', event => {

@@ -25,8 +25,9 @@
 import EventEmitter from 'events';
 import {options} from '../options';
 import {Settings} from '../settings';
-import {editor} from 'monaco-editor';
-import IEditor = editor.IEditor;
+import * as monaco from 'monaco-editor';
+
+type IEditor = monaco.editor.IEditor;
 
 import {FontScaleState} from './fontscale.interfaces';
 

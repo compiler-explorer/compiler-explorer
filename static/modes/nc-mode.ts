@@ -22,9 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 // We need to ensure we use proper keywords for the Monaco Editor matcher. Note how
 // https://github.com/Microsoft/monaco-languages/ lacks, as far as I can tell, proper C support. We cheat and use C++

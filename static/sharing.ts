@@ -25,15 +25,14 @@
 import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
+import cloneDeep from 'lodash.clonedeep';
 import ClipboardJS from 'clipboard';
-
-import ClickEvent = JQuery.ClickEvent;
+import {ga} from './analytics';
+import {options} from './options';
+import * as url from './url';
 import TriggeredEvent = JQuery.TriggeredEvent;
 
-const ga = require('./analytics').ga;
-const options = require('./options').options;
-const url = require('./url');
-const cloneDeep = require('lodash.clonedeep');
+type ClickEvent = JQuery.ClickEvent;
 
 enum LinkType {
     Short,

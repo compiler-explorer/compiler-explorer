@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 function definition() {
     return {
@@ -110,7 +109,9 @@ function configuration() {
 }
 
 monaco.languages.register({id: 'cmake'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('cmake', definition());
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setLanguageConfiguration('cmake', configuration());
 
 export {};

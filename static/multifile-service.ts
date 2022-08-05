@@ -26,7 +26,9 @@ import _ from 'underscore';
 import path from 'path-browserify';
 import JSZip from 'jszip';
 import {Hub} from './hub';
-const languages = require('./options').options.languages;
+import {options} from './options';
+
+const languages = options.languages;
 
 export interface MultifileFile {
     fileId: number;

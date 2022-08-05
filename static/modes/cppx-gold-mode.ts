@@ -24,8 +24,7 @@
 
 // Originally based on `./d-mode.js` by the Compiler Explorer Authors
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 function definition() {
     return {
@@ -305,7 +304,9 @@ function configuration() {
 }
 
 monaco.languages.register({id: 'cppx-gold'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('cppx-gold', definition());
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setLanguageConfiguration('cppx-gold', configuration());
 
 export {};

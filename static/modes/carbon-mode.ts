@@ -22,10 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
-const monaco = require('monaco-editor');
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 function definition() {
     return {
@@ -206,6 +204,7 @@ function definition() {
 
 const def = definition();
 monaco.languages.register({id: 'carbon'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('carbon', def);
 monaco.languages.setLanguageConfiguration('carbon', cpp.conf);
 

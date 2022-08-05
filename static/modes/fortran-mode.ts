@@ -25,8 +25,7 @@
 // The lists of keywords, operator, functions, and subroutines have been adopted from
 //    vs.language.fortran, Copyright (c) 2015, Thomas E. Dunn
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 function definition() {
     return {
@@ -552,7 +551,9 @@ function configuration() {
 const def = definition();
 
 monaco.languages.register({id: 'fortran'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('fortran', def);
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setLanguageConfiguration('fortran', configuration());
 
 export = def;

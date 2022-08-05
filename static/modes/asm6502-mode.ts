@@ -22,9 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 function definition() {
     return {
@@ -63,6 +61,7 @@ function definition() {
 
 const def = definition();
 monaco.languages.register({id: 'asm6502'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('asm6502', def);
 
 export = def;

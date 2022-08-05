@@ -29,7 +29,7 @@ import {ga} from '../analytics';
 import * as local from '../local';
 import {Language} from '../../types/languages.interfaces';
 
-const history = require('../history');
+import * as history from '../history';
 
 type PopulateItem = {name: string; load: () => void; delete?: () => void; overwrite?: () => void};
 

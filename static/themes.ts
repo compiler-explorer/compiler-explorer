@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {editor} from 'monaco-editor';
+import * as monaco from 'monaco-editor';
 import {SiteSettings} from './settings';
 
 export type Themes = 'default' | 'dark' | 'darkplus';
@@ -59,7 +59,7 @@ export const themes: Record<Themes, Theme> = {
     },
 };
 
-editor.defineTheme('ce', {
+monaco.editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
     rules: [
@@ -72,7 +72,7 @@ editor.defineTheme('ce', {
     colors: {},
 });
 
-editor.defineTheme('ce-dark', {
+monaco.editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
@@ -85,7 +85,7 @@ editor.defineTheme('ce-dark', {
     colors: {},
 });
 
-editor.defineTheme('ce-dark-plus', {
+monaco.editor.defineTheme('ce-dark-plus', {
     base: 'vs-dark',
     inherit: true,
     rules: [
@@ -134,7 +134,7 @@ export class Themer {
         if (this.currentTheme === theme) return;
         $('html').attr('data-theme', theme.path);
         $('#meta-theme').prop('content', theme.mainColor);
-        editor.setTheme(theme.monaco);
+        monaco.editor.setTheme(theme.monaco);
         this.eventHub.emit('resize');
         this.currentTheme = theme;
     }

@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 function configuration() {
     /* Toit Language Configuration: */
@@ -159,7 +158,9 @@ function definition() {
 const def = definition();
 
 monaco.languages.register({id: 'toit'});
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setMonarchTokensProvider('toit', def);
+// @ts-expect-error - TODO(supergrecko): fix types
 monaco.languages.setLanguageConfiguration('toit', configuration());
 
 export = def;
