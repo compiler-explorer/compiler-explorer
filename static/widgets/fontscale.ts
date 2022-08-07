@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import EventEmitter from 'events';
 import {options} from '../options';
 import {Settings} from '../settings';
