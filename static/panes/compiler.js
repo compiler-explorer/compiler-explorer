@@ -436,11 +436,12 @@ Compiler.prototype.initPanerButtons = function () {
         return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options, treeId);
     }, this);
 
-    var panerDropdown = this.domRoot.find('.pane-dropdown');
+    var newPaneDropdown = this.domRoot.find('.new-pane-dropdown');
     var togglePannerAdder = function () {
-        panerDropdown.dropdown('toggle');
+        newPaneDropdown.dropdown('toggle');
     };
 
+    // Note that the .d.ts file lies. createDragSource returns the newly created DragSource
     this.container.layoutManager
         .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
         ._dragListener.on('dragStart', togglePannerAdder);
@@ -672,7 +673,7 @@ Compiler.prototype.initPanerButtons = function () {
         }, this)
     );
 
-    this.initToolButtons(togglePannerAdder);
+    this.initToolButtons();
 };
 
 Compiler.prototype.undefer = function () {
@@ -2079,8 +2080,11 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
     );
 };
 
-Compiler.prototype.initToolButtons = function (togglePannerAdder) {
-    this.toolsMenu = this.domRoot.find('.toolsmenu');
+Compiler.prototype.initToolButtons = function () {
+    this.toolsMenu = this.domRoot.find('.new-tool-dropdown');
+    var toggleToolDropdown = _.bind(function () {
+        this.toolsMenu.dropdown('toggle');
+    }, this);
     this.toolsMenu.empty();
 
     if (!this.compiler) return;
@@ -2090,13 +2094,17 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
         if (toolIcon) {
-            const light = toolIcons(toolIcon);
-            const dark = toolIconDark ? toolIcons(toolIconDark) : light;
+            var light = toolIcons(toolIcon);
+            var dark = toolIconDark ? toolIcons(toolIconDark) : light;
             btn.append(
-                `<span class="dropdown-icon fas">
-                <img src="${light}" class="theme-light-only" width="16px" style="max-height: 16px"/>
-                <img src="${dark}" class="theme-dark-only" width="16px" style="max-height: 16px"/>
-                </span>`
+                '<span class="dropdown-icon fas">' +
+                    '<img src="' +
+                    light +
+                    '" class="theme-light-only" width="16px" style="max-height: 16px"/>' +
+                    '<img src="' +
+                    dark +
+                    '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' +
+                    '</span>'
             );
         } else {
             btn.append("<span class='dropdown-icon fas fa-cog'></span>");
@@ -2105,7 +2113,7 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
-            this.initToolButton(togglePannerAdder, btn, toolName);
+            this.initToolButton(toggleToolDropdown, btn, toolName);
         }
     }, this);
 
