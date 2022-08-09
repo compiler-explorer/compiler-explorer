@@ -35,7 +35,7 @@ function definition() {
     }
 
     function vectorMatrixTypes(basename) {
-        let types: string[] = [];
+        const types: string[] = [];
         for (let i = 1; i !== 5; ++i) {
             for (let j = 1; j !== 5; ++j) {
                 types.push(`${basename}${i}x${j}`);
@@ -45,10 +45,10 @@ function definition() {
         return types;
     }
 
-    addKeywords(vectorMatrixTypes('bool'))
-    addKeywords(vectorMatrixTypes('uint'))
-    addKeywords(vectorMatrixTypes('float'))
-    addKeywords(vectorMatrixTypes('int'))
+    addKeywords(vectorMatrixTypes('bool'));
+    addKeywords(vectorMatrixTypes('uint'));
+    addKeywords(vectorMatrixTypes('float'));
+    addKeywords(vectorMatrixTypes('int'));
 
     function resource(name) {
         return [name, `RW${name}`];
