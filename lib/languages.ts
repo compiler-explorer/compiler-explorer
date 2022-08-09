@@ -293,6 +293,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
     },
+    hlsl: {
+        name: 'HLSL',
+        monaco: 'hlsl',
+        extensions: ['.hlsl', '.hlsli'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     ispc: {
         name: 'ispc',
         monaco: 'ispc',
