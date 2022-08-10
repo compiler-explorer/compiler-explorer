@@ -1,7 +1,4 @@
-import $ from 'jquery';
 import {it} from 'mocha';
-
-import {runFrontendTest} from './utils';
 
 
 describe('UI testing', () => {
