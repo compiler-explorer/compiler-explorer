@@ -7,7 +7,8 @@
     /* Code generation */
     "inlineSources": true,
     "strictPropertyInitialization": false,
-    "lib": ["dom", "es5"]
+    "lib": ["dom", "es5"],
+    //"types": ["cypress"]
   },
   "exclude": ["out", "test", "etc", "examples", "app.js", "lib", "examples"]
 }
