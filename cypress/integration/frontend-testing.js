@@ -6,6 +6,7 @@ describe('UI testing', () => {
         cy.visit('/');
         cy.get('[data-cy="close-alert-btn"]:visible').click();
         cy.get('[data-cy="new-compiler-dropdown-btn"]:visible').click();
+        // Shows every pane button even if the compiler does not support it
         cy.get('[data-cy="new-pane-dropdown"]:visible button').each(($btn) => {
             $btn.prop('disabled', false).show();
         });
@@ -13,9 +14,11 @@ describe('UI testing', () => {
 
     afterEach(() => {
         cy.window().then((win) => {
+            // Makes sure the pane did not output anything to stderr
             expect(win.console.error).to.have.callCount(0);
             expect(win.console.warn).to.have.callCount(0);
         });
+        // Can't bring the site to a default state by clearing localStorage, so do it manually
         cy.get('[data-cy="more-dropdown-btn"]').click();
         cy.get('[data-cy="reset-ui-btn"]:visible').click();
     });
@@ -23,9 +26,8 @@ describe('UI testing', () => {
     function addPaneOpenTest(datacy, title) {
         it(title + " pane", () => {
             cy.get(`[data-cy="new-${datacy}-btn"]:visible`).click();
+            // Not the most consistent way, but the easiest one!
             cy.get('span.lm_title:visible').contains(title);
-            cy.clearLocalStorage();
-            window.localStorage.clear();
         });
     }
 
