@@ -42,7 +42,7 @@ describe('UI testing', () => {
     addPaneOpenTest("view-rusthir", "HIR");
     addPaneOpenTest("view-rustmacroexp", "Macro");
     addPaneOpenTest("view-haskellCore", "Core");
-    addPaneOpenTest("view-haskellStg", "Stg");
+    addPaneOpenTest("view-haskellStg", "STG");
     addPaneOpenTest("view-haskellCmm", "Cmm");
     addPaneOpenTest("view-gccdump", "Dump");
     addPaneOpenTest("view-gnatdebugtree", "Tree");
