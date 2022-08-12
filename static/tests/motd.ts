@@ -94,11 +94,11 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-01T00:00:00',
+                valid_from: '2022-01-01T00:00:00Z',
             },
             'langForTest',
             true,
@@ -106,11 +106,11 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-16T00:00:00',
+                valid_from: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             false,
@@ -118,11 +118,11 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_until: '2022-01-16T00:00:00',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             true,
@@ -130,11 +130,11 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-16T00:00:00',
+                valid_from: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             false,
@@ -142,12 +142,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-01T00:00:00',
-                valid_until: '2022-01-16T00:00:00',
+                valid_from: '2022-01-01T00:00:00Z',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             true,
@@ -155,12 +155,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-10T00:00:00',
-                valid_until: '2022-01-16T00:00:00',
+                valid_from: '2022-01-10T00:00:00Z',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             false,
@@ -168,12 +168,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            978307200000, // 2022-01-20T00:00:00
+            Date.parse('2022-01-20T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-10T00:00:00',
-                valid_until: '2022-01-16T00:00:00',
+                valid_from: '2022-01-10T00:00:00Z',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             false,
@@ -181,12 +181,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: [],
                 html: '',
-                valid_from: '2022-01-16T00:00:00',
-                valid_until: '2022-01-10T00:00:00',
+                valid_from: '2022-01-16T00:00:00Z',
+                valid_until: '2022-01-10T00:00:00Z',
             },
             'langForTest',
             false,
@@ -194,12 +194,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: ['fakeLang'],
                 html: '',
-                valid_from: '2022-01-01T00:00:00',
-                valid_until: '2022-01-16T00:00:00',
+                valid_from: '2022-01-01T00:00:00Z',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             false,
@@ -207,12 +207,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: ['langForTest'],
                 html: '',
-                valid_from: '2022-01-01T00:00:00',
-                valid_until: '2022-01-16T00:00:00',
+                valid_from: '2022-01-01T00:00:00Z',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             true,
@@ -220,12 +220,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: ['langForTest'],
                 html: '',
-                valid_from: '2022-01-08T00:00:00',
-                valid_until: '2022-01-16T00:00:00',
+                valid_from: '2022-01-08T00:00:00Z',
+                valid_until: '2022-01-16T00:00:00Z',
             },
             'langForTest',
             true,
@@ -233,12 +233,12 @@ class MotdTests implements ITestable {
         );
 
         MotdTests.assertAdWithDateNow(
-            1641596400000, // 2022-01-08T00:00:00
+            Date.parse('2022-01-08T00:00:00Z'),
             {
                 filter: ['langForTest'],
                 html: '',
-                valid_from: '2022-01-01T00:00:00',
-                valid_until: '2022-01-18T00:00:00',
+                valid_from: '2022-01-01T00:00:00Z',
+                valid_until: '2022-01-18T00:00:00Z',
             },
             'langForTest',
             true,
