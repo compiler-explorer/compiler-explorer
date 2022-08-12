@@ -144,8 +144,6 @@ export type EventMap = {
     toolInputChange: (compilerId: number, toolId: number, input: string) => void;
     toolInputViewClosed: (compilerId: number, toolId: number, input: string) => void;
     toolInputViewCloseRequest: (compilerId: number, toolId: number) => void;
-    // TODO: Only emitted
-    toolInputViewOpened: (toolId: number) => void;
     toolOpened: (compilerId: number, toolState: unknown) => void;
     toolSettingsChange: (compilerId: number) => void;
     treeClose: (treeId: number) => void;
