@@ -27,6 +27,7 @@ from os import listdir
 from os.path import isfile, join
 import re
 
+PROP_RE = re.compile(r'[^#]*=.*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
@@ -40,7 +41,7 @@ LIB_VERSION_RE = re.compile(r'libs\.(.*?)\.versions\.(.*?)\.version')
 TOOLS_LIST_RE = re.compile(r'tools=(.+)')
 TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe')
 EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias|exclude|libPath)=.*::.*')
-DISABLED_RE = re.compile(r'^# Disabled:\s*(.*)')
+DISABLED_RE = re.compile(r'^# Disabled?:?\s*(.*)')
 
 
 def match_and_add(line, expr, s):
@@ -72,9 +73,22 @@ def process_file(file: str):
     listed_libs_versions = set()
     seen_libs_versions = set()
     empty_separators = set()
+    seen_lines = set()
+    duplicate_lines = set()
     disabled = set()
     with open(file) as f:
         for line in f:
+            match_and_update(line, DISABLED_RE, disabled, ' ')
+
+            match_prop = PROP_RE.match(line)
+            if not match_prop:
+                continue
+
+            if line in seen_lines:
+                duplicate_lines.add(line)
+            else:
+                seen_lines.add(line)
+
             match_empty = EMPTY_LIST_RE.match(line)
             if match_empty:
                 empty_separators.add(f"{line}")
@@ -110,8 +124,7 @@ def process_file(file: str):
                     match_and_update(line, ALIAS_LIST_RE, seen_compilers) or
                     match_and_update(line, FORMATTERS_LIST_RE, listed_formatters) or
                     match_and_update(line, TOOLS_LIST_RE, listed_tools) or
-                    match_and_update(line, LIBS_LIST_RE, listed_libs_ids) or
-                    match_and_update(line, DISABLED_RE, disabled, ' ')
+                    match_and_update(line, LIBS_LIST_RE, listed_libs_ids)
             ):
                 continue
     bad_compilers = listed_compilers.symmetric_difference(seen_compilers)
@@ -129,7 +142,8 @@ def process_file(file: str):
             bad_libs_versions - disabled,
             bad_tools - disabled,
             bad_default,
-            empty_separators)
+            empty_separators,
+            duplicate_lines)
 
 
 def process_folder(folder: str):
@@ -164,6 +178,7 @@ def find_orphans(folder: str):
             print_issue("TOOLS", r[6])
             print_issue("UNKNOWN DEFAULT COMPILER", r[7])
             print_issue("EMPTY LISTINGS", r[8])
+            print_issue("DUPLICATE LINES", r[9])
             print("")
         print("To suppress this warning on IDs that are temporally disabled, "
               "add one or more comments to each listed file:")
