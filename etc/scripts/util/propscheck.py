@@ -101,7 +101,7 @@ def process_file(file: str):
         for text in f:
             line_number += 1
             text = text.strip()
-            if text == "":
+            if not text:
                 continue
             line = Line(line_number, text)
             match_and_update(line, DISABLED_RE, disabled, ' ')
