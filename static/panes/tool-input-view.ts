@@ -54,7 +54,6 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
 
         this.updateTitle();
         this.onSettingsChange(this.settings);
-        this.eventHub.emit('toolInputViewOpened', this._toolId);
     }
 
     override getInitialHTML() {
