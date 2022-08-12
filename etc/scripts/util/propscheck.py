@@ -97,7 +97,7 @@ def process_file(file: str):
     disabled = set()
 
     with open(file) as f:
-        line_number = 0
+        for line_number, line in enumerate(f, start=1)
         for text in f:
             line_number += 1
             text = text.strip()
