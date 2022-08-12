@@ -1,9 +1,9 @@
 import unittest
 
-from orphancompiler import process_file, Line
+from propscheck import process_file, Line
 
 
-class OrphanCompilerTests(unittest.TestCase):
+class PropsCheckTests(unittest.TestCase):
     def run_test(self, file, expected_key, expected_contents):
         result = process_file(file)
         self.assertEqual(result[expected_key], expected_contents)
