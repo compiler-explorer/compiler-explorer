@@ -482,6 +482,22 @@ function earlyGetDefaultLangSetting() {
     return Settings.getStoredSettings().defaultLanguage;
 }
 
+function getDefaultLangId(subLangId, options) {
+    var defaultLangId = subLangId;
+    if (!defaultLangId) {
+        var defaultLangSetting = earlyGetDefaultLangSetting();
+        if (defaultLangSetting && options.languages[defaultLangSetting] !== undefined) {
+            defaultLangId = defaultLangSetting;
+        } else if (options.languages['c++']) {
+            defaultLangId = 'c++';
+        } else {
+            defaultLangId = _.keys(options.languages)[0];
+        }
+    }
+    // returns string
+    return defaultLangId;
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
@@ -501,17 +517,8 @@ function start() {
             subLangId = langBySubdomain.id;
         }
     }
-    var defaultLangId = subLangId;
-    if (!defaultLangId) {
-        var defaultLangSetting = earlyGetDefaultLangSetting();
-        if (defaultLangSetting) {
-            defaultLangId = defaultLangSetting;
-        } else if (options.languages['c++']) {
-            defaultLangId = 'c++';
-        } else {
-            defaultLangId = _.keys(options.languages)[0];
-        }
-    }
+
+    var defaultLangId = getDefaultLangId(subLangId, options);
 
     setupLanguageLogos(options.languages);
 

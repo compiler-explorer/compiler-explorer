@@ -1495,7 +1495,7 @@ Editor.prototype.setQuickFixes = function (fixes) {
 };
 
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
-    if (!this.ourCompilers[compilerId]) return;
+    if (!compiler || !this.ourCompilers[compilerId]) return;
 
     this.busyCompilers[compilerId] = false;
 
