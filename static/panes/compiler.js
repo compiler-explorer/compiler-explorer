@@ -1411,7 +1411,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 Compiler.prototype.postCompilationResult = function (request, result, wasCmake) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
-    } else if (this.compiler != null) {
+    } else if (this.compiler) {
         this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
             _.bind(function (result) {
                 if (result && result.result) {
