@@ -1411,7 +1411,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 Compiler.prototype.postCompilationResult = function (request, result, wasCmake) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
-    } else {
+    } else if (this.compiler) {
         this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
             _.bind(function (result) {
                 if (result && result.result) {
@@ -2490,6 +2490,7 @@ Compiler.prototype.checkForHints = function (result) {
 };
 
 Compiler.prototype.checkForUnwiseArguments = function (optionsArray, wasCmake) {
+    if (!this.compiler) return;
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(
         optionsArray,
