@@ -327,7 +327,7 @@ Conformance.prototype.expandSource = function () {
 };
 
 Conformance.prototype.onEditorChange = function (editorId, newSource, langId) {
-    if (editorId === this.editorId) {
+    if (editorId === this.editorId && this.source !== newSource) {
         this.langId = langId;
         this.source = newSource;
         this.sourceNeedsExpanding = true;
@@ -352,7 +352,7 @@ Conformance.prototype.handleCompileOutIcon = function (element, result) {
     var hasOutput = hasResultAnyOutput(result);
     element.toggleClass('d-none', !hasOutput);
     if (hasOutput) {
-        this.compilerService.handleOutputButtonTitle(element, result);
+        CompilerService.handleOutputButtonTitle(element, result);
     }
 };
 
@@ -419,7 +419,7 @@ Conformance.prototype.compileChild = function (compilerEntry) {
                             asm: '',
                             code: -1,
                             stdout: '',
-                            stderr: x.error,
+                            stderr: x.error || x.message || x,
                         });
                     }, this)
                 );
