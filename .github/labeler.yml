@@ -58,6 +58,9 @@ lang-fortran:
   - lib/compilers/flang.ts
   - lib/compilers/fortran.js
   - etc/config/fortran.*.properties
+lang-hlsl:
+  - lib/compilers/hlsl.js
+  - etc/config/hlsl.*.properties
 lang-jakt:
   - lib/compilers/jakt.ts
   - etc/config/jakt.*.properties

@@ -463,9 +463,11 @@ function setupLanguageLogos(languages) {
         languages,
         function (lang) {
             try {
-                lang.logoData = logos('./' + lang.logoUrl);
-                if (lang.logoUrlDark !== null) {
-                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                if (lang.logoUrl !== null) {
+                    lang.logoData = logos('./' + lang.logoUrl);
+                    if (lang.logoUrlDark !== null) {
+                        lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                    }
                 }
             } catch (ignored) {
                 lang.logoData = '';
@@ -478,6 +480,22 @@ function setupLanguageLogos(languages) {
 function earlyGetDefaultLangSetting() {
     // returns string | undefined
     return Settings.getStoredSettings().defaultLanguage;
+}
+
+function getDefaultLangId(subLangId, options) {
+    var defaultLangId = subLangId;
+    if (!defaultLangId) {
+        var defaultLangSetting = earlyGetDefaultLangSetting();
+        if (defaultLangSetting && options.languages[defaultLangSetting] !== undefined) {
+            defaultLangId = defaultLangSetting;
+        } else if (options.languages['c++']) {
+            defaultLangId = 'c++';
+        } else {
+            defaultLangId = _.keys(options.languages)[0];
+        }
+    }
+    // returns string
+    return defaultLangId;
 }
 
 // eslint-disable-next-line max-statements
@@ -499,17 +517,8 @@ function start() {
             subLangId = langBySubdomain.id;
         }
     }
-    var defaultLangId = subLangId;
-    if (!defaultLangId) {
-        var defaultLangSetting = earlyGetDefaultLangSetting();
-        if (defaultLangSetting) {
-            defaultLangId = defaultLangSetting;
-        } else if (options.languages['c++']) {
-            defaultLangId = 'c++';
-        } else {
-            defaultLangId = _.keys(options.languages)[0];
-        }
-    }
+
+    var defaultLangId = getDefaultLangId(subLangId, options);
 
     setupLanguageLogos(options.languages);
 

@@ -13,3 +13,11 @@ describe('Frontendtestresults', () => {
 
     runFrontendTest('HelloWorld');
 });
+
+describe('Motd testing', () => {
+    before(() => {
+        cy.visit('/');
+    });
+
+    runFrontendTest('motd');
+});

@@ -24,3 +24,4 @@
 
 require('./frontend-testing');
 require('./hello-world');
+require('./motd');
