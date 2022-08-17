@@ -26,7 +26,7 @@ import path from 'path';
 
 import {readdir, rename, writeFile} from 'fs-extra';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
@@ -77,8 +77,8 @@ export class RGACompiler extends BaseCompiler {
                 // Do a quick sanity check to determine if a valid ASIC was supplied
                 if (!asic.startsWith('gfx')) {
                     return {
-                        // eslint-disable-next-line max-len
-                        error: `The argument immediately following --asic doesn't appear to be a valid ASIC. Please supply an ASIC from the following options:`,
+                        error: `The argument immediately following --asic doesn't appear to be a valid ASIC.
+Please supply an ASIC from the following options:`,
                         printASICs: true,
                     };
                 }
@@ -101,7 +101,28 @@ export class RGACompiler extends BaseCompiler {
         return ((endTime - startTime) / BigInt(1000000)).toString();
     }
 
-    override async exec(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<any> {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
+        if (!execOptions) {
+            execOptions = this.getDefaultExecOptions();
+        }
+
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
+
+        const result = await this.execDXCandRGA(compiler, options, execOptions);
+        result.inputFilename = inputFilename;
+        const transformedInput = result.filenameTransform(inputFilename);
+        this.parseCompilationOutput(result, transformedInput);
+        return result;
+    }
+
+    async execDXCandRGA(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<any> {
         // RGA is invoked in two steps. First, DXC is invoked to compile the SPIR-V output of the HLSL file.
         // Next, RGA is invoked to consume the SPIR-V output and produce the requested ISA.
 
@@ -142,64 +163,59 @@ export class RGACompiler extends BaseCompiler {
             return dxcResult;
         }
 
-        return new Promise(resolve => {
-            writeFile(spvTemp, dxcResult.stdout, async error => {
-                if (error) {
-                    const endTime = process.hrtime.bigint();
-                    resolve({
-                        code: -1,
-                        okToCache: true,
-                        filenameTransform: x => x,
-                        stdout: 'Failed to emit intermediate SPIR-V result.',
-                        execTime: this.execTime(startTime, endTime),
-                    });
-                    return;
+        try {
+            await writeFile(spvTemp, dxcResult.stdout);
+        } catch (e) {
+            const endTime = process.hrtime.bigint();
+            return {
+                code: -1,
+                okToCache: true,
+                filenameTransform: x => x,
+                stdout: 'Failed to emit intermediate SPIR-V result.',
+                execTime: this.execTime(startTime, endTime),
+            };
+        }
+
+        const rgaArgs = ['-s', 'vk-spv-txt-offline', '-c', asicSelection.asic, '--isa', args[0], spvTemp];
+        logger.debug(`RGA args: ${rgaArgs}`);
+
+        const rgaResult = await exec.execute(filepath, rgaArgs, execOptions);
+        if (rgaResult.code !== 0) {
+            // Failed to compile AMD ISA
+            const endTime = process.hrtime.bigint();
+            rgaResult.execTime = this.execTime(startTime, endTime);
+            return rgaResult;
+        }
+
+        // RGA doesn't emit the exact file we requested. It prepends the requested GPU
+        // architecture and appends the shader type (with underscore separators). Here,
+        // we rename the generated file to the output file Compiler Explorer expects.
+
+        const files = await readdir(outputDir, {encoding: 'utf-8'});
+        for (const file of files) {
+            if (file.startsWith(asicSelection.asic as string)) {
+                await rename(path.join(outputDir, file), args[0]);
+
+                if (asicSelection.printASICs) {
+                    rgaResult.stdout = `ISA compiled with the default AMD ASIC (Radeon RX 6800 series RDNA2).
+To override this, pass --asic [ASIC] to the options above (nonstandard DXC option),
+where [ASIC] corresponds to one of the following options:`;
+
+                    const asics = await exec.execute(filepath, ['-s', 'vk-spv-txt-offline', '-l']);
+                    rgaResult.stdout += '\n';
+                    rgaResult.stdout += asics.stdout;
                 }
 
-                const rgaArgs = ['-s', 'vk-spv-txt-offline', '-c', asicSelection.asic, '--isa', args[0], spvTemp];
-                logger.debug(`RGA args: ${rgaArgs}`);
-
-                const rgaResult = await exec.execute(filepath, rgaArgs, execOptions);
-                if (rgaResult.code !== 0) {
-                    // Failed to compile AMD ISA
-                    const endTime = process.hrtime.bigint();
-                    rgaResult.execTime = this.execTime(startTime, endTime);
-                    resolve(rgaResult);
-                    return;
-                }
-
-                // RGA doesn't emit the exact file we requested. It prepends the requested GPU
-                // architecture and appends the shader type (with underscore separators). Here,
-                // we rename the generated file to the output file Compiler Explorer expects.
-
-                const files = await readdir(outputDir, {encoding: 'utf-8'});
-                for (const file of files) {
-                    if (file.startsWith(asicSelection.asic as string)) {
-                        await rename(path.join(outputDir, file), args[0]);
-
-                        if (asicSelection.printASICs) {
-                            rgaResult.stdout =
-                                // eslint-disable-next-line max-len
-                                'ISA compiled with the default AMD ASIC (Radeon RX 6800 series RDNA2). To override this, pass --asic [ASIC] to the options above (nonstandard DXC option), where [ASIC] corresponds to one of the following options:';
-
-                            const asics = await exec.execute(filepath, ['-s', 'vk-spv-txt-offline', '-l']);
-                            rgaResult.stdout += '\n';
-                            rgaResult.stdout += asics.stdout;
-                        }
-
-                        const endTime = process.hrtime.bigint();
-                        rgaResult.execTime = this.execTime(startTime, endTime);
-                        resolve(rgaResult);
-                        return;
-                    }
-                }
-
-                // Arriving here means the expected ISA result wasn't emitted. Synthesize an error.
                 const endTime = process.hrtime.bigint();
                 rgaResult.execTime = this.execTime(startTime, endTime);
-                rgaResult.stdout = `RGA didn't emit expected ISA output.`;
-                resolve(rgaResult);
-            });
-        });
+                return rgaResult;
+            }
+        }
+
+        // Arriving here means the expected ISA result wasn't emitted. Synthesize an error.
+        const endTime = process.hrtime.bigint();
+        rgaResult.execTime = this.execTime(startTime, endTime);
+        rgaResult.stdout = `RGA didn't emit expected ISA output.`;
+        return rgaResult;
     }
 }
