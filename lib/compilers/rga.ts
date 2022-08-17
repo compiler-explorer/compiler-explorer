@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {readdir, rename, writeFile} from 'fs-extra';
+import {readdir, readFile, rename, writeFile} from 'fs-extra';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
@@ -130,8 +130,9 @@ Please supply an ASIC from the following options:`,
         const startTime = process.hrtime.bigint();
 
         // The first argument is the target output file
-        const outputDir = path.dirname(args[0]);
-        const spvTemp = path.join(outputDir, 'output.spv.txt');
+        const outputFile = args[0];
+        const outputDir = path.dirname(outputFile);
+        const spvTemp = 'output.spv.txt';
         logger.debug(`Intermediate SPIR-V output: ${spvTemp}`);
 
         const dxcArgs = args.slice(1);
@@ -155,7 +156,7 @@ Please supply an ASIC from the following options:`,
             };
         }
 
-        const dxcResult = await exec.execute(this.dxcPath, dxcArgs);
+        const dxcResult = await exec.execute(this.dxcPath, dxcArgs, execOptions);
         if (dxcResult.code !== 0) {
             // Failed to compile SPIR-V intermediate product. Exit immediately with DXC invocation result.
             const endTime = process.hrtime.bigint();
@@ -164,7 +165,7 @@ Please supply an ASIC from the following options:`,
         }
 
         try {
-            await writeFile(spvTemp, dxcResult.stdout);
+            await writeFile(path.join(outputDir, spvTemp), dxcResult.stdout);
         } catch (e) {
             const endTime = process.hrtime.bigint();
             return {
@@ -176,7 +177,18 @@ Please supply an ASIC from the following options:`,
             };
         }
 
-        const rgaArgs = ['-s', 'vk-spv-txt-offline', '-c', asicSelection.asic, '--isa', args[0], spvTemp];
+        let registerAnalysisFile = 'livereg.txt';
+        const rgaArgs = [
+            '-s',
+            'vk-spv-txt-offline',
+            '-c',
+            asicSelection.asic,
+            '--isa',
+            outputFile,
+            '--livereg',
+            registerAnalysisFile,
+            spvTemp,
+        ];
         logger.debug(`RGA args: ${rgaArgs}`);
 
         const rgaResult = await exec.execute(filepath, rgaArgs, execOptions);
@@ -193,15 +205,48 @@ Please supply an ASIC from the following options:`,
 
         const files = await readdir(outputDir, {encoding: 'utf-8'});
         for (const file of files) {
-            if (file.startsWith(asicSelection.asic as string)) {
-                await rename(path.join(outputDir, file), args[0]);
+            if (file.startsWith((asicSelection.asic as string) + '_output')) {
+                await rename(path.join(outputDir, file), outputFile);
+
+                registerAnalysisFile = path.join(outputDir, file.replace('output', 'livereg').replace('.s', '.txt'));
+                // The register analysis file contains a legend, and register liveness data
+                // for each line of disassembly. Interleave those lines into the final output
+                // as assembly comments.
+                const asm = await readFile(outputFile, 'utf-8');
+                const asmLines = asm.split(/\r?\n/);
+                const analysis = await readFile(registerAnalysisFile, 'utf-8');
+                const analysisLines = analysis.split(/\r?\n/);
+
+                // The first few lines of the register analysis are the legend. Emit those lines
+                // as comments at the start of the output.
+                let analysisOffset = analysisLines.indexOf('');
+                analysisOffset += 3;
+                const epilogueOffset = analysisLines.indexOf('', analysisOffset);
+                const outputAsm = analysisLines.slice(epilogueOffset + 1).map(line => `; ${line}`);
+                outputAsm.push(...analysisLines.slice(0, analysisOffset).map(line => `; ${line}`), '\n');
+
+                let asmOffset = asmLines.indexOf('');
+                outputAsm.push(...asmLines.slice(0, asmOffset));
+                asmOffset += 1;
+
+                // Perform the interleave
+                for (let i = 0; i !== asmOffset + asmLines.length; ++i) {
+                    if (i + analysisOffset >= epilogueOffset) {
+                        outputAsm.push(...asmLines.slice(i));
+                        break;
+                    }
+
+                    outputAsm.push(`; ${analysisLines[i + analysisOffset]}`, asmLines[i + asmOffset]);
+                }
+
+                await writeFile(outputFile, outputAsm.join('\n'));
 
                 if (asicSelection.printASICs) {
-                    rgaResult.stdout = `ISA compiled with the default AMD ASIC (Radeon RX 6800 series RDNA2).
+                    rgaResult.stdout += `ISA compiled with the default AMD ASIC (Radeon RX 6800 series RDNA2).
 To override this, pass --asic [ASIC] to the options above (nonstandard DXC option),
 where [ASIC] corresponds to one of the following options:`;
 
-                    const asics = await exec.execute(filepath, ['-s', 'vk-spv-txt-offline', '-l']);
+                    const asics = await exec.execute(filepath, ['-s', 'vk-spv-txt-offline', '-l'], execOptions);
                     rgaResult.stdout += '\n';
                     rgaResult.stdout += asics.stdout;
                 }
