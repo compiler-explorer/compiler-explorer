@@ -39,7 +39,7 @@ export class HLSLCompiler extends BaseCompiler {
     }
 
     /* eslint-disable no-unused-vars */
-    override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): any[] {
+    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
         return [
             '-Zi', // Embed debug information to get DXIL line associations
             '-Qembed_debug', // Silences the warning associated with embedded debug information
