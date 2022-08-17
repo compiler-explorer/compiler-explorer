@@ -87,6 +87,7 @@ export class RGACompiler extends BaseCompiler {
 
                 // If the user supplied a specific ASIC, don't bother printing available ASIC options
                 printASICs = false;
+                break;
             }
         }
 
