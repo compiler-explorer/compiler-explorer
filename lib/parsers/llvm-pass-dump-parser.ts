@@ -113,6 +113,7 @@ export class LlvmPassDumpParser {
         this.debugInfoFilters = [
             /^\s+call void @llvm.dbg.value.+$/, // dbg calls
             /^\s+call void @llvm.dbg.declare.+$/, // dbg calls
+            /^\s+DBG_.+$/, // dbg pseudo-instructions
             /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/, // meta
             /^(!\d+) = (?:distinct )?!{.*}/, // meta
             /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
