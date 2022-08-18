@@ -11,6 +11,10 @@
             span Filter Inconsequential Passes
           input.d-none(type="checkbox" checked=false)
         .button-checkbox
+          button.dropdown-item.btn.btn-sm.btn-light.filter-debug-info(type="button" title="Filter debug info intrinsics" data-bind="filter-debug-info" aria-pressed="false" aria-label="Filter Debug Info")
+            span Filter Debug Info
+          input.d-none(type="checkbox" checked=true)
+        .button-checkbox
           button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Dump the entire module for each pass" data-bind="dump-full-module" aria-pressed="false" aria-label="Filter Inconsequential Passes")
             span Dump Full Module
           input.d-none(type="checkbox" checked=false)

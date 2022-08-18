@@ -36,6 +36,7 @@ export type Pass = {
 export type LLVMOptPipelineOutput = Record<string, Pass[]>;
 
 export type LLVMOptPipelineBackendOptions = {
+    filterDebugInfo: boolean;
     fullModule: boolean;
     noDiscardValueNames: boolean;
     demangle: boolean;
