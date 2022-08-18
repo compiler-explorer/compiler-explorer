@@ -300,7 +300,10 @@ async function setupWebPackDevMiddleware(router) {
     router.use(
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/static',
-            stats: 'errors-only',
+            stats: {
+                preset: 'errors-only',
+                timings: true,
+            },
         }),
     );
 
