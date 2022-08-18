@@ -58,6 +58,7 @@ export type LanguageKey =
     | 'mlir'
     | 'nim'
     | 'ocaml'
+    | 'objc'
     | 'openclc'
     | 'pascal'
     | 'pony'
