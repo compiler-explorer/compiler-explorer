@@ -187,7 +187,7 @@ def process_file(file: str):
         "empty_separators": empty_separators,
         "duplicate_lines": duplicate_lines,
         "duplicated_compiler_references": duplicated_compiler_references,
-        "duplicated_group_references": duplicated_group_references
+        "duplicated_group_references": duplicated_group_references,
         "suspicious_path": suspicious_path - disabled
     }
 
