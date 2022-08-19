@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import * as Sentry from '@sentry/browser';
 import _ from 'underscore';
 import LRU from 'lru-cache';
@@ -40,6 +41,8 @@ type CompilationStatus = {
     code: 0 | 1 | 2 | 3 | 4;
     compilerOut: number;
 };
+
+const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
 export class CompilerService {
     private readonly base = window.httpRoot;
@@ -428,11 +431,9 @@ export class CompilerService {
         const stdout = result.stdout ?? [];
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stderr = result.stderr ?? [];
-        // TODO: Make its own const variable at top of module?
-        const asciiColorsRe = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
         function filterAsciiColors(line: ResultLine) {
-            return line.text.replace(asciiColorsRe, '');
+            return line.text.replace(ASCII_COLORS_RE, '');
         }
 
         const output = stdout.map(filterAsciiColors).concat(stderr.map(filterAsciiColors)).join('\n');

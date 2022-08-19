@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';

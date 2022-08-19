@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ga} from './analytics';
+import $ from 'jquery';
 
-import {Motd} from './motd.interfaces';
+import {ga} from './analytics';
+import {Ad, Motd} from './motd.interfaces';
 
 function ensureShownMessage(message: string, motdNode: JQuery) {
     motdNode.find('.content').html(message);
@@ -37,15 +38,34 @@ function ensureShownMessage(message: string, motdNode: JQuery) {
         .prop('title', 'Hide message');
 }
 
+export function isValidAd(ad: Ad, subLang: string): boolean {
+    if (!subLang || ad.filter.length === 0 || ad.filter.includes(subLang)) {
+        const now = Date.now();
+        try {
+            if (ad.valid_from && now < Date.parse(ad.valid_from)) {
+                return false;
+            }
+
+            if (ad.valid_until && now > Date.parse(ad.valid_until)) {
+                return false;
+            }
+        } catch {
+            // Don't care if parsing fails (Which infra script makes sure it shouldn't, but you never know)
+            return true;
+        }
+
+        return true;
+    }
+    return false;
+}
+
 function handleMotd(motd: Motd, motdNode: JQuery, subLang: string, adsEnabled: boolean, onHide: () => void) {
     if (motd.update) {
         ensureShownMessage(motd.update, motdNode);
     } else if (motd.motd) {
         ensureShownMessage(motd.motd, motdNode);
     } else if (adsEnabled) {
-        const applicableAds = motd.ads?.filter(ad => {
-            return !subLang || !ad.filter || ad.filter.length === 0 || ad.filter.indexOf(subLang) >= 0;
-        });
+        const applicableAds = motd.ads?.filter(ad => isValidAd(ad, subLang));
 
         if (applicableAds != null && applicableAds.length > 0) {
             const randomAd = applicableAds[Math.floor(Math.random() * applicableAds.length)];

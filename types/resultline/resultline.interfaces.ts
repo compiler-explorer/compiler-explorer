@@ -3,6 +3,11 @@ export type Link = {
     url: string;
 };
 
+export type Fix = {
+    title: string;
+    edits: MessageWithLocation[];
+};
+
 export type MessageWithLocation = {
     line?: number;
     column?: number;
@@ -16,6 +21,7 @@ export type ResultLineTag = MessageWithLocation & {
     severity: number;
     link?: Link;
     flow?: MessageWithLocation[];
+    fixes?: Fix[];
 };
 
 export type ResultLine = {

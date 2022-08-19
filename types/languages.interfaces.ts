@@ -23,50 +23,52 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export type LanguageKey =
-    | 'mlir'
-    | 'jakt'
-    | 'c++'
-    | 'llvm'
-    | 'cppx'
-    | 'cppx_gold'
-    | 'cppx_blue'
+    | 'ada'
+    | 'analysis'
+    | 'assembly'
     | 'c'
-    | 'openclc'
+    | 'c++'
+    | 'carbon'
+    | 'circle'
+    | 'circt'
+    | 'clean'
+    | 'cmake'
     | 'cpp_for_opencl'
-    | 'rust'
+    | 'cppx'
+    | 'cppx_blue'
+    | 'cppx_gold'
+    | 'crystal'
+    | 'csharp'
+    | 'cuda'
     | 'd'
+    | 'dart'
     | 'erlang'
+    | 'fortran'
+    | 'fsharp'
     | 'go'
-    | 'ispc'
     | 'haskell'
+    | 'hlsl'
+    | 'ispc'
+    | 'jakt'
     | 'java'
     | 'kotlin'
-    | 'scala'
+    | 'llvm'
+    | 'mlir'
+    | 'nim'
     | 'ocaml'
+    | 'openclc'
+    | 'pascal'
     | 'pony'
     | 'python'
-    | 'swift'
-    | 'pascal'
-    | 'fortran'
-    | 'assembly'
-    | 'analysis'
-    | 'cuda'
-    | 'zig'
-    | 'clean'
-    | 'ada'
-    | 'nim'
-    | 'crystal'
-    | 'circle'
     | 'ruby'
-    | 'cmake'
-    | 'csharp'
-    | 'fsharp'
-    | 'vb'
-    | 'dart'
-    | 'typescript'
+    | 'rust'
+    | 'scala'
     | 'solidity'
+    | 'swift'
     | 'toit'
-    | 'carbon';
+    | 'typescript'
+    | 'vb'
+    | 'zig';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */
@@ -84,7 +86,7 @@ export interface Language {
     /** Whether there's at least 1 compiler in this language that supportsExecute */
     supportsExecute: boolean | null;
     /** Path in /views/resources/logos to the logo of the language */
-    logoUrl: string;
+    logoUrl: string | null;
     /** Path in /views/resources/logos to the logo of the language for dark mode use */
     logoUrlDark: string | null;
     /** Example code to show in the language's editor */

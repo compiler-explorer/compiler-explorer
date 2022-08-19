@@ -22,7 +22,7 @@ jobs:
           npm run lint-check
           npm run ci-test
           npm run ts-check
-          python3 ./etc/scripts/util/orphancompiler.py
+          python3 ./etc/scripts/util/propscheck.py
       - name: Code coverage
         run: npm run codecov
 

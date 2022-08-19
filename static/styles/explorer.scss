@@ -570,6 +570,10 @@ kbd {
     height: 20px !important;
 }
 
+li.lm_tab.lm_active {
+    overflow: hidden;
+}
+
 @media (max-width: 768px) {
     .lm_header {
         height: 50px !important;

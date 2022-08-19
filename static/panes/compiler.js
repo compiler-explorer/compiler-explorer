@@ -47,6 +47,7 @@ var utils = require('../utils');
 var LibUtils = require('../lib-utils');
 var getAssemblyDocumentation = require('../api/api').getAssemblyDocumentation;
 var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
 var OpcodeCache = new LruCache({
     max: 64 * 1024,
@@ -439,11 +440,12 @@ Compiler.prototype.initPanerButtons = function () {
         return Components.getExecutorWith(editorId, langId, compilerId, libs, currentState.options, treeId);
     }, this);
 
-    var panerDropdown = this.domRoot.find('.pane-dropdown');
+    var newPaneDropdown = this.domRoot.find('.new-pane-dropdown');
     var togglePannerAdder = function () {
-        panerDropdown.dropdown('toggle');
+        newPaneDropdown.dropdown('toggle');
     };
 
+    // Note that the .d.ts file lies. createDragSource returns the newly created DragSource
     this.container.layoutManager
         .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent)
         ._dragListener.on('dragStart', togglePannerAdder);
@@ -675,7 +677,7 @@ Compiler.prototype.initPanerButtons = function () {
         }, this)
     );
 
-    this.initToolButtons(togglePannerAdder);
+    this.initToolButtons();
 };
 
 Compiler.prototype.undefer = function () {
@@ -1413,7 +1415,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 Compiler.prototype.postCompilationResult = function (request, result, wasCmake) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
-    } else {
+    } else if (this.compiler) {
         this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
             _.bind(function (result) {
                 if (result && result.result) {
@@ -2083,21 +2085,40 @@ Compiler.prototype.initToolButton = function (togglePannerAdder, button, toolId)
     );
 };
 
-Compiler.prototype.initToolButtons = function (togglePannerAdder) {
-    this.toolsMenu = this.domRoot.find('.toolsmenu');
+Compiler.prototype.initToolButtons = function () {
+    this.toolsMenu = this.domRoot.find('.new-tool-dropdown');
+    var toggleToolDropdown = _.bind(function () {
+        this.toolsMenu.dropdown('toggle');
+    }, this);
     this.toolsMenu.empty();
 
     if (!this.compiler) return;
 
-    var addTool = _.bind(function (toolName, title) {
+    var addTool = _.bind(function (toolName, title, toolIcon, toolIconDark) {
         var btn = $("<button class='dropdown-item btn btn-light btn-sm'>");
         btn.addClass('view-' + toolName);
         btn.data('toolname', toolName);
-        btn.append("<span class='dropdown-icon fas fa-cog'></span>" + title);
+        if (toolIcon) {
+            var light = toolIcons(toolIcon);
+            var dark = toolIconDark ? toolIcons(toolIconDark) : light;
+            btn.append(
+                '<span class="dropdown-icon fas">' +
+                    '<img src="' +
+                    light +
+                    '" class="theme-light-only" width="16px" style="max-height: 16px"/>' +
+                    '<img src="' +
+                    dark +
+                    '" class="theme-dark-only" width="16px" style="max-height: 16px"/>' +
+                    '</span>'
+            );
+        } else {
+            btn.append("<span class='dropdown-icon fas fa-cog'></span>");
+        }
+        btn.append(title);
         this.toolsMenu.append(btn);
 
         if (toolName !== 'none') {
-            this.initToolButton(togglePannerAdder, btn, toolName);
+            this.initToolButton(toggleToolDropdown, btn, toolName);
         }
     }, this);
 
@@ -2108,7 +2129,7 @@ Compiler.prototype.initToolButtons = function (togglePannerAdder) {
             this.compiler.tools,
             _.bind(function (tool) {
                 if (this.isSupportedTool(tool)) {
-                    addTool(tool.tool.id, tool.tool.name);
+                    addTool(tool.tool.id, tool.tool.name, tool.tool.icon, tool.tool.darkIcon);
                 }
             }, this)
         );
@@ -2474,6 +2495,7 @@ Compiler.prototype.checkForHints = function (result) {
 };
 
 Compiler.prototype.checkForUnwiseArguments = function (optionsArray, wasCmake) {
+    if (!this.compiler) return;
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(
         optionsArray,
