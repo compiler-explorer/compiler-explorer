@@ -66,7 +66,7 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('tom-select/dist/css/tom-select.bootstrap4.css');
 require('./colours.scss');
-require('./explorer.scss');
+require('./styles/explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
