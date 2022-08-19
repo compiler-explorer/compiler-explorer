@@ -53,6 +53,14 @@ class PropsCheckTests(unittest.TestCase):
         self.run_test("./test/cases/duplicate_lines.properties", "duplicate_lines",
                       {str(Line(5, "duplicated.prop=true"))})
 
+    def test_duplicated_compiler(self):
+        self.run_test("./test/cases/bad_duplicated_compiler.properties", "duplicated_compiler_references",
+                      {"duplicatedname"})
+
+    def test_duplicated_group(self):
+        self.run_test("./test/cases/bad_duplicated_group.properties", "duplicated_group_references",
+                      {"dupgroup"})
+
     def test_good_file(self):
         result = process_file('../../config/c++.amazon.properties')
         for k in result:

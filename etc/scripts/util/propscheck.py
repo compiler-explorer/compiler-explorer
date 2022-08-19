@@ -94,6 +94,9 @@ def process_file(file: str):
     seen_lines = set()
     duplicate_lines = set()
 
+    duplicated_compiler_references = set()
+    duplicated_group_references = set()
+
     disabled = set()
 
     with open(file) as f:
@@ -122,8 +125,12 @@ def process_file(file: str):
                 ids = match_compilers.group(1).split(':')
                 for elem_id in ids:
                     if elem_id.startswith('&'):
+                        if elem_id[1:] in listed_groups:
+                            duplicated_group_references.add (elem_id[1:])
                         listed_groups.add(elem_id[1:])
                     elif '@' not in elem_id:
+                        if elem_id in listed_compilers:
+                            duplicated_compiler_references.add (elem_id)
                         listed_compilers.add(elem_id)
 
             match_libs_versions = LIB_VERSIONS_LIST_RE.match(line.text)
@@ -166,7 +173,9 @@ def process_file(file: str):
         "bad_tools": bad_tools - disabled,
         "bad_default": bad_default,
         "empty_separators": empty_separators,
-        "duplicate_lines": duplicate_lines
+        "duplicate_lines": duplicate_lines,
+        "duplicated_compiler_references": duplicated_compiler_references,
+        "duplicated_group_references": duplicated_group_references
     }
 
 
