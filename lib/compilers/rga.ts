@@ -236,6 +236,16 @@ Please supply an ASIC from the following options:`,
                         break;
                     }
 
+                    // Check if this line of assembly corresponds to a label. If so, emit the asm line
+                    // and continue from the next line (the register analysis file operates on instructions,
+                    // and labels are not considered instructions)
+                    if (asmLines[i + asmOffset].startsWith('label')) {
+                        outputAsm.push(asmLines[i + asmOffset]);
+                        ++asmOffset;
+                        --i;
+                        continue;
+                    }
+
                     outputAsm.push(`; ${analysisLines[i + analysisOffset]}`, asmLines[i + asmOffset]);
                 }
 
@@ -260,7 +270,7 @@ where [ASIC] corresponds to one of the following options:`;
         // Arriving here means the expected ISA result wasn't emitted. Synthesize an error.
         const endTime = process.hrtime.bigint();
         rgaResult.execTime = this.execTime(startTime, endTime);
-        rgaResult.stdout = `RGA didn't emit expected ISA output.`;
+        rgaResult.stdout += `\nRGA didn't emit expected ISA output.`;
         return rgaResult;
     }
 }
