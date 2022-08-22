@@ -6,8 +6,8 @@ export type LibraryVersion = {
     dependencies: string[];
     liblink: string[];
     libpath: string[];
-    path: string;
-    options: string;
+    path: string[];
+    options: string[];
 };
 
 export type Library = {
