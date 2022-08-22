@@ -22,19 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
 
 import {ClangParser} from './argument-parsers';
-
-// Each arch has a list of jump instructions in
-// Go source src/cmd/asm/internal/arch.
-// x86 -> j, b
-// arm -> cb, tb
-// s390x -> cmpb, cmpub
-const jumpRe = /^(j|b|cb|tb|cmpb|cmpub).*/i;
 
 export class TinyGoCompiler extends BaseCompiler {
     private readonly goroot: string;
@@ -46,145 +36,6 @@ export class TinyGoCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
         this.goroot = this.compilerProps(`compiler.${this.compiler.id}.goroot`);
-        // this.goarch = this.compilerProps(`compiler.${this.compiler.id}.goarch`);
-        // this.goos = this.compilerProps(`compiler.${this.compiler.id}.goos`);
-    }
-
-    convertNewGoL(code) {
-        const re = /^\s+(0[Xx]?[\dA-Za-z]+)?\s?(\d+)\s*\(([^:]+):(\d+)\)\s*([A-Z]+)(.*)/;
-        const reUnknown = /^\s+(0[Xx]?[\dA-Za-z]+)?\s?(\d+)\s*\(<unknown line number>\)\s*([A-Z]+)(.*)/;
-        const reFunc = /TEXT\s+[".]*(\S+)\(SB\)/;
-        let prevLine: string | null = null;
-        let file: string | null = null;
-        let fileCount = 0;
-        let func: string | null = null;
-        const funcCollisions: Record<string, number> = {};
-        const labels = {};
-        const usedLabels: Record<string, boolean> = {};
-        const lines: (string[] | null)[] = code.map(obj => {
-            let pcMatch: string | null = null;
-            let fileMatch: string | null = null;
-            let lineMatch: string | null = null;
-            let ins: string | null = null;
-            let args: string | null = null;
-
-            const line: string = obj.text;
-            let match = line.match(re);
-            if (match) {
-                pcMatch = match[2];
-                fileMatch = match[3];
-                lineMatch = match[4];
-                ins = match[5];
-                args = match[6];
-            } else {
-                match = line.match(reUnknown);
-                if (match) {
-                    pcMatch = match[2];
-                    ins = match[3];
-                    args = match[4];
-                } else {
-                    return null;
-                }
-            }
-
-            match = line.match(reFunc);
-            if (match) {
-                // Normalize function name.
-                func = match[1].replace(/[()*.]+/g, '_');
-
-                // It's possible for normalized function names to collide.
-                // Keep a count of collisions per function name. Labels get
-                // suffixed with _[collisions] when collisions > 0.
-                let collisions = funcCollisions[func];
-                if (collisions == null) {
-                    collisions = 0;
-                } else {
-                    collisions++;
-                }
-
-                funcCollisions[func] = collisions;
-            }
-
-            const res: string[] = [];
-            if (pcMatch && !labels[pcMatch]) {
-                // Create pseudo-label.
-                let label = pcMatch.replace(/^0{0,4}/, '');
-                let suffix = '';
-                if (func != null && funcCollisions[func] > 0) {
-                    suffix = `_${funcCollisions[func]}`;
-                }
-
-                label = `${func}_pc${label}${suffix}:`;
-                if (!labels[label]) {
-                    res.push(label);
-                    labels[label] = true;
-                }
-            }
-
-            if (fileMatch && file !== fileMatch) {
-                fileCount++;
-                res.push(`\t.file ${fileCount} "${fileMatch}"`);
-                file = fileMatch;
-            }
-
-            if (lineMatch && prevLine !== lineMatch) {
-                res.push(`\t.loc ${fileCount} ${lineMatch} 0`);
-                prevLine = lineMatch;
-            }
-
-            if (func != null) {
-                args = this.replaceJump(func, funcCollisions[func], ins, args, usedLabels);
-                res.push(`\t${ins}${args}`);
-            }
-            return res;
-        });
-
-        // Find unused pseudo-labels so they can be filtered out.
-        const unusedLabels = Object.keys(labels).map(label => !unusedLabels[label]);
-
-        return lines
-            .flat()
-            .filter((line): line is string => !!line && !unusedLabels[line])
-            .join('\n');
-    }
-
-    replaceJump(func: string, collisions: number, ins: string, args: string, usedLabels: Record<string, boolean>) {
-        // Check if last argument is a decimal number.
-        const re = /(\s+)(\d+)(\s?)$/;
-        const match = args.match(re);
-        if (!match) {
-            return args;
-        }
-
-        // Check instruction has a jump prefix
-        if (jumpRe.test(ins)) {
-            let label = `${func}_pc${match[2]}`;
-            if (collisions > 0) {
-                label += `_${collisions}`;
-            }
-            usedLabels[label + ':'] = true; // record label use for later filtering
-            return `${match[1]}${label}${match[3]}`;
-        }
-
-        return args;
-    }
-
-    extractLogging(stdout) {
-        const filepath = `./${this.compileFilename}`;
-        const reLogging = /^[^:]+:\d+:(\d+:)?\s.*/;
-        return stdout
-            .filter(obj => obj.text.match(reLogging))
-            .map(obj => obj.text.replace(filepath, '<source>'))
-            .join('\n');
-    }
-
-    override async postProcess(result) {
-        const out = result.stderr;
-        const logging = this.extractLogging(out);
-        result.asm = this.convertNewGoL(out);
-        result.stderr = null;
-        result.stdout = utils.parseOutput(logging, result.inputFilename);
-        return Promise.all([result, '']);
     }
 
     override getSharedLibraryPathsAsArguments() {
@@ -192,16 +43,11 @@ export class TinyGoCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters, outputFilename, userOptions) {
-        if (filters.binary) {
-            return ['build', '-o', outputFilename, '-gcflags=' + userOptions.join(' ')];
-        } else {
-            // Add userOptions to -gcflags to preserve previous behavior.
-            return ['build', '-o', outputFilename, '-gcflags=-S ' + userOptions.join(' ')];
-        }
+        return ['build', '-o', outputFilename, ...userOptions];
     }
 
     override filterUserOptions(userOptions) {
-        // userOptions are added to -gcflags in optionsForFilter
+        // userOptions are added to optionsForFilter
         return [];
     }
 
