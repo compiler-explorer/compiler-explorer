@@ -30,6 +30,7 @@ export type CompilationResult = {
     buildResult?: unknown;
     inputFilename?: string;
     asm?: ResultLine[];
+    asmSize?: number;
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
