@@ -392,7 +392,7 @@ export class BaseCompiler {
         return output;
     }
 
-    async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters, staticReloc: any, dynamicReloc: any) {
+    async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, staticReloc, dynamicReloc, filters: ParseFilters) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         if (!(await utils.fileExists(outputFilename))) {
@@ -2100,8 +2100,9 @@ export class BaseCompiler {
             for (const key in filters) {
                 filters[key] = false;
             }
-        if (filters.binaryobject && !this.compiler.supportsBinaryObject) {
-            delete filters.binaryobject;
+            if (filters.binaryobject && !this.compiler.supportsBinaryObject){
+             delete filters.binaryobject;
+            }
         }
 
         const executeParameters = {
@@ -2455,7 +2456,7 @@ but nothing was dumped. Possible causes are:
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
               (filters.binary || filters.binaryobject) && this.supportsObjdump()
-                ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters)
+                ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters.binaryobject, false, filters)
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
