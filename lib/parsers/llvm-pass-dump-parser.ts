@@ -410,6 +410,17 @@ export class LlvmPassDumpParser {
                     assert(false, 'Unexpected pass header', current_dump.header);
                 }
                 pass.machine = current_dump.machine;
+
+                // The first machine pass outputs the same MIR before and after,
+                // making it seem like it did nothing.
+                // Assuming we ran some IR pass before this, grab its output as
+                // the before text, ensuring the first MIR pass appears when
+                // inconsequential passes are filtered away.
+                const previousPass = passes.at(-1);
+                if (previousPass && previousPass.machine !== pass.machine) {
+                    pass.before = previousPass.after;
+                }
+
                 // check for equality
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
