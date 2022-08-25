@@ -32,15 +32,15 @@ PROP_RE = re.compile(r'[^#]*=.*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
-COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe')
+COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe=(.*)')
 DEFAULT_COMPILER_RE = re.compile(r'defaultCompiler=(.*)')
 FORMATTERS_LIST_RE = re.compile(r'formatters=(.*)')
-FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe')
+FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe=(.*)')
 LIBS_LIST_RE = re.compile(r'libs=(.+)')
 LIB_VERSIONS_LIST_RE = re.compile(r'libs\.(.*?)\.versions=(.*)')
 LIB_VERSION_RE = re.compile(r'libs\.(.*?)\.versions\.(.*?)\.version')
 TOOLS_LIST_RE = re.compile(r'tools=(.+)')
-TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe')
+TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe=(.*)')
 EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias|exclude|libPath)=((.*::.*)|(:.*)|(.*:))$')
 DISABLED_RE = re.compile(r'^# Disabled?:?\s*(.*)')
 
@@ -94,7 +94,13 @@ def process_file(file: str):
     seen_lines = set()
     duplicate_lines = set()
 
-    disabled = set()
+    duplicated_compiler_references = set()
+    duplicated_group_references = set()
+
+    suspicious_path = set()
+
+    # By default, consider this one valid as it's in several configs.
+    disabled = set({'/usr/bin/ldd'})
 
     with open(file) as f:
         for line_number, text in enumerate(f, start=1):
@@ -122,8 +128,12 @@ def process_file(file: str):
                 ids = match_compilers.group(1).split(':')
                 for elem_id in ids:
                     if elem_id.startswith('&'):
+                        if elem_id[1:] in listed_groups:
+                            duplicated_group_references.add (elem_id[1:])
                         listed_groups.add(elem_id[1:])
                     elif '@' not in elem_id:
+                        if elem_id in listed_compilers:
+                            duplicated_compiler_references.add (elem_id)
                         listed_compilers.add(elem_id)
 
             match_libs_versions = LIB_VERSIONS_LIST_RE.match(line.text)
@@ -141,9 +151,18 @@ def process_file(file: str):
 
             match_and_add(line, DEFAULT_COMPILER_RE, default_compiler)
             match_and_add(line, GROUP_NAME_RE, seen_groups)
-            match_and_add(line, COMPILER_EXE_RE, seen_compilers)
-            match_and_add(line, FORMATTER_EXE_RE, seen_formatters)
-            match_and_add(line, TOOL_EXE_RE, seen_tools)
+            m = match_and_add(line, COMPILER_EXE_RE, seen_compilers)
+            if m and not m.group(2).startswith('/opt/compiler-explorer'):
+                    suspicious_path.add(m.group(2))
+
+            m = match_and_add(line, FORMATTER_EXE_RE, seen_formatters)
+            if m and not m.group(2).startswith('/opt/compiler-explorer'):
+                    suspicious_path.add(m.group(2))
+
+            m = match_and_add(line, TOOL_EXE_RE, seen_tools)
+            if m and not m.group(2).startswith('/opt/compiler-explorer'):
+                    suspicious_path.add(m.group(2))
+
             match_and_update(line, ALIAS_LIST_RE, seen_compilers)
             match_and_update(line, FORMATTERS_LIST_RE, listed_formatters)
             match_and_update(line, TOOLS_LIST_RE, listed_tools)
@@ -166,7 +185,10 @@ def process_file(file: str):
         "bad_tools": bad_tools - disabled,
         "bad_default": bad_default,
         "empty_separators": empty_separators,
-        "duplicate_lines": duplicate_lines
+        "duplicate_lines": duplicate_lines,
+        "duplicated_compiler_references": duplicated_compiler_references,
+        "duplicated_group_references": duplicated_group_references,
+        "suspicious_path": suspicious_path - disabled
     }
 
 

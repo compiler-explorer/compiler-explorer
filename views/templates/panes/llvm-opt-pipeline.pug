@@ -1,3 +1,9 @@
+mixin optionButton(bind, isActive, text, title)
+  .button-checkbox
+    button(type="button" class="dropdown-item btn btn-sm btn-light" + (isActive ? " active" : "") title=title data-bind=bind aria-pressed=isActive ? "true" : "false")
+      span #{text}
+    input.d-none(type="checkbox" checked=isActive)
+
 #llvm-opt-pipeline
   .top-bar.btn-toolbar.bg-light(role="toolbar")
     include ../../font-size
@@ -6,26 +12,12 @@
         span.fas.fa-anchor
         span.hideable Options
       .dropdown-menu
-        .button-checkbox
-          button.dropdown-item.btn.btn-sm.btn-light.filter-inconsequential-passes(type="button" title="Filter passes which do not make changes" data-bind="filter-inconsequential-passes" aria-pressed="false" aria-label="Filter Inconsequential Passes")
-            span Filter Inconsequential Passes
-          input.d-none(type="checkbox" checked=false)
-        .button-checkbox
-          button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Dump the entire module for each pass" data-bind="dump-full-module" aria-pressed="false" aria-label="Filter Inconsequential Passes")
-            span Dump Full Module
-          input.d-none(type="checkbox" checked=false)
-        .button-checkbox
-          button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Demangle Symbols" data-bind="demangle-symbols" aria-pressed="false" aria-label="Demangle Symbols")
-            span Demangle Symbols
-          input.d-none(type="checkbox" checked=true)
-        .button-checkbox
-          button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Keep value names instead of llvm value numbers" data-bind="-fno-discard-value-names" aria-pressed="false" aria-label="-fno-discard-value-names")
-            span -fno-discard-value-names
-          input.d-none(type="checkbox" checked=true)
-        //.button-checkbox
-        //  button.dropdown-item.btn.btn-sm.btn-light.dump-full-module(type="button" title="Filter Library Functions" data-bind="library-functions" aria-pressed="false" aria-label="Filter Library Functions")
-        //    span Filter Library Functions
-        //  input.d-none(type="checkbox" checked=true)
+        +optionButton("filter-inconsequential-passes", false, "Filter Inconsequential Passes", "Filter passes which do not make changes")
+        +optionButton("filter-debug-info", true, "Filter Debug Info", "Filter debug info intrinsics")
+        +optionButton("dump-full-module", false, "Dump Full Module", "Dump the entire module for each pass")
+        +optionButton("demangle-symbols", true, "Demangle Symbols", "Demangle symbols")
+        +optionButton("-fno-discard-value-names", true, "-fno-discard-value-names", "Keep value names instead of LLVM value numbers")
+        //- +optionButton("library-functions", true, "Filter Library Functions", "Filter library functions")
     .btn-group.btn-group-sm
       .input-group.input-group-sm.mb-auto
         .input-group-prepend

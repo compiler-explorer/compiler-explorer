@@ -451,7 +451,7 @@ export class BaseCompiler {
         return fn;
     }
 
-    getGccDumpFileName(outputFilename) {
+    getGccDumpFileName(outputFilename: string) {
         return outputFilename.replace(path.extname(outputFilename), '.dump');
     }
 
@@ -523,7 +523,7 @@ export class BaseCompiler {
     // Returns a list of additional options that may be required by some backend options.
     // Meant to be overloaded by compiler classes.
     // Default handles the GCC compiler with some debug dump enabled.
-    optionsForBackend(backendOptions, outputFilename) {
+    optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         let addOpts: string[] = [];
 
         if (backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump) {
@@ -533,7 +533,7 @@ export class BaseCompiler {
         return addOpts;
     }
 
-    protected optionsForFilter(filters: ParseFilters, outputFilename, userOptions?) {
+    protected optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
@@ -563,8 +563,8 @@ export class BaseCompiler {
         return result;
     }
 
-    findAutodetectStaticLibLink(linkname): SelectedLibraryVersion | false {
-        const foundLib = _.findKey(this.supportedLibraries as object, lib => {
+    findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
+        const foundLib = _.findKey(this.supportedLibraries as Record<string, Library>, lib => {
             return (
                 lib.versions.autodetect &&
                 lib.versions.autodetect.staticliblink &&
@@ -751,31 +751,34 @@ export class BaseCompiler {
         );
     }
 
-    getIncludeArguments(libraries) {
+    getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
 
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                return _.map(foundVersion.path, path => includeFlag + path);
-            }),
-        );
+            return foundVersion.path.map(path => includeFlag + path);
+        });
     }
 
-    getLibraryOptions(libraries) {
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                return foundVersion.options;
-            }),
-        );
+    getLibraryOptions(libraries: SelectedLibraryVersion[]): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.options;
+        });
     }
 
-    orderArguments(options, inputFilename, libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks) {
+    orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
         return options.concat(
             userOptions,
             [this.filename(inputFilename)],
@@ -787,7 +790,14 @@ export class BaseCompiler {
         );
     }
 
-    prepareArguments(userOptions, filters: ParseFilters, backendOptions, inputFilename, outputFilename, libraries) {
+    prepareArguments(
+        userOptions: string[],
+        filters: ParseFilters,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
 
@@ -831,7 +841,7 @@ export class BaseCompiler {
         return options;
     }
 
-    filterUserOptions(userOptions) {
+    filterUserOptions(userOptions: string[]): string[] {
         return userOptions;
     }
 
@@ -2359,7 +2369,7 @@ but nothing was dumped. Possible causes are:
         return source;
     }
 
-    async postProcess(result, outputFilename, filters) {
+    async postProcess(result, outputFilename: string, filters: ParseFilters) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';

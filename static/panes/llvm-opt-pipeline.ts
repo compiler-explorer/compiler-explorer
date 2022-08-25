@@ -61,6 +61,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     options: Toggles;
     state: LLVMOptPipelineViewState;
     lastOptions: LLVMOptPipelineBackendOptions = {
+        filterDebugInfo: true,
         fullModule: false,
         noDiscardValueNames: true,
         demangle: true,
@@ -188,6 +189,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         // the backend? Would be a data transfer optimization.
         const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
+            filterDebugInfo: options['filter-debug-info'],
             fullModule: options['dump-full-module'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],

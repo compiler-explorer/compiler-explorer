@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 export class HLSLCompiler extends BaseCompiler {
@@ -31,21 +32,39 @@ export class HLSLCompiler extends BaseCompiler {
         return 'hlsl';
     }
 
-    constructor(info, env) {
+    constructor(info: any, env: any) {
         super(info, env);
 
         this.compiler.supportsIntel = false;
     }
 
     /* eslint-disable no-unused-vars */
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
         return [
+            '-Zi', // Embed debug information to get DXIL line associations
+            '-Qembed_debug', // Silences the warning associated with embedded debug information
             `-Fc ${outputFilename}`, // Output object
         ];
     }
     /* eslint-enable no-unused-vars */
 
-    getIrOutputFilename(inputFilename) {
+    override filterUserOptions(userOptions: any) {
+        // RGA supports a non-standard flag --asic [ASIC] which must be removed when compiling with DXC
+        const options = userOptions.slice(0);
+        // Scan for the RGA-specific argument --asic and strip it and its corresponding argument
+        // Assumes the argument exists at most once (compilation will fail if supplied more than
+        // once regardless)
+        for (let i = 0; i !== options.length; ++i) {
+            const option = options[i];
+            if (option === '--asic') {
+                options.splice(i, 2);
+                break;
+            }
+        }
+        return options;
+    }
+
+    override getIrOutputFilename(inputFilename: string) {
         return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.dxil');
     }
 }
