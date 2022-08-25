@@ -751,35 +751,29 @@ export class BaseCompiler {
         );
     }
 
-    getIncludeArguments(libraries) {
+    getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
 
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                return _.map(foundVersion.path, path => includeFlag + path);
-            }),
-        );
+            return foundVersion.path.map(path => includeFlag + path);
+        });
     }
 
-    getLibraryOptions(libraries) {
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                return foundVersion.options;
-            }),
-        );
+    getLibraryOptions(libraries: SelectedLibraryVersion[]): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.options;
+        });
     }
 
     orderArguments(
         options: string[],
         inputFilename: string,
-        libIncludes: any[], // TODO: Fix this type
-        libOptions: any[],
+        libIncludes: string[],
+        libOptions: string[],
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
