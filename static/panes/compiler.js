@@ -1644,7 +1644,6 @@ Compiler.prototype.onLLVMOptPipelineViewClosed = function (id) {
 
 Compiler.prototype.onLLVMOptPipelineViewOptionsUpdated = function (id, options, recompile) {
     if (this.id === id) {
-        console.log(options);
         this.llvmOptPipelineOptions = options;
         if (recompile) {
             this.compile();
