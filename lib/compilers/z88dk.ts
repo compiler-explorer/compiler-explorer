@@ -27,7 +27,9 @@ import path from 'path';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
+import * as utils from '../utils';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {
@@ -45,7 +47,7 @@ export class z88dkCompiler extends BaseCompiler {
         if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
         } else if (key && key.filters.binary) {
-            filename = `${outputFilebase}.s`;
+            filename = `${outputFilebase}`;
         } else {
             filename = `${outputFilebase}.c.asm`;
         }
@@ -82,7 +84,8 @@ export class z88dkCompiler extends BaseCompiler {
         if (!filters.binary) {
             return ['-S'];
         } else {
-            return ['-o', outputFilename];
+            // note: the .tmp is somehow empty, but this argument is still required to generate "example.bin"
+            return ['-o', outputFilename + '.tmp', '-create-app'];
         }
     }
 
@@ -92,5 +95,46 @@ export class z88dkCompiler extends BaseCompiler {
         opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
 
         return opts;
+    }
+
+    override getObjdumpOutputFilename(defaultOutputFilename) {
+        return defaultOutputFilename + '.bin';
+    }
+
+    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+        outputFilename = this.getObjdumpOutputFilename(outputFilename);
+
+        if (!(await utils.fileExists(outputFilename))) {
+            result.asm = '<No output file ' + outputFilename + '>';
+            return result;
+        }
+
+        const args = [outputFilename];
+
+        if (this.externalparser) {
+            const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
+            if (objResult.parsingTime !== undefined) {
+                objResult.objdumpTime = parseInt(result.execTime) - parseInt(result.parsingTime);
+                delete objResult.execTime;
+            }
+
+            result = {...result, ...objResult};
+        } else {
+            const execOptions: ExecutionOptions = {
+                maxOutput: maxSize,
+                customCwd: (result.dirPath as string) || path.dirname(outputFilename),
+            };
+            const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
+
+            if (objResult.code !== 0) {
+                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
+                result.asm = `<No output: objdump returned ${objResult.code}>`;
+            } else {
+                result.objdumpTime = objResult.execTime;
+                result.asm = this.postProcessObjdumpOutput(objResult.stdout);
+            }
+        }
+
+        return result;
     }
 }
