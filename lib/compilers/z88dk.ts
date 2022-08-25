@@ -84,8 +84,7 @@ export class z88dkCompiler extends BaseCompiler {
         if (!filters.binary) {
             return ['-S'];
         } else {
-            // note: the .tmp is somehow empty, but this argument is still required to generate "example.bin"
-            return ['-o', outputFilename + '.tmp', '-create-app'];
+            return ['-o', outputFilename + '.s', '-create-app'];
         }
     }
 
@@ -98,15 +97,22 @@ export class z88dkCompiler extends BaseCompiler {
     }
 
     override getObjdumpOutputFilename(defaultOutputFilename) {
-        return defaultOutputFilename + '.bin';
+        return defaultOutputFilename;
     }
 
     override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
-        if (!(await utils.fileExists(outputFilename))) {
-            result.asm = '<No output file ' + outputFilename + '>';
-            return result;
+        // sometimes (with +z80 for example) the .bin file is written and the .s file is empty
+        if (!(await utils.fileExists(outputFilename + '.bin'))) {
+            if (!(await utils.fileExists(outputFilename + '.s'))) {
+                result.asm = '<No output file ' + outputFilename + '.s>';
+                return result;
+            } else {
+                outputFilename += '.s';
+            }
+        } else {
+            outputFilename += '.bin';
         }
 
         const args = [outputFilename];
