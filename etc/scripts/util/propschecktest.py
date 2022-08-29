@@ -5,16 +5,12 @@ import unittest
 from propscheck import process_file, Line
 
 
-def sline(number, text):
-    return str(Line(number, text))
-
-
 class PropsCheckTests(unittest.TestCase):
     def run_test(self, filename, expected_key, expected_contents):
         base_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         test_case_file = os.path.join(base_path, 'test', 'cases', f"{filename}.properties")
         result = process_file(test_case_file)
-        self.assertEqual(result[expected_key], expected_contents)
+        self.assertEqual(result[expected_key], {Line(-1, text) for text in expected_contents})
 
     def test_bad_compilers_exe(self):
         self.run_test("bad_compilers_exe", "bad_compilers_exe", {"b"})
@@ -55,19 +51,19 @@ class PropsCheckTests(unittest.TestCase):
 
     def test_empty_separators(self):
         self.run_test("empty_separators", "empty_separators", {
-            sline(1, "compilers=a::b"),
-            sline(1, "compilers=a::b"),
-            sline(2, "compilers=::a:b"),
-            sline(3, "compilers=a:b::"),
-            sline(4, "compilers=::"),
-            sline(5, "compilers=::a"),
-            sline(6, "compilers=a::"),
-            sline(7, "compilers=:a"),
-            sline(8, "compilers=a:")
+            "compilers=a::b",
+            "compilers=a::b",
+            "compilers=::a:b",
+            "compilers=a:b::",
+            "compilers=::",
+            "compilers=::a",
+            "compilers=a::",
+            "compilers=:a",
+            "compilers=a:"
         })
 
     def test_duplicate_lines(self):
-        self.run_test("duplicate_lines", "duplicate_lines", {sline(5, "duplicated.prop=true")})
+        self.run_test("duplicate_lines", "duplicate_lines", {"duplicated.prop=true"})
 
     def test_duplicated_compiler(self):
         self.run_test("bad_duplicated_compiler", "duplicated_compiler_references", {"duplicatedname"})
@@ -83,11 +79,10 @@ class PropsCheckTests(unittest.TestCase):
         test_case_file = os.path.join(base_path, '..', '..', 'config', 'c++.amazon.properties')
         result = process_file(test_case_file)
         for k in result:
-            if k != "filename":
-                self.assertEqual(result[k], set(), f"{k} has output in known good file")
+            self.assertEqual(result[k], set(), f"{k} has output in known good file")
 
     def test_typo_compilers(self):
-        self.run_test("typo_compilers", "typo_compilers", {sline(3, 'compilers.a.name=A')})
+        self.run_test("typo_compilers", "typo_compilers", {'compilers.a.name=A'})
 
 
 if __name__ == '__main__':
