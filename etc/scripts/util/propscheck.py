@@ -37,11 +37,13 @@ TYPO_COMPILERS_RE = re.compile(r'compilers\..*')
 DEFAULT_COMPILER_RE = re.compile(r'defaultCompiler=(.*)')
 FORMATTERS_LIST_RE = re.compile(r'formatters=(.*)')
 FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe=(.*)')
+FORMATTER_ID_RE = re.compile(r'formatter\.(.*?)\..*')
 LIBS_LIST_RE = re.compile(r'libs=(.+)')
 LIB_VERSIONS_LIST_RE = re.compile(r'libs\.(.*?)\.versions=(.*)')
 LIB_VERSION_RE = re.compile(r'libs\.(.*?)\.versions\.(.*?)\.version')
 TOOLS_LIST_RE = re.compile(r'tools=(.+)')
 TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe=(.*)')
+TOOL_ID_RE = re.compile(r'tools\.(.*?)\..*')
 EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias|exclude|libPath)=((.*::.*)|(:.*)|(.*:))$')
 DISABLED_RE = re.compile(r'^# Disabled?:?\s*(.*)')
 
@@ -77,12 +79,15 @@ def process_file(file: str):
 
     listed_compilers = set()
     seen_compilers_exe = set()
+    seen_compilers_id = set()
 
     listed_formatters = set()
-    seen_formatters = set()
+    seen_formatters_exe = set()
+    seen_formatters_id = set()
 
     listed_tools = set()
-    seen_tools = set()
+    seen_tools_exe = set()
+    seen_tools_id = set()
 
     listed_libs_ids = set()
     seen_libs_ids = set()
@@ -100,7 +105,6 @@ def process_file(file: str):
 
     suspicious_path = set()
 
-    seen_compilers_id = set()
     seen_typo_compilers = set()
 
     # By default, consider this one valid as it's in several configs.
@@ -159,15 +163,18 @@ def process_file(file: str):
             if m and not m.group(2).startswith('/opt/compiler-explorer'):
                 suspicious_path.add(m.group(2))
 
-            m = match_and_add(line, FORMATTER_EXE_RE, seen_formatters)
+            m = match_and_add(line, FORMATTER_EXE_RE, seen_formatters_exe)
             if m and not m.group(2).startswith('/opt/compiler-explorer'):
                 suspicious_path.add(m.group(2))
 
-            m = match_and_add(line, TOOL_EXE_RE, seen_tools)
+            m = match_and_add(line, TOOL_EXE_RE, seen_tools_exe)
             if m and not m.group(2).startswith('/opt/compiler-explorer'):
                 suspicious_path.add(m.group(2))
 
             match_and_add(line, COMPILER_ID_RE, seen_compilers_id)
+            match_and_add(line, TOOL_ID_RE, seen_tools_id)
+            match_and_add(line, FORMATTER_ID_RE, seen_formatters_id)
+
             match = TYPO_COMPILERS_RE.match(line.text)
             if match is not None:
                 seen_typo_compilers.add(str(line))
@@ -177,23 +184,27 @@ def process_file(file: str):
             match_and_update(line, TOOLS_LIST_RE, listed_tools)
             match_and_update(line, LIBS_LIST_RE, listed_libs_ids)
 
-    bad_compilers = listed_compilers.symmetric_difference(seen_compilers_exe)
-    bad_compiler_ids = listed_compilers.symmetric_difference(seen_compilers_id)
+    bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
+    bad_compilers_ids = listed_compilers.symmetric_difference(seen_compilers_id)
     bad_groups = listed_groups.symmetric_difference(seen_groups)
-    bad_formatters = listed_formatters.symmetric_difference(seen_formatters)
+    bad_formatters_exe = listed_formatters.symmetric_difference(seen_formatters_exe)
+    bad_formatters_id = listed_formatters.symmetric_difference(seen_formatters_id)
     bad_libs_ids = listed_libs_ids.symmetric_difference(seen_libs_ids)
     bad_libs_versions = listed_libs_versions.symmetric_difference(seen_libs_versions)
-    bad_tools = listed_tools.symmetric_difference(seen_tools)
+    bad_tools_exe = listed_tools.symmetric_difference(seen_tools_exe)
+    bad_tools_id = listed_tools.symmetric_difference(seen_tools_id)
     bad_default = default_compiler - listed_compilers
     return {
         "filename": file,
-        "bad_compilers": bad_compilers - disabled,
-        "bad_compiler_ids": bad_compiler_ids - disabled,
+        "bad_compilers_exe": bad_compilers_exe - disabled,
+        "bad_compilers_id": bad_compilers_ids - disabled,
         "bad_groups": bad_groups - disabled,
-        "bad_formatters": bad_formatters - disabled,
+        "bad_formatters_exe": bad_formatters_exe - disabled,
+        "bad_formatters_id": bad_formatters_id - disabled,
         "bad_libs_ids": bad_libs_ids - disabled,
         "bad_libs_versions": bad_libs_versions - disabled,
-        "bad_tools": bad_tools - disabled,
+        "bad_tools_exe": bad_tools_exe - disabled,
+        "bad_tools_id": bad_tools_id - disabled,
         "bad_default": bad_default,
         "empty_separators": empty_separators,
         "duplicate_lines": duplicate_lines,
