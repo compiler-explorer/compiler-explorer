@@ -27,20 +27,23 @@ from os import listdir
 from os.path import isfile, join
 import re
 
-
 PROP_RE = re.compile(r'[^#]*=.*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
 COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe=(.*)')
+COMPILER_ID_RE = re.compile(r'compiler\.(.*?)\..*')
+TYPO_COMPILERS_RE = re.compile(r'compilers\..*')
 DEFAULT_COMPILER_RE = re.compile(r'defaultCompiler=(.*)')
 FORMATTERS_LIST_RE = re.compile(r'formatters=(.*)')
 FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe=(.*)')
+FORMATTER_ID_RE = re.compile(r'formatter\.(.*?)\..*')
 LIBS_LIST_RE = re.compile(r'libs=(.+)')
 LIB_VERSIONS_LIST_RE = re.compile(r'libs\.(.*?)\.versions=(.*)')
 LIB_VERSION_RE = re.compile(r'libs\.(.*?)\.versions\.(.*?)\.version')
 TOOLS_LIST_RE = re.compile(r'tools=(.+)')
 TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe=(.*)')
+TOOL_ID_RE = re.compile(r'tools\.(.*?)\..*')
 EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias|exclude|libPath)=((.*::.*)|(:.*)|(.*:))$')
 DISABLED_RE = re.compile(r'^# Disabled?:?\s*(.*)')
 
@@ -75,13 +78,16 @@ def process_file(file: str):
     seen_groups = set()
 
     listed_compilers = set()
-    seen_compilers = set()
+    seen_compilers_exe = set()
+    seen_compilers_id = set()
 
     listed_formatters = set()
-    seen_formatters = set()
+    seen_formatters_exe = set()
+    seen_formatters_id = set()
 
     listed_tools = set()
-    seen_tools = set()
+    seen_tools_exe = set()
+    seen_tools_id = set()
 
     listed_libs_ids = set()
     seen_libs_ids = set()
@@ -98,6 +104,8 @@ def process_file(file: str):
     duplicated_group_references = set()
 
     suspicious_path = set()
+
+    seen_typo_compilers = set()
 
     # By default, consider this one valid as it's in several configs.
     disabled = set({'/usr/bin/ldd'})
@@ -129,11 +137,11 @@ def process_file(file: str):
                 for elem_id in ids:
                     if elem_id.startswith('&'):
                         if elem_id[1:] in listed_groups:
-                            duplicated_group_references.add (elem_id[1:])
+                            duplicated_group_references.add(elem_id[1:])
                         listed_groups.add(elem_id[1:])
                     elif '@' not in elem_id:
                         if elem_id in listed_compilers:
-                            duplicated_compiler_references.add (elem_id)
+                            duplicated_compiler_references.add(elem_id)
                         listed_compilers.add(elem_id)
 
             match_libs_versions = LIB_VERSIONS_LIST_RE.match(line.text)
@@ -151,44 +159,59 @@ def process_file(file: str):
 
             match_and_add(line, DEFAULT_COMPILER_RE, default_compiler)
             match_and_add(line, GROUP_NAME_RE, seen_groups)
-            m = match_and_add(line, COMPILER_EXE_RE, seen_compilers)
+            m = match_and_add(line, COMPILER_EXE_RE, seen_compilers_exe)
             if m and not m.group(2).startswith('/opt/compiler-explorer'):
-                    suspicious_path.add(m.group(2))
+                suspicious_path.add(m.group(2))
 
-            m = match_and_add(line, FORMATTER_EXE_RE, seen_formatters)
+            m = match_and_add(line, FORMATTER_EXE_RE, seen_formatters_exe)
             if m and not m.group(2).startswith('/opt/compiler-explorer'):
-                    suspicious_path.add(m.group(2))
+                suspicious_path.add(m.group(2))
 
-            m = match_and_add(line, TOOL_EXE_RE, seen_tools)
+            m = match_and_add(line, TOOL_EXE_RE, seen_tools_exe)
             if m and not m.group(2).startswith('/opt/compiler-explorer'):
-                    suspicious_path.add(m.group(2))
+                suspicious_path.add(m.group(2))
 
-            match_and_update(line, ALIAS_LIST_RE, seen_compilers)
+            match_and_add(line, COMPILER_ID_RE, seen_compilers_id)
+            match_and_add(line, TOOL_ID_RE, seen_tools_id)
+            match_and_add(line, FORMATTER_ID_RE, seen_formatters_id)
+
+            match = TYPO_COMPILERS_RE.match(line.text)
+            if match is not None:
+                seen_typo_compilers.add(str(line))
+
+            match_and_update(line, ALIAS_LIST_RE, seen_compilers_exe)
             match_and_update(line, FORMATTERS_LIST_RE, listed_formatters)
             match_and_update(line, TOOLS_LIST_RE, listed_tools)
             match_and_update(line, LIBS_LIST_RE, listed_libs_ids)
 
-    bad_compilers = listed_compilers.symmetric_difference(seen_compilers)
+    bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
+    bad_compilers_ids = listed_compilers.symmetric_difference(seen_compilers_id)
     bad_groups = listed_groups.symmetric_difference(seen_groups)
-    bad_formatters = listed_formatters.symmetric_difference(seen_formatters)
+    bad_formatters_exe = listed_formatters.symmetric_difference(seen_formatters_exe)
+    bad_formatters_id = listed_formatters.symmetric_difference(seen_formatters_id)
     bad_libs_ids = listed_libs_ids.symmetric_difference(seen_libs_ids)
     bad_libs_versions = listed_libs_versions.symmetric_difference(seen_libs_versions)
-    bad_tools = listed_tools.symmetric_difference(seen_tools)
+    bad_tools_exe = listed_tools.symmetric_difference(seen_tools_exe)
+    bad_tools_id = listed_tools.symmetric_difference(seen_tools_id)
     bad_default = default_compiler - listed_compilers
     return {
         "filename": file,
-        "bad_compilers": bad_compilers - disabled,
+        "bad_compilers_exe": bad_compilers_exe - disabled,
+        "bad_compilers_id": bad_compilers_ids - disabled,
         "bad_groups": bad_groups - disabled,
-        "bad_formatters": bad_formatters - disabled,
+        "bad_formatters_exe": bad_formatters_exe - disabled,
+        "bad_formatters_id": bad_formatters_id - disabled,
         "bad_libs_ids": bad_libs_ids - disabled,
         "bad_libs_versions": bad_libs_versions - disabled,
-        "bad_tools": bad_tools - disabled,
+        "bad_tools_exe": bad_tools_exe - disabled,
+        "bad_tools_id": bad_tools_id - disabled,
         "bad_default": bad_default,
         "empty_separators": empty_separators,
         "duplicate_lines": duplicate_lines,
         "duplicated_compiler_references": duplicated_compiler_references,
         "duplicated_group_references": duplicated_group_references,
-        "suspicious_path": suspicious_path - disabled
+        "suspicious_path": suspicious_path - disabled,
+        "typo_compilers": seen_typo_compilers - disabled
     }
 
 
