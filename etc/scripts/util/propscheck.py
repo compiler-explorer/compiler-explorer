@@ -132,7 +132,7 @@ def process_file(file: str):
     seen_typo_compilers = set()
 
     # By default, consider this one valid as it's in several configs.
-    disabled = {Line(-1, '/usr/bin/ldd')}
+    disabled = {as_line('/usr/bin/ldd')}
 
     with open(file) as f:
         for line_number, text in enumerate(f, start=1):
