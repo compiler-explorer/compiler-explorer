@@ -33,7 +33,7 @@ ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
 COMPILER_EXE_RE = re.compile(r'compiler\.(.*?)\.exe=(.*)')
 COMPILER_ID_RE = re.compile(r'compiler\.(.*?)\..*')
-TYPO_COMPILERS_RE = re.compile(r'compilers\..*')
+TYPO_COMPILERS_RE = re.compile(r'(compilers\..*)')
 DEFAULT_COMPILER_RE = re.compile(r'defaultCompiler=(.*)')
 FORMATTERS_LIST_RE = re.compile(r'formatters=(.*)')
 FORMATTER_EXE_RE = re.compile(r'formatter\.(.*?)\.exe=(.*)')
@@ -44,7 +44,7 @@ LIB_VERSION_RE = re.compile(r'libs\.(.*?)\.versions\.(.*?)\.version')
 TOOLS_LIST_RE = re.compile(r'tools=(.+)')
 TOOL_EXE_RE = re.compile(r'tools\.(.*?)\.exe=(.*)')
 TOOL_ID_RE = re.compile(r'tools\.(.*?)\..*')
-EMPTY_LIST_RE = re.compile(r'.*(compilers|formatters|versions|tools|alias|exclude|libPath)=((.*::.*)|(:.*)|(.*:))$')
+EMPTY_LIST_RE = re.compile(r'(.*(compilers|formatters|versions|tools|alias|exclude|libPath)=((.*::.*)|(:.*)|(.*:)))$')
 DISABLED_RE = re.compile(r'^# Disabled?:?\s*(.*)')
 
 
@@ -54,21 +54,45 @@ class Line:
         self.text = text.strip()
 
     def __str__(self):
-        return f'<{self.number}> {self.text}'
+        return f'Line {self.number}: {self.text}'
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other):
+        return self.text == other.text
+
+    def __ne__(self, other):
+        return self.text != other.text
+
+    def __hash__(self):
+        return hash(self.text)
+
+    def __lt__(self, other):
+        return self.text < other.text
 
 
-def match_and_add(line: Line, expr, s):
+def as_line(text):
+    return Line(-1, text)
+
+
+def match_and_add(line: Line, expr, s: set):
     match = expr.match(line.text)
     if match:
-        s.add(match.group(1))
+        s.add(Line(line.number, match.group(1)))
     return match
 
 
-def match_and_update(line: Line, expr, s, split=':'):
+def match_and_update(line: Line, expr, s: set, split=':'):
     match = expr.match(line.text)
     if match:
-        s.update(match.group(1).split(split))
+        s.update([Line(line.number, text) for text in match.group(1).split(split)])
     return match
+
+
+def check_suspicious_path_and_add(line: Line, m, s):
+    if m and not m.group(2).startswith('/opt/compiler-explorer'):
+        s.add(Line(line.number, m.group(2)))
 
 
 def process_file(file: str):
@@ -108,7 +132,7 @@ def process_file(file: str):
     seen_typo_compilers = set()
 
     # By default, consider this one valid as it's in several configs.
-    disabled = set({'/usr/bin/ldd'})
+    disabled = {as_line('/usr/bin/ldd')}
 
     with open(file) as f:
         for line_number, text in enumerate(f, start=1):
@@ -122,62 +146,55 @@ def process_file(file: str):
             if not match_prop:
                 continue
 
-            if line.text in seen_lines:
-                duplicate_lines.add(str(line))
+            if line in seen_lines:
+                duplicate_lines.add(line)
             else:
-                seen_lines.add(line.text)
+                seen_lines.add(line)
 
-            match_empty = EMPTY_LIST_RE.match(line.text)
-            if match_empty:
-                empty_separators.add(str(line))
-
-            match_compilers = COMPILERS_LIST_RE.search(line.text)
-            if match_compilers:
-                ids = match_compilers.group(1).split(':')
+            match_compilers_list = COMPILERS_LIST_RE.search(line.text)
+            if match_compilers_list:
+                ids = match_compilers_list.group(1).split(':')
                 for elem_id in ids:
                     if elem_id.startswith('&'):
-                        if elem_id[1:] in listed_groups:
-                            duplicated_group_references.add(elem_id[1:])
-                        listed_groups.add(elem_id[1:])
+                        if as_line(elem_id[1:]) in listed_groups:
+                            duplicated_group_references.add(Line(line.number, elem_id[1:]))
+                        listed_groups.add(Line(line.number, elem_id[1:]))
                     elif '@' not in elem_id:
-                        if elem_id in listed_compilers:
-                            duplicated_compiler_references.add(elem_id)
-                        listed_compilers.add(elem_id)
+                        if as_line(elem_id) in listed_compilers:
+                            duplicated_compiler_references.add(Line(line.number, elem_id))
+                        listed_compilers.add(Line(line.number, elem_id))
 
             match_libs_versions = LIB_VERSIONS_LIST_RE.match(line.text)
             if match_libs_versions:
                 lib_id = match_libs_versions.group(1)
                 versions = match_libs_versions.group(2).split(':')
-                seen_libs_ids.add(lib_id)
-                listed_libs_versions.update([f"{lib_id} {v}" for v in versions])
+                seen_libs_ids.add(Line(line.number, lib_id))
+                listed_libs_versions.update([Line(line.number, f"{lib_id} {v}") for v in versions])
 
             match_libs_version = LIB_VERSION_RE.match(line.text)
             if match_libs_version:
                 lib_id = match_libs_version.group(1)
                 version = match_libs_version.group(2)
-                seen_libs_versions.add(f"{lib_id} {version}")
+                seen_libs_versions.add(Line(line.number, f"{lib_id} {version}"))
 
+            match_and_add(line, EMPTY_LIST_RE, empty_separators)
             match_and_add(line, DEFAULT_COMPILER_RE, default_compiler)
             match_and_add(line, GROUP_NAME_RE, seen_groups)
-            m = match_and_add(line, COMPILER_EXE_RE, seen_compilers_exe)
-            if m and not m.group(2).startswith('/opt/compiler-explorer'):
-                suspicious_path.add(m.group(2))
 
-            m = match_and_add(line, FORMATTER_EXE_RE, seen_formatters_exe)
-            if m and not m.group(2).startswith('/opt/compiler-explorer'):
-                suspicious_path.add(m.group(2))
+            match_compiler_exe = match_and_add(line, COMPILER_EXE_RE, seen_compilers_exe)
+            check_suspicious_path_and_add(line, match_compiler_exe, suspicious_path)
 
-            m = match_and_add(line, TOOL_EXE_RE, seen_tools_exe)
-            if m and not m.group(2).startswith('/opt/compiler-explorer'):
-                suspicious_path.add(m.group(2))
+            match_formatter_exe = match_and_add(line, FORMATTER_EXE_RE, seen_formatters_exe)
+            check_suspicious_path_and_add(line, match_formatter_exe, suspicious_path)
+
+            match_tool_exe = match_and_add(line, TOOL_EXE_RE, seen_tools_exe)
+            check_suspicious_path_and_add(line, match_tool_exe, suspicious_path)
 
             match_and_add(line, COMPILER_ID_RE, seen_compilers_id)
             match_and_add(line, TOOL_ID_RE, seen_tools_id)
             match_and_add(line, FORMATTER_ID_RE, seen_formatters_id)
 
-            match = TYPO_COMPILERS_RE.match(line.text)
-            if match is not None:
-                seen_typo_compilers.add(str(line))
+            match_and_add(line, TYPO_COMPILERS_RE, seen_typo_compilers)
 
             match_and_update(line, ALIAS_LIST_RE, seen_compilers_exe)
             match_and_update(line, FORMATTERS_LIST_RE, listed_formatters)
@@ -195,7 +212,6 @@ def process_file(file: str):
     bad_tools_id = listed_tools.symmetric_difference(seen_tools_id)
     bad_default = default_compiler - listed_compilers
     return {
-        "filename": file,
         "bad_compilers_exe": bad_compilers_exe - disabled,
         "bad_compilers_id": bad_compilers_ids - disabled,
         "bad_groups": bad_groups - disabled,
@@ -216,7 +232,7 @@ def process_file(file: str):
 
 
 def process_folder(folder: str):
-    return [process_file(join(folder, f))
+    return [(f, process_file(join(folder, f)))
             for f in listdir(folder)
             if isfile(join(folder, f))
             and not (f.endswith('.defaults.properties') or f.endswith('.local.properties'))
@@ -229,20 +245,19 @@ def problems_found(file_result):
 
 def print_issue(name, result):
     if len(result) > 0:
-        sep = "\n\t"
-        print(f"{name}:\n\t{sep.join(sorted(result))}")
+        sep = "\n  "
+        print(f"{name}:\n  {sep.join(sorted([str(issue) for issue in result]))}")
 
 
 def find_orphans(folder: str):
-    result = sorted([r for r in process_folder(folder) if problems_found(r)], key=lambda x: x["filename"])
+    result = sorted([(f, r) for (f, r) in process_folder(folder) if problems_found(r)], key=lambda x: x[0])
     if result:
         print(f"Found {len(result)} property file(s) with issues:")
-        for r in result:
+        for (filename, issues) in result:
             print('################')
-            print(f'## {r["filename"]}')
-            for k in r:
-                if k != "filename":
-                    print_issue(k, r[k])
+            print(f'## {filename}')
+            for issue_key in issues:
+                print_issue(issue_key, issues[issue_key])
             print("")
         print("To suppress this warning on IDs that are temporally disabled, "
               "add one or more comments to each listed file:")
