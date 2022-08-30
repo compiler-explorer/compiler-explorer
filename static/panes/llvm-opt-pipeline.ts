@@ -59,6 +59,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
+    filters: Toggles;
     state: LLVMOptPipelineViewState;
     lastOptions: LLVMOptPipelineBackendOptions = {
         filterDebugInfo: true,
@@ -151,6 +152,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', this.onOptionsChange.bind(this));
 
         this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
         this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
@@ -185,11 +188,12 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
 
     emitOptions(force = false) {
         const options = this.options.get();
+        const filters = this.filters.get();
         // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
         // the backend? Would be a data transfer optimization.
         const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
-            filterDebugInfo: options['filter-debug-info'],
+            filterDebugInfo: filters['filter-debug-info'],
             fullModule: options['dump-full-module'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
@@ -273,7 +277,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (!(name in this.results)) {
             return;
         }
-        const filterInconsequentialPasses = this.options.get()['filter-inconsequential-passes'];
+        const filterInconsequentialPasses = this.filters.get()['filter-inconsequential-passes'];
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
@@ -366,8 +370,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     }
 
     override getCurrentState() {
+        // TODO: Remove _.pick when and if toggles can be updated to not do this state clobbering stuff
         return {
-            ...this.options.get(),
+            ..._.pick(this.options.get(), ['dump-full-module', 'demangle-symbols', '-fno-discard-value-names']),
+            ..._.pick(this.filters.get(), ['filter-inconsequential-passes', 'filter-debug-info']),
             ...super.getCurrentState(),
             selectedFunction: this.state.selectedFunction,
             selectedIndex: this.state.selectedIndex,

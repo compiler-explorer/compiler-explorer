@@ -12,11 +12,16 @@ mixin optionButton(bind, isActive, text, title)
         span.fas.fa-anchor
         span.hideable Options
       .dropdown-menu
-        +optionButton("filter-inconsequential-passes", false, "Filter Inconsequential Passes", "Filter passes which do not make changes")
-        +optionButton("filter-debug-info", true, "Filter Debug Info", "Filter debug info intrinsics")
         +optionButton("dump-full-module", false, "Dump Full Module", "Dump the entire module for each pass")
         +optionButton("demangle-symbols", true, "Demangle Symbols", "Demangle symbols")
         +optionButton("-fno-discard-value-names", true, "-fno-discard-value-names", "Keep value names instead of LLVM value numbers")
+    .btn-group.btn-group-sm.filters(role="group")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Filters" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output filters")
+        span.fas.fa-filter
+        span.hideable Filters
+      .dropdown-menu
+        +optionButton("filter-inconsequential-passes", false, "Filter Inconsequential Passes", "Filter passes which do not make changes")
+        +optionButton("filter-debug-info", true, "Filter Debug Info", "Filter debug info intrinsics")
         //- +optionButton("library-functions", true, "Filter Library Functions", "Filter library functions")
     .btn-group.btn-group-sm
       .input-group.input-group-sm.mb-auto
