@@ -370,10 +370,9 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     }
 
     override getCurrentState() {
-        // TODO: Remove _.pick when and if toggles can be updated to not do this state clobbering stuff
         return {
-            ..._.pick(this.options.get(), ['dump-full-module', 'demangle-symbols', '-fno-discard-value-names']),
-            ..._.pick(this.filters.get(), ['filter-inconsequential-passes', 'filter-debug-info']),
+            ...this.options.get(),
+            ...this.filters.get(),
             ...super.getCurrentState(),
             selectedFunction: this.state.selectedFunction,
             selectedIndex: this.state.selectedIndex,
