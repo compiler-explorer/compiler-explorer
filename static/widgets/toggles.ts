@@ -50,7 +50,7 @@ export class Toggles extends EventEmitter {
             const bind = button.data('bind');
 
             // copy relevant parts of the state
-            this.state[bind] = state ? state[bind] : checkbox.is(':checked');
+            this.state[bind] = state && bind in state ? state[bind] : checkbox.is(':checked');
 
             // Event Handlers
             button.on('click', e => {
