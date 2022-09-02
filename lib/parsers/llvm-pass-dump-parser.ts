@@ -26,7 +26,7 @@ import _ from 'underscore';
 
 import {
     LLVMOptPipelineBackendOptions,
-    LLVMOptPipelineOutput,
+    LLVMOptPipelineResults,
     Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
@@ -366,7 +366,7 @@ export class LlvmPassDumpParser {
     matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps
-        const final_output: LLVMOptPipelineOutput = {};
+        const final_output: LLVMOptPipelineResults = {};
         for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
             // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
             // case: At least the "Delete dead loops" may only print a before dump and no after dump

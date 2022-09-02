@@ -35,7 +35,10 @@ import {
     ExecutionOptions,
     ToolResult,
 } from '../types/compilation/compilation.interfaces';
-import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {
+    LLVMOptPipelineBackendOptions,
+    LLVMOptPipelineOutput,
+} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
@@ -991,7 +994,7 @@ export class BaseCompiler {
         options,
         filters: ParseFilters,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
-    ) {
+    ): Promise<LLVMOptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
@@ -1002,21 +1005,40 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+
+        if (output.timedOut) {
+            return {
+                error: 'Compilation timed out',
+                results: {},
+            };
+        }
+
         if (output.code !== 0) {
             return;
         }
 
-        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+        try {
+            const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
 
-        if (llvmOptPipelineOptions.demangle) {
-            // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
-            // new this.demanglerClass(this.compiler.demangler, this);
-            const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
-            // collect labels off the raw input
-            await demangler.collect({asm: output.stderr});
-            return await demangler.demangleLLVMPasses(llvmOptPipeline);
-        } else {
-            return llvmOptPipeline;
+            if (llvmOptPipelineOptions.demangle) {
+                // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
+                // new this.demanglerClass(this.compiler.demangler, this);
+                const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+                // collect labels off the raw input
+                await demangler.collect({asm: output.stderr});
+                return {
+                    results: await demangler.demangleLLVMPasses(llvmOptPipeline),
+                };
+            } else {
+                return {
+                    results: llvmOptPipeline,
+                };
+            }
+        } catch (e: any) {
+            return {
+                error: e.toString(),
+                results: {},
+            };
         }
     }
 
@@ -1825,6 +1847,7 @@ export class BaseCompiler {
         if (!this.compiler.supportsBinary) {
             const errorResult: CompilationResult = {
                 code: -1,
+                timedOut: false,
                 didExecute: false,
                 stderr: [],
                 stdout: [],

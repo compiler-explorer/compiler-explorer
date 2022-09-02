@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LLVMOptPipelineOutput} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {LLVMOptPipelineResults} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {logger} from '../logger';
 import {SymbolStore} from '../symbol-store';
@@ -59,7 +59,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
     }
 
-    processPassOutput(passOutput: LLVMOptPipelineOutput, demanglerOutput) {
+    processPassOutput(passOutput: LLVMOptPipelineResults, demanglerOutput) {
         if (demanglerOutput.stdout.length === 0 && demanglerOutput.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, demanglerOutput);
             return passOutput;
@@ -95,7 +95,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         return passOutput;
     }
 
-    async demangleLLVMPasses(passOutput: LLVMOptPipelineOutput) {
+    async demangleLLVMPasses(passOutput: LLVMOptPipelineResults) {
         const options = {
             input: this.getInput(),
         };
