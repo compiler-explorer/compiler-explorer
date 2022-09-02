@@ -27,6 +27,7 @@ import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
     code: number;
+    timedOut: boolean;
     buildResult?: unknown;
     inputFilename?: string;
     asm?: ResultLine[];

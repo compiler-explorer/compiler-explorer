@@ -42,12 +42,13 @@ import {Toggles} from '../widgets/toggles';
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
+    LLVMOptPipelineResults,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
 export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, LLVMOptPipelineViewState> {
-    results: LLVMOptPipelineOutput = {};
+    results: LLVMOptPipelineResults = {};
     passesColumn: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
@@ -221,7 +222,16 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
-            this.updateResults(result.llvmOptPipelineOutput as LLVMOptPipelineOutput);
+            const output: LLVMOptPipelineOutput = result.llvmOptPipelineOutput;
+            if (output.error) {
+                this.editor
+                    .getModel()
+                    ?.original.setValue(
+                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`
+                    );
+                this.editor.getModel()?.modified.setValue('');
+            }
+            this.updateResults(output.results);
         } else if (compiler.supportsLLVMOptPipelineView) {
             this.updateResults({});
             this.editor.getModel()?.original.setValue('<Error>');
@@ -240,7 +250,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         }
     }
 
-    updateResults(results: LLVMOptPipelineOutput): void {
+    updateResults(results: LLVMOptPipelineResults): void {
         this.results = results;
         //const functions = Object.keys(result);
         let selectedFunction = this.state.selectedFunction; // one of the .clear calls below will end up resetting this
