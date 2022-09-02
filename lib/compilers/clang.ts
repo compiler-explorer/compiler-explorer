@@ -27,6 +27,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
@@ -34,6 +35,8 @@ import {SassAsmParser} from '../parsers/asm-parser-sass';
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
 export class ClangCompiler extends BaseCompiler {
+    protected asanSymbolizerPath?: string;
+
     static get key() {
         return 'clang';
     }
@@ -47,7 +50,7 @@ export class ClangCompiler extends BaseCompiler {
         }
     }
 
-    runExecutable(executable, executeParameters, homeDir) {
+    override runExecutable(executable, executeParameters, homeDir) {
         if (this.asanSymbolizerPath) {
             executeParameters.env = {
                 ASAN_SYMBOLIZER_PATH: this.asanSymbolizerPath,
@@ -67,13 +70,13 @@ export class ClangCompiler extends BaseCompiler {
         return options;
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         const options = super.optionsForFilter(filters, outputFilename);
 
         return this.forceDwarf4UnlessOverridden(options);
     }
 
-    runCompiler(compiler, options, inputFilename, execOptions) {
+    override runCompiler(compiler, options, inputFilename, execOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -102,7 +105,7 @@ export class ClangCompiler extends BaseCompiler {
         return devices;
     }
 
-    extractDeviceCode(result, filters) {
+    override extractDeviceCode(result, filters) {
         const split = this.splitDeviceCode(result.asm);
         if (!split) return result;
 
@@ -139,7 +142,7 @@ export class ClangCompiler extends BaseCompiler {
 }
 
 export class ClangCudaCompiler extends ClangCompiler {
-    static get key() {
+    static override get key() {
         return 'clang-cuda';
     }
 
@@ -149,11 +152,11 @@ export class ClangCudaCompiler extends ClangCompiler {
         this.asm = new SassAsmParser();
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         return ['-o', this.filename(outputFilename), '-g1', filters.binary ? '-c' : '-S'];
     }
 
-    async objdump(outputFilename, result, maxSize) {
+    override async objdump(outputFilename, result, maxSize) {
         // For nvdisasm.
         const args = [outputFilename, '-c', '-g', '-hex'];
         const execOptions = {maxOutput: maxSize, customCwd: path.dirname(outputFilename)};
@@ -170,7 +173,7 @@ export class ClangCudaCompiler extends ClangCompiler {
 }
 
 export class ClangHipCompiler extends ClangCompiler {
-    static get key() {
+    static override get key() {
         return 'clang-hip';
     }
 
@@ -180,17 +183,24 @@ export class ClangHipCompiler extends ClangCompiler {
         this.asm = new AmdgpuAsmParser();
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         return ['-o', this.filename(outputFilename), '-g1', '--no-gpu-bundle-output', filters.binary ? '-c' : '-S'];
     }
 }
 
 export class ClangIntelCompiler extends ClangCompiler {
-    static get key() {
+    static override get key() {
         return 'clang-intel';
     }
 
-    runExecutable(executable, executeParameters, homeDir) {
+    override getDefaultExecOptions(): ExecutionOptions {
+        const opts = super.getDefaultExecOptions();
+        opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
+
+        return opts;
+    }
+
+    override runExecutable(executable, executeParameters, homeDir) {
         executeParameters.env = {
             OCL_ICD_FILENAMES: path.resolve(path.dirname(this.compiler.exe) + '/../lib/x64/libintelocl.so'),
             ...executeParameters.env,
