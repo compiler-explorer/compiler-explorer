@@ -1,5 +1,5 @@
 mixin newPaneButton(classId, text, title, label, icon)
-  button(class="dropdown-item btn btn-sm btn-light " + classId title=title)
+  button(class="dropdown-item btn btn-sm btn-light " + classId title=title data-cy="new-" + classId + "-btn")
     span(class="dropdown-icon " + icon)
     | #{text}
 
@@ -10,10 +10,10 @@ mixin newPaneButton(classId, text, title, label, icon)
       button.btn.btn-sm.btn-light.load-save(title="Load or save text" aria-label="Load or save text")
         span.fa.fa-save
         span.hideable Save/Load
-      button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false")
+      button.dropdown-toggle.btn.btn-sm.btn-light.add-pane(type="button" title="Add a new pane" aria-label="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-cy="new-editor-dropdown-btn")
         span.fa.fa-plus
         span.hideable Add new...
-      .dropdown-menu
+      .dropdown-menu(data-cy="new-editor-pane-dropdown")
         +newPaneButton("add-compiler", "Compiler", "Add a new compiler for this source", "New compiler", "fa fa-cogs")
         +newPaneButton("add-executor", "Execution Only", "Add a new executor for this source", "New executor", "fas fa-microchip")
         +newPaneButton("conformance", "Conformance View", "Add a new conformance view", "New conformance view", "fa fa-list")
