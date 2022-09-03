@@ -28,6 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
@@ -36,6 +37,8 @@ const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/
 
 export class ClangCompiler extends BaseCompiler {
     protected asanSymbolizerPath?: string;
+    protected offloadBundlerPath?: string;
+    protected llvmDisassemblerPath?: string;
 
     static get key() {
         return 'clang';
@@ -44,9 +47,22 @@ export class ClangCompiler extends BaseCompiler {
     constructor(info, env) {
         super(info, env);
         this.compiler.supportsDeviceAsmView = true;
-        const asanSymbolizerPath = path.dirname(this.compiler.exe) + '/llvm-symbolizer';
+
+        const asanSymbolizerPath = path.join(path.dirname(this.compiler.exe), 'llvm-symbolizer');
         if (fs.existsSync(asanSymbolizerPath)) {
             this.asanSymbolizerPath = asanSymbolizerPath;
+        }
+
+        const offloadBundlerPath = path.join(path.dirname(this.compiler.exe), 'clang-offload-bundler');
+        if (fs.existsSync(offloadBundlerPath)) {
+            this.offloadBundlerPath = offloadBundlerPath;
+        }
+
+        const llvmDisassemblerPath = path.join(path.dirname(this.compiler.exe), 'llvm-dis');
+        if (fs.existsSync(llvmDisassemblerPath)) {
+            this.llvmDisassemblerPath = llvmDisassemblerPath;
+        } else {
+            this.llvmDisassemblerPath = this.compilerProps('llvmDisassembler');
         }
     }
 
@@ -86,7 +102,7 @@ export class ClangCompiler extends BaseCompiler {
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    splitDeviceCode(assembly) {
+    async splitDeviceCode(assembly) {
         // Check to see if there is any offload code in the assembly file.
         if (!offloadRegexp.test(assembly)) return null;
 
@@ -105,36 +121,56 @@ export class ClangCompiler extends BaseCompiler {
         return devices;
     }
 
-    override extractDeviceCode(result, filters) {
-        const split = this.splitDeviceCode(result.asm);
+    override async extractDeviceCode(result, filters, compilationInfo) {
+        const split = await this.splitDeviceCode(result.asm);
         if (!split) return result;
 
         const devices = (result.devices = {});
         for (const key of Object.keys(split)) {
             if (key.indexOf('host-') === 0) result.asm = split[key];
-            else devices[key] = this.processDeviceAssembly(key, split[key], filters);
+            else devices[key] = await this.processDeviceAssembly(key, split[key], filters, compilationInfo);
         }
         return result;
-        // //result.asm = ...
-        //
-        // const extractor = this.compiler.deviceExtractor;
-        // const extractor_result = await this.exec(extractor,
-        //     [outputFilename, result.dirPath + '/devices'], {});
-        // if (extractor_result.code !== 0) {
-        //     result.devices = extractor_result.stderr;
-        //     return result;
-        // }
-        // const extractor_info = JSON.parse(extractor_result.stdout);
-        // result.asm = await fs.readFile(extractor_info.host, 'utf-8');
-        // const devices = result.devices = {};
-        // for (const device in extractor_info.devices) {
-        //     const file = extractor_info.devices[device];
-        //     devices[device] = await this.processDeviceAssembly(device, file, filters);
-        // }
-        // return result;
     }
 
-    processDeviceAssembly(deviceName, deviceAsm, filters) {
+    async extractBitcodeFromBundle(bundlefile, devicename): Promise<string> {
+        const bcfile = path.join(path.dirname(bundlefile), devicename + '.bc');
+
+        const env = this.getDefaultExecOptions();
+        env.customCwd = path.dirname(bundlefile);
+
+        if (this.offloadBundlerPath) {
+            const unbundleResult: UnprocessedExecResult = await this.exec(
+                this.offloadBundlerPath,
+                ['-unbundle', '--type', 's', '--inputs', bundlefile, '--outputs', bcfile, '--targets', devicename],
+                env,
+            );
+            if (unbundleResult.code !== 0) {
+                return unbundleResult.stderr;
+            }
+        } else {
+            return '<error: no offload bundler found to unbundle device code>';
+        }
+
+        if (this.llvmDisassemblerPath) {
+            const llvmirFile = path.join(path.dirname(bundlefile), devicename + '.ll');
+
+            const disassembleResult: UnprocessedExecResult = await this.exec(this.llvmDisassemblerPath, [bcfile], env);
+            if (disassembleResult.code !== 0) {
+                return disassembleResult.stderr;
+            }
+
+            return fs.readFileSync(llvmirFile, 'utf-8');
+        } else {
+            return '<error: no llvm-dis found to disassemble bitcode>';
+        }
+    }
+
+    async processDeviceAssembly(deviceName, deviceAsm, filters, compilationInfo) {
+        if (deviceAsm.startsWith('BC')) {
+            deviceAsm = await this.extractBitcodeFromBundle(compilationInfo.outputFilename, deviceName);
+        }
+
         return this.llvmIr.isLlvmIr(deviceAsm)
             ? this.llvmIr.process(deviceAsm, filters)
             : this.asm.process(deviceAsm, filters);
@@ -191,6 +227,17 @@ export class ClangHipCompiler extends ClangCompiler {
 export class ClangIntelCompiler extends ClangCompiler {
     static override get key() {
         return 'clang-intel';
+    }
+
+    constructor(info, env) {
+        super(info, env);
+
+        if (!this.offloadBundlerPath) {
+            const offloadBundlerPath = path.join(path.dirname(this.compiler.exe), '../bin-llvm/clang-offload-bundler');
+            if (fs.existsSync(offloadBundlerPath)) {
+                this.offloadBundlerPath = path.resolve(offloadBundlerPath);
+            }
+        }
     }
 
     override getDefaultExecOptions(): ExecutionOptions {

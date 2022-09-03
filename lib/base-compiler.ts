@@ -2146,14 +2146,15 @@ export class BaseCompiler {
             delete result.optPath;
             result.optOutput = optOutput;
         }
+
+        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+
         result.tools = _.union(
             result.tools,
-            await Promise.all(
-                this.runToolsOfType(tools, 'postcompilation', this.getCompilationInfo(key, result, customBuildPath)),
-            ),
+            await Promise.all(this.runToolsOfType(tools, 'postcompilation', compilationInfo)),
         );
 
-        result = this.extractDeviceCode(result, filters);
+        result = await this.extractDeviceCode(result, filters, compilationInfo);
 
         this.doTempfolderCleanup(result);
         if (result.buildResult) {
@@ -2376,7 +2377,7 @@ but nothing was dumped. Possible causes are:
     }
 
     // eslint-disable-next-line no-unused-vars
-    extractDeviceCode(result, filters) {
+    async extractDeviceCode(result, filters, compilationInfo) {
         return result;
     }
 
