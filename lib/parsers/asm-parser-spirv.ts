@@ -44,10 +44,10 @@ export class SPIRVAsmParser extends AsmParser {
         return files;
     }
 
-    processAsm(asmResult, filters) {
+    override processAsm(asmResult, filters) {
         const startTime = process.hrtime.bigint();
 
-        const asm = [];
+        const asm: any = [];
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
@@ -61,7 +61,7 @@ export class SPIRVAsmParser extends AsmParser {
         const comment = /;/;
         const opLine = /OpLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
-        let source = null;
+        let source: any = null;
 
         for (let line of asmLines) {
             let match = line.match(sourceTag);
