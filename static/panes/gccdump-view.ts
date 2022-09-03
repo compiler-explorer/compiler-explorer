@@ -263,7 +263,6 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     onPassSelect(passId: string) {
         const selectedPass = this.selectize.options[passId] as unknown as any;
-        console.log(selectedPass);
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);

@@ -63,9 +63,9 @@ export abstract class Pane<S> {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
-        this.hideable = this.domRoot.find('.hideable');
-
         this.domRoot.html(this.getInitialHTML());
+
+        this.hideable = this.domRoot.find('.hideable');
 
         this.compilerInfo = {
             compilerId: state.id,

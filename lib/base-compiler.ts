@@ -35,7 +35,10 @@ import {
     ExecutionOptions,
     ToolResult,
 } from '../types/compilation/compilation.interfaces';
-import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {
+    LLVMOptPipelineBackendOptions,
+    LLVMOptPipelineOutput,
+} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
@@ -451,7 +454,7 @@ export class BaseCompiler {
         return fn;
     }
 
-    getGccDumpFileName(outputFilename) {
+    getGccDumpFileName(outputFilename: string) {
         return outputFilename.replace(path.extname(outputFilename), '.dump');
     }
 
@@ -523,7 +526,7 @@ export class BaseCompiler {
     // Returns a list of additional options that may be required by some backend options.
     // Meant to be overloaded by compiler classes.
     // Default handles the GCC compiler with some debug dump enabled.
-    optionsForBackend(backendOptions, outputFilename) {
+    optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         let addOpts: string[] = [];
 
         if (backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump) {
@@ -533,7 +536,7 @@ export class BaseCompiler {
         return addOpts;
     }
 
-    protected optionsForFilter(filters: ParseFilters, outputFilename, userOptions?) {
+    protected optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
@@ -563,8 +566,8 @@ export class BaseCompiler {
         return result;
     }
 
-    findAutodetectStaticLibLink(linkname): SelectedLibraryVersion | false {
-        const foundLib = _.findKey(this.supportedLibraries as object, lib => {
+    findAutodetectStaticLibLink(linkname: string): SelectedLibraryVersion | false {
+        const foundLib = _.findKey(this.supportedLibraries as Record<string, Library>, lib => {
             return (
                 lib.versions.autodetect &&
                 lib.versions.autodetect.staticliblink &&
@@ -751,31 +754,34 @@ export class BaseCompiler {
         );
     }
 
-    getIncludeArguments(libraries) {
+    getIncludeArguments(libraries: SelectedLibraryVersion[]): string[] {
         const includeFlag = this.compiler.includeFlag || '-I';
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
 
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                return _.map(foundVersion.path, path => includeFlag + path);
-            }),
-        );
+            return foundVersion.path.map(path => includeFlag + path);
+        });
     }
 
-    getLibraryOptions(libraries) {
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-
-                return foundVersion.options;
-            }),
-        );
+    getLibraryOptions(libraries: SelectedLibraryVersion[]): string[] {
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion) return [];
+            return foundVersion.options;
+        });
     }
 
-    orderArguments(options, inputFilename, libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks) {
+    orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
         return options.concat(
             userOptions,
             [this.filename(inputFilename)],
@@ -787,7 +793,14 @@ export class BaseCompiler {
         );
     }
 
-    prepareArguments(userOptions, filters: ParseFilters, backendOptions, inputFilename, outputFilename, libraries) {
+    prepareArguments(
+        userOptions: string[],
+        filters: ParseFilters,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
 
@@ -831,7 +844,7 @@ export class BaseCompiler {
         return options;
     }
 
-    filterUserOptions(userOptions) {
+    filterUserOptions(userOptions: string[]): string[] {
         return userOptions;
     }
 
@@ -981,7 +994,7 @@ export class BaseCompiler {
         options,
         filters: ParseFilters,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
-    ) {
+    ): Promise<LLVMOptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
@@ -992,21 +1005,40 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+
+        if (output.timedOut) {
+            return {
+                error: 'Compilation timed out',
+                results: {},
+            };
+        }
+
         if (output.code !== 0) {
             return;
         }
 
-        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+        try {
+            const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
 
-        if (llvmOptPipelineOptions.demangle) {
-            // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
-            // new this.demanglerClass(this.compiler.demangler, this);
-            const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
-            // collect labels off the raw input
-            await demangler.collect({asm: output.stderr});
-            return await demangler.demangleLLVMPasses(llvmOptPipeline);
-        } else {
-            return llvmOptPipeline;
+            if (llvmOptPipelineOptions.demangle) {
+                // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
+                // new this.demanglerClass(this.compiler.demangler, this);
+                const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+                // collect labels off the raw input
+                await demangler.collect({asm: output.stderr});
+                return {
+                    results: await demangler.demangleLLVMPasses(llvmOptPipeline),
+                };
+            } else {
+                return {
+                    results: llvmOptPipeline,
+                };
+            }
+        } catch (e: any) {
+            return {
+                error: e.toString(),
+                results: {},
+            };
         }
     }
 
@@ -1815,6 +1847,7 @@ export class BaseCompiler {
         if (!this.compiler.supportsBinary) {
             const errorResult: CompilationResult = {
                 code: -1,
+                timedOut: false,
                 didExecute: false,
                 stderr: [],
                 stdout: [],
@@ -2359,7 +2392,7 @@ but nothing was dumped. Possible causes are:
         return source;
     }
 
-    async postProcess(result, outputFilename, filters) {
+    async postProcess(result, outputFilename: string, filters: ParseFilters) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';

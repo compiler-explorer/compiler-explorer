@@ -42,6 +42,8 @@ type CompilationStatus = {
     compilerOut: number;
 };
 
+const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
+
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
@@ -429,11 +431,9 @@ export class CompilerService {
         const stdout = result.stdout ?? [];
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stderr = result.stderr ?? [];
-        // TODO: Make its own const variable at top of module?
-        const asciiColorsRe = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
         function filterAsciiColors(line: ResultLine) {
-            return line.text.replace(asciiColorsRe, '');
+            return line.text.replace(ASCII_COLORS_RE, '');
         }
 
         const output = stdout.map(filterAsciiColors).concat(stderr.map(filterAsciiColors)).join('\n');

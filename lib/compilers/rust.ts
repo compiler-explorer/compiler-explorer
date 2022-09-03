@@ -35,6 +35,7 @@ import {RustParser} from './argument-parsers';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
+
     static get key() {
         return 'rust';
     }
@@ -69,24 +70,19 @@ export class RustCompiler extends BaseCompiler {
 
     override getIncludeArguments(libraries) {
         const includeFlag = '--extern';
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-                if (!foundVersion.name) return false;
-                const list: string[] = [];
-                const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
-                for (const rlib of foundVersion.path) {
-                    list.push(
-                        includeFlag,
-                        `${lowercaseLibName}=${foundVersion.name}/build/debug/${rlib}`,
-                        '-L',
-                        `dependency=${foundVersion.name}/build/debug/deps`,
-                    );
-                }
-                return list;
-            }),
-        );
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || !foundVersion.name) return [];
+            const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
+            return foundVersion.path.flatMap(rlib => {
+                return [
+                    includeFlag,
+                    `${lowercaseLibName}=${foundVersion.name}/build/debug/${rlib}`,
+                    '-L',
+                    `dependency=${foundVersion.name}/build/debug/deps`,
+                ];
+            });
+        });
     }
 
     override orderArguments(

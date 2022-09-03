@@ -170,14 +170,12 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     }
 
     currentState() {
-        const options = this.options.get();
         const state = {
             id: this.compilerInfo.compilerId,
             editorid: this.compilerInfo.editorId,
             treeid: this.compilerInfo.treeId,
             selection: this.selection,
-            'filter-headers': options['filter-headers'],
-            'clang-format': options['clang-format'],
+            ...this.options.get(),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);

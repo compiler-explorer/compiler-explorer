@@ -27,6 +27,7 @@ import {Toggles} from '../widgets/toggles';
 import _ from 'underscore';
 import {Pane} from './pane';
 import {ga} from '../analytics';
+import {updateAndCalcTopBarHeight} from '../utils';
 import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces';
 import {Hub} from '../hub';
@@ -150,7 +151,7 @@ export class Output extends Pane<OutputState> {
 
     override resize() {
         const rootHeight = this.domRoot.height();
-        const toolbarHeight = this.optionsToolbar.height();
+        const toolbarHeight = updateAndCalcTopBarHeight(this.domRoot, this.optionsToolbar, this.hideable);
         if (rootHeight && toolbarHeight) {
             this.contentRoot.height(rootHeight - toolbarHeight - 5);
         }
@@ -158,9 +159,8 @@ export class Output extends Pane<OutputState> {
 
     override getCurrentState() {
         const parent = super.getCurrentState();
-        const options = this.getEffectiveOptions();
         const state = {
-            wrap: options.wrap,
+            ...this.getEffectiveOptions(),
             ...parent,
         };
         this.fontScale.addState(state);

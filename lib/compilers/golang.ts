@@ -1,4 +1,4 @@
-// Copyright (c) 2016, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
@@ -34,40 +35,61 @@ import {ClangParser} from './argument-parsers';
 // x86 -> j, b
 // arm -> cb, tb
 // s390x -> cmpb, cmpub
-const jumpRe = /^(j|b|cb|tb|cmpb|cmpub).*/i;
+const JUMP_RE = /^(j|b|cb|tb|cmpb|cmpub).*/i;
+const LINE_RE = /^\s+(0[Xx]?[\dA-Za-z]+)?\s?(\d+)\s*\(([^:]+):(\d+)\)\s*([A-Z]+)(.*)/;
+const UNKNOWN_RE = /^\s+(0[Xx]?[\dA-Za-z]+)?\s?(\d+)\s*\(<unknown line number>\)\s*([A-Z]+)(.*)/;
+const FUNC_RE = /TEXT\s+[".]*(\S+)\(SB\)/;
+const LOGGING_RE = /^[^:]+:\d+:(\d+:)?\s.*/;
+const DECIMAL_RE = /(\s+)(\d+)(\s?)$/;
+
+type GoEnv = {
+    GOROOT?: string;
+    GOARCH?: string;
+    GOOS?: string;
+};
 
 export class GolangCompiler extends BaseCompiler {
+    private readonly GOENV: GoEnv;
+
     static get key() {
         return 'golang';
     }
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
-        this.goroot = this.compilerProps(`compiler.${this.compiler.id}.goroot`);
-        this.goarch = this.compilerProps(`compiler.${this.compiler.id}.goarch`);
-        this.goos = this.compilerProps(`compiler.${this.compiler.id}.goos`);
+        const goroot = this.compilerProps(`compiler.${this.compiler.id}.goroot`);
+        const goarch = this.compilerProps(`compiler.${this.compiler.id}.goarch`);
+        const goos = this.compilerProps(`compiler.${this.compiler.id}.goos`);
+
+        this.GOENV = {};
+        if (goroot) {
+            this.GOENV.GOROOT = goroot;
+        }
+        if (goarch) {
+            this.GOENV.GOARCH = goarch;
+        }
+        if (goos) {
+            this.GOENV.GOOS = goos;
+        }
     }
 
-    convertNewGoL(code) {
-        const re = /^\s+(0[Xx]?[\dA-Za-z]+)?\s?(\d+)\s*\(([^:]+):(\d+)\)\s*([A-Z]+)(.*)/;
-        const reUnknown = /^\s+(0[Xx]?[\dA-Za-z]+)?\s?(\d+)\s*\(<unknown line number>\)\s*([A-Z]+)(.*)/;
-        const reFunc = /TEXT\s+[".]*(\S+)\(SB\)/;
-        let prevLine = null;
-        let file = null;
+    convertNewGoL(code: ResultLine[]): string {
+        let prevLine: string | null = null;
+        let file: string | null = null;
         let fileCount = 0;
-        let func = null;
-        const funcCollisions = {};
-        const labels = {};
-        const usedLabels = {};
+        let func: string | null = null;
+        const funcCollisions: Record<string, number> = {};
+        const labels: Record<string, boolean> = {};
+        const usedLabels: Record<string, boolean> = {};
         const lines = code.map(obj => {
-            let pcMatch = null;
-            let fileMatch = null;
-            let lineMatch = null;
-            let ins = null;
-            let args = null;
+            let pcMatch: string | null = null;
+            let fileMatch: string | null = null;
+            let lineMatch: string | null = null;
+            let ins: string | null = null;
+            let args: string | null = null;
 
             const line = obj.text;
-            let match = line.match(re);
+            let match = line.match(LINE_RE);
             if (match) {
                 pcMatch = match[2];
                 fileMatch = match[3];
@@ -75,17 +97,17 @@ export class GolangCompiler extends BaseCompiler {
                 ins = match[5];
                 args = match[6];
             } else {
-                match = line.match(reUnknown);
+                match = line.match(UNKNOWN_RE);
                 if (match) {
                     pcMatch = match[2];
                     ins = match[3];
                     args = match[4];
                 } else {
-                    return null;
+                    return [];
                 }
             }
 
-            match = line.match(reFunc);
+            match = line.match(FUNC_RE);
             if (match) {
                 // Normalize function name.
                 func = match[1].replace(/[()*.]+/g, '_');
@@ -103,12 +125,12 @@ export class GolangCompiler extends BaseCompiler {
                 funcCollisions[func] = collisions;
             }
 
-            let res = [];
+            const res: string[] = [];
             if (pcMatch && !labels[pcMatch]) {
                 // Create pseudo-label.
                 let label = pcMatch.replace(/^0{0,4}/, '');
                 let suffix = '';
-                if (funcCollisions[func] > 0) {
+                if (func && funcCollisions[func] > 0) {
                     suffix = `_${funcCollisions[func]}`;
                 }
 
@@ -130,32 +152,37 @@ export class GolangCompiler extends BaseCompiler {
                 prevLine = lineMatch;
             }
 
-            args = this.replaceJump(func, funcCollisions[func], ins, args, usedLabels);
-            res.push(`\t${ins}${args}`);
+            if (func) {
+                args = this.replaceJump(func, funcCollisions[func], ins, args, usedLabels);
+                res.push(`\t${ins}${args}`);
+            }
             return res;
         });
 
         // Find unused pseudo-labels so they can be filtered out.
         const unusedLabels = _.mapObject(labels, (val, key) => !usedLabels[key]);
 
-        return _.chain(lines)
-            .flatten()
-            .compact()
+        return lines
+            .flat()
             .filter(line => !unusedLabels[line])
-            .value()
             .join('\n');
     }
 
-    replaceJump(func, collisions, ins, args, usedLabels) {
+    replaceJump(
+        func: string,
+        collisions: number,
+        ins: string,
+        args: string,
+        usedLabels: Record<string, boolean>,
+    ): string {
         // Check if last argument is a decimal number.
-        const re = /(\s+)(\d+)(\s?)$/;
-        const match = args.match(re);
+        const match = args.match(DECIMAL_RE);
         if (!match) {
             return args;
         }
 
         // Check instruction has a jump prefix
-        if (jumpRe.test(ins)) {
+        if (JUMP_RE.test(ins)) {
             let label = `${func}_pc${match[2]}`;
             if (collisions > 0) {
                 label += `_${collisions}`;
@@ -167,16 +194,16 @@ export class GolangCompiler extends BaseCompiler {
         return args;
     }
 
-    extractLogging(stdout) {
-        let filepath = `./${this.compileFilename}`;
-        const reLogging = /^[^:]+:\d+:(\d+:)?\s.*/;
+    extractLogging(stdout: ResultLine[]): string {
+        const filepath = `./${this.compileFilename}`;
+
         return stdout
-            .filter(obj => obj.text.match(reLogging))
+            .filter(obj => obj.text.match(LOGGING_RE))
             .map(obj => obj.text.replace(filepath, '<source>'))
             .join('\n');
     }
 
-    async postProcess(result) {
+    override async postProcess(result) {
         let out = result.stderr;
         if (this.compiler.id === '6g141') {
             out = result.stdout;
@@ -185,14 +212,14 @@ export class GolangCompiler extends BaseCompiler {
         result.asm = this.convertNewGoL(out);
         result.stderr = null;
         result.stdout = utils.parseOutput(logging, result.inputFilename);
-        return [result, ''];
+        return Promise.all([result, '']);
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(filters, outputFilename, userOptions) {
         // If we're dealing with an older version...
         if (this.compiler.id === '6g141') {
             return ['tool', '6g', '-g', '-o', outputFilename, '-S'];
@@ -206,7 +233,7 @@ export class GolangCompiler extends BaseCompiler {
         }
     }
 
-    filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions) {
         if (this.compiler.id === '6g141') {
             return userOptions;
         }
@@ -214,21 +241,14 @@ export class GolangCompiler extends BaseCompiler {
         return [];
     }
 
-    getDefaultExecOptions() {
-        const execOptions = super.getDefaultExecOptions();
-        if (this.goroot) {
-            execOptions.env.GOROOT = this.goroot;
-        }
-        if (this.goarch) {
-            execOptions.env.GOARCH = this.goarch;
-        }
-        if (this.goos) {
-            execOptions.env.GOOS = this.goos;
-        }
-        return execOptions;
+    override getDefaultExecOptions() {
+        return {
+            ...super.getDefaultExecOptions(),
+            ...this.GOENV,
+        };
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return ClangParser;
     }
 }

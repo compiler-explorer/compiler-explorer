@@ -1418,7 +1418,7 @@ Compiler.prototype.onCompileResponse = function (request, result, cached) {
 Compiler.prototype.postCompilationResult = function (request, result, wasCmake) {
     if (result.popularArguments) {
         this.handlePopularArgumentsResult(result.popularArguments);
-    } else {
+    } else if (this.compiler) {
         this.compilerService.requestPopularArguments(this.compiler.id, request.options.userArguments).then(
             _.bind(function (result) {
                 if (result && result.result) {
@@ -1651,7 +1651,6 @@ Compiler.prototype.onLLVMOptPipelineViewClosed = function (id) {
 
 Compiler.prototype.onLLVMOptPipelineViewOptionsUpdated = function (id, options, recompile) {
     if (this.id === id) {
-        console.log(options);
         this.llvmOptPipelineOptions = options;
         if (recompile) {
             this.compile();
@@ -2497,6 +2496,7 @@ Compiler.prototype.checkForHints = function (result) {
 };
 
 Compiler.prototype.checkForUnwiseArguments = function (optionsArray, wasCmake) {
+    if (!this.compiler) return;
     // Check if any options are in the unwiseOptions array and remember them
     var unwiseOptions = _.intersection(
         optionsArray,

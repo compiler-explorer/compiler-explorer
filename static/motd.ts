@@ -42,11 +42,11 @@ export function isValidAd(ad: Ad, subLang: string): boolean {
     if (!subLang || ad.filter.length === 0 || ad.filter.includes(subLang)) {
         const now = Date.now();
         try {
-            if (ad.valid_from && Date.parse(ad.valid_from) > now) {
+            if (ad.valid_from && now < Date.parse(ad.valid_from)) {
                 return false;
             }
 
-            if (ad.valid_until && Date.parse(ad.valid_until) < now) {
+            if (ad.valid_until && now > Date.parse(ad.valid_until)) {
                 return false;
             }
         } catch {
