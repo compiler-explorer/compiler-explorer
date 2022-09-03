@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmParser} from './asm-parser';
-
 import * as utils from '../utils';
+
+import {AsmParser} from './asm-parser';
 
 export class SPIRVAsmParser extends AsmParser {
     constructor(compilerProps) {
@@ -64,7 +64,7 @@ export class SPIRVAsmParser extends AsmParser {
         let source: any = null;
 
         for (let line of asmLines) {
-            let match = line.match(sourceTag);
+            const match = line.match(sourceTag);
             if (match) {
                 source = {
                     file: utils.maskRootdir(opStrings[parseInt(match[1])]),
