@@ -188,14 +188,7 @@ function Compiler(hub, container, state) {
     if (this.sourceTreeId) {
         this.compile();
     }
-    window.compiler = this;
 }
-
-Compiler.prototype.showAll = function () {
-    this.domRoot.find('[data-cy="new-pane-dropdown"] button').each(function ($btn, s) {
-        $(s).prop('disabled', false).show();
-    });
-};
 
 Compiler.prototype.getEditorIdBySourcefile = function (sourcefile) {
     if (this.sourceTreeId) {
