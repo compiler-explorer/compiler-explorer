@@ -8,4 +8,5 @@ export type ParsedAsmResult = {
     externalParserUsed?: boolean;
     objdumpTime?: number;
     execTime?: string;
+    languageId?: string;
 };
