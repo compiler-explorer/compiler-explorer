@@ -67,7 +67,8 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PaneDataMap.dump);
     addPaneOpenTest(PaneDataMap.tree);
     addPaneOpenTest(PaneDataMap.debug);
-    addPaneOpenTest(PaneDataMap.cfg);
+    // TODO: Bring back once #3899 lands
+    // addPaneOpenTest(PaneDataMap.cfg);
 
     it('Output pane', () => {
         // Hide the dropdown
@@ -83,7 +84,6 @@ describe('Individual pane testing', () => {
         cy.get('[data-cy="new-conformance-btn"]:visible').click();
         cy.get('span.lm_title:visible').contains('Conformance');
     });
-    // runFrontendTest('ui');
 });
 
 describe('Known good state test', () => {
@@ -107,23 +107,13 @@ describe('Known good state test', () => {
     });
 
     it('Correctly loads the page for a state with every pane active', () => {
-
         for (const paneId in PaneDataMap) {
             const pane = PaneDataMap[paneId];
-            //it(`Has loaded the ${pane.name} pane`, () => {
-                cy.get('span.lm_title:visible').contains(pane.name);
-            //});
+            cy.get('span.lm_title:visible').contains(pane.name);
         }
 
-        //it(`Has loaded the output pane`, () => {
-            cy.get('span.lm_title:visible').contains('Output');
-        //});
-
-        //it(`Has loaded the conformance pane`, () => {
-            cy.get('span.lm_title:visible').contains('Conformance');
-        //});
-
-
+        cy.get('span.lm_title:visible').contains('Output');
+        cy.get('span.lm_title:visible').contains('Conformance');
     });
 
 });
