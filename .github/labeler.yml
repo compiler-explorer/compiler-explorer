@@ -148,7 +148,7 @@ lang-swift:
 lang-toit:
   - lib/compilers/toit.ts
   - etc/config/toit.*.properties
-  - static/modes/toiy-mode.ts
+  - static/modes/toit-mode.ts
 lang-typescript:
   - lib/compilers/typescript.js
   - etc/config/typescript.*.properties
