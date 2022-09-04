@@ -33,6 +33,8 @@ import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
 import * as utils from '../utils';
 
 export class CLSPVCompiler extends BaseCompiler {
+    disassemblerPath: any;
+
     static get key() {
         return 'clspv';
     }
@@ -45,8 +47,8 @@ export class CLSPVCompiler extends BaseCompiler {
         this.disassemblerPath = this.compilerProps('disassemblerPath');
     }
 
-    prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
-        let options = this.optionsForFilter(filters, outputFilename, userOptions);
+    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+        let options = this.optionsForFilter(filters, outputFilename);
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
@@ -64,9 +66,9 @@ export class CLSPVCompiler extends BaseCompiler {
 
         const libIncludes = this.getIncludeArguments(libraries);
         const libOptions = this.getLibraryOptions(libraries);
-        let libLinks = [];
-        let libPaths = [];
-        let staticLibLinks = [];
+        let libLinks: any = [];
+        let libPaths: any = [];
+        let staticLibLinks: any = [];
 
         if (filters.binary) {
             libLinks = this.getSharedLibraryLinks(libraries);
@@ -86,7 +88,7 @@ export class CLSPVCompiler extends BaseCompiler {
         );
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         const sourceDir = path.dirname(outputFilename);
         const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
         return ['-o', spvBinFilename, '-g'];
@@ -97,11 +99,11 @@ export class CLSPVCompiler extends BaseCompiler {
     }
 
     // TODO: Check this to see if it needs key
-    getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath, outputFilebase) {
         return path.join(dirPath, `${outputFilebase}.spvasm`);
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(compiler, options, inputFilename, execOptions) {
         const sourceDir = path.dirname(inputFilename);
         const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
 
