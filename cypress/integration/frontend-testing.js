@@ -1,7 +1,7 @@
 import {it} from 'mocha';
 import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
 
-const PaneDataMap = {
+const PANE_DATA_MAP = {
     executor: {name: 'Executor', selector: 'create-executor'},
     opt: {name: 'Opt Viewer', selector: 'view-optimization'},
     preprocessor: {name: 'Preprocessor', selector: 'view-pp'},
