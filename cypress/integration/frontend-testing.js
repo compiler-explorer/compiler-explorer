@@ -51,22 +51,22 @@ describe('Individual pane testing', () => {
         });
     }
 
-    addPaneOpenTest(PaneDataMap.executor);
-    addPaneOpenTest(PaneDataMap.opt);
-    addPaneOpenTest(PaneDataMap.preprocessor);
-    addPaneOpenTest(PaneDataMap.ast);
-    addPaneOpenTest(PaneDataMap.llvmir);
-    addPaneOpenTest(PaneDataMap.pipeline);
-    addPaneOpenTest(PaneDataMap.device);
-    addPaneOpenTest(PaneDataMap.mir);
-    addPaneOpenTest(PaneDataMap.hir);
-    addPaneOpenTest(PaneDataMap.macro);
-    addPaneOpenTest(PaneDataMap.core);
-    addPaneOpenTest(PaneDataMap.stg);
-    addPaneOpenTest(PaneDataMap.cmm);
-    addPaneOpenTest(PaneDataMap.dump);
-    addPaneOpenTest(PaneDataMap.tree);
-    addPaneOpenTest(PaneDataMap.debug);
+    addPaneOpenTest(PANE_DATA_MAP.executor);
+    addPaneOpenTest(PANE_DATA_MAP.opt);
+    addPaneOpenTest(PANE_DATA_MAP.preprocessor);
+    addPaneOpenTest(PANE_DATA_MAP.ast);
+    addPaneOpenTest(PANE_DATA_MAP.llvmir);
+    addPaneOpenTest(PANE_DATA_MAP.pipeline);
+    addPaneOpenTest(PANE_DATA_MAP.device);
+    addPaneOpenTest(PANE_DATA_MAP.mir);
+    addPaneOpenTest(PANE_DATA_MAP.hir);
+    addPaneOpenTest(PANE_DATA_MAP.macro);
+    addPaneOpenTest(PANE_DATA_MAP.core);
+    addPaneOpenTest(PANE_DATA_MAP.stg);
+    addPaneOpenTest(PANE_DATA_MAP.cmm);
+    addPaneOpenTest(PANE_DATA_MAP.dump);
+    addPaneOpenTest(PANE_DATA_MAP.tree);
+    addPaneOpenTest(PANE_DATA_MAP.debug);
     // TODO: Bring back once #3899 lands
     // addPaneOpenTest(PaneDataMap.cfg);
 
