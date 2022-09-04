@@ -107,8 +107,8 @@ describe('Known good state test', () => {
     });
 
     it('Correctly loads the page for a state with every pane active', () => {
-        for (const paneId in PaneDataMap) {
-            const pane = PaneDataMap[paneId];
+        for (const paneId in PANE_DATA_MAP) {
+            const pane = PANE_DATA_MAP[paneId];
             cy.get('span.lm_title:visible').contains(pane.name);
         }
 
