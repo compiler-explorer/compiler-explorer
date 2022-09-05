@@ -23,6 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class SymbolStore {
+    private readonly uniqueSymbols: Record<string, string>;
+    private sortedSymbols: [string, string][];
+    private isSorted: boolean;
+
     constructor() {
         this.uniqueSymbols = {};
         this.sortedSymbols = [];
@@ -31,18 +35,16 @@ export class SymbolStore {
 
     sort() {
         this.sortedSymbols = [];
-        for (let symbol in this.uniqueSymbols) {
+        for (const symbol in this.uniqueSymbols) {
             this.sortedSymbols.push([symbol, this.uniqueSymbols[symbol]]);
         }
 
-        this.sortedSymbols.sort(function (a, b) {
-            return b[0].length - a[0].length;
-        });
+        this.sortedSymbols.sort((a, b) => b[0].length - a[0].length);
 
         this.isSorted = true;
     }
 
-    add(symbol, demangled) {
+    add(symbol: string, demangled?: string) {
         if (demangled !== undefined) {
             this.uniqueSymbols[symbol] = demangled;
         } else {
@@ -52,11 +54,11 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    contains(symbol) {
-        return this.uniqueSymbols[symbol] !== undefined;
+    contains(symbol: string) {
+        return symbol in this.uniqueSymbols;
     }
 
-    exclude(otherStore) {
+    exclude(otherStore: SymbolStore) {
         for (const symbol in otherStore.uniqueSymbols) {
             delete this.uniqueSymbols[symbol];
         }
@@ -64,7 +66,7 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    softExclude(otherStore) {
+    softExclude(otherStore: SymbolStore) {
         for (const symbol in otherStore.uniqueSymbols) {
             let shouldExclude = false;
             let checksymbol;
@@ -81,7 +83,7 @@ export class SymbolStore {
         this.isSorted = false;
     }
 
-    addMany(symbols) {
+    addMany(symbols: string[]) {
         for (const symbol of symbols) {
             this.uniqueSymbols[symbol] = symbol;
         }
@@ -92,9 +94,7 @@ export class SymbolStore {
     listSymbols() {
         if (!this.isSorted) this.sort();
 
-        return this.sortedSymbols.map(function (elem) {
-            return elem[0];
-        });
+        return this.sortedSymbols.map(elem => elem[0]);
     }
 
     listTranslations() {
