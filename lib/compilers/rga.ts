@@ -116,10 +116,7 @@ Please supply an ASIC from the following options:`,
         }
 
         const result = await this.execDXCandRGA(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-        this.parseCompilationOutput(result, transformedInput);
-        return result;
+        return this.transformToCompilationResult(result, inputFilename);
     }
 
     async execDXCandRGA(filepath: string, args: string[], execOptions: ExecutionOptions): Promise<any> {
@@ -182,7 +179,7 @@ Please supply an ASIC from the following options:`,
             '-s',
             'vk-spv-txt-offline',
             '-c',
-            asicSelection.asic,
+            asicSelection.asic || '',
             '--isa',
             outputFile,
             '--livereg',

@@ -302,7 +302,17 @@ describe('Compiler execution', function () {
         stubOutCallToExec(execStub, compiler, 'This is the output file', fakeExecResults);
         const source = 'Some cacheable source';
         const options = 'Some cacheable options';
-        ceMock.expects('cachePut').withArgs(match({source, options}), match(fakeExecResults)).resolves();
+        ceMock
+            .expects('cachePut')
+            .withArgs(
+                match({source, options}),
+                match({
+                    ...fakeExecResults,
+                    stdout: [{text: 'stdout'}],
+                    stderr: [{text: 'stderr'}],
+                }),
+            )
+            .resolves();
         const uncachedResult = await compiler.compile(source, options, {}, {}, false, [], {}, []);
         uncachedResult.code.should.equal(0);
         ceMock.verify();
