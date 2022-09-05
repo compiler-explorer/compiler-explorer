@@ -23,15 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class SymbolStore {
-    private readonly uniqueSymbols: Record<string, string>;
-    private sortedSymbols: [string, string][];
-    private isSorted: boolean;
-
-    constructor() {
-        this.uniqueSymbols = {};
-        this.sortedSymbols = [];
-        this.isSorted = true;
-    }
+    private readonly uniqueSymbols: Record<string, string> = {};
+    private sortedSymbols: [string, string][] = [];
+    private isSorted = true;
 
     sort() {
         this.sortedSymbols = [];
