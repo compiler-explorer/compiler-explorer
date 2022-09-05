@@ -221,7 +221,7 @@ export function getNsJailOptions(
 
     const env = {...options.env, HOME: homeDir};
     if (options.ldPath) {
-        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
+        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
         delete env.LD_LIBRARY_PATH;
     }
@@ -290,7 +290,7 @@ function sandboxFirejail(command: string, args: string[], options) {
     ]);
 
     if (options.ldPath) {
-        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
+        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
     }
 
@@ -492,7 +492,7 @@ async function executeFirejail(command, args, options) {
     baseOptions.push('--profile=' + getFirejailProfileFilePath('execute'));
 
     if (options.ldPath) {
-        baseOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
+        baseOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
     }
 

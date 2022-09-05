@@ -27,3 +27,10 @@ export type BasicExecutionResult = {
     execTime: string;
     timedOut: boolean;
 };
+
+export type ExecutableExecutionOptions = {
+    args: string[];
+    stdin: string;
+    ldPath: string[];
+    env: any;
+};

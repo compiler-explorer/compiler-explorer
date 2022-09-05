@@ -39,7 +39,11 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {BasicExecutionResult, UnprocessedExecResult} from '../types/execution/execution.interfaces';
+import {
+    BasicExecutionResult,
+    ExecutableExecutionOptions,
+    UnprocessedExecResult,
+} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
@@ -446,7 +450,12 @@ export class BaseCompiler {
         };
     }
 
-    async execBinary(executable, maxSize, executeParameters, homeDir): Promise<BasicExecutionResult> {
+    async execBinary(
+        executable,
+        maxSize,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir,
+    ): Promise<BasicExecutionResult> {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         try {
@@ -1495,7 +1504,7 @@ export class BaseCompiler {
         }
     }
 
-    runExecutable(executable, executeParameters, homeDir) {
+    runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
         const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
         // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
         executeParameters.env = {
@@ -1852,7 +1861,7 @@ export class BaseCompiler {
 
         _.extend(cmakeExecParams.env, this.getCompilerEnvironmentVariables(options.join(' ')));
 
-        cmakeExecParams.env.LD_LIBRARY_PATH = dirPath;
+        cmakeExecParams.ldPath = [dirPath];
 
         // todo: if we don't use nsjail, the path should not be /app but dirPath
         const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app');
@@ -1893,10 +1902,11 @@ export class BaseCompiler {
         const libsAndOptions = this.createLibsAndOptions(key);
 
         const doExecute = key.filters.execute;
-        const executeParameters = {
+        const executeParameters: ExecutableExecutionOptions = {
             ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
             args: key.executionParameters.args || [],
             stdin: key.executionParameters.stdin || '',
+            env: {},
         };
 
         const cacheKey = this.getCmakeCacheKey(key, files);
