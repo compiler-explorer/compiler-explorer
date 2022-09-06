@@ -30,8 +30,17 @@ import Graceful from 'node-graceful';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../types/compilation/compilation.interfaces';
+import {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces';
+
 import {logger} from './logger';
 import {propsFor} from './properties';
+
+type NsJailOptions = {
+    args: string[];
+    options: ExecutionOptions;
+    filenameTransform: FilenameTransformFunc;
+};
 
 const execProps = propsFor('execution');
 
@@ -42,17 +51,19 @@ function setupOnError(stream, name) {
     });
 }
 
-export function executeDirect(command, args, options, filenameTransform) {
-    // filename transform is expected to have been pre-applied by the caller.
-    // it is passed through here only so clients can see it in the result.
-    filenameTransform = filenameTransform || (x => x);
+export async function executeDirect(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+    filenameTransform?: FilenameTransformFunc,
+): Promise<UnprocessedExecResult> {
     options = options || {};
     const maxOutput = options.maxOutput || 1024 * 1024;
     const timeoutMs = options.timeoutMs || 0;
     const env = {...process.env, ...options.env};
 
     if (options.ldPath) {
-        env.LD_LIBRARY_PATH = options.ldPath;
+        env.LD_LIBRARY_PATH = options.ldPath.join(path.delimiter);
     }
 
     if (options.wrapper) {
@@ -85,7 +96,7 @@ export function executeDirect(command, args, options, filenameTransform) {
     const kill =
         options.killChild ||
         (() => {
-            if (running) treeKill(child.pid);
+            if (running && child && child.pid) treeKill(child.pid);
         });
 
     const streams = {
@@ -138,11 +149,11 @@ export function executeDirect(command, args, options, filenameTransform) {
             if (code === null) code = -1;
             if (timeout !== undefined) clearTimeout(timeout);
             const endTime = process.hrtime.bigint();
-            const result = {
+            const result: UnprocessedExecResult = {
                 code,
                 okToCache,
                 timedOut,
-                filenameTransform,
+                filenameTransform: filenameTransform || (x => x),
                 stdout: streams.stdout,
                 stderr: streams.stderr,
                 execTime: ((endTime - startTime) / BigInt(1000000)).toString(),
@@ -157,7 +168,7 @@ export function executeDirect(command, args, options, filenameTransform) {
     });
 }
 
-export function getNsJailCfgFilePath(configName) {
+export function getNsJailCfgFilePath(configName: string): string {
     const propKey = `nsjail.config.${configName}`;
     const configPath = execProps(propKey);
     if (configPath === undefined) {
@@ -167,7 +178,7 @@ export function getNsJailCfgFilePath(configName) {
     return configPath;
 }
 
-export function getFirejailProfileFilePath(profileName) {
+export function getFirejailProfileFilePath(profileName: string): string {
     const propKey = `firejail.profile.${profileName}`;
     const profilePath = execProps(propKey);
     if (profilePath === undefined) {
@@ -177,7 +188,12 @@ export function getFirejailProfileFilePath(profileName) {
     return profilePath;
 }
 
-export function getNsJailOptions(configName, command, args, options) {
+export function getNsJailOptions(
+    configName: string,
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): NsJailOptions {
     options = {...options};
     const jailingOptions = ['--config', getNsJailCfgFilePath(configName)];
 
@@ -205,7 +221,7 @@ export function getNsJailOptions(configName, command, args, options) {
 
     const env = {...options.env, HOME: homeDir};
     if (options.ldPath) {
-        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
+        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
         delete env.LD_LIBRARY_PATH;
     }
@@ -222,7 +238,7 @@ export function getNsJailOptions(configName, command, args, options) {
     };
 }
 
-export function getSandboxNsjailOptions(command, args, options) {
+export function getSandboxNsjailOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
     // If we already had a custom cwd, use that.
     if (options.customCwd) {
         let relativeCommand = command;
@@ -251,7 +267,7 @@ function executeNsjail(command, args, options) {
     return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
-function withFirejailTimeout(args, options) {
+function withFirejailTimeout(args: string[], options?) {
     if (options && options.timeoutMs) {
         // const ExtraWallClockLeewayMs = 1000;
         const ExtraCpuLeewayMs = 1500;
@@ -260,7 +276,7 @@ function withFirejailTimeout(args, options) {
     return args;
 }
 
-function sandboxFirejail(command, args, options) {
+function sandboxFirejail(command: string, args: string[], options) {
     logger.info('Sandbox execution via firejail', {command, args});
     const execPath = path.dirname(command);
     const execName = path.basename(command);
@@ -274,7 +290,7 @@ function sandboxFirejail(command, args, options) {
     ]);
 
     if (options.ldPath) {
-        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
+        jailingOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
     }
 
@@ -298,7 +314,11 @@ const sandboxDispatchTable = {
     firejail: sandboxFirejail,
 };
 
-export async function sandbox(command, args, options) {
+export async function sandbox(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
@@ -309,7 +329,7 @@ const wineSandboxName = 'ce-wineserver';
 // WINE takes a while to initialise and very often we don't need to run it at
 // all during startup. So, we do just the bare minimum at startup and then make
 // a promise that all subsequent WINE calls wait on.
-let wineInitPromise = null;
+let wineInitPromise: Promise<void> | null;
 
 export function startWineInit() {
     const wine = execProps('wine');
@@ -327,7 +347,7 @@ export function startWineInit() {
 
     logger.info(`Initialising WINE in ${prefix}`);
 
-    const asyncSetup = async () => {
+    const asyncSetup = async (): Promise<void> => {
         if (!(await fs.pathExists(prefix))) {
             logger.info(`Creating directory ${prefix}`);
             await fs.mkdir(prefix);
@@ -374,9 +394,9 @@ export function startWineInit() {
         });
 
         Graceful.on('exit', () => {
-            const waitingPromises = [];
+            const waitingPromises: Promise<void>[] = [];
 
-            function waitForExit(process, name) {
+            function waitForExit(process, name): Promise<void> {
                 return new Promise(resolve => {
                     process.on('close', () => {
                         logger.info(`Process '${name}' closed`);
@@ -472,7 +492,7 @@ async function executeFirejail(command, args, options) {
     baseOptions.push('--profile=' + getFirejailProfileFilePath('execute'));
 
     if (options.ldPath) {
-        baseOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath}`);
+        baseOptions.push(`--env=LD_LIBRARY_PATH=${options.ldPath.join(path.delimiter)}`);
         delete options.ldPath;
     }
 
@@ -507,7 +527,11 @@ const executeDispatchTable = {
         needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
 };
 
-export async function execute(command, args, options) {
+export async function execute(
+    command: string,
+    args: string[],
+    options: ExecutionOptions,
+): Promise<UnprocessedExecResult> {
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);

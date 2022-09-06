@@ -224,9 +224,11 @@ describe('Execution tests', () => {
             args.should.include('--time_limit=2');
         });
         it('should handle linker paths', () => {
-            const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {ldPath: '/a/lib/path'});
+            const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
+                ldPath: ['/a/lib/path', '/b/lib2'],
+            });
             options.should.deep.equals({});
-            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path');
+            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
         });
         it('should handle envs', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {

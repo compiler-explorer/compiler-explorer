@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 
@@ -82,13 +83,18 @@ class DotNetCompiler extends BaseCompiler {
         ];
     }
 
-    override async runCompiler(compiler, options, inputFileName, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
-        const programDir = path.dirname(inputFileName);
-        const sourceFile = path.basename(inputFileName);
+        const programDir = path.dirname(inputFilename);
+        const sourceFile = path.basename(inputFilename);
 
         const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
         const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
@@ -149,7 +155,7 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
-        const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFileName, execOptions);
+        const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
         if (compilerResult.code !== 0) {
             return compilerResult;
@@ -194,10 +200,8 @@ class DotNetCompiler extends BaseCompiler {
             '--compilebubblegenerics',
         ].concat(options);
 
-        const result = await this.exec(compiler, crossgen2Options, execOptions);
-        result.inputFilename = dllPath;
-        const transformedInput = result.filenameTransform(dllPath);
-        this.parseCompilationOutput(result, transformedInput);
+        const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
+        const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
             outputPath,
