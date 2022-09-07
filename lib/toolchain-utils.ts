@@ -24,14 +24,14 @@
 
 import path from 'path';
 
-export function getToolchainPath(compilerExe, compilerOptions) {
+export function getToolchainPath(compilerExe: string, compilerOptions?: string): string | false {
     const options = compilerOptions ? compilerOptions.split(' ') : [];
     const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
-    if (existingChain) return existingChain.substr(16);
+    if (existingChain) return existingChain.substring(16);
 
     const gxxname = options.find(elem => elem.includes('--gxx-name='));
     if (gxxname) {
-        return path.resolve(path.dirname(gxxname.substr(11)), '..');
+        return path.resolve(path.dirname(gxxname.substring(11)), '..');
     } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
         return path.resolve(path.dirname(compilerExe), '..');
     } else {
