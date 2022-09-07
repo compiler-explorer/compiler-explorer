@@ -28,7 +28,7 @@ type InstructionSetMethod = {
 };
 
 export class InstructionSets {
-    public default: string = 'amd64';
+    private defaultInstructionset = 'amd64';
     private supported: Record<string, InstructionSetMethod> = {};
 
     constructor() {
@@ -106,7 +106,7 @@ export class InstructionSets {
                 }
             }
 
-            resolve(this.default);
+            resolve(this.defaultInstructionset);
         });
     }
 }
