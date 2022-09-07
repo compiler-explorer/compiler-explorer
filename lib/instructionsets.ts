@@ -24,7 +24,15 @@
 
 import _ from 'underscore';
 
+type InstructionSetMethod = {
+    target: string[];
+    path: string[];
+};
+
 export class InstructionSets {
+    public default: string;
+    private supported: Record<string, InstructionSetMethod>;
+
     constructor() {
         this.default = 'amd64';
 
@@ -80,19 +88,19 @@ export class InstructionSets {
         };
     }
 
-    async getCompilerInstructionSetHint(compilerArch, exe) {
+    async getCompilerInstructionSetHint(compilerArch: string | boolean, exe: string): Promise<string> {
         return new Promise(resolve => {
-            if (compilerArch) {
-                _.each(this.supported, (method, instructionSet) => {
-                    for (let target of method.target) {
+            if (compilerArch && typeof compilerArch === 'string') {
+                _.each(this.supported, (method: InstructionSetMethod, instructionSet: string) => {
+                    for (const target of method.target) {
                         if (compilerArch.includes(target)) {
                             resolve(instructionSet);
                         }
                     }
                 });
             } else {
-                _.each(this.supported, (method, instructionSet) => {
-                    for (let path of method.path) {
+                _.each(this.supported, (method: InstructionSetMethod, instructionSet: string) => {
+                    for (const path of method.path) {
                         if (exe.includes(path)) {
                             resolve(instructionSet);
                         }
