@@ -22,20 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 type InstructionSetMethod = {
     target: string[];
     path: string[];
 };
 
 export class InstructionSets {
-    public default: string;
-    private supported: Record<string, InstructionSetMethod>;
+    public default: string = 'amd64';
+    private supported: Record<string, InstructionSetMethod> = {};
 
     constructor() {
-        this.default = 'amd64';
-
         this.supported = {
             aarch64: {
                 target: ['aarch64'],
@@ -91,21 +87,23 @@ export class InstructionSets {
     async getCompilerInstructionSetHint(compilerArch: string | boolean, exe: string): Promise<string> {
         return new Promise(resolve => {
             if (compilerArch && typeof compilerArch === 'string') {
-                _.each(this.supported, (method: InstructionSetMethod, instructionSet: string) => {
+                for (const instructionSet in this.supported) {
+                    const method = this.supported[instructionSet];
                     for (const target of method.target) {
                         if (compilerArch.includes(target)) {
                             resolve(instructionSet);
                         }
                     }
-                });
+                }
             } else {
-                _.each(this.supported, (method: InstructionSetMethod, instructionSet: string) => {
+                for (const instructionSet in this.supported) {
+                    const method = this.supported[instructionSet];
                     for (const path of method.path) {
                         if (exe.includes(path)) {
                             resolve(instructionSet);
                         }
                     }
-                });
+                }
             }
 
             resolve(this.default);
