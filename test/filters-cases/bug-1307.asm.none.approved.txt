@@ -112,7 +112,15 @@
       "text": "        .loc 2 261 28 is_stmt 0"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
@@ -121,7 +129,15 @@
       "text": "        movss   xmm3, DWORD PTR .LC1[rip]"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",
@@ -201,7 +217,15 @@
       "text": "        pxor    xmm2, xmm2"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC2",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "column": 28,
         "file": "/opt/compiler-explorer/gcc-trunk-20190430/include/c++/10.0.0/cmath",

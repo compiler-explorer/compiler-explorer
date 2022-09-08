@@ -1,0 +1,342 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .intel_syntax noprefix"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sA",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  s_sA"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .rodata"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"hello world!\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .data"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 8"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sA",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   s_sA, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sA",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   s_sA, 8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "s_sA:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .LC0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .rodata"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 8"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sB",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   s_sB, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sB",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   s_sB, 10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "s_sB:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"hey there\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  main"
+    },
+    {
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   main, @function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFB0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file 1 \"/tmp/compiler-explorer-compiler116820-58-ewfj5u/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 6 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_offset 6, -16"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_register 6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 7 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mov     rax, QWORD PTR s_sA[rip]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mov     rdi, rax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        call    puts"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 8 0"
+    },
+    {
+      "labels": [
+        {
+          "name": "s_sB",
+          "range": {
+            "endCol": 38,
+            "startCol": 34
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        mov     edi, OFFSET FLAT:s_sB"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        call    puts"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc 1 9 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        mov     eax, 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa 7, 8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 7,
+    "main": 24,
+    "s_sA": 13,
+    "s_sB": 19
+  }
+}
