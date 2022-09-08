@@ -92,6 +92,7 @@ export class InstructionSets {
                     for (const target of method.target) {
                         if (compilerArch.includes(target)) {
                             resolve(instructionSet);
+                            return;
                         }
                     }
                 }
@@ -101,6 +102,7 @@ export class InstructionSets {
                     for (const path of method.path) {
                         if (exe.includes(path)) {
                             resolve(instructionSet);
+                            return;
                         }
                     }
                 }
