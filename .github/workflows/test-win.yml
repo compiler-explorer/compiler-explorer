@@ -7,6 +7,10 @@ jobs:
     runs-on: windows-2019
 
     steps:
+      - name: Ask Git to use LF line endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
