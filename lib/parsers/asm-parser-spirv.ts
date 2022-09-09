@@ -60,6 +60,7 @@ export class SPIRVAsmParser extends AsmParser {
         const endBlock = /OpFunctionEnd/;
         const comment = /;/;
         const opLine = /OpLine/;
+        const opNoLine = /OpNoLine/;
         const opExtDbg = /OpExtInst\s+%void\s+%\d+\s+Debug/;
         let source: any = null;
 
@@ -77,7 +78,7 @@ export class SPIRVAsmParser extends AsmParser {
                 }
             }
 
-            if (endBlock.test(line)) {
+            if (endBlock.test(line) || opNoLine.test(line)) {
                 source = null;
             }
 
@@ -85,7 +86,7 @@ export class SPIRVAsmParser extends AsmParser {
                 continue;
             }
             if (filters.directives) {
-                if (opLine.test(line) || opExtDbg.test(line)) {
+                if (opLine.test(line) || opExtDbg.test(line) || opNoLine.test(line)) {
                     continue;
                 }
             }
