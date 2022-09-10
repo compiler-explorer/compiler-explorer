@@ -30,6 +30,8 @@ import _ from 'underscore';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import * as utils from '../utils';
+import {ToolEnv, ToolInfo} from './base-tool.interface';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 
 const toolCounter = new PromClient.Counter({
     name: 'tool_invocations_total',
@@ -37,11 +39,20 @@ const toolCounter = new PromClient.Counter({
     labelNames: ['language', 'name'],
 });
 
+type BaseToolInfo = Omit<ToolInfo, 'exclude'> & {exclude?: string};
+
 export class BaseTool {
-    constructor(toolInfo, env) {
-        this.tool = toolInfo;
+    protected tool: ToolInfo;
+    private env: ToolEnv;
+    private addOptionsToToolArgs = true;
+    protected parseOutput: (...args: any[]) => any;
+
+    constructor(toolInfo: BaseToolInfo, env: ToolEnv) {
+        this.tool = {
+            ...toolInfo,
+            exclude: toolInfo.exclude ? toolInfo.exclude.split(':') : [],
+        };
         this.env = env;
-        this.tool.exclude = this.tool.exclude ? this.tool.exclude.split(':') : [];
         this.addOptionsToToolArgs = true;
         this.parseOutput = utils.parseOutput;
     }
@@ -60,7 +71,7 @@ export class BaseTool {
         return this.tool.id.replace(/[^\da-z]/gi, '_') + timestamp_str + '_';
     }
 
-    isCompilerExcluded(compilerId, compilerProps) {
+    isCompilerExcluded(compilerId: string, compilerProps: ToolEnv['compilerProps']) {
         if (this.tool.includeKey) {
             // If the includeKey is set, we only support compilers that have a truthy 'includeKey'.
             if (!compilerProps(this.tool.includeKey)) {
@@ -71,19 +82,19 @@ export class BaseTool {
         return this.tool.exclude.find(excl => compilerId.includes(excl));
     }
 
-    exec(toolExe, args, options) {
+    exec(toolExe: string, args: string[], options: ExecutionOptions) {
         return exec.execute(toolExe, args, options);
     }
 
-    getDefaultExecOptions() {
+    getDefaultExecOptions(): ExecutionOptions {
         return {
-            timeoutMs: this.env.ceProps('compileTimeoutMs', 7500),
-            maxErrorOutput: this.env.ceProps('max-error-output', 5000),
+            timeoutMs: this.env.ceProps('compileTimeoutMs', 7500) as number,
+            maxErrorOutput: this.env.ceProps('max-error-output', 5000) as number,
             wrapper: this.env.compilerProps('compiler-wrapper'),
         };
     }
 
-    createErrorResponse(message) {
+    createErrorResponse(message: string) {
         return {
             id: this.tool.id,
             name: this.tool.name,
@@ -134,7 +145,7 @@ export class BaseTool {
                 name: this.tool.name,
             });
         }
-        let execOptions = this.getDefaultExecOptions();
+        const execOptions = this.getDefaultExecOptions() as ExecutionOptions;
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
