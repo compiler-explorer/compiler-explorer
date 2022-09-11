@@ -22,12 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
+type InstructionSetMethod = {
+    target: string[];
+    path: string[];
+};
 
 export class InstructionSets {
-    constructor() {
-        this.default = 'amd64';
+    private defaultInstructionset = 'amd64';
+    private supported: Record<string, InstructionSetMethod> = {};
 
+    constructor() {
         this.supported = {
             aarch64: {
                 target: ['aarch64'],
@@ -80,27 +84,31 @@ export class InstructionSets {
         };
     }
 
-    async getCompilerInstructionSetHint(compilerArch, exe) {
+    async getCompilerInstructionSetHint(compilerArch: string | boolean, exe: string): Promise<string> {
         return new Promise(resolve => {
-            if (compilerArch) {
-                _.each(this.supported, (method, instructionSet) => {
-                    for (let target of method.target) {
+            if (compilerArch && typeof compilerArch === 'string') {
+                for (const instructionSet in this.supported) {
+                    const method = this.supported[instructionSet];
+                    for (const target of method.target) {
                         if (compilerArch.includes(target)) {
                             resolve(instructionSet);
+                            return;
                         }
                     }
-                });
+                }
             } else {
-                _.each(this.supported, (method, instructionSet) => {
-                    for (let path of method.path) {
+                for (const instructionSet in this.supported) {
+                    const method = this.supported[instructionSet];
+                    for (const path of method.path) {
                         if (exe.includes(path)) {
                             resolve(instructionSet);
+                            return;
                         }
                     }
-                });
+                }
             }
 
-            resolve(this.default);
+            resolve(this.defaultInstructionset);
         });
     }
 }
