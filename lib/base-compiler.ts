@@ -72,6 +72,7 @@ import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
 import * as utils from './utils';
+import {ToolTypeKey} from './tooling/base-tool.interface';
 
 export class BaseCompiler {
     public compiler: any;
@@ -1300,7 +1301,7 @@ export class BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(tools, type, compilationInfo): Promise<ToolResult>[] {
+    runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {

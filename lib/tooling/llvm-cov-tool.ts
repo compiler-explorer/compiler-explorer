@@ -22,26 +22,34 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
 import path from 'path';
-import {logger} from '../logger';
+
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 
 import {BaseTool} from './base-tool';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 
 export class LLVMCovTool extends BaseTool {
     static get key() {
         return 'llvm-cov-tool';
     }
 
-    override async runTool(compilationInfo, inputFilepath, args, stdin /*, supportedLibraries*/) {
-        const compilationExecOptions = this.getDefaultExecOptions() as ExecutionOptions;
+    override async runTool(compilationInfo, inputFilepath, args, stdin) {
+        const compilationExecOptions = this.getDefaultExecOptions();
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;
         try {
+            const generatedExecutableName = this.getUniqueFilePrefix() + '-coverage.a';
             const compilationResult = await this.exec(
                 compilationInfo.compiler.exe,
-                ['-fprofile-instr-generate', '-fcoverage-mapping', '-g', '-O0', inputFilepath, '-o', 'coverage.a'],
+                [
+                    '-fprofile-instr-generate',
+                    '-fcoverage-mapping',
+                    '-g',
+                    '-O0',
+                    inputFilepath,
+                    '-o',
+                    generatedExecutableName,
+                ],
                 compilationExecOptions,
             );
 
@@ -54,7 +62,7 @@ export class LLVMCovTool extends BaseTool {
             const runExecOptions = this.getDefaultExecOptions() as ExecutionOptions;
             runExecOptions.customCwd = path.dirname(inputFilepath);
 
-            await this.exec('./coverage.a', [], {
+            await this.exec('./' + generatedExecutableName, [], {
                 ...runExecOptions,
                 input: stdin,
             });
@@ -62,9 +70,10 @@ export class LLVMCovTool extends BaseTool {
             const folder = path.dirname(this.tool.exe);
             const profdataPath = path.join(folder, 'llvm-profdata');
 
+            const generatedProfdataName = this.getUniqueFilePrefix() + '.profdata';
             const profdataResult = await this.exec(
                 profdataPath,
-                ['merge', '-sparse', './default.profraw', '-o', './coverage.profdata'],
+                ['merge', '-sparse', './default.profraw', '-o', './' + generatedProfdataName],
                 runExecOptions,
             );
             if (profdataResult.code !== 0) {
@@ -73,20 +82,15 @@ export class LLVMCovTool extends BaseTool {
                 );
             }
 
-            const cppFiltPath = path.join(folder, 'llvm-cxxfilt');
             const covResult = await this.exec(
                 this.tool.exe,
                 [
                     'show',
-                    './coverage.a',
-                    '-instr-profile=./coverage.profdata',
+                    './' + generatedExecutableName,
+                    '-instr-profile=./' + generatedProfdataName,
                     '-format',
                     'text',
                     '-use-color',
-                    '-Xdemangler',
-                    cppFiltPath,
-                    '-Xdemangler',
-                    '-n',
                     '-compilation-dir=./',
                     ...args,
                 ],
@@ -98,7 +102,7 @@ export class LLVMCovTool extends BaseTool {
                 return this.createErrorResponse(`<llvm-cov error>\n${covResult.stdout}\n${covResult.stderr}`);
             }
         } catch (e) {
-            return this.createErrorResponse(`<Tool error: ${e}`);
+            return this.createErrorResponse(`<Tool error: ${e}>`);
         }
     }
 }
