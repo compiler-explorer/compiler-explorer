@@ -27,10 +27,6 @@ import * as utils from '../utils';
 import {AsmParser} from './asm-parser';
 
 export class SPIRVAsmParser extends AsmParser {
-    constructor() {
-        super();
-    }
-
     parseOpString(asmLines) {
         const opString = /^\s*%(\d+)\s+=\s+OpString\s+"([^"]+)"$/;
         const files = {};
