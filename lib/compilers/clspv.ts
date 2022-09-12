@@ -29,7 +29,6 @@ import _ from 'underscore';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
-
 import * as utils from '../utils';
 
 export class CLSPVCompiler extends BaseCompiler {
@@ -52,7 +51,7 @@ export class CLSPVCompiler extends BaseCompiler {
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            let compilerOptions = _.filter(
+            const compilerOptions = _.filter(
                 utils.splitArguments(this.compiler.options),
                 option => option !== '-fno-crash-diagnostics',
             );
@@ -91,7 +90,7 @@ export class CLSPVCompiler extends BaseCompiler {
     override optionsForFilter(filters, outputFilename) {
         const sourceDir = path.dirname(outputFilename);
         const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
-        return ['-o', spvBinFilename, '-g'];
+        return ['-o', spvBinFilename];
     }
 
     getPrimaryOutputFilename(dirPath, outputFilebase) {
@@ -113,10 +112,10 @@ export class CLSPVCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const spvBin = await this.exec(compiler, options, execOptions);
-        if (spvBin.code !== 0) {
-            logger.error('clspv compilation failed', spvBin);
-            spvBin.stdout = utils.parseOutput(spvBin.stdout, spvBinFilename, execOptions.customCwd);
-            spvBin.stderr = utils.parseOutput(spvBin.stderr, spvBinFilename, execOptions.customCwd);
+        spvBin.stdout = utils.parseOutput(spvBin.stdout);
+        spvBin.stderr = utils.parseOutput(spvBin.stderr);
+
+        if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename))) {
             return spvBin;
         }
 
@@ -128,8 +127,8 @@ export class CLSPVCompiler extends BaseCompiler {
             logger.error('SPIR-V binary to text failed', spvasmOutput);
         }
 
-        spvasmOutput.stdout = utils.parseOutput(spvasmOutput.stdout, spvasmFilename, execOptions.customCwd);
-        spvasmOutput.stderr = utils.parseOutput(spvasmOutput.stderr, spvasmFilename, execOptions.customCwd);
+        spvasmOutput.stdout = spvBin.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
+        spvasmOutput.stderr = spvBin.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
         return spvasmOutput;
     }
 }
