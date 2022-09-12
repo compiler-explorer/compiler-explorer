@@ -71,8 +71,8 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
-import * as utils from './utils';
 import {ToolTypeKey} from './tooling/base-tool.interface';
+import * as utils from './utils';
 
 export class BaseCompiler {
     public compiler: any;
