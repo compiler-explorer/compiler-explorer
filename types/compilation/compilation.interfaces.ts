@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
+import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
@@ -120,4 +121,29 @@ export type ToolResult = {
     stderr: ResultLine[];
     stdout: ResultLine[];
     artifact?: Artifact;
+};
+
+export type CompilationInfo = {
+    mtime: any;
+    compiler: any;
+    args: string[];
+    options: ExecutionOptions;
+    outputFilename: string;
+    executableFilename: string;
+    asmParser: IAsmParser;
+    inputFilename?: string;
+    dirPath?: string;
+};
+
+export type CompilationCacheKey = {
+    mtime: any;
+    compiler: any;
+    args: string[];
+    options: ExecutionOptions;
+};
+
+export type CustomInputForTool = {
+    inputFilename: string;
+    dirPath: string;
+    outputFilename: string;
 };
