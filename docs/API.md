@@ -317,3 +317,4 @@ Here are some examples of projects using the Compiler Explorer API:
 - [CLion plugin by ogrebenyuk](https://github.com/ogrebenyuk/compilerexplorer) (Java)
 - [QCompilerExplorer - frontend in Qt](https://github.com/Waqar144/QCompilerExplorer) (C++)
 - [Emacs client - compiler-explorer.el](https://github.com/mkcms/compiler-explorer.el)
+- [compiler-explorer.nvim by krady21](https://github.com/krady21/compiler-explorer.nvim) (Lua)
