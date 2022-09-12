@@ -112,11 +112,10 @@ export class CLSPVCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const spvBin = await this.exec(compiler, options, execOptions);
-        spvBin.stdout = utils.parseOutput(spvBin.stdout);
-        spvBin.stderr = utils.parseOutput(spvBin.stderr);
+        const result = this.transformToCompilationResult(spvBin, inputFilename);
 
         if (spvBin.code !== 0 || !(await utils.fileExists(spvBinFilename))) {
-            return spvBin;
+            return result;
         }
 
         const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
@@ -127,8 +126,8 @@ export class CLSPVCompiler extends BaseCompiler {
             logger.error('SPIR-V binary to text failed', spvasmOutput);
         }
 
-        spvasmOutput.stdout = spvBin.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
-        spvasmOutput.stderr = spvBin.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
-        return spvasmOutput;
+        result.stdout = result.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
+        result.stderr = result.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
+        return result;
     }
 }
