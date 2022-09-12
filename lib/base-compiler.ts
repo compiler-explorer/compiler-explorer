@@ -39,7 +39,11 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
+import {
+    BasicExecutionResult,
+    ExecutableExecutionOptions,
+    UnprocessedExecResult,
+} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
@@ -346,10 +350,7 @@ export class BaseCompiler {
         }
 
         const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-        this.parseCompilationOutput(result, transformedInput);
-        return result;
+        return this.transformToCompilationResult(result, inputFilename);
     }
 
     async runCompilerRawOutput(compiler, options, inputFilename, execOptions) {
@@ -362,13 +363,10 @@ export class BaseCompiler {
         }
 
         const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        return result;
-    }
-
-    parseCompilationOutput(result, inputFilename: string) {
-        result.stdout = utils.parseOutput(result.stdout, inputFilename);
-        result.stderr = utils.parseOutput(result.stderr, inputFilename);
+        return {
+            ...result,
+            inputFilename,
+        };
     }
 
     supportsObjdump() {
@@ -423,30 +421,66 @@ export class BaseCompiler {
         return result;
     }
 
-    async execBinary(executable, maxSize, executeParameters, homeDir) {
+    processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        return {
+            ...input,
+            stdout: utils.parseOutput(input.stdout, inputFilename),
+            stderr: utils.parseOutput(input.stderr, inputFilename),
+        };
+    }
+
+    getEmptyExecutionResult(): BasicExecutionResult {
+        return {
+            code: -1,
+            okToCache: false,
+            filenameTransform: x => x,
+            stdout: [],
+            stderr: [],
+            execTime: '',
+            timedOut: false,
+        };
+    }
+
+    transformToCompilationResult(input: UnprocessedExecResult, inputFilename): CompilationResult {
+        const transformedInput = input.filenameTransform(inputFilename);
+
+        return {
+            inputFilename,
+            ...this.processExecutionResult(input, transformedInput),
+        };
+    }
+
+    async execBinary(
+        executable,
+        maxSize,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir,
+    ): Promise<BasicExecutionResult> {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         try {
-            const execResult = await exec.sandbox(executable, executeParameters.args, {
+            const execResult: UnprocessedExecResult = await exec.sandbox(executable, executeParameters.args, {
                 maxOutput: maxSize,
                 timeoutMs: timeoutMs,
-                ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath).join(':'),
+                ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath),
                 input: executeParameters.stdin,
                 env: executeParameters.env,
                 customCwd: homeDir,
                 appHome: homeDir,
             });
-            execResult.stdout = utils.parseOutput(execResult.stdout);
-            execResult.stderr = utils.parseOutput(execResult.stderr);
-            return execResult;
+
+            return this.processExecutionResult(execResult);
         } catch (err: UnprocessedExecResult | any) {
-            // TODO: is this the best way? Perhaps failures in sandbox shouldn't reject
-            // with "results", but instead should play on?
-            return {
-                stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
-                stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                code: err.code !== undefined ? err.code : -1,
-            };
+            if (err.code && err.stderr) {
+                return this.processExecutionResult(err);
+            } else {
+                return {
+                    ...this.getEmptyExecutionResult(),
+                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
+                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
+                    code: err.code !== undefined ? err.code : -1,
+                };
+            }
         }
     }
 
@@ -1470,7 +1504,7 @@ export class BaseCompiler {
         }
     }
 
-    runExecutable(executable, executeParameters, homeDir) {
+    runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
         const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
         // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
         executeParameters.env = {
@@ -1494,9 +1528,11 @@ export class BaseCompiler {
         await fs.writeFile(outputFilename, source);
         executeParameters.args.unshift(outputFilename);
         const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
-        result.didExecute = true;
-        result.buildResult = {code: 0};
-        return result;
+        return {
+            ...result,
+            didExecute: true,
+            buildResult: {code: 0},
+        };
     }
 
     async handleExecution(key, executeParameters) {
@@ -1538,9 +1574,11 @@ export class BaseCompiler {
 
         executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        result.didExecute = true;
-        result.buildResult = buildResult;
-        return result;
+        return {
+            ...result,
+            didExecute: true,
+            buildResult: buildResult,
+        };
     }
 
     getCacheKey(source, options, backendOptions, filters, tools, libraries, files) {
@@ -1791,9 +1829,7 @@ export class BaseCompiler {
 
     async doBuildstep(command, args, execParams) {
         const result = await this.exec(command, args, execParams);
-        result.stdout = utils.parseOutput(result.stdout);
-        result.stderr = utils.parseOutput(result.stderr);
-        return result;
+        return this.processExecutionResult(result);
     }
 
     handleUserError(error, dirPath) {
@@ -1808,8 +1844,10 @@ export class BaseCompiler {
     }
 
     async doBuildstepAndAddToResult(result, name, command, args, execParams) {
-        const stepResult = await this.doBuildstep(command, args, execParams);
-        stepResult.step = name;
+        const stepResult = {
+            ...(await this.doBuildstep(command, args, execParams)),
+            step: name,
+        };
         logger.debug(name);
         result.buildsteps.push(stepResult);
         return stepResult;
@@ -1823,7 +1861,7 @@ export class BaseCompiler {
 
         _.extend(cmakeExecParams.env, this.getCompilerEnvironmentVariables(options.join(' ')));
 
-        cmakeExecParams.env.LD_LIBRARY_PATH = dirPath;
+        cmakeExecParams.ldPath = [dirPath];
 
         // todo: if we don't use nsjail, the path should not be /app but dirPath
         const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app');
@@ -1864,10 +1902,11 @@ export class BaseCompiler {
         const libsAndOptions = this.createLibsAndOptions(key);
 
         const doExecute = key.filters.execute;
-        const executeParameters = {
+        const executeParameters: ExecutableExecutionOptions = {
             ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
             args: key.executionParameters.args || [],
             stdin: key.executionParameters.stdin || '',
+            env: {},
         };
 
         const cacheKey = this.getCmakeCacheKey(key, files);

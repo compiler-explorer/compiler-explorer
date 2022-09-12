@@ -26,9 +26,9 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
-import {logger} from '../logger';
 import {parseRustOutput} from '../utils';
 
 import {RustParser} from './argument-parsers';
@@ -160,8 +160,11 @@ export class RustCompiler extends BaseCompiler {
         return true;
     }
 
-    override parseCompilationOutput(result, inputFilename) {
-        result.stdout = parseRustOutput(result.stdout, inputFilename);
-        result.stderr = parseRustOutput(result.stderr, inputFilename);
+    override processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        return {
+            ...input,
+            stdout: parseRustOutput(input.stdout, inputFilename),
+            stderr: parseRustOutput(input.stderr, inputFilename),
+        };
     }
 }

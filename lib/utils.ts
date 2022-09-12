@@ -90,9 +90,10 @@ function parseSeverity(message: string): number {
     return 3;
 }
 
+const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+
 export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
-    const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
@@ -102,7 +103,7 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
             const filteredline = line.replace(ansiColoursRe, '');
-            let match = filteredline.match(re);
+            let match = filteredline.match(SOURCE_RE);
             if (match) {
                 const message = match[4].trim();
                 lineObj.tag = {
@@ -112,7 +113,7 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
                     severity: parseSeverity(message),
                 };
             } else {
-                match = filteredline.match(reWithFilename);
+                match = filteredline.match(SOURCE_WITH_FILENAME);
                 if (match) {
                     const message = match[5].trim();
                     lineObj.tag = {
