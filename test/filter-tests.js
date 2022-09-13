@@ -28,7 +28,7 @@ import approvals from 'approvals';
 
 import {AsmParser} from '../lib/parsers/asm-parser';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass';
-import {AsmEWAVRParser} from '../lib/asm-parser-ewavr';
+import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
 
 import {fs, resolvePathFromTestRoot} from './utils';
