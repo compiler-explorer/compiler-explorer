@@ -145,6 +145,21 @@ describe('Parses compiler output', () => {
                 },
             ]);
     });
+
+    it('parser error with full path', () => {
+        utils.parseOutput("/app/example.cl:5:30: error: use of undeclared identifier 'ad'").should.deep.equals([
+            {
+                tag: {
+                    file: 'example.cl',
+                    column: 30,
+                    line: 5,
+                    text: "error: use of undeclared identifier 'ad'",
+                    severity: 3,
+                },
+                text: "example.cl:5:30: error: use of undeclared identifier 'ad'",
+            },
+        ]);
+    });
 });
 
 describe('Pascal compiler output', () => {
