@@ -90,7 +90,7 @@ export class CLSPVCompiler extends BaseCompiler {
     override optionsForFilter(filters, outputFilename) {
         const sourceDir = path.dirname(outputFilename);
         const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
-        return ['-o', spvBinFilename];
+        return ['-o', spvBinFilename, '-g'];
     }
 
     getPrimaryOutputFilename(dirPath, outputFilebase) {
