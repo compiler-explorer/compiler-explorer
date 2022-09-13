@@ -104,7 +104,7 @@ export class CLSPVCompiler extends BaseCompiler {
 
     override async runCompiler(compiler, options, inputFilename, execOptions) {
         const sourceDir = path.dirname(inputFilename);
-        const spvBinFilename = getPrimaryOutputFilename(sourceDir, this.outputFilebase)
+        const spvBinFilename = getPrimaryOutputFilename(sourceDir, this.outputFilebase);
 
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
