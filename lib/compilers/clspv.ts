@@ -87,14 +87,14 @@ export class CLSPVCompiler extends BaseCompiler {
         );
     }
 
-    override optionsForFilter(filters, outputFilename) {
-        const sourceDir = path.dirname(outputFilename);
-        const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
-        return ['-o', spvBinFilename, '-g'];
-    }
-
     getPrimaryOutputFilename(dirPath, outputFilebase) {
         return path.join(dirPath, `${outputFilebase}.spv`);
+    }
+
+    override optionsForFilter(filters, outputFilename) {
+        const sourceDir = path.dirname(outputFilename);
+        const spvBinFilename = getPrimaryOutputFilename(sourceDir, this.outputFilebase);
+        return ['-o', spvBinFilename, '-g'];
     }
 
     // TODO: Check this to see if it needs key
@@ -104,7 +104,7 @@ export class CLSPVCompiler extends BaseCompiler {
 
     override async runCompiler(compiler, options, inputFilename, execOptions) {
         const sourceDir = path.dirname(inputFilename);
-        const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
+        const spvBinFilename = getPrimaryOutputFilename(sourceDir, this.outputFilebase)
 
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -119,7 +119,7 @@ export class CLSPVCompiler extends BaseCompiler {
             return spvBin;
         }
 
-        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
+        const spvasmFilename = getOutputFilename(sourceDis, this.outputFilebase);
         const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
