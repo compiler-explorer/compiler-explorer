@@ -124,7 +124,7 @@ export type ToolResult = {
 };
 
 export type CompilationInfo = {
-    mtime: any;
+    mtime: Date | null;
     compiler: any;
     args: string[];
     options: ExecutionOptions;
