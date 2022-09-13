@@ -1,0 +1,27 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "issue1989:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addl $16,$17,$0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmplt $16,$0,$0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret $31,($26),1"
+    }
+  ],
+  "labelDefinitions": {
+    "issue1989": 1
+  }
+}

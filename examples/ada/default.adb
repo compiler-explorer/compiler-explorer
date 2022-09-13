@@ -13,5 +13,5 @@ end Square;
 -- (http://www.ada-auth.org/standards/12rm/html/RM-6-8.html)
 -- as a short hand for functions whose body consists of a
 -- single return statement. However they cannot be used as a
--- complication unit.
+-- compilation unit.
 -- function Square(num : Integer) return Integer is (num**2);

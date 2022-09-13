@@ -1,0 +1,236 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LNDBG_TX:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..TXTST0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L_2__routine_start__Z6squarei_0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value__Z6squarei.2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..L3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        push      rbp                                           #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov       rbp, rsp                                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        sub       rsp, 16                                       #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        mov       DWORD PTR [-16+rbp], edi                      #2.21"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.5:                         # Preds ..B1.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "label:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.4:                         # Preds ..B1.5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mov       eax, DWORD PTR [-16+rbp]                      #4.18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN8:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        imul      eax, DWORD PTR [-16+rbp]                      #4.18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN9:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        leave                                                   #4.18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN10:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ret                                                     #4.18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN_Z6squarei.13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LN_Z6squarei:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_info_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_line_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_abbrev_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_frame_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_str_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".eh_frame_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LNDBG_TXe:"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 5
+  }
+}

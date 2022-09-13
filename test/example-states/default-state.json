@@ -341,7 +341,7 @@
                   "type": "component",
                   "componentName": "compiler",
                   "componentState": {
-                    "compiler": "rv32clang",
+                    "compiler": "rv32-clang",
                     "source": 4,
                     "options": "",
                     "filters": {

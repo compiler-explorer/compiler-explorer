@@ -1,0 +1,158 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"Hello world\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"moo\\n\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        subq    $8, %rsp"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC0",
+          "range": {
+            "endCol": 22,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movl    $.LC0, %esi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movl    $1, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        call    __printf_chk"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LC1",
+          "range": {
+            "endCol": 22,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movl    $.LC1, %esi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movl    $1, %edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/include/x86_64-linux-gnu/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        call    __printf_chk"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        xorl    %eax, %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        addq    $8, %rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 1,
+    ".LC1": 3,
+    "main": 5
+  }
+}

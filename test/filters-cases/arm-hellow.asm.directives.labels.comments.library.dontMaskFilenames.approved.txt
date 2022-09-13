@@ -1,0 +1,133 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        push    {r3, lr}"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movs    r0, #1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movw    r1, #:lower16:.LC0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movt    r1, #:upper16:.LC0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        bl      __printf_chk"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movs    r0, #1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movw    r1, #:lower16:.LC1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        movt    r1, #:upper16:.LC1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/usr/arm-linux-gnueabi/include/bits/stdio2.h",
+        "line": 105,
+        "mainsource": false
+      },
+      "text": "        bl      __printf_chk"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        movs    r0, #0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "<stdin>",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        pop     {r3, pc}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ascii  \"Hello world\\000\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LC1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ascii  \"moo\\012\\000\""
+    }
+  ],
+  "labelDefinitions": {
+    ".LC0": 13,
+    ".LC1": 15,
+    "main": 1
+  }
+}

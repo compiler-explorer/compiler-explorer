@@ -6,6 +6,22 @@ html(lang="en")
     block meta
         include meta.pug
 
+    if extraBodyClass === "dev"
+      script(src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/14.0.0/sinon.js" integrity="sha512-lwbFZYfi3WibUQJXhehHc/gtTko1JVC38zKx2PloaZP6AIVNCk5u/GRDKwF0bHwmiQsF0r9nLF7gO9gew+1j3g==" crossorigin="anonymous" referrerpolicy="no-referrer")
+
+    script
+      | (function () {
+      |   var isIE11 = !!window.MSInputMethodContext && !!document.documentMode;
+      |   var storedState = '#{storedStateId}';
+      |   if (isIE11) {
+      |     if (storedState) {
+      |       location.href = '#{httpRoot}noscript/z/' + storedState;
+      |     } else {
+      |       location.href = '#{httpRoot}noscript';
+      |     }
+      |   }
+      | })();
+
     block styles
         link(href=require("vendor.css") rel="stylesheet")
         link(href=require("main.css") rel="stylesheet")
@@ -33,17 +49,11 @@ html(lang="en")
                 a(href=`${httpRoot}noscript`) click here
 
     block footer
-        include templates.pug
+        include templates/templates
 
     block scripts
         script(src=`${httpRoot}client-options.js?hash=${optionsHash}`)
         div#config(extraOptions=encodeURIComponent(compilerExplorerOptions), httpRoot=httpRoot, staticRoot=staticRoot)
-        script
-          | if (window.navigator.userAgent.indexOf("Trident/") > 0) {
-          |   var s = document.createElement("script");
-          |   s.src = "!{require("es6-shim.min.js")}";
-          |   document.head.appendChild(s);
-          | }
         script(src=require("runtime.js"))
         script(src=require("vendor.js"))
         script(src=require("main.js"))

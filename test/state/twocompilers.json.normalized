@@ -7,6 +7,7 @@
             "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num + 3;\r\n}\r\n\r\n",
             "compilers": [
                 {
+                    "_internalid": 1,
                     "id": "vc2017_64",
                     "options": "-O2",
                     "filters": {
@@ -33,6 +34,7 @@
             "source": "// Type your code here, or load an example.\r\nint square(int num) {\r\n    return num * num;\r\n}",
             "compilers": [
                 {
+                    "_internalid": 2,
                     "id": "vc2017_32",
                     "options": "-O3",
                     "filters": {
@@ -52,5 +54,6 @@
             ],
             "executors": []
         }
-    ]
+    ],
+    "trees": []
 }

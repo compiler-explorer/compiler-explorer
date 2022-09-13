@@ -1,0 +1,1022 @@
+@import '~@fortawesome/fontawesome-free/css/all.min.css';
+@import '~vis-network/styles/vis-network.css';
+
+/*
+ * https://github.com/Microsoft/monaco-editor/issues/417
+ * Safari 10.1, fails inherit correct visibility from parent when we change the visibility of parent element from hidden to inherit, in this particular case.
+ */
+.monaco-editor-hover .monaco-scrollable-element {
+    visibility: visible;
+}
+
+.monaco-editor .asm-label-link {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+// The :root and .monaco-editor .codelens-decoration are used to set the codelens font
+// Official support using the IEditorOptions.codeLensFontFamily property has landed in vscode
+// These blocks should be removed once a downstream release of monaco is cut
+:root {
+    // updated at runtime
+    --user-selected-font-stack: Consolas, 'Liberation Mono', Courier, monospace;
+}
+.monaco-editor .codelens-decoration {
+    font-family: var(--user-selected-font-stack);
+}
+
+body {
+    overflow: hidden;
+}
+
+.navbar-godbolt {
+    padding: 0;
+}
+
+.navbar-brand {
+    padding: 0;
+}
+
+.navbar-brand img.logo-overlay {
+    position: absolute;
+    top: 0;
+    display: block;
+}
+
+.btn-light:focus {
+    box-shadow: none !important;
+}
+
+.top-bar .btn-light:disabled,
+.bottom-bar .btn-light:disabled {
+    cursor: not-allowed;
+}
+
+.float-link {
+    z-index: 100;
+    position: absolute;
+    bottom: 0.5em;
+    right: 2.5em;
+    display: inline-block;
+    padding: 0.25em;
+    font-size: x-small;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+}
+
+.popover.libs-popover {
+    max-width: 800px !important;
+    max-height: 615px !important;
+}
+
+.template {
+    display: none;
+}
+
+.compiler-picker {
+    min-width: 14em;
+}
+
+.compiler-picker .ts-input {
+    text-align: center;
+    border-left: none !important;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.function-picker {
+    min-width: 14em;
+    width: 99%;
+}
+
+.gccdump-pass-picker {
+    min-width: 14em;
+    width: 99%;
+}
+
+.change-device {
+    min-width: 20em;
+    width: 99%;
+}
+
+li.tweet {
+    padding: 3px 20px;
+}
+
+.diff-picker {
+    max-width: 20em;
+    min-width: 14em;
+}
+
+.difftype-picker {
+    max-width: 10em;
+    min-width: 10em;
+}
+
+.diff-picker .options {
+    padding-left: 0.5em;
+    font-size: small;
+}
+
+.diff-picker .meta {
+    font-style: italic;
+    text-align: right;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: x-small;
+}
+
+.diff-picker .meta li {
+    padding: 0;
+    display: inline;
+    margin: 0 10px 0 0;
+}
+
+.llvm-opt-function-picker {
+    min-width: 10em;
+}
+
+#root {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.lm_splitter.lm_vertical .lm_drag_handle {
+    height: 10px;
+    top: -2.5px;
+}
+
+.lm_splitter.lm_horizontal .lm_drag_handle {
+    width: 10px;
+    left: -2.5px;
+}
+
+pre.content {
+    width: 100%;
+    padding-top: 3px;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    overflow: auto;
+}
+
+pre.content.output-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+pre.content p {
+    margin: 0;
+}
+
+pre.content.wrap {
+    word-break: keep-all;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+}
+
+pre.content.wrap * {
+    word-wrap: break-word;
+    white-space: pre-wrap; /* Preserve sequences of white space */
+}
+
+.compile-info {
+    font-size: x-small;
+    font-style: italic;
+}
+
+.compile-time {
+    font-size: x-small;
+    font-style: italic;
+}
+
+.url-parse-info {
+    font-size: small;
+    margin-top: 1em;
+    font-style: italic;
+}
+
+.libs-container ul {
+    float: left;
+    clear: none;
+}
+
+.lib-list {
+    margin: 3px;
+    padding: 3px;
+    text-align: left;
+}
+
+.lib-header {
+    padding-left: 1px;
+}
+
+.lib-item {
+    list-style: none;
+}
+
+.lib-checkbox {
+    display: inline;
+}
+
+.lib-label {
+    display: inline;
+    padding: 5px 0 5px 5px;
+}
+
+.lib-separator {
+    margin: 3px 0 3px 0;
+    padding: 0 2px 0 2px;
+}
+
+.small-v-scrollable {
+    max-height: 8em;
+    overflow-y: auto;
+}
+
+.linked-code-decoration-margin {
+    width: 5px !important;
+    left: 3px;
+}
+
+.linked-code-decoration-column {
+    font-weight: 600;
+    color: red !important;
+}
+
+.modal {
+    /* maximum for all modal dialogs */
+    width: 100%;
+    height: 100%;
+    padding: 1.75rem;
+}
+
+.modal-dialog {
+    max-width: max-content; /* override bootstrap width */
+    margin: 0 auto;
+}
+
+.modal-content {
+    max-width: max-content; /* modal boxes are at most as wide as their content - smaller width is handled by the browser and flexbox */
+    max-height: calc(100vh - 4rem); /* modal box height scales with the viewport height and leaves space for borders */
+}
+
+#history {
+    .modal-content {
+        min-width: calc(80vw); /* force min-width on html element containing history editor */
+    }
+}
+
+.modal-body {
+    min-height: 200px;
+    overflow-y: auto; /* make body scrollable -> keep Header & Footer onscreen, if possible */
+}
+
+#enter-something .modal-body {
+    min-height: 90px;
+}
+
+#enter-something .modal-body .question {
+    margin-bottom: 5px;
+}
+
+#enter-something .modal-body .question-answer {
+    width: 300px;
+}
+
+.modal-content .well {
+    border: 1px solid;
+    border-radius: 3px;
+}
+
+.navbar-nav.navbar-center {
+    float: left; /* by default */
+}
+
+@media (min-width: 1300px) {
+    .navbar-nav.navbar-center {
+        float: none;
+        position: absolute;
+        left: 50%;
+        transform: translatex(-50%);
+    }
+}
+
+.community-advert {
+    display: flex;
+    max-width: 500px;
+    height: 44px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border: 2px solid;
+    border-radius: 8px;
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+@media (max-width: 1200px) {
+    .community-advert {
+        display: none;
+    }
+}
+
+.community-hide {
+    padding-left: 5px;
+}
+
+.community-hide button {
+    font-size: small;
+    opacity: 1;
+    color: #67c52a;
+}
+
+#notifications {
+    padding: 5px;
+    border-radius: 0.5rem;
+    position: fixed;
+    bottom: 3px;
+    right: 5px;
+    max-width: 40%;
+}
+
+.toast {
+    max-width: 100% !important;
+}
+
+.toast-header .close {
+    float: left;
+    margin-right: 5px;
+}
+
+.font-size-list {
+    min-width: 43px !important;
+    max-height: 70% !important;
+    overflow-y: scroll;
+    width: auto;
+    // For my fellow Firefox users
+    scrollbar-width: thin;
+}
+
+.font-size-list button {
+    margin-left: 0 !important;
+    border-radius: 0;
+}
+
+.font-option {
+    text-align: center;
+}
+
+.opt-decoration {
+    width: 8px !important;
+    left: 3px;
+}
+
+.compiler-list {
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100%;
+}
+
+.cfg-toolbar table {
+    width: 100%;
+}
+
+.graph-placeholder {
+    width: 100%;
+    height: 100%;
+}
+
+.clear-cache {
+    position: absolute;
+    right: 0;
+}
+
+.change-language {
+    line-height: 14px;
+    min-width: 200px !important;
+}
+
+.change-language .ts-input {
+    border-bottom: none;
+    border-right: none;
+    border-radius: 0;
+}
+
+.short-compiler-name {
+    font-size: 12px;
+    padding-left: 3px;
+}
+
+.header-fontscale {
+    padding-right: 1em;
+}
+
+.local-file {
+    display: none;
+}
+
+.save-file {
+    display: none;
+}
+
+.save-btn {
+    margin-left: 5px;
+}
+
+label#vim-label {
+    top: 3px;
+}
+
+#settings input,
+#embedsettings input {
+    margin-right: 3px;
+}
+
+.checkbox label {
+    user-select: none;
+}
+
+#settings select,
+#settings input:not([type='checkbox']):not([type='range']) {
+    display: block;
+}
+
+input.vim-check {
+    margin-bottom: 4px;
+}
+
+.opens-new-window {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.lib-described {
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    cursor: help;
+}
+
+.program-exec-output {
+    font-family: 'Courier New', Courier, monospace;
+    padding-left: 2%;
+}
+
+.lib-arrow {
+    display: inline-table;
+    width: 0;
+    height: 0;
+    border: 7px solid transparent;
+    margin-right: 2px;
+}
+
+.share-disabled {
+    cursor: not-allowed;
+}
+
+.share-item {
+    display: block;
+    overflow: auto;
+    padding: 3px;
+}
+
+.share-item:last-child {
+    border-radius: 0 0 3px 3px;
+}
+
+.share-item-logo {
+    margin-left: 5px;
+    margin-right: 5px;
+    width: 20px;
+    height: 20px;
+}
+
+/* While we find a better solution, lets up this a bit */
+.compiler-picker .ts-dropdown-content {
+    max-height: 300px !important;
+}
+
+.compiler-picker .ts-dropdown-content .option {
+    padding: 0 10px;
+}
+
+.compiler-options-popover {
+    font-family: monospace;
+    max-width: 460px;
+}
+
+.navbar-nav a.nav-link {
+    font-size: 14px;
+    border-radius: 5px;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
+.navbar-nav a.nav-link:hover {
+    border-radius: 5px;
+}
+
+kbd {
+    display: inline-block;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 0.1em 0.5em;
+    margin: 0 0.2em;
+    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #fff inset;
+}
+
+#simplecook {
+    align-items: center;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+#simplecook .message {
+    display: block;
+    flex: 1 1 auto;
+    max-width: 100%;
+}
+
+.new-cookie-msg {
+    display: inline;
+    margin: 0 2px 0 2px;
+}
+
+.dropdown-icon {
+    width: 25px;
+    text-align: center;
+    margin-right: 6px;
+}
+
+.linked-compiler-output-line {
+    cursor: pointer;
+}
+
+.lm_content {
+    overflow: visible;
+}
+
+.lm_header {
+    /* Needed to prevent the tab selection dropdown getting stuck behind other elements */
+    z-index: 3 !important;
+    height: 20px !important;
+}
+
+li.lm_tab.lm_active {
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .lm_header {
+        height: 50px !important;
+    }
+
+    .lm_header .lm_tabs {
+        height: 100%;
+    }
+
+    .lm_header .lm_tabs .lm_tab {
+        height: 31px;
+        padding-top: 15px;
+    }
+
+    .lm_controls li {
+        padding-top: 20px;
+        transform: scale(1.8);
+        padding-right: 15px;
+    }
+
+    .lm_controls .lm_tabdropdown {
+        padding-top: 8px;
+    }
+
+    .lm_header .lm_tabdropdown_list .lm_tab {
+        height: 50px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.open-in-cppinsights *,
+.open-in-quickbench * {
+    vertical-align: middle;
+}
+
+/* Fix the width to allow bootstrap's right-justify to work, else it truncates. See https://github.com/compiler-explorer/compiler-explorer/issues/1863 */
+div.populararguments div.dropdown-menu {
+    width: 300px;
+}
+
+.ces-content-root {
+    min-height: 100px;
+    max-height: calc(
+        100vh - 306px
+    ); /* works on my machine :) - 306px = the height of the footer + borders/margins/paddings - guessed/tried out */
+    overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
+}
+
+@media (max-width: 1000px) {
+    .ces-content-root {
+        font-size: 60%;
+    }
+}
+
+@media (max-width: 1250px) {
+    #ces-banner-text {
+        display: none;
+    }
+}
+
+.ces-item-block:not(:first-child) {
+    margin-top: 6em;
+}
+
+.ces-top {
+    margin-top: 1em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 60%;
+}
+
+@media (min-height: 700px) {
+    /* Scales on the top-level object to try and fit enough in shorter screens */
+    .ces-top {
+        font-size: 75%;
+    }
+}
+
+@media (min-height: 1000px) {
+    /* Scales on the top-level object to try and fit enough in shorter screens */
+    .ces-top {
+        font-size: 90%;
+    }
+}
+
+.ces-item-title {
+    font-size: 200%;
+    font-weight: bold;
+}
+
+.ces-item-title img {
+    margin: 0.5em;
+}
+.ces-level-selectors {
+    padding-bottom: 5px;
+}
+
+.ces {
+    flex-grow: 1;
+    margin: 2px;
+    font-size: 70%;
+}
+
+.ces button {
+    padding: 4px;
+    height: 100%;
+}
+
+.corporate .ces {
+    font-size: 165%;
+    height: 9em;
+}
+
+.legendary .ces {
+    font-size: 165%;
+    height: 7em;
+}
+
+.legendary .ces button {
+    padding: 1em;
+}
+
+.ces-logo {
+    max-height: 1.5em;
+}
+
+.ces-logo-large {
+    max-height: 3em;
+}
+
+.ces-icons {
+    float: right;
+    height: 1.5em;
+}
+
+.ces-icon {
+    margin-left: 0.3em;
+    height: 1.5em;
+}
+
+.ces-item-description {
+    margin: auto;
+}
+
+#library-selection .modal-body {
+    overflow-y: scroll;
+}
+
+#library-selection .lib-search-button {
+    margin-left: 10px;
+}
+
+#library-selection .libs-how-to-use {
+    font-size: smaller;
+}
+
+#library-selection .libs-selected-col {
+    padding: 0 15px 0 0;
+    min-width: 250px;
+    max-width: 250px;
+}
+
+#library-selection .libs-results-col {
+    padding: 0 0 0 0;
+    min-width: 450px;
+    max-width: 450px;
+}
+
+#library-selection .lib-results-items .card {
+    margin-bottom: 3px;
+}
+
+#library-selection.mobile .lib-results-items .card-body {
+    display: none;
+}
+
+#library-selection.mobile .libs-results-col {
+    min-width: 250px;
+    max-width: 450px;
+}
+
+#library-selection .libs-results-col span.lib-version {
+    float: right;
+}
+
+#library-selection .libs-results-col span.lib-website {
+    float: left;
+}
+
+#library-selection .libs-results-col span.lib-fav {
+    float: right;
+}
+
+#library-selection .libs-favorites-col {
+    padding: 0 0 0 15px;
+    min-width: 200px;
+    max-width: 200px;
+}
+
+#library-selection.mobile .libs-favorites-col {
+    display: none;
+}
+
+#timing-info .modal-content {
+    min-width: 500px;
+    min-height: 400px;
+}
+
+.icon-link > span {
+    margin-right: 2pt;
+}
+
+span.badge.badge-pill {
+    margin-left: 2pt;
+}
+
+.theme-light-only,
+.theme-dark-only {
+    display: none;
+}
+
+html[data-theme='default'] {
+    @import 'themes/default-theme';
+    .theme-light-only {
+        display: inline;
+    }
+}
+
+html[data-theme='dark'] {
+    @import 'themes/dark-theme';
+    background-color: #333 !important;
+    .theme-dark-only {
+        display: inline;
+    }
+}
+
+.socialsharing {
+    max-width: 250px;
+}
+
+.ts-input {
+    height: 100%;
+}
+
+.ts-input,
+.ts-dropdown .option {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ts-dropdown .optgroup-header {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.copy-link-btn {
+    padding-top: 0;
+}
+
+.conformance-wrapper .compiler-list .form-row {
+    padding-top: 3px;
+}
+
+.status-icon {
+    border: none;
+    background-color: transparent;
+}
+
+.tree-editor-file {
+    cursor: pointer;
+    line-height: 14px;
+    padding: 0 0 0 5px;
+}
+.tree-editor-file span {
+    font-family: inherit;
+    float: left;
+    margin-top: 6px;
+}
+.tree-editor-file button {
+    float: right;
+    padding: 4px 10px 4px 0;
+}
+.mainbar .cmake-project {
+    margin-top: 2px;
+}
+
+.v-scroll {
+    overflow-y: scroll;
+}
+
+.prepend-options {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.popular-arguments-btn {
+    border-top-right-radius: 0;
+}
+
+.panel-compilation {
+    border-top: none !important;
+    border-bottom: none !important;
+}
+
+.compiler-out {
+    cursor: help;
+}
+
+.compiler-selector-icon {
+    padding: 0 4px 0 4px !important;
+}
+
+.load-project-from-file {
+    width: 400px;
+}
+
+.delay {
+    display: inline;
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+.hideable {
+    margin-left: 4px;
+}
+
+.checkbox label {
+    cursor: pointer;
+}
+
+.ctrlSNothing {
+    font-size: small;
+    border: none;
+    user-select: text;
+}
+
+.currentCursorPosition {
+    position: absolute;
+    bottom: 0;
+    right: 14px; // width of monaco scrollbar
+    font-size: small;
+    border-radius: 0.5rem;
+    z-index: 1;
+    padding: 5px;
+}
+
+#site-template-modal-row {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 25px;
+    > div {
+        padding: 0;
+        flex-shrink: 0;
+        &.site-template-preview-col {
+            flex-grow: 1;
+            flex-shrink: 1;
+            img {
+                max-width: 100%;
+            }
+        }
+    }
+}
+
+#site-templates-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    li {
+        margin: 0;
+        padding: 0;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 3px 5px;
+        margin-bottom: 4px;
+        cursor: pointer;
+        &:hover {
+            background: rgba(0, 0, 0, 0.4);
+        }
+    }
+}
+
+.llvm-opt-pipeline-body {
+    display: flex;
+    overflow: hidden;
+    align-items: stretch;
+    height: 100%;
+    .passes-column {
+        color: white;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        height: 100%;
+        position: relative;
+        .passes-list div {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 3px;
+            border: 1px solid black;
+            cursor: pointer;
+            word-wrap: anywhere;
+            &.firstMachinePass {
+                margin-top: 5px;
+                position: relative;
+                &:before {
+                    position: absolute;
+                    top: -5px;
+                    left: 0;
+                    content: '';
+                    height: 4px;
+                    width: 100%;
+                    background: white;
+                }
+            }
+            &:hover,
+            &.active {
+                background: rgba(255, 255, 255, 0.2);
+            }
+            &.changed {
+                color: #36ac46;
+            }
+        }
+    }
+    .passes-column-resizer {
+        position: relative;
+        width: 5px;
+        height: 100%;
+        background-color: #000000;
+        transition: background-color 200ms ease;
+        z-index: 1;
+        &:hover {
+            background-color: #444444;
+            cursor: ew-resize;
+        }
+        .passes-column-resizer-handle {
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 15px;
+            height: 100%;
+        }
+    }
+}

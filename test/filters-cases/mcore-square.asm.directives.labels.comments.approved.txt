@@ -1,0 +1,67 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "square:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        subi    sp,16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        stw     r8,(sp,8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r8,sp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        stw     r2,(r8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ldw     r7,(r8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mult    r7,r7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r2,r7"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     sp,r8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ldw     r8,(sp,8)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        addi    sp,16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        jmp     r15"
+    }
+  ],
+  "labelDefinitions": {
+    "square": 1
+  }
+}

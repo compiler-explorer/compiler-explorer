@@ -25,19 +25,21 @@
 'use strict';
 var $ = require('jquery');
 var _ = require('underscore');
-var ga = require('../analytics');
-var Toggles = require('../toggles');
-var FontScale = require('../fontscale');
-var options = require('../options');
-var Alert = require('../alert');
-var local = require('../local');
-var Libraries = require('../libs-widget-ext');
-var AnsiToHtml = require('../ansi-to-html');
-require('../modes/asm-mode');
-require('../modes/ptx-mode');
-
-require('selectize');
-
+var Promise = require('es6-promise').Promise;
+var ga = require('../analytics').ga;
+var Toggles = require('../widgets/toggles').Toggles;
+var FontScale = require('../widgets/fontscale').FontScale;
+var options = require('../options').options;
+var Alert = require('../alert').Alert;
+var LibsWidget = require('../widgets/libs-widget').LibsWidget;
+var AnsiToHtml = require('../ansi-to-html').Filter;
+var TimingWidget = require('../widgets/timing-info-widget');
+var CompilerPicker = require('../compiler-picker').CompilerPicker;
+var Settings = require('../settings').Settings;
+var utils = require('../utils');
+var LibUtils = require('../lib-utils');
+var PaneRenaming = require('../widgets/pane-renaming').PaneRenaming;
+var CompilerService = require('../compiler-service').CompilerService;
 
 var languages = options.languages;
 
@@ -50,7 +52,6 @@ function makeAnsiToHtml(color) {
     });
 }
 
-
 function Executor(hub, container, state) {
     this.container = container;
     this.hub = hub;
@@ -58,9 +59,15 @@ function Executor(hub, container, state) {
     this.compilerService = hub.compilerService;
     this.domRoot = container.getElement();
     this.domRoot.html($('#executor').html());
-    this.sourceEditorId = state.source || 1;
+    this.contentRoot = this.domRoot.find('.content');
+    this.sourceTreeId = state.tree ? state.tree : false;
+    if (this.sourceTreeId) {
+        this.sourceEditorId = false;
+    } else {
+        this.sourceEditorId = state.source || 1;
+    }
     this.id = state.id || hub.nextExecutorId();
-    this.settings = JSON.parse(local.get('settings', '{}'));
+    this.settings = Settings.getStoredSettings();
     this.initLangAndCompiler(state);
     this.infoByLang = {};
     this.deferCompiles = hub.deferred;
@@ -70,11 +77,14 @@ function Executor(hub, container, state) {
     this.executionStdin = state.execStdin || '';
     this.source = '';
     this.lastResult = {};
+    this.lastTimeTaken = 0;
     this.pendingRequestSentAt = 0;
+    this.pendingCMakeRequestSentAt = 0;
     this.nextRequest = null;
+    this.nextCMakeRequest = null;
 
     this.alertSystem = new Alert();
-    this.alertSystem.prefixMessage = 'Executor #' + this.id + ': ';
+    this.alertSystem.prefixMessage = 'Executor #' + this.id;
 
     this.normalAnsiToHtml = makeAnsiToHtml();
     this.errorAnsiToHtml = makeAnsiToHtml('red');
@@ -82,32 +92,16 @@ function Executor(hub, container, state) {
     this.initButtons(state);
 
     this.fontScale = new FontScale(this.domRoot, state, 'pre.content');
+    this.compilerPicker = new CompilerPicker(
+        this.domRoot,
+        this.hub,
+        this.currentLangId,
+        this.compiler ? this.compiler.id : null,
+        _.bind(this.onCompilerChange, this),
+        this.compilerIsVisible
+    );
 
-    this.compilerPicker.selectize({
-        sortField: this.compilerService.getSelectizerOrder(),
-        valueField: 'id',
-        labelField: 'name',
-        searchField: ['name'],
-        optgroupField: 'group',
-        optgroups: this.compilerService.getGroupsInUse(this.currentLangId),
-        lockOptgroupOrder: true,
-        options: _.map(this.getCurrentLangCompilers(), _.identity),
-        items: this.compiler ? [this.compiler.id] : [],
-        dropdownParent: 'body',
-        closeAfterSelect: true,
-    }).on('change', _.bind(function (e) {
-        var val = $(e.target).val();
-        if (val) {
-            ga.proxy('send', {
-                hitType: 'event',
-                eventCategory: 'SelectCompiler',
-                eventAction: val,
-            });
-            this.onCompilerChange(val);
-        }
-    }, this));
-
-    this.compilerSelectizer = this.compilerPicker[0].selectize;
+    this.paneRenaming = new PaneRenaming(this, state);
 
     this.initLibraries(state);
     this.initCallbacks();
@@ -120,7 +114,30 @@ function Executor(hub, container, state) {
         eventCategory: 'OpenViewPane',
         eventAction: 'Executor',
     });
+
+    if (this.sourceTreeId) {
+        this.compile();
+    }
 }
+
+Executor.prototype.compilerIsVisible = function (compiler) {
+    return compiler.supportsExecute;
+};
+
+Executor.prototype.getEditorIdBySourcefile = function (sourcefile) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            return tree.multifileService.getEditorIdByFilename(sourcefile.file);
+        }
+    } else {
+        if (sourcefile !== null && (sourcefile.file === null || sourcefile.mainsource)) {
+            return this.sourceEditorId;
+        }
+    }
+
+    return false;
+};
 
 Executor.prototype.initLangAndCompiler = function (state) {
     var langId = state.lang;
@@ -133,6 +150,7 @@ Executor.prototype.initLangAndCompiler = function (state) {
 
 Executor.prototype.close = function () {
     this.eventHub.unsubscribe();
+    this.compilerPicker.close();
     this.eventHub.emit('executorClose', this.id);
 };
 
@@ -141,36 +159,24 @@ Executor.prototype.undefer = function () {
     if (this.needsCompile) this.compile();
 };
 
-Executor.prototype.updateAndCalcTopBarHeight = function () {
-    // If we save vertical space by hiding stuff that's OK to hide
-    // when thin, then hide that stuff.
-    this.hideable.show();
-    var topBarHeightMax = this.topBar.outerHeight(true);
-    this.hideable.hide();
-    var topBarHeightMin = this.topBar.outerHeight(true);
-    var topBarHeight = topBarHeightMin;
-    if (topBarHeightMin === topBarHeightMax) {
-        this.hideable.show();
-    }
-
-    if (!this.panelCompilation.hasClass('d-none')) {
-        topBarHeight += this.panelCompilation.outerHeight(true);
-    }
-    if (!this.panelArgs.hasClass('d-none')) {
-        topBarHeight += this.panelArgs.outerHeight(true);
-    }
-    if (!this.panelStdin.hasClass('d-none')) {
-        topBarHeight += this.panelStdin.outerHeight(true);
-    }
-
-    return topBarHeight;
-};
-
 Executor.prototype.resize = function () {
-    var topBarHeight = this.updateAndCalcTopBarHeight();
-    var bottomBarHeight = this.bottomBar.outerHeight(true);
-    this.outputContentRoot.outerHeight(this.domRoot.height() - topBarHeight - bottomBarHeight);
+    _.defer(function (self) {
+        var topBarHeight = utils.updateAndCalcTopBarHeight(self.domRoot, $(self.topBar[0]), self.hideable);
 
+        // We have some more elements that modify the topBarHeight
+        if (!self.panelCompilation.hasClass('d-none')) {
+            topBarHeight += self.panelCompilation.outerHeight(true);
+        }
+        if (!self.panelArgs.hasClass('d-none')) {
+            topBarHeight += self.panelArgs.outerHeight(true);
+        }
+        if (!self.panelStdin.hasClass('d-none')) {
+            topBarHeight += self.panelStdin.outerHeight(true);
+        }
+
+        var bottomBarHeight = self.bottomBar.outerHeight(true);
+        self.outputContentRoot.outerHeight(self.domRoot.height() - topBarHeight - bottomBarHeight);
+    }, this);
 };
 
 function errorResult(message) {
@@ -192,6 +198,7 @@ Executor.prototype.compile = function (bypassCache) {
         },
         compilerOptions: {
             executorRequest: true,
+            skipAsm: true,
         },
         filters: {execute: true},
         tools: [],
@@ -205,20 +212,123 @@ Executor.prototype.compile = function (bypassCache) {
         });
     });
 
-    this.compilerService.expand(this.source).then(_.bind(function (expanded) {
-        var request = {
-            source: expanded || '',
-            compiler: this.compiler ? this.compiler.id : '',
-            options: options,
-            lang: this.currentLangId,
-        };
+    if (this.sourceTreeId) {
+        this.compileFromTree(options, bypassCache);
+    } else {
+        this.compileFromEditorSource(options, bypassCache);
+    }
+};
+
+Executor.prototype.compileFromEditorSource = function (options, bypassCache) {
+    if (!this.compiler.supportsExecute) {
+        this.alertSystem.notify('This compiler (' + this.compiler.name + ') does not support execution', {
+            group: 'execution',
+        });
+        return;
+    }
+    this.compilerService.expand(this.source).then(
+        _.bind(function (expanded) {
+            var request = {
+                source: expanded || '',
+                compiler: this.compiler ? this.compiler.id : '',
+                options: options,
+                lang: this.currentLangId,
+                files: [],
+            };
+            if (bypassCache) request.bypassCache = true;
+            if (!this.compiler) {
+                this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+            } else {
+                this.sendCompile(request);
+            }
+        }, this)
+    );
+};
+
+Executor.prototype.compileFromTree = function (options, bypassCache) {
+    var tree = this.hub.getTreeById(this.sourceTreeId);
+    if (!tree) {
+        this.sourceTreeId = false;
+        this.compileFromEditorSource(options, bypassCache);
+        return;
+    }
+
+    var request = {
+        source: tree.multifileService.getMainSource(),
+        compiler: this.compiler ? this.compiler.id : '',
+        options: options,
+        lang: this.currentLangId,
+        files: tree.multifileService.getFiles(),
+    };
+
+    var fetches = [];
+
+    fetches.push(
+        this.compilerService.expand(request.source).then(function (contents) {
+            request.source = contents;
+        })
+    );
+
+    for (var i = 0; i < request.files.length; i++) {
+        var file = request.files[i];
+        fetches.push(
+            this.compilerService.expand(file.contents).then(function (contents) {
+                file.contents = contents;
+            })
+        );
+    }
+
+    var self = this;
+    Promise.all(fetches).then(function () {
+        var treeState = tree.currentState();
+        var cmakeProject = tree.multifileService.isACMakeProject();
+
         if (bypassCache) request.bypassCache = true;
-        if (!this.compiler) {
-            this.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        if (!self.compiler) {
+            self.onCompileResponse(request, errorResult('<Please select a compiler>'), false);
+        } else if (cmakeProject && request.source === '') {
+            self.onCompileResponse(request, errorResult('<Please supply a CMakeLists.txt>'), false);
         } else {
-            this.sendCompile(request);
+            if (cmakeProject) {
+                request.options.compilerOptions.cmakeArgs = treeState.cmakeArgs;
+                request.options.compilerOptions.customOutputFilename = treeState.customOutputFilename;
+                self.sendCMakeCompile(request);
+            } else {
+                self.sendCompile(request);
+            }
         }
-    }, this));
+    });
+};
+
+Executor.prototype.sendCMakeCompile = function (request) {
+    var onCompilerResponse = _.bind(this.onCMakeResponse, this);
+
+    if (this.pendingCMakeRequestSentAt) {
+        // If we have a request pending, then just store this request to do once the
+        // previous request completes.
+        this.nextCMakeRequest = request;
+        return;
+    }
+    // this.eventHub.emit('compiling', this.id, this.compiler);
+    // Display the spinner
+    this.handleCompilationStatus({code: 4});
+    this.pendingCMakeRequestSentAt = Date.now();
+    // After a short delay, give the user some indication that we're working on their
+    // compilation.
+    this.compilerService
+        .submitCMake(request)
+        .then(function (x) {
+            onCompilerResponse(request, x.result, x.localCacheHit);
+        })
+        .catch(function (x) {
+            var message = 'Unknown error';
+            if (_.isString(x)) {
+                message = x;
+            } else if (x) {
+                message = x.error || x.code || x.message || x;
+            }
+            onCompilerResponse(request, errorResult(message), false);
+        });
 };
 
 Executor.prototype.sendCompile = function (request) {
@@ -236,7 +346,8 @@ Executor.prototype.sendCompile = function (request) {
     this.pendingRequestSentAt = Date.now();
     // After a short delay, give the user some indication that we're working on their
     // compilation.
-    this.compilerService.submit(request)
+    this.compilerService
+        .submit(request)
         .then(function (x) {
             onCompilerResponse(request, x.result, x.localCacheHit);
         })
@@ -245,28 +356,39 @@ Executor.prototype.sendCompile = function (request) {
             if (_.isString(x)) {
                 message = x;
             } else if (x) {
-                message = x.error || x.code;
+                message = x.error || x.code || x.message || x;
             }
             onCompilerResponse(request, errorResult(message), false);
         });
 };
 
-Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column) {
-    var elem = $('<p></p>').appendTo(container);
+Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum /*, column*/) {
+    var elem = $('<div/>').appendTo(container);
     if (lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
-                .click(_.bind(function (e) {
-                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, true);
-                    // do not bring user to the top of index.html
-                    // http://stackoverflow.com/questions/3252730
-                    e.preventDefault();
-                    return false;
-                }, this))
-                .on('mouseover', _.bind(function () {
-                    this.eventHub.emit('editorLinkLine', this.sourceEditorId, lineNum, column, false);
-                }, this))
+                .click(
+                    _.bind(function (e) {
+                        // var editorId = this.getEditorIdBySourcefile(source);
+                        // if (editorId) {
+                        //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
+                        // }
+                        // do not bring user to the top of index.html
+                        // http://stackoverflow.com/questions/3252730
+                        e.preventDefault();
+                        return false;
+                    }, this)
+                )
+                .on(
+                    'mouseover',
+                    _.bind(function () {
+                        // var editorId = this.getEditorIdBySourcefile(source);
+                        // if (editorId) {
+                        //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
+                        // }
+                    }, this)
+                )
         );
     } else {
         elem.html(msg);
@@ -281,25 +403,100 @@ Executor.prototype.clearPreviousOutput = function () {
 
 Executor.prototype.handleOutput = function (output, element, ansiParser) {
     var outElem = $('<pre class="card"></pre>').appendTo(element);
-    _.each(output, function (obj) {
-        if (obj.text === '') {
-            this.addCompilerOutputLine('<br/>', outElem);
-        } else {
-            var lineNumber = obj.tag ? obj.tag.line : obj.line;
-            var columnNumber = obj.tag ? obj.tag.column : -1;
-            this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
-        }
-    }, this);
+    _.each(
+        output,
+        function (obj) {
+            if (obj.text === '') {
+                this.addCompilerOutputLine('<br/>', outElem);
+            } else {
+                var lineNumber = obj.tag ? obj.tag.line : obj.line;
+                var columnNumber = obj.tag ? obj.tag.column : -1;
+                this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
+            }
+        },
+        this
+    );
     return outElem;
 };
 
-Executor.prototype.onCompileResponse = function (request, result, cached) {
-    // Save which source produced this change. It should probably be saved earlier though
+Executor.prototype.getBuildStdoutFromResult = function (result) {
+    var arr = [];
+
+    if (result.buildResult && result.buildResult.stdout !== undefined) {
+        arr = arr.concat(result.buildResult.stdout);
+    }
+
+    if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            arr = arr.concat(step.stdout);
+        });
+    }
+
+    return arr;
+};
+
+Executor.prototype.getBuildStderrFromResult = function (result) {
+    var arr = [];
+
+    if (result.buildResult && result.buildResult.stderr !== undefined) {
+        arr = arr.concat(result.buildResult.stderr);
+    }
+
+    if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            arr = arr.concat(step.stderr);
+        });
+    }
+
+    return arr;
+};
+
+Executor.prototype.getExecutionStdoutfromResult = function (result) {
+    if (result.execResult && result.execResult.stdout !== undefined) {
+        return result.execResult.stdout;
+    }
+
+    return result.stdout || [];
+};
+
+Executor.prototype.getExecutionStderrfromResult = function (result) {
+    if (result.execResult) {
+        return result.execResult.stderr;
+    }
+
+    return result.stderr || [];
+};
+
+Executor.prototype.onCMakeResponse = function (request, result, cached) {
     result.source = this.source;
     this.lastResult = result;
-    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
-    var wasRealReply = this.pendingRequestSentAt > 0;
-    this.pendingRequestSentAt = 0;
+    var timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
+    this.lastTimeTaken = timeTaken;
+    var wasRealReply = this.pendingCMakeRequestSentAt > 0;
+    this.pendingCMakeRequestSentAt = 0;
+
+    this.handleCompileRequestAndResponse(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCMakeRequest();
+};
+
+Executor.prototype.doNextCompileRequest = function () {
+    if (this.nextRequest) {
+        var next = this.nextRequest;
+        this.nextRequest = null;
+        this.sendCompile(next);
+    }
+};
+
+Executor.prototype.doNextCMakeRequest = function () {
+    if (this.nextCMakeRequest) {
+        var next = this.nextCMakeRequest;
+        this.nextCMakeRequest = null;
+        this.sendCMakeCompile(next);
+    }
+};
+
+Executor.prototype.handleCompileRequestAndResponse = function (request, result, cached, wasRealReply, timeTaken) {
     ga.proxy('send', {
         hitType: 'event',
         eventCategory: 'Compile',
@@ -315,32 +512,46 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     });
 
     this.clearPreviousOutput();
-    var compileStdout = result.buildResult.stdout || [];
-    var compileStderr = result.buildResult.stderr || [];
-    var execStdout = result.stdout || [];
-    var execStderr = result.stderr || [];
-    if (!result.didExecute) {
-        this.executionStatusSection.append($('<p></p>').text('Could not execute the program'));
-        this.executionStatusSection.append($('<p></p>').text('Compiler returned: ' + result.buildResult.code));
+    var compileStdout = this.getBuildStdoutFromResult(result);
+    var compileStderr = this.getBuildStderrFromResult(result);
+    var execStdout = this.getExecutionStdoutfromResult(result);
+    var execStderr = this.getExecutionStderrfromResult(result);
+
+    var buildResultCode = 0;
+
+    if (result.buildResult) {
+        buildResultCode = result.buildResult.code;
+    } else if (result.buildsteps) {
+        _.each(result.buildsteps, function (step) {
+            buildResultCode = step.code;
+        });
     }
 
+    if (!result.didExecute) {
+        this.executionStatusSection.append($('<div/>').text('Could not execute the program'));
+        this.executionStatusSection.append($('<div/>').text('Compiler returned: ' + buildResultCode));
+    }
+    // reset stream styles
+    this.normalAnsiToHtml.reset();
+    this.errorAnsiToHtml.reset();
     if (compileStdout.length > 0) {
-        this.compilerOutputSection.append($('<p></p>').text('Compiler stdout'));
+        this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
         this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);
     }
     if (compileStderr.length > 0) {
-        this.compilerOutputSection.append($('<p></p>').text('Compiler stderr'));
+        this.compilerOutputSection.append($('<div/>').text('Compiler stderr'));
         this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml);
     }
     if (result.didExecute) {
-        this.executionOutputSection.append($('<p></p>').text('Program returned: ' + result.code));
+        var exitCode = result.execResult ? result.execResult.code : result.code;
+        this.executionOutputSection.append($('<div/>').text('Program returned: ' + exitCode));
         if (execStdout.length > 0) {
-            this.executionOutputSection.append($('<p></p>').text('Program stdout'));
+            this.executionOutputSection.append($('<div/>').text('Program stdout'));
             var outElem = this.handleOutput(execStdout, this.executionOutputSection, this.normalAnsiToHtml);
             outElem.addClass('execution-stdout');
         }
         if (execStderr.length > 0) {
-            this.executionOutputSection.append($('<p></p>').text('Program stderr'));
+            this.executionOutputSection.append($('<div/>').text('Program stderr'));
             this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml);
         }
     }
@@ -354,16 +565,27 @@ Executor.prototype.onCompileResponse = function (request, result, cached) {
     }
     this.compileTimeLabel.text(timeLabelText);
 
-    this.setCompilationOptionsPopover(result.buildResult &&
-        result.buildResult.compilationOptions ? result.buildResult.compilationOptions.join(' ') : '');
+    this.setCompilationOptionsPopover(
+        result.buildResult && result.buildResult.compilationOptions
+            ? result.buildResult.compilationOptions.join(' ')
+            : ''
+    );
 
     this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
+};
 
-    if (this.nextRequest) {
-        var next = this.nextRequest;
-        this.nextRequest = null;
-        this.sendCompile(next);
-    }
+Executor.prototype.onCompileResponse = function (request, result, cached) {
+    // Save which source produced this change. It should probably be saved earlier though
+    result.source = this.source;
+    this.lastResult = result;
+    var timeTaken = Math.max(0, Date.now() - this.pendingRequestSentAt);
+    this.lastTimeTaken = timeTaken;
+    var wasRealReply = this.pendingRequestSentAt > 0;
+    this.pendingRequestSentAt = 0;
+
+    this.handleCompileRequestAndResponse(request, result, cached, wasRealReply, timeTaken);
+
+    this.doNextCompileRequest();
 };
 
 Executor.prototype.resendResult = function () {
@@ -381,8 +603,20 @@ Executor.prototype.onResendExecutionResult = function (id) {
 };
 
 Executor.prototype.onEditorChange = function (editor, source, langId, compilerId) {
-    if (editor === this.sourceEditorId && langId === this.currentLangId &&
-        (compilerId === undefined)) {
+    if (this.sourceTreeId) {
+        var tree = this.hub.getTreeById(this.sourceTreeId);
+        if (tree) {
+            if (tree.multifileService.isEditorPartOfProject(editor)) {
+                if (this.settings.compileOnChange) {
+                    this.compile();
+
+                    return;
+                }
+            }
+        }
+    }
+
+    if (editor === this.sourceEditorId && langId === this.currentLangId && compilerId === undefined) {
         this.source = source;
         if (this.settings.compileOnChange) {
             this.compile();
@@ -392,7 +626,7 @@ Executor.prototype.onEditorChange = function (editor, source, langId, compilerId
 
 Executor.prototype.initButtons = function (state) {
     this.filters = new Toggles(this.domRoot.find('.filters'), state.filters);
-
+    this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state);
     this.compileClearCache = this.domRoot.find('.clear-cache');
     this.outputContentRoot = this.domRoot.find('pre.content');
     this.executionStatusSection = this.outputContentRoot.find('.execution-status');
@@ -404,6 +638,7 @@ Executor.prototype.initButtons = function (state) {
     this.execStdinField = this.domRoot.find('.execution-stdin');
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
+    this.fullTimingInfo = this.domRoot.find('.full-timing-info');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
 
     this.compileTimeLabel = this.domRoot.find('.compile-time');
@@ -411,16 +646,25 @@ Executor.prototype.initButtons = function (state) {
 
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('mouseup', _.bind(function (e) {
-        var target = $(e.target);
-        if (!target.is(this.prependOptions) && this.prependOptions.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.prependOptions.popover('hide');
+    $(document).on(
+        'mouseup',
+        _.bind(function (e) {
+            var target = $(e.target);
+            if (
+                !target.is(this.prependOptions) &&
+                this.prependOptions.has(target).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.prependOptions.popover('hide');
 
-        if (!target.is(this.fullCompilerName) && this.fullCompilerName.has(target).length === 0 &&
-            target.closest('.popover').length === 0)
-            this.fullCompilerName.popover('hide');
-    }, this));
+            if (
+                !target.is(this.fullCompilerName) &&
+                this.fullCompilerName.has(target).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.fullCompilerName.popover('hide');
+        }, this)
+    );
 
     this.optionsField.val(this.options);
     this.execArgsField.val(this.executionArguments);
@@ -428,7 +672,7 @@ Executor.prototype.initButtons = function (state) {
 
     this.shortCompilerName = this.domRoot.find('.short-compiler-name');
     this.compilerPicker = this.domRoot.find('.compiler-picker');
-    this.setCompilerVersionPopover('');
+    this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
     this.topBar = this.domRoot.find('.top-bar');
     this.bottomBar = this.domRoot.find('.bottom-bar');
@@ -440,6 +684,11 @@ Executor.prototype.initButtons = function (state) {
     this.panelCompilation = this.domRoot.find('.panel-compilation');
     this.panelArgs = this.domRoot.find('.panel-args');
     this.panelStdin = this.domRoot.find('.panel-stdin');
+
+    this.wrapButton = this.domRoot.find('.wrap-lines');
+    this.wrapTitle = this.wrapButton.prop('title');
+
+    this.triggerCompilationButton = this.bottomBar.find('.trigger-compilation');
 
     this.initToggleButtons(state);
 };
@@ -465,6 +714,14 @@ Executor.prototype.initToggleButtons = function (state) {
     if (state.compilerOutShown === false) {
         this.hidePanel(this.toggleCompilerOut, this.compilerOutputSection);
     }
+
+    if (state.wrap === true) {
+        this.contentRoot.addClass('wrap');
+        this.wrapButton.prop('title', '[ON] ' + this.wrapTitle);
+    } else {
+        this.contentRoot.removeClass('wrap');
+        this.wrapButton.prop('title', '[OFF] ' + this.wrapTitle);
+    }
 };
 
 Executor.prototype.onLibsChanged = function () {
@@ -473,8 +730,18 @@ Executor.prototype.onLibsChanged = function () {
 };
 
 Executor.prototype.initLibraries = function (state) {
-    this.libsWidget = new Libraries.Widget(this.currentLangId, this.compiler,
-        this.libsButton, state, _.bind(this.onLibsChanged, this));
+    this.libsWidget = new LibsWidget(
+        this.currentLangId,
+        this.compiler,
+        this.libsButton,
+        state,
+        _.bind(this.onLibsChanged, this),
+        LibUtils.getSupportedLibraries(
+            this.compiler ? this.compiler.libsArr : [],
+            this.currentLangId,
+            this.compiler ? this.compiler.remote : null
+        )
+    );
 };
 
 Executor.prototype.onFontScale = function () {
@@ -484,13 +751,19 @@ Executor.prototype.onFontScale = function () {
 Executor.prototype.initListeners = function () {
     // this.filters.on('change', _.bind(this.onFilterChange, this));
     this.fontScale.on('change', _.bind(this.onFontScale, this));
+    this.paneRenaming.on('renamePane', this.saveState.bind(this));
+    this.toggleWrapButton.on('change', _.bind(this.onToggleWrapChange, this));
 
     this.container.on('destroy', this.close, this);
     this.container.on('resize', this.resize, this);
     this.container.on('shown', this.resize, this);
-    this.container.on('open', function () {
-        this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
-    }, this);
+    this.container.on(
+        'open',
+        function () {
+            this.eventHub.emit('executorOpen', this.id, this.sourceEditorId);
+        },
+        this
+    );
     this.eventHub.on('editorChange', this.onEditorChange, this);
     this.eventHub.on('editorClose', this.onEditorClose, this);
     this.eventHub.on('settingsChange', this.onSettingsChange, this);
@@ -498,8 +771,13 @@ Executor.prototype.initListeners = function () {
     this.eventHub.on('resendExecution', this.onResendExecutionResult, this);
     this.eventHub.on('resize', this.resize, this);
     this.eventHub.on('findExecutors', this.sendExecutor, this);
-
     this.eventHub.on('languageChange', this.onLanguageChange, this);
+
+    this.fullTimingInfo.off('click').click(
+        _.bind(function () {
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
+        }, this)
+    );
 };
 
 Executor.prototype.showPanel = function (button, panel) {
@@ -526,97 +804,139 @@ Executor.prototype.togglePanel = function (button, panel) {
 Executor.prototype.initCallbacks = function () {
     this.initListeners();
 
-    var optionsChange = _.debounce(_.bind(function (e) {
-        this.onOptionsChange($(e.target).val());
-    }, this), 800);
+    var optionsChange = _.debounce(
+        _.bind(function (e) {
+            this.onOptionsChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    var execArgsChange = _.debounce(_.bind(function (e) {
-        this.onExecArgsChange($(e.target).val());
-    }, this), 800);
+    var execArgsChange = _.debounce(
+        _.bind(function (e) {
+            this.onExecArgsChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    var execStdinChange = _.debounce(_.bind(function (e) {
-        this.onExecStdinChange($(e.target).val());
-    }, this), 800);
+    var execStdinChange = _.debounce(
+        _.bind(function (e) {
+            this.onExecStdinChange($(e.target).val());
+        }, this),
+        800
+    );
 
-    this.optionsField
-        .on('change', optionsChange)
-        .on('keyup', optionsChange);
+    this.optionsField.on('change', optionsChange).on('keyup', optionsChange);
 
-    this.execArgsField
-        .on('change', execArgsChange)
-        .on('keyup', execArgsChange);
+    this.execArgsField.on('change', execArgsChange).on('keyup', execArgsChange);
 
-    this.execStdinField
-        .on('change', execStdinChange)
-        .on('keyup', execStdinChange);
+    this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
 
-    this.compileClearCache.on('click', _.bind(function () {
-        this.compilerService.cache.reset();
-        this.compile(true);
-    }, this));
+    this.compileClearCache.on(
+        'click',
+        _.bind(function () {
+            this.compilerService.cache.reset();
+            this.compile(true);
+        }, this)
+    );
 
     // Dismiss the popover on escape.
-    $(document).on('keyup.editable', _.bind(function (e) {
-        if (e.which === 27) {
-            this.libsButton.popover('hide');
-        }
-    }, this));
+    $(document).on(
+        'keyup.editable',
+        _.bind(function (e) {
+            if (e.which === 27) {
+                this.libsButton.popover('hide');
+            }
+        }, this)
+    );
 
-    this.toggleCompilation.on('click', _.bind(function () {
-        this.togglePanel(this.toggleCompilation, this.panelCompilation);
-    }, this));
+    this.toggleCompilation.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleCompilation, this.panelCompilation);
+        }, this)
+    );
 
-    this.toggleArgs.on('click', _.bind(function () {
-        this.togglePanel(this.toggleArgs, this.panelArgs);
-    }, this));
+    this.toggleArgs.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleArgs, this.panelArgs);
+        }, this)
+    );
 
-    this.toggleStdin.on('click', _.bind(function () {
-        this.togglePanel(this.toggleStdin, this.panelStdin);
-    }, this));
+    this.toggleStdin.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleStdin, this.panelStdin);
+        }, this)
+    );
 
-    this.toggleCompilerOut.on('click', _.bind(function () {
-        this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
-    }, this));
+    this.toggleCompilerOut.on(
+        'click',
+        _.bind(function () {
+            this.togglePanel(this.toggleCompilerOut, this.compilerOutputSection);
+        }, this)
+    );
+
+    this.triggerCompilationButton.on(
+        'click',
+        _.bind(function () {
+            this.compile(true);
+        }, this)
+    );
 
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
-    $(document).on('click', _.bind(function (e) {
-        var elem = this.libsButton;
-        var target = $(e.target);
-        if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
-            elem.popover('hide');
-        }
-    }, this));
+    $(document).on(
+        'click',
+        _.bind(function (e) {
+            var elem = this.libsButton;
+            var target = $(e.target);
+            if (!target.is(elem) && elem.has(target).length === 0 && target.closest('.popover').length === 0) {
+                elem.popover('hide');
+            }
+        }, this)
+    );
 
     this.eventHub.on('initialised', this.undefer, this);
 
     if (MutationObserver !== undefined) {
         new MutationObserver(_.bind(this.resize, this)).observe(this.execStdinField[0], {
-            attributes: true, attributeFilter: ['style'],
+            attributes: true,
+            attributeFilter: ['style'],
         });
     }
+};
+
+Executor.prototype.shouldEmitExecutionOnFieldChange = function () {
+    return this.settings.executorCompileOnChange;
 };
 
 Executor.prototype.onOptionsChange = function (options) {
     this.options = options;
     this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.compile();
+    }
 };
 
 Executor.prototype.onExecArgsChange = function (args) {
     this.executionArguments = args;
     this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.compile();
+    }
 };
 
 Executor.prototype.onExecStdinChange = function (newStdin) {
     this.executionStdin = newStdin;
     this.saveState();
-    this.compile();
+    if (this.shouldEmitExecutionOnFieldChange()) {
+        this.compile();
+    }
 };
 
-Executor.prototype.onRequestCompilation = function (editorId) {
-    if (editorId === this.sourceEditorId) {
+Executor.prototype.onRequestCompilation = function (editorId, treeId) {
+    if (editorId === this.sourceEditorId || (treeId && treeId === this.sourceTreeId)) {
         this.compile();
     }
 };
@@ -650,8 +970,15 @@ Executor.prototype.onCompilerChange = function (value) {
     this.updateCompilerUI();
 };
 
+Executor.prototype.onToggleWrapChange = function () {
+    var state = this.currentState();
+    this.contentRoot.toggleClass('wrap', state.wrap);
+    this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
+    this.saveState();
+};
+
 Executor.prototype.sendExecutor = function () {
-    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId);
+    this.eventHub.emit('executor', this.id, this.compiler, this.options, this.sourceEditorId, this.sourceTreeId);
 };
 
 Executor.prototype.onEditorClose = function (editor) {
@@ -670,6 +997,7 @@ Executor.prototype.currentState = function () {
         id: this.id,
         compiler: this.compiler ? this.compiler.id : '',
         source: this.sourceEditorId,
+        tree: this.sourceTreeId,
         options: this.options,
         execArgs: this.executionArguments,
         execStdin: this.executionStdin,
@@ -679,7 +1007,9 @@ Executor.prototype.currentState = function () {
         compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
         argsPanelShown: !this.panelArgs.hasClass('d-none'),
         stdinPanelShown: !this.panelStdin.hasClass('d-none'),
+        wrap: this.toggleWrapButton.get().wrap,
     };
+    this.paneRenaming.addState(state);
     this.fontScale.addState(state);
     return state;
 };
@@ -692,45 +1022,89 @@ Executor.prototype.getCompilerName = function () {
     return this.compiler ? this.compiler.name : 'No compiler set';
 };
 
-
 Executor.prototype.getLanguageName = function () {
     var lang = options.languages[this.currentLangId];
     return lang ? lang.name : '?';
 };
 
+Executor.prototype.getLinkHint = function () {
+    if (this.sourceTreeId) {
+        return 'Tree #' + this.sourceTreeId;
+    } else {
+        return 'Editor #' + this.sourceEditorId;
+    }
+};
+
 Executor.prototype.getPaneName = function () {
     var langName = this.getLanguageName();
     var compName = this.getCompilerName();
-    return compName + ' Executor (Editor #' + this.sourceEditorId + ') ' + langName;
+    return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
+};
+
+Executor.prototype.updateTitle = function () {
+    var name = this.paneName ? this.paneName : this.getPaneName();
+    this.container.setTitle(_.escape(name));
 };
 
 Executor.prototype.updateCompilerName = function () {
+    this.updateTitle();
     var compilerName = this.getCompilerName();
     var compilerVersion = this.compiler ? this.compiler.version : '';
-    this.container.setTitle(this.getPaneName());
+    var compilerFullVersion = this.compiler && this.compiler.fullVersion ? this.compiler.fullVersion : compilerVersion;
+    var compilerNotification = this.compiler ? this.compiler.notification : '';
     this.shortCompilerName.text(compilerName);
-    this.setCompilerVersionPopover(compilerVersion);
+    this.setCompilerVersionPopover({version: compilerVersion, fullVersion: compilerFullVersion}, compilerNotification);
 };
 
 Executor.prototype.setCompilationOptionsPopover = function (content) {
     this.prependOptions.popover('dispose');
     this.prependOptions.popover({
         content: content || 'No options in use',
-        template: '<div class="popover' +
+        template:
+            '<div class="popover' +
             (content ? ' compiler-options-popover' : '') +
             '" role="tooltip"><div class="arrow"></div>' +
             '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
     });
 };
 
-Executor.prototype.setCompilerVersionPopover = function (version) {
+Executor.prototype.setCompilerVersionPopover = function (version, notification) {
     this.fullCompilerName.popover('dispose');
+    // `notification` contains HTML from a config file, so is 'safe'.
+    // `version` comes from compiler output, so isn't, and is escaped.
+    var bodyContent = $('<div>');
+    var versionContent = $('<div>').html(_.escape(version.version));
+    bodyContent.append(versionContent);
+    if (version.fullVersion) {
+        var hiddenSection = $('<div>');
+        var hiddenVersionText = $('<div>').html(_.escape(version.fullVersion)).hide();
+        var clickToExpandContent = $('<a>')
+            .attr('href', 'javascript:;')
+            .text('Toggle full version output')
+            .on(
+                'click',
+                _.bind(function () {
+                    versionContent.toggle();
+                    hiddenVersionText.toggle();
+                    this.fullCompilerName.popover('update');
+                }, this)
+            );
+        hiddenSection.append(hiddenVersionText).append(clickToExpandContent);
+        bodyContent.append(hiddenSection);
+    }
     this.fullCompilerName.popover({
-        content: version || '',
-        template: '<div class="popover' +
+        html: true,
+        title: notification
+            ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0]
+            : 'Full compiler version',
+        content: bodyContent,
+        template:
+            '<div class="popover' +
             (version ? ' compiler-options-popover' : '') +
-            '" role="tooltip"><div class="arrow"></div>' +
-            '<h3 class="popover-header"></h3><div class="popover-body"></div></div>',
+            '" role="tooltip">' +
+            '<div class="arrow"></div>' +
+            '<h3 class="popover-header"></h3><div class="popover-body"></div>' +
+            '</div>',
     });
 };
 
@@ -738,40 +1112,54 @@ Executor.prototype.onSettingsChange = function (newSettings) {
     this.settings = _.clone(newSettings);
 };
 
+function ariaLabel(status) {
+    // Compiling...
+    if (status.code === 4) return 'Compiling';
+    if (status.didExecute) {
+        return 'Program compiled & executed';
+    } else {
+        return 'Program could not be executed';
+    }
+}
+
+function color(status) {
+    // Compiling...
+    if (status.code === 4) return '#888888';
+    if (status.didExecute) return '#12BB12';
+    return '#FF1212';
+}
+
 Executor.prototype.handleCompilationStatus = function (status) {
-    if (!this.statusLabel || !this.statusIcon) return;
+    // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
+    CompilerService.handleCompilationStatus(this.statusLabel, null, status);
 
-    function ariaLabel() {
-        // Compiling...
-        if (status.code === 4) return 'Compiling';
-        if (status.didExecute) {
-            return 'Program compiled & executed';
-        } else {
-            return 'Program could not be executed';
-        }
+    if (this.statusIcon != null) {
+        this.statusIcon
+            .removeClass()
+            .addClass('status-icon fas')
+            .css('color', color(status))
+            .toggle(status.code !== 0)
+            .prop('aria-label', ariaLabel(status))
+            .prop('data-status', status.code)
+            .toggleClass('fa-spinner fa-spin', status.code === 4)
+            .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
+            .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
     }
-
-    function color() {
-        // Compiling...
-        if (status.code === 4) return 'black';
-        if (status.didExecute) return '#12BB12';
-        return '#FF1212';
-    }
-
-    this.statusIcon
-        .removeClass()
-        .addClass('status-icon fas')
-        .css('color', color())
-        .toggle(status.code !== 0)
-        .prop('aria-label', ariaLabel())
-        .prop('data-status', status.code)
-        .toggleClass('fa-spinner', status.code === 4)
-        .toggleClass('fa-times-circle', status.code !== 4 && !status.didExecute)
-        .toggleClass('fa-check-circle', status.code !== 4 && status.didExecute);
 };
 
 Executor.prototype.updateLibraries = function () {
-    if (this.libsWidget) this.libsWidget.setNewLangId(this.currentLangId, this.compiler.id, this.compiler.libs);
+    if (this.libsWidget) {
+        var filteredLibraries = {};
+        if (this.compiler) {
+            filteredLibraries = LibUtils.getSupportedLibraries(
+                this.compiler.libsArr,
+                this.currentLangId,
+                this.compiler ? this.compiler.remote : null
+            );
+        }
+
+        this.libsWidget.setNewLangId(this.currentLangId, this.compiler ? this.compiler.id : false, filteredLibraries);
+    }
 };
 
 Executor.prototype.onLanguageChange = function (editorId, newLangId) {
@@ -796,7 +1184,7 @@ Executor.prototype.onLanguageChange = function (editorId, newLangId) {
 Executor.prototype.getCurrentLangCompilers = function () {
     var allCompilers = this.compilerService.getCompilersForLang(this.currentLangId);
     var hasAtLeastOneExecuteSupported = _.any(allCompilers, function (compiler) {
-        return (compiler.supportsExecute !== false);
+        return compiler.supportsExecute !== false;
     });
 
     if (!hasAtLeastOneExecuteSupported) {
@@ -807,21 +1195,16 @@ Executor.prototype.getCurrentLangCompilers = function () {
     return _.filter(
         allCompilers,
         _.bind(function (compiler) {
-            return ((compiler.hidden !== true) && (compiler.supportsExecute !== false)) ||
-                   (this.compiler && compiler.id === this.compiler.id);
-        }, this));
+            return (
+                (compiler.hidden !== true && compiler.supportsExecute !== false) ||
+                (this.compiler && compiler.id === this.compiler.id)
+            );
+        }, this)
+    );
 };
 
 Executor.prototype.updateCompilersSelector = function (info) {
-    this.compilerSelectizer.clearOptions(true);
-    this.compilerSelectizer.clearOptionGroups();
-    _.each(this.compilerService.getGroupsInUse(this.currentLangId), function (group) {
-        this.compilerSelectizer.addOptionGroup(group.value, {label: group.label});
-    }, this);
-    this.compilerSelectizer.load(_.bind(function (callback) {
-        callback(_.map(this.getCurrentLangCompilers(), _.identity));
-    }, this));
-    this.compilerSelectizer.setValue([this.compiler ? this.compiler.id : null], true);
+    this.compilerPicker.update(this.currentLangId, this.compiler ? this.compiler.id : null);
     this.options = info.options || '';
     this.optionsField.val(this.options);
     this.executionArguments = info.execArgs || '';

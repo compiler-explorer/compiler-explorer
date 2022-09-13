@@ -1,32 +1,44 @@
 ---
 root: true
 plugins:
-- import
-- jsdoc
-- node
-- promise
-- sonarjs
-- unicorn
+  - import
+  - jsdoc
+  - node
+  - promise
+  - sonarjs
+  - prettier
+  - unicorn
+  - '@typescript-eslint'
 extends:
-- ./.eslint-license-header.yml
-- eslint:recommended
-- plugin:import/recommended
-- plugin:node/recommended
-- plugin:unicorn/recommended
+  - ./.eslint-license-header.yml
+  - eslint:recommended
+  - plugin:import/recommended
+  - plugin:node/recommended
+  - plugin:unicorn/recommended
+  - prettier
+  - plugin:@typescript-eslint/eslint-recommended
+  - plugin:@typescript-eslint/recommended
+  - plugin:import/typescript
 env:
   mocha: true
   node: true
   es6: true
 rules:
+  prettier/prettier: error
   comma-dangle:
-  - error
-  - always-multiline
+    - error
+    - arrays: always-multiline
+      objects: always-multiline
+      imports: always-multiline
+      exports: always-multiline
+      functions: always-multiline
   eol-last:
-  - error
-  - always
+    - error
+    - always
   eqeqeq:
-  - error
-  - smart
+    - error
+    - smart
+  import/default: off # fs-extra trips this. the ts compiler catches actual errors
   import/extensions: error
   import/first: error
   import/newline-after-import: error
@@ -35,26 +47,23 @@ rules:
   import/no-default-export: warn
   import/no-deprecated: warn
   import/no-mutable-exports: error
+  import/no-named-as-default-member: off # Far too many things (express, morgan, fs) trip this
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
   import/order:
-  - warn
-  - alphabetize:
-      order: asc
-      caseInsensitive: true
-    newlines-between: always
-  indent:
-  - error
-  - 4
-  - SwitchCase: 1
+    - warn
+    - alphabetize:
+        order: asc
+        caseInsensitive: true
+      newlines-between: always
   max-len:
-  - error
-  - 120
-  - ignoreRegExpLiterals: true
+    - error
+    - 120
+    - ignoreRegExpLiterals: true
   max-statements:
-  - error
-  - 50
+    - error
+    - 100 # TODO reduce...was 50
   no-control-regex: 0
   no-duplicate-imports: error
   no-useless-call: error
@@ -65,39 +74,42 @@ rules:
   no-useless-rename: error
   no-useless-return: error
   quote-props:
-  - error
-  - as-needed
+    - error
+    - as-needed
   quotes:
-  - error
-  - single
-  - allowTemplateLiterals: true
-    avoidEscape: true
+    - error
+    - single
+    - allowTemplateLiterals: true
+      avoidEscape: true
   semi:
-  - error
-  - always
+    - error
+    - always
   space-before-function-paren:
-  - error
-  - anonymous: always
-    asyncArrow: always
-    named: never
+    - error
+    - anonymous: always
+      asyncArrow: always
+      named: never
+  keyword-spacing:
+    - error
+    - after: true
   yoda:
-  - error
-  - never
-  - onlyEquality: true
+    - error
+    - never
+    - onlyEquality: true
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn
-  jsdoc/check-tag-names: warn
+  jsdoc/check-tag-names: off
   jsdoc/check-types: warn
   jsdoc/empty-tags: warn
   jsdoc/newline-after-description: warn
   jsdoc/require-hyphen-before-param-description: warn
   jsdoc/valid-types: warn
   no-multiple-empty-lines:
-  - warn
-  - max: 1
-    maxBOF: 0
-    maxEOF: 0
+    - warn
+    - max: 1
+      maxBOF: 0
+      maxEOF: 0
   no-process-exit: off
   node/no-unsupported-features/es-syntax: off
   node/shebang: off
@@ -113,23 +125,46 @@ rules:
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
   sort-imports:
-  - warn
-  - ignoreCase: true
-    ignoreDeclarationSort: true
+    - warn
+    - ignoreCase: true
+      ignoreDeclarationSort: true
   unicorn/catch-error-name: off
   unicorn/consistent-function-scoping: off
+  unicorn/empty-brace-spaces: off
   unicorn/no-fn-reference-in-iterator: off
   unicorn/no-hex-escape: off
   unicorn/no-null: off
   unicorn/no-reduce: off
+  unicorn/numeric-separators-style: off
   unicorn/prefer-add-event-listener: off
   unicorn/prefer-flat-map: error
   unicorn/prefer-optional-catch-binding: off
+  unicorn/prefer-node-protocol: off # until we get node 16+
   unicorn/prefer-number-properties: off
   unicorn/prefer-string-slice: off
   unicorn/prevent-abbreviations: off
+  # things we'd like to turn on but need fairly extensive code changes:
+  unicorn/prefer-ternary: off
+  unicorn/prefer-array-some: off
+  unicorn/prefer-spread: off
+  unicorn/no-lonely-if: off
+  unicorn/no-array-reduce: off
+  unicorn/prefer-array-flat: off # can't turn off yet without tests blowing up; lodash vs underscore?
+  unicorn/no-array-callback-reference: off
+  unicorn/prefer-switch: off
+  unicorn/no-static-only-class: off
+  unicorn/no-process-exit: off
+  '@typescript-eslint/no-empty-function': off
+  '@typescript-eslint/no-unused-vars': off
+  '@typescript-eslint/no-explicit-any': off
 parserOptions:
   sourceType: module
   ecmaVersion: 2020
 globals:
   BigInt: true
+settings:
+  node:
+    tryExtensions: [.js, .ts]
+  import/parsers:
+    '@typescript-eslint/parser': [.ts, .tsx]
+  import/resolver: 'typescript'

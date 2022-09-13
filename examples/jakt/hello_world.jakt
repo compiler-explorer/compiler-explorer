@@ -1,0 +1,7 @@
+function hello() throws -> String  {
+    return "Well, hello friends."
+}
+
+function main() {
+    println("{}", hello())
+}

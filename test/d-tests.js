@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Rubén Rincón
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { DMDCompiler } from '../lib/compilers/dmd';
-import { LDCCompiler } from '../lib/compilers/ldc';
+import {DMDCompiler} from '../lib/compilers/dmd';
+import {LDCCompiler} from '../lib/compilers/ldc';
 
-import { makeCompilationEnvironment } from './utils';
+import {makeCompilationEnvironment} from './utils';
 
 const languages = {
     d: {id: 'd'},

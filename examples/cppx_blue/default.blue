@@ -1,8 +1,4 @@
-// Type your code here, or load an example.
-int square(int num) {
-    return num * num;
-}
-
-int main() {
-     return square(2);
+// Type your code here, or load an example
+square: (x: int) -> int = {
+    return x * x;
 }

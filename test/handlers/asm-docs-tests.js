@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2021, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,87 +22,115 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {expect} from 'chai';
 import express from 'express';
 
-import { AsmDocsHandler } from '../../lib/handlers/asm-docs-api';
-import { chai } from '../utils';
+import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-documentation';
+import {chai} from '../utils';
 
-describe('Assembly documents', () => {
+/** Test matrix of architecture to [opcode, tooptip, html, url] */
+export const TEST_MATRIX = {
+    6502: [
+        [
+            'lda',
+            'Load Accumulator with Memory',
+            'data is transferred from memory to the accumulator',
+            'https://www.pagetable.com/c64ref/6502/',
+        ],
+    ],
+    amd64: [
+        ['mov', 'Copies the second operand', 'Copies the second operand', 'www.felixcloutier.com'],
+        [
+            'shr',
+            'Shifts the bits in the first operand',
+            'Shifts the bits in the first operand',
+            'www.felixcloutier.com',
+        ], // regression test for #3541
+    ],
+    arm32: [
+        [
+            'mov',
+            'writes an immediate value',
+            'writes an immediate value to the destination register',
+            'https://developer.arm.com/documentation/',
+        ],
+    ],
+    avr: [
+        [
+            'mov',
+            'Copy Register',
+            'makes a copy of one register into another',
+            'https://ww1.microchip.com/downloads/en/DeviceDoc/AVR-InstructionSet-Manual-DS40002198.pdf',
+        ],
+    ],
+    java: [
+        [
+            'iload_0',
+            'Load int from local variable',
+            'Load int from local variable',
+            'https://docs.oracle.com/javase/specs/jvms/se16/html/',
+        ],
+    ],
+    llvm: [
+        [
+            'ret',
+            'There are two forms of the ‘ret’ instruction',
+            '<span id="i-ret"></span><h4>',
+            'https://llvm.org/docs/LangRef.html#ret-instruction',
+        ],
+    ],
+};
+
+describe('Assembly Documentation API', () => {
     let app;
 
     before(() => {
         app = express();
-        const handler = new AsmDocsHandler();
-        app.use('/asm/:opcode', handler.handle.bind(handler));
+        const router = express.Router();
+        withAssemblyDocumentationProviders(router);
+        app.use('/api', router);
     });
 
-    // We don't serve a 404 for unknown opcodes as it allows the not-an-opcode to be cached.
-    it('should respond with "unknown opcode" for unknown opcodes', () => {
-        return chai.request(app)
-            .get('/asm/NOTANOPCODE')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.equal('Unknown opcode');
-            })
-            .catch(function (err) {
-                throw err;
-            });
+    it('should return 404 for unknown architecture', async () => {
+        const res = await chai.request(app).get(`/api/asm/not_an_arch/mov`).set('Accept', 'application/json');
+        expect(res).to.have.status(404);
+        expect(res).to.be.json;
+        expect(res.body).to.deep.equal({error: `No documentation for 'not_an_arch'`});
     });
 
-    it('should respond to text requests', () => {
-        return chai.request(app)
-            .get('/asm/mov')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.contain('Copies the second operand');
-            })
-            .catch(function (err) {
-                throw err;
+    for (const [arch, cases] of Object.entries(TEST_MATRIX)) {
+        for (const [opcode, tooltip, html, url] of cases) {
+            it(`should process ${arch} text requests`, async () => {
+                const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'text/plain');
+                expect(res).to.have.status(200);
+                expect(res).to.be.html;
+                expect(res.text).to.contain(html);
             });
-    });
 
-    it('should respond to json requests', () => {
-        return chai.request(app)
-            .get('/asm/mov')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.found.should.equal(true);
-                res.body.result.html.should.contain('Copies the second operand');
-                res.body.result.tooltip.should.contain('Copies the second operand');
-                res.body.result.url.should.contain('www.felixcloutier.com');
-            })
-            .catch(function (err) {
-                throw err;
-            });
-    });
-    it('should respond to json for unknown opcodes', () => {
-        return chai.request(app)
-            .get('/asm/NOANOPCODE')
-            .set('Accept', 'application/json')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.found.should.equal(false);
-            })
-            .catch(function (err) {
-                throw err;
-            });
-    });
+            it(`should process ${arch} json requests`, async () => {
+                const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'application/json');
 
-    it('should handle at&t syntax', () => {
-        return chai.request(app)
-            .get('/asm/addq')
-            .then(res => {
-                res.should.have.status(200);
-                res.should.be.html;
-                res.text.should.contain('Adds the destination operand');
-            })
-            .catch(function (err) {
-                throw err;
+                expect(res).to.have.status(200);
+                expect(res).to.be.json;
+                expect(res.body.html).to.contain(html);
+                expect(res.body.tooltip).to.contain(tooltip);
+                expect(res.body.url).to.contain(url);
             });
-    });
+
+            it(`should return 404 for ${arch} unknown opcode requests`, async () => {
+                const res = await chai
+                    .request(app)
+                    .get(`/api/asm/${arch}/not_an_opcode`)
+                    .set('Accept', 'application/json');
+                expect(res).to.have.status(404);
+                expect(res).to.be.json;
+                expect(res.body).to.deep.equal({error: "Unknown opcode 'NOT_AN_OPCODE'"});
+            });
+
+            it(`should return 406 for ${arch} bad accept type requests`, async () => {
+                const res = await chai.request(app).get(`/api/asm/${arch}/${opcode}`).set('Accept', 'application/pdf');
+                expect(res).to.have.status(406);
+            });
+        }
+    }
 });

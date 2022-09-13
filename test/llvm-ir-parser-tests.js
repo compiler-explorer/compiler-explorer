@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { LlvmIrParser } from '../lib/llvm-ir';
+import {LlvmIrParser} from '../lib/llvm-ir';
 import * as properties from '../lib/properties';
 
-import { chai } from './utils';
+import {chai} from './utils';
 
 const expect = chai.expect;
 
@@ -55,40 +55,48 @@ describe('llvm-ir parseMetaNode', function () {
     });
 
     it('should parse distinct DILexicalBlock', function () {
-        llvmIrParser.parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)').should.deep.equal({
-            metaType: 'LexicalBlock',
-            metaId: '!50',
-            scope: '!44',
-            file: '!1',
-            line: '8',
-            column: '5',
-        });
+        llvmIrParser
+            .parseMetaNode('!50 = distinct !DILexicalBlock(scope: !44, file: !1, line: 8, column: 5)')
+            .should.deep.equal({
+                metaType: 'LexicalBlock',
+                metaId: '!50',
+                scope: '!44',
+                file: '!1',
+                line: '8',
+                column: '5',
+            });
     });
 
     it('should parse all value types', function () {
-        llvmIrParser.parseMetaNode('!44 = distinct !DISubprogram(name: "func<int, int>", ' +
-            'scope: !1, line: 7, isLocal: false, isDefinition: true, flags: ' +
-            'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")').should.deep.equal({
-            metaType: 'Subprogram',
-            metaId: '!44',
-            name: 'func<int, int>',
-            line: '7',
-            scope: '!1',
-            isLocal: 'false',
-            isDefinition: 'true',
-            flags: 'DIFlagPrototyped',
-            ceTest: 'a:b\\"c,d',
-            ceEmpty: '',
-        });
+        llvmIrParser
+            .parseMetaNode(
+                '!44 = distinct !DISubprogram(name: "func<int, int>", ' +
+                    'scope: !1, line: 7, isLocal: false, isDefinition: true, flags: ' +
+                    'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")',
+            )
+            .should.deep.equal({
+                metaType: 'Subprogram',
+                metaId: '!44',
+                name: 'func<int, int>',
+                line: '7',
+                scope: '!1',
+                isLocal: 'false',
+                isDefinition: 'true',
+                flags: 'DIFlagPrototyped',
+                ceTest: 'a:b\\"c,d',
+                ceEmpty: '',
+            });
     });
 
     it('should parse distinct DILexicalBlock', function () {
-        llvmIrParser.parseMetaNode('!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")').should.deep.equal({
-            metaType: 'File',
-            metaId: '!1',
-            filename: '/tmp/example.cpp',
-            directory: '/home/compiler-explorer',
-        });
+        llvmIrParser
+            .parseMetaNode('!1 = !DIFile(filename: "/tmp/example.cpp", directory: "/home/compiler-explorer")')
+            .should.deep.equal({
+                metaType: 'File',
+                metaId: '!1',
+                filename: '/tmp/example.cpp',
+                directory: '/home/compiler-explorer',
+            });
     });
 });
 
@@ -104,13 +112,13 @@ describe('llvm-ir getSourceLineNumber', function () {
     });
 
     const debugInfo = {
-        '!10': { line: 10 },
-        '!20': { line: 20, scope: '!10' },
-        '!11': { scope: '!10' },
-        '!12': { line: 0, scope: '!10' },
-        '!14': { },
-        '!15': { scope: '!14' },
-        '!16': { scope: '!42' },
+        '!10': {line: 10},
+        '!20': {line: 20, scope: '!10'},
+        '!11': {scope: '!10'},
+        '!12': {line: 0, scope: '!10'},
+        '!14': {},
+        '!15': {scope: '!14'},
+        '!16': {scope: '!42'},
     };
 
     it('should return a line number', function () {
@@ -133,6 +141,48 @@ describe('llvm-ir getSourceLineNumber', function () {
     });
 });
 
+describe('llvm-ir getSourceColumn', function () {
+    let llvmIrParser;
+    let compilerProps;
+
+    before(() => {
+        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+
+        llvmIrParser = new LlvmIrParser(compilerProps);
+    });
+
+    const debugInfo = {
+        '!10': {column: 10},
+        '!20': {column: 20, scope: '!10'},
+        '!11': {scope: '!10'},
+        '!12': {column: 0, scope: '!10'},
+        '!14': {},
+        '!15': {scope: '!14'},
+        '!16': {scope: '!42'},
+    };
+
+    it('should return a column number', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!10')).to.equal(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!20')).to.equal(20);
+    });
+
+    it('should return the column number of its parent scope', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!11')).to.equal(10);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).to.equal(10);
+    });
+
+    it('should return null on non-existend node', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(null);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(null);
+    });
+
+    it('should return null if no higher scope has a column', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(null);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(null);
+    });
+});
+
 describe('llvm-ir getFileName', function () {
     let llvmIrParser;
     let compilerProps;
@@ -144,12 +194,12 @@ describe('llvm-ir getFileName', function () {
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
     const debugInfo = {
-        '!10': { filename: '/test.cpp' },
-        '!20': { filename: '/example.cpp' },
-        '!11': { file: '!10' },
-        '!21': { file: '!20' },
-        '!12': { scope: '!11' },
-        '!13': { scope: '!12' },
+        '!10': {filename: '/test.cpp'},
+        '!20': {filename: '/example.cpp'},
+        '!11': {file: '!10'},
+        '!21': {file: '!20'},
+        '!12': {scope: '!11'},
+        '!13': {scope: '!12'},
     };
 
     it('should return a filename', function () {
@@ -204,14 +254,14 @@ describe('llvm-ir isLineLlvmDirective', function () {
     ];
 
     it('should recognize directives', function () {
-        directives.forEach(directive => {
+        for (const directive of directives) {
             llvmIrParser.isLineLlvmDirective(directive).should.be.true;
-        });
+        }
     });
 
     it('should recognize non-directives', function () {
-        nonDirectives.forEach(directive => {
+        for (const directive of nonDirectives) {
             llvmIrParser.isLineLlvmDirective(directive).should.be.false;
-        });
+        }
     });
 });

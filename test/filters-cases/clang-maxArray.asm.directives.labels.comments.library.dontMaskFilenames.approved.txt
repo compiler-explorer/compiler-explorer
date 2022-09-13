@@ -1,0 +1,203 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z8maxArrayPdS_:                        # @_Z8maxArrayPdS_"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 1,
+        "mainsource": true
+      },
+      "text": "        xor     eax, eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_1:                                # =>This Inner Loop Header: Depth=1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 13,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        movsd   xmm0, qword ptr [rsi + 8*rax]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 13,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        ucomisd xmm0, qword ptr [rdi + 8*rax]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_3",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 13,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        jbe     .LBB0_3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 26,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        movsd   qword ptr [rdi + 8*rax], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_3:                                #   in Loop: Header=BB0_1 Depth=1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 10,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        lea     rcx, qword ptr [rax + 1]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 13,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        movsd   xmm0, qword ptr [rsi + 8*rax + 8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 13,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        ucomisd xmm0, qword ptr [rdi + 8*rax + 8]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 13,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        jbe     .LBB0_5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 26,
+        "file": "example.cpp",
+        "line": 3,
+        "mainsource": true
+      },
+      "text": "        movsd   qword ptr [rdi + 8*rax + 8], xmm0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_5:                                #   in Loop: Header=BB0_1 Depth=1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 10,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        inc     rcx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 10,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        cmp     rcx, 65536"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 10,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        mov     rax, rcx"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_1",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 10,
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        jne     .LBB0_1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "example.cpp",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB0_1": 3,
+    ".LBB0_3": 8,
+    ".LBB0_5": 14,
+    "_Z8maxArrayPdS_": 1
+  }
+}

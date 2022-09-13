@@ -24,10 +24,10 @@
 
 import child_process from 'child_process';
 
-import { WineVcCompiler } from '../lib/compilers/wine-vc';
-import { WslVcCompiler } from '../lib/compilers/wsl-vc';
+import {WineVcCompiler} from '../lib/compilers/wine-vc';
+import {WslVcCompiler} from '../lib/compilers/wsl-vc';
 
-import { makeCompilationEnvironment } from './utils';
+import {makeCompilationEnvironment} from './utils';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -81,7 +81,8 @@ function createCompiler(compiler) {
     return new compiler(info, ce);
 }
 
-if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) { // WSL
+if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
+    // WSL
     describe('Wsl compiler', () => {
         let compiler;
 
@@ -90,16 +91,16 @@ if (process.platform === 'linux' && child_process.execSync('uname -a').toString(
         });
 
         it('Can set working directory', () => {
-            return compiler.runCompiler('pwd', [], 'c:/this-should-be-run-in-mnt-c')
+            return compiler
+                .runCompiler('pwd', [], 'c:/this-should-be-run-in-mnt-c')
                 .then(testExecOutput)
-                .should.eventually.deep.equals(
-                    {
-                        code: 0,
-                        inputFilename: 'c:/this-should-be-run-in-mnt-c',
-                        okToCache: true,
-                        stderr: [],
-                        stdout: [{text: '/mnt/c'}],
-                    });
+                .should.eventually.deep.equals({
+                    code: 0,
+                    inputFilename: 'c:/this-should-be-run-in-mnt-c',
+                    okToCache: true,
+                    stderr: [],
+                    stdout: [{text: '/mnt/c'}],
+                });
         });
     });
 }

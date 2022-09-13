@@ -15,10 +15,10 @@
         .section        .debug_ranges,"",@progbits
 .Ldebug_range:
         .text
-        .globl  maxArray(double*, double*)
+        .globl  _Z8maxArrayPdS_
         .align  16, 0x90
-        .type   maxArray(double*, double*),@function
-maxArray(double*, double*):                        # @maxArray(double*, double*)
+        .type   _Z8maxArrayPdS_,@function
+_Z8maxArrayPdS_:                        # @_Z8maxArrayPdS_
 .Lfunc_begin0:
         .file   1 "/tmp/compiler-explorer-compiler1151011-11958-1r6gk9o" "example.cpp"
         .loc    1 1 0                   # /tmp/compiler-explorer-compiler1151011-11958-1r6gk9o/example.cpp:1:0

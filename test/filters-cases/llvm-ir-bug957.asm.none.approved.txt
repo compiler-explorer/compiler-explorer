@@ -1,0 +1,150 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "source_filename = \"./example.ll\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "define dso_local void @_Z4testi(i32 %arg) local_unnamed_addr {"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "bb:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  %i = icmp sgt i32 %arg, 0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".preheader",
+          "range": {
+            "endCol": 30,
+            "startCol": 20
+          }
+        },
+        {
+          "name": ".loopexit",
+          "range": {
+            "endCol": 48,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "  br i1 %i, label %.preheader, label %.loopexit"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".loopexit: ; preds = %.preheader, %bb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  ret void"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".preheader: ; preds = %bb, %.preheader"
+    },
+    {
+      "labels": [
+        {
+          "name": ".preheader",
+          "range": {
+            "endCol": 35,
+            "startCol": 25
+          }
+        },
+        {
+          "name": "bb",
+          "range": {
+            "endCol": 47,
+            "startCol": 45
+          }
+        }
+      ],
+      "source": null,
+      "text": "  %i1 = phi i32 [ %i2, %.preheader ], [ 0, %bb ]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  tail call void @_Z4calli(i32 %i1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  %i2 = add nuw nsw i32 %i1, 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "  %i3 = icmp eq i32 %i2, %arg"
+    },
+    {
+      "labels": [
+        {
+          "name": ".loopexit",
+          "range": {
+            "endCol": 30,
+            "startCol": 21
+          }
+        },
+        {
+          "name": ".preheader",
+          "range": {
+            "endCol": 49,
+            "startCol": 39
+          }
+        }
+      ],
+      "source": null,
+      "text": "  br i1 %i3, label %.loopexit, label %.preheader"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "declare dso_local void @_Z4calli(i32) local_unnamed_addr"
+    }
+  ],
+  "labelDefinitions": {
+    ".loopexit": 8,
+    ".preheader": 11,
+    "bb": 4,
+    "source_filename": 1
+  }
+}

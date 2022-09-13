@@ -43,11 +43,12 @@ a.dropdown-item(href="https://xania.org/MattGodbolt" rel="author" target="_blank
     span.dropdown-icon.fas.fa-address-card
     | About the author
     | &nbsp;
-a.dropdown-item#changes(href="javascript:;")
+button.dropdown-item.btn#changes
     span.dropdown-icon.fas.fa-sticky-note
     | Changelog
     | &nbsp;
-a.dropdown-item#version-tree(href="javascript:;" target="_blank")
+// Href is set dynamically when the site loads
+a.dropdown-item#version-tree(target="_blank")
     span.dropdown-icon.fas.fa-code-branch
     | Version tree
     | &nbsp;

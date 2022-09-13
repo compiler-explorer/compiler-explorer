@@ -1,0 +1,136 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3sumRKSt6vectorIiSaIiEE:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        movl    $0, %ecx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        movl    $0, %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+        "line": 671
+      },
+      "text": "        movq    (%rdi), %rsi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+        "line": 671
+      },
+      "text": "        movq    8(%rdi), %rdx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+        "line": 671
+      },
+      "text": "        subq    %rsi, %rdx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "/opt/compiler-explorer/gcc-7.1.0/include/c++/7.1.0/bits/stl_vector.h",
+        "line": 671
+      },
+      "text": "        sarq    $2, %rdx"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        cmpq    %rdx, %rcx"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L1",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        jnb     .L1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        addl    (%rsi,%rcx,4), %eax"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        addq    $1, %rcx"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L3",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        jmp     .L3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        rep ret"
+    }
+  ],
+  "labelDefinitions": {
+    ".L1": 14,
+    ".L3": 4,
+    "_Z3sumRKSt6vectorIiSaIiEE": 1
+  }
+}

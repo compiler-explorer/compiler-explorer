@@ -39,7 +39,6 @@ blacklist /srv
 whitelist /opt/compiler-explorer
 read-only /opt/compiler-explorer
 
-read-only /celibs
 read-only /infra
 
 noexec /tmp

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils';
-import { CompilerFinder } from '../lib/compiler-finder';
+import {CompilerFinder} from '../lib/compiler-finder';
 import * as properties from '../lib/properties';
 
 const languages = {
@@ -118,7 +118,6 @@ describe('Compiler-finder', function () {
     });
 
     it('should not hang for undefined groups (Bug #860)', () => {
-
         const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), {}, optionsHandler);
         return finder.getCompilers().should.eventually.have.lengthOf(2);
     });
@@ -150,24 +149,7 @@ describe('Compiler-finder', function () {
     it('should be able to filter libraries', async () => {
         const finder = new CompilerFinder({}, libraryCompilerProps, properties.fakeProps({}), {}, optionsHandler);
         const compilers = await finder.getCompilers();
-        const libs = compilers[0].libs;
-        libs.should.deep.equal({
-            catch2: {
-                versions: {
-                    2101: {
-                        version: '2.1.0.1',
-                        libPath: '/catch2/2.1.0.1/lib/x86_64',
-                    },
-                },
-            },
-            fmt: {
-                versions: {
-                    trunk: {
-                        version: '(trunk)',
-                        libPath: '/fmt/trunk/lib',
-                    },
-                },
-            },
-        });
+        const libsArr = compilers[0].libsArr;
+        libsArr.should.deep.equal(['fmt', 'catch2.2101']);
     });
 });

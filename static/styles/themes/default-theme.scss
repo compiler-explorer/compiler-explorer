@@ -1,0 +1,397 @@
+@import '~golden-layout/src/css/goldenlayout-light-theme';
+
+/*
+ * replace low res golden-layout icons with svg recreations to improve high DPI displays
+ * not all icons in golden-layout are used, so we don't replace all of them
+ */
+.lm_header .lm_tab .lm_close_tab {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+#renamepanemodal .modal-body {
+    min-height: 100px;
+}
+
+.lm_header .lm_tab .lm_modify_tab_title {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23000' class='bi bi-pencil' viewBox='0 0 16 16'%3E%3Cpath d='M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 11px;
+    height: 11px;
+    position: absolute;
+    top: 4px;
+    right: 23px;
+}
+
+.lm_controls .lm_maximise {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M0 4.5V0h9v9H0zM8 5V2H1v6h7z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+.lm_controls .lm_close {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M.45713 8.5429l-.44426-.44438 3.5955-3.5956L.00697.90152l.8944-.89463 3.6016 3.6015 3.6014-3.6015.88867.88867-3.6014 3.6015 3.6014 3.6015-.89449.89449-3.6015-3.6014-3.5957 3.5956z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+.lm_content {
+    border-color: #dddddd;
+}
+
+.lm_maximised .lm_controls .lm_maximise {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9'%3E%3Cpath fill='%23000' d='M1.0096 8.0019v-.99809h6.9807v1.9962H1.0096z'/%3E%3C/svg%3E") !important;
+    background-size: 9px !important;
+}
+
+body {
+    background-color: #ffffff;
+}
+
+.navbar-nav a.nav-link {
+    border: rgb(140, 140, 140) 1px solid;
+}
+
+.float-link {
+    background-color: rgba(128, 128, 128, 0.5);
+}
+
+.float-link:hover {
+    background-color: rgba(128, 128, 160, 0.5);
+}
+
+.lm_header {
+    background-color: #f2f2f2;
+}
+
+pre.content {
+    background-color: #f5f5f5;
+}
+
+pre.content.compiling {
+    background-color: #f0f0f0;
+}
+
+a.navbar-brand img.logo.inverse {
+    display: none !important;
+}
+
+a.navbar-brand img.logo.normal {
+    display: block !important;
+}
+
+.button-checkbox button:disabled {
+    background-color: #dae5e0 !important;
+    border-color: #aae3e0 !important;
+}
+
+.top-bar.btn-toolbar.bg-light {
+    border-bottom: 1px solid #d2d3d4;
+}
+
+.bottom-bar.bg-light {
+    border-top: 1px solid #d2d3d4;
+}
+
+.linked-code-decoration {
+    background: lightblue;
+}
+
+.linked-code-decoration-inline {
+    background: lightblue;
+}
+
+.linked-code-decoration-line {
+    background: lightblue !important;
+}
+
+.flow-decoration {
+    background-color: #b4131f !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.flow-highlight {
+    background-color: rgba(180, 19, 31, 0.4) !important;
+}
+
+.rainbow-decoration {
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-image: -webkit-gradient(
+        linear,
+        left top,
+        right bottom,
+        color-stop(0, red),
+        color-stop(16%, orange),
+        color-stop(32%, yellow),
+        color-stop(48%, green),
+        color-stop(60%, blue),
+        color-stop(76%, indigo),
+        color-stop(1, violet)
+    );
+}
+
+.font-option {
+    background: white;
+}
+
+.font-option:hover {
+    background: lightblue;
+}
+
+.font-option-active {
+    background: #226699;
+}
+
+.font-option-active:hover {
+    background: #4477aa;
+}
+
+.linked-code-decoration-margin {
+    background: lightblue;
+}
+
+.modal-content .well {
+    border-color: #474747;
+}
+
+.notification {
+    background-color: cornflowerblue;
+}
+
+.notification-info {
+    background-color: #f2f2f2;
+}
+
+.notification-error {
+    background-color: indianred;
+    color: white;
+    .close {
+        color: white;
+    }
+}
+
+.notification-on {
+    background-color: green;
+    color: #fff;
+    .close {
+        color: white;
+    }
+}
+
+.notification-off {
+    background-color: gray;
+    color: black;
+}
+
+.analysis,
+.mixed {
+    background: #fdfd96;
+}
+
+.passed {
+    background: #77dd77;
+}
+
+.missed {
+    background: #ff6961;
+}
+
+.conformance-wrapper {
+    background-color: #f5f5f5;
+}
+
+.graph-placeholder {
+    background-color: #ffffff;
+}
+
+.text-count {
+    color: green;
+}
+
+.err-count {
+    color: red;
+}
+
+.commit-entry:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.commit-entry:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.popover,
+.popover-content,
+.libs-container,
+.lib-list {
+    background-color: #fefefe;
+}
+
+.lib-in-use {
+    background-color: green;
+}
+
+#socialshare .share-twitter,
+.share-twitter {
+    background-color: #1da1f2;
+    color: white;
+}
+
+#socialshare .share-reddit,
+.share-reddit {
+    background-color: #ff4500;
+    color: white;
+}
+
+.share-disabled {
+    color: gray;
+}
+
+.community-advert {
+    background: #f0f0f0;
+    border-color: #67c52a;
+}
+
+.navbar-nav a.nav-link:hover {
+    background-color: #d8d9da;
+}
+
+kbd {
+    color: black;
+    border-color: #ccc;
+    background-color: #f7f7f7;
+}
+
+.prepend-options {
+    background-color: #e9ecef;
+}
+
+#simplecook {
+    background-color: #f4f4f4;
+}
+
+.new-cookie-msg {
+    color: black;
+}
+
+div.argmenuitem {
+    max-width: 250px;
+}
+
+div.argmenuitem span.argtitle {
+    font-weight: bold;
+    display: block;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+}
+
+div.argmenuitem span.argdescription {
+    max-height: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    font-style: italic;
+    font-size: smaller;
+    display: block;
+    white-space: normal;
+    text-overflow: ellipsis;
+    overflow-y: hidden;
+}
+
+.execution-stdout {
+    color: black;
+}
+
+.linked-compiler-output-line {
+    color: #007bfd;
+}
+
+.logo-pri {
+    fill: #67c52a;
+}
+
+.logo-sec {
+    fill: #3c3c3f;
+}
+
+.copy-link-btn:hover {
+    color: #007bfd;
+}
+
+.conformance-wrapper .compiler-list .form-row {
+    border-bottom: 1px solid #e3e3e3;
+}
+
+.toggle-fav {
+    color: #6c757d; // text-muted
+}
+
+.fas.fav {
+    color: #e3cf7a;
+}
+
+.lm_header .lm_tab:last-child {
+    border-bottom: 1px solid #ccc !important;
+}
+
+.lm_content .tree {
+    background-color: #fff;
+    height: 100%;
+}
+
+.lm_content .tree span.filename {
+    padding-left: 10px;
+}
+
+.tree li.tree-editor-file:hover {
+    background-color: #dae5e0 !important;
+}
+
+.compiler-out {
+    color: #797979 !important;
+}
+
+.ts-dropdown .optgroup-header {
+    background-color: #f6f6f6;
+}
+
+.currentCursorPosition {
+    color: #15a3b9;
+    background-color: darken(rgba(248, 249, 250, 0.85), 3%);
+    border: 1px solid #d2d3d4;
+}
+
+.llvm-opt-pipeline-body {
+    .passes-column {
+        color: black;
+        border-right: 1px solid #d2d3d4;
+        background: #f5f5f5;
+        .passes-list div {
+            background: #f5f5f5;
+            border: 1px solid #d2d3d4;
+            &.firstMachinePass {
+                &:before {
+                    background: white;
+                }
+            }
+            &:hover,
+            &.active {
+                background: lighten(#f5f5f5, 5%);
+            }
+            &.changed {
+                color: #148624;
+            }
+        }
+    }
+    .passes-column-resizer {
+        background-color: #f4f4f4;
+        transition: background-color 200ms ease;
+        &:hover {
+            background-color: #bbbbbb;
+        }
+    }
+    .monaco-placeholder {
+        border-left: 1px solid #d2d3d4;
+    }
+}

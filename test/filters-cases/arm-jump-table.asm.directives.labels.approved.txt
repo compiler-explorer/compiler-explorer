@@ -1,0 +1,2301 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z13switchexampleh:                     // @_Z13switchexampleh"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// %bb.0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        // kill: def $w0 killed $w0 def $x0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        and     w8, w0, #0xff"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmp     w8, #139                // =139"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_3",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        b.hi    .LBB0_3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// %bb.1:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LJTI0_0",
+          "range": {
+            "endCol": 29,
+            "startCol": 21
+          }
+        }
+      ],
+      "source": null,
+      "text": "        adrp    x9, .LJTI0_0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        and     x8, x0, #0xff"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LJTI0_0",
+          "range": {
+            "endCol": 39,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": null,
+      "text": "        add     x9, x9, :lo12:.LJTI0_0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ldr     x8, [x9, x8, lsl #3]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #123"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        br      x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cmp     w8, #255                // =255"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        b.ne    .LBB0_5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "// %bb.4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #149"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x7c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #125"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x7e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x7f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_11:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x80"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_12:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #129"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #130"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_14:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #131"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_15:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #132"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_16:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #133"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #134"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sub     sp, sp, #16             // =16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w8, wzr, #0x40"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        strb    w8, [sp, #12]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #145"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     sp, sp, #16             // =16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_19:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_20:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        orr     w0, wzr, #0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_21:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #146"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #147"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB0_23:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     w0, #148"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LJTI0_0:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_6",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_7",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_8",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_9",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_9"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_10",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_10"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_11",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_11"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_12",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_12"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_13",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_13"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_14",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_14"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_15",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_15"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_16",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_16"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_17",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_17"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_18",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_18"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_19",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_19"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_2",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_2",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_20",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_20"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_5",
+          "range": {
+            "endCol": 24,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_21",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_21"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_22",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_22"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LBB0_23",
+          "range": {
+            "endCol": 25,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .xword  .LBB0_23"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        // -- End function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    ".LBB0_10": 36,
+    ".LBB0_11": 39,
+    ".LBB0_12": 42,
+    ".LBB0_13": 45,
+    ".LBB0_14": 48,
+    ".LBB0_15": 51,
+    ".LBB0_16": 54,
+    ".LBB0_17": 57,
+    ".LBB0_18": 60,
+    ".LBB0_19": 67,
+    ".LBB0_2": 14,
+    ".LBB0_20": 70,
+    ".LBB0_21": 73,
+    ".LBB0_22": 76,
+    ".LBB0_23": 79,
+    ".LBB0_3": 17,
+    ".LBB0_5": 23,
+    ".LBB0_6": 25,
+    ".LBB0_7": 27,
+    ".LBB0_8": 30,
+    ".LBB0_9": 33,
+    ".LJTI0_0": 82,
+    "_Z13switchexampleh": 1
+  }
+}

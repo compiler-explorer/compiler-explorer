@@ -1,0 +1,2129 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3fooRKSt17basic_string_viewIcSt11char_traitsIcEE: # @_Z3fooRKSt17basic_string_viewIcSt11char_traitsIcEE"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# %bb.0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: foo:s <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: foo:s <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator[]:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator[]:this <- $rdi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #DEBUG_VALUE: operator[]:__pos <- 0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 17,
+        "file": "/opt/compiler-explorer/gcc-11.1.0/lib/gcc/x86_64-linux-gnu/11.1.0/../../../../include/c++/11.1.0/string_view",
+        "line": 235
+      },
+      "text": "        mov     rax, qword ptr [rdi + 8]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 45,
+        "file": null,
+        "line": 2
+      },
+      "text": "        movsx   eax, byte ptr [rax]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 38,
+        "file": null,
+        "line": 2
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # -- End function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_ACCESS_public"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_declaration"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_artificial"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_GNU_all_call_sites"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z3fooRKSt17basic_string_viewIcSt11char_traitsIcEE": 1
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "asm": [
+    {
+      "source": null,
+      "text": "a$ = 32"
+    },
+    {
+      "source": null,
+      "text": "__$ArrayPad$ = 80"
+    },
+    {
+      "source": null,
+      "text": "main    PROC"
+    },
+    {
+      "source": null,
+      "text": "$LN3:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        sub     rsp, 104                      ; 00000068H"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        mov     rax, QWORD PTR __security_cookie"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        xor     rax, rsp"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        mov     QWORD PTR __$ArrayPad$[rsp], rax"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp], 1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+4], 3"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+8], 4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+12], 2"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+16], 3"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+20], 5"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+24], 6"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+28], 4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+32], 8"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+36], 9"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 11
+      },
+      "text": "        mov     DWORD PTR a$[rsp+40], 2"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 13
+      },
+      "text": "        mov     edx, 2"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 13
+      },
+      "text": "        lea     rcx, QWORD PTR a$[rsp]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 13
+      },
+      "text": "        call    ??A?$array@H$0L@@std@@QEBAAEBH_K@Z      ; std::array<int,11>::operator[]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 13
+      },
+      "text": "        mov     eax, DWORD PTR [rax]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        mov     rcx, QWORD PTR __$ArrayPad$[rsp]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        xor     rcx, rsp"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        call    __security_check_cookie"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        add     rsp, 104                      ; 00000068H"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        ret     0"
+    },
+    {
+      "source": null,
+      "text": "main    ENDP"
+    }
+  ]
+}

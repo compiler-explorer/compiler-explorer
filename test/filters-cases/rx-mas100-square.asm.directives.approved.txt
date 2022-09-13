@@ -1,0 +1,72 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_square:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push.l  r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push.l  r6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     #-4, r0, r6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.L   r6, r0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.L   r1, [r6]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.L   [r6], r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mul     r10, r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.L   r10, r1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     #4, r0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        rts"
+    }
+  ],
+  "labelDefinitions": {
+    "_square": 1
+  }
+}

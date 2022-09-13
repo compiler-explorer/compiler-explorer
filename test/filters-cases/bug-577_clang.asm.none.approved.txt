@@ -1,0 +1,1214 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.cpp\""
+    },
+    {
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  _Z6squarei"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .p2align        4, 0x90"
+    },
+    {
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   _Z6squarei,@function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:                             # @_Z6squarei"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   1 \"\" \"example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 2 0                   # example.cpp:2:0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_startproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "# BB#0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcfi0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_offset 16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcfi1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_offset %rbp, -16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcfi2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_def_cfa_register %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %edi, -4(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 3 5 prologue_end      # example.cpp:3:5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #APP"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "label:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        #NO_APP"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 4 12                  # example.cpp:4:12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -4(%rbp), %edi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 4 16 is_stmt 0        # example.cpp:4:16"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        imull   -4(%rbp), %edi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .loc    1 4 5                   # example.cpp:4:5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %edi, %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 40,
+            "startCol": 29
+          }
+        },
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 51,
+            "startCol": 41
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   _Z6squarei, .Lfunc_end0-_Z6squarei"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .cfi_endproc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_str,\"MS\",@progbits,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"clang version 4.0.0-1ubuntu1 (tags/RELEASE_400/rc1)\" # string offset=0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"example.cpp\" # string offset=52"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"/home/partouf/compiler-explorer\" # string offset=122"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string3:"
+    },
+    {
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 28,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .asciz  \"_Z6squarei\"            # string offset=154"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"square\"                # string offset=165"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"int\"                   # string offset=172"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Linfo_string6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"num\"                   # string offset=176"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_loc,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_abbrev:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # Abbreviation Code"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17                      # DW_TAG_compile_unit"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_CHILDREN_yes"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   37                      # DW_AT_producer"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19                      # DW_AT_language"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5                       # DW_FORM_data2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   16                      # DW_AT_stmt_list"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   23                      # DW_FORM_sec_offset"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   27                      # DW_AT_comp_dir"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17                      # DW_AT_low_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_FORM_addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   18                      # DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   6                       # DW_FORM_data4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(2)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       # Abbreviation Code"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   46                      # DW_TAG_subprogram"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_CHILDREN_yes"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   17                      # DW_AT_low_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_FORM_addr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   18                      # DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   6                       # DW_FORM_data4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   64                      # DW_AT_frame_base"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   24                      # DW_FORM_exprloc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   110                     # DW_AT_linkage_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   58                      # DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   59                      # DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   73                      # DW_AT_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19                      # DW_FORM_ref4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   63                      # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   25                      # DW_FORM_flag_present"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(2)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       # Abbreviation Code"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5                       # DW_TAG_formal_parameter"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # DW_CHILDREN_no"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       # DW_AT_location"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   24                      # DW_FORM_exprloc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   58                      # DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   59                      # DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   73                      # DW_AT_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   19                      # DW_FORM_ref4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(2)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4                       # Abbreviation Code"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   36                      # DW_TAG_base_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # DW_CHILDREN_no"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   14                      # DW_FORM_strp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   62                      # DW_AT_encoding"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_AT_byte_size"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   11                      # DW_FORM_data1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(1)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(2)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # EOM(3)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lsection_info:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   90                      # Length of Unit"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4                       # DWARF version number"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lsection_abbrev",
+          "range": {
+            "endCol": 33,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lsection_abbrev        # Offset Into Abbrev. Section"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   8                       # Address Size (in bytes)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # Abbrev [1] 0xb:0x53 DW_TAG_compile_unit"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string0",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string0          # DW_AT_producer"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4                       # DW_AT_language"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string1",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string1          # DW_AT_name"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lline_table_start0",
+          "range": {
+            "endCol": 36,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lline_table_start0     # DW_AT_stmt_list"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string2",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string2          # DW_AT_comp_dir"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin0           # DW_AT_low_pc"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end0-.Lfunc_begin0 # DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       # Abbrev [2] 0x2a:0x2c DW_TAG_subprogram"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Lfunc_begin0           # DW_AT_low_pc"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lfunc_end0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".Lfunc_begin0",
+          "range": {
+            "endCol": 42,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lfunc_end0-.Lfunc_begin0 # DW_AT_high_pc"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_AT_frame_base"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   86"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string3",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string3          # DW_AT_linkage_name"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string4",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string4          # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       # DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   86                      # DW_AT_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "                                        # DW_AT_external"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   3                       # Abbrev [3] 0x47:0xe DW_TAG_formal_parameter"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       # DW_AT_location"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   145"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   124"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string6",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string6          # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   1                       # DW_AT_decl_file"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   2                       # DW_AT_decl_line"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   86                      # DW_AT_type"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # End Of Children Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4                       # Abbrev [4] 0x56:0x7 DW_TAG_base_type"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Linfo_string5",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Linfo_string5          # DW_AT_name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   5                       # DW_AT_encoding"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   4                       # DW_AT_byte_size"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # End Of Children Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_ranges,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_range:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_macinfo,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_macinfo:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lcu_macro_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0                       # End Of Macro List Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_pubnames,\"\",@progbits"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LpubNames_end0",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".LpubNames_begin0",
+          "range": {
+            "endCol": 50,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LpubNames_end0-.LpubNames_begin0 # Length of Public Names Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubNames_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2                       # DWARF Version"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lcu_begin0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lcu_begin0             # Offset of Compilation Unit Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   94                      # Compilation Unit Length"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   42                      # DIE offset"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"square\"                # External Name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       # End Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubNames_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_pubtypes,\"\",@progbits"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LpubTypes_end0",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        },
+        {
+          "name": ".LpubTypes_begin0",
+          "range": {
+            "endCol": 50,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LpubTypes_end0-.LpubTypes_begin0 # Length of Public Types Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubTypes_begin0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  2                       # DWARF Version"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Lcu_begin0",
+          "range": {
+            "endCol": 28,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Lcu_begin0             # Offset of Compilation Unit Info"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   94                      # Compilation Unit Length"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   86                      # DIE offset"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .asciz  \"int\"                   # External Name"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0                       # End Mark"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LpubTypes_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"clang version 4.0.0-1ubuntu1 (tags/RELEASE_400/rc1)\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        \".note.GNU-stack\",\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lline_table_start0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".Lcu_begin0": 128,
+    ".Lfunc_begin0": 7,
+    ".Lfunc_end0": 35,
+    ".Linfo_string0": 40,
+    ".Linfo_string1": 42,
+    ".Linfo_string2": 44,
+    ".Linfo_string3": 46,
+    ".Linfo_string4": 48,
+    ".Linfo_string5": 50,
+    ".Linfo_string6": 52,
+    ".Lline_table_start0": 196,
+    ".LpubNames_begin0": 174,
+    ".LpubNames_end0": 181,
+    ".LpubTypes_begin0": 184,
+    ".LpubTypes_end0": 191,
+    ".Lsection_abbrev": 56,
+    "_Z6squarei": 6,
+    "label": 24
+  }
+}

@@ -1,0 +1,506 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LNDBG_TX:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..TXTST0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.1:                         # Preds ..B1.0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.2:                                          #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN0:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        pushq     %rbp                                          #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.4:                                          #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        movq      %rsp, %rbp                                    #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.5:                                          #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        andq      $-128, %rsp                                   #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        subq      $128, %rsp                                    #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN4:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        movl      $3, %edi                                      #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.8:                                          #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        call      __intel_new_proc_init                         #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.9:                                          #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN6:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.6:                         # Preds ..B1.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        stmxcsr   (%rsp)                                        #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN8:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        movl      $.L_2__STRING.0, %edi                         #3.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN9:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        xorl      %eax, %eax                                    #3.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN10:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        orl       $32832, (%rsp)                                #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN11:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        ldmxcsr   (%rsp)                                        #2.12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.10:                                         #3.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN12:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        call      printf                                        #3.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.11:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN13:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.2:                         # Preds ..B1.6"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN14:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        movl      $.L_2__STRING.1, %edi                         #4.3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN15:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        xorl      %eax, %eax                                    #4.3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.12:                                         #4.3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN16:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        call      printf                                        #4.3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.13:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN17:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..B1.3:                         # Preds ..B1.2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN18:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        xorl      %eax, %eax                                    #5.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN19:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        movq      %rbp, %rsp                                    #5.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN20:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        popq      %rbp                                          #5.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.15:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN21:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        ret                                                     #5.1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..___tag_value_main.19:                                         #"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN22:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LN23:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "..LNmain.24:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LNmain:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L_2__STRING.0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   72"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   101"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   108"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   108"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   111"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   32"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   119"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   111"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   114"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   108"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   100"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L_2__STRING.1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   109"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   111"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   111"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_info_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_line_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_abbrev_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".debug_frame_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".eh_frame_seg:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LNDBG_TXe:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L_2__STRING.0": 64,
+    ".L_2__STRING.1": 77,
+    "main": 3
+  }
+}

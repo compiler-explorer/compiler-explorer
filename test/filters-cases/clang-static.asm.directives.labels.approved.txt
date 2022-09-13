@@ -1,0 +1,50 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "Char:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   128                     # 0x80"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Short:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .short  4660                    # 0x1234"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Int:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   123                     # 0x7b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "Long:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   2345                    # 0x929"
+    }
+  ],
+  "labelDefinitions": {
+    "Char": 1,
+    "Int": 5,
+    "Long": 7,
+    "Short": 3
+  }
+}

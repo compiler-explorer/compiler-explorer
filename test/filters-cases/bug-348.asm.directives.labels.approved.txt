@@ -1,0 +1,105 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "/***********************"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": " * Function `square(int)'"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": " ***********************/"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "square(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        push    r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r1, r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     #4, r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        sub     #2, r1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r15, -6(r4)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     -6(r4), r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     -6(r4), r12"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        call    #__mulhi3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov     r14, r15"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add     #2, r1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pop     r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ";; End of function"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {}
+}

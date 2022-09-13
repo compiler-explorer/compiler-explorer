@@ -25,41 +25,48 @@
 'use strict';
 
 // setup analytics before anything else so we can capture any future errors in sentry
-var analytics = require('./analytics');
+var analytics = require('./analytics').ga;
 
+require('whatwg-fetch');
 // eslint-disable-next-line requirejs/no-js-extension
 require('popper.js');
 require('bootstrap');
-require('bootstrap-slider');
 
-var sharing = require('./sharing');
+var Sharing = require('./sharing').Sharing;
 var _ = require('underscore');
-var cloneDeep = require('lodash.clonedeep');
 var $ = require('jquery');
 var GoldenLayout = require('golden-layout');
 var Components = require('./components');
 var url = require('./url');
 var clipboard = require('clipboard');
-var Hub = require('./hub');
+var Hub = require('./hub').Hub;
 var Sentry = require('@sentry/browser');
-var settings = require('./settings');
+var Settings = require('./settings').Settings;
 var local = require('./local');
-var Alert = require('./alert');
+var Alert = require('./alert').Alert;
 var themer = require('./themes');
 var motd = require('./motd');
 var jsCookie = require('js-cookie');
-var SimpleCook = require('./simplecook');
+var SimpleCook = require('./widgets/simplecook').SimpleCook;
+var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
-var HistoryWidget = require('./history-widget').HistoryWidget;
-var presentation = require('./presentation');
+var Presentation = require('./presentation').Presentation;
+var setupSiteTemplateWidgetButton = require('./widgets/site-templates-widget').setupSiteTemplateWidgetButton;
+
+var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+
+var siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
+
+if (!window.PRODUCTION) {
+    require('./tests/_all');
+}
 
 //css
 require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
-require('selectize/dist/css/selectize.bootstrap2.css');
-require('bootstrap-slider/dist/css/bootstrap-slider.css');
+require('tom-select/dist/css/tom-select.bootstrap4.css');
 require('./colours.scss');
-require('./explorer.scss');
+require('./styles/explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
@@ -67,18 +74,10 @@ var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
 
-// Polyfill includes for IE11 - From MDN
-if (!String.prototype.includes) {
-    String.prototype.includes = function (search, start) {
-        if (search instanceof RegExp) {
-            throw TypeError('first argument must not be a RegExp');
-        }
-        if (start === undefined) {
-            start = 0;
-        }
-        return this.indexOf(search, start) !== -1;
-    };
-}
+var policyDocuments = {
+    cookies: require('./generated/cookies.pug').default,
+    privacy: require('./generated/privacy.pug').default,
+};
 
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
@@ -102,6 +101,7 @@ function setupSettings(hub) {
                 eventAction: newSettings.colourScheme,
             });
         }
+        $('#settings').find('.editorsFFont').css('font-family', newSettings.editorsFFont);
         currentSettings = newSettings;
         local.set('settings', JSON.stringify(newSettings));
         eventHub.emit('settingsChange', newSettings);
@@ -113,47 +113,61 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var setSettings = settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
-        setSettings(_.extend(currentSettings, newSettings));
+        SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
     return currentSettings;
 }
 
 function hasCookieConsented(options) {
-    return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
+    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
 function isMobileViewer() {
     return window.compilerExplorerOptions.mobileViewer;
 }
 
-function setupButtons(options) {
+function calcLocaleChangedDate(policyModal) {
+    var timestamp = policyModal.find('#changed-date');
+    timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+}
+
+function setupButtons(options, hub) {
+    var eventHub = hub.createEventHub();
     var alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
-        $('#privacy').click(function (event, data) {
-            alertSystem.alert(
+        $('#privacy').on('click', function (event, data) {
+            var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                require('./policies/privacy.html')
+                policyDocuments.privacy.text
             );
+            calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {expires: 365});
+                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                    expires: 365,
+                    sameSite: 'strict',
+                });
             }
         });
     }
 
     if (options.policies.cookies.enabled) {
         var getCookieTitle = function () {
-            return 'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
-                (hasCookieConsented(options) ? 'green' : 'red') + '">' +
-                (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
+            return (
+                'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
+                (hasCookieConsented(options) ? 'green' : 'red') +
+                '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') +
+                '</span></p>'
+            );
         };
-        $('#cookies').click(function () {
-            alertSystem.ask(getCookieTitle(), $(require('./policies/cookies.html')), {
+        $('#cookies').on('click', function () {
+            var modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -163,25 +177,26 @@ function setupButtons(options) {
                 },
                 noHtml: 'Do NOT consent',
             });
+            calcLocaleChangedDate(modal);
         });
     }
 
-    $('#ui-reset').click(function () {
+    $('#ui-reset').on('click', function () {
         local.remove('gl');
         hasUIBeenReset = true;
         window.history.replaceState(null, null, window.httpRoot);
         window.location.reload();
     });
 
-    $('#ui-duplicate').click(function () {
+    $('#ui-duplicate').on('click', function () {
         window.open('/', '_blank');
     });
 
-    $('#changes').click(function () {
-        alertSystem.alert('Changelog', $(require('./changelog.html')));
+    $('#changes').on('click', function () {
+        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
     });
 
-    $('#ces').click(function () {
+    $('#ces').on('click', function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
@@ -193,12 +208,14 @@ function setupButtons(options) {
             })
             .fail(function (err) {
                 var result = err.responseText || JSON.stringify(err);
-                alertSystem.alert('Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>');
+                alertSystem.alert(
+                    'Compiler Explorer Sponsors',
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                );
             });
     });
 
-    $('#ui-history').click(function () {
+    $('#ui-history').on('click', function () {
         historyWidget.run(function (data) {
             local.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
@@ -209,32 +226,96 @@ function setupButtons(options) {
         $('#history').modal();
     });
 
-    if (isMobileViewer() && window.compilerExplorerOptions.slides && window.compilerExplorerOptions.slides.length > 1) {
-        $('#share').remove();
-        $('.ui-presentation-control').removeClass('d-none');
-        $('.ui-presentation-first').click(presentation.first);
-        $('.ui-presentation-prev').click(presentation.prev);
-        $('.ui-presentation-next').click(presentation.next);
+    $('#ui-apply-default-font-scale').on('click', function () {
+        var defaultFontScale = Settings.getStoredSettings().defaultFontScale;
+        if (defaultFontScale !== undefined) {
+            eventHub.emit('broadcastFontScale', defaultFontScale);
+        }
+    });
+}
+
+function configFromEmbedded(embeddedUrl) {
+    // Old-style link?
+    var params;
+    try {
+        params = url.unrisonify(embeddedUrl);
+    } catch (e) {
+        // Ignore this, it's not a problem
+    }
+    if (params && params.source && params.compiler) {
+        var filters = _.chain((params.filters || '').split(','))
+            .map(function (o) {
+                return [o, true];
+            })
+            .object()
+            .value();
+        return {
+            content: [
+                {
+                    type: 'row',
+                    content: [
+                        Components.getEditorWith(1, params.source, filters),
+                        Components.getCompilerWith(1, filters, params.options, params.compiler),
+                    ],
+                },
+            ],
+        };
+    } else {
+        return url.deserialiseState(embeddedUrl);
     }
 }
 
+function fixBugsInConfig(config) {
+    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
+        config.activeItemIndex = config.content.length - 1;
+    }
+
+    _.each(config.content, function (item) {
+        fixBugsInConfig(item);
+    });
+}
+
 function findConfig(defaultConfig, options) {
-    var config = null;
+    var config;
     if (!options.embedded) {
         if (options.slides) {
-            presentation.init(window.compilerExplorerOptions.slides.length);
-            var currentSlide = presentation.getCurrentSlide();
+            var presentation = new Presentation(window.compilerExplorerOptions.slides.length);
+            var currentSlide = presentation.currentSlide;
             if (currentSlide < options.slides.length) {
                 config = options.slides[currentSlide];
             } else {
-                presentation.setCurrentSlide(0);
+                presentation.currentSlide = 0;
                 config = options.slides[0];
+            }
+            if (
+                isMobileViewer() &&
+                window.compilerExplorerOptions.slides &&
+                window.compilerExplorerOptions.slides.length > 1
+            ) {
+                $('#share').remove();
+                $('.ui-presentation-control').removeClass('d-none');
+                $('.ui-presentation-first').on('click', presentation.first.bind(presentation));
+                $('.ui-presentation-prev').on('click', presentation.previous.bind(presentation));
+                $('.ui-presentation-next').on('click', presentation.next.bind(presentation));
             }
         } else {
             if (options.config) {
                 config = options.config;
             } else {
-                config = url.deserialiseState(window.location.hash.substr(1));
+                try {
+                    config = url.deserialiseState(window.location.hash.substring(1));
+                } catch (e) {
+                    // #3518 Alert the user that the url is invalid
+                    var alertSystem = new Alert();
+                    alertSystem.notify(
+                        'Unable to load custom configuration from URL,\
+                     the last locally saved configuration will be used if present.',
+                        {
+                            alertClass: 'notification-error',
+                            dismissTime: 5000,
+                        }
+                    );
+                }
             }
 
             if (config) {
@@ -247,77 +328,100 @@ function findConfig(defaultConfig, options) {
             }
         }
     } else {
-        config = _.extend(defaultConfig, {
-            settings: {
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                hasHeaders: false,
+        config = _.extend(
+            defaultConfig,
+            {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false,
+                },
             },
-        }, sharing.configFromEmbedded(window.location.hash.substr(1)));
+            configFromEmbedded(window.location.hash.substr(1))
+        );
     }
+
+    removeOrphanedMaximisedItemFromConfig(config);
+    fixBugsInConfig(config);
+
     return config;
 }
 
 function initializeResetLayoutLink() {
     var currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
-        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/'));
-        $('#ui-brokenlink').show();
+        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
     } else {
         $('#ui-brokenlink').hide();
     }
 }
 
 function initPolicies(options) {
-    // Ensure old cookies are removed, to avoid user confusion
-
-    jsCookie.remove('fs_uid');
-    jsCookie.remove('cookieconsent_status');
-    if (options.policies.privacy.enabled &&
-        options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
-        $('#privacy').trigger('click', {
-            title: 'New Privacy Policy. Please take a moment to read it',
-        });
+    if (options.policies.privacy.enabled) {
+        if (jsCookie.get(options.policies.privacy.key) == null) {
+            $('#privacy').trigger('click', {
+                title: 'New Privacy Policy. Please take a moment to read it',
+            });
+        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+            // When the user has already accepted the privacy, just show a pretty notification.
+            var ppolicyBellNotification = $('#policyBellNotification');
+            var pprivacyBellNotification = $('#privacyBellNotification');
+            var pcookiesBellNotification = $('#cookiesBellNotification');
+            ppolicyBellNotification.removeClass('d-none');
+            pprivacyBellNotification.removeClass('d-none');
+            $('#privacy').on('click', function () {
+                // Only hide if the other policy does not also have a bell
+                if (pcookiesBellNotification.hasClass('d-none')) {
+                    ppolicyBellNotification.addClass('d-none');
+                }
+                pprivacyBellNotification.addClass('d-none');
+            });
+        }
     }
-    simpleCooks.onDoConsent = function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {expires: 365});
+    simpleCooks.setOnDoConsent(function () {
+        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
+            expires: 365,
+            sameSite: 'strict',
+        });
         analytics.toggle(true);
-    };
-    simpleCooks.onDontConsent = function () {
+    });
+    simpleCooks.setOnDontConsent(function () {
         analytics.toggle(false);
-        jsCookie.set(options.policies.cookies.key, '');
-    };
-    simpleCooks.onHide = function () {
+        jsCookie.set(options.policies.cookies.key, '', {
+            sameSite: 'strict',
+        });
+    });
+    simpleCooks.setOnHide(function () {
+        var spolicyBellNotification = $('#policyBellNotification');
+        var sprivacyBellNotification = $('#privacyBellNotification');
+        var scookiesBellNotification = $('#cookiesBellNotification');
+        // Only hide if the other policy does not also have a bell
+        if (sprivacyBellNotification.hasClass('d-none')) {
+            spolicyBellNotification.addClass('d-none');
+        }
+        scookiesBellNotification.addClass('d-none');
         $(window).trigger('resize');
-    };
+    });
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
-    if (options.policies.cookies.enabled && storedCookieConsent !== '' &&
-        options.policies.cookies.hash !== storedCookieConsent) {
-        simpleCooks.show();
-    } else if (options.policies.cookies.enabled && hasCookieConsented(options)) {
-        analytics.initialise();
-    }
-}
-
-function filterComponentState(config, keysToRemove) {
-    function filterComponentStateImpl(component) {
-        if (component.content) {
-            for (var i = 0; i < component.content.length; i++) {
-                filterComponentStateImpl(component.content[i], keysToRemove);
-            }
-        }
-
-        if (component.componentState) {
-            Object.keys(component.componentState)
-                .filter(function (key) { return keysToRemove.includes(key); })
-                .forEach(function (key) { delete component.componentState[key]; });
+    if (options.policies.cookies.enabled) {
+        if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
+            simpleCooks.show();
+            var cpolicyBellNotification = $('#policyBellNotification');
+            var cprivacyBellNotification = $('#privacyBellNotification');
+            var ccookiesBellNotification = $('#cookiesBellNotification');
+            cpolicyBellNotification.removeClass('d-none');
+            ccookiesBellNotification.removeClass('d-none');
+            $('#cookies').on('click', function () {
+                if (cprivacyBellNotification.hasClass('d-none')) {
+                    cpolicyBellNotification.addClass('d-none');
+                }
+                ccookiesBellNotification.addClass('d-none');
+            });
+        } else if (hasCookieConsented(options)) {
+            analytics.initialise();
         }
     }
-
-    config = cloneDeep(config);
-    filterComponentStateImpl(config);
-    return config;
 }
 
 /*
@@ -332,6 +436,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     if (config.maximisedItemId !== '__glMaximised') return;
 
     var found = false;
+
     function impl(component) {
         if (component.id === '__glMaximised') {
             found = true;
@@ -353,11 +458,52 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
+function setupLanguageLogos(languages) {
+    _.each(
+        languages,
+        function (lang) {
+            try {
+                if (lang.logoUrl !== null) {
+                    lang.logoData = logos('./' + lang.logoUrl);
+                    if (lang.logoUrlDark !== null) {
+                        lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                    }
+                }
+            } catch (ignored) {
+                lang.logoData = '';
+            }
+        },
+        this
+    );
+}
+
+function earlyGetDefaultLangSetting() {
+    // returns string | undefined
+    return Settings.getStoredSettings().defaultLanguage;
+}
+
+function getDefaultLangId(subLangId, options) {
+    var defaultLangId = subLangId;
+    if (!defaultLangId) {
+        var defaultLangSetting = earlyGetDefaultLangSetting();
+        if (defaultLangSetting && options.languages[defaultLangSetting] !== undefined) {
+            defaultLangId = defaultLangSetting;
+        } else if (options.languages['c++']) {
+            defaultLangId = 'c++';
+        } else {
+            defaultLangId = _.keys(options.languages)[0];
+        }
+    }
+    // returns string
+    return defaultLangId;
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
-    var options = require('options');
+    var options = require('options').options;
 
     var hostnameParts = window.location.hostname.split('.');
     var subLangId = undefined;
@@ -371,14 +517,10 @@ function start() {
             subLangId = langBySubdomain.id;
         }
     }
-    var defaultLangId = subLangId;
-    if (!defaultLangId) {
-        if (options.languages['c++']) {
-            defaultLangId = 'c++';
-        } else {
-            defaultLangId = _.keys(options.languages)[0];
-        }
-    }
+
+    var defaultLangId = getDefaultLangId(subLangId, options);
+
+    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
@@ -386,22 +528,20 @@ function start() {
     // share the same cookie domain for some settings.
     var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {
-        cookieDomain = cookieDomain[0];
-        jsCookie.defaults.domain = cookieDomain;
+        jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
     var defaultConfig = {
         settings: {showPopoutIcon: false},
-        content: [{
-            type: 'row',
-            content: [
-                Components.getEditor(1, defaultLangId),
-                Components.getCompiler(1, defaultLangId),
-            ],
-        }],
+        content: [
+            {
+                type: 'row',
+                content: [Components.getEditor(1, defaultLangId), Components.getCompiler(1, defaultLangId)],
+            },
+        ],
     };
 
-    $(window).bind('hashchange', function () {
+    $(window).on('hashchange', function () {
         // punt on hash events and just reload the page if there's a hash
         if (window.location.hash.substr(1)) window.location.reload();
     });
@@ -416,7 +556,6 @@ function start() {
     }
 
     var config = findConfig(defaultConfig, options);
-    removeOrphanedMaximisedItemFromConfig(config);
 
     var root = $('#root');
 
@@ -436,29 +575,9 @@ function start() {
         hub = new Hub(layout, subLangId, defaultLangId);
     }
 
-    var lastState = null;
-    var storedPaths = {};  // TODO maybe make this an LRU cache?
-
-    layout.on('stateChanged', function () {
-        var config = filterComponentState(layout.toConfig(), ['selection']);
-        var stringifiedConfig = JSON.stringify(config);
-        if (stringifiedConfig !== lastState) {
-            if (storedPaths[stringifiedConfig]) {
-                window.history.replaceState(null, null, storedPaths[stringifiedConfig]);
-            } else if (window.location.pathname !== window.httpRoot) {
-                window.history.replaceState(null, null, window.httpRoot);
-                // TODO: Add this state to storedPaths, but with a upper bound on the stored state count
-            }
-            lastState = stringifiedConfig;
-
-            History.push(stringifiedConfig);
-        }
-        if (options.embedded) {
-            var strippedToLast = window.location.pathname;
-            strippedToLast = strippedToLast.substr(0, strippedToLast.lastIndexOf('/') + 1);
-            $('a.link').attr('href', strippedToLast + '#' + url.serialiseState(config));
-        }
-    });
+    if (hub.hasTree()) {
+        $('#add-tree').prop('disabled', true);
+    }
 
     function sizeRoot() {
         var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
@@ -467,7 +586,7 @@ function start() {
     }
 
     $(window)
-        .resize(sizeRoot)
+        .on('resize', sizeRoot)
         .on('beforeunload', function () {
             // Only preserve state in localStorage in non-embedded mode.
             var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
@@ -482,18 +601,22 @@ function start() {
 
     // We assume no consent for embed users
     if (!options.embedded) {
-        setupButtons(options);
+        setupButtons(options, hub);
     }
 
-    sharing.initShareButton($('#share'), layout, function (config, extra) {
-        window.history.pushState(null, null, extra);
-        storedPaths[JSON.stringify(config)] = extra;
-    });
+    var addDropdown = $('#addDropdown');
 
     function setupAdd(thing, func) {
-        layout.createDragSource(thing, func);
-        thing.click(function () {
-            hub.addAtRoot(func());
+        layout.createDragSource(thing, func)._dragListener.on('dragStart', function () {
+            addDropdown.dropdown('toggle');
+        });
+
+        thing.on('click', function () {
+            if (hub.hasTree()) {
+                hub.addInEditorStackIfPossible(func());
+            } else {
+                hub.addAtRoot(func());
+            }
         });
     }
 
@@ -501,19 +624,27 @@ function start() {
         return Components.getEditor();
     });
     setupAdd($('#add-diff'), function () {
-        return Components.getDiff();
+        return Components.getDiffView();
+    });
+    setupAdd($('#add-tree'), function () {
+        $('#add-tree').prop('disabled', true);
+        return Components.getTree();
     });
 
     if (hashPart) {
         var element = $(hashPart);
-        if (element) element.click();
+        if (element) element.trigger('click');
     }
     initPolicies(options);
 
     // Skip some steps if using embedded mode
     if (!options.embedded) {
         // Only fetch MOTD when not embedded.
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds,
+        motd.initialise(
+            options.motdUrl,
+            $('#motd'),
+            subLangId,
+            settings.enableCommunityAds,
             function (data) {
                 var sendMotd = function () {
                     hub.layout.eventHub.emit('motd', data);
@@ -525,7 +656,8 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            });
+            }
+        );
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.gitReleaseCommit;
@@ -551,10 +683,22 @@ function start() {
         window.open(sponsor.url);
     };
 
+    if (options.pageloadUrl) {
+        setTimeout(function () {
+            var visibleIcons = $('.ces-icon:visible')
+                .map(function (index, value) {
+                    return value.dataset.statsid;
+                })
+                .get()
+                .join(',');
+            $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
+        }, 5000);
+    }
+
     sizeRoot();
-    var initialConfig = JSON.stringify(filterComponentState(layout.toConfig(), ['selection']));
-    lastState = initialConfig;
-    storedPaths[initialConfig] = window.location.href;
+
+    History.trackHistory(layout);
+    new Sharing(layout);
 }
 
 $(start);

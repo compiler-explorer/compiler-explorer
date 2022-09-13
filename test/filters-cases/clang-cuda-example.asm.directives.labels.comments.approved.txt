@@ -1,0 +1,879 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .func  (.param .b32 func_retval0) cudaMalloc("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaMalloc_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaMalloc_param_1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot0;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd2, [cudaMalloc_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [cudaMalloc_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+8], %rd2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r1, 30;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.param.b32    [func_retval0+0], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .func  (.param .b32 func_retval0) cudaFuncGetAttributes("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaFuncGetAttributes_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaFuncGetAttributes_param_1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd2, [cudaFuncGetAttributes_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [cudaFuncGetAttributes_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+8], %rd2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r1, 30;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.param.b32    [func_retval0+0], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .func  (.param .b32 func_retval0) cudaDeviceGetAttribute("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaDeviceGetAttribute_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b32 cudaDeviceGetAttribute_param_1,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b32 cudaDeviceGetAttribute_param_2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r2, [cudaDeviceGetAttribute_param_2];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r1, [cudaDeviceGetAttribute_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [cudaDeviceGetAttribute_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+8], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+12], %r2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r3, 30;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.param.b32    [func_retval0+0], %r3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .func  (.param .b32 func_retval0) cudaGetDevice("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaGetDevice_param_0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [cudaGetDevice_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r1, 30;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.param.b32    [func_retval0+0], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessor("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot4;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd3, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_3];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r1, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_2];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd2, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [cudaOccupancyMaxActiveBlocksPerMultiprocessor_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+8], %rd2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+16], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+24], %rd3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r2, 30;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.param.b32    [func_retval0+0], %r2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .func  (.param .b32 func_retval0) cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b64 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .b32 cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot5;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r2, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_4];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd3, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_3];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r1, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_2];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd2, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [cudaOccupancyMaxActiveBlocksPerMultiprocessorWithFlags_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+8], %rd2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+16], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+24], %rd3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+32], %r2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r3, 30;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.param.b32    [func_retval0+0], %r3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".visible .entry _Z6vecAddPfS_S_i("
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u64 _Z6vecAddPfS_S_i_param_0,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u64 _Z6vecAddPfS_S_i_param_1,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u64 _Z6vecAddPfS_S_i_param_2,"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .param .u32 _Z6vecAddPfS_S_i_param_3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ")"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "{"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u64         %SPL, __local_depot6;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.local.u64  %SP, %SPL;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u32    %r1, [_Z6vecAddPfS_S_i_param_3];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd3, [_Z6vecAddPfS_S_i_param_2];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd2, [_Z6vecAddPfS_S_i_param_1];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.param.u64    %rd1, [_Z6vecAddPfS_S_i_param_0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.to.global.u64      %rd4, %rd3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.global.u64         %rd5, %rd4;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.to.global.u64      %rd6, %rd2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.global.u64         %rd7, %rd6;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.to.global.u64      %rd8, %rd1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        cvta.global.u64         %rd9, %rd8;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+0], %rd9;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+8], %rd7;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u64  [%SP+16], %rd5;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+24], %r1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r2, %ctaid.x;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r3, %ntid.x;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mul.lo.s32      %r4, %r2, %r3;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        mov.u32         %r5, %tid.x;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add.s32         %r6, %r4, %r5;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.u32  [%SP+28], %r6;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.u32  %r7, [%SP+28];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.u32  %r8, [%SP+24];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        setp.ge.s32     %p1, %r7, %r8;"
+    },
+    {
+      "labels": [
+        {
+          "name": "LBB6_2",
+          "range": {
+            "endCol": 31,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        @%p1 bra        LBB6_2;"
+    },
+    {
+      "labels": [
+        {
+          "name": "LBB6_1",
+          "range": {
+            "endCol": 31,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        bra.uni         LBB6_1;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "LBB6_1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.u64  %rd10, [%SP+0];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.s32  %rd11, [%SP+28];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        shl.b64         %rd12, %rd11, 2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add.s64         %rd13, %rd10, %rd12;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.f32  %f1, [%rd13];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.u64  %rd14, [%SP+8];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add.s64         %rd15, %rd14, %rd12;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.f32  %f2, [%rd15];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add.rn.f32      %f3, %f1, %f2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ld.u64  %rd16, [%SP+16];"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        add.s64         %rd17, %rd16, %rd12;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        st.f32  [%rd17], %f3;"
+    },
+    {
+      "labels": [
+        {
+          "name": "LBB6_2",
+          "range": {
+            "endCol": 31,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": null,
+      "text": "        bra.uni         LBB6_2;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "LBB6_2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        ret;"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "}"
+    }
+  ],
+  "labelDefinitions": {
+    "LBB6_1": 153,
+    "LBB6_2": 167,
+    "entry": 118,
+    "func": 92
+  }
+}

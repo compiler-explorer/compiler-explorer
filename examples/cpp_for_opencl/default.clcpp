@@ -1,0 +1,8 @@
+template<typename T>
+T add(T a, T b) {
+    return a + b;
+}
+kernel void k(global int* in1, global int* in2, global int* out) {
+    auto index = get_global_id(0);
+    out[index] = add(in1[index], in2[index]);
+}

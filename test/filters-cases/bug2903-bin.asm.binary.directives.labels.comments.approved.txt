@@ -1,0 +1,154 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "address": 4198432,
+      "labels": [],
+      "opcodes": [
+        "bf",
+        "64",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " mov    edi,0x64"
+    },
+    {
+      "address": 4198437,
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 27,
+            "startCol": 17
+          }
+        }
+      ],
+      "opcodes": [
+        "e9",
+        "f6",
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " jmp    401120 <_Z6squarei>"
+    },
+    {
+      "address": 4198442,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "0f",
+        "1f",
+        "44",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 4,
+        "mainsource": true
+      },
+      "text": " nop    WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:"
+    },
+    {
+      "address": 4198688,
+      "labels": [],
+      "opcodes": [
+        "89",
+        "f8"
+      ],
+      "source": {
+        "file": null,
+        "line": 5,
+        "mainsource": true
+      },
+      "text": " mov    eax,edi"
+    },
+    {
+      "address": 4198690,
+      "labels": [],
+      "opcodes": [
+        "0f",
+        "af",
+        "c7"
+      ],
+      "source": {
+        "file": null,
+        "line": 5,
+        "mainsource": true
+      },
+      "text": " imul   eax,edi"
+    },
+    {
+      "address": 4198693,
+      "labels": [],
+      "opcodes": [
+        "c3"
+      ],
+      "source": {
+        "file": null,
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " ret    "
+    },
+    {
+      "address": 4198694,
+      "labels": [],
+      "opcodes": [
+        "66",
+        "2e",
+        "0f",
+        "1f",
+        "84",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " cs nop WORD PTR [rax+rax*1+0x0]"
+    },
+    {
+      "address": 4198701,
+      "labels": [],
+      "opcodes": [
+        "00",
+        "00",
+        "00"
+      ],
+      "source": {
+        "file": null,
+        "line": 6,
+        "mainsource": true
+      },
+      "text": " "
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 5,
+    "main": 1
+  }
+}

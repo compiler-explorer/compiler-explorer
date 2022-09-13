@@ -1,0 +1,3195 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L8:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L84:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "testFunction(double*, double):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        stwu            r1,-48(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        stmw            r26,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        stw       r0,52(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mr          r31,r3      # input=r31 input=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mr          r30,r5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mr          r29,r6"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        diab.li   r28,0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 5
+      },
+      "text": "        diab.li   r27,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L92:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo2:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        diab.li   r26,0             # i=r26"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L42:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mr          r3,r26      # i=r3 i=r26"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        bl          _d_itod"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mr          r6,r29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        mr          r5,r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        bl          _d_fge"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        extsb.      r0,r3         # i=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L44",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        bc          4,2,.L44        # ne cr0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        rlwinm      r0,r26,3,0,28         # i=r26"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        add       r3,r31,r0         # i=r3 input=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        lwzx            r5,r31,r0             # input=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        lwz       r6,4(r3)            # i=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r4,r27"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r3,r28      # i=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        bl          _d_add"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r27,r4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        mr          r28,r3      # i=r28"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        addi            r26,r26,1             # i=r26 i=r26"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L42",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 8
+      },
+      "text": "        b             .L42"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L44:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L93:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo4:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        mr          r4,r27"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 9
+      },
+      "text": "        mr          r3,r28      # i=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        lmw       r26,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        lwz       r0,52(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        addi            r1,r1,48                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 10
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L85:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L101:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "fibo(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        stmw            r30,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 12
+      },
+      "text": "        mr          r31,r3      # n=r31 n=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        cmpi            0,0,r3,1                # n=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L46",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 14
+      },
+      "text": "        bc          12,1,.L46       # gt cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo6:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L45",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 15
+      },
+      "text": "        b             .L45"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L46:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        addi            r3,r3,-1                # n=r3 n=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        bl          fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        mr          r30,r3      # n=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        addi            r3,r31,-2             # n=r3 n=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        bl          fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 16
+      },
+      "text": "        add       r3,r3,r30         # n=r3 n=r3 n=r30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L45:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L105:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo8:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        lmw       r30,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo9:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 17
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo10:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L102:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L108:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "fizz_buzz():"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo11:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        stw       r31,28(r1)      # offset r1+28  0x1c"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 19
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 22
+      },
+      "text": "        diab.li   r31,1             # i=r31"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L48:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 22
+      },
+      "text": "        cmpi            0,0,r31,100       # i=r31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L50",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 22
+      },
+      "text": "        bc          12,1,.L50       # gt cr0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        lis       r0,21845"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        ori       r0,r0,21846"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        add       r3,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L51",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 24
+      },
+      "text": "        bc          4,2,.L51        # ne cr0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L114",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 25
+      },
+      "text": "        addis         r3,0,.L114@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L114",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 25
+      },
+      "text": "        addi            r3,r3,.L114@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 25
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L51:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        lis       r0,26214"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        ori       r0,r0,26215"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        srawi         r0,r0,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        rlwinm      r3,r0,2,0,29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L52",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 26
+      },
+      "text": "        bc          4,2,.L52        # ne cr0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L115",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 27
+      },
+      "text": "        addis         r3,0,.L115@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L115",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 27
+      },
+      "text": "        addi            r3,r3,.L115@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 27
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L52:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        lis       r0,21845"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        ori       r0,r0,21846"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        add       r3,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L53",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        bc          12,2,.L53       # eq cr0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        lis       r0,26214"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        ori       r0,r0,26215"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        mulhw         r0,r0,r31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        srawi         r0,r0,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        srawi         r3,r31,31         # i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf            r0,r3,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        rlwinm      r3,r0,2,0,29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        add       r0,r0,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        subf.         r0,r0,r31         # i=?a4"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L53",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 28
+      },
+      "text": "        bc          12,2,.L53       # eq cr0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L116",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        addis         r3,0,.L116@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L116",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        addi            r3,r3,.L116@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        mr          r4,r31      # i=r4 i=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 29
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L53:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L117",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 30
+      },
+      "text": "        addis         r3,0,.L117@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L117",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 30
+      },
+      "text": "        addi            r3,r3,.L117@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 30
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 31
+      },
+      "text": "        addi            r31,r31,1             # i=r31 i=r31"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L48",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 31
+      },
+      "text": "        b             .L48"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L50:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 33
+      },
+      "text": "        diab.li   r3,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L113:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo12:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        lwz       r31,28(r1)      # offset r1+28  0x1c"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 34
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L109:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L120:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "printEvenNumbers(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo13:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        stmw            r30,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 37
+      },
+      "text": "        mr          r31,r3      # N=r31 N=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L125:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo14:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        diab.li   r30,1             # i=r30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L55:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo15:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        rlwinm      r0,r31,1,0,30         # N=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        cmp       0,0,r0,r30      # i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L54",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 39
+      },
+      "text": "        bc          12,0,.L54       # lt cr0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        srawi         r0,r30,1            # i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        addze         r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        add       r0,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        subf.         r0,r0,r30         # i=?a5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L58",
+          "range": {
+            "endCol": 29,
+            "startCol": 25
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 42
+      },
+      "text": "        bc          4,2,.L58        # ne cr0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        addis         r3,0,.L131@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        addi            r3,r3,.L131@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        mr          r4,r30      # i=r4 i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 43
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L58:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 44
+      },
+      "text": "        addi            r30,r30,1             # i=r30 i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L55",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 44
+      },
+      "text": "        b             .L55"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L126:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L54:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L124:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo16:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        lmw       r30,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo17:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 45
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo18:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L121:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L134:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "printOddNumbers(int):"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo19:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        stmw            r30,24(r1)          # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 48
+      },
+      "text": "        mr          r31,r3      # N=r31 N=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L139:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo20:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        diab.li   r30,1             # i=r30"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L60:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo21:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        rlwinm      r0,r31,1,0,30         # N=r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        cmp       0,0,r0,r30      # i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L59",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 50
+      },
+      "text": "        bc          12,0,.L59       # lt cr0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        srawi         r0,r30,1            # i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        addze         r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        add       r0,r0,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        subf.         r0,r0,r30         # i=?a5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L63",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 53
+      },
+      "text": "        bc          12,2,.L63       # eq cr0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        addis         r3,0,.L131@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L131",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        addi            r3,r3,.L131@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        mr          r4,r30      # i=r4 i=r30"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 54
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L63:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 55
+      },
+      "text": "        addi            r30,r30,1             # i=r30 i=r30"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L60",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 55
+      },
+      "text": "        b             .L60"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L140:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L59:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L138:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo22:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        lmw       r30,24(r1)      # offset r1+24  0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo23:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 56
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo24:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L135:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L147:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "tokenizeString():"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "        stwu            r1,-32(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 58
+      },
+      "text": "        stw       r0,36(r1)"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L65",
+          "range": {
+            "endCol": 33,
+            "startCol": 29
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addis         r12,0,.L65@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L65",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addi            r12,r12,.L65@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addi            r12,r12,-1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        addi            r11,r1,7"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        diab.li   r10,8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        mtspr         ctr,r10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L158:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        lbzu            r9,1(r12)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        lbzu            r10,1(r12)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        stbu            r9,1(r11)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        stbu            r10,1(r11)"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L158",
+          "range": {
+            "endCol": 31,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 60
+      },
+      "text": "        bc          16,0,.L158"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        addi            r3,r1,8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        addis         r4,0,.L159@ha"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        addi            r4,r4,.L159@l"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        bl          strtok"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo25:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 63
+      },
+      "text": "        mr          r4,r3         # token=r4 token=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L66:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 67
+      },
+      "text": "        cmpi            0,0,r3,0                # token=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L64",
+          "range": {
+            "endCol": 30,
+            "startCol": 26
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 67
+      },
+      "text": "        bc          12,2,.L64       # eq cr0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo26:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L160",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 69
+      },
+      "text": "        addis         r3,0,.L160@ha             # token=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo27:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L160",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 69
+      },
+      "text": "        addi            r3,r3,.L160@l         # token=r3 token=r3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo28:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 69
+      },
+      "text": "        bl          printf"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 33,
+            "startCol": 28
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        addis         r4,0,.L159@ha             # token=r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo29:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L159",
+          "range": {
+            "endCol": 36,
+            "startCol": 31
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        addi            r4,r4,.L159@l         # token=r4 token=r4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo30:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        diab.li   r3,0                # token=r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        bl          strtok"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo31:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        mr          r4,r3         # token=r4 token=r3"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L66",
+          "range": {
+            "endCol": 27,
+            "startCol": 23
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 70
+      },
+      "text": "        b             .L66"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L64:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L157:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Llo32:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        lwz       r0,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        addi            r1,r1,32                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 72
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L148:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L168:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        stwu            r1,-64(r1)          "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        mfspr         r0,lr"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        stw       r31,60(r1)      # offset r1+60  0x3c"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 74
+      },
+      "text": "        stw       r0,68(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 76
+      },
+      "text": "        diab.li   r3,10"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 76
+      },
+      "text": "        bl          fibo(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 76
+      },
+      "text": "        mr          r31,r3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 77
+      },
+      "text": "        bl          fizz_buzz()"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 78
+      },
+      "text": "        mr          r3,r31"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 78
+      },
+      "text": "        bl          printOddNumbers(int)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16368"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        diab.li   r6,0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,8(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,12(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16384"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,16(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,20(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16392"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,24(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,28(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r0,16400"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r0,32(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,36(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        lis       r5,16404"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r5,40(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 79
+      },
+      "text": "        stw       r6,44(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 80
+      },
+      "text": "        addi            r3,r1,8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 80
+      },
+      "text": "        bl          testFunction(double*, double)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 81
+      },
+      "text": "        bl          tokenizeString()"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 82
+      },
+      "text": "        diab.li   r3,0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L177:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        lwz       r31,60(r1)      # offset r1+60  0x3c"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        lwz       r0,68(r1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        mtspr         lr,r0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        addi            r1,r1,64                "
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 83
+      },
+      "text": "        blr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L169:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L65:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         71,101,101,107,115,45,102,111,114,45,71,101,101,107,115"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.161:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.162:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.163:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.164:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "FLOAT_TEMP.165:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L114:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         70,105,122,122"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L115:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         66,117,122,122"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L116:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         110,117,109,98,101,114,61,37,100"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L117:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L131:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         37,100"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L159:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         45"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L160:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         37,115,10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte         0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L5:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L86:   .d2filenum \"/tmp/compiler-explorer-compiler202107-8023-z5iran.8cqm/example.cpp\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L9:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L88:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L91:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L96:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L95:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L83:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L103:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L100:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L110:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L111:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L107:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L122:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L129:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L128:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L119:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L136:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L143:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L142:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L133:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L149:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L150:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L154:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L146:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L170:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L171:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L173:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L176:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L167:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L87:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L89:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L97:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L153:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L151:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L152:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L155:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L174:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L175:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L7:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L90:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L98:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L104:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L112:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L123:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L130:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L137:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L144:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L156:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L172:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L114": 347,
+    ".L115": 350,
+    ".L116": 353,
+    ".L117": 356,
+    ".L131": 359,
+    ".L158": 259,
+    ".L159": 362,
+    ".L160": 365,
+    ".L42": 19,
+    ".L44": 39,
+    ".L45": 72,
+    ".L46": 64,
+    ".L48": 93,
+    ".L50": 152,
+    ".L51": 108,
+    ".L52": 122,
+    ".L53": 146,
+    ".L54": 193,
+    ".L55": 175,
+    ".L58": 189,
+    ".L59": 235,
+    ".L60": 217,
+    ".L63": 231,
+    ".L64": 289,
+    ".L65": 339,
+    ".L66": 271,
+    "main": 300
+  }
+}

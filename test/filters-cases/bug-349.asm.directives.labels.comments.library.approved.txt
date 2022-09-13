@@ -1,0 +1,50 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "foo():"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        PUSHM.W #1, R4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        MOV.W   R1, R4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        MOV.B   #3, R12"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        POPM.W  #1, r4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        RET"
+    }
+  ],
+  "labelDefinitions": {}
+}

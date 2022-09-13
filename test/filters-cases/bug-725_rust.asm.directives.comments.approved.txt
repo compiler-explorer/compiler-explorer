@@ -1,0 +1,52 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rdi, %rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        callq   _ZN5alloc3str56_$LT$impl$u20$alloc..borrow..ToOwned$u20$for$u20$str$GT$8to_owned17h6364b00ba4e57363E@PLT"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rbx, %rax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbx"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lfunc_end0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "_ZN95_$LT$example..Bla$LT$$u27$a$GT$$u20$as$u20$core..convert..Into$LT$alloc..string..String$GT$$GT$4into17h38301ffbb2e8fb47E": 1
+  }
+}

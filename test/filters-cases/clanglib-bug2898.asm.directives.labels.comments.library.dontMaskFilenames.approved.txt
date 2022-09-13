@@ -1,0 +1,32 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z3cvtN3eve7logicalINS_10avx_abi_v04wideIsNS_5fixedILl8EEEEEEE: # @_Z3cvtN3eve7logicalINS_10avx_abi_v04wideIsNS_5fixedILl8EEEEEEE"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 20,
+        "file": "/opt/compiler-explorer/libs/eve/trunk/include/eve/module/real/core/function/regular/simd/x86/convert_256.hpp",
+        "line": 130,
+        "mainsource": false
+      },
+      "text": "        vpmovsxwd       ymm0, xmm0"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 6,
+        "file": "example.cpp",
+        "line": 14,
+        "mainsource": true
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z3cvtN3eve7logicalINS_10avx_abi_v04wideIsNS_5fixedILl8EEEEEEE": 1
+  }
+}

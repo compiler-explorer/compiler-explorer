@@ -4,3 +4,5 @@ rules:
   max-len: off
   max-statements: off
   node/no-unpublished-import: off
+  unicorn/no-empty-file: off
+  unicorn/no-await-expression-member: off

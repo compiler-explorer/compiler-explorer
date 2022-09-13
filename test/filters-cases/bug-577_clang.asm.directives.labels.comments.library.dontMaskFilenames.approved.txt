@@ -1,0 +1,57 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:                             # @_Z6squarei"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        pushq   %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movq    %rsp, %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %edi, -4(%rbp)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    -4(%rbp), %edi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        imull   -4(%rbp), %edi"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        movl    %edi, %eax"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        popq    %rbp"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        retq"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 1
+  }
+}

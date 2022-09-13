@@ -1,0 +1,75 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z6squarei:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        push    rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        mov     rbp, rsp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        mov     DWORD PTR -4[rbp], edi"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        mov     eax, DWORD PTR -4[rbp]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 4,
+        "mainsource": true
+      },
+      "text": "        imul    eax, DWORD PTR -4[rbp]"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        pop     rbp"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": "example.cpp",
+        "line": 5,
+        "mainsource": true
+      },
+      "text": "        ret"
+    }
+  ],
+  "labelDefinitions": {
+    "_Z6squarei": 1
+  }
+}

@@ -1,0 +1,5 @@
+project(default)
+
+add_compile_options(-Werror -Wall -Wextra -g)
+
+add_executable(output.s example.cpp)

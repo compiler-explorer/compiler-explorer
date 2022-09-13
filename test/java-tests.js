@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { JavaCompiler } from '../lib/compilers/java';
+import {JavaCompiler} from '../lib/compilers';
 import * as utils from '../lib/utils';
 
-import { fs, makeCompilationEnvironment } from './utils';
+import {fs, makeCompilationEnvironment} from './utils';
 
 const languages = {
     java: {id: 'java'},
@@ -37,8 +37,7 @@ const info = {
     lang: languages.java.id,
 };
 
-// Temporarily disabled: see #1438
-describe.skip('Basic compiler setup', function () {
+describe('Basic compiler setup', function () {
     let env;
 
     before(() => {
@@ -60,66 +59,54 @@ describe.skip('Basic compiler setup', function () {
         }
     });
 
-    describe.skip('Forbidden compiler arguments', function () {
+    describe('Forbidden compiler arguments', function () {
         it('JavaCompiler should not allow -d parameter', () => {
             const compiler = new JavaCompiler(info, env);
-            compiler.filterUserOptions(['hello', '-d', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else'],
-            );
-            compiler.filterUserOptions(['hello', '-d']).should.deep.equal(
-                ['hello'],
-            );
-            compiler.filterUserOptions(['-d', 'something', 'something-else']).should.deep.equal(
-                ['something-else'],
-            );
+            compiler
+                .filterUserOptions(['hello', '-d', '--something', '--something-else'])
+                .should.deep.equal(['hello', '--something-else']);
+            compiler.filterUserOptions(['hello', '-d']).should.deep.equal(['hello']);
+            compiler.filterUserOptions(['-d', 'something', 'something-else']).should.deep.equal(['something-else']);
         });
 
         it('JavaCompiler should not allow -s parameter', () => {
             const compiler = new JavaCompiler(info, env);
-            compiler.filterUserOptions(['hello', '-s', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else'],
-            );
-            compiler.filterUserOptions(['hello', '-s']).should.deep.equal(
-                ['hello'],
-            );
-            compiler.filterUserOptions(['-s', 'something', 'something-else']).should.deep.equal(
-                ['something-else'],
-            );
+            compiler
+                .filterUserOptions(['hello', '-s', '--something', '--something-else'])
+                .should.deep.equal(['hello', '--something-else']);
+            compiler.filterUserOptions(['hello', '-s']).should.deep.equal(['hello']);
+            compiler.filterUserOptions(['-s', 'something', 'something-else']).should.deep.equal(['something-else']);
         });
 
         it('JavaCompiler should not allow --source-path parameter', () => {
             const compiler = new JavaCompiler(info, env);
-            compiler.filterUserOptions(['hello', '--source-path', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else'],
-            );
-            compiler.filterUserOptions(['hello', '--source-path']).should.deep.equal(
-                ['hello'],
-            );
-            compiler.filterUserOptions(['--source-path', 'something', 'something-else']).should.deep.equal(
-                ['something-else'],
-            );
+            compiler
+                .filterUserOptions(['hello', '--source-path', '--something', '--something-else'])
+                .should.deep.equal(['hello', '--something-else']);
+            compiler.filterUserOptions(['hello', '--source-path']).should.deep.equal(['hello']);
+            compiler
+                .filterUserOptions(['--source-path', 'something', 'something-else'])
+                .should.deep.equal(['something-else']);
         });
 
         it('JavaCompiler should not allow -sourcepath parameter', () => {
             const compiler = new JavaCompiler(info, env);
-            compiler.filterUserOptions(['hello', '-sourcepath', '--something', '--something-else']).should.deep.equal(
-                ['hello', '--something-else'],
-            );
-            compiler.filterUserOptions(['hello', '-sourcepath']).should.deep.equal(
-                ['hello'],
-            );
-            compiler.filterUserOptions(['-sourcepath', 'something', 'something-else']).should.deep.equal(
-                ['something-else'],
-            );
+            compiler
+                .filterUserOptions(['hello', '-sourcepath', '--something', '--something-else'])
+                .should.deep.equal(['hello', '--something-else']);
+            compiler.filterUserOptions(['hello', '-sourcepath']).should.deep.equal(['hello']);
+            compiler
+                .filterUserOptions(['-sourcepath', 'something', 'something-else'])
+                .should.deep.equal(['something-else']);
         });
     });
 });
 
-describe.skip('javap parsing', () => {
+describe('javap parsing', () => {
     let compiler;
     let env;
     before(() => {
-        const env = makeCompilationEnvironment({languages});
+        env = makeCompilationEnvironment({languages});
         compiler = new JavaCompiler(info, env);
     });
 
@@ -159,15 +146,11 @@ describe.skip('javap parsing', () => {
             asm: '<Compilation failed>',
         };
 
-        compiler.processAsm(result).should.deep.equal([
-            {text: '<Compilation failed>', source: null},
-        ]);
+        compiler.processAsm(result).should.deep.equal([{text: '<Compilation failed>', source: null}]);
     });
 
     it('Parses simple class with one method', () => {
-        return Promise.all([
-            testJava('test/java/square', 'javap-square'),
-        ]);
+        return Promise.all([testJava('test/java/square', 'javap-square')]);
     });
 
     it('Preserves ordering of multiple classes', () => {
@@ -175,5 +158,9 @@ describe.skip('javap parsing', () => {
             testJava('test/java/two-classes', 'ZFirstClass', 'ASecondClass'),
             testJava('test/java/two-classes', 'ASecondClass', 'ZFirstClass'),
         ]);
+    });
+
+    it('Properly parses lookupswitch blocks', () => {
+        return testJava('test/java/lookupswitch-bug-2995', 'Main');
     });
 });

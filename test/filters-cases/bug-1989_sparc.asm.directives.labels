@@ -1,7 +1,0 @@
-issue1989:
-        add     %o1, %o0, %o1
-        mov     0, %g1
-        cmp     %o1, %o0
-        movg    %icc, 1, %g1
-        jmp     %o7+8
-         mov    %g1, %o0

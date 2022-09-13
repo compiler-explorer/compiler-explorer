@@ -1,0 +1,124 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .intel_syntax noprefix"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.c\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "my_own_address:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltmp0:"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ltmp0",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   .Ltmp0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   1 \"/tmp/compiler-explorer-compiler1181017-55-1emkn80.7vnff\" \"/tmp/compiler-explorer-compiler1181017-55-1emkn80.7vnff/example.c\""
+    },
+    {
+      "labels": [
+        {
+          "name": "ptr",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   ptr,@object             # @ptr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .data"
+    },
+    {
+      "labels": [
+        {
+          "name": "ptr",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  ptr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .p2align        3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "ptr:"
+    },
+    {
+      "labels": [
+        {
+          "name": "my_own_address",
+          "range": {
+            "endCol": 31,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   my_own_address"
+    },
+    {
+      "labels": [
+        {
+          "name": "ptr",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   ptr, 8"
+    }
+  ],
+  "labelDefinitions": {
+    ".Ltmp0": 5,
+    "my_own_address": 4,
+    "ptr": 13
+  }
+}

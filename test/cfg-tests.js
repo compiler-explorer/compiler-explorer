@@ -24,7 +24,7 @@
 
 import * as cfg from '../lib/cfg';
 
-import { fs, path, resolvePathFromTestRoot } from './utils';
+import {fs, path, resolvePathFromTestRoot} from './utils';
 
 async function DoCfgTest(cfgArg, filename) {
     const contents = await fs.readJson(filename, 'utf-8');

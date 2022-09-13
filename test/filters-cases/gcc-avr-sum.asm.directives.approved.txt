@@ -1,0 +1,846 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "__SREG__ = 0x3f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__SP_H__ = 0x3e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__SP_L__ = 0x3d"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__CCP__ = 0x34"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__tmp_reg__ = 0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "__zero_reg__ = 1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z12testFunctionPii:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LFBB1:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        push r29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        push r28"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SP_L__",
+          "range": {
+            "endCol": 24,
+            "startCol": 16
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        in r28,__SP_L__"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SP_H__",
+          "range": {
+            "endCol": 24,
+            "startCol": 16
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        in r29,__SP_H__"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        sbiw r28,8"
+    },
+    {
+      "labels": [
+        {
+          "name": "__tmp_reg__",
+          "range": {
+            "endCol": 23,
+            "startCol": 12
+          }
+        },
+        {
+          "name": "__SREG__",
+          "range": {
+            "endCol": 32,
+            "startCol": 24
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        in __tmp_reg__,__SREG__"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        cli"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SP_H__",
+          "range": {
+            "endCol": 21,
+            "startCol": 13
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        out __SP_H__,r29"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SREG__",
+          "range": {
+            "endCol": 21,
+            "startCol": 13
+          }
+        },
+        {
+          "name": "__tmp_reg__",
+          "range": {
+            "endCol": 33,
+            "startCol": 22
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        out __SREG__,__tmp_reg__"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SP_L__",
+          "range": {
+            "endCol": 21,
+            "startCol": 13
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        out __SP_L__,r28"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/* prologue: function */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/* frame size = 8 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/* stack size = 10 */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L__stack_usage = 10"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        std Y+6,r25"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        std Y+5,r24"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        std Y+8,r23"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 1
+      },
+      "text": "        std Y+7,r22"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM1:"
+    },
+    {
+      "labels": [
+        {
+          "name": "__zero_reg__",
+          "range": {
+            "endCol": 29,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        std Y+2,__zero_reg__"
+    },
+    {
+      "labels": [
+        {
+          "name": "__zero_reg__",
+          "range": {
+            "endCol": 29,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 2
+      },
+      "text": "        std Y+1,__zero_reg__"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBB3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM2:"
+    },
+    {
+      "labels": [
+        {
+          "name": "__zero_reg__",
+          "range": {
+            "endCol": 29,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        std Y+4,__zero_reg__"
+    },
+    {
+      "labels": [
+        {
+          "name": "__zero_reg__",
+          "range": {
+            "endCol": 29,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        std Y+3,__zero_reg__"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L2",
+          "range": {
+            "endCol": 17,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        rjmp .L2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L4:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r24,Y+3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r25,Y+4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        lsl r24"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        rol r25"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r18,Y+5"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r19,Y+6"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        add r24,r18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        adc r25,r19"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mov r30,r24"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        mov r31,r25"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ld r24,Z"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r25,Z+1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r18,Y+1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        ldd r19,Y+2"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        add r24,r18"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        adc r25,r19"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        std Y+2,r25"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 4
+      },
+      "text": "        std Y+1,r24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM4:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldd r24,Y+3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldd r25,Y+4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        adiw r24,1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        std Y+4,r25"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        std Y+3,r24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldi r20,lo8(1)"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldd r18,Y+3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldd r19,Y+4"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldd r24,Y+7"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldd r25,Y+8"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        cp r18,r24"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        cpc r19,r25"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L3",
+          "range": {
+            "endCol": 17,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        brlt .L3"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        ldi r20,lo8(0)"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        tst r20"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L4",
+          "range": {
+            "endCol": 17,
+            "startCol": 14
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 3
+      },
+      "text": "        brne .L4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE3:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM6:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        ldd r24,Y+1"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 6
+      },
+      "text": "        ldd r25,Y+2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "/* epilogue start */"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LBE2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LM7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        adiw r28,8"
+    },
+    {
+      "labels": [
+        {
+          "name": "__tmp_reg__",
+          "range": {
+            "endCol": 23,
+            "startCol": 12
+          }
+        },
+        {
+          "name": "__SREG__",
+          "range": {
+            "endCol": 32,
+            "startCol": 24
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        in __tmp_reg__,__SREG__"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        cli"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SP_H__",
+          "range": {
+            "endCol": 21,
+            "startCol": 13
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        out __SP_H__,r29"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SREG__",
+          "range": {
+            "endCol": 21,
+            "startCol": 13
+          }
+        },
+        {
+          "name": "__tmp_reg__",
+          "range": {
+            "endCol": 33,
+            "startCol": 22
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        out __SREG__,__tmp_reg__"
+    },
+    {
+      "labels": [
+        {
+          "name": "__SP_L__",
+          "range": {
+            "endCol": 21,
+            "startCol": 13
+          }
+        }
+      ],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        out __SP_L__,r28"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        pop r28"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        pop r29"
+    },
+    {
+      "labels": [],
+      "source": {
+        "file": null,
+        "line": 7
+      },
+      "text": "        ret"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Lscope1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Letext0:"
+    }
+  ],
+  "labelDefinitions": {
+    ".L2": 64,
+    ".L3": 75,
+    ".L4": 38,
+    "_Z12testFunctionPii": 8,
+    "__SP_H__": 2,
+    "__SP_L__": 3,
+    "__SREG__": 1,
+    "__tmp_reg__": 5,
+    "__zero_reg__": 6
+  }
+}

@@ -1,142 +1,142 @@
 {
-    "settings": {
-        "hasHeaders": true,
-        "constrainDragToContainer": false,
-        "reorderEnabled": true,
-        "selectionEnabled": false,
-        "popoutWholeStack": false,
-        "blockedPopoutsThrowError": true,
-        "closePopoutsOnUnload": true,
-        "showPopoutIcon": false,
-        "showMaximiseIcon": true,
-        "showCloseIcon": true,
-        "responsiveMode": "onload",
-        "tabOverlapAllowance": 0,
-        "reorderOnTabMenuClick": true,
-        "tabControlOffset": 10
-    },
-    "dimensions": {
-        "borderWidth": 5,
-        "borderGrabWidth": 15,
-        "minItemHeight": 10,
-        "minItemWidth": 10,
-        "headerHeight": 20,
-        "dragProxyWidth": 300,
-        "dragProxyHeight": 200
-    },
-    "labels": {
-        "close": "close",
-        "maximise": "maximise",
-        "minimise": "minimise",
-        "popout": "open in new window",
-        "popin": "pop in",
-        "tabDropdown": "additional tabs"
-    },
-    "content": [
-        {
-            "type": "row",
-            "isClosable": true,
-            "reorderEnabled": true,
-            "title": "",
-            "content": [
-                {
-                    "type": "stack",
-                    "width": 33.333333333333336,
-                    "isClosable": true,
-                    "reorderEnabled": true,
-                    "title": "",
-                    "activeItemIndex": 0,
-                    "content": [
-                        {
-                            "type": "component",
-                            "componentName": "codeEditor",
-                            "componentState": {
-                                "id": 1,
-                                "source": "// Type your code here, or load an example.\nint square(int num) {\n    auto x = 344 + 5 + 1;\n    return num * num + 234 + x;\n}\n\nint main() {\n    return square(23);\n}\n",
-                                "lang": "c++"
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true,
-                            "title": "C++ source #1"
-                        }
-                    ]
-                },
-                {
-                    "type": "stack",
-                    "width": 33.333333333333336,
-                    "isClosable": true,
-                    "reorderEnabled": true,
-                    "title": "",
-                    "activeItemIndex": 0,
-                    "content": [
-                        {
-                            "type": "component",
-                            "componentName": "compiler",
-                            "componentState": {
-                                "compiler": "g92",
-                                "source": 1,
-                                "options": "-O3",
-                                "filters": {
-                                    "binary": false,
-                                    "execute": false,
-                                    "labels": true,
-                                    "libraryCode": false,
-                                    "directives": true,
-                                    "commentOnly": true,
-                                    "trim": false,
-                                    "intel": true,
-                                    "demangle": true
-                                },
-                                "libs": [],
-                                "lang": "c++"
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true,
-                            "title": "x86-64 gcc 9.2 (Editor #1, Compiler #1) C++"
-                        }
-                    ]
-                },
-                {
-                    "type": "stack",
-                    "width": 33.33333333333333,
-                    "isClosable": true,
-                    "reorderEnabled": true,
-                    "title": "",
-                    "activeItemIndex": 0,
-                    "content": [
-                        {
-                            "type": "component",
-                            "componentName": "executor",
-                            "componentState": {
-                                "compiler": "g92",
-                                "source": 1,
-                                "options": "-O3",
-                                "execArgs": "test",
-                                "execStdin": "",
-                                "libs": [
-                                    {
-                                        "name": "openssl",
-                                        "ver": "111c"
-                                    }
-                                ],
-                                "lang": "c++",
-                                "compilationPanelShown": false,
-                                "compilerOutShown": true,
-                                "argsPanelShown": true,
-                                "stdinPanelShown": false
-                            },
-                            "isClosable": true,
-                            "reorderEnabled": true,
-                            "title": "x86-64 gcc 9.2 Executor (Editor #1) C++"
-                        }
-                    ]
-                }
-            ]
-        }
-    ],
-    "isClosable": true,
+  "settings": {
+    "hasHeaders": true,
+    "constrainDragToContainer": false,
     "reorderEnabled": true,
-    "title": "",
-    "openPopouts": [],
-    "maximisedItemId": null
+    "selectionEnabled": false,
+    "popoutWholeStack": false,
+    "blockedPopoutsThrowError": true,
+    "closePopoutsOnUnload": true,
+    "showPopoutIcon": false,
+    "showMaximiseIcon": true,
+    "showCloseIcon": true,
+    "responsiveMode": "onload",
+    "tabOverlapAllowance": 0,
+    "reorderOnTabMenuClick": true,
+    "tabControlOffset": 10
+  },
+  "dimensions": {
+    "borderWidth": 5,
+    "borderGrabWidth": 15,
+    "minItemHeight": 10,
+    "minItemWidth": 10,
+    "headerHeight": 20,
+    "dragProxyWidth": 300,
+    "dragProxyHeight": 200
+  },
+  "labels": {
+    "close": "close",
+    "maximise": "maximise",
+    "minimise": "minimise",
+    "popout": "open in new window",
+    "popin": "pop in",
+    "tabDropdown": "additional tabs"
+  },
+  "content": [
+    {
+      "type": "row",
+      "isClosable": true,
+      "reorderEnabled": true,
+      "title": "",
+      "content": [
+        {
+          "type": "stack",
+          "width": 33.333333333333336,
+          "isClosable": true,
+          "reorderEnabled": true,
+          "title": "",
+          "activeItemIndex": 0,
+          "content": [
+            {
+              "type": "component",
+              "componentName": "codeEditor",
+              "componentState": {
+                "id": 1,
+                "source": "// Type your code here, or load an example.\nint square(int num) {\n    auto x = 344 + 5 + 1;\n    return num * num + 234 + x;\n}\n\nint main() {\n    return square(23);\n}\n",
+                "lang": "c++"
+              },
+              "isClosable": true,
+              "reorderEnabled": true,
+              "title": "C++ source #1"
+            }
+          ]
+        },
+        {
+          "type": "stack",
+          "width": 33.333333333333336,
+          "isClosable": true,
+          "reorderEnabled": true,
+          "title": "",
+          "activeItemIndex": 0,
+          "content": [
+            {
+              "type": "component",
+              "componentName": "compiler",
+              "componentState": {
+                "compiler": "g92",
+                "source": 1,
+                "options": "-O3",
+                "filters": {
+                  "binary": false,
+                  "execute": false,
+                  "labels": true,
+                  "libraryCode": false,
+                  "directives": true,
+                  "commentOnly": true,
+                  "trim": false,
+                  "intel": true,
+                  "demangle": true
+                },
+                "libs": [],
+                "lang": "c++"
+              },
+              "isClosable": true,
+              "reorderEnabled": true,
+              "title": "x86-64 gcc 9.2 (Editor #1, Compiler #1) C++"
+            }
+          ]
+        },
+        {
+          "type": "stack",
+          "width": 33.33333333333333,
+          "isClosable": true,
+          "reorderEnabled": true,
+          "title": "",
+          "activeItemIndex": 0,
+          "content": [
+            {
+              "type": "component",
+              "componentName": "executor",
+              "componentState": {
+                "compiler": "g92",
+                "source": 1,
+                "options": "-O3",
+                "execArgs": "test",
+                "execStdin": "",
+                "libs": [
+                  {
+                    "name": "openssl",
+                    "ver": "111c"
+                  }
+                ],
+                "lang": "c++",
+                "compilationPanelShown": false,
+                "compilerOutShown": true,
+                "argsPanelShown": true,
+                "stdinPanelShown": false
+              },
+              "isClosable": true,
+              "reorderEnabled": true,
+              "title": "x86-64 gcc 9.2 Executor (Editor #1) C++"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "isClosable": true,
+  "reorderEnabled": true,
+  "title": "",
+  "openPopouts": [],
+  "maximisedItemId": null
 }

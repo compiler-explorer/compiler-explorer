@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerArguments } from '../../lib/compiler-arguments';
-import { BaseParser, ClangParser, GCCParser, PascalParser } from '../../lib/compilers/argument-parsers';
-import { FakeCompiler } from '../../lib/compilers/fake-for-test';
-import { makeCompilationEnvironment, should } from '../utils';
+import {CompilerArguments} from '../../lib/compiler-arguments';
+import {BaseParser, ClangParser, GCCParser, PascalParser} from '../../lib/compilers/argument-parsers';
+import {FakeCompiler} from '../../lib/compilers/fake-for-test';
+import {makeCompilationEnvironment, should} from '../utils';
 
 const languages = {
     'c++': {id: 'c++'},
@@ -79,11 +79,12 @@ describe('option parser', () => {
         });
     });
     it('handles non-option text', () => {
-        return BaseParser.getOptions(makeCompiler('-foo=123\nthis is a fish\n-badger=123')).should.eventually.deep.equals(
-            {
-                '-foo=123': {description: 'this is a fish', timesused: 0},
-                '-badger=123': {description: '', timesused: 0},
-            });
+        return BaseParser.getOptions(
+            makeCompiler('-foo=123\nthis is a fish\n-badger=123'),
+        ).should.eventually.deep.equals({
+            '-foo=123': {description: 'this is a fish', timesused: 0},
+            '-badger=123': {description: '', timesused: 0},
+        });
     });
     it('should ignore if errors occur', () => {
         return BaseParser.getOptions(makeCompiler('--foo\n', '--bar\n', 1)).should.eventually.deep.equals({});
@@ -97,21 +98,20 @@ describe('gcc parser', () => {
         result.compiler.options.should.equals('');
     });
     it('should handle options', () => {
-        return GCCParser.parse(makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'))
-            .should.eventually.satisfy(result => {
-                return Promise.all([
-                    result.compiler.supportsGccDump.should.equals(true),
-                    result.compiler.supportsIntel.should.equals(true),
-                    result.compiler.intelAsm.should.equals('-masm=intel'),
-                    result.compiler.options.should.equals('-fdiagnostics-color=always'),
-                ]);
-            });
+        return GCCParser.parse(
+            makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'),
+        ).should.eventually.satisfy(result => {
+            return Promise.all([
+                result.compiler.supportsGccDump.should.equals(true),
+                result.compiler.supportsIntel.should.equals(true),
+                result.compiler.intelAsm.should.equals('-masm=intel'),
+                result.compiler.options.should.equals('-fdiagnostics-color=always'),
+            ]);
+        });
     });
     it('should handle undefined options', () => {
         return GCCParser.parse(makeCompiler('-fdiagnostics-color=[blah]')).should.eventually.satisfy(result => {
-            return Promise.all([
-                result.compiler.options.should.equals('-fdiagnostics-color=always'),
-            ]);
+            return Promise.all([result.compiler.options.should.equals('-fdiagnostics-color=always')]);
         });
     });
 });
@@ -119,32 +119,29 @@ describe('gcc parser', () => {
 describe('clang parser', () => {
     it('should handle empty options', () => {
         return ClangParser.parse(makeCompiler()).should.eventually.satisfy(result => {
-            return Promise.all([
-                result.compiler.options.should.equals(''),
-            ]);
+            return Promise.all([result.compiler.options.should.equals('')]);
         });
     });
     it('should handle options', () => {
-        return ClangParser.parse(makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics'))
-            .should.eventually.satisfy(result => {
-                return Promise.all([
-                    result.compiler.supportsOptOutput.should.equals(true),
-                    result.compiler.optArg.should.equals('-fsave-optimization-record'),
+        return ClangParser.parse(
+            makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics'),
+        ).should.eventually.satisfy(result => {
+            return Promise.all([
+                result.compiler.supportsOptOutput.should.equals(true),
+                result.compiler.optArg.should.equals('-fsave-optimization-record'),
 
-                    result.compiler.options.should.include('-fcolor-diagnostics'),
-                    result.compiler.options.should.include('-fno-crash-diagnostics'),
-                    result.compiler.options.should.not.include('-fsave-optimization-record'),
-                ]);
-            });
+                result.compiler.options.should.include('-fcolor-diagnostics'),
+                result.compiler.options.should.include('-fno-crash-diagnostics'),
+                result.compiler.options.should.not.include('-fsave-optimization-record'),
+            ]);
+        });
     });
 });
 
 describe('pascal parser', () => {
     it('should handle empty options', () => {
         return PascalParser.parse(makeCompiler()).should.eventually.satisfy(result => {
-            return Promise.all([
-                result.compiler.options.should.equals(''),
-            ]);
+            return Promise.all([result.compiler.options.should.equals('')]);
         });
     });
 });
@@ -153,7 +150,9 @@ describe('popular compiler arguments', () => {
     let compiler;
 
     before(() => {
-        compiler = makeCompiler('-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>');
+        compiler = makeCompiler(
+            '-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>',
+        );
     });
 
     it('should return 5 arguments', () => {

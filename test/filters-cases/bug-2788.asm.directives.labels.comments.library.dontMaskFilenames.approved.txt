@@ -1,0 +1,430 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "_Z4revcc:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": "/tmp/example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        sub     r3, r0, #65"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": "/tmp/example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        cmp     r3, #19"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 3,
+        "file": "/tmp/example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        ldrls   pc, [pc, r3, asl #2]"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": {
+        "column": 3,
+        "file": "/tmp/example.cpp",
+        "line": 2,
+        "mainsource": true
+      },
+      "text": "        b       .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L8",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L6",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L6"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L5",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L5"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L7",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L7"
+    },
+    {
+      "labels": [
+        {
+          "name": ".L3",
+          "range": {
+            "endCol": 20,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .word   .L3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L8:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 12,
+        "mainsource": true
+      },
+      "text": "        mov     r0, #84"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L7:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 1,
+        "file": "/tmp/example.cpp",
+        "line": 14,
+        "mainsource": true
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L3:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 10,
+        "mainsource": true
+      },
+      "text": "        mov     r0, #65"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 10,
+        "mainsource": true
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L5:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 8,
+        "mainsource": true
+      },
+      "text": "        mov     r0, #67"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 8,
+        "mainsource": true
+      },
+      "text": "        bx      lr"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".L6:"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": "        mov     r0, #71"
+    },
+    {
+      "labels": [],
+      "source": {
+        "column": 14,
+        "file": "/tmp/example.cpp",
+        "line": 6,
+        "mainsource": true
+      },
+      "text": "        bx      lr"
+    }
+  ],
+  "labelDefinitions": {
+    ".L3": 30,
+    ".L5": 33,
+    ".L6": 36,
+    ".L7": 28,
+    ".L8": 26,
+    "_Z4revcc": 1
+  }
+}
