@@ -46,47 +46,6 @@ export class CLSPVCompiler extends BaseCompiler {
         this.disassemblerPath = this.compilerProps('disassemblerPath');
     }
 
-    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
-        let options = this.optionsForFilter(filters, outputFilename);
-        backendOptions = backendOptions || {};
-
-        if (this.compiler.options) {
-            const compilerOptions = _.filter(
-                utils.splitArguments(this.compiler.options),
-                option => option !== '-fno-crash-diagnostics',
-            );
-
-            options = options.concat(compilerOptions);
-        }
-
-        if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
-        }
-
-        const libIncludes = this.getIncludeArguments(libraries);
-        const libOptions = this.getLibraryOptions(libraries);
-        let libLinks: any = [];
-        let libPaths: any = [];
-        let staticLibLinks: any = [];
-
-        if (filters.binary) {
-            libLinks = this.getSharedLibraryLinks(libraries);
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
-            staticLibLinks = this.getStaticLibraryLinks(libraries);
-        }
-
-        userOptions = this.filterUserOptions(userOptions) || [];
-        return options.concat(
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            userOptions,
-            [this.filename(inputFilename)],
-            staticLibLinks,
-        );
-    }
-
     getPrimaryOutputFilename(dirPath, outputFilebase) {
         return path.join(dirPath, `${outputFilebase}.spv`);
     }
