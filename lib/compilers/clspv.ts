@@ -93,7 +93,7 @@ export class CLSPVCompiler extends BaseCompiler {
 
     override optionsForFilter(filters, outputFilename) {
         const sourceDir = path.dirname(outputFilename);
-        const spvBinFilename = getPrimaryOutputFilename(sourceDir, this.outputFilebase);
+        const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
         return ['-o', spvBinFilename, '-g'];
     }
 
@@ -104,7 +104,7 @@ export class CLSPVCompiler extends BaseCompiler {
 
     override async runCompiler(compiler, options, inputFilename, execOptions) {
         const sourceDir = path.dirname(inputFilename);
-        const spvBinFilename = getPrimaryOutputFilename(sourceDir, this.outputFilebase);
+        const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
 
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -119,7 +119,7 @@ export class CLSPVCompiler extends BaseCompiler {
             return spvBin;
         }
 
-        const spvasmFilename = getOutputFilename(sourceDis, this.outputFilebase);
+        const spvasmFilename = this.getOutputFilename(sourceDir, this.outputFilebase);
         const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
