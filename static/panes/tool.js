@@ -491,6 +491,7 @@ Tool.prototype.onCompileResult = function (id, compiler, result) {
             if (toolResult.languageId) {
                 this.setEditorContent(_.pluck(toolResult.stdout, 'text').join('\n'));
             } else {
+                this.plainContentRoot.empty();
                 _.each(
                     (toolResult.stdout || []).concat(toolResult.stderr || []),
                     function (obj) {

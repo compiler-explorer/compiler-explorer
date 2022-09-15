@@ -1,5 +1,5 @@
 mixin newPaneButton(classId, text, title, icon)
-  button(class="dropdown-item btn btn-sm btn-light " + classId title=title)
+  button(class="dropdown-item btn btn-sm btn-light " + classId title=title data-cy="new-" + classId + "-btn")
     span(class="dropdown-icon " + icon)
     | #{text}
 
@@ -40,10 +40,10 @@ mixin newPaneButton(classId, text, title, icon)
         span.fas.fa-book
         span.dp-text.hideable Libraries
     .btn-group.btn-group-sm(role="group")
-      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler")
+      button.btn.btn-sm.btn-light.dropdown-toggle.add-pane(type="button" title="Add a new pane" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add new element for this compiler" data-cy="new-compiler-dropdown-btn")
         span.fas.fa-plus
         span.hideable Add new...
-      .dropdown-menu.dropdown-menu-right.new-pane-dropdown
+      .dropdown-menu.dropdown-menu-right.new-pane-dropdown(data-cy="new-compiler-pane-dropdown")
         +newPaneButton("add-compiler", "Clone Compiler", "Clone this compiler window (click or drag)", "far fa-clone")
         +newPaneButton("create-executor", "Executor From This", "Create executor from this compiler", "fas fa-microchip")
         +newPaneButton("view-optimization", "Optimization", "Show optimization output", "fas fa-weight")
@@ -75,7 +75,7 @@ mixin newPaneButton(classId, text, title, icon)
           .input-group-prepend
             button.btn.btn-sm.btn-light.clear-cache(title="Clear cache & recompile")
               span.fas.fa-redo
-          button.btn.btn-sm.btn-light.output-btn
+          button.btn.btn-sm.btn-light.output-btn(data-cy="new-output-pane-btn")
             span.fas.fa-receipt.status-text
             | &nbsp;Output
             span.output-count

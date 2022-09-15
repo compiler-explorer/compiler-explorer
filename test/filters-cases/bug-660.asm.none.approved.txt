@@ -4290,7 +4290,15 @@
       "text": "$LASF54:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 15,
+            "startCol": 11
+          }
+        }
+      ],
       "source": null,
       "text": "  .ascii \"main\\000\""
     },

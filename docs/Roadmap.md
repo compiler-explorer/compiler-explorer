@@ -42,7 +42,7 @@ forever once they are created, which places a burden on us to keep existing comp
 ### Non-goals
 
 Compiler Explorer will remain open-source and non-commercial. There are no plans at all to add "freemium" content. We do
-have a Patreon site, Github sponsors, Paypal donations, and some corporate sponsors. Funds from these source help
+have a Patreon site, GitHub sponsors, PayPal donations, and some corporate sponsors. Funds from these source help
 support the cost of running the servers, and incentivize the core team. Previously our goal was to remain "ad-free",
 that has been relaxed slightly to allow up to three company sponsor logos visible at the top right of the screen.
 
@@ -59,7 +59,7 @@ that has been relaxed slightly to allow up to three company sponsor logos visibl
 - **Multi-file support**. Multiple file compilation units to open the door to seeing LTO and maybe modules. This may
   include being able to use a `CMake` file to build things.
 - **Modernising the codebase**. Moving the codebase to TypeScript, or something similar that will allow us to worry less
-  about differences between front-end and back-end code (old Javascript versions), and help us attract more people to
+  about differences between front-end and back-end code (old JavaScript versions), and help us attract more people to
   the project.
 - **More compilers and libraries**. Plus finishing off the last stragglers of installation.
 

@@ -46,7 +46,7 @@ Native on Windows for general setup of Compiler Explorer and other compilers.
 ## Setting up c++.local.properties
 
 The next step is to create a `c++.local.properties` file under `etc/config` folder. The next step is going to be
-different for everyone, as you can choose what compiler options you pass to the compiler and so on, but im going to
+different for everyone, as you can choose what compiler options you pass to the compiler and so on, but I'm going to
 paste my template here, and you can just modify, what you need
 
 ```

@@ -77,8 +77,8 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
         line = line.split(inputFilename).join('<source>');
 
         if (inputFilename.indexOf('./') === 0) {
-            line = line.split('/home/ubuntu/' + inputFilename.substr(2)).join('<source>');
-            line = line.split('/home/ce/' + inputFilename.substr(2)).join('<source>');
+            line = line.split('/home/ubuntu/' + inputFilename.substring(2)).join('<source>');
+            line = line.split('/home/ce/' + inputFilename.substring(2)).join('<source>');
         }
     }
     return line;
@@ -90,9 +90,10 @@ function parseSeverity(message: string): number {
     return 3;
 }
 
+const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+
 export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
-    const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
     const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
@@ -102,7 +103,7 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
         if (line !== null) {
             const lineObj: ResultLine = {text: line};
             const filteredline = line.replace(ansiColoursRe, '');
-            let match = filteredline.match(re);
+            let match = filteredline.match(SOURCE_RE);
             if (match) {
                 const message = match[4].trim();
                 lineObj.tag = {
@@ -112,7 +113,7 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
                     severity: parseSeverity(message),
                 };
             } else {
-                match = filteredline.match(reWithFilename);
+                match = filteredline.match(SOURCE_WITH_FILENAME);
                 if (match) {
                     const message = match[5].trim();
                     lineObj.tag = {
@@ -365,6 +366,15 @@ export function base32Encode(buffer: Buffer): string {
     }
 
     return output;
+}
+
+// Splits a : separated list into its own array, or to default if input is undefined
+export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
+    if (input !== undefined) {
+        return input.split(':');
+    } else {
+        return defaultArray;
+    }
 }
 
 export function splitArguments(options = ''): string[] {

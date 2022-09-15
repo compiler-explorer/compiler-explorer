@@ -35,8 +35,15 @@ import {
     ExecutionOptions,
     ToolResult,
 } from '../types/compilation/compilation.interfaces';
-import {LLVMOptPipelineBackendOptions} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {UnprocessedExecResult} from '../types/execution/execution.interfaces';
+import {
+    LLVMOptPipelineBackendOptions,
+    LLVMOptPipelineOutput,
+} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {
+    BasicExecutionResult,
+    ExecutableExecutionOptions,
+    UnprocessedExecResult,
+} from '../types/execution/execution.interfaces';
 import {ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
@@ -64,6 +71,7 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
+import {ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
 export class BaseCompiler {
@@ -343,10 +351,7 @@ export class BaseCompiler {
         }
 
         const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-        this.parseCompilationOutput(result, transformedInput);
-        return result;
+        return this.transformToCompilationResult(result, inputFilename);
     }
 
     async runCompilerRawOutput(compiler, options, inputFilename, execOptions) {
@@ -359,13 +364,10 @@ export class BaseCompiler {
         }
 
         const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        return result;
-    }
-
-    parseCompilationOutput(result, inputFilename: string) {
-        result.stdout = utils.parseOutput(result.stdout, inputFilename);
-        result.stderr = utils.parseOutput(result.stderr, inputFilename);
+        return {
+            ...result,
+            inputFilename,
+        };
     }
 
     supportsObjdump() {
@@ -420,30 +422,66 @@ export class BaseCompiler {
         return result;
     }
 
-    async execBinary(executable, maxSize, executeParameters, homeDir) {
+    processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        return {
+            ...input,
+            stdout: utils.parseOutput(input.stdout, inputFilename),
+            stderr: utils.parseOutput(input.stderr, inputFilename),
+        };
+    }
+
+    getEmptyExecutionResult(): BasicExecutionResult {
+        return {
+            code: -1,
+            okToCache: false,
+            filenameTransform: x => x,
+            stdout: [],
+            stderr: [],
+            execTime: '',
+            timedOut: false,
+        };
+    }
+
+    transformToCompilationResult(input: UnprocessedExecResult, inputFilename): CompilationResult {
+        const transformedInput = input.filenameTransform(inputFilename);
+
+        return {
+            inputFilename,
+            ...this.processExecutionResult(input, transformedInput),
+        };
+    }
+
+    async execBinary(
+        executable,
+        maxSize,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir,
+    ): Promise<BasicExecutionResult> {
         // We might want to save this in the compilation environment once execution is made available
         const timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         try {
-            const execResult = await exec.sandbox(executable, executeParameters.args, {
+            const execResult: UnprocessedExecResult = await exec.sandbox(executable, executeParameters.args, {
                 maxOutput: maxSize,
                 timeoutMs: timeoutMs,
-                ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath).join(':'),
+                ldPath: _.union(this.compiler.ldPath, executeParameters.ldPath),
                 input: executeParameters.stdin,
                 env: executeParameters.env,
                 customCwd: homeDir,
                 appHome: homeDir,
             });
-            execResult.stdout = utils.parseOutput(execResult.stdout);
-            execResult.stderr = utils.parseOutput(execResult.stderr);
-            return execResult;
+
+            return this.processExecutionResult(execResult);
         } catch (err: UnprocessedExecResult | any) {
-            // TODO: is this the best way? Perhaps failures in sandbox shouldn't reject
-            // with "results", but instead should play on?
-            return {
-                stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
-                stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                code: err.code !== undefined ? err.code : -1,
-            };
+            if (err.code && err.stderr) {
+                return this.processExecutionResult(err);
+            } else {
+                return {
+                    ...this.getEmptyExecutionResult(),
+                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
+                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
+                    code: err.code !== undefined ? err.code : -1,
+                };
+            }
         }
     }
 
@@ -991,7 +1029,7 @@ export class BaseCompiler {
         options,
         filters: ParseFilters,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
-    ) {
+    ): Promise<LLVMOptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
@@ -1002,21 +1040,40 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+
+        if (output.timedOut) {
+            return {
+                error: 'Compilation timed out',
+                results: {},
+            };
+        }
+
         if (output.code !== 0) {
             return;
         }
 
-        const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+        try {
+            const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
 
-        if (llvmOptPipelineOptions.demangle) {
-            // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
-            // new this.demanglerClass(this.compiler.demangler, this);
-            const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
-            // collect labels off the raw input
-            await demangler.collect({asm: output.stderr});
-            return await demangler.demangleLLVMPasses(llvmOptPipeline);
-        } else {
-            return llvmOptPipeline;
+            if (llvmOptPipelineOptions.demangle) {
+                // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
+                // new this.demanglerClass(this.compiler.demangler, this);
+                const demangler = new LLVMIRDemangler(this.compiler.demangler, this);
+                // collect labels off the raw input
+                await demangler.collect({asm: output.stderr});
+                return {
+                    results: await demangler.demangleLLVMPasses(llvmOptPipeline),
+                };
+            } else {
+                return {
+                    results: llvmOptPipeline,
+                };
+            }
+        } catch (e: any) {
+            return {
+                error: e.toString(),
+                results: {},
+            };
         }
     }
 
@@ -1244,7 +1301,7 @@ export class BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(tools, type, compilationInfo): Promise<ToolResult>[] {
+    runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
@@ -1448,7 +1505,7 @@ export class BaseCompiler {
         }
     }
 
-    runExecutable(executable, executeParameters, homeDir) {
+    runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
         const maxExecOutputSize = this.env.ceProps('max-executable-output-size', 32 * 1024);
         // Hardcoded fix for #2339. Ideally I'd have a config option for this, but for now this is plenty good enough.
         executeParameters.env = {
@@ -1472,9 +1529,11 @@ export class BaseCompiler {
         await fs.writeFile(outputFilename, source);
         executeParameters.args.unshift(outputFilename);
         const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
-        result.didExecute = true;
-        result.buildResult = {code: 0};
-        return result;
+        return {
+            ...result,
+            didExecute: true,
+            buildResult: {code: 0},
+        };
     }
 
     async handleExecution(key, executeParameters) {
@@ -1516,9 +1575,11 @@ export class BaseCompiler {
 
         executeParameters.ldPath = this.getSharedLibraryPathsAsLdLibraryPathsForExecution(key.libraries);
         const result = await this.runExecutable(buildResult.executableFilename, executeParameters, buildResult.dirPath);
-        result.didExecute = true;
-        result.buildResult = buildResult;
-        return result;
+        return {
+            ...result,
+            didExecute: true,
+            buildResult: buildResult,
+        };
     }
 
     getCacheKey(source, options, backendOptions, filters, tools, libraries, files) {
@@ -1769,9 +1830,7 @@ export class BaseCompiler {
 
     async doBuildstep(command, args, execParams) {
         const result = await this.exec(command, args, execParams);
-        result.stdout = utils.parseOutput(result.stdout);
-        result.stderr = utils.parseOutput(result.stderr);
-        return result;
+        return this.processExecutionResult(result);
     }
 
     handleUserError(error, dirPath) {
@@ -1786,8 +1845,10 @@ export class BaseCompiler {
     }
 
     async doBuildstepAndAddToResult(result, name, command, args, execParams) {
-        const stepResult = await this.doBuildstep(command, args, execParams);
-        stepResult.step = name;
+        const stepResult = {
+            ...(await this.doBuildstep(command, args, execParams)),
+            step: name,
+        };
         logger.debug(name);
         result.buildsteps.push(stepResult);
         return stepResult;
@@ -1801,7 +1862,7 @@ export class BaseCompiler {
 
         _.extend(cmakeExecParams.env, this.getCompilerEnvironmentVariables(options.join(' ')));
 
-        cmakeExecParams.env.LD_LIBRARY_PATH = dirPath;
+        cmakeExecParams.ldPath = [dirPath];
 
         // todo: if we don't use nsjail, the path should not be /app but dirPath
         const libPaths = this.getSharedLibraryPathsAsArguments(libsAndOptions.libraries, '/app');
@@ -1825,6 +1886,7 @@ export class BaseCompiler {
         if (!this.compiler.supportsBinary) {
             const errorResult: CompilationResult = {
                 code: -1,
+                timedOut: false,
                 didExecute: false,
                 stderr: [],
                 stdout: [],
@@ -1841,10 +1903,11 @@ export class BaseCompiler {
         const libsAndOptions = this.createLibsAndOptions(key);
 
         const doExecute = key.filters.execute;
-        const executeParameters = {
+        const executeParameters: ExecutableExecutionOptions = {
             ldPath: this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries),
             args: key.executionParameters.args || [],
             stdin: key.executionParameters.stdin || '',
+            env: {},
         };
 
         const cacheKey = this.getCmakeCacheKey(key, files);
@@ -2123,14 +2186,15 @@ export class BaseCompiler {
             delete result.optPath;
             result.optOutput = optOutput;
         }
+
+        const compilationInfo = this.getCompilationInfo(key, result, customBuildPath);
+
         result.tools = _.union(
             result.tools,
-            await Promise.all(
-                this.runToolsOfType(tools, 'postcompilation', this.getCompilationInfo(key, result, customBuildPath)),
-            ),
+            await Promise.all(this.runToolsOfType(tools, 'postcompilation', compilationInfo)),
         );
 
-        result = this.extractDeviceCode(result, filters);
+        result = await this.extractDeviceCode(result, filters, compilationInfo);
 
         this.doTempfolderCleanup(result);
         if (result.buildResult) {
@@ -2353,7 +2417,7 @@ but nothing was dumped. Possible causes are:
     }
 
     // eslint-disable-next-line no-unused-vars
-    extractDeviceCode(result, filters) {
+    async extractDeviceCode(result, filters, compilationInfo) {
         return result;
     }
 

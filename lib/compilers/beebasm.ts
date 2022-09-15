@@ -63,15 +63,15 @@ export class BeebAsmCompiler extends BaseCompiler {
 
         const hasBootOption = options.some(opt => opt.includes('-boot'));
 
-        const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
+        const compilerExecResult = await this.exec(compiler, options, execOptions);
 
-        if (result.stdout.length > 0) {
+        if (compilerExecResult.stdout.length > 0) {
             const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase);
-            fs.writeFileSync(outputFilename, result.stdout);
-            result.stdout = '';
+            fs.writeFileSync(outputFilename, compilerExecResult.stdout);
+            compilerExecResult.stdout = '';
         }
+
+        const result = this.transformToCompilationResult(compilerExecResult, inputFilename);
 
         if (result.code === 0 && options.includes('-v')) {
             const diskfile = path.join(dirPath, 'disk.ssd');
@@ -88,8 +88,6 @@ export class BeebAsmCompiler extends BaseCompiler {
                 }
             }
         }
-
-        this.parseCompilationOutput(result, transformedInput);
 
         const hasNoSaveError = result.stderr.some(opt => opt.text.includes('warning: no SAVE command in source file'));
         if (hasNoSaveError) {

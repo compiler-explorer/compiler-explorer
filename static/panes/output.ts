@@ -159,9 +159,8 @@ export class Output extends Pane<OutputState> {
 
     override getCurrentState() {
         const parent = super.getCurrentState();
-        const options = this.getEffectiveOptions();
         const state = {
-            wrap: options.wrap,
+            ...this.getEffectiveOptions(),
             ...parent,
         };
         this.fontScale.addState(state);

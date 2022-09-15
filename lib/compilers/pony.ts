@@ -94,10 +94,7 @@ export class PonyCompiler extends BaseCompiler {
         // So we must set the input to the directory rather than a file.
         options = _.map(options, arg => (arg.includes(inputFilename) ? path.dirname(arg) : arg));
 
-        const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-        this.parseCompilationOutput(result, transformedInput);
-        return result;
+        const compilerExecResult = await this.exec(compiler, options, execOptions);
+        return this.transformToCompilationResult(compilerExecResult, inputFilename);
     }
 }

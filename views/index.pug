@@ -20,7 +20,7 @@ block prepend content
               span.dropdown-icon.fa.fa-list-alt
               | Tree (IDE Mode)
         li.nav-item.dropdown
-          button.btn.btn-light.nav-link.dropdown-toggle#moreDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false") More
+          button.btn.btn-light.nav-link.dropdown-toggle#moreDropdown(role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-cy="more-dropdown-btn") More
           div.dropdown-menu(aria-labelledby="moreDropdown")
             button.dropdown-item.btn#setting(data-target="#settings" data-toggle="modal")
               span.dropdown-icon.fas.fa-sliders-h
@@ -29,7 +29,7 @@ block prepend content
             button.dropdown-item.btn#ui-brokenlink
               span.dropdown-icon.fas.fa-undo-alt
               | Reset UI layout
-            button.dropdown-item.btn#ui-reset
+            button.dropdown-item.btn#ui-reset(data-cy="reset-ui-btn")
               span.dropdown-icon.fas.fa-trash-alt
               | Reset code and UI layout
             button.dropdown-item.btn#ui-duplicate

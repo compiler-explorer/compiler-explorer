@@ -49,6 +49,7 @@ describe('Execution tests', () => {
                     okToCache: true,
                     stderr: '',
                     stdout: 'hello world\n',
+                    timedOut: false,
                 });
             });
             it('limits output', () => {
@@ -60,6 +61,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
+                        timedOut: false,
                     });
             });
             it('handles failing commands', () => {
@@ -68,6 +70,7 @@ describe('Execution tests', () => {
                     okToCache: true,
                     stderr: '',
                     stdout: '',
+                    timedOut: false,
                 });
             });
             it('handles timouts', () => {
@@ -79,6 +82,7 @@ describe('Execution tests', () => {
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
+                        timedOut: true,
                     });
             });
             it('handles missing executables', () => {
@@ -93,6 +97,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'this is stdin',
+                        timedOut: false,
                     });
             });
         });
@@ -109,6 +114,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'hello world\r\n',
+                        timedOut: false,
                     });
             });
             it('limits output', () => {
@@ -122,6 +128,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: 'A very ver\n[Truncated]',
+                        timedOut: false,
                     });
             });
             it('handles failing commands', () => {
@@ -133,6 +140,7 @@ describe('Execution tests', () => {
                         okToCache: true,
                         stderr: '',
                         stdout: '',
+                        timedOut: false,
                     });
             });
             it('handles timouts', () => {
@@ -144,6 +152,7 @@ describe('Execution tests', () => {
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
+                        timedOut: false,
                     });
             });
             it('handles missing executables', () => {
@@ -215,9 +224,11 @@ describe('Execution tests', () => {
             args.should.include('--time_limit=2');
         });
         it('should handle linker paths', () => {
-            const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {ldPath: '/a/lib/path'});
+            const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
+                ldPath: ['/a/lib/path', '/b/lib2'],
+            });
             options.should.deep.equals({});
-            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path');
+            args.should.include('--env=LD_LIBRARY_PATH=/a/lib/path:/b/lib2');
         });
         it('should handle envs', () => {
             const {args, options} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {

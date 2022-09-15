@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,19 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import {InstructionSets} from '../lib/instructionsets';
 
-export function getToolchainPath(compilerExe, compilerOptions) {
-    const options = compilerOptions ? compilerOptions.split(' ') : [];
-    const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
-    if (existingChain) return existingChain.substr(16);
+describe('InstructionSets', async () => {
+    it('should recognize aarch64 for clang target', async () => {
+        const isets = new InstructionSets();
 
-    const gxxname = options.find(elem => elem.includes('--gxx-name='));
-    if (gxxname) {
-        return path.resolve(path.dirname(gxxname.substr(11)), '..');
-    } else if (typeof compilerExe === 'string' && compilerExe.includes('/g++')) {
-        return path.resolve(path.dirname(compilerExe), '..');
-    } else {
-        return false;
-    }
-}
+        return isets
+            .getCompilerInstructionSetHint('aarch64-linux-gnu', '/opt/compiler-explorer/clang-11.0.1/bin/clang++')
+            .should.eventually.equal('aarch64');
+    });
+
+    it('should recognize gcc aarch64 from filepath', async () => {
+        const isets = new InstructionSets();
+
+        return isets
+            .getCompilerInstructionSetHint(
+                false,
+                '/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-g++',
+            )
+            .should.eventually.equal('aarch64');
+    });
+
+    it('should default to amd64 when not apparant', async () => {
+        const isets = new InstructionSets();
+
+        return isets
+            .getCompilerInstructionSetHint(false, '/opt/compiler-explorer/gcc-12.2.0/bin/g++')
+            .should.eventually.equal('amd64');
+    });
+});

@@ -37,18 +37,20 @@ const settings = {
 
 export class Toggles extends EventEmitter {
     private readonly buttons: JQuery;
-    private readonly state: Record<string, boolean>;
+    private readonly state: Record<string, boolean> = {};
 
-    constructor(root: JQuery, state: Record<string, boolean>) {
+    constructor(root: JQuery, state: Record<string, boolean> | undefined) {
         super();
         this.buttons = root.find('.button-checkbox');
-        this.state = {...state};
 
         for (const element of this.buttons) {
             const widget = $(element);
             const button = widget.find('button');
             const checkbox = widget.find('input:checkbox');
             const bind = button.data('bind');
+
+            // copy relevant parts of the state
+            this.state[bind] = state && bind in state ? state[bind] : checkbox.is(':checked');
 
             // Event Handlers
             button.on('click', e => {

@@ -231,9 +231,10 @@ DeviceAsm.prototype.onDeviceSelect = function () {
 };
 
 DeviceAsm.prototype.updateDeviceAsm = function () {
-    if (this.selectedDevice && this.devices[this.selectedDevice])
-        this.showDeviceAsmResults(this.devices[this.selectedDevice].asm);
-    else this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
+    if (this.selectedDevice && this.devices[this.selectedDevice]) {
+        var languageId = this.devices[this.selectedDevice].languageId;
+        this.showDeviceAsmResults(this.devices[this.selectedDevice].asm, languageId);
+    } else this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
 };
 
 DeviceAsm.prototype.getPaneTag = function () {
@@ -256,9 +257,16 @@ DeviceAsm.prototype.updateTitle = function () {
     this.container.setTitle(_.escape(this.getPaneName()));
 };
 
-DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode) {
+DeviceAsm.prototype.showDeviceAsmResults = function (deviceCode, languageId) {
     if (!this.deviceEditor) return;
     this.deviceCode = deviceCode;
+
+    if (!languageId) {
+        languageId = 'asm';
+    }
+
+    monaco.editor.setModelLanguage(this.deviceEditor.getModel(), languageId);
+
     this.deviceEditor
         .getModel()
         .setValue(deviceCode.length ? _.pluck(deviceCode, 'text').join('\n') : '<No device code>');

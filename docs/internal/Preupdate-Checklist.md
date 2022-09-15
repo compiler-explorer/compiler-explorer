@@ -18,7 +18,7 @@ To run the new version on the beta environment we'll use the `ce` utility:
 Ensure that the beta environment is active by running `ce --env beta environment start` - You can skip this step if it's
 already running from a previous run or if you'd rather boot it once the current version is marked as active.
 
-Check what `versionId` the desired commit has. This can be checked on the Github CI build logs as its build number for
+Check what `versionId` the desired commit has. This can be checked on the GitHub CI build logs as its build number for
 that specific commit, or by running `ce --env beta builds list` which shows a list of the most recent builds with their
 corresponding commit hash.
 

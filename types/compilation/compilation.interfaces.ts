@@ -23,10 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
+import {LanguageKey} from '../languages.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
     code: number;
+    timedOut: boolean;
     buildResult?: unknown;
     inputFilename?: string;
     asm?: ResultLine[];
@@ -79,6 +81,10 @@ export type CompilationResult = {
 
     hasHaskellCmmOutput?: boolean;
     haskellCmmOutput?: any;
+
+    forceBinaryView?: boolean;
+    bbcdiskimage?: string;
+    hints?: string[];
 };
 
 export type ExecutionOptions = {
@@ -91,6 +97,7 @@ export type ExecutionOptions = {
     appHome?: string;
     customCwd?: string;
     input?: any;
+    killChild?: () => void;
 };
 
 export type BuildResult = {
@@ -108,9 +115,9 @@ export type Artifact = {
 
 export type ToolResult = {
     id: string;
-    name: string;
+    name?: string;
     code: number;
-    languageId: string;
+    languageId?: LanguageKey | 'stderr';
     stderr: ResultLine[];
     stdout: ResultLine[];
     artifact?: Artifact;

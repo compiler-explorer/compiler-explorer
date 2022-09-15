@@ -70,7 +70,15 @@
       "text": "        mov     rbp, rsp"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "s_sA",
+          "range": {
+            "endCol": 36,
+            "startCol": 32
+          }
+        }
+      ],
       "source": {
         "file": null,
         "line": 7
