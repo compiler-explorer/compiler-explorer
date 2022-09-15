@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
+import {LanguageKey} from '../languages.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
@@ -114,9 +115,9 @@ export type Artifact = {
 
 export type ToolResult = {
     id: string;
-    name: string;
+    name?: string;
     code: number;
-    languageId: string;
+    languageId?: LanguageKey | 'stderr';
     stderr: ResultLine[];
     stdout: ResultLine[];
     artifact?: Artifact;

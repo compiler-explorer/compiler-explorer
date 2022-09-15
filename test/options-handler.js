@@ -511,7 +511,6 @@ describe('Options handler', () => {
             fake: {
                 faketool: {
                     addOptionsToToolArgs: true,
-                    parseOutput: parseOutput,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -531,7 +530,6 @@ describe('Options handler', () => {
                 },
                 someothertool: {
                     addOptionsToToolArgs: true,
-                    parseOutput: parseOutput,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',

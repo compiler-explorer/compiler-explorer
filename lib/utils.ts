@@ -368,6 +368,15 @@ export function base32Encode(buffer: Buffer): string {
     return output;
 }
 
+// Splits a : separated list into its own array, or to default if input is undefined
+export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
+    if (input !== undefined) {
+        return input.split(':');
+    } else {
+        return defaultArray;
+    }
+}
+
 export function splitArguments(options = ''): string[] {
     // escape hashes first, otherwise they're interpreted as comments
     const escapedOptions = options.replaceAll(/#/g, '\\#');

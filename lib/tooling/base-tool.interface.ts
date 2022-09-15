@@ -22,19 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatTool} from './clang-format-tool';
-export {ClangQueryTool} from './clang-query-tool';
-export {ClangTidyTool} from './clang-tidy-tool';
-export {CompilerDropinTool} from './compiler-dropin-tool';
-export {LLVMMcaTool} from './llvm-mca-tool';
-export {LLVMCovTool} from './llvm-cov-tool';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool';
-export {OSACATool} from './osaca-tool';
-export {PaholeTool} from './pahole-tool';
-export {PvsStudioTool} from './pvs-studio-tool';
-export {ReadElfTool} from './readelf-tool';
-export {RustFmtTool} from './rustfmt-tool';
-export {StringsTool} from './strings-tool';
-export {BBCDiskifyTool} from './bbcdiskify-tool';
-export {x86to6502Tool} from './x86to6502-tool';
-export {TestingTool} from './testing-tool';
+import {LanguageKey} from '../../types/languages.interfaces';
+
+export type ToolTypeKey = 'independent' | 'postcompilation';
+
+export type ToolInfo = {
+    id: string;
+    name?: string;
+    type?: ToolTypeKey;
+    exe: string;
+    exclude: string[];
+    includeKey?: string;
+    options: string[];
+    args?: string;
+    languageId?: LanguageKey;
+    stdinHint?: string;
+    monacoStdin?: string;
+    icon?: string;
+    darkIcon?: string;
+    compilerLanguage: LanguageKey;
+};
+
+export type ToolEnv = {
+    ceProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
+    compilerProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
+};
