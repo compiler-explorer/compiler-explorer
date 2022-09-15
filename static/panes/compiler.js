@@ -1439,7 +1439,9 @@ Compiler.prototype.emulateSpeccyTape = function (image) {
     var dialog = $('#jsspeccyemu');
 
     this.alertSystem.notify(
-        'Click <a target="_blank" id="jsspeccy_emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+        'Click ' +
+            '<a target="_blank" id="jsspeccy_emulink" style="cursor:pointer;" click="javascript:;">here</a>' +
+            ' to emulate',
         {
             group: 'emulation',
             collapseSimilar: true,
