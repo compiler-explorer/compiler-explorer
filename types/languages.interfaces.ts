@@ -37,6 +37,7 @@ export type LanguageKey =
     | 'cppx'
     | 'cppx_blue'
     | 'cppx_gold'
+    | 'cppx_cppfront'
     | 'crystal'
     | 'csharp'
     | 'cuda'
