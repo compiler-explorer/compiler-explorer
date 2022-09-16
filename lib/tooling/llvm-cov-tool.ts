@@ -33,23 +33,28 @@ export class LLVMCovTool extends BaseTool {
         return 'llvm-cov-tool';
     }
 
-    override async runTool(compilationInfo, inputFilepath, args, stdin) {
+    override async runTool(compilationInfo, inputFilepath, args: string[], stdin) {
         const compilationExecOptions = this.getDefaultExecOptions();
         compilationExecOptions.customCwd = path.dirname(inputFilepath);
         compilationExecOptions.input = stdin;
         try {
             const generatedExecutableName = this.getUniqueFilePrefix() + '-coverage.a';
+            // Remove inputs
+            const options = compilationInfo.compilationOptions.slice().splice(0, 4);
+            const compilationArgs = [
+                ...options,
+                '-fprofile-instr-generate',
+                '-fcoverage-mapping',
+                '-g',
+                '-O0',
+                inputFilepath,
+                '-o',
+                generatedExecutableName,
+            ];
+
             const compilationResult = await this.exec(
                 compilationInfo.compiler.exe,
-                [
-                    '-fprofile-instr-generate',
-                    '-fcoverage-mapping',
-                    '-g',
-                    '-O0',
-                    inputFilepath,
-                    '-o',
-                    generatedExecutableName,
-                ],
+                compilationArgs,
                 compilationExecOptions,
             );
 
