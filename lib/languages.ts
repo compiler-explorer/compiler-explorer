@@ -193,6 +193,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
     },
+    cppx_cppfront: {
+        name: 'Cppx-cppfront',
+        monaco: 'cppx-cppfront',
+        extensions: ['.cpp2'],
+        alias: [],
+        logoUrl: 'c++.svg', // TODO: Find a better alternative
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     crystal: {
         name: 'Crystal',
         monaco: 'crystal',
