@@ -27,7 +27,7 @@ import {ToolInfo} from '../lib/tooling/base-tool.interface';
 
 import {Library} from './libraries/libraries.interfaces';
 
-export type Compiler = {
+export type CompilerInfo = {
     id: string;
     exe: string;
     name: string;

@@ -29,7 +29,7 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {Compiler} from '../types/compiler.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 import {
     BuildResult,
     CompilationCacheKey,
@@ -79,7 +79,7 @@ import {ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
 export class BaseCompiler {
-    public compiler: Compiler & Record<string, any>; // TODO: Some missing types still present in Compiler type
+    public compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
