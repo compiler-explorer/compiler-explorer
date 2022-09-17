@@ -24,9 +24,9 @@
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
-
 import {LanguageKey} from '../languages.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
+import {Compiler} from '../compiler.interfaces';
 
 export type CompilationResult = {
     code: number;
@@ -127,7 +127,7 @@ export type ToolResult = {
 
 export type CompilationInfo = {
     mtime: Date | null;
-    compiler: any;
+    compiler: Compiler & Record<string, unknown>;
     args: string[];
     options: ExecutionOptions;
     outputFilename: string;
