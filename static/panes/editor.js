@@ -1521,8 +1521,9 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 
 Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
     var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
-    output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
-
+    if (result.buildResult) {
+        output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
+    }
     this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor '+ executorId);
 
     this.numberUsedLines();

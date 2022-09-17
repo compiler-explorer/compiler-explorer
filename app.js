@@ -210,6 +210,8 @@ if (defArgs.wantedLanguages) {
             }
         }
     }
+    // Always keep cmake for IDE mode, just in case
+    filteredLangs[languages.cmake.id] = languages.cmake;
     languages = filteredLangs;
 }
 
