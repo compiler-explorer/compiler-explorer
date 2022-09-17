@@ -48,6 +48,7 @@ export type Compiler = {
     adarts: string;
     supportsDemangle: boolean;
     supportsBinary: boolean;
+    supportsIntel: boolean;
     interpreted: boolean;
     // (interpreted || supportsBinary) && supportsExecute
     supportsExecute: boolean;
@@ -62,7 +63,7 @@ export type Compiler = {
     linkFlag: string;
     rpathFlag: string;
     libpathFlag: string;
-    libPath: string;
+    libPath: string[];
     ldPath: string[];
     // [env, setting][]
     envVars: [string, string][];
