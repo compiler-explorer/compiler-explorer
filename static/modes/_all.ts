@@ -49,6 +49,7 @@ import './mlir-mode';
 import './nc-mode';
 import './nim-mode';
 import './ocaml-mode';
+import './odin-mode';
 import './openclc-mode';
 import './ptx-mode';
 import './zig-mode';

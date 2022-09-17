@@ -373,6 +373,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
     },
+    odin: {
+        name: 'Odin',
+        monaco: 'odin',
+        extensions: ['.odin'],
+        alias: [],
+        logoUrl: 'odin.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     openclc: {
         name: 'OpenCL C',
         monaco: 'openclc',

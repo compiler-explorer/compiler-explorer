@@ -118,6 +118,10 @@ lang-ocaml:
   - lib/compilers/ocaml.js
   - etc/config/ocaml.*.properties
   - static/modes/ocaml-mode.ts
+lang-odin:
+  - lib/compilers/odin.ts
+  - etc/config/odin.*.properties
+  - static/modes/odin-mode.ts
 lang-opencl-c:
   - etc/config/openclc.*.properties
   - static/modes/openclc-mode.ts
