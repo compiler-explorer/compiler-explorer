@@ -143,6 +143,8 @@ export class Themer {
         if (theme.id === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 theme = themes.dark;
+            } else {
+                theme = themes.default;
             }
         }
         $('html').attr('data-theme', theme.path);

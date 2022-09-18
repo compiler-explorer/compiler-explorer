@@ -421,6 +421,8 @@ export class Settings {
         if (newTheme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 newTheme = themes.dark.id;
+            } else {
+                newTheme = themes.default.id;
             }
         }
         for (const scheme of colour.schemes) {
