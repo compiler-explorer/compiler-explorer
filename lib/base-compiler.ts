@@ -340,6 +340,10 @@ export class BaseCompiler {
         };
     }
 
+    getCompilerResultLanguageId(): string | undefined {
+        return undefined;
+    }
+
     async runCompiler(
         compiler: string,
         options: string[],
@@ -355,7 +359,10 @@ export class BaseCompiler {
         }
 
         const result = await this.exec(compiler, options, execOptions);
-        return this.transformToCompilationResult(result, inputFilename);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(),
+        };
     }
 
     async runCompilerRawOutput(compiler, options, inputFilename, execOptions) {
@@ -451,6 +458,7 @@ export class BaseCompiler {
 
         return {
             inputFilename,
+            languageId: input.languageId,
             ...this.processExecutionResult(input, transformedInput),
         };
     }
