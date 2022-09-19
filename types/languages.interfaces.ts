@@ -49,6 +49,7 @@ export type LanguageKey =
     | 'go'
     | 'haskell'
     | 'hlsl'
+    | 'hook'
     | 'ispc'
     | 'jakt'
     | 'java'
