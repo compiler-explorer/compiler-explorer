@@ -193,9 +193,9 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
     },
-    cppx_cppfront: {
-        name: 'Cppx-cppfront',
-        monaco: 'cppx-cppfront',
+    cpp2_cppfront: {
+        name: 'Cpp2-cppfront',
+        monaco: 'cpp2-cppfront',
         extensions: ['.cpp2'],
         alias: [],
         logoUrl: 'c++.svg', // TODO: Find a better alternative

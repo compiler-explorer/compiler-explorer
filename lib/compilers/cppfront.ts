@@ -60,6 +60,7 @@ export class CppFrontCompiler extends BaseCompiler {
             staticLibLinks,
         );
     }
+
     override optionsForFilter(filters: ParseFilters, outputFilename: any) {
         return [];
     }
