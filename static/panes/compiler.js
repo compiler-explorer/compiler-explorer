@@ -128,21 +128,8 @@ function Compiler(hub, container, state) {
 
     this.initButtons(state);
 
-    var monacoDisassembly = 'asm';
-    // Bandaid fix to not have to include monacoDisassembly everywhere in languages.js
-    if (languages[this.currentLangId]) {
-        switch (languages[this.currentLangId].id) {
-            case 'cuda':
-                monacoDisassembly = 'ptx';
-                break;
-            case 'ruby':
-                monacoDisassembly = 'asmruby';
-                break;
-            case 'mlir':
-                monacoDisassembly = 'mlir';
-                break;
-        }
-    }
+    var monacoDisassembly =
+        (languages[this.currentLangId] ? languages[this.currentLangId].monacoDisassembly : null) || 'asm';
 
     this.outputEditor = monaco.editor.create(
         this.monacoPlaceholder[0],

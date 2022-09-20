@@ -93,4 +93,6 @@ export interface Language {
     /** Example code to show in the language's editor */
     example: string;
     previewFilter: RegExp | null;
+    /** The override for the output (default is "asm") */
+    monacoDisassembly: string | null;
 }
