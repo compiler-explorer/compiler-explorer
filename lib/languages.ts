@@ -360,6 +360,16 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
     },
+    hook: {
+        name: 'Hook',
+        monaco: 'hook',
+        extensions: ['.hk', '.hook'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+    },
     ispc: {
         name: 'ispc',
         monaco: 'ispc',
