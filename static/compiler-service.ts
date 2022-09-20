@@ -34,7 +34,7 @@ import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {Compiler} from '../types/compiler.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
 
 type CompilationStatus = {
@@ -48,7 +48,7 @@ export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
     private cache: LRU;
-    private readonly compilersByLang: Record<string, Record<string, Compiler>>;
+    private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
@@ -74,7 +74,7 @@ export class CompilerService {
     public processFromLangAndCompiler(
         langId: string | null,
         compilerId: string
-    ): {langId: string | null; compiler: Compiler | null} | null {
+    ): {langId: string | null; compiler: CompilerInfo | null} | null {
         try {
             if (langId) {
                 if (!compilerId) {
@@ -137,7 +137,7 @@ export class CompilerService {
 
     public getGroupsInUse(langId: string): {value: string; label: string}[] {
         return _.chain(this.getCompilersForLang(langId))
-            .map((compiler: Compiler) => compiler)
+            .map((compiler: CompilerInfo) => compiler)
             .uniq(false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
@@ -148,11 +148,11 @@ export class CompilerService {
             .value();
     }
 
-    private getCompilersForLang(langId: string): Record<string, Compiler> {
+    private getCompilersForLang(langId: string): Record<string, CompilerInfo> {
         return langId in this.compilersByLang ? this.compilersByLang[langId] : {};
     }
 
-    private findCompilerInList(compilers: Record<string, Compiler>, compilerId: string) {
+    private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
         if (compilerId in compilers) {
             return compilers[compilerId];
         }

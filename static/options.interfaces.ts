@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces';
-import {Compiler} from '../types/compiler.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 
 export type LibraryVersion = {
     alias: string[];
@@ -52,7 +52,7 @@ export type Options = {
     libs: Libs;
     remoteLibs: LibsPerRemote;
     languages: Record<string, Language>;
-    compilers: Compiler[];
+    compilers: CompilerInfo[];
     defaultCompiler: Record<string, string>;
     defaultLibs: Record<string, string | null>;
     defaultFontScale: number;

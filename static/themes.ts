@@ -65,7 +65,7 @@ editor.defineTheme('ce', {
     inherit: true,
     rules: [
         {
-            token: 'identifier.definition.cppx-blue',
+            token: 'identifier.definition.herb',
             foreground: '008a00',
             fontStyle: 'bold',
         },
@@ -78,7 +78,7 @@ editor.defineTheme('ce-dark', {
     inherit: true,
     rules: [
         {
-            token: 'identifier.definition.cppx-blue',
+            token: 'identifier.definition.herb',
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
@@ -91,7 +91,7 @@ editor.defineTheme('ce-dark-plus', {
     inherit: true,
     rules: [
         {
-            token: 'identifier.definition.cppx-blue',
+            token: 'identifier.definition.herb',
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },

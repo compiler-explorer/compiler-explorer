@@ -22,37 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import $ from 'jquery';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmParserCpp} from '../parsers/asm-parser-cpp';
+const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+const cppp = require('./cppp-mode');
 
-export class CppFrontCompiler extends BaseCompiler {
-    static get key() {
-        return 'cppfront';
-    }
+function definition() {
+    const cppfront = $.extend(true, {}, cppp); // deep copy
+    cppfront.tokenPostfix = '.herb';
 
-    constructor(info, env) {
-        super(info, env);
+    cppfront.keywords.push('type', 'next', 'inout');
 
-        this.asm = new AsmParserCpp();
-        this.outputFilebase = 'example';
-    }
+    // pick up 'identifier:' as a definition. This is a hack; ideally we'd have "optional whitespace after beginning of
+    // line" but here I just try to disambiguate `::` and don't worry about labels.
+    cppfront.tokenizer.root.unshift([/[a-zA-Z_]\w*\s*:(?!:)/, 'identifier.definition']);
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any) {
-        return [];
-    }
-
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
-        return [];
-    }
-
-    override getSharedLibraryLinks(libraries): string[] {
-        return [];
-    }
-
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, `${outputFilebase}.cpp`);
-    }
+    return cppfront;
 }
+
+monaco.languages.register({id: 'cpp2-cppfront'});
+monaco.languages.setLanguageConfiguration('cpp2-cppfront', cpp.conf);
+monaco.languages.setMonarchTokensProvider('cpp2-cppfront', definition());
+
+export {};

@@ -37,7 +37,7 @@ export type LanguageKey =
     | 'cppx'
     | 'cppx_blue'
     | 'cppx_gold'
-    | 'cppx_cppfront'
+    | 'cpp2_cppfront'
     | 'crystal'
     | 'csharp'
     | 'cuda'
@@ -94,4 +94,6 @@ export interface Language {
     /** Example code to show in the language's editor */
     example: string;
     previewFilter: RegExp | null;
+    /** The override for the output (default is "asm") */
+    monacoDisassembly: string | null;
 }
