@@ -29,7 +29,6 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../types/compiler.interfaces';
 import {
     BuildResult,
     CompilationCacheKey,
@@ -43,6 +42,7 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,

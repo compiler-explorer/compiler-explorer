@@ -78,4 +78,9 @@ export type CompilerInfo = {
         id: string;
         props: (name: string, def: string) => string;
     };
+    license?: {
+        link?: string;
+        name?: string;
+        preamble?: string;
+    },
 };
