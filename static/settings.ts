@@ -298,10 +298,7 @@ export class Settings {
         const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
-        let defaultThemeId = themes.default.id;
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            defaultThemeId = themes.dark.id;
-        }
+        const defaultThemeId = themes.system.id;
 
         const colourSchemesData = colour.schemes
             .filter(scheme => this.isSchemeUsable(scheme, defaultThemeId))
