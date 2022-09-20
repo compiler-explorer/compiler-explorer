@@ -82,5 +82,5 @@ export type CompilerInfo = {
         link?: string;
         name?: string;
         preamble?: string;
-    },
+    };
 };

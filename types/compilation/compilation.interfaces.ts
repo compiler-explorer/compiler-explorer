@@ -24,9 +24,9 @@
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
+import {CompilerInfo} from '../compiler.interfaces';
 import {LanguageKey} from '../languages.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
-import {CompilerInfo} from '../compiler.interfaces';
 
 export type CompilationResult = {
     code: number;
