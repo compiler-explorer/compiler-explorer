@@ -24,10 +24,9 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp';
 
 export class CppFrontCompiler extends BaseCompiler {
     static get key() {
@@ -37,29 +36,10 @@ export class CppFrontCompiler extends BaseCompiler {
     constructor(info, env) {
         super(info, env);
 
+        this.asm = new AsmParserCpp();
         this.outputFilebase = 'example';
     }
 
-    override orderArguments(
-        options: string[],
-        inputFilename: string,
-        libIncludes: string[],
-        libOptions: string[],
-        libPaths: string[],
-        libLinks: string[],
-        userOptions: string[],
-        staticLibLinks: string[],
-    ) {
-        return options.concat(
-            userOptions,
-            ['example.cpp2'], // Grotesque hack to handle the fact we can't use abs filenames with current
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            staticLibLinks,
-        );
-    }
     override optionsForFilter(filters: ParseFilters, outputFilename: any) {
         return [];
     }

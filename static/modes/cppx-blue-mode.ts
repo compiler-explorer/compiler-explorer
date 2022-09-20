@@ -30,7 +30,7 @@ const cppp = require('./cppp-mode');
 
 function definition() {
     const cppx_blue = $.extend(true, {}, cppp); // deep copy
-    cppx_blue.tokenPostfix = '.cppx-blue';
+    cppx_blue.tokenPostfix = '.herb';
 
     // add the 'type' keyword
     cppx_blue.keywords.push('type');
