@@ -23,11 +23,64 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Minimal Compiler properties until a better one can be sync'ed with the backend
-export type Compiler = {
+import {ToolInfo} from '../lib/tooling/base-tool.interface';
+
+import {Library} from './libraries/libraries.interfaces';
+
+export type CompilerInfo = {
+    id: string;
+    exe: string;
+    name: string;
     alias: string[];
+    options: string;
+    versionFlag?: string;
+    versionRe?: string;
+    explicitVersion?: string;
+    compilerType: string;
+    demangler: string;
+    demanglerType: string;
+    objdumper: string;
+    objdumperType: string;
+    intelAsm: string;
+    supportsAsmDocs: boolean;
+    instructionSet: string;
+    needsMulti: boolean;
+    adarts: string;
+    supportsDemangle: boolean;
+    supportsBinary: boolean;
+    supportsIntel: boolean;
+    interpreted: boolean;
+    // (interpreted || supportsBinary) && supportsExecute
+    supportsExecute: boolean;
+    executionWrapper: string;
+    supportsLibraryCodeFilter: boolean;
+    postProcess: string[];
+    lang: string;
     group: string;
     groupName: string;
-    id: string;
-    lang: string;
-    name: string;
+    includeFlag: string;
+    includePath: string;
+    linkFlag: string;
+    rpathFlag: string;
+    libpathFlag: string;
+    libPath: string[];
+    ldPath: string[];
+    // [env, setting][]
+    envVars: [string, string][];
+    notification: string[];
+    isSemVer: boolean;
+    semver: string;
+    libsArr: Library['id'][];
+    tools: Record<ToolInfo['id'], ToolInfo>;
+    unwiseOptions: string[];
+    hidden: boolean;
+    buildenvsetup: {
+        id: string;
+        props: (name: string, def: string) => string;
+    };
+    license?: {
+        link?: string;
+        name?: string;
+        preamble?: string;
+    };
 };
