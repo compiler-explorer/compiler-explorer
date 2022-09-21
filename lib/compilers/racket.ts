@@ -27,6 +27,7 @@ import path from 'path';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import {logger} from '../logger';
 
 export class RacketCompiler extends BaseCompiler {
     private raco: string;
@@ -78,7 +79,6 @@ export class RacketCompiler extends BaseCompiler {
         // Compile to bytecode via `raco make`
         options.unshift('make');
         const makeResult = await this.exec(this.raco, options, execOptions);
-        // TODO: Check `raco make` result
 
         return this.transformToCompilationResult(makeResult, inputFilename);
     }
@@ -101,7 +101,11 @@ export class RacketCompiler extends BaseCompiler {
             customCwd: (result.dirPath as string) || path.dirname(outputFilename),
         };
         const decompileResult = await this.exec(this.raco, ['decompile', outputFilename], execOptions);
-        // TODO: Check `raco decompile` result
+
+        if (decompileResult.code) {
+            logger.error('Error decompiling via `raco decompile`', decompileResult);
+            result.asm = `<No output: \`raco decompile\` returned ${decompileResult.code}>`;
+        }
 
         result.objdumpTime = decompileResult.execTime;
         result.asm = this.postProcessObjdumpOutput(decompileResult.stdout);
