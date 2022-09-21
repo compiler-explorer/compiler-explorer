@@ -125,17 +125,18 @@ Executor.prototype.compilerIsVisible = function (compiler) {
 };
 
 Executor.prototype.getEditorIdBySourcefile = function (sourcefile) {
-    if (this.sourceTreeId) {
+    if (this.sourceTreeId && sourcefile) {
         var tree = this.hub.getTreeById(this.sourceTreeId);
         if (tree) {
             return tree.multifileService.getEditorIdByFilename(sourcefile.file);
         }
-    } else {
-        if (sourcefile !== null && (sourcefile.file === null || sourcefile.mainsource)) {
+    } else if (sourcefile) {
+        if (sourcefile.file === null || sourcefile.mainsource) {
             return this.sourceEditorId;
         }
+    } else {
+        return this.sourceEditorId;
     }
-
     return false;
 };
 
@@ -362,18 +363,18 @@ Executor.prototype.sendCompile = function (request) {
         });
 };
 
-Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum /*, column*/) {
+Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column, addLineLinks) {
     var elem = $('<div/>').appendTo(container);
-    if (lineNum) {
+    if (addLineLinks && lineNum) {
         elem.html(
             $('<span class="linked-compiler-output-line"></span>')
                 .html(msg)
                 .click(
                     _.bind(function (e) {
-                        // var editorId = this.getEditorIdBySourcefile(source);
-                        // if (editorId) {
-                        //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
-                        // }
+                        var editorId = this.getEditorIdBySourcefile(null);
+                        if (editorId) {
+                            this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
+                        }
                         // do not bring user to the top of index.html
                         // http://stackoverflow.com/questions/3252730
                         e.preventDefault();
@@ -383,10 +384,10 @@ Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum /*,
                 .on(
                     'mouseover',
                     _.bind(function () {
-                        // var editorId = this.getEditorIdBySourcefile(source);
-                        // if (editorId) {
-                        //     this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
-                        // }
+                        var editorId = this.getEditorIdBySourcefile(null);
+                        if (editorId) {
+                            this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
+                        }
                     }, this)
                 )
         );
@@ -401,17 +402,23 @@ Executor.prototype.clearPreviousOutput = function () {
     this.executionOutputSection.empty();
 };
 
-Executor.prototype.handleOutput = function (output, element, ansiParser) {
+Executor.prototype.handleOutput = function (output, element, ansiParser, addLineLinks) {
     var outElem = $('<pre class="card"></pre>').appendTo(element);
     _.each(
         output,
         function (obj) {
             if (obj.text === '') {
-                this.addCompilerOutputLine('<br/>', outElem);
+                this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false);
             } else {
                 var lineNumber = obj.tag ? obj.tag.line : obj.line;
                 var columnNumber = obj.tag ? obj.tag.column : -1;
-                this.addCompilerOutputLine(ansiParser.toHtml(obj.text), outElem, lineNumber, columnNumber);
+                this.addCompilerOutputLine(
+                    ansiParser.toHtml(obj.text),
+                    outElem,
+                    lineNumber,
+                    columnNumber,
+                    addLineLinks
+                );
             }
         },
         this
@@ -536,23 +543,23 @@ Executor.prototype.handleCompileRequestAndResponse = function (request, result, 
     this.errorAnsiToHtml.reset();
     if (compileStdout.length > 0) {
         this.compilerOutputSection.append($('<div/>').text('Compiler stdout'));
-        this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml);
+        this.handleOutput(compileStdout, this.compilerOutputSection, this.normalAnsiToHtml, true);
     }
     if (compileStderr.length > 0) {
         this.compilerOutputSection.append($('<div/>').text('Compiler stderr'));
-        this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml);
+        this.handleOutput(compileStderr, this.compilerOutputSection, this.errorAnsiToHtml, true);
     }
     if (result.didExecute) {
         var exitCode = result.execResult ? result.execResult.code : result.code;
         this.executionOutputSection.append($('<div/>').text('Program returned: ' + exitCode));
         if (execStdout.length > 0) {
             this.executionOutputSection.append($('<div/>').text('Program stdout'));
-            var outElem = this.handleOutput(execStdout, this.executionOutputSection, this.normalAnsiToHtml);
+            var outElem = this.handleOutput(execStdout, this.executionOutputSection, this.normalAnsiToHtml, false);
             outElem.addClass('execution-stdout');
         }
         if (execStderr.length > 0) {
             this.executionOutputSection.append($('<div/>').text('Program stderr'));
-            this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml);
+            this.handleOutput(execStderr, this.executionOutputSection, this.normalAnsiToHtml, false);
         }
     }
 
