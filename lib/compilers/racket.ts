@@ -45,11 +45,20 @@ export class RacketCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): string[] {
+        // We currently always compile to bytecode first and then decompile.
+        // Forcing `binary` on like this ensures `objdump` will be called for
+        // the decompilation phase.
+        filters.binary = true;
+
         return [];
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, `${outputFilebase}.decompiled.rkt`);
+    override supportsObjdump(): boolean {
+        return true;
+    }
+
+    protected override getSharedLibraryPathsAsArguments(libraries: any, libDownloadPath?: any): string[] {
+        return [];
     }
 
     override async runCompiler(
@@ -66,16 +75,44 @@ export class RacketCompiler extends BaseCompiler {
             execOptions.customCwd = path.dirname(inputFilename);
         }
 
-        // Compile via `raco make`
+        // Compile to bytecode via `raco make`
         options.unshift('make');
         const makeResult = await this.exec(this.raco, options, execOptions);
         // TODO: Check `raco make` result
 
-        // Retrieve assembly via `raco decompile` with `disassemble` package
-        const outputFilename = path.join(inputFilename, '..', `${this.outputFilebase}.decompiled.rkt`);
-        const decompilePipeline = `${this.raco} decompile '${inputFilename}' > '${outputFilename}'`;
-        const decompileResult = await this.exec('bash', ['-c', decompilePipeline], execOptions);
+        return this.transformToCompilationResult(makeResult, inputFilename);
+    }
 
-        return this.transformToCompilationResult(decompileResult, inputFilename);
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        return path.join(dirPath, 'compiled', `${this.compileFilename.replace('.', '_')}.zo`);
+    }
+
+    override async objdump(
+        outputFilename: any,
+        result: any,
+        maxSize: number,
+        intelAsm: any,
+        demangle: any,
+        filters: ParseFilters,
+    ): Promise<any> {
+        // Decompile to assembly via `raco decompile` with `disassemble` package
+        const execOptions: ExecutionOptions = {
+            maxOutput: maxSize,
+            customCwd: (result.dirPath as string) || path.dirname(outputFilename),
+        };
+        const decompileResult = await this.exec(this.raco, ['decompile', outputFilename], execOptions);
+        // TODO: Check `raco decompile` result
+
+        result.objdumpTime = decompileResult.execTime;
+        result.asm = this.postProcessObjdumpOutput(decompileResult.stdout);
+
+        return result;
+    }
+
+    override processAsm(result: any, filters: any, options: any) {
+        // TODO: Process and highlight decompiled output
+        return {
+            asm: [{text: result.asm}],
+        };
     }
 }
