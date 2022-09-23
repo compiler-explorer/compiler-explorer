@@ -31,6 +31,7 @@ import './clean-mode';
 import './cmake-mode';
 import './cppcircle-mode';
 import './cpp-for-opencl-mode';
+import './cppfront-mode';
 import './cppp-mode';
 import './cppx-blue-mode';
 import './cppx-gold-mode';

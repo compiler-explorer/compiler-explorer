@@ -22,19 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatTool} from './clang-format-tool';
-export {ClangQueryTool} from './clang-query-tool';
-export {ClangTidyTool} from './clang-tidy-tool';
-export {CompilerDropinTool} from './compiler-dropin-tool';
-export {LLVMMcaTool} from './llvm-mca-tool';
-export {LLVMCovTool} from './llvm-cov-tool';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool';
-export {OSACATool} from './osaca-tool';
-export {PaholeTool} from './pahole-tool';
-export {PvsStudioTool} from './pvs-studio-tool';
-export {ReadElfTool} from './readelf-tool';
-export {RustFmtTool} from './rustfmt-tool';
-export {StringsTool} from './strings-tool';
-export {BBCDiskifyTool} from './bbcdiskify-tool';
-export {x86to6502Tool} from './x86to6502-tool';
-export {TestingTool} from './testing-tool';
+import path from 'path';
+
+import {ParseFilters} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
+import {AsmParserCpp} from '../parsers/asm-parser-cpp';
+
+export class CppFrontCompiler extends BaseCompiler {
+    static get key() {
+        return 'cppfront';
+    }
+
+    constructor(info, env) {
+        super(info, env);
+
+        this.asm = new AsmParserCpp();
+        this.outputFilebase = 'example';
+    }
+
+    override optionsForFilter(filters: ParseFilters, outputFilename: any) {
+        return [];
+    }
+
+    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
+        return [];
+    }
+
+    override getSharedLibraryLinks(libraries): string[] {
+        return [];
+    }
+
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        return path.join(dirPath, `${outputFilebase}.cpp`);
+    }
+}

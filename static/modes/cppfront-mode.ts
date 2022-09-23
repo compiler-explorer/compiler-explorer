@@ -22,19 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatTool} from './clang-format-tool';
-export {ClangQueryTool} from './clang-query-tool';
-export {ClangTidyTool} from './clang-tidy-tool';
-export {CompilerDropinTool} from './compiler-dropin-tool';
-export {LLVMMcaTool} from './llvm-mca-tool';
-export {LLVMCovTool} from './llvm-cov-tool';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool';
-export {OSACATool} from './osaca-tool';
-export {PaholeTool} from './pahole-tool';
-export {PvsStudioTool} from './pvs-studio-tool';
-export {ReadElfTool} from './readelf-tool';
-export {RustFmtTool} from './rustfmt-tool';
-export {StringsTool} from './strings-tool';
-export {BBCDiskifyTool} from './bbcdiskify-tool';
-export {x86to6502Tool} from './x86to6502-tool';
-export {TestingTool} from './testing-tool';
+import $ from 'jquery';
+
+const monaco = require('monaco-editor');
+const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+const cppp = require('./cppp-mode');
+
+function definition() {
+    const cppfront = $.extend(true, {}, cppp); // deep copy
+    cppfront.tokenPostfix = '.herb';
+
+    cppfront.keywords.push('type', 'next', 'inout');
+
+    // pick up 'identifier:' as a definition. This is a hack; ideally we'd have "optional whitespace after beginning of
+    // line" but here I just try to disambiguate `::` and don't worry about labels.
+    cppfront.tokenizer.root.unshift([/[a-zA-Z_]\w*\s*:(?!:)/, 'identifier.definition']);
+
+    return cppfront;
+}
+
+monaco.languages.register({id: 'cpp2-cppfront'});
+monaco.languages.setLanguageConfiguration('cpp2-cppfront', cpp.conf);
+monaco.languages.setMonarchTokensProvider('cpp2-cppfront', definition());
+
+export {};

@@ -34,7 +34,7 @@ import {MonacoPaneState} from './pane.interfaces';
 import {DiffState, DiffType} from './diff.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {Compiler} from '../../types/compiler.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 
 class DiffStateObject {
     // can be undefined if there are no compilers / executors
@@ -109,7 +109,7 @@ type CompilerEntry = {
     options: unknown;
     editorId: number;
     treeId: number;
-    compiler: Compiler;
+    compiler: CompilerInfo;
 };
 
 type SelectizeType = {
@@ -272,7 +272,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateState();
     }
 
-    onCompileResult(id: number | string, compiler: Compiler, result: CompilationResult) {
+    onCompileResult(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);
@@ -282,7 +282,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
-    onExecuteResult(id: number, compiler: Compiler, result: CompilationResult) {
+    onExecuteResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         const compileResult: any = Object.assign({}, result.buildResult);
         compileResult.execResult = {
             code: result.code,
@@ -314,7 +314,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override onCompiler(
         id: number | string,
-        compiler: Compiler | undefined,
+        compiler: CompilerInfo | undefined,
         options: unknown,
         editorId: number,
         treeId: number
@@ -348,7 +348,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: Compiler, options: unknown, editorId: number, treeId: number) {
+    onExecutor(id: number, compiler: CompilerInfo, options: unknown, editorId: number, treeId: number) {
         this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 

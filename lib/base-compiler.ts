@@ -31,7 +31,10 @@ import _ from 'underscore';
 
 import {
     BuildResult,
+    CompilationCacheKey,
+    CompilationInfo,
     CompilationResult,
+    CustomInputForTool,
     ExecutionOptions,
     ToolResult,
 } from '../types/compilation/compilation.interfaces';
@@ -39,6 +42,7 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -71,10 +75,11 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
+import {ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
 export class BaseCompiler {
-    public compiler: any;
+    public compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
@@ -293,7 +298,7 @@ export class BaseCompiler {
         return exec.execute(filepath, args, execOptions);
     }
 
-    protected getCompilerCacheKey(compiler, args, options) {
+    protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
         return {mtime: this.mtime, compiler, args, options};
     }
 
@@ -1300,7 +1305,7 @@ export class BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    runToolsOfType(tools, type, compilationInfo): Promise<ToolResult>[] {
+    runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
         const tooling: Promise<ToolResult>[] = [];
         if (tools) {
             for (const tool of tools) {
@@ -1598,20 +1603,22 @@ export class BaseCompiler {
         return cacheKey;
     }
 
-    getCompilationInfo(key, result, customBuildPath?) {
-        const compilationinfo = Object.assign({}, key, result);
-        compilationinfo.outputFilename = this.getOutputFilename(
-            customBuildPath || result.dirPath,
-            this.outputFilebase,
-            key,
-        );
-        compilationinfo.executableFilename = this.getExecutableFilename(
-            customBuildPath || result.dirPath,
-            this.outputFilebase,
-            key,
-        );
-        compilationinfo.asmParser = this.asm;
-        return compilationinfo;
+    getCompilationInfo(
+        key: CompilationCacheKey,
+        result: CompilationResult | CustomInputForTool,
+        customBuildPath?: string,
+    ): CompilationInfo {
+        return {
+            outputFilename: this.getOutputFilename(customBuildPath || result.dirPath || '', this.outputFilebase, key),
+            executableFilename: this.getExecutableFilename(
+                customBuildPath || result.dirPath || '',
+                this.outputFilebase,
+                key,
+            ),
+            asmParser: this.asm,
+            ...key,
+            ...result,
+        };
     }
 
     tryAutodetectLibraries(libsAndOptions) {

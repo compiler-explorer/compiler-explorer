@@ -32,6 +32,9 @@ import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
 import * as utils from '../utils';
 
 export class SPIRVCompiler extends BaseCompiler {
+    protected translatorPath: string;
+    protected disassemblerPath: string;
+
     static get key() {
         return 'spirv';
     }
@@ -45,12 +48,12 @@ export class SPIRVCompiler extends BaseCompiler {
         this.disassemblerPath = this.compilerProps('disassemblerPath');
     }
 
-    prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
-        let options = this.optionsForFilter(filters, outputFilename, userOptions);
+    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+        let options = this.optionsForFilter(filters, outputFilename);
         backendOptions = backendOptions || {};
 
         if (this.compiler.options) {
-            let compilerOptions = _.filter(
+            const compilerOptions = _.filter(
                 utils.splitArguments(this.compiler.options),
                 option => option !== '-fno-crash-diagnostics',
             );
@@ -64,9 +67,9 @@ export class SPIRVCompiler extends BaseCompiler {
 
         const libIncludes = this.getIncludeArguments(libraries);
         const libOptions = this.getLibraryOptions(libraries);
-        let libLinks = [];
-        let libPaths = [];
-        let staticLibLinks = [];
+        let libLinks: string[] = [];
+        let libPaths: string[] = [];
+        let staticLibLinks: string[] = [];
 
         if (filters.binary) {
             libLinks = this.getSharedLibraryLinks(libraries);
@@ -86,7 +89,7 @@ export class SPIRVCompiler extends BaseCompiler {
         );
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         const sourceDir = path.dirname(outputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
         return ['-cc1', '-debug-info-kind=limited', '-dwarf-version=5', '-debugger-tuning=gdb', '-o', bitcodeFilename];
@@ -96,12 +99,11 @@ export class SPIRVCompiler extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.bc`);
     }
 
-    // TODO: Check this to see if it needs key
-    getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath, outputFilebase) {
         return path.join(dirPath, `${outputFilebase}.spvasm`);
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(compiler, options, inputFilename, execOptions) {
         const sourceDir = path.dirname(inputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
 
@@ -110,26 +112,24 @@ export class SPIRVCompiler extends BaseCompiler {
         }
         execOptions.customCwd = path.dirname(inputFilename);
 
-        let newOptions = options;
+        const newOptions = options;
         newOptions.push('-emit-llvm-bc');
 
         const bitcode = await this.exec(compiler, newOptions, execOptions);
-        if (bitcode.code !== 0) {
-            logger.error('Bitcode compilation failed', bitcode);
-            bitcode.stdout = utils.parseOutput(bitcode.stdout, bitcodeFilename, execOptions.customCwd);
-            bitcode.stderr = utils.parseOutput(bitcode.stderr, bitcodeFilename, execOptions.customCwd);
-            return bitcode;
+        const result = this.transformToCompilationResult(bitcode, inputFilename);
+        if (bitcode.code !== 0 || !(await utils.fileExists(bitcodeFilename))) {
+            return result;
         }
 
         const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
         const translatorFlags = ['-spirv-debug', bitcodeFilename, '-o', spvBinFilename];
 
         const spvBin = await this.exec(this.translatorPath, translatorFlags, execOptions);
+        result.stdout = result.stdout.concat(utils.parseOutput(spvBin.stdout));
+        result.stderr = result.stderr.concat(utils.parseOutput(spvBin.stderr));
         if (spvBin.code !== 0) {
             logger.error('LLVM to SPIR-V translation failed', spvBin);
-            spvBin.stdout = utils.parseOutput(spvBin.stdout, spvBinFilename, execOptions.customCwd);
-            spvBin.stderr = utils.parseOutput(spvBin.stderr, spvBinFilename, execOptions.customCwd);
-            return spvBin;
+            return result;
         }
 
         const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
@@ -140,12 +140,11 @@ export class SPIRVCompiler extends BaseCompiler {
             logger.error('SPIR-V binary to text failed', spvasmOutput);
         }
 
-        spvasmOutput.stdout = utils.parseOutput(spvasmOutput.stdout, spvasmFilename, execOptions.customCwd);
-        spvasmOutput.stderr = utils.parseOutput(spvasmOutput.stderr, spvasmFilename, execOptions.customCwd);
-        return spvasmOutput;
+        result.stdout = result.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
+        result.stderr = result.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
+        return result;
     }
 
-    // TODO: Check the next few functions and clean them up
     async runCompilerForASTOrIR(compiler, options, inputFilename, execOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -156,10 +155,10 @@ export class SPIRVCompiler extends BaseCompiler {
         const sourceDir = path.dirname(inputFilename);
         const outputFile = path.join(sourceDir, this.outputFilebase + '.bc');
 
-        let newOptions = options;
+        const newOptions = options;
         newOptions.concat('-S');
 
-        let index = newOptions.indexOf(outputFile);
+        const index = newOptions.indexOf(outputFile);
         if (index !== -1) {
             newOptions[index] = inputFilename.replace(path.extname(inputFilename), '.ll');
         }
@@ -167,7 +166,7 @@ export class SPIRVCompiler extends BaseCompiler {
         return super.runCompiler(compiler, newOptions, inputFilename, execOptions);
     }
 
-    async generateAST(inputFilename, options) {
+    override async generateAST(inputFilename, options) {
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(['-ast-dump']);
 
         const execOptions = this.getDefaultExecOptions();
@@ -178,7 +177,7 @@ export class SPIRVCompiler extends BaseCompiler {
         );
     }
 
-    async generateIR(inputFilename, options, filters) {
+    override async generateIR(inputFilename, options, filters) {
         const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat('-emit-llvm');
 
         const execOptions = this.getDefaultExecOptions();

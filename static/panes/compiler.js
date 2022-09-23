@@ -128,21 +128,8 @@ function Compiler(hub, container, state) {
 
     this.initButtons(state);
 
-    var monacoDisassembly = 'asm';
-    // Bandaid fix to not have to include monacoDisassembly everywhere in languages.js
-    if (languages[this.currentLangId]) {
-        switch (languages[this.currentLangId].id) {
-            case 'cuda':
-                monacoDisassembly = 'ptx';
-                break;
-            case 'ruby':
-                monacoDisassembly = 'asmruby';
-                break;
-            case 'mlir':
-                monacoDisassembly = 'mlir';
-                break;
-        }
-    }
+    var monacoDisassembly =
+        (languages[this.currentLangId] ? languages[this.currentLangId].monacoDisassembly : null) || 'asm';
 
     this.outputEditor = monaco.editor.create(
         this.monacoPlaceholder[0],
@@ -1949,6 +1936,7 @@ Compiler.prototype.initButtons = function (state) {
     this.prependOptions = this.domRoot.find('.prepend-options');
     this.fullCompilerName = this.domRoot.find('.full-compiler-name');
     this.fullTimingInfo = this.domRoot.find('.full-timing-info');
+    this.compilerLicenseButton = this.domRoot.find('.compiler-license');
     this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
     // Dismiss on any click that isn't either in the opening element, inside
     // the popover or on any alert
@@ -2276,6 +2264,42 @@ Compiler.prototype.handlePopularArgumentsResult = function (result) {
     }
 };
 
+Compiler.prototype.generateLicenseInfo = function () {
+    if (this.compiler) {
+        // MSVC will take a while to add this
+        if (!this.compiler.license) {
+            return 'No license information to display for ' + this.compiler.name;
+        }
+        var result = '';
+        var preamble = this.compiler.license.preamble;
+        if (preamble) {
+            result += preamble + '<br/>';
+        }
+        var name = this.compiler.license.name;
+        var link = this.compiler.license.link;
+
+        if (name || link) {
+            result += this.compiler.name + ' is licensed under its ';
+
+            if (link) {
+                var aText = name ? name : link;
+                result += '<a href="' + link + '" target="_blank">' + aText + '</a>';
+            } else {
+                result += name;
+            }
+
+            result += ' license';
+        }
+
+        if (!result) {
+            result = 'No license information to display for ' + this.compiler.name;
+        }
+
+        return result;
+    }
+    return 'No compiler selected';
+};
+
 Compiler.prototype.onFontScale = function () {
     this.saveState();
 };
@@ -2431,6 +2455,14 @@ Compiler.prototype.initCallbacks = function () {
         _.bind(function () {
             this.compilerService.cache.reset();
             this.compile(true);
+        }, this)
+    );
+
+    this.compilerLicenseButton.on(
+        'click',
+        _.bind(function () {
+            var title = this.compiler ? 'License for ' + this.compiler.name : 'No compiler selected';
+            this.alertSystem.alert(title, this.generateLicenseInfo());
         }, this)
     );
 
