@@ -1417,7 +1417,33 @@ Compiler.prototype.postCompilationResult = function (request, result, wasCmake) 
 
     if (result.bbcdiskimage) {
         this.emulateBbcDisk(result.bbcdiskimage);
+    } else if (result.speccytape) {
+        this.emulateSpeccyTape(result.speccytape);
     }
+};
+
+Compiler.prototype.emulateSpeccyTape = function (image) {
+    var dialog = $('#jsspeccyemu');
+
+    this.alertSystem.notify(
+        'Click ' +
+            '<a target="_blank" id="jsspeccy_emulink" style="cursor:pointer;" click="javascript:;">here</a>' +
+            ' to emulate',
+        {
+            group: 'emulation',
+            collapseSimilar: true,
+            dismissTime: 10000,
+            onBeforeShow: function (elem) {
+                elem.find('#jsspeccy_emulink').on('click', function () {
+                    dialog.modal();
+
+                    var emuwindow = dialog.find('#speccyemuframe')[0].contentWindow;
+                    var tmstr = Date.now();
+                    emuwindow.location = 'https://static.ce-cdn.net/jsspeccy/index.html?' + tmstr + '#b64tape=' + image;
+                });
+            },
+        }
+    );
 };
 
 Compiler.prototype.emulateBbcDisk = function (bbcdiskimage) {

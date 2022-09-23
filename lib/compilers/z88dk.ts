@@ -24,6 +24,8 @@
 
 import path from 'path';
 
+import fs from 'fs-extra';
+
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -100,6 +102,10 @@ export class z88dkCompiler extends BaseCompiler {
         return defaultOutputFilename;
     }
 
+    getTapefilename() {
+        return `${this.outputFilebase}.tap`;
+    }
+
     override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
@@ -138,6 +144,15 @@ export class z88dkCompiler extends BaseCompiler {
             } else {
                 result.objdumpTime = objResult.execTime;
                 result.asm = this.postProcessObjdumpOutput(objResult.stdout);
+            }
+        }
+
+        if (result.code === 0 && filters.binary) {
+            const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
+            if (await utils.fileExists(tapeFilepath)) {
+                const file_buffer = await fs.readFile(tapeFilepath);
+                const binary_base64 = file_buffer.toString('base64');
+                result.speccytape = binary_base64;
             }
         }
 
