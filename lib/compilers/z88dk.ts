@@ -149,7 +149,7 @@ export class z88dkCompiler extends BaseCompiler {
 
         if (result.code === 0 && filters.binary) {
             const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
-            if (await utils.fileExists(this.getTapefilename())) {
+            if (await utils.fileExists(tapeFilepath)) {
                 const file_buffer = await fs.readFile(tapeFilepath);
                 const binary_base64 = file_buffer.toString('base64');
                 result.speccytape = binary_base64;
