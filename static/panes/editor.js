@@ -1479,7 +1479,6 @@ Editor.prototype.setDecorationTags = function (widgets, ownerId) {
         this
     );
 
-
     this.updateDecorations();
 };
 
@@ -1491,7 +1490,6 @@ Editor.prototype.setQuickFixes = function (fixes) {
     } else {
         quickFixesHandler.unregister(this.id);
     }
-
 };
 
 Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
@@ -1499,7 +1497,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 
     this.busyCompilers[compilerId] = false;
 
-    var collectedOutput = this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name,  compilerId));
+    var collectedOutput = this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name, compilerId));
 
     this.setDecorationTags(collectedOutput.widgets, compilerId);
     this.setQuickFixes(collectedOutput.fixes);
@@ -1519,7 +1517,7 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
     this.numberUsedLines();
 };
 
-Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
+Editor.prototype.onExecuteResponse = function (executorId, compiler, result) {
     var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
     if (result.buildResult) {
         output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
@@ -1528,7 +1526,6 @@ Editor.prototype.onExecuteResponse = function (executorId, compiler, result)  {
 
     this.numberUsedLines();
 };
-
 
 Editor.prototype.onSelectLine = function (id, lineNum) {
     if (Number(id) === this.id) {
