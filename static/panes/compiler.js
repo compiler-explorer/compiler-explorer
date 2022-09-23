@@ -1452,7 +1452,7 @@ Compiler.prototype.emulateSpeccyTape = function (image) {
 
                     var emuwindow = dialog.find('#speccyemuframe')[0].contentWindow;
                     var tmstr = Date.now();
-                    emuwindow.location = 'https://speccy.compiler-explorer.com/?' + tmstr + '#b64tape=' + image;
+                    emuwindow.location = 'https://static.ce-cdn.net/jsspeccy/index.html?' + tmstr + '#b64tape=' + image;
                 });
             },
         }
