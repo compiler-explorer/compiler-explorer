@@ -106,6 +106,10 @@ export class z88dkCompiler extends BaseCompiler {
         return `${this.outputFilebase}.tap`;
     }
 
+    getSmsfilename() {
+        return `${this.outputFilebase}.sms`;
+    }
+
     override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
@@ -153,6 +157,13 @@ export class z88dkCompiler extends BaseCompiler {
                 const file_buffer = await fs.readFile(tapeFilepath);
                 const binary_base64 = file_buffer.toString('base64');
                 result.speccytape = binary_base64;
+            }
+
+            const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
+            if (await utils.fileExists(smsFilepath)) {
+                const file_buffer = await fs.readFile(smsFilepath);
+                const binary_base64 = file_buffer.toString('base64');
+                result.miraclesms = binary_base64;
             }
         }
 
