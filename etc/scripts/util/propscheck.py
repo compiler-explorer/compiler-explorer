@@ -27,7 +27,7 @@ from os import listdir
 from os.path import isfile, join
 import re
 
-PROP_RE = re.compile(r'[^#]*=.*')
+PROP_RE = re.compile(r'([^#]*)=(.*)#*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
@@ -146,10 +146,11 @@ def process_file(file: str):
             if not match_prop:
                 continue
 
-            if line in seen_lines:
-                duplicate_lines.add(line)
+            prop_key = match_prop.group(1)
+            if prop_key in seen_lines:
+                duplicate_lines.add(Line(line.number, prop_key))
             else:
-                seen_lines.add(line)
+                seen_lines.add(prop_key)
 
             match_compilers_list = COMPILERS_LIST_RE.search(line.text)
             if match_compilers_list:
