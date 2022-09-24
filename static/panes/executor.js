@@ -124,17 +124,13 @@ Executor.prototype.compilerIsVisible = function (compiler) {
     return compiler.supportsExecute;
 };
 
-Executor.prototype.getEditorIdBySourcefile = function (sourcefile) {
-    if (this.sourceTreeId && sourcefile) {
+Executor.prototype.getEditorIdByFilename = function (filename) {
+    if (this.sourceTreeId) {
         var tree = this.hub.getTreeById(this.sourceTreeId);
         if (tree) {
-            return tree.multifileService.getEditorIdByFilename(sourcefile.file);
+            return tree.multifileService.getEditorIdByFilename(filename);
         }
-    } else if (sourcefile) {
-        if (sourcefile.file === null || sourcefile.mainsource) {
-            return this.sourceEditorId;
-        }
-    } else {
+    } else if (this.sourceEditorId) {
         return this.sourceEditorId;
     }
     return false;
@@ -363,7 +359,7 @@ Executor.prototype.sendCompile = function (request) {
         });
 };
 
-Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column, addLineLinks) {
+Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, column, addLineLinks, filename) {
     var elem = $('<div/>').appendTo(container);
     if (addLineLinks && lineNum) {
         elem.html(
@@ -371,7 +367,7 @@ Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, co
                 .html(msg)
                 .click(
                     _.bind(function (e) {
-                        var editorId = this.getEditorIdBySourcefile(null);
+                        var editorId = this.getEditorIdByFilename(filename);
                         if (editorId) {
                             this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
                         }
@@ -384,7 +380,7 @@ Executor.prototype.addCompilerOutputLine = function (msg, container, lineNum, co
                 .on(
                     'mouseover',
                     _.bind(function () {
-                        var editorId = this.getEditorIdBySourcefile(null);
+                        var editorId = this.getEditorIdByFilename(filename);
                         if (editorId) {
                             this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
                         }
@@ -408,16 +404,18 @@ Executor.prototype.handleOutput = function (output, element, ansiParser, addLine
         output,
         function (obj) {
             if (obj.text === '') {
-                this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false);
+                this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false, false);
             } else {
                 var lineNumber = obj.tag ? obj.tag.line : obj.line;
                 var columnNumber = obj.tag ? obj.tag.column : -1;
+                var filename = obj.tag ? obj.tag.file : false;
                 this.addCompilerOutputLine(
                     ansiParser.toHtml(obj.text),
                     outElem,
                     lineNumber,
                     columnNumber,
-                    addLineLinks
+                    addLineLinks,
+                    filename
                 );
             }
         },
