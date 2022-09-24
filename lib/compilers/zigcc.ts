@@ -32,7 +32,7 @@ import {ClangCompiler} from './clang';
 export class ZigCC extends ClangCompiler {
     private readonly needsForcedBinary: boolean;
 
-    static get key() {
+    static override get key() {
         return 'zigcc';
     }
 

@@ -59,7 +59,7 @@ export class ZigCompiler extends BaseCompiler {
         return [];
     }
 
-    preProcess(source: string): string {
+    override preProcess(source: string): string {
         if (Semver.eq(asSafeVer(this.compiler.semver), '0.2.0', true)) {
             source += '\n';
             source += 'extern fn zig_panic() noreturn;\n';
@@ -135,7 +135,7 @@ export class ZigCompiler extends BaseCompiler {
         return options;
     }
 
-    getIncludeArguments(libraries: SelectedLibraryVersion[]) {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
