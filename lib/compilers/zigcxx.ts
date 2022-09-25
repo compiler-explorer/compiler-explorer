@@ -24,25 +24,36 @@
 
 import Semver from 'semver';
 
+import {CompilerFilters, ParseFilters} from '../../types/features/filters.interfaces';
 import {asSafeVer} from '../utils';
 
 import {ClangCompiler} from './clang';
 
 export class ZigCXX extends ClangCompiler {
-    static get key() {
+    private readonly needsForcedBinary: boolean;
+
+    static override get key() {
         return 'zigcxx';
     }
 
-    preProcess(source, filters) {
-        if (Semver.eq(asSafeVer(this.compiler.semver), '0.6.0', true)) {
+    constructor(info: any, env: any) {
+        super(info, env);
+        this.needsForcedBinary =
+            Semver.gte(asSafeVer(this.compiler.semver), '0.6.0', true) &&
+            Semver.lt(asSafeVer(this.compiler.semver), '0.9.0', true);
+    }
+
+    override preProcess(source: string, filters: CompilerFilters): string {
+        if (this.needsForcedBinary) {
+            // note: zig versions > 0.6 don't emit asm, only binary works - https://github.com/ziglang/zig/issues/8153
             filters.binary = true;
         }
 
         return super.preProcess(source, filters);
     }
 
-    optionsForFilter(filters, outputFilename) {
-        if (Semver.eq(asSafeVer(this.compiler.semver), '0.6.0', true)) {
+    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
+        if (this.needsForcedBinary) {
             // note: zig versions > 0.6 don't emit asm, only binary works - https://github.com/ziglang/zig/issues/8153
             filters.binary = true;
         }

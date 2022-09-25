@@ -48,7 +48,7 @@ import {
     ExecutableExecutionOptions,
     UnprocessedExecResult,
 } from '../types/execution/execution.interfaces';
-import {ParseFilters} from '../types/features/filters.interfaces';
+import {CompilerFilters, ParseFilters} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
@@ -111,7 +111,7 @@ export class BaseCompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         // Information about our compiler
         this.compiler = compilerInfo;
         this.lang = languages[compilerInfo.lang];
@@ -2432,7 +2432,7 @@ but nothing was dumped. Possible causes are:
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }
 
-    preProcess(source, filters) {
+    preProcess(source: string, filters: CompilerFilters): string {
         if (filters.binary && !this.stubRe.test(source)) {
             source += `\n${this.stubText}\n`;
         }
