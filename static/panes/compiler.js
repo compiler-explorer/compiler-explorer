@@ -2266,7 +2266,16 @@ Compiler.prototype.updateButtons = function () {
     this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
 
+    this.compilerLicenseButton.toggle(this.hasCompilerLicenseInfo());
+
     this.enableToolButtons();
+};
+
+Compiler.prototype.hasCompilerLicenseInfo = function () {
+    return (
+        this.compiler.license &&
+        (this.compiler.license.preamble || this.compiler.license.link || this.compiler.license.name)
+    );
 };
 
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
