@@ -45,7 +45,7 @@ export class RacketCompiler extends BaseCompiler {
         this.raco = this.compilerProps(`compiler.${this.compiler.id}.raco`);
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): string[] {
+    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
         // We currently always compile to bytecode first and then decompile.
         // Forcing `binary` on like this ensures `objdump` will be called for
         // the decompilation phase.
@@ -58,7 +58,7 @@ export class RacketCompiler extends BaseCompiler {
         return true;
     }
 
-    protected override getSharedLibraryPathsAsArguments(libraries: any, libDownloadPath?: any): string[] {
+    override getSharedLibraryPathsAsArguments(libraries: object[], libDownloadPath?: string): string[] {
         return [];
     }
 
