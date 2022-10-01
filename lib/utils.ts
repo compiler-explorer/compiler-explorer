@@ -111,6 +111,7 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
                     column: parseInt(match[3] || '0'),
                     text: message,
                     severity: parseSeverity(message),
+                    file: inputFilename ? path.basename(inputFilename) : undefined,
                 };
             } else {
                 match = filteredline.match(SOURCE_WITH_FILENAME);
