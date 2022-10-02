@@ -47,13 +47,8 @@ type DeviceType = {
 };
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
-    private deviceEditor: monaco.editor.IStandaloneCodeEditor;
     private decorations: DecorationEntry;
     private prevDecorations: string[];
-    private readonly _compilerId: number;
-    private _compilerName: string;
-    private _editorId: number | undefined;
-    private _treeId: number | undefined;
     private awaitingInitialResults: boolean;
     private selectedDevice: string;
     private devices: Record<string, DeviceType> | null;
@@ -68,11 +63,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         super(hub, container, state);
 
         this.prevDecorations = [];
-
-        this._compilerId = state.id;
-        this._compilerName = state.compilerName;
-        this._editorId = state.editorid;
-        this._treeId = state.treeid;
 
         this.awaitingInitialResults = false;
         this.selection = state.selection;
@@ -130,44 +120,44 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         });
     }
 
-    initEditorActions() {
-        this.deviceEditor.addAction({
+    initEditorActions(): void {
+        this.editor.addAction({
             id: 'viewsource',
             label: 'Scroll to source',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             keybindingContext: undefined,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: _.bind(ed => {
+            run: ed => {
                 const position = ed.getPosition();
                 if (position != null) {
                     const desiredLine = position.lineNumber - 1;
                     const source = this.deviceCode[desiredLine].source;
-                    if (source && source.file == null && this._editorId != null) {
+                    if (source && source.file == null && this.compilerInfo.editorId != null) {
                         // a null file means it was the user's source
-                        this.eventHub.emit('editorLinkLine', this._editorId, source.line, -1, -1, true);
+                        this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
                     }
                 }
-            }, this),
+            },
         });
     }
 
-    initButtons(state) {
-        this.fontScale = new FontScale(this.domRoot, state, this.deviceEditor);
+    initButtons(state): void {
+        this.fontScale = new FontScale(this.domRoot, state, this.editor);
 
         this.topBar = this.domRoot.find('.top-bar');
     }
 
-    override registerCallbacks() {
+    override registerCallbacks(): void {
         this.linkedFadeTimeoutId = null;
         const mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
-        this.deviceEditor.onMouseMove(e => mouseMoveThrottledFunction(e));
+        this.editor.onMouseMove(e => mouseMoveThrottledFunction(e));
 
         const cursorSelectionThrottledFunction = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        this.deviceEditor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
+        this.editor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
 
-        this.fontScale.on('change', _.bind(this.updateState, this));
-        this.selectize.on('change', _.bind(this.onDeviceSelect, this));
+        this.fontScale.on('change', this.updateState.bind(this));
+        this.selectize.on('change', this.onDeviceSelect.bind(this));
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
         this.container.on('destroy', this.close, this);
@@ -178,24 +168,15 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
-        this.eventHub.emit('deviceViewOpened', this._compilerId);
+        this.eventHub.emit('deviceViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
     }
 
-    // TODO: de-dupe with compiler etc
-    override resize() {
-        const topBarHeight = this.topBar.outerHeight(true);
-        this.deviceEditor.layout({
-            width: this.domRoot.width() ?? 0,
-            height: this.domRoot.height() ?? 0 - (topBarHeight ?? 0),
-        });
-    }
-
     override onCompileResult(id: number, compiler: any, result: any): void {
-        if (this._compilerId !== id) return;
+        if (this.compilerInfo.compilerId !== id) return;
         this.devices = result.devices;
         let deviceNames: string[] = [];
         if (!this.devices) {
@@ -209,29 +190,21 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         // Why call this explicitly instead of just listening to the "colours" event?
         // Because the recolouring happens before this editors value is set using "showDeviceAsmResults".
-        this.onColours(this._compilerId, this.lastColours, this.lastColourScheme);
+        this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
     }
 
     makeDeviceSelector(deviceNames: string[]): void {
         const selectize = this.selectize;
 
-        _.each(
-            selectize.options,
-            function (p) {
-                if (deviceNames.indexOf(p.name) === -1) {
-                    selectize.removeOption(p.name);
-                }
-            },
-            this
-        );
+        for (const key in selectize.options) {
+            if (deviceNames.indexOf(selectize.options[key].name) === -1) {
+                selectize.removeOption(selectize.options[key].name);
+            }
+        }
 
-        _.each(
-            deviceNames,
-            function (p) {
-                selectize.addOption({name: p});
-            },
-            this
-        );
+        deviceNames.forEach(deviceName => {
+            selectize.addOption({name: deviceName});
+        });
 
         if (!this.selectedDevice && deviceNames.length > 0) {
             this.selectedDevice = deviceNames[0];
@@ -245,13 +218,13 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    onDeviceSelect() {
+    onDeviceSelect(): void {
         this.selectedDevice = this.selectize.getValue() as string;
         this.updateState();
         this.updateDeviceAsm();
     }
 
-    updateDeviceAsm() {
+    updateDeviceAsm(): void {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (this.selectedDevice && this.devices != null && this.devices[this.selectedDevice]) {
             const languageId = this.devices[this.selectedDevice].languageId;
@@ -261,187 +234,164 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    override getPaneTag() {
-        if (this._editorId) {
-            return this._compilerName + ' (Editor #' + this._editorId + ', Compiler #' + this._compilerId + ')';
+    override getPaneTag(): string {
+        if (this.compilerInfo.editorId) {
+            return (
+                this.compilerInfo.compilerName +
+                ' (Editor #' +
+                this.compilerInfo.editorId +
+                ', Compiler #' +
+                this.compilerInfo.compilerId +
+                ')'
+            );
         } else {
-            return this._compilerName + ' (Tree #' + this._treeId + ', Compiler #' + this._compilerId + ')';
+            return (
+                this.compilerInfo.compilerName +
+                ' (Tree #' +
+                this.compilerInfo.treeId +
+                ', Compiler #' +
+                this.compilerInfo.compilerId +
+                ')'
+            );
         }
     }
 
-    getDefaultPaneName() {
+    getDefaultPaneName(): string {
         return 'Device Viewer';
     }
 
-    override getPaneName() {
-        return this.paneName ? this.paneName : this.getDefaultPaneName() + ' ' + this.getPaneTag();
-    }
-
-    override updateTitle() {
-        this.container.setTitle(_.escape(this.getPaneName()));
-    }
-
-    showDeviceAsmResults(deviceCode: DeviceAsmCode[], languageId?: string) {
+    showDeviceAsmResults(deviceCode: DeviceAsmCode[], languageId?: string): void {
         this.deviceCode = deviceCode;
 
         if (!languageId) {
             languageId = 'asm';
         }
 
-        const model = this.deviceEditor.getModel();
+        const model = this.editor.getModel();
         if (model) {
             monaco.editor.setModelLanguage(model, languageId);
-            model.setValue(deviceCode.length ? _.pluck(deviceCode, 'text').join('\n') : '<No device code>');
+            model.setValue(deviceCode.length ? deviceCode.map(d => d.text).join('\n') : '<No device code>');
         }
 
         if (!this.awaitingInitialResults) {
             if (this.selection) {
-                this.deviceEditor.setSelection(this.selection);
-                this.deviceEditor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
+                this.editor.setSelection(this.selection);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.awaitingInitialResults = true;
         }
     }
 
-    onCompiler(id, compiler, options, editorId, treeId) {
-        if (id === this._compilerId) {
-            this._compilerName = compiler ? compiler.name : '';
-            this._editorId = editorId;
-            this._treeId = treeId;
+    onCompiler(id: number, compiler, options: string, editorId: number, treeId: number): void {
+        if (id === this.compilerInfo.compilerId) {
+            this.compilerInfo.compilerName = compiler ? compiler.name : '';
+            this.compilerInfo.editorId = editorId;
+            this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsDeviceAsmView) {
-                this.deviceEditor.setValue('<Device output is not supported for this compiler>');
+                this.editor.setValue('<Device output is not supported for this compiler>');
             }
         }
     }
 
-    onColours(id: number, colours: Record<number, number>, scheme: string) {
+    onColours(id: number, colours: Record<number, number>, scheme: string): void {
         this.lastColours = colours;
         this.lastColourScheme = scheme;
 
-        if (id === this._compilerId) {
+        if (id === this.compilerInfo.compilerId) {
             const irColours = {};
-            _.each(this.deviceCode, function (x, index) {
+            this.deviceCode.forEach((x: DeviceAsmCode, index: number) => {
                 if (x.source && x.source.file == null && x.source.line > 0 && colours[x.source.line - 1]) {
                     irColours[index] = colours[x.source.line - 1];
                 }
             });
-            this.colours = colour.applyColours(this.deviceEditor, irColours, scheme, this.colours);
+            this.colours = colour.applyColours(this.editor, irColours, scheme, this.colours);
         }
     }
 
-    override updateState() {
-        this.container.setState(this.currentState());
+    currentState(): MonacoPaneState {
+        return this.getCurrentState();
     }
 
-    currentState() {
-        const state = {
-            id: this._compilerId,
-            editorid: this._editorId,
-            treeid: this._treeId,
-            selection: this.selection,
-            device: this.selectedDevice,
-        };
-        this.paneRenaming.addState(state);
-        this.fontScale.addState(state);
-        return state;
-    }
-
-    override onCompilerClose(id) {
-        if (id === this._compilerId) {
+    override onCompilerClose(id): void {
+        if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
             this.close();
-            _.defer(function (self) {
-                self.container.close();
-            }, this);
+            _.defer(() => {
+                this.container.close();
+            });
         }
     }
 
-    override onSettingsChange(newSettings) {
-        this.settings = newSettings;
-        this.deviceEditor.updateOptions({
-            contextmenu: newSettings.useCustomContextMenu,
-            minimap: {
-                enabled: newSettings.showMinimap,
-            },
-            fontFamily: newSettings.editorsFFont,
-            fontLigatures: newSettings.editorsFLigatures,
-        });
-    }
-
-    onMouseMove(e: monaco.editor.IEditorMouseEvent) {
+    onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
         if (e.target.position === null) return;
         if (this.settings.hoverShowSource) {
             this.clearLinkedLines();
             const hoverCode = this.deviceCode[e.target.position.lineNumber - 1];
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (hoverCode && this._editorId != null) {
+            if (hoverCode && this.compilerInfo.editorId != null) {
                 // We check that we actually have something to show at this point!
                 const sourceLine = hoverCode.source && !hoverCode.source.file ? hoverCode.source.line : -1;
-                this.eventHub.emit('editorLinkLine', this._editorId, sourceLine, -1, 0, false);
-                this.eventHub.emit('panesLinkLine', this._compilerId, sourceLine, -1, 0, false, this.getPaneName());
+                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, -1, 0, false);
+                this.eventHub.emit(
+                    'panesLinkLine',
+                    this.compilerInfo.compilerId,
+                    sourceLine,
+                    -1,
+                    0,
+                    false,
+                    this.getPaneName()
+                );
             }
         }
     }
 
-    override onDidChangeCursorSelection(e) {
-        if (this.awaitingInitialResults) {
-            this.selection = e.selection;
-            this.updateState();
-        }
-    }
-
-    updateDecorations() {
-        this.prevDecorations = this.deviceEditor.deltaDecorations(
+    updateDecorations(): void {
+        this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            _.flatten(_.values(this.decorations))
+            Object.values(this.decorations).flatMap(x => x)
         );
     }
 
-    clearLinkedLines() {
+    clearLinkedLines(): void {
         this.decorations.linkedCode = [];
         this.updateDecorations();
     }
 
-    onPanesLinkLine(compilerId, lineNumber, revealLine, sender) {
-        if (Number(compilerId) === this._compilerId) {
+    onPanesLinkLine(compilerId, lineNumber, revealLine, sender): void {
+        if (Number(compilerId) === this.compilerInfo.compilerId) {
             const lineNums: number[] = [];
-            _.each(this.deviceCode, function (irLine, i) {
+            this.deviceCode.forEach((irLine: DeviceAsmCode, i: number) => {
                 if (irLine.source && irLine.source.file == null && irLine.source.line === lineNumber) {
                     const line = i + 1;
                     lineNums.push(line);
                 }
             });
-            if (revealLine && lineNums[0]) this.deviceEditor.revealLineInCenter(lineNums[0]);
+            if (revealLine && lineNums[0]) this.editor.revealLineInCenter(lineNums[0]);
             const lineClass = sender !== this.getPaneName() ? 'linked-code-decoration-line' : '';
-            this.decorations.linkedCode = _.map(lineNums, function (line) {
-                return {
-                    range: new monaco.Range(line, 1, line, 1),
-                    options: {
-                        isWholeLine: true,
-                        linesDecorationsClassName: 'linked-code-decoration-margin',
-                        className: lineClass,
-                    },
-                };
-            });
+            this.decorations.linkedCode = lineNums.map(line => ({
+                range: new monaco.Range(line, 1, line, 1),
+                options: {
+                    isWholeLine: true,
+                    linesDecorationsClassName: 'linked-code-decoration-margin',
+                    className: lineClass,
+                },
+            }));
             if (this.linkedFadeTimeoutId !== null) {
                 clearTimeout(this.linkedFadeTimeoutId);
             }
-            this.linkedFadeTimeoutId = setTimeout(
-                _.bind(() => {
-                    this.clearLinkedLines();
-                    this.linkedFadeTimeoutId = null;
-                }, this),
-                5000
-            );
+            this.linkedFadeTimeoutId = setTimeout(() => {
+                this.clearLinkedLines();
+                this.linkedFadeTimeoutId = null;
+            }, 5000);
             this.updateDecorations();
         }
     }
 
-    close() {
+    close(): void {
         this.eventHub.unsubscribe();
-        this.eventHub.emit('deviceViewClosed', this._compilerId);
-        this.deviceEditor.dispose();
+        this.eventHub.emit('deviceViewClosed', this.compilerInfo.compilerId);
+        this.editor.dispose();
     }
 }
