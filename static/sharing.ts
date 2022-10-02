@@ -282,7 +282,6 @@ export class Sharing {
                 }
             });
         });
-
     }
 
     private copyLinkTypeToClipboard(type: LinkType): void {

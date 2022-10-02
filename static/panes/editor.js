@@ -1522,7 +1522,7 @@ Editor.prototype.onExecuteResponse = function (executorId, compiler, result) {
     if (result.buildResult) {
         output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
     }
-    this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor '+ executorId);
+    this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
 
     this.numberUsedLines();
 };
