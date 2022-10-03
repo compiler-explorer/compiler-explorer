@@ -142,7 +142,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         });
     }
 
-    initButtons(state): void {
+    initButtons(state: DeviceAsmState & MonacoPaneState): void {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
 
         this.topBar = this.domRoot.find('.top-bar');
@@ -234,28 +234,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    override getPaneTag(): string {
-        if (this.compilerInfo.editorId) {
-            return (
-                this.compilerInfo.compilerName +
-                ' (Editor #' +
-                this.compilerInfo.editorId +
-                ', Compiler #' +
-                this.compilerInfo.compilerId +
-                ')'
-            );
-        } else {
-            return (
-                this.compilerInfo.compilerName +
-                ' (Tree #' +
-                this.compilerInfo.treeId +
-                ', Compiler #' +
-                this.compilerInfo.compilerId +
-                ')'
-            );
-        }
-    }
-
     getDefaultPaneName(): string {
         return 'Device Viewer';
     }
@@ -282,7 +260,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    onCompiler(id: number, compiler, options: string, editorId: number, treeId: number): void {
+    onCompiler(id: number, compiler: any, options: string, editorId: number, treeId: number): void {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
@@ -309,11 +287,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    currentState(): MonacoPaneState {
-        return this.getCurrentState();
-    }
-
-    override onCompilerClose(id): void {
+    override onCompilerClose(id: number): void {
         if (id === this.compilerInfo.compilerId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
@@ -359,7 +333,14 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.updateDecorations();
     }
 
-    onPanesLinkLine(compilerId, lineNumber, revealLine, sender): void {
+    onPanesLinkLine(
+        compilerId: number,
+        lineNumber: number,
+        _colBegin: number,
+        _colEnd: number,
+        revealLine: boolean,
+        sender: string
+    ): void {
         if (Number(compilerId) === this.compilerInfo.compilerId) {
             const lineNums: number[] = [];
             this.deviceCode.forEach((irLine: DeviceAsmCode, i: number) => {
