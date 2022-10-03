@@ -164,7 +164,7 @@ export class CompilerService {
         return null;
     }
 
-    private findCompiler(langId: string, compilerId: string) {
+    public findCompiler(langId: string, compilerId: string) {
         if (!compilerId) return null;
         const compilers = this.getCompilersForLang(langId);
         return this.findCompilerInList(compilers, compilerId);
