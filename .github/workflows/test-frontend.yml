@@ -12,9 +12,21 @@ jobs:
         run: make clean
       - name: Install prerequisites
         run: make prereqs
-      - name: Cypress run
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@latest
+      - name: Cypress run Chrome
         uses: cypress-io/github-action@v2
         with:
           start: npm run dev
           wait-on: 'http://localhost:10240'
           config: screenshotOnRunFailure=false,video=false
+          browser: chrome
+      - name: Cypress run Firefox
+        uses: cypress-io/github-action@v2
+        with:
+          start: npm run dev
+          wait-on: 'http://localhost:10240'
+          config: screenshotOnRunFailure=false,video=false
+          browser: firefox
