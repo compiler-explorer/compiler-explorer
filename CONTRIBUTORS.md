@@ -123,3 +123,4 @@ From oldest to newest contributor, we would like to thank:
 - [Mike Urbach](https://github.com/mikeurbach)
 - [J. Ryan Stinnett](https://github.com/jryans)
 - [Fábio S. V. Medeiros](https://github.com/fabiosvm)
+- [Jackson Machado](https://github.com/jacksjm)
