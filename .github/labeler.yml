@@ -75,6 +75,10 @@ lang-hlsl:
   - lib/compilers/hlsl.js
   - etc/config/hlsl.*.properties
   - static/modes/hlsl-mode.ts
+lang-hook:
+  - lib/compilers/hook.ts
+  - etc/config/hook.*.properties
+  - static/modes/hook-mode.ts
 lang-jakt:
   - lib/compilers/jakt.ts
   - etc/config/jakt.*.properties

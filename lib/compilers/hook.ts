@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,34 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import Semver from 'semver';
+import path from 'path';
 
-import {asSafeVer} from '../utils';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
 
-import {ClangCompiler} from './clang';
-
-export class ZigCC extends ClangCompiler {
-    static get key() {
-        return 'zigcc';
+export class HookCompiler extends BaseCompiler {
+    static get key(): string {
+        return 'hook';
     }
 
-    preProcess(source, filters) {
-        if (Semver.eq(asSafeVer(this.compiler.semver), '0.6.0', true)) {
-            filters.binary = true;
-        }
-
-        return super.preProcess(source, filters);
+    override optionsForFilter(filters: ParseFilters): string[] {
+        return ['--dump'];
     }
 
-    optionsForFilter(filters, outputFilename) {
-        if (Semver.eq(asSafeVer(this.compiler.semver), '0.6.0', true)) {
-            // note: zig versions > 0.6 don't emit asm, only binary works - https://github.com/ziglang/zig/issues/8153
-            filters.binary = true;
-        }
+    override getOutputFilename(dirPath: string): string {
+        return path.join(dirPath, 'example.out');
+    }
 
-        let options = ['cc', '-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options = options.concat(this.compiler.intelAsm.split(' '));
-        }
-        if (!filters.binary) options = options.concat('-S');
-        return options;
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
+        const dirPath = path.dirname(inputFilename);
+        const outputFilename = this.getOutputFilename(dirPath);
+        options.push(outputFilename);
+        return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 }

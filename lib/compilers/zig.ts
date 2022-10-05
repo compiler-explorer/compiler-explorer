@@ -27,10 +27,14 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
+import {ParseFilters} from '../../types/features/filters.interfaces';
+import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
 
 export class ZigCompiler extends BaseCompiler {
+    private readonly self_hosted_cli: boolean;
+
     static get key() {
         return 'zig';
     }
@@ -51,11 +55,11 @@ export class ZigCompiler extends BaseCompiler {
         }
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments(): string[] {
         return [];
     }
 
-    preProcess(source) {
+    override preProcess(source: string): string {
         if (Semver.eq(asSafeVer(this.compiler.semver), '0.2.0', true)) {
             source += '\n';
             source += 'extern fn zig_panic() noreturn;\n';
@@ -86,7 +90,7 @@ export class ZigCompiler extends BaseCompiler {
         return source;
     }
 
-    optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions: string[]): string[] {
         let options = [filters.execute ? 'build-exe' : 'build-obj'];
 
         const desiredName = path.basename(outputFilename);
@@ -122,7 +126,7 @@ export class ZigCompiler extends BaseCompiler {
         }
 
         if (!filters.binary) {
-            let userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
+            const userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
@@ -131,25 +135,30 @@ export class ZigCompiler extends BaseCompiler {
         return options;
     }
 
-    getIncludeArguments(libraries) {
+    override getIncludeArguments(libraries: SelectedLibraryVersion[]) {
         return libraries.flatMap(selectedLib => {
             const foundVersion = this.findLibVersion(selectedLib);
             if (!foundVersion) return [];
             // Zig should not have more than 1 path, but it's still an array so spread it
-            return ['--pkg-begin', foundVersion.name, ...foundVersion.path, '--pkg-end'];
+            return [
+                '--pkg-begin',
+                ...(foundVersion.name ? [foundVersion.name] : []),
+                ...foundVersion.path,
+                '--pkg-end',
+            ];
         });
     }
 
-    getIrOutputFilename(inputFilename) {
+    override getIrOutputFilename(inputFilename: string): string {
         return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.ll');
     }
 
-    filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]): string[] {
         const forbiddenOptions = /^(((--(cache-dir|name|output|verbose))|(-(mllvm|f(no-)?emit-))).*)$/;
         return _.filter(userOptions, option => !forbiddenOptions.test(option));
     }
 
-    isCfgCompiler(/*compilerVersion*/) {
+    override isCfgCompiler(/*compilerVersion*/): boolean {
         return true;
     }
 }

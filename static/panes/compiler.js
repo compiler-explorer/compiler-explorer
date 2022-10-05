@@ -1419,7 +1419,33 @@ Compiler.prototype.postCompilationResult = function (request, result, wasCmake) 
         this.emulateBbcDisk(result.bbcdiskimage);
     } else if (result.speccytape) {
         this.emulateSpeccyTape(result.speccytape);
+    } else if (result.miraclesms) {
+        this.emulateMiracleSMS(result.miraclesms);
     }
+};
+
+Compiler.prototype.emulateMiracleSMS = function (image) {
+    var dialog = $('#miracleemu');
+
+    this.alertSystem.notify(
+        'Click ' +
+            '<a target="_blank" id="miracle_emulink" style="cursor:pointer;" click="javascript:;">here</a>' +
+            ' to emulate',
+        {
+            group: 'emulation',
+            collapseSimilar: true,
+            dismissTime: 10000,
+            onBeforeShow: function (elem) {
+                elem.find('#miracle_emulink').on('click', function () {
+                    dialog.modal();
+
+                    var emuwindow = dialog.find('#miracleemuframe')[0].contentWindow;
+                    var tmstr = Date.now();
+                    emuwindow.location = 'https://xania.org/miracle/miracle.html?' + tmstr + '#b64sms=' + image;
+                });
+            },
+        }
+    );
 };
 
 Compiler.prototype.emulateSpeccyTape = function (image) {
@@ -2240,7 +2266,16 @@ Compiler.prototype.updateButtons = function () {
     this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
     this.executorButton.toggle(!!this.compiler.supportsExecute);
 
+    this.compilerLicenseButton.toggle(this.hasCompilerLicenseInfo());
+
     this.enableToolButtons();
+};
+
+Compiler.prototype.hasCompilerLicenseInfo = function () {
+    return (
+        this.compiler.license &&
+        (this.compiler.license.preamble || this.compiler.license.link || this.compiler.license.name)
+    );
 };
 
 Compiler.prototype.handlePopularArgumentsResult = function (result) {
