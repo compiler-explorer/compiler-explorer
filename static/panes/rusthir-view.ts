@@ -22,21 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 
-import { Pane } from './pane';
-import { BasePaneState } from './pane.interfaces';
-import { RustHirState } from './rusthir-view.interfaces';
+import {MonacoPane} from './pane';
+import {MonacoPaneState} from './pane.interfaces';
+import {RustHirState} from './rusthir-view.interfaces';
 
-import { ga } from '../analytics';
-import { extendConfig } from '../monaco-config';
+import {ga} from '../analytics';
+import {extendConfig} from '../monaco-config';
+import {Hub} from '../hub';
 
-export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
-    constructor(hub: any, container: Container, state: RustHirState & BasePaneState) {
+export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
+    constructor(hub: Hub, container: Container, state: RustHirState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.rustHirOutput) {
+        if (state.rustHirOutput) {
             this.showRustHirResults(state.rustHirOutput);
         }
     }
@@ -46,12 +48,15 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, extendConfig({
-            language: 'plainText',
-            readOnly: true,
-            glyphMargin: true,
-            lineNumbersMinChars: 3,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            extendConfig({
+                language: 'plainText',
+                readOnly: true,
+                glyphMargin: true,
+                lineNumbersMinChars: 3,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -67,8 +72,8 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
     }
 
     override registerCallbacks(): void {
-        const throttleFunction = _.throttle((event) => this.onDidChangeCursorSelection(event), 500);
-        this.editor.onDidChangeCursorSelection((event) => throttleFunction(event));
+        const throttleFunction = _.throttle(event => this.onDidChangeCursorSelection(event), 500);
+        this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('rustHirViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
     }
@@ -82,32 +87,31 @@ export class RustHir extends Pane<monaco.editor.IStandaloneCodeEditor, RustHirSt
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
-        treeId: number | boolean): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number, treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsRustHirView) {
-                this.showRustHirResults([{
-                    text: '<Rust HIR output is not supported for this compiler>',
-                }]);
+                this.showRustHirResults([
+                    {
+                        text: '<Rust HIR output is not supported for this compiler>',
+                    },
+                ]);
             }
         }
     }
 
     showRustHirResults(result: any[]): void {
-        if (!this.editor) return;
-        this.editor.getModel()?.setValue(result.length
-            ? _.pluck(result, 'text').join('\n')
-            : '<No Rust HIR generated>');
+        this.editor
+            .getModel()
+            ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No Rust HIR generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.selectionStartLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.selectionStartLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }

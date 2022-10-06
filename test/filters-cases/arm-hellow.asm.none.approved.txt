@@ -5323,7 +5323,15 @@
       "text": ".LASF55:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "main",
+          "range": {
+            "endCol": 22,
+            "startCol": 18
+          }
+        }
+      ],
       "source": null,
       "text": "        .ascii  \"main\\000\""
     },

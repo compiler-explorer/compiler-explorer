@@ -233,35 +233,47 @@ def parse(filename, f):
         ''.join(map(lambda x: str(x), description_paragraphs)).strip())
 
 
-def read_table(table):
+def read_table(start_table):
+    # Tables on felixcloutier may be split in half, e.g. on https://www.felixcloutier.com/x86/sal:sar:shl:shr
+    # This traverses the immediate siblings of the input table
+    tables = []
+    current_node = start_table
+    while current_node:
+        if current_node.name == 'table':
+            tables.append(current_node)
+        elif current_node.name is not None: # whitespace between the tables, i.e. the \n, is a none tag
+            break
+        current_node = current_node.next_sibling
     # Finding all 'th' is not enough, since some headers are 'td'.
     # Instead, walk through all children of the first 'tr', filter out those
     # that are only whitespace, keep `get_text()` on the others.
     headers = list(
         map(lambda th: th.get_text(),
-            filter(lambda th: str(th).strip(), table.tr.children)))
+            filter(lambda th: str(th).strip(), tables[0].tr.children)))
 
     result = []
     if headers:
         # common case
-        for row in table.find_all('tr'):
-            obj = {}
-            for column, name in zip(row.find_all('td'), headers):
-                # Remove '\n's in names that contain it.
-                obj[name.replace('\n', '')] = column.get_text()
-            if obj:
-                result.append(obj)
+        for table in tables:
+            for row in table.find_all('tr'):
+                obj = {}
+                for column, name in zip(row.find_all('td'), headers):
+                    # Remove '\n's in names that contain it.
+                    obj[name.replace('\n', '')] = column.get_text()
+                if obj:
+                    result.append(obj)
     else:
         # Cases like BEXTR and BZHI
-        rows = table.find_all('tr')
-        if len(rows) != 1:
-            return []
-        obj = {}
-        for td in rows[0].find_all('td'):
-            header = td.p.strong.get_text()
-            td.p.strong.decompose()
-            obj[header] = td.get_text()
-        result.append(obj)
+        for table in tables:
+            rows = table.find_all('tr')
+            if len(rows) != 1:
+                return []
+            obj = {}
+            for td in rows[0].find_all('td'):
+                header = td.p.strong.get_text()
+                td.p.strong.decompose()
+                obj[header] = td.get_text()
+            result.append(obj)
 
     return result
 
@@ -347,7 +359,7 @@ export function getAsmOpcode(opcode) {
     switch (opcode.toUpperCase()) {
 """)
         for inst in instructions:
-            for name in inst.names:
+            for name in sorted(inst.names):
                 f.write(f'        case "{name}":\n')
             f.write('            return {}'.format(json.dumps({
                 "tooltip": inst.tooltip,

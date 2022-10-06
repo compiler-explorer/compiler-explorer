@@ -51,6 +51,11 @@ var SimpleCook = require('./widgets/simplecook').SimpleCook;
 var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
 var History = require('./history');
 var Presentation = require('./presentation').Presentation;
+var setupSiteTemplateWidgetButton = require('./widgets/site-templates-widget').setupSiteTemplateWidgetButton;
+
+var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+
+var siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
 
 if (!window.PRODUCTION) {
     require('./tests/_all');
@@ -61,13 +66,18 @@ require('bootstrap/dist/css/bootstrap.min.css');
 require('golden-layout/src/css/goldenlayout-base.css');
 require('tom-select/dist/css/tom-select.bootstrap4.css');
 require('./colours.scss');
-require('./explorer.scss');
+require('./styles/explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
 var hasUIBeenReset = false;
 var simpleCooks = new SimpleCook();
 var historyWidget = new HistoryWidget();
+
+var policyDocuments = {
+    cookies: require('./generated/cookies.pug').default,
+    privacy: require('./generated/privacy.pug').default,
+};
 
 function setupSettings(hub) {
     var eventHub = hub.layout.eventHub;
@@ -103,7 +113,7 @@ function setupSettings(hub) {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var SettingsObject = new Settings($('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    var SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
     eventHub.on('modifySettings', function (newSettings) {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
@@ -111,7 +121,7 @@ function setupSettings(hub) {
 }
 
 function hasCookieConsented(options) {
-    return jsCookie.get(options.policies.cookies.key) === options.policies.cookies.hash;
+    return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
 function isMobileViewer() {
@@ -123,7 +133,8 @@ function calcLocaleChangedDate(policyModal) {
     timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
 }
 
-function setupButtons(options) {
+function setupButtons(options, hub) {
+    var eventHub = hub.createEventHub();
     var alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
@@ -132,13 +143,14 @@ function setupButtons(options) {
         $('#privacy').on('click', function (event, data) {
             var modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                require('./policies/privacy.html').default
+                policyDocuments.privacy.text
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
             if (options.policies.privacy.enabled) {
-                jsCookie.set(options.policies.privacy.key, options.policies.privacy.hash, {
-                    expires: 365, sameSite: 'strict',
+                jsCookie.set(options.policies.privacy.key, policyDocuments.privacy.hash, {
+                    expires: 365,
+                    sameSite: 'strict',
                 });
             }
         });
@@ -146,12 +158,16 @@ function setupButtons(options) {
 
     if (options.policies.cookies.enabled) {
         var getCookieTitle = function () {
-            return 'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
-                (hasCookieConsented(options) ? 'green' : 'red') + '">' +
-                (hasCookieConsented(options) ? 'Granted' : 'Denied') + '</span></p>';
+            return (
+                'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
+                (hasCookieConsented(options) ? 'green' : 'red') +
+                '">' +
+                (hasCookieConsented(options) ? 'Granted' : 'Denied') +
+                '</span></p>'
+            );
         };
         $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), require('./policies/cookies.html').default, {
+            var modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
                 yes: function () {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
@@ -177,7 +193,7 @@ function setupButtons(options) {
     });
 
     $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./changelog.html').default));
+        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
     });
 
     $('#ces').on('click', function () {
@@ -192,8 +208,10 @@ function setupButtons(options) {
             })
             .fail(function (err) {
                 var result = err.responseText || JSON.stringify(err);
-                alertSystem.alert('Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>');
+                alertSystem.alert(
+                    'Compiler Explorer Sponsors',
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                );
             });
     });
 
@@ -206,6 +224,13 @@ function setupButtons(options) {
         });
 
         $('#history').modal();
+    });
+
+    $('#ui-apply-default-font-scale').on('click', function () {
+        var defaultFontScale = Settings.getStoredSettings().defaultFontScale;
+        if (defaultFontScale !== undefined) {
+            eventHub.emit('broadcastFontScale', defaultFontScale);
+        }
     });
 }
 
@@ -262,9 +287,11 @@ function findConfig(defaultConfig, options) {
                 presentation.currentSlide = 0;
                 config = options.slides[0];
             }
-            if (isMobileViewer()
-                && window.compilerExplorerOptions.slides
-                && window.compilerExplorerOptions.slides.length > 1) {
+            if (
+                isMobileViewer() &&
+                window.compilerExplorerOptions.slides &&
+                window.compilerExplorerOptions.slides.length > 1
+            ) {
                 $('#share').remove();
                 $('.ui-presentation-control').removeClass('d-none');
                 $('.ui-presentation-first').on('click', presentation.first.bind(presentation));
@@ -275,7 +302,20 @@ function findConfig(defaultConfig, options) {
             if (options.config) {
                 config = options.config;
             } else {
-                config = url.deserialiseState(window.location.hash.substr(1));
+                try {
+                    config = url.deserialiseState(window.location.hash.substring(1));
+                } catch (e) {
+                    // #3518 Alert the user that the url is invalid
+                    var alertSystem = new Alert();
+                    alertSystem.notify(
+                        'Unable to load custom configuration from URL,\
+                     the last locally saved configuration will be used if present.',
+                        {
+                            alertClass: 'notification-error',
+                            dismissTime: 5000,
+                        }
+                    );
+                }
             }
 
             if (config) {
@@ -288,13 +328,17 @@ function findConfig(defaultConfig, options) {
             }
         }
     } else {
-        config = _.extend(defaultConfig, {
-            settings: {
-                showMaximiseIcon: false,
-                showCloseIcon: false,
-                hasHeaders: false,
+        config = _.extend(
+            defaultConfig,
+            {
+                settings: {
+                    showMaximiseIcon: false,
+                    showCloseIcon: false,
+                    hasHeaders: false,
+                },
             },
-        }, configFromEmbedded(window.location.hash.substr(1)));
+            configFromEmbedded(window.location.hash.substr(1))
+        );
     }
 
     removeOrphanedMaximisedItemFromConfig(config);
@@ -306,9 +350,7 @@ function findConfig(defaultConfig, options) {
 function initializeResetLayoutLink() {
     var currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
-        $('#ui-brokenlink')
-            .attr('href', currentUrl.replace('/z/', '/resetlayout/'))
-            .show();
+        $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
     } else {
         $('#ui-brokenlink').hide();
     }
@@ -320,7 +362,7 @@ function initPolicies(options) {
             $('#privacy').trigger('click', {
                 title: 'New Privacy Policy. Please take a moment to read it',
             });
-        } else if (options.policies.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
+        } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
             var ppolicyBellNotification = $('#policyBellNotification');
             var pprivacyBellNotification = $('#privacyBellNotification');
@@ -337,8 +379,9 @@ function initPolicies(options) {
         }
     }
     simpleCooks.setOnDoConsent(function () {
-        jsCookie.set(options.policies.cookies.key, options.policies.cookies.hash, {
-            expires: 365, sameSite: 'strict',
+        jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
+            expires: 365,
+            sameSite: 'strict',
         });
         analytics.toggle(true);
     });
@@ -362,7 +405,7 @@ function initPolicies(options) {
     // '' means no consent. Hash match means consent of old. Null means new user!
     var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
-        if (storedCookieConsent !== '' && options.policies.cookies.hash !== storedCookieConsent) {
+        if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
             var cpolicyBellNotification = $('#policyBellNotification');
             var cprivacyBellNotification = $('#privacyBellNotification');
@@ -415,9 +458,50 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
+function setupLanguageLogos(languages) {
+    _.each(
+        languages,
+        function (lang) {
+            try {
+                if (lang.logoUrl !== null) {
+                    lang.logoData = logos('./' + lang.logoUrl);
+                    if (lang.logoUrlDark !== null) {
+                        lang.logoDataDark = logos('./' + lang.logoUrlDark);
+                    }
+                }
+            } catch (ignored) {
+                lang.logoData = '';
+            }
+        },
+        this
+    );
+}
+
+function earlyGetDefaultLangSetting() {
+    // returns string | undefined
+    return Settings.getStoredSettings().defaultLanguage;
+}
+
+function getDefaultLangId(subLangId, options) {
+    var defaultLangId = subLangId;
+    if (!defaultLangId) {
+        var defaultLangSetting = earlyGetDefaultLangSetting();
+        if (defaultLangSetting && options.languages[defaultLangSetting] !== undefined) {
+            defaultLangId = defaultLangSetting;
+        } else if (options.languages['c++']) {
+            defaultLangId = 'c++';
+        } else {
+            defaultLangId = _.keys(options.languages)[0];
+        }
+    }
+    // returns string
+    return defaultLangId;
+}
+
 // eslint-disable-next-line max-statements
 function start() {
     initializeResetLayoutLink();
+    setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
     var options = require('options').options;
 
@@ -433,14 +517,10 @@ function start() {
             subLangId = langBySubdomain.id;
         }
     }
-    var defaultLangId = subLangId;
-    if (!defaultLangId) {
-        if (options.languages['c++']) {
-            defaultLangId = 'c++';
-        } else {
-            defaultLangId = _.keys(options.languages)[0];
-        }
-    }
+
+    var defaultLangId = getDefaultLangId(subLangId, options);
+
+    setupLanguageLogos(options.languages);
 
     // Cookie domains are matched as a RE against the window location. This allows a flexible
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
@@ -453,13 +533,12 @@ function start() {
 
     var defaultConfig = {
         settings: {showPopoutIcon: false},
-        content: [{
-            type: 'row',
-            content: [
-                Components.getEditor(1, defaultLangId),
-                Components.getCompiler(1, defaultLangId),
-            ],
-        }],
+        content: [
+            {
+                type: 'row',
+                content: [Components.getEditor(1, defaultLangId), Components.getCompiler(1, defaultLangId)],
+            },
+        ],
     };
 
     $(window).on('hashchange', function () {
@@ -522,16 +601,15 @@ function start() {
 
     // We assume no consent for embed users
     if (!options.embedded) {
-        setupButtons(options);
+        setupButtons(options, hub);
     }
 
     var addDropdown = $('#addDropdown');
 
     function setupAdd(thing, func) {
-        layout.createDragSource(thing, func)
-            ._dragListener.on('dragStart', function () {
-                addDropdown.dropdown('toggle');
-            });
+        layout.createDragSource(thing, func)._dragListener.on('dragStart', function () {
+            addDropdown.dropdown('toggle');
+        });
 
         thing.on('click', function () {
             if (hub.hasTree()) {
@@ -546,7 +624,7 @@ function start() {
         return Components.getEditor();
     });
     setupAdd($('#add-diff'), function () {
-        return Components.getDiff();
+        return Components.getDiffView();
     });
     setupAdd($('#add-tree'), function () {
         $('#add-tree').prop('disabled', true);
@@ -562,7 +640,11 @@ function start() {
     // Skip some steps if using embedded mode
     if (!options.embedded) {
         // Only fetch MOTD when not embedded.
-        motd.initialise(options.motdUrl, $('#motd'), subLangId, settings.enableCommunityAds,
+        motd.initialise(
+            options.motdUrl,
+            $('#motd'),
+            subLangId,
+            settings.enableCommunityAds,
             function (data) {
                 var sendMotd = function () {
                     hub.layout.eventHub.emit('motd', data);
@@ -574,7 +656,8 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            });
+            }
+        );
 
         // Don't try to update Version tree link
         var release = window.compilerExplorerOptions.gitReleaseCommit;
@@ -602,9 +685,12 @@ function start() {
 
     if (options.pageloadUrl) {
         setTimeout(function () {
-            var visibleIcons = $('.ces-icon:visible').map(function (index, value) {
-                return value.dataset.statsid;
-            }).get().join(',');
+            var visibleIcons = $('.ces-icon:visible')
+                .map(function (index, value) {
+                    return value.dataset.statsid;
+                })
+                .get()
+                .join(',');
             $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));
         }, 5000);
     }

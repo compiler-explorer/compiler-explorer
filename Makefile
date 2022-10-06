@@ -39,12 +39,12 @@ $(NODE_MODULES): package.json | node-installed
 
 .PHONY: lint
 lint: $(NODE_MODULES)  ## Checks if the source currently matches code conventions
-	$(NPM) run ts-compile
-	$(NPM) run lint
+	$(NPM) run ts-check
+	$(NPM) run lint-check
 
 .PHONY: lint-fix
 lint-fix: $(NODE_MODULES)  ## Checks if everything matches code conventions & fixes those which are trivial to do so
-	$(NPM) run lint-fix
+	$(NPM) run lint
 
 .PHONY: ci-lint
 ci-lint: $(NODE_MODULES)
@@ -55,19 +55,26 @@ test: $(NODE_MODULES)  ## Runs the tests
 	$(NPM) run test
 	@echo Tests pass
 
+.PHONY: test-min
+test-min: $(NODE_MODULES)  ## Runs the minimal tests
+	$(NPM) run test-min
+	@echo Tests pass
+
 .PHONY: check
-check: $(NODE_MODULES) test lint  ## Runs all checks required before committing (fixing trivial things automatically)
+check: $(NODE_MODULES) lint test  ## Runs all checks required before committing (fixing trivial things automatically)
+
 .PHONY: pre-commit
-pre-commit: $(NODE_MODULES) test ci-lint
+pre-commit: $(NODE_MODULES) test-min lint
 
 .PHONY: clean
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out
 
 .PHONY: run
-run: prereqs  ## Runs the site normally
+run: prereqs  ## Runs the site like it runs in production
 	$(NPM) run webpack
-	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js $(EXTRA_ARGS)
+	$(NPM) run ts-compile
+	env NODE_ENV=production $(NODE) $(NODE_ARGS) -r esm ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
 
 .PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks

@@ -22,21 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 
-import { Pane } from './pane';
-import { BasePaneState } from './pane.interfaces';
-import { RustMacroExpState } from './rustmacroexp-view.interfaces';
+import {MonacoPane} from './pane';
+import {MonacoPaneState} from './pane.interfaces';
+import {RustMacroExpState} from './rustmacroexp-view.interfaces';
 
-import { ga } from '../analytics';
-import { extendConfig } from '../monaco-config';
+import {ga} from '../analytics';
+import {extendConfig} from '../monaco-config';
+import {Hub} from '../hub';
 
-export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
-    constructor(hub: any, container: Container, state: RustMacroExpState & BasePaneState) {
+export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
+    constructor(hub: Hub, container: Container, state: RustMacroExpState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.rustMacroExpOutput) {
+        if (state.rustMacroExpOutput) {
             this.showRustMacroExpResults(state.rustMacroExpOutput);
         }
     }
@@ -46,12 +48,15 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, extendConfig({
-            language: 'rust',
-            readOnly: true,
-            glyphMargin: true,
-            lineNumbersMinChars: 3,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            extendConfig({
+                language: 'rust',
+                readOnly: true,
+                glyphMargin: true,
+                lineNumbersMinChars: 3,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -67,8 +72,8 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
     }
 
     override registerCallbacks(): void {
-        const throttleFunction = _.throttle((event) => this.onDidChangeCursorSelection(event), 500);
-        this.editor.onDidChangeCursorSelection((event) => throttleFunction(event));
+        const throttleFunction = _.throttle(event => this.onDidChangeCursorSelection(event), 500);
+        this.editor.onDidChangeCursorSelection(event => throttleFunction(event));
         this.eventHub.emit('rustMacroExpViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
     }
@@ -82,32 +87,31 @@ export class RustMacroExp extends Pane<monaco.editor.IStandaloneCodeEditor, Rust
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId: number | boolean,
-        treeId: number | boolean): void {
+    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number, treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
             if (compiler && !compiler.supportsRustMacroExpView) {
-                this.showRustMacroExpResults([{
-                    text: '<Rust Macro Expansion output is not supported for this compiler>',
-                }]);
+                this.showRustMacroExpResults([
+                    {
+                        text: '<Rust Macro Expansion output is not supported for this compiler>',
+                    },
+                ]);
             }
         }
     }
 
     showRustMacroExpResults(result: any[]): void {
-        if (!this.editor) return;
-        this.editor.getModel()?.setValue(result.length
-            ? _.pluck(result, 'text').join('\n')
-            : '<No Rust Macro Expansion generated>');
+        this.editor
+            .getModel()
+            ?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No Rust Macro Expansion generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.selectionStartLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.selectionStartLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }

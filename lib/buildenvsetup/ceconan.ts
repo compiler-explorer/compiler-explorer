@@ -1,0 +1,250 @@
+// Copyright (c) 2020, Compiler Explorer Authors
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+//     * Redistributions of source code must retain the above copyright notice,
+//       this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above copyright
+//       notice, this list of conditions and the following disclaimer in the
+//       documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+import path from 'path';
+import zlib from 'zlib';
+
+import fs, {mkdirp} from 'fs-extra';
+import request from 'request';
+import tar from 'tar-stream';
+import _ from 'underscore';
+
+import {logger} from '../logger';
+
+import {BuildEnvSetupBase} from './base';
+import {BuildEnvDownloadInfo} from './buildenv.interfaces';
+
+export type ConanBuildProperties = {
+    os: string;
+    build_type: string;
+    compiler: string;
+    'compiler.version': string;
+    'compiler.libcxx': string;
+    arch: string;
+    stdver: string;
+    flagcollection: string;
+};
+
+export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
+    protected host: any;
+    protected onlyonstaticliblink: any;
+    protected extractAllToRoot: boolean;
+
+    static get key() {
+        return 'ceconan';
+    }
+
+    constructor(compilerInfo, env) {
+        super(compilerInfo, env);
+
+        this.host = compilerInfo.buildenvsetup.props('host', false);
+        this.onlyonstaticliblink = compilerInfo.buildenvsetup.props('onlyonstaticliblink', false);
+        this.extractAllToRoot = true;
+
+        if (env.debug) request.debug = true;
+    }
+
+    async getAllPossibleBuilds(libid, version) {
+        return new Promise((resolve, reject) => {
+            const encLibid = encodeURIComponent(libid);
+            const encVersion = encodeURIComponent(version);
+            const url = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}/search`;
+            const settings = {
+                method: 'GET',
+                json: true,
+            };
+
+            request(url, settings, (err, res, body) => {
+                if (res.statusCode === 404) {
+                    reject(`Not found (${url})`);
+                } else if (err) {
+                    reject(err);
+                } else {
+                    resolve(body);
+                }
+            });
+        });
+    }
+
+    async getPackageUrl(libid, version, hash): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const encLibid = encodeURIComponent(libid);
+            const encVersion = encodeURIComponent(version);
+            const libUrl = `${this.host}/v1/conans/${encLibid}/${encVersion}/${encLibid}/${encVersion}`;
+            const url = `${libUrl}/packages/${hash}/download_urls`;
+
+            const settings = {
+                method: 'GET',
+                json: true,
+            };
+
+            request(url, settings, (err, res, body) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+
+                resolve(body['conan_package.tgz']);
+            });
+        });
+    }
+
+    async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
+        return new Promise(resolve => {
+            const startTime = process.hrtime.bigint();
+            const extract = tar.extract();
+            const gunzip = zlib.createGunzip();
+
+            extract.on('entry', async (header, stream, next) => {
+                let filepath = '';
+                if (this.extractAllToRoot) {
+                    const filename = path.basename(header.name);
+                    filepath = path.join(downloadPath, filename);
+                } else {
+                    const filename = header.name;
+                    filepath = path.join(downloadPath, filename);
+                    const resolved = path.resolve(path.dirname(filepath));
+                    if (!resolved.startsWith(downloadPath)) {
+                        logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                        next();
+                        return;
+                    }
+
+                    await mkdirp(path.dirname(filepath));
+                }
+
+                const filestream = fs.createWriteStream(filepath);
+                stream.pipe(filestream);
+                stream.on('end', next);
+                stream.resume();
+            });
+
+            extract.on('finish', () => {
+                const endTime = process.hrtime.bigint();
+                resolve({
+                    step: `Download of ${libId} ${version}`,
+                    packageUrl: packageUrl,
+                    time: ((endTime - startTime) / BigInt(1000000)).toString(),
+                });
+            });
+
+            gunzip.pipe(extract);
+
+            const settings = {
+                method: 'GET',
+                encoding: null,
+            };
+
+            request(packageUrl, settings).pipe(gunzip);
+        });
+    }
+
+    async getConanBuildProperties(key): Promise<ConanBuildProperties> {
+        const arch = this.getTarget(key);
+        const libcxx = this.getLibcxx(key);
+        const stdver = '';
+        const flagcollection = '';
+
+        return {
+            os: 'Linux',
+            build_type: 'Debug',
+            compiler: this.compilerTypeOrGCC,
+            'compiler.version': this.compiler.id,
+            'compiler.libcxx': libcxx,
+            arch: arch,
+            stdver: stdver,
+            flagcollection: flagcollection,
+        };
+    }
+
+    async findMatchingHash(buildProperties, possibleBuilds) {
+        return _.findKey(possibleBuilds, elem => {
+            return _.all(buildProperties, (val, key) => {
+                if ((key === 'compiler' || key === 'compiler.version') && elem.settings[key] === 'cshared') {
+                    return true;
+                } else {
+                    return val === elem.settings[key];
+                }
+            });
+        });
+    }
+
+    async download(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
+        const allDownloads: Promise<BuildEnvDownloadInfo>[] = [];
+        const allLibraryBuilds: any = [];
+
+        _.each(libraryDetails, (details, libId) => {
+            if (this.hasBinariesToLink(details)) {
+                const lookupversion = details.lookupversion ? details.lookupversion : details.version;
+                allLibraryBuilds.push({
+                    id: libId,
+                    version: details.version,
+                    lookupversion: details.lookupversion,
+                    possibleBuilds: this.getAllPossibleBuilds(libId, lookupversion).catch(() => false),
+                });
+            }
+        });
+
+        const buildProperties = await this.getConanBuildProperties(key);
+
+        for (const libVerBuilds of allLibraryBuilds) {
+            const lookupversion = libVerBuilds.lookupversion ? libVerBuilds.lookupversion : libVerBuilds.version;
+            const libVer = `${libVerBuilds.id}/${lookupversion}`;
+            const possibleBuilds = await libVerBuilds.possibleBuilds;
+            if (possibleBuilds) {
+                const hash = await this.findMatchingHash(buildProperties, possibleBuilds);
+                if (hash) {
+                    logger.debug(`Found conan hash ${hash} for ${libVer}`);
+                    allDownloads.push(
+                        this.getPackageUrl(libVerBuilds.id, lookupversion, hash).then(downloadUrl => {
+                            return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
+                        }),
+                    );
+                } else {
+                    logger.info(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
+                }
+            } else {
+                logger.info(`Library ${libVer} not available`);
+            }
+        }
+
+        return Promise.all(allDownloads);
+    }
+
+    override async setup(key, dirPath, libraryDetails): Promise<BuildEnvDownloadInfo[]> {
+        if (this.host && (!this.onlyonstaticliblink || this.hasAtLeastOneBinaryToLink(libraryDetails))) {
+            return this.download(key, dirPath, libraryDetails);
+        } else {
+            return [];
+        }
+    }
+
+    hasBinariesToLink(details) {
+        return details.libpath.length === 0 && (details.staticliblink.length > 0 || details.liblink.length > 0);
+    }
+
+    hasAtLeastOneBinaryToLink(libraryDetails) {
+        return _.some(libraryDetails, details => this.hasBinariesToLink(details));
+    }
+}

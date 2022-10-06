@@ -22,30 +22,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 
-import { Pane } from './pane';
-import { IrState } from './ir-view.interfaces';
-import { BasePaneState } from './pane.interfaces';
+import {MonacoPane} from './pane';
+import {IrState} from './ir-view.interfaces';
+import {MonacoPaneState} from './pane.interfaces';
 
-import { ga } from '../analytics';
-import { extendConfig } from '../monaco-config';
-import { applyColours } from '../colour';
+import {ga} from '../analytics';
+import {extendConfig} from '../monaco-config';
+import {applyColours} from '../colour';
 
-import { PaneRenaming } from '../widgets/pane-renaming';
+import {Hub} from '../hub';
 
-export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
+export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId = -1;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
     previousDecorations: string[] = [];
 
-    constructor(hub: any, container: Container, state: IrState & BasePaneState) {
+    constructor(hub: Hub, container: Container, state: IrState & MonacoPaneState) {
         super(hub, container, state);
-        if (state && state.irOutput) {
+        if (state.irOutput) {
             this.showIrResults(state.irOutput);
         }
     }
@@ -55,12 +56,15 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, extendConfig({
-            language: 'llvm-ir',
-            readOnly: true,
-            glyphMargin: true,
-            lineNumbersMinChars: 3,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            extendConfig({
+                language: 'llvm-ir',
+                readOnly: true,
+                glyphMargin: true,
+                lineNumbersMinChars: 3,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -82,13 +86,20 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: (editor) => {
+            run: editor => {
                 const position = editor.getPosition();
                 if (position != null) {
                     const desiredLine = position.lineNumber - 1;
                     const source = this.irCode[desiredLine].source;
                     if (source !== null && source.file !== null) {
-                        this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, source.line, -1, -1, true);
+                        this.eventHub.emit(
+                            'editorLinkLine',
+                            this.compilerInfo.editorId as number,
+                            source.line,
+                            -1,
+                            -1,
+                            true
+                        );
                     }
                 }
             },
@@ -98,8 +109,10 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     override registerCallbacks(): void {
         const onMouseMove = _.throttle(this.onMouseMove.bind(this), 50);
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
-        const onColoursOnCompile = this.eventHub.mediateDependentCalls(this.onColours.bind(this),
-            this.onCompileResult.bind(this));
+        const onColoursOnCompile = this.eventHub.mediateDependentCalls(
+            this.onColours.bind(this),
+            this.onCompileResult.bind(this)
+        );
 
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
@@ -107,12 +120,11 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         this.eventHub.on('colours', onColoursOnCompile.dependentProxy, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine.bind(this));
 
-        this.editor.onMouseMove((event) => onMouseMove(event));
-        this.editor.onDidChangeCursorSelection((event) => onDidChangeCursorSelection(event));
+        this.editor.onMouseMove(event => onMouseMove(event));
+        this.editor.onDidChangeCursorSelection(event => onDidChangeCursorSelection(event));
 
         this.eventHub.emit('irViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
-
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
@@ -136,17 +148,13 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     }
 
     showIrResults(result: any[]): void {
-        if (!this.editor) return;
         this.irCode = result;
-        this.editor.getModel()?.setValue(result.length
-            ? _.pluck(result, 'text').join('\n')
-            : '<No LLVM IR generated>');
+        this.editor.getModel()?.setValue(result.length ? _.pluck(result, 'text').join('\n') : '<No LLVM IR generated>');
 
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }
@@ -156,10 +164,12 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const irColours: Record<number, number> = {};
         for (const [index, code] of this.irCode.entries()) {
-            if (code.source
-                && code.source.file === null
-                && code.source.line > 0
-                && colours[code.source.line - 1] !== undefined) {
+            if (
+                code.source &&
+                code.source.file === null &&
+                code.source.line > 0 &&
+                colours[code.source.line - 1] !== undefined
+            ) {
                 irColours[index] = colours[code.source.line - 1];
             }
         }
@@ -167,11 +177,11 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
     }
 
     onMouseMove(e: monaco.editor.IEditorMouseEvent): void {
-        if (e === null || e.target === null || e.target.position === null) return;
-        if (this.settings.hoverShowSource === true && this.irCode) {
+        if (e.target.position === null) return;
+        if (this.settings.hoverShowSource === true) {
             this.clearLinkedLines();
-            const hoverCode = this.irCode[e.target.position.lineNumber - 1];
-            if (hoverCode) {
+            if (e.target.position.lineNumber - 1 in this.irCode) {
+                const hoverCode = this.irCode[e.target.position.lineNumber - 1];
                 let sourceLine = -1;
                 let sourceColumnBegin = -1;
                 let sourceColumnEnd = -1;
@@ -184,10 +194,23 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
                     }
                 }
 
-                this.eventHub.emit('editorLinkLine', this.compilerInfo.editorId, sourceLine, sourceColumnBegin,
-                    sourceColumnEnd, false);
-                this.eventHub.emit('panesLinkLine', this.compilerInfo.compilerId, sourceLine, sourceColumnBegin,
-                    sourceColumnEnd, false, this.getPaneName());
+                this.eventHub.emit(
+                    'editorLinkLine',
+                    this.compilerInfo.editorId as number,
+                    sourceLine,
+                    sourceColumnBegin,
+                    sourceColumnEnd,
+                    false
+                );
+                this.eventHub.emit(
+                    'panesLinkLine',
+                    this.compilerInfo.compilerId,
+                    sourceLine,
+                    sourceColumnBegin,
+                    sourceColumnEnd,
+                    false,
+                    this.getPaneName()
+                );
             }
         }
     }
@@ -210,10 +233,12 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
                 const line = index + 1;
                 const currentColumn = irLine.source.column;
                 lineNumbers.push(line);
-                if (isSignalFromAnotherPane
-                    && currentColumn
-                    && columnBegin <= currentColumn
-                    && currentColumn <= columnEnd) {
+                if (
+                    isSignalFromAnotherPane &&
+                    currentColumn &&
+                    columnBegin <= currentColumn &&
+                    currentColumn <= columnEnd
+                ) {
                     directlyLinkedLineNumbers.push(line);
                 }
             }
@@ -225,7 +250,7 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
         }
 
         const lineClassName = isSignalFromAnotherPane ? 'linked-code-decoration-line' : '';
-        const linkedLineDecorations: monaco.editor.IModelDeltaDecoration[] = lineNumbers.map((line) => ({
+        const linkedLineDecorations: monaco.editor.IModelDeltaDecoration[] = lineNumbers.map(line => ({
             range: new monaco.Range(line, 1, line, 1),
             options: {
                 isWholeLine: true,
@@ -233,14 +258,15 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
                 className: lineClassName,
             },
         }));
-        const directlyLinkedLineDecorations: monaco.editor.IModelDeltaDecoration[] =
-            directlyLinkedLineNumbers.map((line) => ({
+        const directlyLinkedLineDecorations: monaco.editor.IModelDeltaDecoration[] = directlyLinkedLineNumbers.map(
+            line => ({
                 range: new monaco.Range(line, 1, line, 1),
                 options: {
                     isWholeLine: true,
                     inlineClassName: 'linked-code-decoration-column',
                 },
-            }));
+            })
+        );
         this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
 
         if (this.linkedFadeTimeoutId !== -1) {
@@ -256,7 +282,9 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
     updateDecorations(): void {
         this.previousDecorations = this.editor.deltaDecorations(
-            this.previousDecorations, _.flatten(_.values(this.decorations)));
+            this.previousDecorations,
+            _.flatten(_.values(this.decorations))
+        );
     }
 
     clearLinkedLines(): void {
@@ -266,6 +294,8 @@ export class Ir extends Pane<monaco.editor.IStandaloneCodeEditor, IrState> {
 
     /** LLVM IR View proxies some things in the standard callbacks */
     override registerStandardCallbacks(): void {
+        // TODO(jeremy-rifkin) While I'm here, this needs to be refactored to take advantage of base class logic
+        // Other panes probably need to be changed too
         this.fontScale.on('change', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));

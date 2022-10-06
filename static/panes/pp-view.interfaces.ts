@@ -25,3 +25,8 @@
 export interface PPViewState {
     ppOutput: any;
 }
+
+export type PPOptions = {
+    'filter-headers': boolean;
+    'clang-format': boolean;
+};

@@ -11,32 +11,48 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - name: Get npm cache directory
-        id: npm-cache
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v1
-        with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: npm
       - name: Install prerequisites
         run: make prereqs
       - name: Run checks
         run: |
-          npm run lint
+          npm run lint-check
           npm run ci-test
-          python3 ./etc/scripts/util/orphancompiler.py
+          npm run ts-check
+          python3 ./etc/scripts/util/propscheck.py
       - name: Code coverage
         run: npm run codecov
 
-  build-dist-and-deploy:
+  build_dist:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
-    needs: [test]
+    runs-on: ubuntu-20.04
+    outputs:
+      release_name: ${{ steps.build_dist.outputs.release_name }}
+      branch: ${{ steps.build_dist.outputs.branch }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+      - name: Build distribution
+        id: build_dist
+        run: etc/scripts/build-dist.sh
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: out/dist-bin
+
+  deploy:
+    if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
+    needs: [test, build_dist]
     runs-on: ubuntu-20.04
 
     steps:
@@ -44,27 +60,28 @@ jobs:
         with:
           fetch-depth: 0
       - name: Use Node.js 16.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16.x
-      - name: Get npm cache directory
-        id: npm-cache
-        run: |
-          echo "::set-output name=dir::$(npm config get cache)"
-      - uses: actions/cache@v1
+          cache: npm
+      - name: Download the built distribution
+        uses: actions/download-artifact@v3
         with:
-          path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      - name: Build distribution
-        id: build_dist
+          name: dist
+          path: out/dist-bin
+      - name: Unpack static files for sentry
+        run: |
+          mkdir -p out/dist/static
+          tar Jxf out/dist-bin/*.static.tar.xz -C out/dist/static
+      - name: Tag in sentry
         run: |
           export SENTRY_AUTH_TOKEN='${{ secrets.SENTRY_AUTH_TOKEN }}'
           export SENTRY_DSN='${{ secrets.SENTRY_DSN }}'
           export SENTRY_ORG=compiler-explorer
           export SENTRY_PROJECT=compiler-explorer
-          etc/scripts/build-dist.sh
+          npm run sentry -- releases new -p compiler-explorer "${{ needs.build_dist.outputs.release_name }}"
+          npm run sentry -- releases set-commits --auto "${{ needs.build_dist.outputs.release_name }}"
+          npm run sentry -- releases files "${{ needs.build_dist.outputs.release_name }}" upload-sourcemaps out/dist/static
       - name: Deploy
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -74,7 +91,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           SOURCE_DIR: out/dist-bin
-          DEST_DIR: dist/gh/${{ steps.build_dist.outputs.branch }}
+          DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}
       - name: Tag the commit
         uses: tvdias/github-tagger@v0.0.2
         with:

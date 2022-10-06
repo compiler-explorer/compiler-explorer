@@ -22,28 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
-import { Toggles } from '../widgets/toggles';
+import $ from 'jquery';
+import {Toggles} from '../widgets/toggles';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import $ from 'jquery';
-import { Pane } from './pane';
-import { ga } from '../analytics';
+import {MonacoPane} from './pane';
+import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';
-import { PPViewState } from './pp-view.interfaces';
-import { Container } from 'golden-layout';
-import { BasePaneState } from './pane.interfaces';
+import {PPViewState} from './pp-view.interfaces';
+import {Container} from 'golden-layout';
+import {MonacoPaneState} from './pane.interfaces';
+import {Hub} from '../hub';
 
-export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
+export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
 
-    constructor(hub: any, container: Container, state: PPViewState & BasePaneState) {
+    constructor(hub: Hub, container: Container, state: PPViewState & MonacoPaneState) {
         super(hub, container, state);
         this.eventHub.emit('ppViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
         this.onOptionsChange();
-        if (state && state.ppOutput) {
+        if (state.ppOutput) {
             this.showPpResults(state.ppOutput);
         } else {
             this.showCompilationLoadingMessage();
@@ -55,12 +54,15 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     override createEditor(editorRoot: HTMLElement): monaco.editor.IStandaloneCodeEditor {
-        return monaco.editor.create(editorRoot, monacoConfig.extendConfig({
-            language: 'plaintext',
-            readOnly: true,
-            glyphMargin: true,
-            lineNumbersMinChars: 3,
-        }));
+        return monaco.editor.create(
+            editorRoot,
+            monacoConfig.extendConfig({
+                language: 'plaintext',
+                readOnly: true,
+                glyphMargin: true,
+                lineNumbersMinChars: 3,
+            })
+        );
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -71,8 +73,9 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         });
     }
 
-    override registerButtons(state: PPViewState & BasePaneState): void {
-        this.options = new Toggles(this.domRoot.find('.options'), ((state as unknown) as Record<string, boolean>));
+    override registerButtons(state: PPViewState & MonacoPaneState): void {
+        super.registerButtons(state);
+        this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
     }
 
@@ -81,10 +84,15 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         this.updateState();
         // update parameters for the compiler and recompile
         this.showCompilationLoadingMessage();
-        this.eventHub.emit('ppViewOptionsUpdated', this.compilerInfo.compilerId, {
-            'filter-headers': options['filter-headers'],
-            'clang-format': options['clang-format'],
-        }, true);
+        this.eventHub.emit(
+            'ppViewOptionsUpdated',
+            this.compilerInfo.compilerId,
+            {
+                'filter-headers': options['filter-headers'],
+                'clang-format': options['clang-format'],
+            },
+            true
+        );
     }
 
     showCompilationLoadingMessage() {
@@ -95,13 +103,13 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
         const topBarHeight = this.topBar.outerHeight(true) as number;
         this.editor.layout({
             width: this.domRoot.width() as number,
-            height: this.domRoot.height() as number - topBarHeight,
+            height: (this.domRoot.height() as number) - topBarHeight,
         });
     }
 
     override onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerInfo.compilerId !== compilerId) return;
-    
+
         if (result.hasPpOutput) {
             this.showPpResults(result.ppOutput);
         } else if (compiler.supportsPpView) {
@@ -126,20 +134,20 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     showPpResults(results) {
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
-                this.editor.setValue(`/* <${results.numberOfLinesFiltered} lines filtered> */\n\n`
-                                     + results.output.trimStart());
+                this.editor.setValue(
+                    `/* <${results.numberOfLinesFiltered} lines filtered> */\n\n` + results.output.trimStart()
+                );
             } else {
                 this.editor.setValue(results.output.trimStart());
             }
         } else {
             this.editor.setValue(results);
         }
-    
+
         if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
-                this.editor.revealLinesInCenter(this.selection.startLineNumber,
-                    this.selection.endLineNumber);
+                this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
             this.isAwaitingInitialResults = true;
         }
@@ -162,14 +170,12 @@ export class PP extends Pane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     }
 
     currentState() {
-        const options = this.options.get();
         const state = {
             id: this.compilerInfo.compilerId,
             editorid: this.compilerInfo.editorId,
             treeid: this.compilerInfo.treeId,
             selection: this.selection,
-            'filter-headers': options['filter-headers'],
-            'clang-format': options['clang-format'],
+            ...this.options.get(),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);

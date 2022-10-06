@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import $ from 'jquery';
+
 const monaco = require('monaco-editor');
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const cppp = require('./cppp-mode');
@@ -44,7 +45,13 @@ function definition() {
 
     // Keywords for CUDA
     addKeywords([
-        '__host__', '__global__', '__device__', '__shared__', '__noinline__', '__forceinline__', '__restrict__',
+        '__host__',
+        '__global__',
+        '__device__',
+        '__shared__',
+        '__noinline__',
+        '__forceinline__',
+        '__restrict__',
     ]);
 
     return cuda;

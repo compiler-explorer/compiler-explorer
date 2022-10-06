@@ -24,8 +24,8 @@
 
 import $ from 'jquery';
 
-import { AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions } from './alert.interfaces';
-import { toggleEventListener } from './utils';
+import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
+import {toggleEventListener} from './utils';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;
@@ -62,23 +62,17 @@ export class Alert {
      */
     ask(title: string, question: string, askOptions: AlertAskOptions) {
         const modal = $('#yes-no');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
-        modal.find('.modal-body')
-            .css('min-height', 'inherit')
-            .html(question);
+        modal.find('.modal-body').css('min-height', 'inherit').html(question);
         if (askOptions.yesHtml) modal.find('.modal-footer .yes').html(askOptions.yesHtml);
         if (askOptions.yesClass) {
-            modal.find('.modal-footer .yes')
-                .removeClass('btn-link')
-                .addClass(askOptions.yesClass);
+            modal.find('.modal-footer .yes').removeClass('btn-link').addClass(askOptions.yesClass);
         }
         if (askOptions.noHtml) modal.find('.modal-footer .no').html(askOptions.noHtml);
         if (askOptions.noClass) {
-            modal.find('.modal-footer .no')
-                .removeClass('btn-link')
-                .addClass(askOptions.noClass);
+            modal.find('.modal-footer .no').removeClass('btn-link').addClass(askOptions.noClass);
         }
         if (askOptions.onClose) {
             modal.off('hidden.bs.modal');
@@ -91,15 +85,18 @@ export class Alert {
     /**
      * Notifies the user of something by a popup which can be stacked, auto-dismissed, etc... based on options
      */
-    notify(body: string, {
-        group = '',
-        collapseSimilar = true,
-        alertClass = '',
-        autoDismiss = true,
-        dismissTime = 5000,
-    }: AlertNotifyOptions) {
+    notify(
+        body: string,
+        {
+            group = '',
+            collapseSimilar = true,
+            alertClass = '',
+            autoDismiss = true,
+            dismissTime = 5000,
+            onBeforeShow = () => {},
+        }: AlertNotifyOptions
+    ) {
         const container = $('#notifications');
-        if (!container) return;
         const newElement = $(`
             <div class="toast" tabindex="-1" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="toast-header ${alertClass}">
@@ -127,6 +124,7 @@ export class Alert {
             }
             newElement.attr('data-group', group);
         }
+        onBeforeShow(newElement);
         newElement.toast('show');
     }
 
@@ -135,8 +133,8 @@ export class Alert {
      */
     enterSomething(title: string, question: string, defaultValue: string, askOptions: AlertEnterTextOptions) {
         const modal = $('#enter-something');
-        this.yesHandler = askOptions?.yes ?? (() => undefined);
-        this.noHandler = askOptions?.no ?? (() => undefined);
+        this.yesHandler = askOptions.yes ?? (() => undefined);
+        this.noHandler = askOptions.no ?? (() => undefined);
         modal.find('.modal-title').html(title);
         modal.find('.modal-body .question').html(question);
 
@@ -153,7 +151,7 @@ export class Alert {
 
         const answerEdit = modal.find('.modal-body .question-answer');
         answerEdit.val(defaultValue);
-        answerEdit.on('keyup', (e) => {
+        answerEdit.on('keyup', e => {
             if (e.keyCode === 13 || e.which === 13) {
                 yesButton.trigger('click');
             }

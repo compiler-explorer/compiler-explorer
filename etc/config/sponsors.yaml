@@ -20,6 +20,16 @@ levels:
         topIcon: true
         sideBySide: true
         statsId: intel
+      - name: Backtrace
+        description: We compress error debugging time by automating capture and providing essential context and insight about impact, all on one platform. Get started for free.
+        icon: https://static.ce-cdn.net/bt/Black-BT-Logo-A.svg
+        icon_dark: https://static.ce-cdn.net/bt/White-BT-Logo-A.svg
+        img: https://static.ce-cdn.net/bt/BT-logo (1).png
+        url: https://hubs.la/Q013D7rx0
+        priority: 500
+        topIcon: true
+        sideBySide: true
+        statsId: backtrace
   - name: Patreon Legends
     description: 'These amazing people have pledged at the highest level of support. Huge thanks to these fine folks:'
     class: legendary
@@ -55,6 +65,8 @@ levels:
       - Daniel Williams
       - name: Paul Williams
         url: https://pcwilliams.design/
+      - name: Molecular Matters GmbH
+        url: https://liveplusplus.tech/
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -351,3 +363,23 @@ levels:
       - Joshua
       - Vladimir Motyka
       - Gerasimos Chourdakis
+      - Dusan Jovanovic
+      - Geoff Evans
+      - Pat Monaghan
+      - NoNae
+      - Martin Weitzel
+      - Scott Bruce
+      - Sergii Lovygin
+      - Marton Szasz
+      - CiotatSoft
+      - Tadej P
+      - Adam Byrd
+      - Jonathan Watmough
+      - Neil Bickford
+      - Unstillable
+      - cedric chanoine
+      - Cristian Kocza
+      - Benji Smith
+      - John Mertus
+      - Nick Darnell
+      - Cordell Bloor

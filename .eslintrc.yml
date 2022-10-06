@@ -6,6 +6,7 @@ plugins:
   - node
   - promise
   - sonarjs
+  - prettier
   - unicorn
   - '@typescript-eslint'
 extends:
@@ -23,9 +24,14 @@ env:
   node: true
   es6: true
 rules:
+  prettier/prettier: error
   comma-dangle:
     - error
-    - always-multiline
+    - arrays: always-multiline
+      objects: always-multiline
+      imports: always-multiline
+      exports: always-multiline
+      functions: always-multiline
   eol-last:
     - error
     - always
@@ -41,7 +47,7 @@ rules:
   import/no-default-export: warn
   import/no-deprecated: warn
   import/no-mutable-exports: error
-  import/no-named-as-default-member: off  # Far too many things (express, morgan, fs) trip this
+  import/no-named-as-default-member: off # Far too many things (express, morgan, fs) trip this
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
@@ -83,6 +89,9 @@ rules:
     - anonymous: always
       asyncArrow: always
       named: never
+  keyword-spacing:
+    - error
+    - after: true
   yoda:
     - error
     - never
@@ -140,7 +149,7 @@ rules:
   unicorn/prefer-spread: off
   unicorn/no-lonely-if: off
   unicorn/no-array-reduce: off
-  unicorn/prefer-array-flat: off  # can't turn off yet without tests blowing up; lodash vs underscore?
+  unicorn/prefer-array-flat: off # can't turn off yet without tests blowing up; lodash vs underscore?
   unicorn/no-array-callback-reference: off
   unicorn/prefer-switch: off
   unicorn/no-static-only-class: off
@@ -155,7 +164,7 @@ globals:
   BigInt: true
 settings:
   node:
-    tryExtensions: [ .js, .ts ]
+    tryExtensions: [.js, .ts]
   import/parsers:
-    "@typescript-eslint/parser": [ .ts, .tsx ]
-  import/resolver: "typescript"
+    '@typescript-eslint/parser': [.ts, .tsx]
+  import/resolver: 'typescript'

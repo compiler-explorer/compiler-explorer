@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
+
+import $ from 'jquery';
 
 const settings = {
     on: {
@@ -35,13 +37,11 @@ const settings = {
 
 export class Toggles extends EventEmitter {
     private readonly buttons: JQuery;
-    private readonly state: Record<string, boolean>;
+    private readonly state: Record<string, boolean> = {};
 
-    constructor(root: JQuery, state: Record<string, boolean> ) {
+    constructor(root: JQuery, state: Record<string, boolean> | undefined) {
         super();
         this.buttons = root.find('.button-checkbox');
-        this.state = {...state};
-
 
         for (const element of this.buttons) {
             const widget = $(element);
@@ -49,9 +49,11 @@ export class Toggles extends EventEmitter {
             const checkbox = widget.find('input:checkbox');
             const bind = button.data('bind');
 
+            // copy relevant parts of the state
+            this.state[bind] = state && bind in state ? state[bind] : checkbox.is(':checked');
 
             // Event Handlers
-            button.on('click', (e) => {
+            button.on('click', e => {
                 checkbox.prop('checked', !checkbox.is(':checked'));
                 checkbox.triggerHandler('change');
                 e.stopPropagation();
@@ -79,7 +81,8 @@ export class Toggles extends EventEmitter {
         button.data('state', isChecked ? 'on' : 'off');
 
         // Set the button's icon
-        button.find('.state-icon')
+        button
+            .find('.state-icon')
             .removeClass()
             .addClass(`state-icon ${settings[button.data('state')].icon}`);
 
@@ -89,7 +92,6 @@ export class Toggles extends EventEmitter {
             this.set(button.data('bind'), isChecked);
         }
     }
-
 
     get() {
         return {...this.state};

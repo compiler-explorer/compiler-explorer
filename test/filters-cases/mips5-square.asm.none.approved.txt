@@ -1114,7 +1114,15 @@
       "text": "$LASF3:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "_Z6squarei",
+          "range": {
+            "endCol": 28,
+            "startCol": 18
+          }
+        }
+      ],
       "source": null,
       "text": "        .ascii  \"_Z6squarei\\000\""
     },

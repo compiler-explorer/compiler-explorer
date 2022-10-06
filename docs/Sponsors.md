@@ -1,9 +1,11 @@
 # Sponsorship
 
-Compiler Explorer is funded by sponsors: mostly individuals through Patreon, GitHub sponsors and PayPal one-off payments.
-There is potential for corporate sponsorship; though extremely limited due to the goal of making Compiler Explorer a mostly ad-free experience.
+Compiler Explorer is funded by sponsors: mostly individuals through Patreon, GitHub sponsors and PayPal one-off
+payments. There is potential for corporate sponsorship; though extremely limited due to the goal of making Compiler
+Explorer a mostly ad-free experience.
 
-Corporate sponsorship requests should be directed to [Matt](mailto:matt@godbolt.org), who has sole discretion on what kinds of sponsorship is appropriate.
+Corporate sponsorship requests should be directed to [Matt](mailto:matt@godbolt.org), who has sole discretion on what
+kinds of sponsorship is appropriate.
 
 ## The sponsors.yaml format
 
@@ -26,7 +28,7 @@ levels:
   - name: Level two
     description: The second level.
     sponsors:
-    - bob
-    - ian
-    - joe
+      - bob
+      - ian
+      - joe
 ```

@@ -23,6 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface FontScaleState {
-    fontScale: number,
-    fontUsePx: boolean
+    fontScale: number;
+    fontUsePx: boolean;
 }

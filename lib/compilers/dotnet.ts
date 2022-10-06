@@ -26,9 +26,9 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-/// <reference types="../base-compiler" />
-import { BaseCompiler } from '../base-compiler';
-import { DotNetAsmParser } from '../parsers/asm-parser-dotnet';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {BaseCompiler} from '../base-compiler';
+import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 
 class DotNetCompiler extends BaseCompiler {
     private rID: string;
@@ -38,7 +38,6 @@ class DotNetCompiler extends BaseCompiler {
     private clrBuildDir: string;
     private additionalSources: string;
     private langVersion: string;
-    protected asm: DotNetAsmParser;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -58,22 +57,44 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     get configurableOptions() {
-        return ['--targetos', '--targetarch', '--instruction-set', '--singlemethodtypename', '--singlemethodname',
-                '--singlemethodindex', '--singlemethodgenericarg', '--codegenopt', '--codegen-options'];
+        return [
+            '--targetos',
+            '--targetarch',
+            '--instruction-set',
+            '--singlemethodtypename',
+            '--singlemethodname',
+            '--singlemethodindex',
+            '--singlemethodgenericarg',
+            '--codegenopt',
+            '--codegen-options',
+        ];
     }
 
     get configurableSwitches() {
-        return ['-O', '--optimize', '--Od', '--optimize-disabled', '--Os', '--optimize-space', '--Ot', 
-                '--optimize-time'];
+        return [
+            '-O',
+            '--optimize',
+            '--Od',
+            '--optimize-disabled',
+            '--Os',
+            '--optimize-space',
+            '--Ot',
+            '--optimize-time',
+        ];
     }
 
-    async runCompiler(compiler, options, inputFileName, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
-        const programDir = path.dirname(inputFileName);
-        const sourceFile = path.basename(inputFileName);
+        const programDir = path.dirname(inputFilename);
+        const sourceFile = path.basename(inputFilename);
 
         const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
         const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
@@ -88,8 +109,7 @@ class DotNetCompiler extends BaseCompiler {
         );
 
         const programDllPath = path.join(programPublishPath, 'CompilerExplorer.dll');
-        const projectFileContent =
-            `<Project Sdk="Microsoft.NET.Sdk">
+        const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
             <PropertyGroup>
                 <TargetFramework>${this.targetFramework}</TargetFramework>
                 <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -110,7 +130,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
         execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
         execOptions.env.NUGET_PACKAGES = this.nugetPackagesPath;
-        execOptions.env.DOTNET_NOLOGO='true';
+        execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
         await fs.writeFile(projectFilePath, projectFileContent);
@@ -135,7 +155,7 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
-        const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFileName, execOptions);
+        const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
         if (compilerResult.code !== 0) {
             return compilerResult;
@@ -158,21 +178,30 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    optionsForFilter() {
+    override optionsForFilter() {
         return this.compilerOptions;
     }
 
     async runCrossgen2(compiler, execOptions, crossgen2Path, publishPath, dllPath, options, outputPath) {
         const crossgen2Options = [
-            crossgen2Path, '-r', path.join(publishPath, '*'), dllPath, '-o', 'CompilerExplorer.r2r.dll',
-            '--codegenopt', 'NgenDisasm=*', '--codegenopt', 'JitDiffableDasm=1', '--parallelism', '1',
-            '--inputbubble', '--compilebubblegenerics',
+            crossgen2Path,
+            '-r',
+            path.join(publishPath, '*'),
+            dllPath,
+            '-o',
+            'CompilerExplorer.r2r.dll',
+            '--codegenopt',
+            'NgenDisasm=*',
+            '--codegenopt',
+            'JitDiffableDasm=1',
+            '--parallelism',
+            '1',
+            '--inputbubble',
+            '--compilebubblegenerics',
         ].concat(options);
 
-        const result = await this.exec(compiler, crossgen2Options, execOptions);
-        result.inputFilename = dllPath;
-        const transformedInput = result.filenameTransform(dllPath);
-        this.parseCompilationOutput(result, transformedInput);
+        const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
+        const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
             outputPath,
@@ -184,13 +213,19 @@ class DotNetCompiler extends BaseCompiler {
 }
 
 export class CSharpCompiler extends DotNetCompiler {
-    static get key() { return 'csharp'; }
+    static get key() {
+        return 'csharp';
+    }
 }
 
 export class FSharpCompiler extends DotNetCompiler {
-    static get key() { return 'fsharp'; }
+    static get key() {
+        return 'fsharp';
+    }
 }
 
 export class VBCompiler extends DotNetCompiler {
-    static get key() { return 'vb'; }
+    static get key() {
+        return 'vb';
+    }
 }

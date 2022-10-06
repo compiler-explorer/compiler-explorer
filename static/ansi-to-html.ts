@@ -28,7 +28,7 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
-import { AnsiToHtmlOptions, ColorCodes } from './ansi-to-html.interfaces';
+import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -59,15 +59,15 @@ function getDefaultColors(): ColorCodes {
         15: '#FFF',
     };
 
-    range(0, 5).forEach((red) => {
-        range(0, 5).forEach((green) => {
-            range(0, 5).forEach((blue) => {
+    range(0, 5).forEach(red => {
+        range(0, 5).forEach(green => {
+            range(0, 5).forEach(blue => {
                 setStyleColor(red, green, blue, colors);
             });
         });
     });
 
-    range(0, 23).forEach((gray) => {
+    range(0, 23).forEach(gray => {
         const c = gray + 232;
         const l = toHexString(gray * 10 + 8);
 
@@ -127,8 +127,25 @@ function generateOutput(stack: string[], token: string, data: string | number, o
     } else if (token === 'xterm256') {
         // Note: Param 'data' must be a string at this point
         return handleXterm256(stack, data as string, options);
+    } else if (token === 'rgb') {
+        // Note: Param 'data' must be a string at this point
+        return handleRgb(stack, data as string, options);
     }
     return '';
+}
+
+function handleRgb(stack: string[], data: string, options: AnsiToHtmlOptions) {
+    data = data.substring(2).slice(0, -1);
+    const operation = +data.substr(0, 2);
+
+    const color = data.substring(5).split(';');
+    const rgb = color
+        .map(value => {
+            return ('0' + Number(value).toString(16)).substr(-2);
+        })
+        .join('');
+
+    return pushStyle(stack, (operation === 38 ? 'color:#' : 'background-color:#') + rgb);
 }
 
 function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOptions): string {
@@ -163,10 +180,12 @@ function handleDisplay(stack: string[], _code: string | number, options: AnsiToH
         49: () => pushBackgroundColor(stack, options.bg as string),
     };
 
-    if (codeMap[code]) {
+    if (code in codeMap) {
         return codeMap[code]();
     } else if (4 < code && code < 7) {
         return pushTag(stack, 'blink');
+    } else if (code === 7) {
+        return '';
     } else if (29 < code && code < 38) {
         // @ts-ignore
         return pushForegroundColor(stack, options.colors[code - 30]);
@@ -190,7 +209,10 @@ function resetStyles(stack: string[]): string {
     const stackClone = stack.slice(0);
     stack.length = 0;
 
-    return stackClone.reverse().map((tag) => `</${tag}>`).join('');
+    return stackClone
+        .reverse()
+        .map(tag => `</${tag}>`)
+        .join('');
 }
 
 /**
@@ -216,7 +238,7 @@ function range(low: number, high: number): number[] {
  */
 function notCategory(category: string): (e: StickyStackElement) => boolean {
     return (e: StickyStackElement): boolean => {
-        return (category === null || e.category !== category) && category !== 'all';
+        return e.category !== category && category !== 'all';
     };
 }
 
@@ -241,9 +263,9 @@ function categoryForCode(_code: string | number): string {
         return 'hide';
     } else if (code === 9) {
         return 'strike';
-    } else if (29 < code && code < 38 || code === 39 || 89 < code && code < 98) {
+    } else if ((29 < code && code < 38) || code === 39 || (89 < code && code < 98)) {
         return 'foreground-color';
-    } else if (39 < code && code < 48 || code === 49 || 99 < code && code < 108) {
+    } else if ((39 < code && code < 48) || code === 49 || (99 < code && code < 108)) {
         return 'background-color';
     }
     return '';
@@ -307,6 +329,11 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
         return '';
     }
 
+    function rgb(m) {
+        callback('rgb', m);
+        return '';
+    }
+
     function removeXterm256(m: string): string {
         callback('xterm256', m);
         return '';
@@ -344,28 +371,40 @@ function tokenize(text: string, options: AnsiToHtmlOptions, callback: TokenizeCa
     }
 
     /* eslint no-control-regex:0 */
-    const tokens: Token[] = [{
-        pattern: /^\x08+/,
-        sub: remove,
-    }, {
-        pattern: /^\x1b\[[012]?K/,
-        sub: remove,
-    }, {
-        pattern: /^\x1b\[[34]8;5;(\d+)m/,
-        sub: removeXterm256,
-    }, {
-        pattern: /^\n/,
-        sub: newline,
-    }, {
-        pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
-        sub: ansiMess,
-    }, {
-        pattern: /^\x1b\[?[\d;]{0,3}/,
-        sub: remove,
-    }, {
-        pattern: /^([^\x1b\x08\n]+)/,
-        sub: realText,
-    }];
+    const tokens: Token[] = [
+        {
+            pattern: /^\x08+/,
+            sub: remove,
+        },
+        {
+            pattern: /^\x1b\[[012]?K/,
+            sub: remove,
+        },
+        {
+            pattern: /^\x1b\[[34]8;2;\d+;\d+;\d+m/,
+            sub: rgb,
+        },
+        {
+            pattern: /^\x1b\[[34]8;5;(\d+)m/,
+            sub: removeXterm256,
+        },
+        {
+            pattern: /^\n/,
+            sub: newline,
+        },
+        {
+            pattern: /^\x1b\[((?:\d{1,3};)*\d{1,3}|)m/,
+            sub: ansiMess,
+        },
+        {
+            pattern: /^\x1b\[?[\d;]{0,3}/,
+            sub: remove,
+        },
+        {
+            pattern: /^([^\x1b\x08\n]+)/,
+            sub: realText,
+        },
+    ];
 
     function process(handler: Token, i: number): void {
         if (i > ansiHandler && ansiMatch) {
@@ -421,7 +460,8 @@ interface StickyStackElement {
 function updateStickyStack(
     stickyStack: StickyStackElement[],
     token: string,
-    data: string | number): StickyStackElement[] {
+    data: string | number
+): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));
         stickyStack.push({
@@ -440,8 +480,6 @@ export class Filter {
     private stickyStack: StickyStackElement[];
 
     public constructor(options: AnsiToHtmlOptions) {
-        options = options || {};
-
         if (options.colors) {
             options.colors = _.extend(defaults.colors, options.colors);
         }
@@ -482,5 +520,9 @@ export class Filter {
         }
 
         return buf.join('');
+    }
+
+    public reset() {
+        this.stickyStack = [];
     }
 }

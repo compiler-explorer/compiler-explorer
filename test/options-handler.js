@@ -22,15 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
 
-import { BaseCompiler } from '../lib/base-compiler';
-import { ClientOptionsHandler } from '../lib/options-handler';
+import {BaseCompiler} from '../lib/base-compiler';
+import {ClientOptionsHandler} from '../lib/options-handler';
 import * as properties from '../lib/properties';
+import {parseOutput} from '../lib/utils';
 
-import { should } from './utils';
+import {should} from './utils';
 
 const languages = {
     fake: {
@@ -85,10 +86,13 @@ const optionsProps = {
 };
 
 if (process.platform === 'win32') {
-    optionsProps['libs.fakelib.versions.twoPaths.path'] =
-        optionsProps['libs.fakelib.versions.twoPaths.path'].replace(':', ';');
-    optionsProps['libs.fakelib.versions.twoPaths.libpath'] =
-        optionsProps['libs.fakelib.versions.twoPaths.libpath'].replace(':', ';');
+    optionsProps['libs.fakelib.versions.twoPaths.path'] = optionsProps['libs.fakelib.versions.twoPaths.path'].replace(
+        ':',
+        ';',
+    );
+    optionsProps['libs.fakelib.versions.twoPaths.libpath'] = optionsProps[
+        'libs.fakelib.versions.twoPaths.libpath'
+    ].replace(':', ';');
 }
 
 const moreLibProps = {
@@ -176,22 +180,29 @@ describe('Options handler', () => {
                             dependencies: [],
                             alias: [],
                             lookupversion: 'no-paths123',
-                            options: [
-                                '-DHELLO123',
-                                '-DETC',
-                                '--some thing with spaces'],
+                            options: ['-DHELLO123', '-DETC', '--some thing with spaces'],
                             hidden: false,
                         },
                         onePath: {
-                            path: ['/dev/null'], version: 'one path', staticliblink: [], dependencies: [],
+                            path: ['/dev/null'],
+                            version: 'one path',
+                            staticliblink: [],
+                            dependencies: [],
                             liblink: ['hello'],
-                            libpath: ['/lib/null'], alias: [], options: [],
+                            libpath: ['/lib/null'],
+                            alias: [],
+                            options: [],
                             hidden: false,
                         },
                         twoPaths: {
-                            path: ['/dev/null', '/dev/urandom'], staticliblink: [], dependencies: [],
+                            path: ['/dev/null', '/dev/urandom'],
+                            staticliblink: [],
+                            dependencies: [],
                             liblink: ['hello1', 'hello2'],
-                            libpath: ['/lib/null', '/lib/urandom'], version: 'two paths', alias: [], options: [],
+                            libpath: ['/lib/null', '/lib/urandom'],
+                            version: 'two paths',
+                            alias: [],
+                            options: [],
                             hidden: false,
                         },
                     },
@@ -244,32 +255,6 @@ describe('Options handler', () => {
                 },
             },
         });
-    });
-    it('should understand most kinds of semvers', () => {
-        optionsHandler._asSafeVer('0').should.equal('0.0.0');
-        optionsHandler._asSafeVer('1').should.equal('1.0.0');
-
-        optionsHandler._asSafeVer('1.0').should.equal('1.0.0');
-        optionsHandler._asSafeVer('1.1').should.equal('1.1.0');
-
-        optionsHandler._asSafeVer('1.1.0').should.equal('1.1.0');
-        optionsHandler._asSafeVer('1.1.1').should.equal('1.1.1');
-
-        const MAGIC_TRUNK_VERSION = '9999999.99999.999';
-        optionsHandler._asSafeVer('trunk').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('(trunk)').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('(123.456.789 test)').should.equal(MAGIC_TRUNK_VERSION);
-
-        optionsHandler._asSafeVer('0..0').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('0.0.').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('0.').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('.0.0').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('.0..').should.equal(MAGIC_TRUNK_VERSION);
-        optionsHandler._asSafeVer('0..').should.equal(MAGIC_TRUNK_VERSION);
-
-        optionsHandler._asSafeVer('123 TEXT').should.equal('123.0.0');
-        optionsHandler._asSafeVer('123.456 TEXT').should.equal('123.456.0');
-        optionsHandler._asSafeVer('123.456.789 TEXT').should.equal('123.456.789');
     });
     it('should order compilers as expected', () => {
         const compilers = [
@@ -338,7 +323,11 @@ describe('Options handler', () => {
         };
         optionsHandler.setCompilers(compilers);
         _.each(optionsHandler.get().compilers, compiler => {
-            should.equal(compiler['$order'], expectedOrder[compiler.group][compiler.id], `group: ${compiler.group} id: ${compiler.id}`);
+            should.equal(
+                compiler['$order'],
+                expectedOrder[compiler.group][compiler.id],
+                `group: ${compiler.group} id: ${compiler.id}`,
+            );
         });
         optionsHandler.setCompilers([]);
     });
@@ -347,8 +336,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -369,8 +357,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -385,7 +372,8 @@ describe('Options handler', () => {
 
         staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fs', version: 'std'},
-            {id: 'someotherlib', version: 'trunk'}]);
+            {id: 'someotherlib', version: 'trunk'},
+        ]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 1', () => {
@@ -393,8 +381,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -404,8 +391,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
-            {id: 'fs', version: 'std'}]);
+        let staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
@@ -413,8 +399,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -427,7 +412,8 @@ describe('Options handler', () => {
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
             {id: 'fs', version: 'std'},
-            {id: 'someotherlib', version: 'trunk'}]);
+            {id: 'someotherlib', version: 'trunk'},
+        ]);
         staticlinks.should.deep.equal(['yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 3', () => {
@@ -435,8 +421,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
         const compiler = new BaseCompiler(compilerInfo, env);
         compiler.initialiseLibraries({
@@ -448,7 +433,8 @@ describe('Options handler', () => {
         let staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
             {id: 'fs', version: 'std'},
-            {id: 'someotherlib', version: 'trunk'}]);
+            {id: 'someotherlib', version: 'trunk'},
+        ]);
         staticlinks.should.deep.equal(['fourthlib', 'yalib', 'someotherlib', 'fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('filtered library list', () => {
@@ -456,8 +442,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         compilerInfo.libsArr = ['fs.std', 'someotherlib'];
@@ -477,8 +462,7 @@ describe('Options handler', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -500,13 +484,12 @@ describe('Options handler', () => {
         ]);
         obj.options.should.deep.equal(['-O3', '--std=c++17']);
     });
-    it('server-side library alias support (just in case client doesn\'t support it)', () => {
+    it("server-side library alias support (just in case client doesn't support it)", () => {
         const libs = moreOptionsHandler.parseLibraries({fake: moreLibProps.libs});
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
         const env = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {
-            },
+            compilerProps: () => {},
         };
 
         const compiler = new BaseCompiler(compilerInfo, env);
@@ -516,8 +499,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
-            {id: 'someotherlib', version: 'master'}]);
+        let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {
@@ -542,6 +524,8 @@ describe('Options handler', () => {
                         options: [],
                         stdinHint: 'disabled',
                         type: 'independent',
+                        icon: undefined,
+                        darkIcon: undefined,
                     },
                 },
                 someothertool: {
@@ -559,6 +543,8 @@ describe('Options handler', () => {
                         options: [],
                         stdinHint: 'disabled',
                         type: 'independent',
+                        icon: undefined,
+                        darkIcon: undefined,
                     },
                 },
             },

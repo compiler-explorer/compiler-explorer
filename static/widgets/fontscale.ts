@@ -22,23 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import EventEmitter from 'events';
 import $ from 'jquery';
+import EventEmitter from 'events';
 import {options} from '../options';
+import {Settings} from '../settings';
 import {editor} from 'monaco-editor';
 import IEditor = editor.IEditor;
 
 import {FontScaleState} from './fontscale.interfaces';
 
+function getDefaultFontScale() {
+    return Settings.getStoredSettings().defaultFontScale ?? options.defaultFontScale;
+}
+
 function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQuery) {
     function onClickEvent(this: JQuery) {
         // Toggle off the selection of the others
-        $(this)
-            .addClass('active')
-            .siblings().removeClass('active');
+        $(this).addClass('active').siblings().removeClass('active');
         // Send the data
-        obj.scale = $(this).data('value');
-        obj.apply();
+        obj.applyScale($(this).data('value'));
         obj.emit('change');
     }
 
@@ -56,37 +58,50 @@ function makeFontSizeDropdown(elem: JQuery, obj: FontScale, buttonDropdown: JQue
         }
     }
 
-    if (buttonDropdown) {
-        buttonDropdown.on('wheel', (e: any) => {
-            e.preventDefault();
-            let selectedId = elem.find('.active').index();
-            if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
-                selectedId++;
-            } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
-                selectedId--;
-            }
-            elem.children().eq(selectedId).trigger('click');
-        });
-    }
+    buttonDropdown.on('wheel', (e: any) => {
+        e.preventDefault();
+        let selectedId = elem.find('.active').index();
+        if (e.originalEvent.deltaY >= 0 && selectedId < elem.children().length - 1) {
+            selectedId++;
+        } else if (e.originalEvent.deltaY < 0 && selectedId > 0) {
+            selectedId--;
+        }
+        elem.children().eq(selectedId).trigger('click');
+    });
+
+    // ctrl+click handler
+    buttonDropdown.on('click', e => {
+        if (e.ctrlKey) {
+            // This is a hack. It prevents bootstrap's click listener from opening the dropdown
+            e.stopImmediatePropagation();
+            // Set the correct scale as active
+            elem.find('.active').removeClass('active');
+            elem.find(`[data-value=${getDefaultFontScale()}]`).addClass('active');
+            // Set the scale
+            obj.applyScale(getDefaultFontScale());
+            obj.emit('change');
+        }
+    });
 }
 
 function convertOldScale(oldScale: number): number {
     // New low + ((new max - new low) * (oldScale - old low) / (old max - old low))
-    return Math.floor(8 + (22 * (oldScale - 0.3) / 2.7));
+    return Math.floor(8 + (22 * (oldScale - 0.3)) / 2.7);
 }
 
 export class FontScale extends EventEmitter.EventEmitter {
     private domRoot: JQuery;
+    private fontSizeList: JQuery;
     public scale: number;
     private readonly usePxUnits: boolean;
-    private fontSelectorOrEditor: JQuery | IEditor;
+    private fontSelectorOrEditor: JQuery | string | IEditor;
     private isFontOfStr: boolean;
 
-    constructor(domRoot: JQuery, state: FontScaleState & any, fontSelectorOrEditor: JQuery | IEditor) {
+    constructor(domRoot: JQuery, state: FontScaleState & any, fontSelectorOrEditor: JQuery | string | IEditor) {
         super();
         this.domRoot = domRoot;
         // Old scale went from 0.3 to 3. New one uses 8 up to 30, so we can convert the old ones to the new format
-        this.scale = state.fontScale || options.defaultFontScale;
+        this.scale = state.fontScale || getDefaultFontScale();
         // The check seems pointless, but it ensures a false in case it's undefined
         // FontScale assumes it's an old state if it does not see a fontUsePx in the state, so at first it will use pt.
         // So the second condition is there to make new objects actually use px
@@ -96,11 +111,8 @@ export class FontScale extends EventEmitter.EventEmitter {
         }
         this.setTarget(fontSelectorOrEditor);
         this.apply();
-        makeFontSizeDropdown(
-            this.domRoot.find('.font-size-list'),
-            this,
-            this.domRoot.find('.fs-button')
-        );
+        this.fontSizeList = this.domRoot.find('.font-size-list');
+        makeFontSizeDropdown(this.fontSizeList, this, this.domRoot.find('.fs-button'));
     }
 
     apply() {
@@ -120,13 +132,19 @@ export class FontScale extends EventEmitter.EventEmitter {
         state.fontUsePx = true;
     }
 
-    setScale(scale: number) {
+    applyScale(scale: number) {
         this.scale = scale;
         this.apply();
     }
 
-    setTarget(target: JQuery | IEditor) {
+    setScale(scale: number) {
+        this.fontSizeList.find('.active').removeClass('active');
+        this.fontSizeList.find(`[data-value=${scale}]`).addClass('active');
+        this.applyScale(scale);
+    }
+
+    setTarget(target: JQuery | string | IEditor) {
         this.fontSelectorOrEditor = target;
-        this.isFontOfStr = typeof (this.fontSelectorOrEditor) === 'string';
+        this.isFontOfStr = typeof this.fontSelectorOrEditor === 'string';
     }
 }

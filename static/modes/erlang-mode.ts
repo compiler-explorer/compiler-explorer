@@ -30,9 +30,7 @@ function definition() {
 
         funcdef: ['when', '->', 'if', 'end', 'unknown', 'case', 'of', 'receive', 'after'],
 
-        operators: [
-            '<=', '>=', '==', '!=', '=<', '+', '-', '*', '/',
-        ],
+        operators: ['<=', '>=', '==', '!=', '=<', '+', '-', '*', '/'],
 
         symbols: /[=><!+\-*/]+/,
 
@@ -42,29 +40,38 @@ function definition() {
             root: [
                 [/-?\d[\d.]*/, 'number'],
 
-                [/-[a-zA-Z][\w]*/, {
-                    cases: {
-                        '@commands': 'keyword',
-                        '@default': '',
+                [
+                    /-[a-zA-Z][\w]*/,
+                    {
+                        cases: {
+                            '@commands': 'keyword',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
-                [/[a-zA-Z-][>\w]*/, {
-                    cases: {
-                        '@funcdef': 'keyword',
-                        '@default': 'identifier',
+                [
+                    /[a-zA-Z-][>\w]*/,
+                    {
+                        cases: {
+                            '@funcdef': 'keyword',
+                            '@default': 'identifier',
+                        },
                     },
-                }],
+                ],
 
                 [/[(){}[\]]/, '@brackets'],
                 [/<<.*>>/, '@brackets'],
 
-                [/@symbols/, {
-                    cases: {
-                        '@operators': 'delimiter',
-                        '@default': '',
+                [
+                    /@symbols/,
+                    {
+                        cases: {
+                            '@operators': 'delimiter',
+                            '@default': '',
+                        },
                     },
-                }],
+                ],
 
                 [/^%.*/, 'comment'],
 
@@ -79,13 +86,9 @@ function definition() {
                 [/[;.,]/, 'delimiter'],
             ],
 
-            whitespace: [
-                [/\s/],
-            ],
+            whitespace: [[/\s/]],
 
-            comment: [
-                [/%/, 'comment'],
-            ],
+            comment: [[/%/, 'comment']],
 
             stringDouble: [
                 [/[^\\"]+/, 'string'],
@@ -114,12 +117,12 @@ function configuration() {
             ['<<', '>>'],
         ],
         autoClosingPairs: [
-            { open: '{', close: '}', notIn: ['string', 'comment'] },
-            { open: '[', close: ']', notIn: ['string', 'comment'] },
-            { open: '(', close: ')', notIn: ['string', 'comment'] },
-            { open: '<<', close: '>>', notIn: ['string', 'comment'] },
-            { open: "'", close: "'", notIn: ['string', 'comment'] },
-            { open: '"', close: '"' },
+            {open: '{', close: '}', notIn: ['string', 'comment']},
+            {open: '[', close: ']', notIn: ['string', 'comment']},
+            {open: '(', close: ')', notIn: ['string', 'comment']},
+            {open: '<<', close: '>>', notIn: ['string', 'comment']},
+            {open: "'", close: "'", notIn: ['string', 'comment']},
+            {open: '"', close: '"'},
         ],
         folding: {
             markers: {
@@ -132,7 +135,7 @@ function configuration() {
 
 const def = definition();
 
-monaco.languages.register({ id: 'erlang' });
+monaco.languages.register({id: 'erlang'});
 monaco.languages.setMonarchTokensProvider('erlang', def);
 monaco.languages.setLanguageConfiguration('erlang', configuration());
 

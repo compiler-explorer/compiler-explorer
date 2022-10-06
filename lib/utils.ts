@@ -24,24 +24,16 @@
 
 import crypto from 'crypto';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import {fileURLToPath} from 'url';
 
 import fs from 'fs-extra';
-import { ComponentConfig, ItemConfigType } from 'golden-layout';
-import { parse as quoteParse } from 'shell-quote';
+import {ComponentConfig, ItemConfigType} from 'golden-layout';
+import semverParser from 'semver';
+import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
-interface IResultLineTag {
-    line?: number;
-    column?: number;
-    file?: string;
-    text: string;
-}
-
-interface IResultLine {
-    text: string;
-    tag?: IResultLineTag;
-}
+import {CacheableValue} from '../types/cache.interfaces';
+import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;
@@ -49,12 +41,11 @@ const lineRe = /\r?\n/;
 export function splitLines(text: string): string[] {
     if (!text) return [];
     const result = text.split(lineRe);
-    if (result.length > 0 && result[result.length - 1] === '')
-        return result.slice(0, -1);
+    if (result.length > 0 && result[result.length - 1] === '') return result.slice(0, -1);
     return result;
 }
 
-export function eachLine(text: string, func: (line: string) => (IResultLine | void)): (IResultLine | void)[] {
+export function eachLine(text: string, func: (line: string) => ResultLine | void): (ResultLine | void)[] {
     return splitLines(text).map(func);
 }
 
@@ -86,40 +77,52 @@ function _parseOutputLine(line: string, inputFilename?: string, pathPrefix?: str
         line = line.split(inputFilename).join('<source>');
 
         if (inputFilename.indexOf('./') === 0) {
-            line = line.split('/home/ubuntu/' + inputFilename.substr(2)).join('<source>');
-            line = line.split('/home/ce/' + inputFilename.substr(2)).join('<source>');
+            line = line.split('/home/ubuntu/' + inputFilename.substring(2)).join('<source>');
+            line = line.split('/home/ce/' + inputFilename.substring(2)).join('<source>');
         }
     }
     return line;
 }
 
-export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): IResultLine[] {
-    const re = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const reWithFilename = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result: IResultLine[]  = [];
+function parseSeverity(message: string): number {
+    if (message.startsWith('warning')) return 2;
+    if (message.startsWith('note')) return 1;
+    return 3;
+}
+
+const SOURCE_RE = /^\s*<source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+const SOURCE_WITH_FILENAME = /^\s*([\w.]*)[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
+
+export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: string): ResultLine[] {
+    const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (!inputFilename) {
             line = maskRootdir(line);
         }
         if (line !== null) {
-            const lineObj: IResultLine = { text: line };
+            const lineObj: ResultLine = {text: line};
             const filteredline = line.replace(ansiColoursRe, '');
-            let match = filteredline.match(re);
+            let match = filteredline.match(SOURCE_RE);
             if (match) {
+                const message = match[4].trim();
                 lineObj.tag = {
                     line: parseInt(match[1]),
                     column: parseInt(match[3] || '0'),
-                    text: match[4].trim(),
+                    text: message,
+                    severity: parseSeverity(message),
+                    file: inputFilename ? path.basename(inputFilename) : undefined,
                 };
             } else {
-                match = filteredline.match(reWithFilename);
+                match = filteredline.match(SOURCE_WITH_FILENAME);
                 if (match) {
+                    const message = match[5].trim();
                     lineObj.tag = {
                         file: match[1],
                         line: parseInt(match[2]),
                         column: parseInt(match[4] || '0'),
-                        text: match[5].trim(),
+                        text: message,
+                        severity: parseSeverity(message),
                     };
                 }
             }
@@ -131,11 +134,11 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
 
 export function parseRustOutput(lines: string, inputFilename?: string, pathPrefix?: string) {
     const re = /^ --> <source>[(:](\d+)(:?,?(\d+):?)?[):]*\s*(.*)/;
-    const result: IResultLine[] = [];
+    const result: ResultLine[] = [];
     eachLine(lines, line => {
         line = _parseOutputLine(line, inputFilename, pathPrefix);
         if (line !== null) {
-            const lineObj: IResultLine = { text: line };
+            const lineObj: ResultLine = {text: line};
             const match = line.replace(ansiColoursRe, '').match(re);
 
             if (match) {
@@ -144,10 +147,12 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
 
                 const previous = result.pop();
                 if (previous !== undefined) {
+                    const text = previous.text.replace(ansiColoursRe, '');
                     previous.tag = {
                         line,
                         column,
-                        text: previous.text.replace(ansiColoursRe, ''),
+                        text,
+                        severity: parseSeverity(text),
                     };
                     result.push(previous);
                 }
@@ -156,6 +161,7 @@ export function parseRustOutput(lines: string, inputFilename?: string, pathPrefi
                     line,
                     column,
                     text: '', // Left empty so that it does not show up in the editor
+                    severity: 3,
                 };
             }
             result.push(lineObj);
@@ -200,9 +206,9 @@ export function anonymizeIp(ip: string): string {
  * @param {*} object
  * @returns {string}
  */
-function objectToHashableString(object: any): string {
+function objectToHashableString(object: CacheableValue): string {
     // See https://stackoverflow.com/questions/899574/which-is-best-to-use-typeof-or-instanceof/6625960#6625960
-    return (typeof (object) === 'string') ? object : JSON.stringify(object);
+    return typeof object === 'string' ? object : JSON.stringify(object);
 }
 
 const DefaultHash = 'Compiler Explorer Default Version 1';
@@ -215,10 +221,8 @@ const DefaultHash = 'Compiler Explorer Default Version 1';
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {Buffer} - Hash of object
  */
-export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
-    return crypto.createHmac('sha256', HashVersion)
-        .update(objectToHashableString(object))
-        .digest();
+export function getBinaryHash(object: CacheableValue, HashVersion = DefaultHash): Buffer {
+    return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest();
 }
 
 /***
@@ -229,10 +233,8 @@ export function getBinaryHash(object: any, HashVersion = DefaultHash): Buffer {
  * @param {string} [HashVersion=DefaultHash] - Hash "version" key
  * @returns {string} - Hash of object
  */
-export function getHash(object: any, HashVersion = DefaultHash): string {
-    return crypto.createHmac('sha256', HashVersion)
-        .update(objectToHashableString(object))
-        .digest('hex');
+export function getHash(object: CacheableValue, HashVersion = DefaultHash): string {
+    return crypto.createHmac('sha256', HashVersion).update(objectToHashableString(object)).digest('hex');
 }
 
 interface glEditorMainContent {
@@ -258,7 +260,7 @@ interface glContents {
  * @returns {glContents}
  */
 export function glGetMainContents(content: ItemConfigType[] = []): glContents {
-    const contents: glContents = { editors: [], compilers: [] };
+    const contents: glContents = {editors: [], compilers: []};
     _.each(content, element => {
         if (element.type === 'component') {
             const component = element as ComponentConfig;
@@ -314,7 +316,7 @@ export function toProperty(prop: string): boolean | number | string {
 export function replaceAll(line: string, oldValue: string, newValue: string): string {
     if (oldValue.length === 0) return line;
     let startPoint = 0;
-    for (; ;) {
+    for (;;) {
         const index = line.indexOf(oldValue, startPoint);
         if (index === -1) break;
         line = line.substr(0, index) + newValue + line.substr(index + oldValue.length);
@@ -346,7 +348,7 @@ export function base32Encode(buffer: Buffer): string {
         output += character;
         bits -= 5;
         // Shift out the newly processed word
-        digest = (digest >>> 5);
+        digest = digest >>> 5;
     }
 
     for (const byte of buffer) {
@@ -367,10 +369,19 @@ export function base32Encode(buffer: Buffer): string {
     return output;
 }
 
-export function splitArguments(options?: string): string[] {
-    return _.chain(quoteParse(options || '')
-        // FIXME: x might not contain a .pattern!
-        .map((x: any) => typeof (x) === 'string' ? x : x.pattern as string))
+// Splits a : separated list into its own array, or to default if input is undefined
+export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
+    if (input !== undefined) {
+        return input.split(':');
+    } else {
+        return defaultArray;
+    }
+}
+
+export function splitArguments(options = ''): string[] {
+    // escape hashes first, otherwise they're interpreted as comments
+    const escapedOptions = options.replaceAll(/#/g, '\\#');
+    return _.chain(quoteParse(escapedOptions).map((x: any) => (typeof x === 'string' ? x : (x.pattern as string))))
         .compact()
         .value();
 }
@@ -411,4 +422,25 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
         }
     }
     return result;
+}
+
+export function asSafeVer(semver: string | number | null) {
+    if (semver !== null) {
+        if (typeof semver === 'number') {
+            semver = `${semver}`;
+        }
+        const splits = semver.split(' ');
+        if (splits.length > 0) {
+            let interestingPart = splits[0];
+            let dotCount = countOccurrences(interestingPart, '.');
+            for (; dotCount < 2; dotCount++) {
+                interestingPart += '.0';
+            }
+            const validated: string | null = semverParser.valid(interestingPart, true);
+            if (validated != null) {
+                return validated;
+            }
+        }
+    }
+    return '9999999.99999.999';
 }

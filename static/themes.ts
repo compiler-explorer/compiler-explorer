@@ -22,18 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { editor } from 'monaco-editor';
-import { SiteSettings } from './settings';
+import $ from 'jquery';
+import {editor} from 'monaco-editor';
+import {SiteSettings} from './settings';
 
-export type Themes = 'default' | 'dark' | 'darkplus';
+export type Themes = 'default' | 'dark' | 'darkplus' | 'system';
 
-export interface Theme {
+export type Theme = {
     path: string;
-    id: string;
+    id: Themes;
     name: string;
     mainColor: string;
     monaco: string;
-}
+};
 
 export const themes: Record<Themes, Theme> = {
     default: {
@@ -57,13 +58,24 @@ export const themes: Record<Themes, Theme> = {
         mainColor: '#333333',
         monaco: 'ce-dark-plus',
     },
+    system: {
+        id: 'system',
+        name: 'Same as system',
+        path: 'default',
+        mainColor: '#f2f2f2',
+        monaco: 'ce',
+    },
 };
 
 editor.defineTheme('ce', {
     base: 'vs',
     inherit: true,
     rules: [
-        {token: 'identifier.definition.cppx-blue', foreground: '008a00', fontStyle: 'bold'},
+        {
+            token: 'identifier.definition.herb',
+            foreground: '008a00',
+            fontStyle: 'bold',
+        },
     ],
     colors: {},
 });
@@ -72,7 +84,11 @@ editor.defineTheme('ce-dark', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-        {token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold'},
+        {
+            token: 'identifier.definition.herb',
+            foreground: '7c9c7c',
+            fontStyle: 'bold',
+        },
     ],
     colors: {},
 });
@@ -81,7 +97,11 @@ editor.defineTheme('ce-dark-plus', {
     base: 'vs-dark',
     inherit: true,
     rules: [
-        {token: 'identifier.definition.cppx-blue', foreground: '7c9c7c', fontStyle: 'bold'},
+        {
+            token: 'identifier.definition.herb',
+            foreground: '7c9c7c',
+            fontStyle: 'bold',
+        },
         {token: 'keyword.if.cpp', foreground: 'c586c0'},
         {token: 'keyword.else.cpp', foreground: 'c586c0'},
         {token: 'keyword.while.cpp', foreground: 'c586c0'},
@@ -109,13 +129,24 @@ export class Themer {
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);
 
-        this.eventHub.on('requestTheme', () => {
-            this.eventHub.emit('themeChange', this.currentTheme);
-        }, this);
+        this.eventHub.on(
+            'requestTheme',
+            () => {
+                this.eventHub.emit('themeChange', this.currentTheme);
+            },
+            this
+        );
     }
 
     public setTheme(theme: Theme) {
         if (this.currentTheme === theme) return;
+        if (theme.id === 'system') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = themes.dark;
+            } else {
+                theme = themes.default;
+            }
+        }
         $('html').attr('data-theme', theme.path);
         $('#meta-theme').prop('content', theme.mainColor);
         editor.setTheme(theme.monaco);
@@ -124,9 +155,8 @@ export class Themer {
     }
 
     private onSettingsChange(newSettings: SiteSettings) {
-        const newTheme = themes[newSettings.theme] || themes.default;
-        if (!newTheme.monaco)
-            newTheme.monaco = 'vs';
+        const newTheme = newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
+        if (!newTheme.monaco) newTheme.monaco = 'vs';
         this.setTheme(newTheme);
     }
 }

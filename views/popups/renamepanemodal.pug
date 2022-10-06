@@ -1,0 +1,17 @@
+#renamepanemodal.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Rename Pane
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .input-group
+                input#renamepaneinput.form-control.panename(type="text" placeholder="New pane name" size="1024")
+      .modal-footer
+        button.btn.btn-outline-secondary(type="button" data-dismiss="modal") Close
+        button#renamepanesubmit.btn.btn-outline-primary(type="submit" data-dismiss="modal" value="Save Changes") Save Changes

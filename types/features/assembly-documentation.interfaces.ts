@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { AssemblyInstructionInfo } from '../../lib/asm-docs/base';
+import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */

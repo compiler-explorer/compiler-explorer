@@ -23,38 +23,34 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import { Container } from 'golden-layout';
+import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import { BasePaneState, PaneCompilerState } from './pane.interfaces';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
 
-import { FontScale } from '../widgets/fontscale';
-import { SiteSettings } from '../settings';
+import {FontScale} from '../widgets/fontscale';
+import {SiteSettings} from '../settings';
 import * as utils from '../utils';
 
-import { PaneRenaming } from '../widgets/pane-renaming';
+import {PaneRenaming} from '../widgets/pane-renaming';
+import {EventHub} from '../event-hub';
+import {Hub} from '../hub';
 
 /**
- * Basic container for a tool pane in Compiler Explorer
- *
- * Type parameter E indicates which monaco editor kind this pane hosts. Common
- * values are monaco.editor.IDiffEditor and monaco.ICodeEditor
+ * Basic container for a tool pane in Compiler Explorer.
  *
  * Type parameter S refers to a state interface for the pane
  */
-export abstract class Pane<E extends monaco.editor.IEditor, S> {
+export abstract class Pane<S> {
     compilerInfo: PaneCompilerState;
     container: Container;
     domRoot: JQuery;
     topBar: JQuery;
     hideable: JQuery;
-    eventHub: any /* typeof hub.createEventHub() */;
-    selection: monaco.Selection;
-    editor: E;
-    fontScale: FontScale;
+    eventHub: EventHub;
     isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
-    paneName: string;
+    paneName: string | undefined = undefined;
     paneRenaming: PaneRenaming;
 
     /**
@@ -63,32 +59,29 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
      *
      * Overridable for implementors
      */
-    protected constructor(hub: any /* Hub */, container: Container, state: S & BasePaneState) {
+    protected constructor(hub: Hub, container: Container, state: S & PaneState) {
         this.container = container;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
+        this.domRoot.html(this.getInitialHTML());
+
         this.hideable = this.domRoot.find('.hideable');
 
-        this.domRoot.html(this.getInitialHTML());
-        const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
-        this.editor = this.createEditor(editorRoot);
-
-        this.selection = state.selection;
         this.compilerInfo = {
             compilerId: state.id,
             compilerName: state.compilerName,
             editorId: state.editorid,
             treeId: state.treeid,
         };
-        this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
 
+        this.registerDynamicElements(state);
+
         this.registerButtons(state);
         this.registerStandardCallbacks();
         this.registerCallbacks();
-        this.registerEditorActions();
         this.registerOpeningAnalyticsEvent();
     }
 
@@ -105,18 +98,6 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     abstract getInitialHTML(): string;
 
     /**
-     * Initialize the monaco editor instance. Typical implementation for looks
-     * like this:
-     *
-     * ```ts
-     * return monaco.editor.create(editorRoot, extendConfig({
-     *     // goodies
-     * }));
-     * ```
-     */
-    abstract createEditor(editorRoot: HTMLElement): E;
-
-    /**
      * Emit analytics event for opening the pane tab. Typical implementation
      * looks like this:
      *
@@ -128,7 +109,10 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
      * });
      * ```
      */
-    abstract registerOpeningAnalyticsEvent(): void
+    abstract registerOpeningAnalyticsEvent(): void;
+
+    /** Optional overridable code for initializing necessary elements before rest of registers **/
+    registerDynamicElements(state: S): void {}
 
     /** Optionally overridable code for initializing pane buttons */
     registerButtons(state: S): void {}
@@ -137,19 +121,13 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
     registerCallbacks(): void {}
 
     /**
-     * Optionally overridable code for initializing monaco actions on the
-     * editor instance
-     */
-    registerEditorActions(): void {}
-
-    /**
      * Handle user selected compiler change.
      *
      * This event is triggered when the user selects a different compiler in the
      * compiler dropdown.
      *
      * Note that this event is also triggered when the changed compiler is not
-     * the one this view is attached to. Therefore it is smart to check that
+     * the one this view is attached to. Therefore, it is smart to check that
      * the updated compiler is the one the view is attached to. This can be done
      * with a simple check.
      *
@@ -159,11 +137,10 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
      *
      * @param compilerId - Id of the compiler that had its version changed
      * @param compiler - The updated compiler object
-     * @param options
+     * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number,
-                        treeId: number): void;
+    abstract onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void;
 
     /**
      * Handle compilation result.
@@ -172,7 +149,7 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
      *
      * Note that this event is triggered for *any* compilation, even when the
      * compilation was done for a source/compiler this view is not attached to.
-     * Therefore it is smart to check that the updated compiler is the one the
+     * Therefore, it is smart to check that the updated compiler is the one the
      * view is attached to. This can be done with a simple check.
      *
      * ```ts
@@ -195,7 +172,6 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
 
     /** Initialize standard lifecycle hooks */
     protected registerStandardCallbacks(): void {
-        this.fontScale.on('change', this.updateState.bind(this));
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
         this.container.on('destroy', this.close.bind(this));
         this.container.on('resize', this.resize.bind(this));
@@ -219,8 +195,8 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
 
     /** Generate "(Editor #1, Compiler #1)" tag */
     protected getPaneTag() {
-        const { compilerName, editorId, treeId, compilerId } = this.compilerInfo;
-        if(editorId !== false) {
+        const {compilerName, editorId, treeId, compilerId} = this.compilerInfo;
+        if (editorId) {
             return `${compilerName} (Editor #${editorId}, Compiler #${compilerId})`;
         } else {
             return `${compilerName} (Tree #${treeId}, Compiler #${compilerId})`;
@@ -244,15 +220,88 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         }
     }
 
-    protected onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent) {
-        if (this.isAwaitingInitialResults) {
-            this.selection = event.selection;
-            this.updateState();
-        }
-    }
-
     protected onSettingsChange(settings: SiteSettings) {
         this.settings = settings;
+    }
+
+    getCurrentState(): PaneState {
+        const state = {
+            id: this.compilerInfo.compilerId,
+            compilerName: this.compilerInfo.compilerName,
+            editorid: this.compilerInfo.editorId,
+            treeid: this.compilerInfo.treeId,
+        };
+        this.paneRenaming.addState(state);
+        return state;
+    }
+
+    updateState() {
+        this.container.setState(this.getCurrentState());
+    }
+
+    abstract resize(): void;
+}
+
+/**
+ * Basic container for a tool pane with a monaco editor in Compiler Explorer.
+ *
+ * Type parameter E indicates which monaco editor kind this pane hosts. Common
+ * values are monaco.editor.IDiffEditor and monaco.ICodeEditor
+ *
+ * Type parameter S refers to a state interface for the pane
+ */
+export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pane<S> {
+    editor: E;
+    selection: monaco.Selection | undefined = undefined;
+    fontScale: FontScale;
+
+    protected constructor(hub: any /* Hub */, container: Container, state: S & MonacoPaneState) {
+        super(hub, container, state);
+        this.selection = state.selection;
+
+        this.registerEditorActions();
+    }
+
+    override registerButtons(state: S): void {
+        const editorRoot = this.domRoot.find('.monaco-placeholder')[0];
+        this.editor = this.createEditor(editorRoot);
+        this.fontScale = new FontScale(this.domRoot, state, this.editor);
+    }
+
+    override getCurrentState(): MonacoPaneState {
+        const parent = super.getCurrentState();
+        const state: MonacoPaneState = {
+            selection: this.selection,
+            ...parent,
+        };
+        this.fontScale.addState(state);
+        return state;
+    }
+
+    resize() {
+        _.defer(() => {
+            const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
+            this.editor.layout({
+                width: this.domRoot.width() as number,
+                height: (this.domRoot.height() as number) - topBarHeight,
+            });
+        });
+    }
+
+    /**
+     * Initialize the monaco editor instance. Typical implementation for looks
+     * like this:
+     *
+     * ```ts
+     * return monaco.editor.create(editorRoot, extendConfig({
+     *     // goodies
+     * }));
+     * ```
+     */
+    abstract createEditor(editorRoot: HTMLElement): E;
+
+    protected override onSettingsChange(settings: SiteSettings) {
+        super.onSettingsChange(settings);
         this.editor.updateOptions({
             contextmenu: settings.useCustomContextMenu,
             minimap: {
@@ -263,29 +312,26 @@ export abstract class Pane<E extends monaco.editor.IEditor, S> {
         });
     }
 
-    getCurrentState() {
-        const state = {
-            id: this.compilerInfo.compilerId,
-            editorId: this.compilerInfo.editorId,
-            treeId: this.compilerInfo.treeId,
-            selection: this.selection,
-        };
-        this.paneRenaming.addState(state);
-        this.fontScale.addState(state);
-        return state;
+    protected onDidChangeCursorSelection(event: monaco.editor.ICursorSelectionChangedEvent) {
+        if (this.isAwaitingInitialResults) {
+            this.selection = event.selection;
+            this.updateState();
+        }
     }
 
-    updateState() {
-        this.container.setState(this.getCurrentState());
-    }
-
-    resize() {
-        const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot,
-            this.topBar, this.hideable);
-        if (!this.editor) return;
-        this.editor.layout({
-            width: this.domRoot.width() as number,
-            height: this.domRoot.height() as number - topBarHeight,
+    /** Initialize standard lifecycle hooks */
+    protected override registerStandardCallbacks(): void {
+        super.registerStandardCallbacks();
+        this.fontScale.on('change', this.updateState.bind(this));
+        this.eventHub.on('broadcastFontScale', (scale: number) => {
+            this.fontScale.setScale(scale);
+            this.updateState();
         });
     }
+
+    /**
+     * Optionally overridable code for initializing monaco actions on the
+     * editor instance
+     */
+    registerEditorActions(): void {}
 }

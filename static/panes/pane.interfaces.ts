@@ -24,25 +24,35 @@
 
 import * as monaco from 'monaco-editor';
 
-export interface PaneCompilerState {
-    compilerId: number;
-    compilerName: string;
-    editorId: number | boolean;
-    treeId: number | boolean;
-}
-
+/**
+ * The base state of a pane as encoded in the URL.
+ *
+ * Be aware this state, and any derived state is part of the public API of
+ * Compiler Explorer, so don't rename or add anything without careful thought.
+ */
 export interface PaneState {
     id: number;
-    editorId: number;
-    selection: monaco.Selection;
+    compilerName: string;
+    // editorid and treeid are truthy numbers: if they are truthy, then they
+    // represent the positive integer id associated with them. If not truthy
+    // there is no editor or tree view associated with this pane.
+    editorid?: number;
+    treeid?: number;
 }
 
 // TODO(supergrecko): get the full type
-export interface BasePaneState {
-    selection: monaco.Selection;
-    id: number;
-    compilerName: string;
-    editorid: number;
-    treeid: number;
+/**
+ * The state of a pane that includes basic Monaco editor support.
+ *
+ * See MonacoPane.
+ */
+export interface MonacoPaneState extends PaneState {
+    selection: monaco.Selection | undefined;
 }
 
+export interface PaneCompilerState {
+    compilerId: number;
+    compilerName: string;
+    editorId?: number;
+    treeId?: number;
+}

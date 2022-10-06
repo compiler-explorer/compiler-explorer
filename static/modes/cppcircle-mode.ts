@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import $ from 'jquery';
+
 const monaco = require('monaco-editor');
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const cppp = require('./cppp-mode');
@@ -40,29 +41,99 @@ function definition() {
         }
     }
 
-    addKeywords(['@array', '@attribute', '@base_count', '@base_offset', '@base_offsets', '@base_type',
-        '@base_type_string', '@base_type_strings', '@base_types', '@base_value', '@base_values', '@codegen',
-        '@data', '@decl_string', '@dynamic_type', '@embed', '@emit', '@enum_attribute', '@enum_attributes',
-        '@enum_count', '@enum_decl_string', '@enum_decl_strings', '@enum_has_attribute', '@enum_name', '@enum_names',
-        '@enum_type', '@enum_type_string', '@enum_type_strings', '@enum_types', '@enum_value', '@enum_values',
-        '@expand_params', '@expression', '@files', '@func_decl', '@has_attribute', '@include', '@is_class_template',
-        '@macro', '@match', '@mauto', '@member', '@member_count', '@member_decl_string', '@member_decl_strings',
-        '@member_default', '@member_has_attribute', '@member_has_default', '@member_name', '@member_names',
-        '@member_offset', '@member_offsets', '@member_ptr', '@member_ptrs', '@member_type', '@member_type_string',
-        '@member_type_strings', '@member_types', '@member_value', '@member_values', '@meta', '@method_count',
-        '@method_name', '@method_params', '@method_type', '@mtype', '@mtypes', '@mvoid', '@op', '@pack_nontype',
-        '@pack_type', '@parse_expression', '@puts', '@range', '@sfinae', '@statements', '@static_type', '@string',
-        '@tattribute', '@type_enum', '@type_id', '@type_name', '@type_string']);
+    addKeywords([
+        '@array',
+        '@attribute',
+        '@base_count',
+        '@base_offset',
+        '@base_offsets',
+        '@base_type',
+        '@base_type_string',
+        '@base_type_strings',
+        '@base_types',
+        '@base_value',
+        '@base_values',
+        '@codegen',
+        '@data',
+        '@decl_string',
+        '@dynamic_type',
+        '@embed',
+        '@emit',
+        '@enum_attribute',
+        '@enum_attributes',
+        '@enum_count',
+        '@enum_decl_string',
+        '@enum_decl_strings',
+        '@enum_has_attribute',
+        '@enum_name',
+        '@enum_names',
+        '@enum_type',
+        '@enum_type_string',
+        '@enum_type_strings',
+        '@enum_types',
+        '@enum_value',
+        '@enum_values',
+        '@expand_params',
+        '@expression',
+        '@files',
+        '@func_decl',
+        '@has_attribute',
+        '@include',
+        '@is_class_template',
+        '@macro',
+        '@match',
+        '@mauto',
+        '@member',
+        '@member_count',
+        '@member_decl_string',
+        '@member_decl_strings',
+        '@member_default',
+        '@member_has_attribute',
+        '@member_has_default',
+        '@member_name',
+        '@member_names',
+        '@member_offset',
+        '@member_offsets',
+        '@member_ptr',
+        '@member_ptrs',
+        '@member_type',
+        '@member_type_string',
+        '@member_type_strings',
+        '@member_types',
+        '@member_value',
+        '@member_values',
+        '@meta',
+        '@method_count',
+        '@method_name',
+        '@method_params',
+        '@method_type',
+        '@mtype',
+        '@mtypes',
+        '@mvoid',
+        '@op',
+        '@pack_nontype',
+        '@pack_type',
+        '@parse_expression',
+        '@puts',
+        '@range',
+        '@sfinae',
+        '@statements',
+        '@static_type',
+        '@string',
+        '@tattribute',
+        '@type_enum',
+        '@type_id',
+        '@type_name',
+        '@type_string',
+    ]);
 
     // Hack to put `@...` keywords in place
-    cppcircle.tokenizer.root.unshift(
-        [/@\w+/, {cases: {'@keywords': {token: 'keyword.$0'}}}]
-    );
+    cppcircle.tokenizer.root.unshift([/@\w+/, {cases: {'@keywords': {token: 'keyword.$0'}}}]);
 
     return cppcircle;
 }
 
-monaco.languages.register({ id: 'cppcircle' });
+monaco.languages.register({id: 'cppcircle'});
 monaco.languages.setLanguageConfiguration('cppcircle', cpp.conf);
 monaco.languages.setMonarchTokensProvider('cppcircle', definition());
 

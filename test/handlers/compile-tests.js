@@ -25,8 +25,8 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
-import { CompileHandler, SetTestMode } from '../../lib/handlers/compile';
-import { chai, makeCompilationEnvironment } from '../utils';
+import {CompileHandler, SetTestMode} from '../../lib/handlers/compile';
+import {chai, makeCompilationEnvironment} from '../utils';
 
 SetTestMode();
 
@@ -55,203 +55,247 @@ describe('Compiler tests', () => {
     });
 
     it('throws for unknown compilers', () => {
-        return chai.request(app)
+        return chai
+            .request(app)
             .post('/NOT_A_COMPILER/compile')
-            .then((res) => {
+            .then(res => {
                 res.should.have.status(404);
             });
     });
 
     describe('Noscript API', () => {
         it('supports compile', () => {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: {
-                    code: 0,
-                    stdout: [{text: 'Something from stdout'}],
-                    stderr: [{text: 'Something from stderr'}],
-                    asm: [{text: 'ASMASMASM'}],
-                },
-            }]).then(() => {
-                return chai.request(app)
-                    .post('/noscript/compile')
-                    .set('Content-Type', 'application/x-www-form-urlencoded')
-                    .send('compiler=fake-for-test&source=I am a program')
-                    .then(res => {
-                        res.should.have.status(200);
-                        res.should.be.text;
-                        res.text.should.contain('Something from stdout');
-                        res.text.should.contain('Something from stderr');
-                        res.text.should.contain('ASMASMASM');
-                    })
-                    .catch(err => {
-                        throw err;
-                    });
-            });
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    },
+                ])
+                .then(() => {
+                    return chai
+                        .request(app)
+                        .post('/noscript/compile')
+                        .set('Content-Type', 'application/x-www-form-urlencoded')
+                        .send('compiler=fake-for-test&source=I am a program')
+                        .then(res => {
+                            res.should.have.status(200);
+                            res.should.be.text;
+                            res.text.should.contain('Something from stdout');
+                            res.text.should.contain('Something from stderr');
+                            res.text.should.contain('ASMASMASM');
+                        })
+                        .catch(err => {
+                            throw err;
+                        });
+                });
         });
     });
 
     describe('Curl API', () => {
         it('supports compile', () => {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: {
-                    code: 0,
-                    stdout: [{text: 'Something from stdout'}],
-                    stderr: [{text: 'Something from stderr'}],
-                    asm: [{text: 'ASMASMASM'}],
-                },
-            }]).then(() => {
-                return chai.request(app)
-                    .post('/fake-for-test/compile')
-                    .set('Content-Type', 'application/x-www-form-urlencoded')
-                    .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
-                    .then(res => {
-                        res.should.have.status(200);
-                        res.should.be.text;
-                        res.text.should.contain('Something from stdout');
-                        res.text.should.contain('Something from stderr');
-                        res.text.should.contain('ASMASMASM');
-                    })
-                    .catch(err => {
-                        throw err;
-                    });
-            });
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    },
+                ])
+                .then(() => {
+                    return chai
+                        .request(app)
+                        .post('/fake-for-test/compile')
+                        .set('Content-Type', 'application/x-www-form-urlencoded')
+                        .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
+                        .then(res => {
+                            res.should.have.status(200);
+                            res.should.be.text;
+                            res.text.should.contain('Something from stdout');
+                            res.text.should.contain('Something from stderr');
+                            res.text.should.contain('ASMASMASM');
+                        })
+                        .catch(err => {
+                            throw err;
+                        });
+                });
         });
 
         it('supports alias compile', () => {
-            return compileHandler.setCompilers([{
-                id: 'newcompilerid',
-                alias: ['oldid1', 'oldid2'],
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: {
-                    code: 0,
-                    stdout: [{text: 'Something from stdout'}],
-                    stderr: [{text: 'Something from stderr'}],
-                    asm: [{text: 'ASMASMASM'}],
-                },
-            }]).then(() => {
-                return chai.request(app)
-                    .post('/oldid1/compile')
-                    .set('Content-Type', 'application/x-www-form-urlencoded')
-                    .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
-                    .then(res => {
-                        res.should.have.status(200);
-                        res.should.be.text;
-                        res.text.should.contain('Something from stdout');
-                        res.text.should.contain('Something from stderr');
-                        res.text.should.contain('ASMASMASM');
-                    })
-                    .catch(err => {
-                        throw err;
-                    });
-            });
+            return compileHandler
+                .setCompilers([
+                    {
+                        id: 'newcompilerid',
+                        alias: ['oldid1', 'oldid2'],
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    },
+                ])
+                .then(() => {
+                    return chai
+                        .request(app)
+                        .post('/oldid1/compile')
+                        .set('Content-Type', 'application/x-www-form-urlencoded')
+                        .send('I am a program /* &compiler=NOT_A_COMPILER&source=etc */')
+                        .then(res => {
+                            res.should.have.status(200);
+                            res.should.be.text;
+                            res.text.should.contain('Something from stdout');
+                            res.text.should.contain('Something from stderr');
+                            res.text.should.contain('ASMASMASM');
+                        })
+                        .catch(err => {
+                            throw err;
+                        });
+                });
         });
     });
 
     describe('JSON API', () => {
         it('handles text output', () => {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: {
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {
+                            code: 0,
+                            stdout: [{text: 'Something from stdout'}],
+                            stderr: [{text: 'Something from stderr'}],
+                            asm: [{text: 'ASMASMASM'}],
+                        },
+                    },
+                ])
+                .then(() => {
+                    return chai
+                        .request(app)
+                        .post('/fake-for-test/compile')
+                        .send({
+                            options: {},
+                            source: 'I am a program',
+                        })
+                        .then(res => {
+                            res.should.have.status(200);
+                            res.should.be.text;
+                            res.text.should.contain('Something from stdout');
+                            res.text.should.contain('Something from stderr');
+                            res.text.should.contain('ASMASMASM');
+                        })
+                        .catch(err => {
+                            throw err;
+                        });
+                });
+        });
+
+        function makeFakeJson(source, options, fakeResult) {
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: fakeResult || {},
+                    },
+                ])
+                .then(() =>
+                    chai
+                        .request(app)
+                        .post('/fake-for-test/compile')
+                        .set('Accept', 'application/json')
+                        .send({
+                            options: options || {},
+                            source: source || '',
+                        }),
+                );
+        }
+
+        function makeFakeWithExtraFilesJson(source, options, files, fakeResult) {
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: fakeResult || {},
+                    },
+                ])
+                .then(() =>
+                    chai
+                        .request(app)
+                        .post('/fake-for-test/compile')
+                        .set('Accept', 'application/json')
+                        .send({
+                            options: options || {},
+                            source: source || '',
+                            files: files || [],
+                        }),
+                );
+        }
+
+        function makeFakeCmakeJson(source, options, fakeResult, files) {
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: fakeResult || {},
+                    },
+                ])
+                .then(() =>
+                    chai
+                        .request(app)
+                        .post('/fake-for-test/cmake')
+                        .set('Accept', 'application/json')
+                        .send({
+                            options: options || {},
+                            source: source || '',
+                            files: files || [],
+                        }),
+                );
+        }
+
+        it('handles JSON output', () => {
+            return makeFakeJson(
+                'I am a program',
+                {},
+                {
                     code: 0,
                     stdout: [{text: 'Something from stdout'}],
                     stderr: [{text: 'Something from stderr'}],
                     asm: [{text: 'ASMASMASM'}],
                 },
-            }]).then(() => {
-                return chai.request(app)
-                    .post('/fake-for-test/compile')
-                    .send({
-                        options: {},
-                        source: 'I am a program',
-                    })
-                    .then(res => {
-                        res.should.have.status(200);
-                        res.should.be.text;
-                        res.text.should.contain('Something from stdout');
-                        res.text.should.contain('Something from stderr');
-                        res.text.should.contain('ASMASMASM');
-                    })
-                    .catch(err => {
-                        throw err;
+            )
+                .then(res => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.should.deep.equals({
+                        asm: [{text: 'ASMASMASM'}],
+                        code: 0,
+                        input: {
+                            backendOptions: {},
+                            filters: {},
+                            options: [],
+                            source: 'I am a program',
+                        },
+                        stderr: [{text: 'Something from stderr'}],
+                        stdout: [{text: 'Something from stdout'}],
                     });
-            });
-        });
-
-        function makeFakeJson(source, options, fakeResult) {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: fakeResult || {},
-            }])
-                .then(() => chai.request(app)
-                    .post('/fake-for-test/compile')
-                    .set('Accept', 'application/json')
-                    .send({
-                        options: options || {},
-                        source: source || '',
-                    }));
-        }
-
-        function makeFakeWithExtraFilesJson(source, options, files, fakeResult) {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: fakeResult || {},
-            }])
-                .then(() => chai.request(app)
-                    .post('/fake-for-test/compile')
-                    .set('Accept', 'application/json')
-                    .send({
-                        options: options || {},
-                        source: source || '',
-                        files: files || [],
-                    }));
-        }
-
-        function makeFakeCmakeJson(source, options, fakeResult, files) {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: fakeResult || {},
-            }])
-                .then(() => chai.request(app)
-                    .post('/fake-for-test/cmake')
-                    .set('Accept', 'application/json')
-                    .send({
-                        options: options || {},
-                        source: source || '',
-                        files: files || [],
-                    }));
-        }
-
-        it('handles JSON output', () => {
-            return makeFakeJson('I am a program', {}, {
-                code: 0,
-                stdout: [{text: 'Something from stdout'}],
-                stderr: [{text: 'Something from stderr'}],
-                asm: [{text: 'ASMASMASM'}],
-            }).then(res => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.deep.equals({
-                    asm: [{text: 'ASMASMASM'}],
-                    code: 0,
-                    input: {
-                        backendOptions: {},
-                        filters: {},
-                        options: [],
-                        source: 'I am a program',
-                    },
-                    stderr: [{text: 'Something from stderr'}],
-                    stdout: [{text: 'Something from stdout'}],
-                });
-            })
+                })
                 .catch(err => {
                     throw err;
                 });
@@ -261,94 +305,115 @@ describe('Compiler tests', () => {
             return makeFakeJson('I am a program', {
                 userArguments: '-O1 -monkey "badger badger"',
                 filters: {a: true, b: true, c: true},
-            })
-                .then(res => {
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
-                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
-                });
+            }).then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
+                res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+            });
         });
 
         it('parses extra files', () => {
-            return makeFakeWithExtraFilesJson('I am a program', {
-                userArguments: '-O1 -monkey "badger badger"',
-                filters: {a: true, b: true, c: true},
-            }, [{
-                filename: 'myresource.txt',
-                contents: 'Hello, World!\nHow are you?\n',
-            }], {})
-                .then(res => {
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
-                    res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
-                    res.body.input.files.should.deep.equals([{
+            return makeFakeWithExtraFilesJson(
+                'I am a program',
+                {
+                    userArguments: '-O1 -monkey "badger badger"',
+                    filters: {a: true, b: true, c: true},
+                },
+                [
+                    {
                         filename: 'myresource.txt',
                         contents: 'Hello, World!\nHow are you?\n',
-                    }]);
-                });
+                    },
+                ],
+                {},
+            ).then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.input.options.should.deep.equals(['-O1', '-monkey', 'badger badger']);
+                res.body.input.filters.should.deep.equals({a: true, b: true, c: true});
+                res.body.input.files.should.deep.equals([
+                    {
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    },
+                ]);
+            });
         });
 
         it('cmakes', () => {
-            return makeFakeCmakeJson('I am a program', {
-                userArguments: '-O1 -monkey "badger badger"',
-                filters: {a: true, b: true, c: true},
-            }, {
-            }, [{
-                filename: 'myresource.txt',
-                contents: 'Hello, World!\nHow are you?\n',
-            }])
-                .then(res => {
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.input.options.should.deep.equals({
-                        backendOptions: {},
-                        bypassCache: false,
-                        executionParameters: {
-                            args: [],
-                        },
-                        filters: {
-                            a: true,
-                            b: true,
-                            c: true,
-                        },
-                        libraries: [],
-                        options: ['-O1', '-monkey', 'badger badger'],
-                        source: 'I am a program',
-                        tools: [],
-                    });
-                    res.body.input.files.should.deep.equals([{
+            return makeFakeCmakeJson(
+                'I am a program',
+                {
+                    userArguments: '-O1 -monkey "badger badger"',
+                    filters: {a: true, b: true, c: true},
+                },
+                {},
+                [
+                    {
                         filename: 'myresource.txt',
                         contents: 'Hello, World!\nHow are you?\n',
-                    }]);
+                    },
+                ],
+            ).then(res => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.input.options.should.deep.equals({
+                    backendOptions: {},
+                    bypassCache: false,
+                    executionParameters: {
+                        args: [],
+                    },
+                    filters: {
+                        a: true,
+                        b: true,
+                        c: true,
+                    },
+                    libraries: [],
+                    options: ['-O1', '-monkey', 'badger badger'],
+                    source: 'I am a program',
+                    tools: [],
                 });
+                res.body.input.files.should.deep.equals([
+                    {
+                        filename: 'myresource.txt',
+                        contents: 'Hello, World!\nHow are you?\n',
+                    },
+                ]);
+            });
         });
     });
 
     describe('Query API', () => {
         function makeFakeQuery(source, query, fakeResult) {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: fakeResult || {},
-            }])
-                .then(() => chai.request(app)
-                    .post('/fake-for-test/compile')
-                    .query(query || {})
-                    .set('Accept', 'application/json')
-                    .send(source || ''));
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: fakeResult || {},
+                    },
+                ])
+                .then(() =>
+                    chai
+                        .request(app)
+                        .post('/fake-for-test/compile')
+                        .query(query || {})
+                        .set('Accept', 'application/json')
+                        .send(source || ''),
+                );
         }
 
         it('error on empty request body', () => {
-            return compileHandler.setCompilers([{
-                compilerType: 'fake-for-test',
-                exe: 'fake',
-                fakeResult: {},
-            }])
-                .then(() => chai.request(app)
-                    .post('/fake-for-test/compile')
-                    .set('Accept', 'application/json'))
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        exe: 'fake',
+                        fakeResult: {},
+                    },
+                ])
+                .then(() => chai.request(app).post('/fake-for-test/compile').set('Accept', 'application/json'))
                 .then(res => {
                     res.should.have.status(500);
                 })
@@ -412,37 +477,37 @@ describe('Compiler tests', () => {
 
     describe('Multi language', () => {
         function makeFakeJson(compiler, lang) {
-            return compileHandler.setCompilers([
-                {
-                    compilerType: 'fake-for-test',
-                    id: 'a',
-                    lang: 'a',
-                    exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
-                },
-                {
-                    compilerType: 'fake-for-test',
-                    id: 'b',
-                    lang: 'b',
-                    exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
-                },
-                {
-                    compilerType: 'fake-for-test',
-                    id: 'a',
-                    lang: 'b',
-                    exe: 'fake',
-                    fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
-                },
-            ])
-                .then(() => chai.request(app)
-                    .post(`/${compiler}/compile`)
-                    .set('Accept', 'application/json')
-                    .send({
+            return compileHandler
+                .setCompilers([
+                    {
+                        compilerType: 'fake-for-test',
+                        id: 'a',
+                        lang: 'a',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG A'}]},
+                    },
+                    {
+                        compilerType: 'fake-for-test',
+                        id: 'b',
+                        lang: 'b',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B'}]},
+                    },
+                    {
+                        compilerType: 'fake-for-test',
+                        id: 'a',
+                        lang: 'b',
+                        exe: 'fake',
+                        fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
+                    },
+                ])
+                .then(() =>
+                    chai.request(app).post(`/${compiler}/compile`).set('Accept', 'application/json').send({
                         lang: lang,
                         options: {},
                         source: '',
-                    }));
+                    }),
+                );
         }
 
         it('finds without language', () => {

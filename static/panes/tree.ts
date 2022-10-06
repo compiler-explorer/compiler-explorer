@@ -22,22 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
 import {LineColouring} from '../line-colouring';
 import * as utils from '../utils';
-import { Settings } from '../settings';
-import { PaneRenaming } from '../widgets/pane-renaming';
+import {Settings, SiteSettings} from '../settings';
+import {PaneRenaming} from '../widgets/pane-renaming';
+import {Hub} from '../hub';
+import {EventHub} from '../event-hub';
+import {Alert} from '../alert';
+import * as Components from '../components';
+import {ga} from '../analytics';
+import TomSelect from 'tom-select';
+import {Toggles} from '../widgets/toggles';
+import {options} from '../options';
+import {saveAs} from 'file-saver';
+import {Container} from 'golden-layout';
+import _ from 'underscore';
 
-const _ = require('underscore');
-const $ = require('jquery');
-const Alert = require('../alert').Alert;
-const Components = require('../components');
-const ga = require('../analytics').ga;
-const TomSelect = require('tom-select');
-const Toggles = require('../widgets/toggles').Toggles;
-const options = require('../options').options;
 const languages = options.languages;
-const saveAs = require('file-saver').saveAs;
 
 export interface TreeState extends MultifileServiceState {
     id: number;
@@ -46,36 +49,36 @@ export interface TreeState extends MultifileServiceState {
 }
 
 export class Tree {
-    private readonly id: number;
-    private container: any;
-    private domRoot: any;
-    private readonly hub: any;
-    private eventHub: any;
-    private readonly settings: any;
-    private httpRoot: any;
-    private readonly alertSystem: any;
-    private root: any;
-    private rowTemplate: any;
-    private namedItems: any;
-    private unnamedItems: any;
+    public readonly id: number;
+    private container: Container;
+    private domRoot: JQuery;
+    private readonly hub: Hub;
+    private eventHub: EventHub;
+    private readonly settings: SiteSettings;
+    private httpRoot: string;
+    private readonly alertSystem: Alert;
+    private root: JQuery;
+    private rowTemplate: JQuery;
+    private namedItems: JQuery;
+    private unnamedItems: JQuery;
     private langKeys: string[];
-    private cmakeArgsInput: any;
-    private customOutputFilenameInput: any;
+    private cmakeArgsInput: JQuery;
+    private customOutputFilenameInput: JQuery;
     public multifileService: MultifileService;
     private lineColouring: LineColouring;
     private readonly ourCompilers: Record<number, boolean>;
     private readonly busyCompilers: Record<number, boolean>;
     private readonly asmByCompiler: Record<number, any>;
-    private selectize: any;
-    private languageBtn: any;
-    private toggleCMakeButton: any;
+    private selectize: TomSelect;
+    private languageBtn: JQuery;
+    private toggleCMakeButton: Toggles;
     private debouncedEmitChange: () => void = () => {};
-    private hideable: any;
-    private readonly topBar: any;
+    private hideable: JQuery;
+    private readonly topBar: JQuery;
     private paneName: string;
     private paneRenaming: PaneRenaming;
 
-    constructor(hub, state: TreeState, container) {
+    constructor(hub: Hub, container: Container, state: TreeState) {
         this.id = state.id || hub.nextTreeId();
         this.container = container;
         this.domRoot = container.getElement();
@@ -96,29 +99,17 @@ export class Tree {
         this.hideable = this.domRoot.find('.hideable');
         this.topBar = this.domRoot.find('.top-bar.mainbar');
 
-        this.langKeys = _.keys(languages);
+        this.langKeys = Object.keys(languages);
 
         this.cmakeArgsInput = this.domRoot.find('.cmake-arguments');
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
-        const usableLanguages = _.filter(languages, (language) => {
+        const usableLanguages = Object.values(languages).filter(language => {
             return hub.compilerService.compilersByLang[language.id];
         });
 
-        if (state) {
-            if (!state.compilerLanguageId) {
-                state.compilerLanguageId = this.settings.defaultLanguage;
-            }
-        } else {
-            state = {
-                id: this.id,
-                customOutputFilename: '',
-                cmakeArgs: '',
-                compilerLanguageId: this.settings.defaultLanguage,
-                isCMakeProject: false,
-                files: [],
-                newFileId: 1,
-            };
+        if (!state.compilerLanguageId) {
+            state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
         }
 
         this.multifileService = new MultifileService(this.hub, this.alertSystem, state);
@@ -134,16 +125,18 @@ export class Tree {
         this.initCallbacks();
         this.onSettingsChange(this.settings);
 
-        this.selectize = new TomSelect(this.languageBtn, {
+        this.selectize = new TomSelect(this.languageBtn[0] as HTMLInputElement, {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: _.map(usableLanguages, _.identity),
+            options: usableLanguages,
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: this.onLanguageChange.bind(this),
+            onChange: (val: any) => {
+                this.onLanguageChange(val as string);
+            },
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
@@ -159,23 +152,21 @@ export class Tree {
     }
 
     private initInputs(state: TreeState) {
-        if (state) {
-            if (state.cmakeArgs) {
-                this.cmakeArgsInput.val(state.cmakeArgs);
-            }
+        if (state.cmakeArgs) {
+            this.cmakeArgsInput.val(state.cmakeArgs);
+        }
 
-            if (state.customOutputFilename) {
-                this.customOutputFilenameInput.val(state.customOutputFilename);
-            }
+        if (state.customOutputFilename) {
+            this.customOutputFilenameInput.val(state.customOutputFilename);
         }
     }
 
     private getCmakeArgs(): string {
-        return this.cmakeArgsInput.val();
+        return this.cmakeArgsInput.val() as string;
     }
 
     private getCustomOutputFilename(): string {
-        return _.escape(this.customOutputFilenameInput.val());
+        return _.escape(this.customOutputFilenameInput.val() as string);
     }
 
     public currentState(): TreeState {
@@ -232,16 +223,15 @@ export class Tree {
     }
 
     private onToggleCMakeChange() {
-        const isOn = this.toggleCMakeButton.state.isCMakeProject;
+        const isOn = this.toggleCMakeButton.get().isCMakeProject;
         this.multifileService.setAsCMakeProject(isOn);
 
-        this.domRoot.find('.cmake-project').prop('title',
-            '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
+        this.domRoot.find('.cmake-project').prop('title', '[' + (isOn ? 'ON' : 'OFF') + '] CMake project');
         this.updateState();
     }
 
     private onLanguageChange(newLangId: string) {
-        if (languages[newLangId]) {
+        if (newLangId in languages) {
             this.multifileService.setLanguageId(newLangId);
             this.eventHub.emit('languageChange', false, newLangId, this.id);
         }
@@ -268,19 +258,19 @@ export class Tree {
     }
 
     private sendChangesToAllEditors() {
-        _.each(this.ourCompilers, (unused, compilerId: string) => {
+        for (const compilerId in this.ourCompilers) {
             this.sendCompilerChangesToEditor(parseInt(compilerId));
-        });
+        }
     }
 
-    private onCompilerOpen(compilerId: number, unused, treeId: number) {
+    private onCompilerOpen(compilerId: number, unused, treeId: number | boolean) {
         if (treeId === this.id) {
             this.ourCompilers[compilerId] = true;
             this.sendCompilerChangesToEditor(compilerId);
         }
     }
 
-    private onCompilerClose(compilerId: number, unused, treeId: number) {
+    private onCompilerClose(compilerId: number, treeId: number | boolean) {
         if (treeId === this.id) {
             delete this.ourCompilers[compilerId];
         }
@@ -345,24 +335,25 @@ export class Tree {
             item.find('.filename').text('Unknown file');
         }
 
-        item.on('click', (e) => {
+        item.on('click', e => {
             const fileId = $(e.currentTarget).data('fileId');
             this.editFile(fileId);
         });
 
-        renameButton.on('click', async (e) => {
+        renameButton.on('click', async e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.multifileService.renameFile(fileId);
             this.refresh();
         });
 
-        deleteButton.on('click', (e) => {
+        deleteButton.on('click', e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             const file = this.multifileService.getFileByFileId(fileId);
             if (file) {
                 this.alertSystem.ask(
                     'Delete file',
-                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?` , {
+                    `Are you sure you want to delete ${file.filename ? _.escape(file.filename) : 'this file'}?`,
+                    {
                         yes: () => {
                             this.removeFile(fileId);
                         },
@@ -375,16 +366,17 @@ export class Tree {
             }
         });
 
-        stageButton.on('click', async (e) => {
+        stageButton.on('click', async e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.moveToInclude(fileId);
         });
-        unstageButton.on('click', async (e) => {
+        unstageButton.on('click', async e => {
             const fileId = $(e.currentTarget).parent('li').data('fileId');
             await this.moveToExclude(fileId);
         });
         stageButton.toggle(!file.isIncluded);
         unstageButton.toggle(file.isIncluded);
+        // @ts-ignore TODO type mismatch
         (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
     }
 
@@ -428,11 +420,12 @@ export class Tree {
     }
 
     private bindClickToOpenPane(dragSource, dragConfig) {
-        this.container.layoutManager
-            .createDragSource(dragSource, dragConfig.bind(this))
-            ._dragListener.on('dragStart', () => {
+        (this.container.layoutManager.createDragSource(dragSource, dragConfig.bind(this)) as any)._dragListener.on(
+            'dragStart',
+            () => {
                 this.domRoot.find('.add-pane').dropdown('toggle');
-            });
+            }
+        );
 
         dragSource.on('click', () => {
             this.hub.addInEditorStackIfPossible(dragConfig.bind(this));
@@ -447,24 +440,20 @@ export class Tree {
         return Components.getExecutorForTree(this.id, this.currentState().compilerLanguageId);
     }
 
-    private getConfigForNewEditor(file: MultifileFile) {
+    private getConfigForNewEditor(file: MultifileFile | undefined) {
         let editor;
         const editorId = this.hub.nextEditorId();
 
         if (file) {
             file.editorId = editorId;
-            editor = Components.getEditor(
-                editorId,
-                file.langId);
+            editor = Components.getEditor(editorId, file.langId);
 
             editor.componentState.source = file.content;
             if (file.filename) {
                 editor.componentState.filename = file.filename;
             }
         } else {
-            editor = Components.getEditor(
-                editorId,
-                this.multifileService.getLanguageId());
+            editor = Components.getEditor(editorId, this.multifileService.getLanguageId());
         }
 
         return editor;
@@ -472,15 +461,12 @@ export class Tree {
 
     private static getFormattedDateTime() {
         const d = new Date();
-
-        let datestring = d.getFullYear() +
-            ('0' + (d.getMonth() + 1)).slice(-2) +
-            ('0' + d.getDate()).slice(-2);
-        datestring += ('0' + d.getHours()).slice(-2) +
-            ('0' + d.getMinutes()).slice(-2) +
-            ('0' + d.getSeconds()).slice(-2);
-
-        return datestring;
+        const t = x => x.slice(-2);
+        // Hopefully some day we can use the temporal api to make this less of a pain
+        return (
+            `${d.getFullYear()} ${t('0' + (d.getMonth() + 1))} ${t('0' + d.getDate())}` +
+            `${t('0' + d.getHours())} ${t('0' + d.getMinutes())} ${t('0' + d.getSeconds())}`
+        );
     }
 
     private static triggerSaveAs(blob) {
@@ -498,10 +484,10 @@ export class Tree {
             await this.multifileService.saveProjectToZipfile(Tree.triggerSaveAs.bind(this));
         });
 
-        const loadProjectFromFile = this.domRoot.find('.load-project-from-file');
-        loadProjectFromFile.on('change', async (e) => {
+        const loadProjectFromFile = this.domRoot.find('.load-project-from-file') as JQuery<HTMLInputElement>;
+        loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
-            if (files.length > 0) {
+            if (files && files.length > 0) {
                 this.multifileService.forEachFile((file: MultifileFile) => {
                     this.removeFile(file.fileId);
                 });
@@ -521,12 +507,17 @@ export class Tree {
         this.bindClickToOpenPane(addEditorButton, this.getConfigForNewEditor);
 
         this.languageBtn = this.domRoot.find('.change-language');
-
+        if (!(this.languageBtn[0] instanceof HTMLSelectElement)) {
+            throw new Error('.language-button is not an HTMLSelectElement');
+        }
         if (this.langKeys.length <= 1) {
             this.languageBtn.prop('disabled', true);
         }
 
-        this.toggleCMakeButton = new Toggles(this.domRoot.find('.options'), state);
+        this.toggleCMakeButton = new Toggles(
+            this.domRoot.find('.options'),
+            state as unknown as Record<string, boolean>
+        );
     }
 
     private numberUsedLines() {
@@ -539,9 +530,11 @@ export class Tree {
 
         this.lineColouring.clear();
 
-        _.each(this.asmByCompiler, (asm: any, compilerId: string) => {
-            if (asm) this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
-        });
+        for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
+            if (asm) {
+                this.lineColouring.addFromAssembly(parseInt(compilerId), asm);
+            }
+        }
 
         this.lineColouring.calculate();
 
@@ -549,22 +542,30 @@ export class Tree {
     }
 
     private updateColours() {
-        _.each(this.ourCompilers, (unused, compilerId: string) => {
+        for (const compilerId in this.ourCompilers) {
             const id: number = parseInt(compilerId);
-            this.eventHub.emit('coloursForCompiler', id,
-                this.lineColouring.getColoursForCompiler(id), this.settings.colourScheme);
-        });
+            this.eventHub.emit(
+                'coloursForCompiler',
+                id,
+                this.lineColouring.getColoursForCompiler(id),
+                this.settings.colourScheme
+            );
+        }
 
         this.multifileService.forEachOpenFile((file: MultifileFile) => {
-            this.eventHub.emit('coloursForEditor', file.editorId,
-                this.lineColouring.getColoursForEditor(file.editorId), this.settings.colourScheme);
+            this.eventHub.emit(
+                'coloursForEditor',
+                file.editorId,
+                this.lineColouring.getColoursForEditor(file.editorId),
+                this.settings.colourScheme
+            );
         });
     }
 
     private updateColoursNone() {
-        _.each(this.ourCompilers, (unused, compilerId: string) => {
+        for (const compilerId in this.ourCompilers) {
             this.eventHub.emit('coloursForCompiler', parseInt(compilerId), {}, this.settings.colourScheme);
-        });
+        }
 
         this.multifileService.forEachOpenFile((file: MultifileFile) => {
             this.eventHub.emit('coloursForEditor', file.editorId, {}, this.settings.colourScheme);
@@ -604,11 +605,12 @@ export class Tree {
     private resize() {
         utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
-        const mainbarHeight = this.topBar.outerHeight(true);
-        const argsHeight = this.domRoot.find('.panel-args').outerHeight(true);
-        const outputfileHeight = this.domRoot.find('.panel-outputfile').outerHeight(true);
+        const mainbarHeight = this.topBar.outerHeight(true) as number;
+        const argsHeight = this.domRoot.find('.panel-args').outerHeight(true) as number;
+        const outputfileHeight = this.domRoot.find('.panel-outputfile').outerHeight(true) as number;
+        const innerHeight = this.domRoot.innerHeight() as number;
 
-        this.root.height(this.domRoot.innerHeight() - mainbarHeight - argsHeight - outputfileHeight);
+        this.root.height(innerHeight - mainbarHeight - argsHeight - outputfileHeight);
     }
 
     private onSettingsChange(newSettings) {

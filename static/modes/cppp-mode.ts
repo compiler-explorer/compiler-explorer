@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import $ from 'jquery';
+
 const monaco = require('monaco-editor');
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
@@ -54,13 +55,65 @@ function definition() {
 
     // We remove everything that's not an identifier, underscore reserved name and not an official C++ keyword...
     // Regarding #617, final is a identifier with special meaning, not a fully qualified keyword
-    removeKeywords(['abstract', 'amp', 'array', 'cpu', 'delegate', 'each', 'event', 'finally', 'gcnew',
-        'generic', 'in', 'initonly', 'interface', 'interior_ptr', 'internal', 'literal', 'partial', 'pascal',
-        'pin_ptr', 'property', 'ref', 'restrict', 'safe_cast', 'sealed', 'title_static', 'where']);
+    removeKeywords([
+        'abstract',
+        'amp',
+        'array',
+        'cpu',
+        'delegate',
+        'each',
+        'event',
+        'finally',
+        'gcnew',
+        'generic',
+        'in',
+        'initonly',
+        'interface',
+        'interior_ptr',
+        'internal',
+        'literal',
+        'partial',
+        'pascal',
+        'pin_ptr',
+        'property',
+        'ref',
+        'restrict',
+        'safe_cast',
+        'sealed',
+        'title_static',
+        'where',
+    ]);
 
-    addKeywords(['alignas', 'alignof', 'and', 'and_eq', 'asm', 'bitand', 'bitor', 'char8_t', 'char16_t',
-        'char32_t', 'compl', 'concept', 'consteval', 'constinit', 'co_await', 'co_return', 'co_yield', 'not', 'not_eq',
-        'or', 'or_eq', 'requires', 'xor', 'xor_eq']);
+    addKeywords([
+        'alignas',
+        'alignof',
+        'and',
+        'and_eq',
+        'asm',
+        'bitand',
+        'bitor',
+        'char8_t',
+        'char16_t',
+        'char32_t',
+        'compl',
+        'concept',
+        'consteval',
+        'constinit',
+        'co_await',
+        'co_return',
+        'co_yield',
+        'not',
+        'not_eq',
+        'or',
+        'or_eq',
+        'requires',
+        'xor',
+        'xor_eq',
+        // Quick fix until https://github.com/microsoft/monaco-editor/pull/3286 is merged and released
+        '__m512',
+        '__m512d',
+        '__m512i',
+    ]);
 
     return cppp;
 }
