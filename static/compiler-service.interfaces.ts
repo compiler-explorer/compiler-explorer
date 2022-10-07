@@ -22,14 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {WidgetState} from '../widgets/libs-widget.interfaces';
-
-export interface CompilerState extends WidgetState {
-    tree: any;
-    source?: number;
-    compiler: any;
-    options: any;
-    flagsViewOpen?: boolean;
-    wantOptInfo?: boolean;
-    lang?: string | null;
+export interface CompilationStatus {
+    code: 0 | 1 | 2 | 3 | 4;
+    compilerOut: number;
 }

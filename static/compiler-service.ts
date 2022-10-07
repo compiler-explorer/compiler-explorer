@@ -36,11 +36,7 @@ import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 import {CompilerInfo} from '../types/compiler.interfaces';
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
-
-type CompilationStatus = {
-    code: 0 | 1 | 2 | 3 | 4;
-    compilerOut: number;
-};
+import {CompilationStatus} from './compiler-service.interfaces';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 

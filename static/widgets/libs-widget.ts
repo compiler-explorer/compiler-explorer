@@ -26,19 +26,9 @@ import $ from 'jquery';
 import {options} from '../options';
 import * as local from '../local';
 import {Library, LibraryVersion} from '../options.interfaces';
+import {WidgetState} from './libs-widget.interfaces';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
-
-interface StateLib {
-    id?: string;
-    name?: string;
-    ver?: string;
-    version?: string;
-}
-
-interface WidgetState {
-    libs?: StateLib[];
-}
 
 export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
