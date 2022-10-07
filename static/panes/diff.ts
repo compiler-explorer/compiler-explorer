@@ -158,7 +158,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                     {id: DiffType.GNAT_Tree, name: 'GNAT Tree Code'},
                 ],
                 items: [],
-                render: {
+                render: <any>{
                     option: (item, escape) => {
                         return `<div>${escape(item.name)}</div>`;
                     },
@@ -195,7 +195,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 searchField: ['name'],
                 options: [],
                 items: [],
-                render: {
+                render: <any>{
                     option: function (item, escape) {
                         const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
                         return (

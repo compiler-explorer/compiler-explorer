@@ -121,7 +121,7 @@ export class CompilerPicker {
                 }
             },
             duplicates: true,
-            render: {
+            render: <any>{
                 option: (data, escape) => {
                     const isFavoriteGroup = data.$groups.indexOf(CompilerPicker.favoriteGroupName) !== -1;
                     const extraClasses = isFavoriteGroup ? 'fas fa-star fav' : 'far fa-star';
