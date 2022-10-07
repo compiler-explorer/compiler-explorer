@@ -118,7 +118,7 @@ export class LlvmPassDumpParser {
             /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
         ];
         this.debugInfoLineFilters = [
-            /,? ![\dA-Za-z]+((?=( {)?$))/, // debug annotation
+            /, !dbg !\d+/, // debug annotation
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
