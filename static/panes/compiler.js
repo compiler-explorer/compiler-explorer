@@ -2252,7 +2252,8 @@ Compiler.prototype.updateButtons = function () {
     this.ppButton.toggle(!!this.compiler.supportsPpView);
     this.astButton.toggle(!!this.compiler.supportsAstView);
     this.irButton.toggle(!!this.compiler.supportsIrView);
-    this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
+    // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
+    //this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
