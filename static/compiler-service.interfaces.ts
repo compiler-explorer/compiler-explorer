@@ -22,7 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+export enum CompilationStatusCode {
+    NONE = 0,
+    OK = 1,
+    WITH_WARNINGS = 2,
+    WITH_ERRORS = 3,
+    COMPILING = 4,
+}
+
 export interface CompilationStatus {
-    code: 0 | 1 | 2 | 3 | 4;
+    code: CompilationStatusCode;
     compilerOut: number;
 }

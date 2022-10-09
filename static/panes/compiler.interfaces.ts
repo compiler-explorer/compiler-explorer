@@ -24,12 +24,12 @@
 
 import {WidgetState} from '../widgets/libs-widget.interfaces';
 
-export interface CompilerState extends WidgetState {
-    tree: any;
+export type CompilerState = WidgetState & {
+    tree?: number;
     source?: number;
-    compiler: any;
-    options: any;
+    compiler: string;
+    options?: string;
     flagsViewOpen?: boolean;
     wantOptInfo?: boolean;
-    lang?: string | null;
-}
+    lang?: string;
+};
