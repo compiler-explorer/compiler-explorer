@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface DeviceAsmState {
+export type DeviceAsmState = {
     device?: string;
     irOutput?: DeviceAsmCode[];
-}
+};
 
-export interface DeviceAsmCode {
+export type DeviceAsmCode = {
     source?: {
         file?: string;
         line: number;
     };
     text: string;
-}
+};

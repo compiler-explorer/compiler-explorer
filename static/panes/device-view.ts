@@ -22,14 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {FontScale} from '../widgets/fontscale';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import $ from 'jquery';
 import * as colour from '../colour';
 import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';
-import {PaneRenaming} from '../widgets/pane-renaming';
 import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
 import {Hub} from '../hub';
@@ -37,19 +34,14 @@ import {MonacoPane} from './pane';
 import {DeviceAsmCode, DeviceAsmState} from './device-view.interfaces';
 import {MonacoPaneState} from './pane.interfaces';
 
-type DecorationEntry = {
-    linkedCode: any[];
-};
-
 type DeviceType = {
     languageId: string;
     asm: DeviceAsmCode[];
 };
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
-    private decorations: DecorationEntry;
+    private decorations: Record<'linkedCode', monaco.editor.IModelDeltaDecoration[]>;
     private prevDecorations: string[];
-    private awaitingInitialResults: boolean;
     private selectedDevice: string;
     private devices: Record<string, DeviceType> | null;
     private colours: string[];
@@ -64,7 +56,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         this.prevDecorations = [];
 
-        this.awaitingInitialResults = false;
         this.selection = state.selection;
         this.selectedDevice = state.device || '';
         this.devices = null;
@@ -85,11 +76,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
         });
-
-        this.paneRenaming = new PaneRenaming(this, state);
-
-        this.initButtons(state);
-        this.initEditorActions();
 
         if (state.irOutput) {
             this.showDeviceAsmResults(state.irOutput);
@@ -120,7 +106,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         });
     }
 
-    initEditorActions(): void {
+    override registerEditorActions(): void {
         this.editor.addAction({
             id: 'viewsource',
             label: 'Scroll to source',
@@ -142,12 +128,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         });
     }
 
-    initButtons(state: DeviceAsmState & MonacoPaneState): void {
-        this.fontScale = new FontScale(this.domRoot, state, this.editor);
-
-        this.topBar = this.domRoot.find('.top-bar');
-    }
-
     override registerCallbacks(): void {
         this.linkedFadeTimeoutId = null;
         const mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
@@ -158,20 +138,12 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
         this.fontScale.on('change', this.updateState.bind(this));
         this.selectize.on('change', this.onDeviceSelect.bind(this));
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
 
-        this.container.on('destroy', this.close, this);
-
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compiler', this.onCompiler, this);
         this.eventHub.on('colours', this.onColours, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.emit('deviceViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestSettings');
 
-        this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
     }
 
@@ -197,7 +169,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         const selectize = this.selectize;
 
         for (const key in selectize.options) {
-            if (deviceNames.indexOf(selectize.options[key].name) === -1) {
+            if (deviceNames.includes(selectize.options[key].name)) {
                 selectize.removeOption(selectize.options[key].name);
             }
         }
@@ -225,16 +197,15 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     }
 
     updateDeviceAsm(): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (this.selectedDevice && this.devices != null && this.devices[this.selectedDevice]) {
+        if (this.selectedDevice && this.devices != null && this.selectedDevice in this.devices) {
             const languageId = this.devices[this.selectedDevice].languageId;
             this.showDeviceAsmResults(this.devices[this.selectedDevice].asm, languageId);
         } else {
-            this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
+            this.showDeviceAsmResults([{text: `<Device ${this.selectedDevice} not found>`}]);
         }
     }
 
-    getDefaultPaneName(): string {
+    override getDefaultPaneName(): string {
         return 'Device Viewer';
     }
 
@@ -251,16 +222,16 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             model.setValue(deviceCode.length ? deviceCode.map(d => d.text).join('\n') : '<No device code>');
         }
 
-        if (!this.awaitingInitialResults) {
+        if (!this.isAwaitingInitialResults) {
             if (this.selection) {
                 this.editor.setSelection(this.selection);
                 this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
             }
-            this.awaitingInitialResults = true;
+            this.isAwaitingInitialResults = true;
         }
     }
 
-    onCompiler(id: number, compiler: any, options: string, editorId: number, treeId: number): void {
+    override onCompiler(id: number, compiler: any, options: string, editorId: number, treeId: number): void {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
@@ -370,7 +341,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    close(): void {
+    override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('deviceViewClosed', this.compilerInfo.compilerId);
         this.editor.dispose();
