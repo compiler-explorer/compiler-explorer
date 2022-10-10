@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,36 +22,34 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './ada-mode';
-import './asm6502-mode';
-import './asm-mode';
-import './asmruby-mode';
-import './carbon-mode';
-import './clean-mode';
-import './cmake-mode';
-import './cppcircle-mode';
-import './cpp-for-opencl-mode';
-import './cppfront-mode';
-import './cppp-mode';
-import './cppx-blue-mode';
-import './cppx-gold-mode';
-import './crystal-mode';
-import './cuda-mode';
-import './d-mode';
-import './erlang-mode';
-import './fortran-mode';
-import './gccdump-rtl-gimple-mode';
-import './haskell-mode';
-import './hlsl-mode';
-import './hook-mode';
-import './ispc-mode';
-import './jakt-mode';
-import './llvm-ir-mode';
-import './mlir-mode';
-import './nc-mode';
-import './nim-mode';
-import './ocaml-mode';
-import './openclc-mode';
-import './ptx-mode';
-import './spirv-mode';
-import './zig-mode';
+'use strict';
+const monaco = require('monaco-editor');
+
+export function definition() {
+    return {
+        defaultToken: 'invalid',
+        escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+        tokenizer: {
+            root: [
+                [/%[0-9]+/, 'variable.predefined'],
+                [/%[a-zA-Z_][a-zA-Z0-9_]*/, 'variable'],
+                [/;.*$/, 'comment'],
+                [/Op[A-Z][a-zA-Z]*/, 'keyword'],
+                [/\d+/, 'number'],
+                [/"([^"\\]|\\.)*$/, 'string.invalid'], // non-terminated string
+                [/"/, 'string', '@string'], // push to string state
+            ],
+            string: [
+                [/[^\\"]+/, 'string'],
+                [/@escapes/, 'string.escape'],
+                [/\\./, 'string.escape.invalid'],
+                [/"/, {token: 'string.quote', bracket: '@close', next: '@pop'}],
+            ],
+        },
+    };
+}
+
+monaco.languages.register({id: 'spirv'});
+monaco.languages.setMonarchTokensProvider('spirv', definition());
+
+export {};
