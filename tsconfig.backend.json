@@ -10,7 +10,7 @@
     "moduleResolution": "node",
     /* Code generation */
     "outDir": "./out/dist",
-    "typeRoots": ["./typings", "./node_modules/@types"],
+    "typeRoots": ["./types", "./node_modules/@types"],
     /* Other options */
     "allowJs": true
   }
