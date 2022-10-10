@@ -34,8 +34,6 @@ export type CompilationResult = {
     buildResult?: unknown;
     inputFilename?: string;
     asm?: ResultLine[];
-    asmSize?: number;
-    filteredCount?: number;
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
