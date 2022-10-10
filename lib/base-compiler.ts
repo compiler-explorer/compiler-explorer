@@ -1011,7 +1011,6 @@ export class BaseCompiler {
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }
-        console.log(newOptions, output);
         const ir = await this.processIrOutput(output, filters);
         return ir.asm;
     }
