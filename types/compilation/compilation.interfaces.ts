@@ -34,6 +34,8 @@ export type CompilationResult = {
     buildResult?: unknown;
     inputFilename?: string;
     asm?: ResultLine[];
+    asmSize?: number;
+    filteredCount?: number;
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
@@ -98,6 +100,7 @@ export type ExecutionOptions = {
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    // Stdin
     input?: any;
     killChild?: () => void;
 };
