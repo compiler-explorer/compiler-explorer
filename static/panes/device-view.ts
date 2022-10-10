@@ -33,6 +33,8 @@ import {Hub} from '../hub';
 import {MonacoPane} from './pane';
 import {DeviceAsmCode, DeviceAsmState} from './device-view.interfaces';
 import {MonacoPaneState} from './pane.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 
 type DeviceType = {
     languageId: string;
@@ -136,7 +138,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         const cursorSelectionThrottledFunction = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
         this.editor.onDidChangeCursorSelection(e => cursorSelectionThrottledFunction(e));
 
-        this.fontScale.on('change', this.updateState.bind(this));
         this.selectize.on('change', this.onDeviceSelect.bind(this));
 
         this.eventHub.on('colours', this.onColours, this);
@@ -147,8 +148,9 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.container.on('shown', this.resize, this);
     }
 
-    override onCompileResult(id: number, compiler: any, result: any): void {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== id) return;
+        // @ts-ignore
         this.devices = result.devices;
         let deviceNames: string[] = [];
         if (!this.devices) {
@@ -231,12 +233,19 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
-    override onCompiler(id: number, compiler: any, options: string, editorId: number, treeId: number): void {
+    override onCompiler(
+        id: number,
+        compiler: CompilerInfo | undefined,
+        options: string,
+        editorId: number,
+        treeId: number
+    ): void {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
+            // @ts-ignore
             if (compiler && !compiler.supportsDeviceAsmView) {
                 this.editor.setValue('<Device output is not supported for this compiler>');
             }
