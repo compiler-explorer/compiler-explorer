@@ -118,7 +118,7 @@ export class LlvmPassDumpParser {
             /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
         ];
         this.debugInfoLineFilters = [
-            /, !dbg !\d+/, // debug annotation
+            /,? !dbg !\d+/, // instruction/function debug metadata
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
@@ -453,7 +453,17 @@ export class LlvmPassDumpParser {
         }
     }
 
-    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    // findLastIndex is currently unavailable in node, replacement essentially taken from
+    // https://stackoverflow.com/a/53187807/89706
+    findLastIndex<T>(array: Array<T>, predicate: (value: T) => boolean): number {
+        let l = array.length;
+        while (l--) {
+            if (predicate(array[l])) return l;
+        }
+        return 0; // if not found slice entire array. -1 would slice only the *last* element
+    }
+
+    applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         // Additional filters conditionally enabled by `filterDebugInfo`
         let filters = this.filters;
         let lineFilters = this.lineFilters;
@@ -462,11 +472,14 @@ export class LlvmPassDumpParser {
             lineFilters = lineFilters.concat(this.debugInfoLineFilters);
         }
 
-        // Filter a lot of junk before processing
-        const preprocessed_lines = ir
-            .slice(
-                ir.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
-            )
+        // Filter junk
+        // prettier-ignore
+        const idxAfterHeaders = this.findLastIndex(
+            ir,
+            line => (line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)) !== null);
+
+        return ir
+            .slice(idxAfterHeaders)
             .filter(line => filters.every(re => line.text.match(re) === null)) // apply filters
             .map(_line => {
                 let line = _line.text;
@@ -485,7 +498,10 @@ export class LlvmPassDumpParser {
                 _line.text = line;
                 return _line;
             });
+    }
 
+    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);
     }
 }
