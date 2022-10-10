@@ -188,6 +188,10 @@ export class ClangCudaCompiler extends ClangCompiler {
         this.asm = new SassAsmParser();
     }
 
+    override getCompilerResultLanguageId() {
+        return 'ptx';
+    }
+
     override optionsForFilter(filters, outputFilename) {
         return ['-o', this.filename(outputFilename), '-g1', filters.binary ? '-c' : '-S'];
     }

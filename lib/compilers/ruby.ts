@@ -30,28 +30,32 @@ import {resolvePathFromAppRoot} from '../utils';
 import {BaseParser} from './argument-parsers';
 
 export class RubyCompiler extends BaseCompiler {
+    disasmScriptPath: any;
+
     static get key() {
         return 'ruby';
     }
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
-        this.compiler.demangler = null;
-        this.demanglerClass = null;
         this.disasmScriptPath =
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'disasm.rb');
     }
 
-    processAsm(result) {
+    override getCompilerResultLanguageId() {
+        return 'asmruby';
+    }
+
+    override processAsm(result) {
         const lineRe = /\(\s*(\d+)\)(?:\[[^\]]+])?$/;
         const fileRe = /ISeq:.*?@(.*?):(\d+) /;
         const baseFile = path.basename(this.compileFilename);
 
         const bytecodeLines = result.asm.split('\n');
 
-        const bytecodeResult = [];
-        let lastFile = null;
-        let lastLineNo = null;
+        const bytecodeResult: any = [];
+        let lastFile: any = null;
+        let lastLineNo: any = null;
 
         for (const line of bytecodeLines) {
             const match = line.match(lineRe);
@@ -77,7 +81,7 @@ export class RubyCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         return [
             this.disasmScriptPath,
             '--outputfile',
@@ -88,7 +92,7 @@ export class RubyCompiler extends BaseCompiler {
         ];
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return BaseParser;
     }
 }
