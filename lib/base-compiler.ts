@@ -1029,13 +1029,14 @@ export class BaseCompiler {
     }
 
     async generateLLVMOptPipeline(
-        inputFilename,
-        options,
+        inputFilename: string,
+        options: string[],
         filters: ParseFilters,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
     ): Promise<LLVMOptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
             .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
             .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : []);
