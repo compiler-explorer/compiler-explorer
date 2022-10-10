@@ -1009,7 +1009,7 @@ export class BaseCompiler {
 
     async generateIR(inputFilename: string, options: string[], filters: ParseFilters) {
         // These options make Clang produce an IR
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
+        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1024,7 +1024,7 @@ export class BaseCompiler {
     }
 
     async processIrOutput(output, filters: ParseFilters) {
-        const irPath = this.getIrOutputFilename(output.inputFilename);
+        const irPath = this.getIrOutputFilename(output.inputFilename, filters);
         if (await fs.pathExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf-8');
             // uses same filters as main compiler
@@ -1186,7 +1186,7 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename) {
+    getIrOutputFilename(inputFilename: string, filters: ParseFilters): string {
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
