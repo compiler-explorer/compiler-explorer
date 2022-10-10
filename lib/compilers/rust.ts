@@ -32,7 +32,6 @@ import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
 import {parseRustOutput} from '../utils';
 
 import {RustParser} from './argument-parsers';
-import {ParseFilters} from '../../types/features/filters.interfaces';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -138,7 +137,7 @@ export class RustCompiler extends BaseCompiler {
             if (this.linker) {
                 options = options.concat(`-Clinker=${this.linker}`);
             }
-        } else {
+        } else if (!filters.binary) {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
@@ -149,13 +148,8 @@ export class RustCompiler extends BaseCompiler {
     }
 
     // Override the IR file name method for rustc because the output file is different from clang.
-    override getIrOutputFilename(inputFilename: string, filters: ParseFilters): string {
-        const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
-        // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
-        if (!filters.binary) {
-            return outputFilename.replace('.s', '.ll');
-        }
-        return outputFilename;
+    override getIrOutputFilename(inputFilename) {
+        return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.ll');
     }
 
     override getArgumentParser() {
