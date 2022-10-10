@@ -99,6 +99,7 @@ export type ExecutionOptions = {
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    // Stdin
     input?: any;
     killChild?: () => void;
 };
