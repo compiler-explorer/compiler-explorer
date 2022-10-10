@@ -58,16 +58,7 @@ export class ErlangCompiler extends BaseCompiler {
         staticLibLinks: string[],
     ): string[] {
         options.push('-input', inputFilename);
-        return super.orderArguments(
-            options,
-            inputFilename,
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            userOptions,
-            staticLibLinks,
-        );
+        return options.concat(libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks);
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string): string {
