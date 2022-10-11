@@ -51,7 +51,7 @@ import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {Decoration, Motd} from '../motd.interfaces';
-import {escape_html} from 'tom-select/src/utils';
+import type {escape_html} from 'tom-select/dist/types/utils';
 import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
 
 const loadSave = new loadSaveLib.LoadSave();
@@ -83,7 +83,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private selectize: TomSelect;
     private lastChangeEmitted: string | null;
     private readonly languageBtn: JQuery<HTMLElement>;
-    private currentLanguage?: Language;
+    public currentLanguage?: Language;
     private waitingForLanguage: boolean;
     private currentCursorPosition: JQuery<HTMLElement>;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;

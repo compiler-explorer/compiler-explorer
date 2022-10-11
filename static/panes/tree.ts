@@ -291,8 +291,8 @@ export class Tree {
         if (file) {
             file.isOpen = false;
             const editor = this.hub.getEditorById(editorId);
-            file.langId = editor.currentLanguage.id;
-            file.content = editor.getSource();
+            file.langId = editor?.currentLanguage?.id ?? '';
+            file.content = editor?.getSource() ?? '';
             file.editorId = -1;
         }
 
@@ -399,7 +399,7 @@ export class Tree {
                 this.hub.addInEditorStackIfPossible(dragConfig);
             } else {
                 const editor = this.hub.getEditorById(file.editorId);
-                this.hub.activateTabForContainer(editor.container);
+                this.hub.activateTabForContainer(editor?.container);
             }
 
             this.sendChangesToAllEditors();
