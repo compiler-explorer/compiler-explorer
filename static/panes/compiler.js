@@ -128,15 +128,12 @@ function Compiler(hub, container, state) {
 
     this.initButtons(state);
 
-    var monacoDisassembly =
-        (languages[this.currentLangId] ? languages[this.currentLangId].monacoDisassembly : null) || 'asm';
-
     this.outputEditor = monaco.editor.create(
         this.monacoPlaceholder[0],
         monacoConfig.extendConfig(
             {
                 readOnly: true,
-                language: monacoDisassembly,
+                language: 'asm',
                 glyphMargin: !options.embedded,
                 guides: false,
                 vimInUse: false,
@@ -1171,6 +1168,13 @@ Compiler.prototype.setAssembly = function (result, filteredCount) {
     this.assembly = asm;
     if (!this.outputEditor || !this.outputEditor.getModel()) return;
     var editorModel = this.outputEditor.getModel();
+    if (result.languageId) {
+        monaco.editor.setModelLanguage(editorModel, result.languageId);
+    } else {
+        var monacoDisassembly =
+            (languages[this.currentLangId] ? languages[this.currentLangId].monacoDisassembly : null) || 'asm';
+        monaco.editor.setModelLanguage(editorModel, monacoDisassembly);
+    }
     var msg = '<No assembly generated>';
     if (asm.length) {
         msg = _.pluck(asm, 'text').join('\n');

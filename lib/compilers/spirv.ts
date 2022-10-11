@@ -142,6 +142,7 @@ export class SPIRVCompiler extends BaseCompiler {
 
         result.stdout = result.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
         result.stderr = result.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
+        result.languageId = 'spirv';
         return result;
     }
 

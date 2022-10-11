@@ -30,6 +30,8 @@ import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
 import {GccSelectedPass} from './panes/gccdump-view.interfaces';
 import {Motd} from './motd.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
+import {CompilationResult} from '../types/compilation/compilation.interfaces';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -42,15 +44,21 @@ export type EventMap = {
     colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
-    compiler: (compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number) => void;
+    compiler: (
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number
+    ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
-    compileResult: (compilerId: number, compiler: unknown, result: unknown, language: Language) => void;
+    compileResult: (compilerId: number, compiler: CompilerInfo, result: CompilationResult, language: Language) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
     // Right now nothing emits this event, but it might be useful at some point so we keep it
     compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
-    compiling: (compilerId: number, compiler: unknown) => void;
+    compiling: (compilerId: number, compiler: CompilerInfo) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
     copyShortLinkToClip: () => void;
