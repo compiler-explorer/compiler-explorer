@@ -184,8 +184,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             onChange: _.bind(this.onLanguageChange, this),
             closeAfterSelect: true,
             render: {
-                option: this.renderSelectizeOption,
-                item: this.renderSelectizeItem,
+                option: this.renderSelectizeOption.bind(this),
+                item: this.renderSelectizeItem.bind(this),
             },
         });
 
@@ -1386,12 +1386,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.busyCompilers[compilerId] = true;
     }
 
-    addSource(arr: (ResultLine & {source?: string})[], source: string): (ResultLine & {source: string})[] {
-        arr.forEach(element => {
+    addSource(arr: (ResultLine & {source?: string})[] | undefined, source: string): (ResultLine & {source: string})[] {
+        arr?.forEach(element => {
             element.source = source;
         });
 
-        return arr as (ResultLine & {source: string})[];
+        return (arr as (ResultLine & {source: string})[] | undefined) ?? [];
     }
 
     getAllOutputAndErrors(
