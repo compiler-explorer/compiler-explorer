@@ -78,11 +78,10 @@ export class ZigCompiler extends BaseCompiler {
         } else {
             source += '\n';
             source += 'extern fn zig_panic() noreturn;\n';
-            source +=
-                'pub fn panic(msg: []const u8, error_return_trace: ' +
-                '?*@import("std").builtin.StackTrace) noreturn {\n';
+            source += 'pub fn panic(msg: []const u8, error_return_trace: ?*@import("std").builtin.StackTrace, ret_addr: ?usize) noreturn {\n';
             source += '    _ = msg;\n';
             source += '    _ = error_return_trace;\n';
+            source += '    _ = ret_addr;\n';
             source += '    zig_panic();\n';
             source += '}\n';
         }
