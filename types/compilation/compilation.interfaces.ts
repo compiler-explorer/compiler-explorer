@@ -50,6 +50,7 @@ export type CompilationResult = {
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
+    languageId?: string;
 
     hasPpOutput?: boolean;
     ppOutput?: any;
@@ -98,6 +99,7 @@ export type ExecutionOptions = {
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    // Stdin
     input?: any;
     killChild?: () => void;
 };

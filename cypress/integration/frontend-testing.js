@@ -97,7 +97,7 @@ describe('Known good state test', () => {
                 },
             },
         );
-    })
+    });
 
     afterEach('Ensure no output in console', () => {
         cy.window().then(win => {
@@ -115,5 +115,4 @@ describe('Known good state test', () => {
         cy.get('span.lm_title:visible').contains('Output');
         cy.get('span.lm_title:visible').contains('Conformance');
     });
-
 });

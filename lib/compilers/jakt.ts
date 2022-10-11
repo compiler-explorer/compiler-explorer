@@ -42,6 +42,10 @@ export class JaktCompiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
+    override getCompilerResultLanguageId() {
+        return 'cppp';
+    }
+
     override optionsForFilter(filters: ParseFilters, outputFilename: any) {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
