@@ -36,49 +36,73 @@ import monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config';
 import * as quickFixesHandler from '../quick-fixes-handler';
 import TomSelect from 'tom-select';
-import {Settings} from '../settings';
-import * as utils from '../utils';
+import {Settings, SiteSettings} from '../settings';
 import '../formatter-registry';
 import '../modes/_all';
 import {MonacoPane} from './pane';
 import {Hub} from '../hub';
 import {MonacoPaneState} from './pane.interfaces';
 import {Container} from 'golden-layout';
+import {EditorState} from './editor.interfaces';
+import {Language, LanguageKey} from '../../types/languages.interfaces';
+import {editor} from 'monaco-editor';
+import IModelDeltaDecoration = editor.IModelDeltaDecoration;
+import {MessageWithLocation, ResultLine} from '../../types/resultline/resultline.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {Decoration, Motd} from '../motd.interfaces';
+import {escape_html} from 'tom-select/src/utils';
+import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
 
 const loadSave = new loadSaveLib.LoadSave();
-const languages = options.languages;
+const languages = options.languages as Record<string, Language | undefined>;
 
 // eslint-disable-next-line max-statements
-export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
+export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, EditorState> {
     private readonly id: number;
     private hub: Hub;
-    private ourCompilers: {};
-    private ourExecutors: {};
-    private httpRoot: string;
-    private asmByCompiler: {};
-    private defaultFileByCompiler: {};
-    private busyCompilers: {};
-    private colours: any[];
-    private treeCompilers: {};
-    private decorations: {};
-    private prevDecorations: any[];
-    private extraDecorations: any[];
-    private fadeTimeoutId: number;
-    private editorSourceByLang: {};
+    private readonly ourCompilers: Record<string, boolean>;
+    private readonly ourExecutors: Record<number, boolean>;
+    private readonly httpRoot: string;
+    private readonly asmByCompiler: Record<string, ResultLine[] | undefined>;
+    private readonly defaultFileByCompiler: Record<number, string>;
+    private readonly busyCompilers: Record<number, boolean>;
+    private colours: string[];
+    private readonly treeCompilers: Record<number, Record<number, boolean> | undefined>;
+    private decorations: Record<string, IModelDeltaDecoration[] | undefined>;
+    private prevDecorations: string[];
+    private extraDecorations?: Decoration[];
+    private fadeTimeoutId: NodeJS.Timeout | null;
+    private readonly editorSourceByLang: Record<LanguageKey, string | undefined>;
     private alertSystem: Alert;
-    private filename: any;
+    private filename: string | null;
     private awaitingInitialResults: boolean;
-    private revealJumpStack: any[];
-    private langKeys: string[];
-    private legacyReadOnly: any;
+    private revealJumpStack: editor.ICodeEditorViewState[];
+    private readonly langKeys: string[];
+    private readonly legacyReadOnly?: boolean;
     private selectize: TomSelect;
-    private lastChangeEmitted: null;
-    private languageBtn: JQuery<HTMLElement>;
-    private currentLanguage: string;
+    private lastChangeEmitted: string | null;
+    private readonly languageBtn: JQuery<HTMLElement>;
+    private currentLanguage?: Language;
     private waitingForLanguage: boolean;
-    private currentCursorPosition: any;
+    private currentCursorPosition: JQuery<HTMLElement>;
+    private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
+    private cursorSelectionThrottledFunction?: (e: monaco.editor.ICursorSelectionChangedEvent) => void & _.Cancelable;
+    private vimMode: any;
+    private vimFlag: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private loadSaveButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private addExecutorButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private conformanceViewerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private cppInsightsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private quickBenchButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private nothingCtrlSSince?: number;
+    private nothingCtrlSTimes?: number;
+    private isCpp: editor.IContextKey<boolean>;
+    private isClean: editor.IContextKey<boolean>;
+    private debouncedEmitChange: (() => void) & _.Cancelable;
+    private revealJumpStackHasElementsCtxKey: editor.IContextKey<boolean>;
 
-    constructor(hub: Hub, state: MonacoPaneState, container: Container) {
+    constructor(hub: Hub, state: MonacoPaneState & EditorState, container: Container) {
         super(hub, container, state);
         this.id = state.id || hub.nextEditorId();
         this.hub = hub;
@@ -97,13 +121,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         this.prevDecorations = [];
         this.extraDecorations = [];
 
-        this.fadeTimeoutId = -1;
+        this.fadeTimeoutId = null;
 
-        this.editorSourceByLang = {};
+        this.editorSourceByLang = {} as Record<LanguageKey, string | undefined>;
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
-        this.filename = state.filename || false;
+        this.filename = state.filename || null;
 
         this.awaitingInitialResults = false;
         this.selection = state.selection;
@@ -112,7 +136,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
 
         this.langKeys = Object.keys(languages);
         this.initLanguage(state);
-        
+
         this.legacyReadOnly = state.options && !!state.options.readOnly;
 
         if (state.source !== undefined) {
@@ -121,18 +145,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             this.updateEditorCode();
         }
 
-        var startFolded = /^[/*#;]+\s*setup.*/;
+        const startFolded = /^[/*#;]+\s*setup.*/;
         if (state.source && state.source.match(startFolded)) {
             // With reference to https://github.com/Microsoft/monaco-editor/issues/115
             // I tried that and it didn't work, but a delay of 500 seems to "be enough".
             // FIXME: Currently not working - No folding is performed
             setTimeout(() => {
-                    this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
-                    this.editor.focus();
-                    this.editor.getAction('editor.fold').run();
-                    //this.editor.clearSelection();
-                }, 500
-            );
+                this.editor.setSelection(new monaco.Selection(1, 1, 1, 1));
+                this.editor.focus();
+                this.editor.getAction('editor.fold').run();
+                //this.editor.clearSelection();
+            }, 500);
         }
 
         this.initEditorActions();
@@ -143,25 +166,26 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             this.enableVim();
         }
 
-        var usableLanguages = _.filter(languages, function(language) {
-            return hub.compilerService.compilersByLang[language.id];
+        const usableLanguages = Object.values(languages).filter(language => {
+            return hub.compilerService.compilersByLang[language?.id ?? ''];
         });
 
-        this.selectize = new TomSelect(this.languageBtn, {
+        this.languageBtn = this.domRoot.find('.change-language');
+        this.selectize = new TomSelect(this.languageBtn as any, {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
             placeholder: '🔍 Select a language...',
             options: _.map(usableLanguages, _.identity),
-            items: [this.currentLanguage.id],
+            items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
             onChange: _.bind(this.onLanguageChange, this),
             closeAfterSelect: true,
             render: {
-                option: renderSelectizeOption,
-                item: renderSelectizeItem,
+                option: this.renderSelectizeOption,
+                item: this.renderSelectizeItem,
             },
         });
 
@@ -181,6 +205,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
 
         this.updateTitle();
         this.updateState();
+    }
+
+    override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -189,27 +216,29 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'LanguageChange',
-            eventAction: this.currentLanguage.id,
+            eventAction: this.currentLanguage?.id,
         });
     }
 
-    override getInitialHTML() {
+    override getInitialHTML(): string {
         return $('#codeEditor').html();
     }
 
-    override createEditor(editorRoot: HTMLElement) {
-        const editor =  monaco.editor.create(
+    override createEditor(editorRoot: HTMLElement): editor.IStandaloneCodeEditor {
+        const editor = monaco.editor.create(
             editorRoot,
+            // @ts-expect-error: options.readOnly and anything inside window.compilerExplorerOptions is unknown
             monacoConfig.extendConfig(
                 {
-                    language: this.currentLanguage.monaco,
+                    language: this.currentLanguage?.monaco,
                     readOnly:
                         !!options.readOnly ||
                         this.legacyReadOnly ||
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                         (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
                     glyphMargin: !options.embedded,
                 },
-                this.settings
+                this.settings as SiteSettings
             )
         );
 
@@ -217,54 +246,68 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         return editor;
     }
 
-    onMotd(motd) {
+    onMotd(motd: Motd): void {
         this.extraDecorations = motd.decorations;
         this.updateExtraDecorations();
-    };
+    }
 
-    updateExtraDecorations() {
-        var decorationsDirty = false;
-            this.extraDecorations.forEach(
-            (decoration) => {
-                if (decoration.filter && decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0) return;
-                var match = this.editor.getModel().findNextMatch(
-                    decoration.regex,
-                    {
-                        column: 1,
-                        lineNumber: 1,
-                    },
-                    true,
-                    true,
-                    null,
-                    false
-                );
-                if (match !== this.decorations[decoration.name]) {
-                    decorationsDirty = true;
-                    this.decorations[decoration.name] = match
-                        ? [{range: match.range, options: decoration.decoration}]
-                        : null;
-                }
+    updateExtraDecorations(): void {
+        let decorationsDirty = false;
+        this.extraDecorations?.forEach(decoration => {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            if (
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                decoration.filter &&
+                this.currentLanguage?.name &&
+                decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0
+            )
+                return;
+            const match = this.editor.getModel()?.findNextMatch(
+                decoration.regex,
+                {
+                    column: 1,
+                    lineNumber: 1,
+                },
+                true,
+                true,
+                null,
+                false
+            );
+
+            if (match !== this.decorations[decoration.name]) {
+                decorationsDirty = true;
+                this.decorations[decoration.name] = match
+                    ? [{range: match.range, options: decoration.decoration}]
+                    : undefined;
             }
-        );
-        if (decorationsDirty) this.updateDecorations();
-    };
+        });
 
-// If compilerId is undefined, every compiler will be pinged
-    maybeEmitChange(force, compilerId) {
-        var source = this.getSource();
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (decorationsDirty) this.updateDecorations();
+    }
+
+    // If compilerId is undefined, every compiler will be pinged
+    maybeEmitChange(force?: boolean, compilerId?: number): void {
+        const source = this.getSource();
         if (!force && source === this.lastChangeEmitted) return;
 
         this.updateExtraDecorations();
 
-        this.lastChangeEmitted = source;
-        this.eventHub.emit('editorChange', this.id, this.lastChangeEmitted, this.currentLanguage.id, compilerId);
-    };
+        this.lastChangeEmitted = source ?? null;
+        this.eventHub.emit(
+            'editorChange',
+            this.id,
+            this.lastChangeEmitted ?? '',
+            this.currentLanguage?.id ?? '',
+            compilerId
+        );
+    }
 
-    override updateState() {
-        var state = {
+    override updateState(): void {
+        const state = {
             id: this.id,
             source: this.getSource(),
-            lang: this.currentLanguage.id,
+            lang: this.currentLanguage?.id,
             selection: this.selection,
             filename: this.filename,
         };
@@ -272,68 +315,59 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         this.container.setState(state);
 
         this.updateButtons();
-    };
+    }
 
-    setSource(newSource) {
+    setSource(newSource: string): void {
         this.updateSource(newSource);
 
         if (window.compilerExplorerOptions.mobileViewer) {
             $(this.domRoot.find('.monaco-placeholder textarea')).hide();
         }
-    };
+    }
 
-    onNewSource(editorId, newSource) {
+    onNewSource(editorId: number, newSource: string): void {
         if (this.id === editorId) {
             this.setSource(newSource);
         }
-    };
+    }
 
-    getSource() {
+    getSource(): string | undefined {
         return this.editor.getModel()?.getValue();
-    };
+    }
 
-    initLanguage(state) {
+    initLanguage(state: MonacoPaneState & EditorState): void {
         this.currentLanguage = languages[this.langKeys[0]];
-        this.waitingForLanguage = state.source && !state.lang;
-        if (languages[this.settings.defaultLanguage]) {
-            this.currentLanguage = languages[this.settings.defaultLanguage];
+        this.waitingForLanguage = Boolean(state.source && !state.lang);
+        if (languages[this.settings.defaultLanguage ?? '']) {
+            this.currentLanguage = languages[this.settings.defaultLanguage ?? ''];
         }
-        if (languages[state.lang]) {
-            this.currentLanguage = languages[state.lang];
-        } else if (this.settings.newEditorLastLang && languages[this.hub.lastOpenedLangId]) {
-            this.currentLanguage = languages[this.hub.lastOpenedLangId];
-        }
-    };
 
-    initCallbacks() {
+        if (languages[state.lang ?? '']) {
+            this.currentLanguage = languages[state.lang ?? ''];
+        } else if (this.settings.newEditorLastLang && languages[this.hub.lastOpenedLangId ?? '']) {
+            this.currentLanguage = languages[this.hub.lastOpenedLangId ?? ''];
+        }
+    }
+
+    initCallbacks(): void {
         this.fontScale.on('change', _.bind(this.updateState, this));
-        this.eventHub.on(
-            'broadcastFontScale',
-            _.bind(function(scale) {
-                this.fontScale.setScale(scale);
-                this.updateState();
-            }, this)
-        );
+        this.eventHub.on('broadcastFontScale', scale => {
+            this.fontScale.setScale(scale);
+            this.updateState();
+        });
 
         this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
-        this.container.on(
-            'open',
-            _.bind(function() {
-                this.eventHub.emit('editorOpen', this.id, this);
-            }, this)
-        );
+        this.container.on('open', () => {
+            this.eventHub.emit('editorOpen', this.id);
+        });
         this.container.on('destroy', this.close, this);
-        this.container.layoutManager.on(
-            'initialised',
-            function() {
-                // Once initialized, let everyone know what text we have.
-                this.maybeEmitChange();
-                // And maybe ask for a compilation (Will hit the cache most of the time)
-                this.requestCompilation();
-            },
-            this
-        );
+        this.container.layoutManager.on('initialised', () => {
+            // Once initialized, let everyone know what text we have.
+            this.maybeEmitChange();
+            // And maybe ask for a compilation (Will hit the cache most of the time)
+            this.requestCompilation();
+        });
 
         this.eventHub.on('treeCompilerEditorIncludeChange', this.onTreeCompilerEditorIncludeChange, this);
         this.eventHub.on('treeCompilerEditorExcludeChange', this.onTreeCompilerEditorExcludeChange, this);
@@ -343,7 +377,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         this.eventHub.on('executorClose', this.onExecutorClose, this);
         this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compiling', this.onCompiling, this);
-        this.eventHub.on('compileResult', this.onCompileResponse, this);
+        this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('executeResult', this.onExecuteResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
@@ -358,39 +392,36 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         this.eventHub.on('findEditors', this.sendEditor, this);
         this.eventHub.emit('requestMotd');
 
-        this.editor.getModel().onDidChangeContent(
-            _.bind(function() {
-                this.debouncedEmitChange();
-                this.updateState();
-            }, this)
-        );
+        this.editor.getModel()?.onDidChangeContent(() => {
+            this.debouncedEmitChange();
+            this.updateState();
+        });
 
-        this.mouseMoveThrottledFunction = _.throttle(_.bind(this.onMouseMove, this), 50);
+        this.mouseMoveThrottledFunction = _.throttle(this.onMouseMove.bind(this), 50);
 
-        this.editor.onMouseMove(
-            _.bind(function(e) {
-                this.mouseMoveThrottledFunction(e);
-            }, this)
-        );
+        this.editor.onMouseMove(e => {
+            if (this.mouseMoveThrottledFunction) this.mouseMoveThrottledFunction(e);
+        });
 
         if (window.compilerExplorerOptions.mobileViewer) {
             // workaround for issue with contextmenu not going away when tapping somewhere else on the screen
-            this.editor.onDidChangeCursorSelection(
-                _.bind(function() {
-                    var contextmenu = $('div.context-view.monaco-menu-container');
-                    if (contextmenu.css('display') !== 'none') {
-                        contextmenu.hide();
-                    }
-                }, this)
-            );
+            this.editor.onDidChangeCursorSelection(() => {
+                const contextmenu = $('div.context-view.monaco-menu-container');
+                if (contextmenu.css('display') !== 'none') {
+                    contextmenu.hide();
+                }
+            });
         }
 
-        this.cursorSelectionThrottledFunction = _.throttle(_.bind(this.onDidChangeCursorSelection, this), 500);
-        this.editor.onDidChangeCursorSelection(
-            _.bind(function(e) {
-                this.cursorSelectionThrottledFunction(e);
-            }, this)
+        this.cursorSelectionThrottledFunction = _.throttle(
+            this.onDidChangeCursorSelection.bind(this) as (
+                e: editor.ICursorSelectionChangedEvent
+            ) => void & _.Cancelable,
+            500
         );
+        this.editor.onDidChangeCursorSelection(e => {
+            if (this.cursorSelectionThrottledFunction) this.cursorSelectionThrottledFunction(e);
+        });
 
         this.editor.onDidFocusEditorText(_.bind(this.onDidFocusEditorText, this));
         this.editor.onDidBlurEditorText(_.bind(this.onDidBlurEditorText, this));
@@ -398,74 +429,77 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
 
         this.eventHub.on('initialised', this.maybeEmitChange, this);
 
-        $(document).on(
-            'keyup.editable',
-            _.bind(function(e) {
-                if (e.target === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
-                    if (e.which === 27) {
-                        this.onEscapeKey(e);
-                    } else if (e.which === 45) {
-                        this.onInsertKey(e);
-                    }
+        $(document).on('keyup.editable', e => {
+            // @ts-expect-error: Document and JQuery<HTMLElement> have no overlap
+            if (e.target === this.domRoot.find('.monaco-placeholder .inputarea')[0]) {
+                if (e.which === 27) {
+                    this.onEscapeKey();
+                } else if (e.which === 45) {
+                    this.onInsertKey(e);
                 }
-            }, this)
-        );
-    };
+            }
+        });
+    }
 
-    sendEditor() {
-        this.eventHub.emit('editorOpen', this.id, this);
-    };
+    sendEditor(): void {
+        this.eventHub.emit('editorOpen', this.id);
+    }
 
-    onMouseMove(e) {
+    onMouseMove(e: editor.IEditorMouseEvent): void {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (e !== null && e.target !== null && this.settings.hoverShowSource && e.target.position !== null) {
             this.clearLinkedLine();
-            var pos = e.target.position;
+            const pos = e.target.position;
             this.tryPanesLinkLine(pos.lineNumber, pos.column, false);
         }
-    };
+    }
 
-    onDidChangeCursorSelection(e) {
+    override onDidChangeCursorSelection(e: ICursorSelectionChangedEvent): void {
         if (this.awaitingInitialResults) {
             this.selection = e.selection;
             this.updateState();
         }
-    };
+    }
 
-    onDidChangeCursorPosition(e) {
+    onDidChangeCursorPosition(e: ICursorSelectionChangedEvent): void {
+        // @ts-expect-error: 'position' is not a property of 'e'
         if (e.position) {
+            // @ts-expect-error: 'position' is not a property of 'e'
             this.currentCursorPosition.text('(' + e.position.lineNumber + ', ' + e.position.column + ')');
         }
-    };
+    }
 
-    onDidFocusEditorText() {
-        var position = this.editor.getPosition();
+    onDidFocusEditorText(): void {
+        const position = this.editor.getPosition();
         if (position) {
             this.currentCursorPosition.text('(' + position.lineNumber + ', ' + position.column + ')');
         }
         this.currentCursorPosition.show();
-    };
+    }
 
-    onDidBlurEditorText() {
+    onDidBlurEditorText(): void {
         this.currentCursorPosition.text('');
         this.currentCursorPosition.hide();
-    };
+    }
 
-    onEscapeKey() {
+    onEscapeKey(): void {
+        // @ts-expect-error: IStandaloneCodeEditor is missing this property
         if (this.editor.vimInUse) {
-            var currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+            const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
             if (currentState.insertMode) {
                 monacoVim.VimMode.Vim.exitInsertMode(this.vimMode);
             } else if (currentState.visualMode) {
                 monacoVim.VimMode.Vim.exitVisualMode(this.vimMode, false);
             }
         }
-    };
+    }
 
-    onInsertKey(event) {
+    onInsertKey(event: JQuery.TriggeredEvent<Document, undefined, Document, Document>): void {
+        // @ts-expect-error: IStandaloneCodeEditor is missing this property
         if (this.editor.vimInUse) {
-            var currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
+            const currentState = monacoVim.VimMode.Vim.maybeInitVimState_(this.vimMode);
             if (!currentState.insertMode) {
-                var insertEvent = {
+                const insertEvent = {
                     preventDefault: event.preventDefault,
                     stopPropagation: event.stopPropagation,
                     browserEvent: {
@@ -477,24 +511,25 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 this.vimMode.handleKeyDown(insertEvent);
             }
         }
-    };
+    }
 
-    enableVim() {
+    enableVim(): void {
         this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
         this.vimFlag.prop('class', 'btn btn-info');
+        // @ts-expect-error: IStandaloneCodeEditor is missing this property
         this.editor.vimInUse = true;
-    };
+    }
 
-    disableVim() {
+    disableVim(): void {
         this.vimMode.dispose();
         this.domRoot.find('#v-status').html('');
         this.vimFlag.prop('class', 'btn btn-light');
+        // @ts-expect-error: IStandaloneCodeEditor is missing this property
         this.editor.vimInUse = false;
-    };
+    }
 
-    initButtons(state) {
+    initButtons(state: MonacoPaneState & EditorState): void {
         this.fontScale = new FontScale(this.domRoot, state, this.editor);
-        this.languageBtn = this.domRoot.find('.change-language');
         // Ensure that the button is disabled if we don't have anything to select
         // Note that is might be disabled for other reasons beforehand
         if (this.langKeys.length <= 1) {
@@ -504,60 +539,56 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         this.hideable = this.domRoot.find('.hideable');
 
         this.loadSaveButton = this.domRoot.find('.load-save');
-        var paneAdderDropdown = this.domRoot.find('.add-pane');
-        var addCompilerButton = this.domRoot.find('.btn.add-compiler');
+        const paneAdderDropdown = this.domRoot.find('.add-pane');
+        const addCompilerButton = this.domRoot.find('.btn.add-compiler');
         this.addExecutorButton = this.domRoot.find('.btn.add-executor');
         this.conformanceViewerButton = this.domRoot.find('.btn.conformance');
-        var addEditorButton = this.domRoot.find('.btn.add-editor');
-        var toggleVimButton = this.domRoot.find('#vim-flag');
+        const addEditorButton = this.domRoot.find('.btn.add-editor');
+        const toggleVimButton = this.domRoot.find('#vim-flag');
         this.vimFlag = this.domRoot.find('#vim-flag');
-        toggleVimButton.on(
-            'click',
-            () => {
-                if (this.editor.vimInUse) {
-                    this.disableVim();
-                } else {
-                    this.enableVim();
-                }
+        toggleVimButton.on('click', () => {
+            // @ts-expect-error: IStandaloneCodeEditor is missing this property
+            if (this.editor.vimInUse) {
+                this.disableVim();
+            } else {
+                this.enableVim();
             }
-        );
+        });
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
         // between all compilers created this way. That leads to some nasty-to-find state
         // bugs e.g. https://github.com/compiler-explorer/compiler-explorer/issues/225
         const getCompilerConfig = () => {
-            return Components.getCompiler(this.id, this.currentLanguage.id);
+            return Components.getCompiler(this.id, this.currentLanguage?.id ?? '');
         };
 
         const getExecutorConfig = () => {
-            return Components.getExecutor(this.id, this.currentLanguage.id);
+            return Components.getExecutor(this.id, this.currentLanguage?.id ?? '');
         };
 
         const getConformanceConfig = () => {
             // TODO: this doesn't pass any treeid introduced by #3360
-            return Components.getConformanceView(this.id, undefined, this.getSource(), this.currentLanguage.id);
+            return Components.getConformanceView(this.id, 0, this.getSource() ?? '', this.currentLanguage?.id ?? '');
         };
 
-        var getEditorConfig = _.bind(function() {
+        const getEditorConfig = () => {
             return Components.getEditor();
-        }, this);
+        };
 
-        var addPaneOpener = (dragSource, dragConfig) => {
+        const addPaneOpener = (dragSource, dragConfig) => {
             this.container.layoutManager
                 .createDragSource(dragSource, dragConfig)
-                // @ts-ignore
+                // @ts-expect-error: createDragSource returns not void
                 ._dragListener.on('dragStart', () => {
-                paneAdderDropdown.dropdown('toggle');
-            });
+                    paneAdderDropdown.dropdown('toggle');
+                });
 
-            dragSource.on(
-                'click',
-                () => {
-                    const insertPoint =
-                        this.hub.findParentRowOrColumn(this.container) || this.container.layoutManager.root.contentItems[0];
-                    insertPoint.addChild(dragConfig);
-                }
-            );
+            dragSource.on('click', () => {
+                const insertPoint =
+                    this.hub.findParentRowOrColumn(this.container.parent) ||
+                    this.container.layoutManager.root.contentItems[0];
+                insertPoint.addChild(dragConfig);
+            });
         };
 
         addPaneOpener(addCompilerButton, getCompilerConfig);
@@ -566,52 +597,43 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         addPaneOpener(addEditorButton, getEditorConfig);
 
         this.initLoadSaver();
-        $(this.domRoot).on(
-            'keydown',
-            (event) => {
-                if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
-                    this.handleCtrlS(event);
-                }
+        $(this.domRoot).on('keydown', event => {
+            if ((event.ctrlKey || event.metaKey) && String.fromCharCode(event.which).toLowerCase() === 's') {
+                this.handleCtrlS(event);
             }
-        );
+        });
 
         if (options.thirdPartyIntegrationEnabled) {
             this.cppInsightsButton = this.domRoot.find('.open-in-cppinsights');
-            this.cppInsightsButton.on(
-                'mousedown',
-                _.bind(function() {
-                    this.updateOpenInCppInsights();
-                }, this)
-            );
+            this.cppInsightsButton.on('mousedown', () => {
+                this.updateOpenInCppInsights();
+            });
 
             this.quickBenchButton = this.domRoot.find('.open-in-quickbench');
-            this.quickBenchButton.on(
-                'mousedown',
-                _.bind(function() {
-                    this.updateOpenInQuickBench();
-                }, this)
-            );
+            this.quickBenchButton.on('mousedown', () => {
+                this.updateOpenInQuickBench();
+            });
         }
 
         this.currentCursorPosition = this.domRoot.find('.currentCursorPosition');
         this.currentCursorPosition.hide();
-    };
+    }
 
-    handleCtrlS(event) {
+    handleCtrlS(event: JQuery.KeyDownEvent<HTMLElement, undefined, HTMLElement, HTMLElement>): void {
         event.preventDefault();
         if (this.settings.enableCtrlStree && this.hub.hasTree()) {
-            var trees = this.hub.trees;
+            const trees = this.hub.trees;
             // todo: change when multiple trees are used
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (trees && trees.length > 0) {
-                trees[0].multifileService.includeByEditorId(this.id).then(
-                    _.bind(function() {
-                        trees[0].refresh();
-                    }, this)
-                );
+                trees[0].multifileService.includeByEditorId(this.id).then(() => {
+                    trees[0].refresh();
+                });
             }
         } else {
             if (this.settings.enableCtrlS === 'true') {
-                loadSave.setMinimalOptions(this.getSource(), this.currentLanguage);
+                if (this.currentLanguage) loadSave.setMinimalOptions(this.getSource() ?? '', this.currentLanguage);
+                // @ts-expect-error: this.id is not a string
                 if (!loadSave.onSaveToFile(this.id)) {
                     this.showLoadSaver();
                 }
@@ -623,19 +645,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 this.handleCtrlSDoNothing();
             }
         }
-    };
+    }
 
-    handleCtrlSDoNothing() {
+    handleCtrlSDoNothing(): void {
         if (this.nothingCtrlSTimes === undefined) {
             this.nothingCtrlSTimes = 0;
             this.nothingCtrlSSince = Date.now();
         } else {
-            if (Date.now() - this.nothingCtrlSSince > 5000) {
+            if (Date.now() - (this.nothingCtrlSSince ?? 0) > 5000) {
                 this.nothingCtrlSTimes = undefined;
             } else if (this.nothingCtrlSTimes === 4) {
-                var element = this.domRoot.find('.ctrlSNothing');
+                const element = this.domRoot.find('.ctrlSNothing');
                 element.show(100);
-                setTimeout(function() {
+                setTimeout(function () {
                     element.hide();
                 }, 2000);
                 this.nothingCtrlSTimes = undefined;
@@ -643,11 +665,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 this.nothingCtrlSTimes++;
             }
         }
-    };
+    }
 
-    updateButtons() {
+    updateButtons(): void {
         if (options.thirdPartyIntegrationEnabled) {
-            if (this.currentLanguage.id === 'c++') {
+            if (this.currentLanguage?.id === 'c++') {
                 this.cppInsightsButton.show();
                 this.quickBenchButton.show();
             } else {
@@ -656,233 +678,230 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             }
         }
 
-        this.addExecutorButton.prop('disabled', !this.currentLanguage.supportsExecute);
-    };
+        this.addExecutorButton.prop('disabled', !this.currentLanguage?.supportsExecute);
+    }
 
-    b64UTFEncode(str) {
-        return btoa(
-            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, v) {
+    b64UTFEncode(str: string): string {
+        return Buffer.from(
+            encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, v) => {
                 return String.fromCharCode(parseInt(v, 16));
             })
-        );
-    };
+        ).toString('base64');
+    }
 
-    asciiEncodeJsonText(json) {
-        return json.replace(/[\u007F-\uFFFF]/g, function(chr) {
+    asciiEncodeJsonText(json: string): string {
+        return json.replace(/[\u007F-\uFFFF]/g, chr => {
             // json unicode escapes must always be 4 characters long, so pad with leading zeros
-            return '\\u' + ('0000' + chr.charCodeAt(0).toString(16)).substr(-4);
+            return '\\u' + ('0000' + chr.charCodeAt(0).toString(16)).substring(-4);
         });
-    };
+    }
 
-    getCompilerStates() {
-        var states = [];
+    getCompilerStates(): any[] {
+        const states: any[] = [];
 
-        _.each(
-            this.ourCompilers,
-            _.bind(function(val, compilerIdStr) {
-                var compilerId = parseInt(compilerIdStr);
+        for (const compilerIdStr of Object.keys(this.ourCompilers)) {
+            const compilerId = parseInt(compilerIdStr);
 
-                var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function(c) {
-                    return c.id === compilerId;
-                });
+            const glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function (c) {
+                return c.id === compilerId;
+            });
 
-                if (glCompiler) {
-                    var state = glCompiler.currentState();
-                    states.push(state);
-                }
-            }, this)
-        );
+            if (glCompiler) {
+                const state = glCompiler.currentState();
+                states.push(state);
+            }
+        }
 
         return states;
-    };
+    }
 
-    updateOpenInCppInsights() {
+    updateOpenInCppInsights(): void {
         if (options.thirdPartyIntegrationEnabled) {
-            var cppStd = 'cpp2a';
+            let cppStd = 'cpp2a';
 
-            var compilers = this.getCompilerStates();
-            _.each(
-                compilers,
-                _.bind(function(compiler) {
-                    if (compiler.options.indexOf('-std=c++11') !== -1 || compiler.options.indexOf('-std=gnu++11') !== -1) {
-                        cppStd = 'cpp11';
-                    } else if (
-                        compiler.options.indexOf('-std=c++14') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++14') !== -1
-                    ) {
-                        cppStd = 'cpp14';
-                    } else if (
-                        compiler.options.indexOf('-std=c++17') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++17') !== -1
-                    ) {
-                        cppStd = 'cpp17';
-                    } else if (
-                        compiler.options.indexOf('-std=c++2a') !== -1 ||
-                        compiler.options.indexOf('-std=gnu++2a') !== -1
-                    ) {
-                        cppStd = 'cpp2a';
-                    } else if (compiler.options.indexOf('-std=c++98') !== -1) {
-                        cppStd = 'cpp98';
-                    }
-                }, this)
-            );
+            const compilers = this.getCompilerStates();
+            compilers.forEach(compiler => {
+                if (compiler.options.indexOf('-std=c++11') !== -1 || compiler.options.indexOf('-std=gnu++11') !== -1) {
+                    cppStd = 'cpp11';
+                } else if (
+                    compiler.options.indexOf('-std=c++14') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++14') !== -1
+                ) {
+                    cppStd = 'cpp14';
+                } else if (
+                    compiler.options.indexOf('-std=c++17') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++17') !== -1
+                ) {
+                    cppStd = 'cpp17';
+                } else if (
+                    compiler.options.indexOf('-std=c++2a') !== -1 ||
+                    compiler.options.indexOf('-std=gnu++2a') !== -1
+                ) {
+                    cppStd = 'cpp2a';
+                } else if (compiler.options.indexOf('-std=c++98') !== -1) {
+                    cppStd = 'cpp98';
+                }
+            });
 
-            var maxURL = 8177; // apache's default maximum url length
-            var maxCode = maxURL - ('/lnk?code=&std=' + cppStd + '&rev=1.0').length;
-            var codeData = this.b64UTFEncode(this.getSource());
+            const maxURL = 8177; // apache's default maximum url length
+            const maxCode = maxURL - ('/lnk?code=&std=' + cppStd + '&rev=1.0').length;
+            let codeData = this.b64UTFEncode(this.getSource() ?? '');
             if (codeData.length > maxCode) {
                 codeData = this.b64UTFEncode('/** Source too long to fit in a URL */\n');
             }
 
-            var link = 'https://cppinsights.io/lnk?code=' + codeData + '&std=' + cppStd + '&rev=1.0';
+            const link = 'https://cppinsights.io/lnk?code=' + codeData + '&std=' + cppStd + '&rev=1.0';
 
             this.cppInsightsButton.attr('href', link);
         }
-    };
+    }
 
-    cleanupSemVer(semver) {
+    cleanupSemVer(semver: string): string | null {
         if (semver) {
-            var semverStr = semver.toString();
+            const semverStr = semver.toString();
             if (semverStr !== '' && semverStr.indexOf('(') === -1) {
-                var vercomps = semverStr.split('.');
+                const vercomps = semverStr.split('.');
                 return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
             }
         }
 
-        return false;
-    };
+        return null;
+    }
 
-    updateOpenInQuickBench() {
+    updateOpenInQuickBench(): void {
         if (options.thirdPartyIntegrationEnabled) {
-            var quickBenchState = {
+            type QuickBenchState = {
+                text?: string;
+                compiler?: string;
+                optim?: string;
+                cppVersion?: string;
+                lib?: string;
+            };
+
+            const quickBenchState: QuickBenchState = {
                 text: this.getSource(),
             };
 
-            var compilers = this.getCompilerStates();
+            const compilers = this.getCompilerStates();
 
-            _.each(
-                compilers,
-                _.bind(function(compiler) {
-                    var knownCompiler = false;
+            compilers.forEach(compiler => {
+                let knownCompiler = false;
 
-                    var compilerExtInfo = this.hub.compilerService.findCompiler(this.currentLanguage.id, compiler.compiler);
-                    var semver = this.cleanupSemVer(compilerExtInfo.semver);
-                    var groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
-                    if (semver && groupOrName) {
-                        groupOrName = groupOrName.toLowerCase();
-                        if (groupOrName.indexOf('gcc') !== -1) {
-                            quickBenchState.compiler = 'gcc-' + semver;
-                            knownCompiler = true;
-                        } else if (groupOrName.indexOf('clang') !== -1) {
-                            quickBenchState.compiler = 'clang-' + semver;
-                            knownCompiler = true;
+                const compilerExtInfo = this.hub.compilerService.findCompiler(
+                    this.currentLanguage?.id ?? '',
+                    compiler.compiler
+                );
+                const semver = this.cleanupSemVer(compilerExtInfo.semver);
+                let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
+                if (semver && groupOrName) {
+                    groupOrName = groupOrName.toLowerCase();
+                    if (groupOrName.indexOf('gcc') !== -1) {
+                        quickBenchState.compiler = 'gcc-' + semver;
+                        knownCompiler = true;
+                    } else if (groupOrName.indexOf('clang') !== -1) {
+                        quickBenchState.compiler = 'clang-' + semver;
+                        knownCompiler = true;
+                    }
+                }
+
+                if (knownCompiler) {
+                    const match = compiler.options.match(/-(O([0-3sg]|fast))/);
+                    if (match !== null) {
+                        if (match[2] === 'fast') {
+                            quickBenchState.optim = 'F';
+                        } else {
+                            quickBenchState.optim = match[2].toUpperCase();
                         }
                     }
 
-                    if (knownCompiler) {
-                        var match = compiler.options.match(/-(O([0-3sg]|fast))/);
-                        if (match !== null) {
-                            if (match[2] === 'fast') {
-                                quickBenchState.optim = 'F';
-                            } else {
-                                quickBenchState.optim = match[2].toUpperCase();
-                            }
-                        }
-
-                        if (
-                            compiler.options.indexOf('-std=c++11') !== -1 ||
-                            compiler.options.indexOf('-std=gnu++11') !== -1
-                        ) {
-                            quickBenchState.cppVersion = '11';
-                        } else if (
-                            compiler.options.indexOf('-std=c++14') !== -1 ||
-                            compiler.options.indexOf('-std=gnu++14') !== -1
-                        ) {
-                            quickBenchState.cppVersion = '14';
-                        } else if (
-                            compiler.options.indexOf('-std=c++17') !== -1 ||
-                            compiler.options.indexOf('-std=gnu++17') !== -1
-                        ) {
-                            quickBenchState.cppVersion = '17';
-                        } else if (
-                            compiler.options.indexOf('-std=c++2a') !== -1 ||
-                            compiler.options.indexOf('-std=gnu++2a') !== -1
-                        ) {
-                            quickBenchState.cppVersion = '20';
-                        }
-
-                        if (compiler.options.indexOf('-stdlib=libc++') !== -1) {
-                            quickBenchState.lib = 'llvm';
-                        }
+                    if (
+                        compiler.options.indexOf('-std=c++11') !== -1 ||
+                        compiler.options.indexOf('-std=gnu++11') !== -1
+                    ) {
+                        quickBenchState.cppVersion = '11';
+                    } else if (
+                        compiler.options.indexOf('-std=c++14') !== -1 ||
+                        compiler.options.indexOf('-std=gnu++14') !== -1
+                    ) {
+                        quickBenchState.cppVersion = '14';
+                    } else if (
+                        compiler.options.indexOf('-std=c++17') !== -1 ||
+                        compiler.options.indexOf('-std=gnu++17') !== -1
+                    ) {
+                        quickBenchState.cppVersion = '17';
+                    } else if (
+                        compiler.options.indexOf('-std=c++2a') !== -1 ||
+                        compiler.options.indexOf('-std=gnu++2a') !== -1
+                    ) {
+                        quickBenchState.cppVersion = '20';
                     }
-                }, this)
-            );
 
-            var link = 'https://quick-bench.com/#' + btoa(this.asciiEncodeJsonText(JSON.stringify(quickBenchState)));
+                    if (compiler.options.indexOf('-stdlib=libc++') !== -1) {
+                        quickBenchState.lib = 'llvm';
+                    }
+                }
+            });
+
+            const link =
+                'https://quick-bench.com/#' +
+                Buffer.from(this.asciiEncodeJsonText(JSON.stringify(quickBenchState))).toString('base64');
             this.quickBenchButton.attr('href', link);
         }
-    };
+    }
 
-    changeLanguage(newLang) {
-        if (newLang === 'cmake') {
+    changeLanguage(newLang: string): void {
+        if (newLang === 'cmake' && languages.cmake) {
             this.selectize.addOption(languages.cmake);
         }
         this.selectize.setValue(newLang);
-    };
+    }
 
     clearLinkedLine() {
         this.decorations.linkedCode = [];
         this.updateDecorations();
-    };
+    }
 
-    tryPanesLinkLine(thisLineNumber, column, reveal) {
-        var selectedToken = this.getTokenSpan(thisLineNumber, column);
-        _.each(
-            this.asmByCompiler,
-            _.bind(function(asms, compilerId) {
-                this.eventHub.emit(
-                    'panesLinkLine',
-                    compilerId,
-                    thisLineNumber,
-                    selectedToken.colBegin,
-                    selectedToken.colEnd,
-                    reveal,
-                    undefined,
-                    this.id
-                );
-            }, this)
-        );
-    };
+    tryPanesLinkLine(thisLineNumber: number, column: number, reveal: boolean): void {
+        const selectedToken = this.getTokenSpan(thisLineNumber, column);
+        for (const compilerId of Object.keys(this.asmByCompiler)) {
+            this.eventHub.emit(
+                'panesLinkLine',
+                Number(compilerId),
+                thisLineNumber,
+                selectedToken.colBegin,
+                selectedToken.colEnd,
+                reveal,
+                this.id + ''
+            );
+        }
+    }
 
-    requestCompilation() {
-        this.eventHub.emit('requestCompilation', this.id);
+    requestCompilation(): void {
+        this.eventHub.emit('requestCompilation', this.id, false);
         if (this.settings.formatOnCompile) {
             this.runFormatDocumentAction();
         }
 
-        _.each(
-            this.hub.trees,
-            _.bind(function(tree) {
-                if (tree.multifileService.isEditorPartOfProject(this.id)) {
-                    this.eventHub.emit('requestCompilation', this.id, tree.id);
-                }
-            }, this)
-        );
-    };
+        this.hub.trees.forEach(tree => {
+            if (tree.multifileService.isEditorPartOfProject(this.id)) {
+                this.eventHub.emit('requestCompilation', this.id, tree.id);
+            }
+        });
+    }
 
-    initEditorActions() {
+    initEditorActions(): void {
         this.editor.addAction({
             id: 'compile',
             label: 'Compile',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-            keybindingContext: null,
+            keybindingContext: undefined,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: _.bind(function() {
+            run: () => {
                 // This change request is mostly superfluous
                 this.maybeEmitChange();
                 this.requestCompilation();
-            }, this),
+            },
         });
 
         this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
@@ -894,17 +913,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.4,
             precondition: 'hasRevealJumpStackElements',
-            run: _.bind(function() {
+            run: () => {
                 this.popAndRevealJump();
-            }, this),
+            },
         });
 
         this.editor.addAction({
             id: 'toggleCompileOnChange',
             label: 'Toggle compile on change',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter],
-            keybindingContext: null,
-            run: _.bind(function() {
+            keybindingContext: undefined,
+            run: () => {
                 this.eventHub.emit('modifySettings', {
                     compileOnChange: !this.settings.compileOnChange,
                 });
@@ -916,121 +935,117 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                         dismissTime: 3000,
                     }
                 );
-            }, this),
+            },
         });
 
         this.editor.addAction({
             id: 'toggleColourisation',
             label: 'Toggle colourisation',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.F1],
-            keybindingContext: null,
-            run: _.bind(function() {
+            keybindingContext: undefined,
+            run: () => {
                 this.eventHub.emit('modifySettings', {
                     colouriseAsm: !this.settings.colouriseAsm,
                 });
-            }, this),
+            },
         });
 
         this.editor.addAction({
             id: 'viewasm',
             label: 'Reveal linked code',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F10],
-            keybindingContext: null,
+            keybindingContext: undefined,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
-            run: _.bind(function(ed) {
-                var pos = ed.getPosition();
+            run: ed => {
+                const pos = ed.getPosition();
                 if (pos != null) {
                     this.tryPanesLinkLine(pos.lineNumber, pos.column, true);
                 }
-            }, this),
+            },
         });
 
         this.isCpp = this.editor.createContextKey('isCpp', true);
-        this.isCpp.set(this.currentLanguage.id === 'c++');
+        this.isCpp.set(this.currentLanguage?.id === 'c++');
 
         this.isClean = this.editor.createContextKey('isClean', true);
-        this.isClean.set(this.currentLanguage.id === 'clean');
+        this.isClean.set(this.currentLanguage?.id === 'clean');
 
         this.editor.addAction({
             id: 'cpprefsearch',
             label: 'Search on Cppreference',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
-            keybindingContext: null,
+            keybindingContext: undefined,
             contextMenuGroupId: 'help',
             contextMenuOrder: 1.5,
             precondition: 'isCpp',
-            run: _.bind(this.searchOnCppreference, this),
+            run: this.searchOnCppreference.bind(this),
         });
 
         this.editor.addAction({
             id: 'clooglesearch',
             label: 'Search on Cloogle',
             keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.F8],
-            keybindingContext: null,
+            keybindingContext: undefined,
             contextMenuGroupId: 'help',
             contextMenuOrder: 1.5,
             precondition: 'isClean',
-            run: _.bind(this.searchOnCloogle, this),
+            run: this.searchOnCloogle.bind(this),
         });
 
-        this.editor.addCommand(
-            monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9,
-            _.bind(function() {
-                this.runFormatDocumentAction();
-            }, this)
-        );
+        this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.F9, () => {
+            this.runFormatDocumentAction();
+        });
 
-        this.editor.addCommand(
-            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD,
-            _.bind(function() {
-                this.editor.getAction('editor.action.duplicateSelection').run();
-            }, this)
-        );
-    };
+        this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyD, () => {
+            this.editor.getAction('editor.action.duplicateSelection').run();
+        });
+    }
 
-    emitShortLinkEvent() {
+    emitShortLinkEvent(): void {
         if (this.settings.enableSharingPopover) {
             this.eventHub.emit('displaySharingPopover');
         } else {
             this.eventHub.emit('copyShortLinkToClip');
         }
-    };
+    }
 
-    runFormatDocumentAction() {
+    runFormatDocumentAction(): void {
         this.editor.getAction('editor.action.formatDocument').run();
-    };
+    }
 
-    searchOnCppreference(ed) {
-        var pos = ed.getPosition();
+    searchOnCppreference(ed: monaco.editor.ICodeEditor): void {
+        const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
-        var word = ed.getModel().getWordAtPosition(pos);
+        const word = ed.getModel()?.getWordAtPosition(pos);
         if (!word || !word.word) return;
-        var preferredLanguage = this.getPreferredLanguageTag();
+        const preferredLanguage = this.getPreferredLanguageTag();
         // This list comes from the footer of the page
-        var cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
+        const cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
         // If navigator.languages is supported, we could be a bit more clever and look for a match there too
-        var langTag = 'en';
+        let langTag = 'en';
         if (cpprefLangs.indexOf(preferredLanguage) !== -1) {
             langTag = preferredLanguage;
         }
-        var url = 'https://' + langTag + '.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
+        const url = 'https://' + langTag + '.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
         window.open(url, '_blank', 'noopener');
-    };
+    }
 
-    searchOnCloogle(ed) {
-        var pos = ed.getPosition();
+    searchOnCloogle(ed: monaco.editor.ICodeEditor): void {
+        const pos = ed.getPosition();
         if (!pos || !ed.getModel()) return;
-        var word = ed.getModel().getWordAtPosition(pos);
+        const word = ed.getModel()?.getWordAtPosition(pos);
         if (!word || !word.word) return;
-        var url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
+        const url = 'https://cloogle.org/#' + encodeURIComponent(word.word);
         window.open(url, '_blank', 'noopener');
-    };
+    }
 
-    getPreferredLanguageTag() {
-        var result = 'en';
-        var lang = 'en';
+    getPreferredLanguageTag(): string {
+        let result = 'en';
+        let lang = 'en';
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (navigator) {
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (navigator.languages && navigator.languages.length) {
                 lang = navigator.languages[0];
             } else if (navigator.language) {
@@ -1039,39 +1054,41 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         }
         // navigator.language[s] is supposed to return strings, but hey, you never know
         if (lang !== result && _.isString(lang)) {
-            var primaryLanguageSubtagIdx = lang.indexOf('-');
-            result = lang.substr(0, primaryLanguageSubtagIdx).toLowerCase();
+            const primaryLanguageSubtagIdx = lang.indexOf('-');
+            result = lang.substring(0, primaryLanguageSubtagIdx).toLowerCase();
         }
         return result;
-    };
+    }
 
-    doesMatchEditor(otherSource) {
+    doesMatchEditor(otherSource?: string): boolean {
         return otherSource === this.getSource();
-    };
+    }
 
-    confirmOverwrite(yes) {
+    confirmOverwrite(yes: () => void): void {
         this.alertSystem.ask(
             'Changes were made to the code',
             'Changes were made to the code while it was being processed. Overwrite changes?',
-            {yes: yes, no: null}
+            {yes: yes, no: undefined}
         );
-    };
+    }
 
-    updateSource(newSource) {
+    updateSource(newSource: string): void {
         // Create something that looks like an edit operation for the whole text
-        var operation = {
-            range: this.editor.getModel().getFullModelRange(),
+        const operation = {
+            range: this.editor.getModel()?.getFullModelRange(),
             forceMoveMarkers: true,
             text: newSource,
         };
-        var nullFn() {
+        const nullFn = () => {
             return null;
         };
-        var viewState = this.editor.saveViewState();
+
+        const viewState = this.editor.saveViewState();
         // Add an undo stop so we don't go back further than expected
         this.editor.pushUndoStop();
         // Apply de edit. Note that we lose cursor position, but I've not found a better alternative yet
-        this.editor.getModel().pushEditOperations(viewState.cursorState, [operation], nullFn);
+        // @ts-expect-error: See above comment maybe
+        this.editor.getModel()?.pushEditOperations(viewState?.cursorState ?? null, [operation], nullFn);
         this.numberUsedLines();
 
         if (!this.awaitingInitialResults) {
@@ -1091,21 +1108,20 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                  *
                  * This is bad and I feel bad.
                  */
-                setTimeout(
-                    _.bind(function() {
+                setTimeout(() => {
+                    if (this.selection) {
                         this.editor.setSelection(this.selection);
                         this.editor.revealLinesInCenter(this.selection.startLineNumber, this.selection.endLineNumber);
-                    }, this),
-                    500
-                );
+                    }
+                }, 500);
             }
             this.awaitingInitialResults = true;
         }
-    };
+    }
 
-    formatCurrentText() {
-        var previousSource = this.getSource();
-        var lang = this.currentLanguage;
+    formatCurrentText(): void {
+        const previousSource = this.getSource();
+        const lang = this.currentLanguage;
 
         if (!Object.prototype.hasOwnProperty.call(lang, 'formatter')) {
             return this.alertSystem.notify('This language does not support in-editor formatting', {
@@ -1116,14 +1132,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
 
         $.ajax({
             type: 'POST',
-            url: window.location.origin + this.httpRoot + 'api/format/' + lang.formatter,
+            url: window.location.origin + this.httpRoot + 'api/format/' + lang?.formatter,
             dataType: 'json', // Expected
             contentType: 'application/json', // Sent
             data: JSON.stringify({
                 source: previousSource,
                 base: this.settings.formatBase,
             }),
-            success: (result) => {
+            success: result => {
                 if (result.exit === 0) {
                     if (this.doesMatchEditor(previousSource)) {
                         this.updateSource(result.answer);
@@ -1142,7 +1158,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 // Hopefully we have not exploded!
                 if (xhr.responseText) {
                     try {
-                        var res = JSON.parse(xhr.responseText);
+                        const res = JSON.parse(xhr.responseText);
                         error = res.answer || error;
                     } catch (e) {
                         // continue regardless of error
@@ -1156,15 +1172,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             },
             cache: true,
         });
-    };
+    }
 
-    override resize() {
-        var topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-
-        this.editor.layout({
-            width: this.domRoot.width(),
-            height: this.domRoot.height() - topBarHeight,
-        });
+    override resize(): void {
+        super.resize();
 
         // Only update the options if needed
         if (this.settings.wordWrap) {
@@ -1172,15 +1183,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 wordWrapColumn: this.editor.getLayoutInfo().viewportColumn,
             });
         }
-    };
+    }
 
-    override onSettingsChange(newSettings) {
-        var before = this.settings;
-        var after = newSettings;
+    override onSettingsChange(newSettings: SiteSettings): void {
+        const before = this.settings;
+        const after = newSettings;
         this.settings = _.clone(newSettings);
 
         this.editor.updateOptions({
             autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
+            // @ts-expect-error: boolean is not assignable to editor.EditorAutoClosingStrategy
             autoClosingBrackets: this.settings.autoCloseBrackets,
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
@@ -1195,12 +1207,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         });
 
         // Unconditionally send editor changes. The compiler only compiles when needed
-        this.debouncedEmitChange = _.debounce(
-            _.bind(function() {
-                this.maybeEmitChange();
-            }, this),
-            after.delayAfterChange
-        );
+        this.debouncedEmitChange = _.debounce(() => {
+            this.maybeEmitChange();
+        }, after.delayAfterChange);
 
         if (before.hoverShowSource && !after.hoverShowSource) {
             this.onEditorSetDecoration(this.id, -1, false);
@@ -1212,17 +1221,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             this.disableVim();
         }
 
-        if (this.editor.getModel()) {
-            this.editor.getModel().updateOptions({
-                tabSize: this.settings.tabWidth,
-                insertSpaces: this.settings.useSpaces,
-            });
-        }
+        this.editor.getModel()?.updateOptions({
+            tabSize: this.settings.tabWidth,
+            insertSpaces: this.settings.useSpaces,
+        });
 
         this.numberUsedLines();
-    };
+    }
 
-    numberUsedLines() {
+    numberUsedLines(): void {
         if (_.any(this.busyCompilers)) return;
 
         if (!this.settings.colouriseAsm) {
@@ -1234,72 +1241,73 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             return;
         }
 
-        var result = {};
+        const result: Record<number, boolean> = {};
         // First, note all lines used.
-        _.each(
-            this.asmByCompiler,
-            _.bind(function(asm, compilerId) {
-                _.each(
-                    asm,
-                    _.bind(function(asmLine) {
-                        var foundInTrees = false;
+        for (const [compilerId, asm] of Object.entries(this.asmByCompiler)) {
+            asm?.forEach(asmLine => {
+                let foundInTrees = false;
 
-                        _.each(
-                            this.treeCompilers,
-                            _.bind(function(compilerIds, treeId) {
-                                if (compilerIds[compilerId]) {
-                                    var tree = this.hub.getTreeById(Number(treeId));
-                                    if (tree) {
-                                        var defaultFile = this.defaultFileByCompiler[compilerId];
-                                        foundInTrees = true;
+                for (const [treeId, compilerIds] of Object.entries(this.treeCompilers)) {
+                    if (compilerIds && compilerIds[compilerId]) {
+                        const tree = this.hub.getTreeById(Number(treeId));
+                        if (tree) {
+                            const defaultFile = this.defaultFileByCompiler[compilerId];
+                            foundInTrees = true;
 
-                                        if (asmLine.source && asmLine.source.line > 0) {
-                                            var sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
-                                            if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
-                                                result[asmLine.source.line - 1] = true;
-                                            }
-                                        }
-                                    }
+                            // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                            if (asmLine.source && asmLine.source.line > 0) {
+                                // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                                const sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
+                                if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
+                                    // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                                    result[asmLine.source.line - 1] = true;
                                 }
-                            }, this)
-                        );
-
-                        if (!foundInTrees) {
-                            if (
-                                asmLine.source &&
-                                (asmLine.source.file === null || asmLine.source.mainsource) &&
-                                asmLine.source.line > 0
-                            ) {
-                                result[asmLine.source.line - 1] = true;
                             }
                         }
-                    }, this)
-                );
-            }, this)
-        );
+                    }
+                }
+
+                if (!foundInTrees) {
+                    if (
+                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                        asmLine.source &&
+                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                        (asmLine.source.file === null || asmLine.source.mainsource) &&
+                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                        asmLine.source.line > 0
+                    ) {
+                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
+                        result[asmLine.source.line - 1] = true;
+                    }
+                }
+            });
+        }
         // Now assign an ordinal to each used line.
-        var ordinal = 0;
-        _.each(result, function(v, k) {
+        let ordinal = 0;
+        Object.keys(result).forEach(k => {
             result[k] = ordinal++;
         });
 
         this.updateColours(result);
-    };
+    }
 
     updateColours(colours) {
         this.colours = colour.applyColours(this.editor, colours, this.settings.colourScheme, this.colours);
         this.eventHub.emit('colours', this.id, colours, this.settings.colourScheme);
-    };
+    }
 
-    onCompilerOpen(compilerId, editorId, treeId) {
+    onCompilerOpen(compilerId: number, editorId: number, treeId: number | boolean): void {
         if (editorId === this.id) {
             // On any compiler open, rebroadcast our state in case they need to know it.
             if (this.waitingForLanguage) {
-                var glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function(c) {
-                    return c.id === compilerId;
-                });
+                const glCompiler = _.find(
+                    this.container.layoutManager.root.getComponentsByName('compiler'),
+                    function (c) {
+                        return c.id === compilerId;
+                    }
+                );
                 if (glCompiler) {
-                    var selected = _.find(options.compilers, function(compiler) {
+                    const selected = options.compilers.find(compiler => {
                         return compiler.id === glCompiler.originalCompilerId;
                     });
                     if (selected) {
@@ -1308,10 +1316,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 }
             }
 
-            if (treeId > 0) {
+            if (typeof treeId === 'number' && treeId > 0) {
                 if (!this.treeCompilers[treeId]) {
                     this.treeCompilers[treeId] = {};
                 }
+
+                // @ts-expect-error: this.treeCompilers[treeId] is never undefined at this point
                 this.treeCompilers[treeId][compilerId] = true;
             }
             this.ourCompilers[compilerId] = true;
@@ -1320,72 +1330,81 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 this.maybeEmitChange(true, compilerId);
             }
         }
-    };
+    }
 
-    onTreeCompilerEditorIncludeChange(treeId, editorId, compilerId) {
+    onTreeCompilerEditorIncludeChange(treeId: number, editorId: number, compilerId: number): void {
         if (this.id === editorId) {
             this.onCompilerOpen(compilerId, editorId, treeId);
         }
-    };
+    }
 
-    onTreeCompilerEditorExcludeChange(treeId, editorId, compilerId) {
+    onTreeCompilerEditorExcludeChange(treeId: number, editorId: number, compilerId: number): void {
         if (this.id === editorId) {
             this.onCompilerClose(compilerId);
         }
-    };
+    }
 
-    onColoursForEditor(editorId, colours, scheme) {
+    onColoursForEditor(editorId: number, colours: Record<number, number>, scheme: string): void {
         if (this.id === editorId) {
             this.colours = colour.applyColours(this.editor, colours, scheme, this.colours);
         }
-    };
+    }
 
-    onExecutorOpen(executorId, editorId) {
+    onExecutorOpen(executorId: number, editorId: boolean | number): void {
         if (editorId === this.id) {
             this.maybeEmitChange(true);
             this.ourExecutors[executorId] = true;
         }
-    };
+    }
 
-    onCompilerClose(compilerId, unused, treeId) {
-        if (this.treeCompilers[treeId]) {
+    override onCompilerClose(compilerId: number): void {
+        /*if (this.treeCompilers[treeId]) {
             delete this.treeCompilers[treeId][compilerId];
-        }
+        }*/
 
         if (this.ourCompilers[compilerId]) {
-            monaco.editor.setModelMarkers(this.editor.getModel(), compilerId, []);
+            const model = this.editor.getModel();
+            if (model) monaco.editor.setModelMarkers(model, String(compilerId), []);
             delete this.asmByCompiler[compilerId];
             delete this.busyCompilers[compilerId];
             delete this.ourCompilers[compilerId];
             delete this.defaultFileByCompiler[compilerId];
             this.numberUsedLines();
         }
-    };
+    }
 
-    onExecutorClose(id) {
+    onExecutorClose(id: number): void {
         if (this.ourExecutors[id]) {
             delete this.ourExecutors[id];
-            monaco.editor.setModelMarkers(this.editor.getModel(), 'Executor ' + id, []);
+            const model = this.editor.getModel();
+            if (model) monaco.editor.setModelMarkers(model, 'Executor ' + id, []);
         }
-    };
+    }
 
-    onCompiling(compilerId) {
+    onCompiling(compilerId: number): void {
         if (!this.ourCompilers[compilerId]) return;
         this.busyCompilers[compilerId] = true;
-    };
+    }
 
-    addSource(arr, source) {
-        arr.forEach(function(element) {
+    addSource(arr: (ResultLine & {source?: string})[], source: string): (ResultLine & {source: string})[] {
+        arr.forEach(element => {
             element.source = source;
         });
-        return arr;
-    };
 
-    getAllOutputAndErrors(result, compilerName, compilerId) {
-        var compilerTitle = compilerName + ' #' + compilerId;
-        var all = this.addSource(result.stdout || [], compilerTitle);
+        return arr as (ResultLine & {source: string})[];
+    }
 
+    getAllOutputAndErrors(
+        result: CompilationResult,
+        compilerName: string,
+        compilerId: number
+    ): (ResultLine & {source: string})[] {
+        const compilerTitle = compilerName + ' #' + compilerId;
+        let all = this.addSource(result.stdout, compilerTitle);
+
+        // @ts-expect-error: Property 'buildsteps' does not exist on type 'CompilationResult'
         if (result.buildsteps) {
+            // @ts-expect-error: Property 'buildsteps' does not exist on type 'CompilationResult'
             _.each(result.buildsteps, step => {
                 all = all.concat(this.addSource(step.stdout, compilerTitle));
                 all = all.concat(this.addSource(step.stderr, compilerTitle));
@@ -1397,107 +1416,116 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 all = all.concat(this.addSource(tool.stderr, tool.name + ' #' + compilerId));
             });
         }
-        all = all.concat(this.addSource(result.stderr || [], compilerTitle));
+        all = all.concat(this.addSource(result.stderr, compilerTitle));
 
         return all;
-    };
+    }
 
-    collectOutputWidgets(output) {
-        var fixes = [];
-        var editorModel = this.editor.getModel();
-        var widgets = _.compact(
-            _.map(
-                output,
-                function(obj) {
-                    if (!obj.tag) return;
+    collectOutputWidgets(output: (ResultLine & {source: string})[]): {
+        fixes: monaco.languages.CodeAction[];
+        widgets: editor.IMarkerData[];
+    } {
+        let fixes: monaco.languages.CodeAction[] = [];
+        const editorModel = this.editor.getModel();
+        const widgets = _.compact(
+            output.map(obj => {
+                if (!obj.tag) return;
 
-                    var trees = this.hub.trees;
-                    if (trees && trees.length > 0) {
-                        if (obj.tag.file) {
-                            if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
-                                return;
-                            }
-                        } else {
-                            if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
-                                return;
-                            }
+                const trees = this.hub.trees;
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                if (trees && trees.length > 0) {
+                    if (obj.tag.file) {
+                        if (this.id !== trees[0].multifileService.getEditorIdByFilename(obj.tag.file)) {
+                            return;
+                        }
+                    } else {
+                        if (this.id !== trees[0].multifileService.getMainSourceEditorId()) {
+                            return;
                         }
                     }
+                }
 
-                    var colBegin = 0;
-                    var colEnd = Infinity;
-                    var lineBegin = obj.tag.line;
-                    var lineEnd = obj.tag.line;
-                    if (obj.tag.column) {
-                        if (obj.tag.endcolumn) {
-                            colBegin = obj.tag.column;
-                            colEnd = obj.tag.endcolumn;
-                            lineBegin = obj.tag.line;
-                            lineEnd = obj.tag.endline;
-                        } else {
-                            var span = this.getTokenSpan(obj.tag.line, obj.tag.column);
-                            colBegin = obj.tag.column;
-                            colEnd = span.colEnd;
-                            if (colEnd === obj.tag.column) colEnd = -1;
-                        }
+                let colBegin = 0;
+                let colEnd = Infinity;
+                let lineBegin = obj.tag.line;
+                let lineEnd = obj.tag.line;
+                if (obj.tag.column) {
+                    if (obj.tag.endcolumn) {
+                        colBegin = obj.tag.column;
+                        colEnd = obj.tag.endcolumn;
+                        lineBegin = obj.tag.line;
+                        lineEnd = obj.tag.endline;
+                    } else {
+                        const span = this.getTokenSpan(obj.tag.line ?? 0, obj.tag.column);
+                        colBegin = obj.tag.column;
+                        colEnd = span.colEnd;
+                        if (colEnd === obj.tag.column) colEnd = -1;
                     }
-                    var link;
-                    if (obj.tag.link) {
-                        link = {
-                            value: obj.tag.link.text,
-                            target: obj.tag.link.url,
-                        };
-                    }
-                    var diag = {
-                        severity: obj.tag.severity,
-                        message: obj.tag.text,
-                        source: obj.source,
-                        startLineNumber: lineBegin,
-                        startColumn: colBegin,
-                        endLineNumber: lineEnd,
-                        endColumn: colEnd,
-                        code: link,
+                }
+                let link;
+                if (obj.tag.link) {
+                    link = {
+                        value: obj.tag.link.text,
+                        target: obj.tag.link.url,
                     };
-                    if (obj.tag.fixes) {
-                        fixes = fixes.concat(
-                            obj.tag.fixes.map(function(fs, ind) {
-                                return {
-                                    title: fs.title,
-                                    diagnostics: [diag],
-                                    kind: 'quickfix',
-                                    edit: {
-                                        edits: fs.edits.map(function(f) {
-                                            return {
-                                                resource: editorModel.uri,
-                                                edit: {
-                                                    range: new monaco.Range(f.line, f.column, f.endline, f.endcolumn),
-                                                    text: f.text,
-                                                },
-                                            };
-                                        }),
-                                    },
-                                    isPreferred: ind === 0,
-                                };
-                            })
-                        );
-                    }
-                    return diag;
-                },
-                this
-            )
+                }
+
+                const diag: monaco.editor.IMarkerData = {
+                    severity: obj.tag.severity,
+                    message: obj.tag.text,
+                    source: obj.source,
+                    startLineNumber: lineBegin ?? 0,
+                    startColumn: colBegin,
+                    endLineNumber: lineEnd ?? 0,
+                    endColumn: colEnd,
+                    code: link,
+                };
+
+                if (obj.tag.fixes && editorModel) {
+                    fixes = fixes.concat(
+                        obj.tag.fixes.map((fs, ind) => {
+                            return {
+                                title: fs.title,
+                                diagnostics: [diag],
+                                kind: 'quickfix',
+                                edit: {
+                                    edits: fs.edits.map(f => {
+                                        return {
+                                            resource: editorModel.uri,
+                                            edit: {
+                                                range: new monaco.Range(
+                                                    f.line ?? 0,
+                                                    f.column ?? 0,
+                                                    f.endline ?? 0,
+                                                    f.endcolumn ?? 0
+                                                ),
+                                                text: f.text,
+                                            },
+                                        };
+                                    }),
+                                },
+                                isPreferred: ind === 0,
+                            };
+                        })
+                    );
+                }
+                return diag;
+            })
         );
+
         return {
             fixes: fixes,
             widgets: widgets,
         };
-    };
+    }
 
-    setDecorationTags(widgets, ownerId) {
-        monaco.editor.setModelMarkers(this.editor.getModel(), ownerId, widgets);
+    setDecorationTags(widgets: editor.IMarkerData[], ownerId: string): void {
+        const editorModel = this.editor.getModel();
+        if (editorModel) monaco.editor.setModelMarkers(editorModel, ownerId, widgets);
 
         this.decorations.tags = _.map(
             widgets,
-            function(tag) {
+            function (tag) {
                 return {
                     range: new monaco.Range(tag.startLineNumber, tag.startColumn, tag.startLineNumber + 1, 1),
                     options: {
@@ -1510,29 +1538,36 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         );
 
         this.updateDecorations();
-    };
+    }
 
-    setQuickFixes(fixes) {
+    setQuickFixes(fixes: monaco.languages.CodeAction[]): void {
         if (fixes.length) {
-            var editorModel = this.editor.getModel();
-            quickFixesHandler.registerQuickFixesForCompiler(this.id, editorModel, fixes);
-            quickFixesHandler.registerProviderForLanguage(editorModel.getLanguageId());
+            const editorModel = this.editor.getModel();
+            if (editorModel) {
+                quickFixesHandler.registerQuickFixesForCompiler(this.id, editorModel, fixes);
+                quickFixesHandler.registerProviderForLanguage(editorModel.getLanguageId());
+            }
         } else {
             quickFixesHandler.unregister(this.id);
         }
-    };
+    }
 
-    onCompileResponse(compilerId, compiler, result) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!compiler || !this.ourCompilers[compilerId]) return;
 
         this.busyCompilers[compilerId] = false;
 
-        var collectedOutput = this.collectOutputWidgets(this.getAllOutputAndErrors(result, compiler.name, compilerId));
+        const collectedOutput = this.collectOutputWidgets(
+            this.getAllOutputAndErrors(result, compiler.name, compilerId)
+        );
 
-        this.setDecorationTags(collectedOutput.widgets, compilerId);
+        this.setDecorationTags(collectedOutput.widgets, String(compilerId));
         this.setQuickFixes(collectedOutput.fixes);
 
+        // @ts-expect-error: result has no property 'result'
         if (result.result && result.result.asm) {
+            // @ts-expect-error: result has no property 'result'
             this.asmByCompiler[compilerId] = result.result.asm;
         } else {
             this.asmByCompiler[compilerId] = result.asm;
@@ -1541,27 +1576,31 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         if (result.inputFilename) {
             this.defaultFileByCompiler[compilerId] = result.inputFilename;
         } else {
-            this.defaultFileByCompiler[compilerId] = 'example' + this.currentLanguage.extensions[0];
+            this.defaultFileByCompiler[compilerId] = 'example' + this.currentLanguage?.extensions[0];
         }
 
         this.numberUsedLines();
-    };
+    }
 
-    onExecuteResponse(executorId, compiler, result) {
-        var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
+    onExecuteResponse(executorId: number, compiler: CompilerInfo, result: CompilationResult): void {
+        // @ts-expect-error: 'compilerId' expects 'number'
+        let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
         if (result.buildResult) {
-            output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
+            output = output.concat(
+                // @ts-expect-error: 'compilerId' expects 'number'
+                this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
+            );
         }
         this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
 
         this.numberUsedLines();
-    };
+    }
 
-    onSelectLine(id, lineNum) {
+    onSelectLine(id: number, lineNum: number): void {
         if (Number(id) === this.id) {
             this.editor.setSelection(new monaco.Selection(lineNum - 1, 0, lineNum, 0));
         }
-    };
+    }
 
     // Returns a half-segment [a, b) for the token on the line lineNum
     // that spans across the column.
@@ -1569,20 +1608,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
     // b - colEnd points to the character immediately following the token
     // e.g.: "this->callableMethod ( x, y );"
     //              ^a   ^column  ^b
-    getTokenSpan(lineNum, column) {
-        var model = this.editor.getModel();
-        if (lineNum < 1 || lineNum > model.getLineCount()) {
+    getTokenSpan(lineNum: number, column: number): {colBegin: number; colEnd: number} {
+        const model = this.editor.getModel();
+        if (model && (lineNum < 1 || lineNum > model.getLineCount())) {
             // #3592 Be forgiving towards parsing errors
             return {colBegin: 0, colEnd: 0};
         }
-        if (lineNum <= model.getLineCount()) {
-            var line = model.getLineContent(lineNum);
+
+        if (model && lineNum <= model.getLineCount()) {
+            const line = model.getLineContent(lineNum);
             if (0 < column && column <= line.length) {
-                var tokens = monaco.editor.tokenize(line, model.getLanguageId());
+                const tokens = monaco.editor.tokenize(line, model.getLanguageId());
                 if (tokens.length > 0) {
-                    var lastOffset = 0;
-                    var lastWasString = false;
-                    for (var i = 0; i < tokens[0].length; ++i) {
+                    let lastOffset = 0;
+                    let lastWasString = false;
+                    for (let i = 0; i < tokens[0].length; ++i) {
                         // Treat all the contiguous string tokens as one,
                         // For example "hello \" world" is treated as one token
                         // instead of 3 "string.cpp", "string.escape.cpp", "string.cpp"
@@ -1594,7 +1634,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                         } else {
                             lastWasString = false;
                         }
-                        var currentOffset = tokens[0][i].offset;
+                        const currentOffset = tokens[0][i].offset;
                         if (column <= currentOffset) {
                             return {colBegin: lastOffset + 1, colEnd: currentOffset + 1};
                         } else {
@@ -1606,21 +1646,23 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             }
         }
         return {colBegin: column, colEnd: column + 1};
-    };
+    }
 
-    pushRevealJump() {
-        this.revealJumpStack.push(this.editor.saveViewState());
+    pushRevealJump(): void {
+        const state = this.editor.saveViewState();
+        if (state) this.revealJumpStack.push(state);
         this.revealJumpStackHasElementsCtxKey.set(true);
-    };
+    }
 
-    popAndRevealJump() {
+    popAndRevealJump(): void {
         if (this.revealJumpStack.length > 0) {
-            this.editor.restoreViewState(this.revealJumpStack.pop());
+            const state = this.revealJumpStack.pop();
+            if (state) this.editor.restoreViewState(state);
             this.revealJumpStackHasElementsCtxKey.set(this.revealJumpStack.length > 0);
         }
-    };
+    }
 
-    onEditorLinkLine(editorId, lineNum, columnBegin, columnEnd, reveal) {
+    onEditorLinkLine(editorId: number, lineNum: number, columnBegin: number, columnEnd: number, reveal: boolean): void {
         if (Number(editorId) === this.id) {
             if (reveal && lineNum) {
                 this.pushRevealJump();
@@ -1640,7 +1682,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             }
 
             if (lineNum > 0 && columnBegin !== -1) {
-                var lastTokenSpan = this.getTokenSpan(lineNum, columnEnd);
+                const lastTokenSpan = this.getTokenSpan(lineNum, columnEnd);
                 this.decorations.linkedCode.push({
                     range: new monaco.Range(lineNum, columnBegin, lineNum, lastTokenSpan.colEnd),
                     options: {
@@ -1650,22 +1692,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
                 });
             }
 
-            if (this.fadeTimeoutId !== -1) {
+            if (this.fadeTimeoutId !== null) {
                 clearTimeout(this.fadeTimeoutId);
             }
-            this.fadeTimeoutId = setTimeout(
-                _.bind(function() {
-                    this.clearLinkedLine();
-                    this.fadeTimeoutId = -1;
-                }, this),
-                5000
-            );
+            this.fadeTimeoutId = setTimeout(() => {
+                this.clearLinkedLine();
+                this.fadeTimeoutId = null;
+            }, 5000);
 
             this.updateDecorations();
         }
-    };
+    }
 
-    onEditorSetDecoration(id, lineNum, reveal, column) {
+    onEditorSetDecoration(id: number, lineNum: number, reveal: boolean, column?: number): void {
         if (Number(id) === this.id) {
             if (reveal && lineNum) {
                 this.pushRevealJump();
@@ -1686,16 +1725,21 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             }
             this.updateDecorations();
         }
-    };
+    }
 
-    onEditorDisplayFlow(id, flow) {
+    onEditorDisplayFlow(id: number, flow: MessageWithLocation[]): void {
         if (Number(id) === this.id) {
             if (this.decorations.flows && this.decorations.flows.length) {
                 this.decorations.flows = [];
             } else {
                 this.decorations.flows = flow.map((ri, ind) => {
                     return {
-                        range: new monaco.Range(ri.line, ri.column, ri.endline || ri.line, ri.endcolumn || ri.column),
+                        range: new monaco.Range(
+                            ri.line ?? 0,
+                            ri.column ?? 0,
+                            (ri.endline || ri.line) ?? 0,
+                            (ri.endcolumn || ri.column) ?? 0
+                        ),
                         options: {
                             before: {
                                 content: ' ' + (ind + 1).toString() + ' ',
@@ -1711,62 +1755,65 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             }
             this.updateDecorations();
         }
-    };
+    }
 
-    updateDecorations() {
+    updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
             _.compact(_.flatten(_.values(this.decorations)))
         );
-    };
+    }
 
-    onConformanceViewOpen(editorId) {
+    onConformanceViewOpen(editorId: number): void {
         if (editorId === this.id) {
-            this.conformanceViewerButton.attr('disabled', true);
+            this.conformanceViewerButton.attr('disabled', 1);
         }
-    };
+    }
 
-    onConformanceViewClose(editorId) {
+    onConformanceViewClose(editorId: number): void {
         if (editorId === this.id) {
-            this.conformanceViewerButton.attr('disabled', false);
+            this.conformanceViewerButton.attr('disabled', null);
         }
-    };
+    }
 
-    showLoadSaver() {
-        this.loadSaveButton.click();
-    };
+    showLoadSaver(): void {
+        this.loadSaveButton.trigger('click');
+    }
 
-    initLoadSaver() {
-        this.loadSaveButton.off('click').click(
-            _.bind(function() {
+    initLoadSaver(): void {
+        this.loadSaveButton.off('click').on('click', () => {
+            if (this.currentLanguage) {
                 loadSave.run(
-                    _.bind(function(text, filename) {
+                    (text, filename) => {
                         this.setSource(text);
                         this.setFilename(filename);
                         this.updateState();
                         this.maybeEmitChange(true);
                         this.requestCompilation();
-                    }, this),
+                    },
                     this.getSource(),
                     this.currentLanguage
                 );
-            }, this)
-        );
-    };
+            }
+        });
+    }
 
-    onLanguageChange(newLangId) {
+    onLanguageChange(newLangId: string): void {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (languages[newLangId]) {
-            if (newLangId !== this.currentLanguage.id) {
-                var oldLangId = this.currentLanguage.id;
+            if (newLangId !== this.currentLanguage?.id) {
+                const oldLangId = this.currentLanguage?.id;
                 this.currentLanguage = languages[newLangId];
                 if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && newLangId !== 'cmake') {
-                    this.editorSourceByLang[oldLangId] = this.getSource();
+                    this.editorSourceByLang[oldLangId ?? ''] = this.getSource();
                     this.updateEditorCode();
                 }
                 this.initLoadSaver();
-                monaco.editor.setModelLanguage(this.editor.getModel(), this.currentLanguage.monaco);
-                this.isCpp.set(this.currentLanguage.id === 'c++');
-                this.isClean.set(this.currentLanguage.id === 'clean');
+                const editorModel = this.editor.getModel();
+                if (editorModel && this.currentLanguage)
+                    monaco.editor.setModelLanguage(editorModel, this.currentLanguage.monaco);
+                this.isCpp.set(this.currentLanguage?.id === 'c++');
+                this.isClean.set(this.currentLanguage?.id === 'clean');
                 this.updateTitle();
                 this.updateState();
                 // Broadcast the change to other panels
@@ -1782,45 +1829,52 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
             }
             this.waitingForLanguage = false;
         }
-    };
+    }
 
-    override getPaneName() {
+    override getDefaultPaneName(): string {
+        return '';
+    }
+
+    override getPaneName(): string {
         if (this.filename) {
             return this.filename;
         } else {
-            return this.currentLanguage.name + ' source #' + this.id;
+            return this.currentLanguage?.name + ' source #' + this.id;
         }
-    };
+    }
 
-    setFilename(name) {
+    setFilename(name: string): void {
         this.filename = name;
         this.updateTitle();
         this.updateState();
-    };
+    }
 
-    override updateTitle() {
-        var name = this.getPaneName();
-        var customName = this.paneName ? this.paneName : name;
+    override updateTitle(): void {
+        const name = this.getPaneName();
+        const customName = this.paneName ? this.paneName : name;
         if (name.endsWith('CMakeLists.txt')) {
             this.changeLanguage('cmake');
         }
         this.container.setTitle(_.escape(customName));
-    };
+    }
 
     // Called every time we change language, so we get the relevant code
-    updateEditorCode() {
-        this.setSource(this.editorSourceByLang[this.currentLanguage.id] || languages[this.currentLanguage.id].example);
-    };
+    updateEditorCode(): void {
+        this.setSource(
+            this.editorSourceByLang[this.currentLanguage?.id ?? ''] ||
+                languages[this.currentLanguage?.id ?? '']?.example
+        );
+    }
 
-    close() {
+    override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('editorClose', this.id);
         this.editor.dispose();
         this.hub.removeEditor(this.id);
-    };
+    }
 
-    getSelectizeRenderHtml(data, escape, width, height) {
-        var result =
+    getSelectizeRenderHtml(data: any, escape: typeof escape_html, width: number, height: number): string {
+        let result =
             '<div class="d-flex" style="align-items: center">' +
             '<div class="mr-1 d-flex" style="align-items: center">' +
             '<img src="' +
@@ -1847,11 +1901,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any>
         return result;
     }
 
-    renderSelectizeOption(data, escape) {
+    renderSelectizeOption(data: any, escape: typeof escape_html) {
         return this.getSelectizeRenderHtml(data, escape, 23, 23);
     }
 
-    renderSelectizeItem(data, escape) {
+    renderSelectizeItem(data: any, escape: typeof escape_html) {
         return this.getSelectizeRenderHtml(data, escape, 20, 20);
     }
+
+    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 }

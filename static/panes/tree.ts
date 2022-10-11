@@ -380,7 +380,7 @@ export class Tree {
         (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
     }
 
-    private refresh() {
+    refresh() {
         this.updateState();
 
         this.namedItems.html('');
