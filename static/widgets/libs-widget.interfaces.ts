@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Lib, WidgetState} from '../widgets/libs-widget.interfaces';
+export interface StateLib {
+    id?: string;
+    name?: string;
+    ver?: string;
+    version?: string;
+}
 
-export type ConformanceViewState = WidgetState & {
-    source?: string;
-    langId?: string;
-    editorid?: number;
-    compilers?: {
-        compilerId: string | string[];
-        options: string | string[] | number;
-    }[];
-    libs?: Lib[];
-};
+export interface WidgetState {
+    libs?: StateLib[];
+}
+
+export type Lib = {name: string; ver: string};

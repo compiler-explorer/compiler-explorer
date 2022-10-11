@@ -39,42 +39,31 @@ import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces';
 import {ConformanceViewState} from './conformance-view.interfaces';
 import {Library, LibraryVersion} from '../options.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {Lib} from '../widgets/libs-widget.interfaces';
 
 type ConformanceStatus = {
     allowCompile: boolean;
     allowAdd: boolean;
 };
 
-type NewCompilerEntryType = {
+type CompilerEntry = {
     parent: JQuery<HTMLElement>;
-    picker: {
-        lastCompilerId: string;
-    } | null;
+    picker: CompilerPicker | null;
     optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]> | null;
     statusIcon: JQuery<HTMLElement> | null;
     prependOptions: JQuery<HTMLElement> | null;
 };
 
-type CompilersStateType = {
-    compilerId: any;
-    options: string;
-};
-
-type StateType = {
-    editorid: number | undefined;
-    langId: string;
-    compilers: CompilersStateType[];
-    libs: any[];
-};
-
 type CompileChildLibraries = {
-    id: any;
-    version: any;
+    id: string;
+    version: string;
 };
 
 type AddCompilerPickerConfig = {
     compilerId: string;
-    options: unknown;
+    options: string | number | string[];
 };
 
 export class Conformance extends Pane<ConformanceViewState> {
@@ -84,17 +73,17 @@ export class Conformance extends Pane<ConformanceViewState> {
     private langId: string;
     private source: string;
     private sourceNeedsExpanding: boolean;
-    private compilerPickers: any[];
+    private compilerPickers: CompilerEntry[];
     private expandedSource: string | null;
-    private currentLibs: any[];
+    private currentLibs: Lib[];
     private status: ConformanceStatus;
-    private readonly stateByLang: any;
+    private readonly stateByLang: Record<string, ConformanceViewState>;
     private libsButton: JQuery<HTMLElement>;
     private conformanceContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private selectorList: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private addCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private selectorTemplate: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private lastState?: StateType;
+    private lastState?: ConformanceViewState;
     private readonly hub: Hub;
 
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
@@ -149,7 +138,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         return $('#conformance').html();
     }
 
-    registerOpeningAnalyticsEvent() {
+    registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -157,7 +146,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         });
     }
 
-    onLibsChanged() {
+    onLibsChanged(): void {
         const newLibs = this.libsWidget.get();
         if (newLibs !== this.currentLibs) {
             this.currentLibs = newLibs;
@@ -166,7 +155,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         }
     }
 
-    initLibraries(state) {
+    initLibraries(state: PaneState & ConformanceViewState): void {
         const compilerIds = this.getCurrentCompilersIds();
         this.libsWidget = new LibsWidget(
             this.langId,
@@ -174,13 +163,14 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.libsButton,
             state,
             this.onLibsChanged.bind(this),
-            this.getOverlappingLibraries(compilerIds)
+            // @ts-expect-error: Typescript does not detect that this is correct
+            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
         );
         // No callback is done on initialization, so make sure we store the current libs
         this.currentLibs = this.libsWidget.get();
     }
 
-    initButtons() {
+    initButtons(): void {
         this.conformanceContentRoot = this.domRoot.find('.conformance-wrapper');
         this.selectorList = this.domRoot.find('.compiler-list');
         this.addCompilerButton = this.domRoot.find('.add-compiler');
@@ -190,7 +180,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.hideable = this.domRoot.find('.hideable');
     }
 
-    initCallbacks() {
+    initCallbacks(): void {
         this.container.on('destroy', () => {
             this.eventHub.unsubscribe();
             if (this.compilerInfo.editorId) this.eventHub.emit('conformanceViewClose', this.compilerInfo.editorId);
@@ -216,11 +206,11 @@ export class Conformance extends Pane<ConformanceViewState> {
         });
     }
 
-    override getPaneName() {
+    override getPaneName(): string {
         return 'Conformance Viewer (Editor #' + this.compilerInfo.editorId + ')';
     }
 
-    override updateTitle() {
+    override updateTitle(): void {
         let compilerText = '';
         if (this.compilerPickers.length !== 0) {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
@@ -229,7 +219,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.container.setTitle(_.escape(name));
     }
 
-    addCompilerPicker(config?: AddCompilerPickerConfig) {
+    addCompilerPicker(config?: AddCompilerPickerConfig): void {
         if (!config) {
             config = {
                 // Compiler id which is being used
@@ -239,7 +229,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             };
         }
         const newSelector = this.selectorTemplate.clone();
-        const newCompilerEntry: NewCompilerEntryType = {
+        const newCompilerEntry: CompilerEntry = {
             parent: newSelector,
             picker: null,
             optionsField: null,
@@ -254,7 +244,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
         newCompilerEntry.optionsField = newSelector
             .find('.conformance-options')
-            .val(config.options as any)
+            .val(config.options)
             .on('change', onOptionsChange)
             .on('keyup', onOptionsChange);
 
@@ -267,8 +257,8 @@ export class Conformance extends Pane<ConformanceViewState> {
             });
 
         newSelector.find('.close.copy-compiler').on('click', () => {
-            const config = {
-                compilerId: newCompilerEntry.picker?.lastCompilerId,
+            const config: AddCompilerPickerConfig = {
+                compilerId: newCompilerEntry.picker?.lastCompilerId ?? '',
                 options: newCompilerEntry.optionsField?.val() || '',
             };
             this.copyCompilerPicker(config);
@@ -323,11 +313,17 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.handleToolbarUI();
     }
 
-    override onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number) {}
+    override onCompiler(
+        compilerId: number,
+        compiler: CompilerInfo,
+        options: string,
+        editorId: number,
+        treeId: number
+    ): void {}
 
-    setCompilationOptionsPopover(element, content) {
-        element.popover('dispose');
-        element.popover({
+    setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
+        element?.popover('dispose');
+        element?.popover({
             content: content || 'No options in use',
             template:
                 '<div class="popover' +
@@ -337,11 +333,11 @@ export class Conformance extends Pane<ConformanceViewState> {
         });
     }
 
-    removeCompilerPicker(compilerEntry) {
+    removeCompilerPicker(compilerEntry: CompilerEntry): void {
         this.compilerPickers = _.reject(this.compilerPickers, function (entry) {
-            return compilerEntry.picker.id === entry.picker.id;
+            return compilerEntry.picker?.id === entry.picker?.id;
         });
-        compilerEntry.picker.tomSelect.close();
+        compilerEntry.picker?.tomSelect?.close();
         compilerEntry.parent.remove();
 
         this.updateLibraries();
@@ -349,13 +345,13 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.saveState();
     }
 
-    copyCompilerPicker(config) {
+    copyCompilerPicker(config: AddCompilerPickerConfig): void {
         this.addCompilerPicker(config);
         this.compileChild(this.compilerPickers.at(-1));
         this.saveState();
     }
 
-    expandSource() {
+    expandSource(): Promise<string> {
         if (this.sourceNeedsExpanding || !this.expandedSource) {
             return this.compilerService.expand(this.source).then(expandedSource => {
                 this.expandedSource = expandedSource;
@@ -366,7 +362,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         return Promise.resolve(this.expandedSource);
     }
 
-    onEditorChange(editorId, newSource, langId) {
+    onEditorChange(editorId: number, newSource: string, langId: string): void {
         if (editorId === this.compilerInfo.editorId && this.source !== newSource) {
             this.langId = langId;
             this.source = newSource;
@@ -375,7 +371,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         }
     }
 
-    onEditorClose(editorId) {
+    onEditorClose(editorId: number): void {
         if (editorId === this.compilerInfo.editorId) {
             this.close();
             _.defer(function (self) {
@@ -384,11 +380,12 @@ export class Conformance extends Pane<ConformanceViewState> {
         }
     }
 
-    private hasResultAnyOutput(result) {
+    private hasResultAnyOutput(result: CompilationResult): boolean {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         return (result.stdout || []).length > 0 || (result.stderr || []).length > 0;
     }
 
-    handleCompileOutIcon(element, result) {
+    handleCompileOutIcon(element: JQuery<HTMLElement>, result: CompilationResult) {
         const hasOutput = this.hasResultAnyOutput(result);
         element.toggleClass('d-none', !hasOutput);
         if (hasOutput) {
@@ -396,7 +393,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         }
     }
 
-    override onCompileResult(compilerEntry, result) {
+    onCompileResponse(compilerEntry: CompilerEntry, result: CompilationResult) {
         let compilationOptions = '';
         if (result.compilationOptions) {
             compilationOptions = result.compilationOptions.join(' ');
@@ -410,7 +407,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.saveState();
     }
 
-    private getCompilerId(compilerEntry) {
+    private getCompilerId(compilerEntry?: CompilerEntry): string | string[] {
         if (compilerEntry && compilerEntry.picker && compilerEntry.picker.tomSelect) {
             return compilerEntry.picker.tomSelect.getValue();
         }
@@ -448,24 +445,25 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.compilerService
                 .submit(request)
                 .then((x: any) => {
-                    this.onCompileResult(compilerEntry, x.result);
+                    this.onCompileResponse(compilerEntry, x.result);
                 })
                 .catch(x => {
-                    this.onCompileResult(compilerEntry, {
-                        asm: '',
+                    this.onCompileResponse(compilerEntry, {
+                        asm: [],
                         code: -1,
-                        stdout: '',
+                        stdout: [],
                         stderr: x.error || x.message || x,
+                        timedOut: false,
                     });
                 });
         });
     }
 
-    compileAll() {
+    compileAll(): void {
         this.compilerPickers.forEach(this.compileChild.bind(this));
     }
 
-    handleToolbarUI() {
+    handleToolbarUI(): void {
         const compilerCount = this.compilerPickers.length;
 
         // Only allow new compilers if we allow for more
@@ -474,14 +472,14 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.updateTitle();
     }
 
-    handleStatusIcon(statusIcon, status) {
+    handleStatusIcon(statusIcon, status): void {
         CompilerService.handleCompilationStatus(null, statusIcon, status);
     }
 
-    currentState(): StateType {
+    currentState(): ConformanceViewState {
         const compilers = this.compilerPickers.map(compilerEntry => ({
             compilerId: this.getCompilerId(compilerEntry),
-            options: compilerEntry.optionsField.val() || '',
+            options: compilerEntry.optionsField?.val() || '',
         }));
         const state = {
             editorid: this.compilerInfo.editorId,
@@ -493,12 +491,12 @@ export class Conformance extends Pane<ConformanceViewState> {
         return state;
     }
 
-    saveState() {
+    saveState(): void {
         this.lastState = this.currentState();
         this.container.setState(this.lastState);
     }
 
-    override resize() {
+    override resize(): void {
         // The pane becomes unusable long before this hides the icons
         // Added either way just in case we ever add more icons to this pane
         const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
@@ -566,19 +564,24 @@ export class Conformance extends Pane<ConformanceViewState> {
         );
     }
 
-    updateLibraries() {
+    updateLibraries(): void {
         const compilerIds = this.getCurrentCompilersIds();
-        this.libsWidget.setNewLangId(this.langId, compilerIds.join('|'), this.getOverlappingLibraries(compilerIds));
+        this.libsWidget.setNewLangId(
+            this.langId,
+            compilerIds.join('|'),
+            // @ts-expect-error: This is actually ok
+            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
+        );
     }
 
-    onLanguageChange(editorId, newLangId) {
+    onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (editorId === this.compilerInfo.editorId && this.langId !== newLangId) {
             const oldLangId = this.langId;
             this.stateByLang[oldLangId] = this.currentState();
 
             this.langId = newLangId;
             this.compilerPickers.forEach(compilerEntry => {
-                compilerEntry.picker.tomSelect.close();
+                compilerEntry.picker?.tomSelect?.close();
                 compilerEntry.parent.remove();
             });
             this.compilerPickers = [];
@@ -590,16 +593,16 @@ export class Conformance extends Pane<ConformanceViewState> {
         }
     }
 
-    close() {
+    override close(): void {
         this.eventHub.unsubscribe();
         this.compilerPickers.forEach(compilerEntry => {
-            compilerEntry.picker.tomSelect.close();
+            compilerEntry.picker?.tomSelect?.close();
             compilerEntry.parent.remove();
         });
         if (this.compilerInfo.editorId) this.eventHub.emit('conformanceViewClose', this.compilerInfo.editorId);
     }
 
-    initFromState(state) {
+    initFromState(state?: ConformanceViewState): void {
         if (state && state.compilers) {
             this.lastState = state;
             _.each(state.compilers, _.bind(this.addCompilerPicker, this));
@@ -611,4 +614,6 @@ export class Conformance extends Pane<ConformanceViewState> {
     getDefaultPaneName(): string {
         return '';
     }
+
+    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
 }
