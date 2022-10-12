@@ -124,3 +124,4 @@ From oldest to newest contributor, we would like to thank:
 - [J. Ryan Stinnett](https://github.com/jryans)
 - [Fábio S. V. Medeiros](https://github.com/fabiosvm)
 - [Jackson Machado](https://github.com/jacksjm)
+- [Cordell Bloor](https://github.com/cgmb)
