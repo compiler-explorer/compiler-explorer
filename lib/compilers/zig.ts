@@ -76,8 +76,8 @@ export class ZigCompiler extends BaseCompiler {
             source += '    zig_panic();\n';
             source += '}\n';
         } else if (
-            Semver.geq(asSafeVer(this.compiler.semver), '0.8.0', true) &&
-            Semver.leq(asSafeVer(this.compiler.semver), '0.9.0', true)
+            Semver.gte(asSafeVer(this.compiler.semver), '0.8.0', true) &&
+            Semver.lte(asSafeVer(this.compiler.semver), '0.9.0', true)
         ) {
             source += '\n';
             source += 'extern fn zig_panic() noreturn;\n';
