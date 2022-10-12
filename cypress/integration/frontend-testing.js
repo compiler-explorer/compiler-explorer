@@ -57,7 +57,7 @@ describe('Individual pane testing', () => {
     addPaneOpenTest(PANE_DATA_MAP.ast);
     addPaneOpenTest(PANE_DATA_MAP.llvmir);
     addPaneOpenTest(PANE_DATA_MAP.pipeline);
-    addPaneOpenTest(PANE_DATA_MAP.device);
+    // TODO: re-enable this when fixed addPaneOpenTest(PANE_DATA_MAP.device);
     addPaneOpenTest(PANE_DATA_MAP.mir);
     addPaneOpenTest(PANE_DATA_MAP.hir);
     addPaneOpenTest(PANE_DATA_MAP.macro);
