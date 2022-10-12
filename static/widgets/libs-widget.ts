@@ -281,7 +281,13 @@ export class LibsWidget {
         versions.append(noVersionSelectedOption);
         let hasVisibleVersions = false;
 
-        for (const versionId in lib.versions) {
+        const versionsArr = Object.keys(lib.versions).map(id => {
+            return {id: id, order: lib.versions[id]['$order']};
+        });
+        versionsArr.sort((a, b) => b.order - a.order);
+
+        for (const libVersion of versionsArr) {
+            const versionId = libVersion.id;
             const version = lib.versions[versionId];
             const option = $('<option>');
             if (version.used) {
