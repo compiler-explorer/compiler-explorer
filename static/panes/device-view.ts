@@ -24,6 +24,7 @@
 
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
+import $ from 'jquery';
 import * as colour from '../colour';
 import {ga} from '../analytics';
 import * as monacoConfig from '../monaco-config';
@@ -50,13 +51,16 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     private deviceCode: DeviceAsmCode[];
     private lastColours: Record<number, number>;
     private lastColourScheme: string;
-    private readonly selectize: TomSelect;
+    private selectize: TomSelect;
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
 
     public constructor(hub: Hub, container: GoldenLayout.Container, state: DeviceAsmState & MonacoPaneState) {
         super(hub, container, state);
 
         this.prevDecorations = [];
+        this.decorations = {
+            linkedCode: [],
+        };
 
         this.selection = state.selection;
         this.selectedDevice = state.device || '';
@@ -66,18 +70,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.deviceCode = [];
         this.lastColours = [];
         this.lastColourScheme = '';
-
-        const changeDeviceEl = this.domRoot[0].querySelector('.change-device') as HTMLInputElement;
-        this.selectize = new TomSelect(changeDeviceEl, {
-            sortField: 'name',
-            valueField: 'name',
-            labelField: 'name',
-            searchField: ['name'],
-            options: [],
-            items: [],
-            dropdownParent: 'body',
-            plugins: ['input_autogrow'],
-        });
 
         if (state.irOutput) {
             this.showDeviceAsmResults(state.irOutput);
@@ -127,6 +119,22 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                     }
                 }
             },
+        });
+    }
+
+    override registerButtons(state: DeviceAsmState): void {
+        super.registerButtons(state);
+
+        const changeDeviceEl = this.domRoot[0].querySelector('.change-device') as HTMLInputElement;
+        this.selectize = new TomSelect(changeDeviceEl, {
+            sortField: 'name',
+            valueField: 'name',
+            labelField: 'name',
+            searchField: ['name'],
+            options: [],
+            items: [],
+            dropdownParent: 'body',
+            plugins: ['input_autogrow'],
         });
     }
 

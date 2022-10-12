@@ -322,7 +322,7 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     /** Initialize standard lifecycle hooks */
     protected override registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
-        this.fontScale.on('change', this.updateState.bind(this));
+        if (this.fontScale) this.fontScale.on('change', this.updateState.bind(this));
         this.eventHub.on('broadcastFontScale', (scale: number) => {
             this.fontScale.setScale(scale);
             this.updateState();
