@@ -95,8 +95,6 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.source = state.source ?? '';
         this.sourceNeedsExpanding = true;
         this.expandedSource = null;
-        this.compilerPickers = [];
-        this.currentLibs = [];
 
         this.status = {
             allowCompile: false,
@@ -212,7 +210,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     override updateTitle(): void {
         let compilerText = '';
-        if (this.compilerPickers.length !== 0) {
+        if (this.compilerPickers && (this.compilerPickers.length !== 0)) {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
@@ -308,6 +306,8 @@ export class Conformance extends Pane<ConformanceViewState> {
         });
 
         this.selectorList.append(newSelector);
+
+        if (!this.compilerPickers) this.compilerPickers = [];
         this.compilerPickers.push(newCompilerEntry);
 
         this.handleToolbarUI();
@@ -477,6 +477,8 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     currentState(): ConformanceViewState {
+        if (!this.compilerPickers) this.compilerPickers = [];
+
         const compilers = this.compilerPickers.map(compilerEntry => ({
             compilerId: this.getCompilerId(compilerEntry),
             options: compilerEntry.optionsField?.val() || '',
