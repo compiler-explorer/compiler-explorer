@@ -210,7 +210,8 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     override updateTitle(): void {
         let compilerText = '';
-        if (this.compilerPickers && (this.compilerPickers.length !== 0)) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.compilerPickers && this.compilerPickers.length !== 0) {
             compilerText = ' ' + this.compilerPickers.length + '/' + this.maxCompilations;
         }
         const name = this.paneName ? this.paneName + compilerText : this.getPaneName() + compilerText;
@@ -307,6 +308,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
         this.selectorList.append(newSelector);
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!this.compilerPickers) this.compilerPickers = [];
         this.compilerPickers.push(newCompilerEntry);
 
@@ -477,6 +479,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     }
 
     currentState(): ConformanceViewState {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!this.compilerPickers) this.compilerPickers = [];
 
         const compilers = this.compilerPickers.map(compilerEntry => ({
