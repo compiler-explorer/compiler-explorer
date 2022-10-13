@@ -22,8 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
+import fs from 'fs-extra';
+
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmRaw} from '../parsers/asm-raw';
+import * as utils from '../utils';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
@@ -34,13 +40,48 @@ export class Cc65Compiler extends BaseCompiler {
         super(compilerInfo, env);
 
         this.asm = new AsmRaw();
+        this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         return ['-g', '-o', this.filename(outputFilename)];
+    }
+
+    override async getCmakeBaseEnv() {
+        if (!this.compiler.exe) return {};
+
+        const env: Record<string, string> = {};
+
+        env.CC = this.compiler.exe;
+
+        if (this.toolchainPath) {
+            const ldPath = `${this.toolchainPath}/bin/ld65`;
+            const arPath = `${this.toolchainPath}/bin/ar65`;
+            const asPath = `${this.toolchainPath}/bin/as65`;
+
+            if (await utils.fileExists(ldPath)) env.LD = ldPath;
+            if (await utils.fileExists(arPath)) env.AR = arPath;
+            if (await utils.fileExists(asPath)) env.AS = asPath;
+        }
+
+        return env;
+    }
+
+    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+        const res = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+
+        const dirPath = path.dirname(outputFilename);
+        const nesFile = path.join(dirPath, 'example.nes');
+        if (await utils.fileExists(nesFile)) {
+            const file_buffer = await fs.readFile(nesFile);
+            const binary_base64 = file_buffer.toString('base64');
+            result.jsnesrom = binary_base64;
+        }
+
+        return res;
     }
 }

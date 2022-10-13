@@ -1425,6 +1425,8 @@ Compiler.prototype.postCompilationResult = function (request, result, wasCmake) 
         this.emulateSpeccyTape(result.speccytape);
     } else if (result.miraclesms) {
         this.emulateMiracleSMS(result.miraclesms);
+    } else if (result.jsnesrom) {
+        this.emulateNESROM(result.jsnesrom);
     }
 };
 
@@ -1493,6 +1495,29 @@ Compiler.prototype.emulateBbcDisk = function (bbcdiskimage) {
                     var tmstr = Date.now();
                     emuwindow.location =
                         'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                });
+            },
+        }
+    );
+};
+
+Compiler.prototype.emulateNESROM = function (nesrom) {
+    var dialog = $('#jsnesemu');
+
+    this.alertSystem.notify(
+        'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+        {
+            group: 'emulation',
+            collapseSimilar: true,
+            dismissTime: 10000,
+            onBeforeShow: function (elem) {
+                elem.find('#emulink').on('click', function () {
+                    dialog.modal();
+
+                    var emuwindow = dialog.find('#jsnesemuframe')[0].contentWindow;
+                    var tmstr = Date.now();
+                    emuwindow.location =
+                        'https://static.ce-cdn.net/jsnes-ceweb/index.html?' + tmstr + '#b64nes=' + nesrom;
                 });
             },
         }
