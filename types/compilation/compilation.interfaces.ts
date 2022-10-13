@@ -31,7 +31,13 @@ import {ResultLine} from '../resultline/resultline.interfaces';
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
-    buildResult?: unknown;
+    source?: string;
+    buildResult?: {
+        stdout?: ResultLine[];
+        stderr?: ResultLine[];
+        code: number;
+        compilationOptions?: string[];
+    };
     inputFilename?: string;
     asm?: ResultLine[];
     stdout: ResultLine[];
@@ -40,6 +46,7 @@ export type CompilationResult = {
     execResult?: {
         stdout?: ResultLine[];
         stderr?: ResultLine[];
+        code: number;
     };
     hasGnatDebugOutput?: boolean;
     gnatDebugOutput?: ResultLine[];
@@ -88,6 +95,11 @@ export type CompilationResult = {
     forceBinaryView?: boolean;
     bbcdiskimage?: string;
     hints?: string[];
+    buildsteps?: {
+        stdout?: ResultLine[];
+        stderr?: ResultLine[];
+        code: number;
+    }[];
 };
 
 export type ExecutionOptions = {

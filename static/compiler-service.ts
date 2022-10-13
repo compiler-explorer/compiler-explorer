@@ -47,7 +47,7 @@ const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
-    private cache: LRU;
+    cache: LRU;
     private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
