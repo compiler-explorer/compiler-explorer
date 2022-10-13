@@ -84,4 +84,16 @@ export class Cc65Compiler extends BaseCompiler {
 
         return res;
     }
+
+    override async doBuildstepAndAddToResult(result, name, command, args, execParams) {
+        const stepResult = await super.doBuildstepAndAddToResult(result, name, command, args, execParams);
+        if (name === 'make') {
+            const mapFile = path.join(execParams.customCwd, '../map.txt');
+            if (await utils.fileExists(mapFile)) {
+                const file_buffer = await fs.readFile(mapFile);
+                stepResult.stderr = stepResult.stderr.concat(utils.parseOutput(file_buffer.toString()));
+            }
+        }
+        return stepResult;
+    }
 }
