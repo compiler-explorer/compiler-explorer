@@ -4397,7 +4397,15 @@
       "text": ".Linfo_string400:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "set",
+          "range": {
+            "endCol": 21,
+            "startCol": 18
+          }
+        }
+      ],
       "source": null,
       "text": "        .asciz  \"set\"                   # string offset=5208"
     },
@@ -7197,7 +7205,15 @@
       "text": ".Linfo_string680:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "clear",
+          "range": {
+            "endCol": 23,
+            "startCol": 18
+          }
+        }
+      ],
       "source": null,
       "text": "        .asciz  \"clear\"                 # string offset=16171"
     },
