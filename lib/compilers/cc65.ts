@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import {AsmRaw} from '../parsers/asm-raw';
+import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
 
 export class Cc65Compiler extends BaseCompiler {
@@ -39,7 +39,7 @@ export class Cc65Compiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.asm = new AsmRaw();
+        this.asm = new CC65AsmParser();
         this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 
