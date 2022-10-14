@@ -29,7 +29,7 @@ export type ExecutorState = WidgetState & {
     source?: number;
     execArgs?: string;
     execStdin?: string;
-    options?: Record<any, any>;
+    options?: string;
     filters?: Record<string, boolean>;
     compilationPanelShown?: boolean;
     argsPanelShown?: boolean;
