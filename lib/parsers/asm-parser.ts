@@ -345,11 +345,11 @@ export class AsmParser extends AsmRegex {
         const files = this.parseFiles(asmLines);
         let prevLabel = '';
 
-        let source: AsmResultSource | undefined;
+        let source: AsmResultSource | undefined | null;
         let mayRemovePreviousLabel = true;
         let keepInlineCode = false;
 
-        let lastOwnSource: AsmResultSource | undefined;
+        let lastOwnSource: AsmResultSource | undefined | null;
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         function maybeAddBlank() {
@@ -380,7 +380,7 @@ export class AsmParser extends AsmRegex {
                         source.column = sourceCol;
                     }
                 } else {
-                    source = undefined;
+                    source = null;
                 }
             } else {
                 match = line.match(this.sourceD2Tag);
@@ -427,7 +427,7 @@ export class AsmParser extends AsmRegex {
                     break;
                 case 132:
                 case 100:
-                    source = undefined;
+                    source = null;
                     prevLabel = '';
                     break;
             }
@@ -451,7 +451,7 @@ export class AsmParser extends AsmRegex {
                     };
                 }
             } else if (this.source6502DbgEnd.test(line)) {
-                source = undefined;
+                source = null;
             }
         };
 
@@ -483,9 +483,9 @@ export class AsmParser extends AsmRegex {
             }
 
             if (this.endBlock.test(line) || (inNvccCode && /}/.test(line))) {
-                source = undefined;
+                source = null;
                 prevLabel = '';
-                lastOwnSource = undefined;
+                lastOwnSource = null;
             }
 
             if (filters.libraryCode && !lastOwnSource && source && source.file !== null && !source.mainsource) {
@@ -564,7 +564,7 @@ export class AsmParser extends AsmRegex {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? source : null,
+                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
                 labels: labelsInLine,
             });
         }
@@ -603,7 +603,7 @@ export class AsmParser extends AsmRegex {
 
         let asmLines = asmResult.split('\n');
         const startingLineCount = asmLines.length;
-        let source: AsmResultSource | null = null;
+        let source: AsmResultSource | undefined | null = null;
         let func: string | null = null;
         let mayRemovePreviousLabel = true;
 

@@ -48,10 +48,10 @@ export class CC65AsmParser extends AsmParser {
     }
 
     extractLabels(asmtext: string, colOffset: number): AsmResultLabel[] | undefined {
-        const labelsInLine: AsmResultLabel[] = [];
-
         const match = asmtext.match(this.labelExtractRe);
         if (match) {
+            const labelsInLine: AsmResultLabel[] = [];
+
             const label = match[1];
 
             const startCol = asmtext.indexOf(label);
@@ -65,6 +65,8 @@ export class CC65AsmParser extends AsmParser {
 
             return labelsInLine;
         }
+
+        return undefined;
     }
 
     override processBinaryAsm(asm, filters: ParseFilters) {
