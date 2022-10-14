@@ -345,11 +345,11 @@ export class AsmParser extends AsmRegex {
         const files = this.parseFiles(asmLines);
         let prevLabel = '';
 
-        let source: AsmResultSource | null = null;
+        let source: AsmResultSource | undefined;
         let mayRemovePreviousLabel = true;
         let keepInlineCode = false;
 
-        let lastOwnSource: AsmResultSource | null = null;
+        let lastOwnSource: AsmResultSource | undefined;
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         function maybeAddBlank() {
@@ -380,7 +380,7 @@ export class AsmParser extends AsmRegex {
                         source.column = sourceCol;
                     }
                 } else {
-                    source = null;
+                    source = undefined;
                 }
             } else {
                 match = line.match(this.sourceD2Tag);
@@ -427,7 +427,7 @@ export class AsmParser extends AsmRegex {
                     break;
                 case 132:
                 case 100:
-                    source = null;
+                    source = undefined;
                     prevLabel = '';
                     break;
             }
@@ -451,7 +451,7 @@ export class AsmParser extends AsmRegex {
                     };
                 }
             } else if (this.source6502DbgEnd.test(line)) {
-                source = null;
+                source = undefined;
             }
         };
 
@@ -483,9 +483,9 @@ export class AsmParser extends AsmRegex {
             }
 
             if (this.endBlock.test(line) || (inNvccCode && /}/.test(line))) {
-                source = null;
+                source = undefined;
                 prevLabel = '';
-                lastOwnSource = null;
+                lastOwnSource = undefined;
             }
 
             if (filters.libraryCode && !lastOwnSource && source && source.file !== null && !source.mainsource) {
