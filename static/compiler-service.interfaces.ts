@@ -22,20 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {WidgetState} from '../widgets/libs-widget.interfaces';
-
-export type ExecutorState = WidgetState & {
-    tree?: number;
-    source?: number;
-    execArgs?: string;
-    execStdin?: string;
-    options?: string;
-    filters?: Record<string, boolean>;
-    compilationPanelShown?: boolean;
-    argsPanelShown?: boolean;
-    stdinPanelShown?: boolean;
-    compilerOutShown?: boolean;
-    wrap?: boolean;
-    lang?: string;
-    compiler: string;
+export type CompilationStatus = {
+    code: 0 | 1 | 2 | 3 | 4;
+    compilerOut: number;
 };

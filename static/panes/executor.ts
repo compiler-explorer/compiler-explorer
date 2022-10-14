@@ -51,8 +51,13 @@ import {GccSelectedPass} from './gccdump-view.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces';
 
 const languages = options.languages;
+
+type CompilationStatus = Omit<CompilerServiceCompilationStatus, 'compilerOut'> & {
+    didExecute?: boolean;
+};
 
 function makeAnsiToHtml(color?: string): AnsiToHtml {
     return new AnsiToHtml({
@@ -69,12 +74,14 @@ type ActiveTools = {
     stdin: string;
 };
 
-type CompileRequestOptions = {
+type CompilationRequestOptions = {
     userArguments: string;
     compilerOptions: {
-        producePp: PPOptions | null;
-        produceAst: boolean;
-        produceGccDump: {
+        executorRequest?: boolean;
+        skipAsm?: boolean;
+        producePp?: PPOptions | null;
+        produceAst?: boolean;
+        produceGccDump?: {
             opened: boolean;
             pass?: GccSelectedPass;
             treeDump?: boolean;
@@ -82,34 +89,35 @@ type CompileRequestOptions = {
             ipaDump?: boolean;
             dumpFlags: any;
         };
-        produceOptInfo: boolean;
-        produceCfg: boolean;
-        produceGnatDebugTree: boolean;
-        produceGnatDebug: boolean;
-        produceIr: boolean;
-        produceLLVMOptPipeline: LLVMOptPipelineBackendOptions | null;
-        produceDevice: boolean;
-        produceRustMir: boolean;
-        produceRustMacroExp: boolean;
-        produceRustHir: boolean;
-        produceHaskellCore: boolean;
-        produceHaskellStg: boolean;
-        produceHaskellCmm: boolean;
+        produceOptInfo?: boolean;
+        produceCfg?: boolean;
+        produceGnatDebugTree?: boolean;
+        produceGnatDebug?: boolean;
+        produceIr?: boolean;
+        produceLLVMOptPipeline?: LLVMOptPipelineBackendOptions | null;
+        produceDevice?: boolean;
+        produceRustMir?: boolean;
+        produceRustMacroExp?: boolean;
+        produceRustHir?: boolean;
+        produceHaskellCore?: boolean;
+        produceHaskellStg?: boolean;
+        produceHaskellCmm?: boolean;
         cmakeArgs?: string;
         customOutputFilename?: string;
     };
+    executeParameters: {
+        args: string;
+        stdin: string;
+    };
     filters: Record<string, boolean>;
     tools: ActiveTools[];
-    libraries: {
-        id: string;
-        version: string;
-    }[];
+    libraries: CompileChildLibraries[];
 };
 
 type CompilationRequest = {
     source: string;
     compiler: string;
-    options: CompileRequestOptions;
+    options: CompilationRequestOptions;
     lang: string | null;
     files: FiledataPair[];
     bypassCache?: boolean;
@@ -276,7 +284,7 @@ export class Executor extends Pane<ExecutorState> {
         this.updateLibraries();
     }
 
-    close() {
+    close(): void {
         this.eventHub.unsubscribe();
         if (this.compilerPicker instanceof CompilerPicker) {
             this.compilerPicker.close();
@@ -285,12 +293,12 @@ export class Executor extends Pane<ExecutorState> {
         this.eventHub.emit('executorClose', this.id);
     }
 
-    undefer() {
+    undefer(): void {
         this.deferCompiles = false;
         if (this.needsCompile) this.compile();
     }
 
-    override resize() {
+    override resize(): void {
         _.defer(self => {
             let topBarHeight = utils.updateAndCalcTopBarHeight(self.domRoot, $(self.topBar[0]), self.hideable);
 
@@ -315,14 +323,14 @@ export class Executor extends Pane<ExecutorState> {
         return {stdout: [], timedOut: false, code: -1, stderr: message};
     }
 
-    compile(bypassCache?: boolean) {
+    compile(bypassCache?: boolean): void {
         if (this.deferCompiles) {
             this.needsCompile = true;
             return;
         }
         this.needsCompile = false;
         this.compileTimeLabel.text(' - Compiling...');
-        const options = {
+        const options: CompilationRequestOptions = {
             userArguments: this.options,
             executeParameters: {
                 args: this.executionArguments,
@@ -334,7 +342,7 @@ export class Executor extends Pane<ExecutorState> {
             },
             filters: {execute: true},
             tools: [],
-            libraries: [] as CompileChildLibraries[],
+            libraries: [],
         };
 
         this.libsWidget?.getLibsInUse()?.forEach(item => {
@@ -351,7 +359,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    compileFromEditorSource(options, bypassCache) {
+    compileFromEditorSource(options: CompilationRequestOptions, bypassCache?: boolean): void {
         if (!this.compiler?.supportsExecute) {
             this.alertSystem.notify('This compiler (' + this.compiler?.name + ') does not support execution', {
                 group: 'execution',
@@ -375,7 +383,7 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    compileFromTree(options, bypassCache) {
+    compileFromTree(options: CompilationRequestOptions, bypassCache?: boolean): void {
         const tree = this.hub.getTreeById(this.sourceTreeId ?? -1);
         if (!tree) {
             this.sourceTreeId = null;
@@ -392,7 +400,6 @@ export class Executor extends Pane<ExecutorState> {
         };
 
         const fetches: Promise<void>[] = [];
-
         fetches.push(
             this.compilerService.expand(request.source).then(contents => {
                 request.source = contents;
@@ -429,7 +436,7 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    sendCMakeCompile(request: CompilationRequest) {
+    sendCMakeCompile(request: CompilationRequest): void {
         const onCompilerResponse = this.onCMakeResponse.bind(this);
 
         if (this.pendingCMakeRequestSentAt) {
@@ -460,7 +467,7 @@ export class Executor extends Pane<ExecutorState> {
             });
     }
 
-    sendCompile(request: CompilationRequest) {
+    sendCompile(request: CompilationRequest): void {
         const onCompilerResponse = this.onCompileResponse.bind(this);
 
         if (this.pendingRequestSentAt) {
@@ -482,7 +489,7 @@ export class Executor extends Pane<ExecutorState> {
             })
             .catch(x => {
                 let message = 'Unknown error';
-                if (_.isString(x)) {
+                if (typeof x === 'string') {
                     message = x;
                 } else if (x) {
                     message = x.error || x.code || x.message || x;
@@ -491,7 +498,14 @@ export class Executor extends Pane<ExecutorState> {
             });
     }
 
-    addCompilerOutputLine(msg, container, lineNum, column, addLineLinks, filename) {
+    addCompilerOutputLine(
+        msg: string,
+        container: JQuery,
+        lineNum: number | undefined,
+        column: number | undefined,
+        addLineLinks: boolean,
+        filename: string | null
+    ): void {
         const elem = $('<div/>').appendTo(container);
         if (addLineLinks && lineNum) {
             elem.html(
@@ -499,9 +513,16 @@ export class Executor extends Pane<ExecutorState> {
                 $('<span class="linked-compiler-output-line"></span>')
                     .html(msg)
                     .on('click', e => {
-                        const editorId = this.getEditorIdByFilename(filename);
+                        const editorId = this.getEditorIdByFilename(filename ?? '');
                         if (editorId) {
-                            this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, true);
+                            this.eventHub.emit(
+                                'editorLinkLine',
+                                editorId,
+                                lineNum,
+                                column ?? 0,
+                                (column ?? 0) + 1,
+                                true
+                            );
                         }
                         // do not bring user to the top of index.html
                         // http://stackoverflow.com/questions/3252730
@@ -509,9 +530,16 @@ export class Executor extends Pane<ExecutorState> {
                         return false;
                     })
                     .on('mouseover', () => {
-                        const editorId = this.getEditorIdByFilename(filename);
+                        const editorId = this.getEditorIdByFilename(filename ?? '');
                         if (editorId) {
-                            this.eventHub.emit('editorLinkLine', editorId, lineNum, column, column + 1, false);
+                            this.eventHub.emit(
+                                'editorLinkLine',
+                                editorId,
+                                lineNum,
+                                column ?? 0,
+                                (column ?? 0) + 1,
+                                false
+                            );
                         }
                     })
             );
@@ -520,17 +548,22 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    clearPreviousOutput() {
+    clearPreviousOutput(): void {
         this.executionStatusSection.empty();
         this.compilerOutputSection.empty();
         this.executionOutputSection.empty();
     }
 
-    handleOutput(output, element, ansiParser, addLineLinks) {
+    handleOutput(
+        output: ResultLine[],
+        element: JQuery<HTMLElement>,
+        ansiParser: AnsiToHtml,
+        addLineLinks: boolean
+    ): JQuery<HTMLElement> {
         const outElem = $('<pre class="card"></pre>').appendTo(element);
-        _.each(output, obj => {
+        output.forEach(obj => {
             if (obj.text === '') {
-                this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false, false);
+                this.addCompilerOutputLine('<br/>', outElem, undefined, undefined, false, null);
             } else {
                 const lineNumber = obj.tag ? obj.tag.line : obj.line;
                 const columnNumber = obj.tag ? obj.tag.column : -1;
@@ -541,14 +574,14 @@ export class Executor extends Pane<ExecutorState> {
                     lineNumber,
                     columnNumber,
                     addLineLinks,
-                    filename
+                    filename || null
                 );
             }
         });
         return outElem;
     }
 
-    getBuildStdoutFromResult(result: CompilationResult) {
+    getBuildStdoutFromResult(result: CompilationResult): ResultLine[] {
         let arr: ResultLine[] = [];
 
         if (result.buildResult && result.buildResult.stdout !== undefined) {
@@ -566,7 +599,7 @@ export class Executor extends Pane<ExecutorState> {
         return arr;
     }
 
-    getBuildStderrFromResult(result: CompilationResult) {
+    getBuildStderrFromResult(result: CompilationResult): ResultLine[] {
         let arr: ResultLine[] = [];
 
         if (result.buildResult && result.buildResult.stderr !== undefined) {
@@ -602,7 +635,7 @@ export class Executor extends Pane<ExecutorState> {
         return result.stderr || [];
     }
 
-    onCMakeResponse(request: CompilationRequest, result: CompilationResult, cached: boolean) {
+    onCMakeResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
         result.source = this.source;
         this.lastResult = result;
         const timeTaken = Math.max(0, Date.now() - this.pendingCMakeRequestSentAt);
@@ -615,7 +648,7 @@ export class Executor extends Pane<ExecutorState> {
         this.doNextCMakeRequest();
     }
 
-    doNextCompileRequest() {
+    doNextCompileRequest(): void {
         if (this.nextRequest) {
             const next = this.nextRequest;
             this.nextRequest = null;
@@ -623,7 +656,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    doNextCMakeRequest() {
+    doNextCMakeRequest(): void {
         if (this.nextCMakeRequest) {
             const next = this.nextCMakeRequest;
             this.nextCMakeRequest = null;
@@ -721,7 +754,7 @@ export class Executor extends Pane<ExecutorState> {
             this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
     }
 
-    onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean) {
+    onCompileResponse(request: CompilationRequest, result: CompilationResult, cached: boolean): void {
         // Save which source produced this change. It should probably be saved earlier though
         result.source = this.source;
         this.lastResult = result;
@@ -735,7 +768,7 @@ export class Executor extends Pane<ExecutorState> {
         this.doNextCompileRequest();
     }
 
-    resendResult() {
+    resendResult(): boolean {
         if (!$.isEmptyObject(this.lastResult)) {
             // @ts-expect-error: 'executeResult' may accept only 4 arguments
             this.eventHub.emit('executeResult', this.id, this.compiler, this.lastResult);
@@ -744,7 +777,7 @@ export class Executor extends Pane<ExecutorState> {
         return false;
     }
 
-    onResendExecutionResult(id: number) {
+    onResendExecutionResult(id: number): void {
         if (id === this.id) {
             this.resendResult();
         }
@@ -772,7 +805,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    initButtons(state: PaneState & ExecutorState) {
+    initButtons(state: PaneState & ExecutorState): void {
         this.filters = new Toggles(this.domRoot.find('.filters'), state.filters);
         // @ts-expect-error: 'state' is not assignable to 'Record<string, boolean>'
         this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state);
@@ -788,7 +821,7 @@ export class Executor extends Pane<ExecutorState> {
         this.prependOptions = this.domRoot.find('.prepend-options');
         this.fullCompilerName = this.domRoot.find('.full-compiler-name');
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
-        this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
+        this.setCompilationOptionsPopover(this.compiler?.options ?? null);
 
         this.compileTimeLabel = this.domRoot.find('.compile-time');
         this.libsButton = this.domRoot.find('.btn.show-libs');
@@ -841,7 +874,7 @@ export class Executor extends Pane<ExecutorState> {
         this.initToggleButtons(state);
     }
 
-    initToggleButtons(state: PaneState & ExecutorState) {
+    initToggleButtons(state: PaneState & ExecutorState): void {
         this.toggleCompilation = this.domRoot.find('.toggle-compilation');
         this.toggleArgs = this.domRoot.find('.toggle-args');
         this.toggleStdin = this.domRoot.find('.toggle-stdin');
@@ -872,12 +905,12 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    onLibsChanged() {
+    onLibsChanged(): void {
         this.saveState();
         this.compile();
     }
 
-    initLibraries(state: PaneState & ExecutorState) {
+    initLibraries(state: PaneState & ExecutorState): void {
         this.libsWidget = new LibsWidget(
             // @ts-expect-error: This argument can be null
             this.currentLangId,
@@ -895,11 +928,11 @@ export class Executor extends Pane<ExecutorState> {
         );
     }
 
-    onFontScale() {
+    onFontScale(): void {
         this.saveState();
     }
 
-    initListeners() {
+    initListeners(): void {
         // this.filters.on('change', _.bind(this.onFilterChange, this));
         this.fontScale.on('change', this.onFontScale.bind(this));
         this.paneRenaming.on('renamePane', this.saveState.bind(this));
@@ -925,19 +958,19 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    showPanel(button, panel) {
+    showPanel(button: JQuery<HTMLElement>, panel: JQuery<HTMLElement>): void {
         panel.removeClass('d-none');
         button.addClass('active');
         this.resize();
     }
 
-    hidePanel(button, panel) {
+    hidePanel(button: JQuery<HTMLElement>, panel: JQuery<HTMLElement>): void {
         panel.addClass('d-none');
         button.removeClass('active');
         this.resize();
     }
 
-    togglePanel(button, panel) {
+    togglePanel(button: JQuery<HTMLElement>, panel: JQuery<HTMLElement>): void {
         if (panel.hasClass('d-none')) {
             this.showPanel(button, panel);
         } else {
@@ -1021,7 +1054,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    shouldEmitExecutionOnFieldChange() {
+    shouldEmitExecutionOnFieldChange(): boolean {
         return this.settings.executorCompileOnChange;
     }
 
@@ -1033,7 +1066,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    onExecArgsChange(args: string) {
+    onExecArgsChange(args: string): void {
         this.executionArguments = args;
         this.saveState();
         if (this.shouldEmitExecutionOnFieldChange()) {
@@ -1041,7 +1074,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    onExecStdinChange(newStdin: string) {
+    onExecStdinChange(newStdin: string): void {
         this.executionStdin = newStdin;
         this.saveState();
         if (this.shouldEmitExecutionOnFieldChange()) {
@@ -1049,13 +1082,13 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    onRequestCompilation(editorId: number | boolean, treeId: number | boolean) {
+    onRequestCompilation(editorId: number | boolean, treeId: number | boolean): void {
         if (editorId === this.sourceEditorId || (treeId && treeId === this.sourceTreeId)) {
             this.compile();
         }
     }
 
-    updateCompilerInfo() {
+    updateCompilerInfo(): void {
         this.updateCompilerName();
         if (this.compiler) {
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -1072,13 +1105,13 @@ export class Executor extends Pane<ExecutorState> {
         this.sendExecutor();
     }
 
-    updateCompilerUI() {
+    updateCompilerUI(): void {
         this.updateCompilerInfo();
         // Resize in case the new compiler name is too big
         this.resize();
     }
 
-    onCompilerChange(value) {
+    onCompilerChange(value: string): void {
         // @ts-expect-error: This argument can be null
         this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
@@ -1087,14 +1120,14 @@ export class Executor extends Pane<ExecutorState> {
         this.updateCompilerUI();
     }
 
-    onToggleWrapChange() {
+    onToggleWrapChange(): void {
         const state = this.currentState();
         this.contentRoot.toggleClass('wrap', state.wrap);
         this.wrapButton.prop('title', '[' + (state.wrap ? 'ON' : 'OFF') + '] ' + this.wrapTitle);
         this.saveState();
     }
 
-    sendExecutor() {
+    sendExecutor(): void {
         this.eventHub.emit(
             'executor',
             this.id,
@@ -1105,7 +1138,7 @@ export class Executor extends Pane<ExecutorState> {
         );
     }
 
-    onEditorClose(editor) {
+    onEditorClose(editor: number): void {
         if (editor === this.sourceEditorId) {
             // We can't immediately close as an outer loop somewhere in GoldenLayout is iterating over
             // the hierarchy. We can't modify while it's being iterated over.
@@ -1116,17 +1149,18 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    currentState() {
-        const state = {
+    currentState(): ExecutorState & PaneState {
+        const state: ExecutorState & PaneState = {
             id: this.id,
+            compilerName: '',
             compiler: this.compiler ? this.compiler.id : '',
-            source: this.sourceEditorId,
-            tree: this.sourceTreeId,
+            source: this.sourceEditorId ?? undefined,
+            tree: this.sourceTreeId ?? undefined,
             options: this.options,
             execArgs: this.executionArguments,
             execStdin: this.executionStdin,
             libs: this.libsWidget?.get(),
-            lang: this.currentLangId,
+            lang: this.currentLangId ?? undefined,
             compilationPanelShown: !this.panelCompilation.hasClass('d-none'),
             compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
@@ -1139,20 +1173,20 @@ export class Executor extends Pane<ExecutorState> {
         return state;
     }
 
-    saveState() {
+    saveState(): void {
         this.container.setState(this.currentState());
     }
 
-    getCompilerName() {
+    getCompilerName(): string {
         return this.compiler ? this.compiler.name : 'No compiler set';
     }
 
-    getLanguageName() {
-        const lang = this.currentLangId ? options.languages[this.currentLangId] as (Language | undefined) : undefined;
+    getLanguageName(): string {
+        const lang = this.currentLangId ? (options.languages[this.currentLangId] as Language | undefined) : undefined;
         return lang ? lang.name : '?';
     }
 
-    getLinkHint() {
+    getLinkHint(): string {
         if (this.sourceTreeId) {
             return 'Tree #' + this.sourceTreeId;
         } else {
@@ -1160,13 +1194,13 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    override getPaneName() {
+    override getPaneName(): string {
         const langName = this.getLanguageName();
         const compName = this.getCompilerName();
         return 'Executor ' + compName + ' (' + langName + ', ' + this.getLinkHint() + ')';
     }
 
-    override updateTitle() {
+    override updateTitle(): void {
         const name = this.paneName ? this.paneName : this.getPaneName();
         this.container.setTitle(_.escape(name));
     }
@@ -1185,11 +1219,12 @@ export class Executor extends Pane<ExecutorState> {
                 version: compilerVersion,
                 fullVersion: compilerFullVersion,
             },
+            // @ts-expect-error: Some of these types seem wrong
             compilerNotification
         );
     }
 
-    setCompilationOptionsPopover(content) {
+    setCompilationOptionsPopover(content: string | null) {
         this.prependOptions.popover('dispose');
         this.prependOptions.popover({
             content: content || 'No options in use',
@@ -1201,14 +1236,14 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    setCompilerVersionPopover(version, notification) {
+    setCompilerVersionPopover(version?: {fullVersion?: string; version: string}, notification?: string) {
         this.fullCompilerName.popover('dispose');
         // `notification` contains HTML from a config file, so is 'safe'.
         // `version` comes from compiler output, so isn't, and is escaped.
         const bodyContent = $('<div>');
-        const versionContent = $('<div>').html(_.escape(version.version));
+        const versionContent = $('<div>').html(_.escape(version?.version ?? ''));
         bodyContent.append(versionContent);
-        if (version.fullVersion) {
+        if (version?.fullVersion) {
             const hiddenSection = $('<div>');
             const hiddenVersionText = $('<div>').html(_.escape(version.fullVersion)).hide();
             const clickToExpandContent = $('<a>')
@@ -1238,11 +1273,11 @@ export class Executor extends Pane<ExecutorState> {
         });
     }
 
-    override onSettingsChange(newSettings: SiteSettings) {
+    override onSettingsChange(newSettings: SiteSettings): void {
         this.settings = _.clone(newSettings);
     }
 
-    private ariaLabel(status) {
+    private ariaLabel(status: CompilationStatus): string {
         // Compiling...
         if (status.code === 4) return 'Compiling';
         if (status.didExecute) {
@@ -1252,16 +1287,16 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    private color(status) {
+    private color(status: CompilationStatus) {
         // Compiling...
         if (status.code === 4) return '#888888';
         if (status.didExecute) return '#12BB12';
         return '#FF1212';
     }
 
-    handleCompilationStatus(status) {
+    handleCompilationStatus(status: CompilationStatus): void {
         // We want to do some custom styles for the icon, so we don't pass it here and instead do it later
-        CompilerService.handleCompilationStatus(this.statusLabel, null, status);
+        CompilerService.handleCompilationStatus(this.statusLabel, null, {compilerOut: 0, ...status});
 
         if (this.statusIcon != null) {
             this.statusIcon
@@ -1277,7 +1312,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    updateLibraries() {
+    updateLibraries(): void {
         if (this.libsWidget) {
             let filteredLibraries: LanguageLibs = {};
             if (this.compiler) {
@@ -1295,7 +1330,7 @@ export class Executor extends Pane<ExecutorState> {
         }
     }
 
-    onLanguageChange(editorId: number | boolean, newLangId: string) {
+    onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (this.sourceEditorId === editorId && this.currentLangId) {
             const oldLangId = this.currentLangId;
             this.currentLangId = newLangId;

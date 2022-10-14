@@ -27,4 +27,5 @@ export type ResultLineTag = MessageWithLocation & {
 export type ResultLine = {
     text: string;
     tag?: ResultLineTag;
+    line?: number;
 };
