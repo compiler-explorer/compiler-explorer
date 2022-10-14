@@ -30,6 +30,7 @@ import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
+import _ from 'underscore';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
@@ -43,12 +44,26 @@ export class Cc65Compiler extends BaseCompiler {
         this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 
-    override getSharedLibraryPathsAsArguments() {
-        return [];
+    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath?) {
+        const libPathFlag = this.compiler.libpathFlag || '-L';
+
+        if (!libDownloadPath) {
+            libDownloadPath = '.';
+        }
+
+        return _.union(
+            [libPathFlag + libDownloadPath],
+            this.compiler.libPath.map(path => libPathFlag + path),
+            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
+        ) as string[];
     }
 
     override optionsForFilter(filters, outputFilename) {
-        return ['-g', '-o', this.filename(outputFilename)];
+        if (filters.binary) {
+            return ['-g', '-o', this.filename(outputFilename)];
+        } else {
+            return ['-g', '-S', '-c', '-o', this.filename(outputFilename)];
+        }
     }
 
     override async getCmakeBaseEnv() {

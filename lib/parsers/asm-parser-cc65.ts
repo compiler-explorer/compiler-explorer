@@ -24,14 +24,12 @@
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
+import {AsmParser} from './asm-parser';
 
-import {AsmRegex} from './asmregex';
-
-export class CC65AsmParser extends AsmRegex {
+export class CC65AsmParser extends AsmParser {
     labelWithAsmRe: RegExp;
     labelAssignmentRe: RegExp;
     justAsmRe: RegExp;
-    commentRe: RegExp;
     labelAddressRe: RegExp;
     directiveRe: RegExp;
     labelExtractRe: RegExp;
@@ -68,7 +66,7 @@ export class CC65AsmParser extends AsmRegex {
         }
     }
 
-    processBinaryAsm(asm, filters: ParseFilters) {
+    override processBinaryAsm(asm, filters: ParseFilters) {
         const result: ParsedAsmResultLine[] = [];
         const asmLines = asm.split('\n');
 
@@ -153,9 +151,5 @@ export class CC65AsmParser extends AsmRegex {
             asm: result,
             labelDefinitions: labelDefinitions,
         };
-    }
-
-    process(asm, filters: ParseFilters) {
-        return this.processBinaryAsm(asm, filters);
     }
 }

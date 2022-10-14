@@ -1,6 +1,7 @@
 export type AsmResultSource = {
-    file?: string;
+    file: string | null;
     line?: number;
+    column?: number;
     mainsource?: boolean;
 };
 
