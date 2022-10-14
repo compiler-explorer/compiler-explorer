@@ -24,6 +24,7 @@
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
+
 import {AsmParser} from './asm-parser';
 
 export class CC65AsmParser extends AsmParser {
@@ -34,8 +35,8 @@ export class CC65AsmParser extends AsmParser {
     directiveRe: RegExp;
     labelExtractRe: RegExp;
 
-    constructor() {
-        super();
+    constructor(compilerProps) {
+        super(compilerProps);
 
         this.labelWithAsmRe = /(L[\dA-F]{4}):\s*(.*)/;
         this.labelAssignmentRe = /(L[\dA-F]{4})\s*:=\s(\$[\dA-F]{4})/;
@@ -74,7 +75,7 @@ export class CC65AsmParser extends AsmParser {
             return {asm: [{text: asmLines[0], source: null}]};
         }
 
-        const labelDefinitions = {};
+        const labelDefinitions: Map<string, number> = new Map<string, number>();
 
         for (const line of asmLines) {
             let match = line.match(this.commentRe);

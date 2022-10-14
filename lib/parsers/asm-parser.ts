@@ -23,8 +23,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
-import {AsmResultLabel, AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 
+import {
+    AsmResultLabel,
+    AsmResultSource,
+    ParsedAsmResult,
+    ParsedAsmResultLine,
+} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import * as utils from '../utils';
 
 import {AsmRegex} from './asmregex';
@@ -253,7 +259,7 @@ export class AsmParser extends AsmRegex {
 
         const MaxLabelIterations = 10;
         for (let iter = 0; iter < MaxLabelIterations; ++iter) {
-            let toAdd: string[] = [];
+            const toAdd: string[] = [];
             _.each(labelsUsed, (t, label) => {
                 // jshint ignore:line
                 _.each(weakUsages[label], (nowused: string) => {
@@ -316,7 +322,7 @@ export class AsmParser extends AsmRegex {
         return labelsInLine;
     }
 
-    processAsm(asmResult, filters) {
+    processAsm(asmResult, filters: ParseFilters): ParsedAsmResult {
         if (filters.binary) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
@@ -327,7 +333,7 @@ export class AsmParser extends AsmRegex {
         }
 
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions = {};
+        const labelDefinitions: Map<string, number> = new Map<string, number>();
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
@@ -337,7 +343,7 @@ export class AsmParser extends AsmRegex {
 
         const labelsUsed = this.findUsedLabels(asmLines, filters.directives);
         const files = this.parseFiles(asmLines);
-        let prevLabel: string = '';
+        let prevLabel = '';
 
         let source: AsmResultSource | null = null;
         let mayRemovePreviousLabel = true;
@@ -589,10 +595,10 @@ export class AsmParser extends AsmRegex {
         return !this.binaryHideFuncRe.test(func);
     }
 
-    processBinaryAsm(asmResult, filters) {
+    processBinaryAsm(asmResult, filters): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions = {};
+        const labelDefinitions: Map<string, number> = new Map<string, number>();
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');

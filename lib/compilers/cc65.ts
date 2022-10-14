@@ -25,12 +25,12 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import _ from 'underscore';
 
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
-import _ from 'underscore';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
@@ -40,7 +40,7 @@ export class Cc65Compiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.asm = new CC65AsmParser();
+        this.asm = new CC65AsmParser(env.compilerProps);
         this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 

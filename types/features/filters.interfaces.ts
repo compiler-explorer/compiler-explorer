@@ -34,7 +34,10 @@ export type CompilerFilters = {
     trim: boolean;
 };
 
+export type preProcessLinesFunc = (lines: string[]) => string[];
+
 export type ParseFilters = CompilerFilters & {
     dontMaskFilenames?: boolean;
     optOutput: boolean;
+    preProcessLines?: preProcessLinesFunc;
 };
