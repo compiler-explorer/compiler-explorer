@@ -1518,13 +1518,17 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
 };
 
 Editor.prototype.onExecuteResponse = function (executorId, compiler, result) {
-    var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
-    if (result.buildResult) {
-        output = output.concat(this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId));
-    }
-    this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
+    if (this.ourExecutors[executorId]) {
+        var output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
+        if (result.buildResult) {
+            output = output.concat(
+                this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
+            );
+        }
+        this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
 
-    this.numberUsedLines();
+        this.numberUsedLines();
+    }
 };
 
 Editor.prototype.onSelectLine = function (id, lineNum) {
