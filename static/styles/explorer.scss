@@ -624,6 +624,10 @@ div.populararguments div.dropdown-menu {
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
 }
 
+#ces-banner-text {
+    margin-right: .1em;
+}
+
 @media (max-width: 1000px) {
     .ces-content-root {
         font-size: 60%;
@@ -714,7 +718,7 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-icon {
-    margin-left: 0.3em;
+    padding: 0 0.2em 0 0.2em;
     height: 1.5em;
 }
 
