@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import $ from 'jquery';
 import {ga} from '../analytics';
 import * as colour from '../colour';
 import {Toggles} from '../widgets/toggles';
@@ -40,7 +41,6 @@ import * as TimingWidget from '../widgets/timing-info-widget';
 import {CompilerPicker} from '../compiler-picker';
 import {CompilerService} from '../compiler-service';
 import {Settings, SiteSettings} from '../settings';
-import * as utils from '../utils';
 import * as LibUtils from '../lib-utils';
 import {getAssemblyDocumentation} from '../api/api';
 import {PaneRenaming} from '../widgets/pane-renaming';
@@ -63,6 +63,7 @@ import {WidgetState} from '../widgets/libs-widget.interfaces';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import * as utils from '../utils';
 
 // @ts-ignore
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
@@ -2863,6 +2864,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     checkForUnwiseArguments(optionsArray: string[], wasCmake: boolean): void {
         if (!this.compiler) return;
+
+        if (!optionsArray) optionsArray = [];
+
         // Check if any options are in the unwiseOptions array and remember them
         const unwiseOptions = _.intersection(
             optionsArray,
@@ -2877,7 +2881,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
         // @ts-ignore
-        if (optionsArray.some('-flto') && !this.filters.state.binary && !wasCmake) {
+        if (optionsArray.some((opt) => opt === '-flto') && !this.filters.state.binary && !wasCmake) {
             this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
                 group: 'unwiseOption',
                 collapseSimilar: true,
@@ -3537,6 +3541,29 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.undefer();
             this.sendCompiler();
         }
+    }
+
+    override getPaneTag() {
+        const editorId = this.sourceEditorId;
+        const treeId = this.sourceTreeId;
+        const compilerName = this.getCompilerName();
+
+        if (editorId) {
+            return `${compilerName} (Editor #${editorId})`;
+        } else {
+            return `${compilerName} (Tree #${treeId})`;
+        }
+    }
+
+    override resize() {
+        _.defer(() => {
+            const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
+            const bottomBarHeight = this.bottomBar.outerHeight(true) ?? 0;
+            this.editor.layout({
+                width: this.domRoot.width() as number,
+                height: (this.domRoot.height() as number) - topBarHeight - bottomBarHeight,
+            });
+        });
     }
 
     private getCurrentLangCompilers(): Record<string, CompilerInfo> {
