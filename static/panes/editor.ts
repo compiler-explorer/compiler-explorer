@@ -26,7 +26,6 @@ import _ from 'underscore';
 import $ from 'jquery';
 import * as colour from '../colour';
 import * as loadSaveLib from '../widgets/load-save';
-import {FontScale} from '../widgets/fontscale';
 import * as Components from '../components';
 import * as monaco from 'monaco-editor';
 import {options} from '../options';
@@ -135,6 +134,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.revealJumpStack = [];
 
         this.langKeys = Object.keys(languages);
+
+        // Ensure that the button is disabled if we don't have anything to select
+        // Note that is might be disabled for other reasons beforehand
+        if (this.langKeys.length <= 1) {
+            this.languageBtn.prop('disabled', true);
+        }
+
         this.initLanguage(state);
 
         this.legacyReadOnly = state.options && !!state.options.readOnly;
@@ -157,10 +163,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 //this.editor.clearSelection();
             }, 500);
         }
-
-        this.initEditorActions();
-        this.initButtons(state);
-        this.initCallbacks();
 
         if (this.settings.useVim) {
             this.enableVim();
@@ -230,7 +232,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             // @ts-expect-error: options.readOnly and anything inside window.compilerExplorerOptions is unknown
             monacoConfig.extendConfig(
                 {
-                    language: this.currentLanguage?.monaco,
                     readOnly:
                         !!options.readOnly ||
                         this.legacyReadOnly ||
@@ -336,21 +337,24 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     initLanguage(state: MonacoPaneState & EditorState): void {
-        this.currentLanguage = languages[this.langKeys[0]];
+        let newLanguage = languages[this.langKeys[0]];
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (languages[this.settings.defaultLanguage ?? '']) {
-            this.currentLanguage = languages[this.settings.defaultLanguage ?? ''];
+            newLanguage = languages[this.settings.defaultLanguage ?? ''];
         }
 
         if (languages[state.lang ?? '']) {
-            this.currentLanguage = languages[state.lang ?? ''];
+            newLanguage = languages[state.lang ?? ''];
         } else if (this.settings.newEditorLastLang && languages[this.hub.lastOpenedLangId ?? '']) {
-            this.currentLanguage = languages[this.hub.lastOpenedLangId ?? ''];
+            newLanguage = languages[this.hub.lastOpenedLangId ?? ''];
         }
+
+        this.initEditorActions();
+
+        if (newLanguage) this.onLanguageChange(newLanguage.id, true);
     }
 
-    initCallbacks(): void {
-        this.fontScale.on('change', _.bind(this.updateState, this));
+    override registerCallbacks(): void {
         this.eventHub.on('broadcastFontScale', scale => {
             this.fontScale.setScale(scale);
             this.updateState();
@@ -391,6 +395,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('motd', this.onMotd, this);
         this.eventHub.on('findEditors', this.sendEditor, this);
         this.eventHub.emit('requestMotd');
+
+        this.debouncedEmitChange = _.debounce(() => {
+            this.maybeEmitChange();
+        }, this.settings.delayAfterChange);
 
         this.editor.getModel()?.onDidChangeContent(() => {
             this.debouncedEmitChange();
@@ -528,13 +536,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.editor.vimInUse = false;
     }
 
-    initButtons(state: MonacoPaneState & EditorState): void {
-        this.fontScale = new FontScale(this.domRoot, state, this.editor);
-        // Ensure that the button is disabled if we don't have anything to select
-        // Note that is might be disabled for other reasons beforehand
-        if (this.langKeys.length <= 1) {
-            this.languageBtn.prop('disabled', true);
-        }
+    override registerButtons(state: MonacoPaneState & EditorState): void {
+        super.registerButtons(state);
+
         this.topBar = this.domRoot.find('.top-bar');
         this.hideable = this.domRoot.find('.hideable');
 
@@ -1206,11 +1210,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             wordWrapColumn: this.editor.getLayoutInfo().viewportColumn, // Ensure the column count is up to date
         });
 
-        // Unconditionally send editor changes. The compiler only compiles when needed
-        this.debouncedEmitChange = _.debounce(() => {
-            this.maybeEmitChange();
-        }, after.delayAfterChange);
-
         if (before.hoverShowSource && !after.hoverShowSource) {
             this.onEditorSetDecoration(this.id, -1, false);
         }
@@ -1799,13 +1798,13 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
     }
 
-    onLanguageChange(newLangId: string): void {
+    onLanguageChange(newLangId: string, firstTime: boolean): void {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (languages[newLangId]) {
             if (newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
                 this.currentLanguage = languages[newLangId];
-                if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && newLangId !== 'cmake') {
+                if (!firstTime && !this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && newLangId !== 'cmake') {
                     this.editorSourceByLang[oldLangId ?? ''] = this.getSource();
                     this.updateEditorCode();
                 }
