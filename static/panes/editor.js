@@ -1508,6 +1508,17 @@ Editor.prototype.onCompileResponse = function (compilerId, compiler, result) {
         this.asmByCompiler[compilerId] = result.asm;
     }
 
+    if (result.devices && Array.isArray(this.asmByCompiler[compilerId])) {
+        _.each(
+            result.devices,
+            _.bind(function (device) {
+                if (device && Array.isArray(device.asm)) {
+                    this.asmByCompiler[compilerId] = this.asmByCompiler[compilerId].concat(device.asm);
+                }
+            }, this)
+        );
+    }
+
     if (result.inputFilename) {
         this.defaultFileByCompiler[compilerId] = result.inputFilename;
     } else {
