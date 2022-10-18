@@ -34,6 +34,7 @@ export type CompilationResult = {
     buildResult?: unknown;
     inputFilename?: string;
     asm?: ResultLine[];
+    devices?: {[key: string]: CompilationResult};
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;

@@ -367,7 +367,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             haskellCoreOutput: '',
             haskellStgOutput: '',
             haskellCmmOutput: '',
-            devices: '',
+            devices: undefined,
             optOutput: '',
             ppOutput: '',
         };
@@ -584,7 +584,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getDeviceViewWith(
                 this.id,
                 this.source,
-                // @ts-expect-error: This type does not exist in CompilationResult
                 this.lastResult.devices,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,

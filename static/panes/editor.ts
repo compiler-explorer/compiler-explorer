@@ -185,7 +185,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             plugins: ['dropdown_input'],
             onChange: _.bind(this.onLanguageChange, this),
             closeAfterSelect: true,
-            render: {
+            render: <any>{
                 option: this.renderSelectizeOption.bind(this),
                 item: this.renderSelectizeItem.bind(this),
             },
@@ -1564,13 +1564,25 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.setDecorationTags(collectedOutput.widgets, String(compilerId));
         this.setQuickFixes(collectedOutput.fixes);
 
+        let asm: ResultLine[] = [];
+
         // @ts-expect-error: result has no property 'result'
         if (result.result && result.result.asm) {
             // @ts-expect-error: result has no property 'result'
-            this.asmByCompiler[compilerId] = result.result.asm;
-        } else {
-            this.asmByCompiler[compilerId] = result.asm;
+            asm = result.result.asm;
+        } else if (result.asm) {
+            asm = result.asm;
         }
+
+        if (result.devices && Array.isArray(asm)) {
+            asm = asm.concat(
+                Object.values(result.devices).flatMap(device => {
+                    return device.asm ?? [];
+                })
+            );
+        }
+
+        this.asmByCompiler[compilerId] = asm;
 
         if (result.inputFilename) {
             this.defaultFileByCompiler[compilerId] = result.inputFilename;
