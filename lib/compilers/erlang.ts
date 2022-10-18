@@ -24,8 +24,8 @@
 
 import path from 'path';
 
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
 
 import {ErlangParser} from './argument-parsers';
 
@@ -34,8 +34,7 @@ export class ErlangCompiler extends BaseCompiler {
         return 'erlang';
     }
 
-    /* eslint-disable no-unused-vars */
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFilters, outputFilename: string): string[] {
         return [
             '-noshell',
             '-eval',
@@ -47,52 +46,26 @@ export class ErlangCompiler extends BaseCompiler {
                 'halt().',
         ];
     }
-    /* eslint-enable no-unused-vars */
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        if (!execOptions.customCwd) {
-            execOptions.customCwd = path.dirname(inputFilename);
-        }
-
-        const result = await this.exec(compiler, options.concat(['-input', inputFilename]), execOptions);
-        result.inputFilename = inputFilename;
-        const transformedInput = result.filenameTransform(inputFilename);
-        this.parseCompilationOutput(result, transformedInput);
-        return result;
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ): string[] {
+        options.push('-input', inputFilename);
+        return options.concat(libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks);
     }
 
-    getVersion() {
-        logger.info(`Gathering ${this.compiler.id} version information on ${this.compiler.exe}...`);
-        if (this.compiler.explicitVersion) {
-            logger.debug(`${this.compiler.id} has forced version output: ${this.compiler.explicitVersion}`);
-            return {stdout: [this.compiler.explicitVersion], stderr: [], code: 0};
-        }
-        const execOptions = this.getDefaultExecOptions();
-        const versionCmd = this.compilerProps(`compiler.${this.compiler.id}.runtime`);
-        execOptions.timeoutMs = 0; // No timeout for --version. A sort of workaround for slow EFS/NFS on the prod site
-        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
-
-        try {
-            return this.execCompilerCached(
-                versionCmd,
-                ['-noshell', '-eval', 'io:fwrite("~s~n", [erlang:system_info(otp_release)]), halt().'],
-                execOptions,
-            );
-        } catch (err) {
-            logger.error(`Unable to get version for compiler '${this.compiler.exe}' - ${err}`);
-            return null;
-        }
-    }
-
-    getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath: string, outputFilebase: string): string {
         return path.join(dirPath, `${outputFilebase}.S`);
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return ErlangParser;
     }
 }

@@ -172,6 +172,7 @@ describe('Options handler', () => {
                     options: [],
                     versions: {
                         noPaths: {
+                            $order: 2,
                             path: [],
                             version: 'no paths',
                             liblink: [],
@@ -184,6 +185,7 @@ describe('Options handler', () => {
                             hidden: false,
                         },
                         onePath: {
+                            $order: 0,
                             path: ['/dev/null'],
                             version: 'one path',
                             staticliblink: [],
@@ -195,6 +197,7 @@ describe('Options handler', () => {
                             hidden: false,
                         },
                         twoPaths: {
+                            $order: 1,
                             path: ['/dev/null', '/dev/urandom'],
                             staticliblink: [],
                             dependencies: [],
@@ -218,6 +221,7 @@ describe('Options handler', () => {
                     options: [],
                     versions: {
                         std: {
+                            $order: 0,
                             libpath: [],
                             path: [],
                             version: 'std',
@@ -241,6 +245,7 @@ describe('Options handler', () => {
                     options: [],
                     versions: {
                         trunk: {
+                            $order: 0,
                             libpath: [],
                             path: [],
                             version: 'trunk',

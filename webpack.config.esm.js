@@ -36,6 +36,7 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
+// eslint-disable-next-line no-console
 console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');

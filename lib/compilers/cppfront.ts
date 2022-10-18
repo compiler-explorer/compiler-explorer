@@ -40,6 +40,10 @@ export class CppFrontCompiler extends BaseCompiler {
         this.outputFilebase = 'example';
     }
 
+    override getCompilerResultLanguageId() {
+        return 'cppp';
+    }
+
     override optionsForFilter(filters: ParseFilters, outputFilename: any) {
         return [];
     }

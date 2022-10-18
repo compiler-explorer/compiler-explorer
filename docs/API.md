@@ -306,6 +306,10 @@ This call is to open the website with a given state (without having to store the
 Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly
 onto the URL.
 
+To avoid problems in reading base64 by the API, some characters must be kept in unicode. Therefore, before calling the
+API, it is necessary to replace these characters with their respective unicodes. A suggestion is to use the Regex
+expression `/[\u007F-\uFFFF]/g` that allows mapping these characters.
+
 # Implementations
 
 Here are some examples of projects using the Compiler Explorer API:
