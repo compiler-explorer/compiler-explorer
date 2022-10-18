@@ -61,6 +61,8 @@ import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
 import {WidgetState} from '../widgets/libs-widget.interfaces';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
 
 // @ts-ignore
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
@@ -222,7 +224,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private source: string;
     private assembly: Assembly[];
     private colours: string[];
-    private lastResult: LastResult;
+    private lastResult: CompilationResult;
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
     private pendingCMakeRequestSentAt: number;
@@ -354,7 +356,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.lastResult = {
             astOutput: '',
             irOutput: '',
+            // @ts-expect-error: This type does not exist in CompilationResult
             gnatDebugOutput: '',
+            // @ts-expect-error: This type does not exist in CompilationResult
             gnatDebugTreeOutput: '',
             rustMirOutput: '',
             rustMacroExpOutput: '',
@@ -428,17 +432,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     override createEditor(editorRoot: HTMLElement) {
-        const monacoDisassembly =
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            (languages[this.currentLangId ?? ''] ? languages[this.currentLangId ?? ''].monacoDisassembly : null) ||
-            'asm';
-
         return monaco.editor.create(
             editorRoot,
             monacoConfig.extendConfig(
                 {
                     readOnly: true,
-                    language: monacoDisassembly,
+                    language: 'asm',
                     glyphMargin: !options.embedded,
                     //guides: false,
                     vimInUse: false,
@@ -522,6 +521,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getOptViewWith(
                 this.id,
                 this.source as unknown as number,
+                // @ts-expect-error: CompilationResult does not have this type
                 this.lastResult.optOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
@@ -583,6 +583,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getDeviceViewWith(
                 this.id,
                 this.source,
+                // @ts-expect-error: This type does not exist in CompilationResult
                 this.lastResult.devices,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
@@ -1349,13 +1350,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.nextCMakeRequest = request;
             return;
         }
-        this.eventHub.emit('compiling', this.id, this.compiler);
+        if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
         this.handleCompilationStatus({code: 4, compilerOut: 0});
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         const progress = setTimeout(() => {
+            // @ts-expect-error: Those types do actually match
             this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
         }, 500);
         this.compilerService
@@ -1385,13 +1387,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.nextRequest = request;
             return;
         }
-        this.eventHub.emit('compiling', this.id, this.compiler);
+        if (this.compiler) this.eventHub.emit('compiling', this.id, this.compiler);
         // Display the spinner
         this.handleCompilationStatus({code: 4, compilerOut: 0});
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         const progress = setTimeout(() => {
+            // @ts-expect-error: Those types do actually match
             this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
         }, 500);
         this.compilerService
@@ -1440,11 +1443,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    setAssembly(result: any, filteredCount = 0) {
+    setAssembly(result: CompilationResult, filteredCount = 0) {
         const asm = result.asm || this.fakeAsm('<No output>');
         this.assembly = asm;
         if (!this.editor.getModel()) return;
         const editorModel = this.editor.getModel();
+        if (editorModel) {
+            if (result.languageId) {
+                monaco.editor.setModelLanguage(editorModel, result.languageId);
+            } else {
+                const monacoDisassembly =
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    (languages[this.currentLangId ?? '']
+                        ? languages[this.currentLangId ?? ''].monacoDisassembly
+                        : null) || 'asm';
+                monaco.editor.setModelLanguage(editorModel, monacoDisassembly);
+            }
+        }
         let msg = '<No assembly generated>';
         if (asm.length) {
             msg = _.pluck(asm, 'text').join('\n');
@@ -1456,6 +1471,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 ' filtered)>';
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (asm.length === 1 && result.code !== 0 && (result.stderr || result.stdout)) {
             msg += '\n\n# For more information see the output window';
             if (!this.isOutputOpened) {
@@ -1539,7 +1555,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return {asm: this.fakeAsm(text), code: -1, stdout: '', stderr: ''};
     }
 
-    private fakeAsm(text: string): Assembly[] {
+    private fakeAsm(text: string): (ResultLine & CompilationResult)[] {
+        // @ts-expect-error: Those types don't overlap
         return [{text: text, source: undefined, fake: true}];
     }
 
@@ -1660,7 +1677,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.postCompilationResult(request, result);
         }
 
-        this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId ?? '']);
+        if (this.compiler)
+            this.eventHub.emit('compileResult', this.id, this.compiler, result, languages[this.currentLangId ?? '']);
     }
 
     onCompileResponse(request: any, result: any, cached: boolean): void {
@@ -1956,7 +1974,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onLLVMOptPipelineViewOpened(id: number): void {
         if (this.id === id) {
-            this.llvmOptPipelineButton.prop('disabled', true);
             this.llvmOptPipelineViewOpen = true;
             this.compile();
         }
@@ -1964,7 +1981,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onLLVMOptPipelineViewClosed(id: number): void {
         if (this.id === id) {
-            this.llvmOptPipelineButton.prop('disabled', false);
             this.llvmOptPipelineViewOpen = false;
         }
     }
@@ -2537,7 +2553,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.ppButton.prop('disabled', this.ppViewOpen);
         this.astButton.prop('disabled', this.astViewOpen);
         this.irButton.prop('disabled', this.irViewOpen);
-        this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
+        // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
+        //this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
         this.rustMirButton.prop('disabled', this.rustMirViewOpen);
         this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
@@ -3036,7 +3053,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     resendResult(): boolean {
         if (!$.isEmptyObject(this.lastResult)) {
-            this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult, this.currentLangId as any);
+            if (this.compiler)
+                this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult, this.currentLangId as any);
             return true;
         }
         return false;
@@ -3511,6 +3529,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.updateCompilersSelector(info);
             this.updateState();
             this.updateCompilerUI();
+            // @ts-expect-error: Those types do actually match
             this.setAssembly(this.fakeAsm(''));
             // this is a workaround to delay compilation further until the Editor sends a compile request
             this.needsCompile = false;

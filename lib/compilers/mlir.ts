@@ -51,6 +51,10 @@ export class MLIRCompiler extends BaseCompiler {
         super(compilerInfo, env);
     }
 
+    override getCompilerResultLanguageId() {
+        return 'mlir';
+    }
+
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         return path.join(dirPath, 'example.out.mlir');
     }

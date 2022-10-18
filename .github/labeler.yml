@@ -134,6 +134,9 @@ lang-pony:
 lang-python:
   - lib/compilers/python.js
   - etc/config/python.*.properties
+lang-racket:
+  - lib/compilers/racket.ts
+  - etc/config/racket.*.properties
 lang-ruby:
   - lib/compilers/ruby.js
   - etc/config/ruby.*.properties

@@ -64,6 +64,7 @@ rules:
   max-statements:
     - error
     - 100 # TODO reduce...was 50
+  no-console: error
   no-control-regex: 0
   no-duplicate-imports: error
   no-useless-call: error
