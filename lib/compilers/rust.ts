@@ -27,12 +27,12 @@ import path from 'path';
 import _ from 'underscore';
 
 import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
 import {parseRustOutput} from '../utils';
 
 import {RustParser} from './argument-parsers';
-import {ParseFilters} from '../../types/features/filters.interfaces';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;

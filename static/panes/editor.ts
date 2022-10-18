@@ -1397,7 +1397,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     getAllOutputAndErrors(
         result: CompilationResult,
         compilerName: string,
-        compilerId: number
+        compilerId: number | string
     ): (ResultLine & {source: string})[] {
         const compilerTitle = compilerName + ' #' + compilerId;
         let all = this.addSource(result.stdout, compilerTitle);
@@ -1583,17 +1583,18 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onExecuteResponse(executorId: number, compiler: CompilerInfo, result: CompilationResult): void {
-        // @ts-expect-error: 'compilerId' expects 'number'
-        let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
-        if (result.buildResult) {
-            output = output.concat(
-                // @ts-expect-error: 'compilerId' expects 'number'
-                this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
-            );
-        }
-        this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
+        if (this.ourExecutors[executorId]) {
+            let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
+            if (result.buildResult) {
+                output = output.concat(
+                    // @ts-expect-error: buildResult is 'unknown'
+                    this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
+                );
+            }
+            this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
 
-        this.numberUsedLines();
+            this.numberUsedLines();
+        }
     }
 
     onSelectLine(id: number, lineNum: number): void {
