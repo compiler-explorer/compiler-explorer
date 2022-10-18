@@ -21,11 +21,11 @@ levels:
         sideBySide: true
         statsId: intel
       - name: Backtrace
-        description: We compress error debugging time by automating capture and providing essential context and insight about impact, all on one platform. Get started for free.
+        description: Deliver uninterrupted experiences by automating your response to player-impacting errors. Get started for free.
         icon: https://static.ce-cdn.net/bt/Black-BT-Logo-A.svg
         icon_dark: https://static.ce-cdn.net/bt/White-BT-Logo-A.svg
         img: https://static.ce-cdn.net/bt/BT-logo (1).png
-        url: https://hubs.la/Q013D7rx0
+        url: https://backtrace.io/sign-up?utm_source=website&utm_medium=paiddisplay&utm_campaign=00O8Y000008JiuiUAC&utm_content=godboltbannerad
         priority: 500
         topIcon: true
         sideBySide: true
