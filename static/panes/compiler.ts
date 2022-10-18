@@ -2865,6 +2865,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     checkForUnwiseArguments(optionsArray: string[], wasCmake: boolean): void {
         if (!this.compiler) return;
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!optionsArray) optionsArray = [];
 
         // Check if any options are in the unwiseOptions array and remember them
@@ -2881,7 +2882,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
         // @ts-ignore
-        if (optionsArray.some((opt) => opt === '-flto') && !this.filters.state.binary && !wasCmake) {
+        if (optionsArray.some(opt => opt === '-flto') && !this.filters.state.binary && !wasCmake) {
             this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
                 group: 'unwiseOption',
                 collapseSimilar: true,

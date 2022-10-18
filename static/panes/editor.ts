@@ -1804,7 +1804,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             if (newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
                 this.currentLanguage = languages[newLangId];
-                if (!firstTime && !this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && newLangId !== 'cmake') {
+                if (
+                    !firstTime &&
+                    !this.waitingForLanguage &&
+                    !this.settings.keepSourcesOnLangChange &&
+                    newLangId !== 'cmake'
+                ) {
                     this.editorSourceByLang[oldLangId ?? ''] = this.getSource();
                     this.updateEditorCode();
                 }
