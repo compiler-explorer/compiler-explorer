@@ -253,7 +253,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
-            // @ts-expect-error: CompilerInfo does not have the 'supportsDeviceAsmView' type
             if (compiler && !compiler.supportsDeviceAsmView) {
                 this.editor.setValue('<Device output is not supported for this compiler>');
             }

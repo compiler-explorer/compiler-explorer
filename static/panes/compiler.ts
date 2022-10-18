@@ -2917,6 +2917,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initToolButtons();
         this.updateButtons();
         this.updateCompilerInfo();
+        if (this.compiler?.supportsDeviceAsmView && !this.deviceViewOpen) {
+            this.deviceButton.trigger('click');
+        }
         // Resize in case the new compiler name is too big
         this.resize();
     }
