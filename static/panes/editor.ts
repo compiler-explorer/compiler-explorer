@@ -1402,9 +1402,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const compilerTitle = compilerName + ' #' + compilerId;
         let all = this.addSource(result.stdout, compilerTitle);
 
-        // @ts-expect-error: Property 'buildsteps' does not exist on type 'CompilationResult'
         if (result.buildsteps) {
-            // @ts-expect-error: Property 'buildsteps' does not exist on type 'CompilationResult'
             _.each(result.buildsteps, step => {
                 all = all.concat(this.addSource(step.stdout, compilerTitle));
                 all = all.concat(this.addSource(step.stderr, compilerTitle));
@@ -1587,7 +1585,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
             if (result.buildResult) {
                 output = output.concat(
-                    // @ts-expect-error: buildResult is 'unknown'
                     this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
                 );
             }
