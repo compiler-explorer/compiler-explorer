@@ -103,6 +103,7 @@ import {
     EmptyLLVMOptPipelineViewState,
     PopulatedLLVMOptPipelineViewState,
 } from './components.interfaces';
+import {OptCodeEntry} from './panes/opt-view.interfaces';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {

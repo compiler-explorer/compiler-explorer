@@ -356,17 +356,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override registerCallbacks(): void {
-        this.eventHub.on('broadcastFontScale', scale => {
-            this.fontScale.setScale(scale);
-            this.updateState();
-        });
-
-        this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
             this.eventHub.emit('editorOpen', this.id);
         });
-        this.container.on('destroy', this.close, this);
         this.container.layoutManager.on('initialised', () => {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
@@ -380,18 +373,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('executorOpen', this.onExecutorOpen, this);
         this.eventHub.on('executorClose', this.onExecutorClose, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compiling', this.onCompiling, this);
-        this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('executeResult', this.onExecuteResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
         this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
-        this.eventHub.on('resize', this.resize, this);
         this.eventHub.on('newSource', this.onNewSource, this);
         this.eventHub.on('motd', this.onMotd, this);
         this.eventHub.on('findEditors', this.sendEditor, this);
