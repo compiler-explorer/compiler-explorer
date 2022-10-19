@@ -179,7 +179,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         const selectize = this.selectize;
 
         for (const key in selectize.options) {
-            if (deviceNames.includes(selectize.options[key].name)) {
+            if (!deviceNames.includes(selectize.options[key].name)) {
                 selectize.removeOption(selectize.options[key].name);
             }
         }
@@ -204,6 +204,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.selectedDevice = this.selectize.getValue() as string;
         this.updateState();
         this.updateDeviceAsm();
+        this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
     }
 
     updateDeviceAsm(): void {

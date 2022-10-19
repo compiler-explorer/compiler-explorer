@@ -875,7 +875,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 selectedToken.colBegin,
                 selectedToken.colEnd,
                 reveal,
-                this.id + ''
+                this.getPaneName(),
+                this.id
             );
         }
     }
