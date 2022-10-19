@@ -122,7 +122,8 @@ export type EventMap = {
         colBegin: number,
         colEnd: number,
         reveal: boolean,
-        sender: string
+        sender: string,
+        editorId?: number
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
