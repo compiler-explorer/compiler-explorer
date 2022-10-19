@@ -74,7 +74,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private fadeTimeoutId: NodeJS.Timeout | null;
     private readonly editorSourceByLang: Record<LanguageKey, string | undefined>;
     private alertSystem: Alert;
-    private filename: string | null;
+    private filename: string | boolean;
     private awaitingInitialResults: boolean;
     private revealJumpStack: editor.ICodeEditorViewState[];
     private readonly langKeys: string[];
@@ -126,7 +126,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
-        this.filename = state.filename || null;
+        this.filename = state.filename || false;
 
         this.awaitingInitialResults = false;
         this.selection = state.selection;
@@ -204,9 +204,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //     // movement etc).
         //     this.debouncedEmitChange();
         // }, this));
-
-        this.updateTitle();
-        this.updateState();
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -339,14 +336,18 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     initLanguage(state: MonacoPaneState & EditorState): void {
         let newLanguage = languages[this.langKeys[0]];
         this.waitingForLanguage = Boolean(state.source && !state.lang);
-        if (languages[this.settings.defaultLanguage ?? '']) {
-            newLanguage = languages[this.settings.defaultLanguage ?? ''];
+        if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
+            newLanguage = languages[this.settings.defaultLanguage];
         }
 
-        if (languages[state.lang ?? '']) {
-            newLanguage = languages[state.lang ?? ''];
-        } else if (this.settings.newEditorLastLang && languages[this.hub.lastOpenedLangId ?? '']) {
-            newLanguage = languages[this.hub.lastOpenedLangId ?? ''];
+        if (state.lang && state.lang in languages) {
+            newLanguage = languages[state.lang];
+        } else if (
+            this.settings.newEditorLastLang &&
+            this.hub.lastOpenedLangId &&
+            this.hub.lastOpenedLangId in languages
+        ) {
+            newLanguage = languages[this.hub.lastOpenedLangId];
         }
 
         this.initEditorActions();
@@ -1799,8 +1800,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onLanguageChange(newLangId: string, firstTime: boolean): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (languages[newLangId]) {
+        if (newLangId in languages) {
             if (newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
                 this.currentLanguage = languages[newLangId];
@@ -1837,7 +1837,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override getDefaultPaneName(): string {
-        return '';
+        return 'Editor';
     }
 
     override getPaneName(): string {
