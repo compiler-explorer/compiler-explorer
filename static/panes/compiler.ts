@@ -1453,11 +1453,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             if (result.languageId) {
                 monaco.editor.setModelLanguage(editorModel, result.languageId);
             } else {
-                const monacoDisassembly =
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    (languages[this.currentLangId ?? '']
-                        ? languages[this.currentLangId ?? ''].monacoDisassembly
-                        : null) || 'asm';
+                let monacoDisassembly = 'asm';
+                if (this.currentLangId && this.currentLangId in languages) {
+                    // TS compiler trips if you try to fold this condition in one if
+                    const disasam = languages[this.currentLangId].monacoDisassembly;
+                    if (disasam !== null) {
+                        monacoDisassembly = disasam;
+                    }
+                }
                 monaco.editor.setModelLanguage(editorModel, monacoDisassembly);
             }
         }
@@ -2555,7 +2558,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.astButton.prop('disabled', this.astViewOpen);
         this.irButton.prop('disabled', this.irViewOpen);
         // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
-        //this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
+        // this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
         this.rustMirButton.prop('disabled', this.rustMirViewOpen);
         this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);

@@ -74,7 +74,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private fadeTimeoutId: NodeJS.Timeout | null;
     private readonly editorSourceByLang: Record<LanguageKey, string | undefined>;
     private alertSystem: Alert;
-    private filename: string | boolean;
+    private filename: string | false;
     private awaitingInitialResults: boolean;
     private revealJumpStack: editor.ICodeEditorViewState[];
     private readonly langKeys: string[];
@@ -126,7 +126,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
-        this.filename = state.filename || false;
+        this.filename = state.filename ?? false;
 
         this.awaitingInitialResults = false;
         this.selection = state.selection;
