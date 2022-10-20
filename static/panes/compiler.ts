@@ -312,7 +312,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
 
     // eslint-disable-next-line max-statements
-    constructor(private readonly hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
+    constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
         this.id = state.id || hub.nextCompilerId();
