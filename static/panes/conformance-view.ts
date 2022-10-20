@@ -84,11 +84,9 @@ export class Conformance extends Pane<ConformanceViewState> {
     private addCompilerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private selectorTemplate: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private lastState?: ConformanceViewState;
-    private readonly hub: Hub;
 
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
         super(hub, container, state);
-        this.hub = hub;
         this.compilerService = hub.compilerService;
         this.maxCompilations = (options.cvCompilerCountMax as number) || 6;
         this.langId = state.langId || _.keys(options.languages)[0];

@@ -27,7 +27,7 @@ export interface OptState {
     source: any; // TODO
 }
 
- type SourceLocation = {
+type SourceLocation = {
     File: string;
     Line: number;
     Column: number;

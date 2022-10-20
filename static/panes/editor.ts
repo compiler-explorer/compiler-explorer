@@ -59,7 +59,6 @@ const languages = options.languages as Record<string, Language | undefined>;
 // eslint-disable-next-line max-statements
 export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, EditorState> {
     private readonly id: number;
-    private hub: Hub;
     private readonly ourCompilers: Record<string, boolean>;
     private readonly ourExecutors: Record<number, boolean>;
     private readonly httpRoot: string;
@@ -77,11 +76,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private filename: string | false;
     private awaitingInitialResults: boolean;
     private revealJumpStack: editor.ICodeEditorViewState[];
-    private readonly langKeys: string[];
-    private readonly legacyReadOnly?: boolean;
+    private langKeys: string[];
+    private legacyReadOnly?: boolean;
     private selectize: TomSelect;
     private lastChangeEmitted: string | null;
-    private readonly languageBtn: JQuery<HTMLElement>;
+    private languageBtn: JQuery<HTMLElement>;
     public currentLanguage?: Language;
     private waitingForLanguage: boolean;
     private currentCursorPosition: JQuery<HTMLElement>;
@@ -104,9 +103,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     constructor(hub: Hub, state: MonacoPaneState & EditorState, container: Container) {
         super(hub, container, state);
         this.id = state.id || hub.nextEditorId();
-        this.hub = hub;
-        // Should probably be its own function somewhere
-        this.settings = Settings.getStoredSettings();
         this.ourCompilers = {};
         this.ourExecutors = {};
         this.httpRoot = window.httpRoot;
@@ -126,24 +122,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
-        this.filename = state.filename ?? false;
-
         this.awaitingInitialResults = false;
-        this.selection = state.selection;
 
         this.revealJumpStack = [];
 
-        this.langKeys = Object.keys(languages);
-
-        // Ensure that the button is disabled if we don't have anything to select
-        // Note that is might be disabled for other reasons beforehand
-        if (this.langKeys.length <= 1) {
-            this.languageBtn.prop('disabled', true);
-        }
-
-        this.initLanguage(state);
-
-        this.legacyReadOnly = state.options && !!state.options.readOnly;
+        if (this.currentLanguage) this.onLanguageChange(this.currentLanguage.id, true);
 
         if (state.source !== undefined) {
             this.setSource(state.source);
@@ -167,29 +150,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         if (this.settings.useVim) {
             this.enableVim();
         }
-
-        const usableLanguages = Object.values(languages).filter(language => {
-            return hub.compilerService.compilersByLang[language?.id ?? ''];
-        });
-
-        this.languageBtn = this.domRoot.find('.change-language');
-        this.selectize = new TomSelect(this.languageBtn as any, {
-            sortField: 'name',
-            valueField: 'id',
-            labelField: 'name',
-            searchField: ['name'],
-            placeholder: '🔍 Select a language...',
-            options: _.map(usableLanguages, _.identity),
-            items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
-            dropdownParent: 'body',
-            plugins: ['dropdown_input'],
-            onChange: _.bind(this.onLanguageChange, this),
-            closeAfterSelect: true,
-            render: {
-                option: this.renderSelectizeOption.bind(this),
-                item: this.renderSelectizeItem.bind(this),
-            },
-        });
 
         // We suppress posting changes until the user has stopped typing by:
         // * Using _.debounce() to run emitChange on any key event or change
@@ -241,6 +201,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
 
         editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
+
         return editor;
     }
 
@@ -333,7 +294,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return this.editor.getModel()?.getValue();
     }
 
-    initLanguage(state: MonacoPaneState & EditorState): void {
+    getLanguageFromState(state: MonacoPaneState & EditorState): Language | undefined {
         let newLanguage = languages[this.langKeys[0]];
         this.waitingForLanguage = Boolean(state.source && !state.lang);
         if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
@@ -350,9 +311,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             newLanguage = languages[this.hub.lastOpenedLangId];
         }
 
-        this.initEditorActions();
-
-        if (newLanguage) this.onLanguageChange(newLanguage.id, true);
+        return newLanguage;
     }
 
     override registerCallbacks(): void {
@@ -526,6 +485,26 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.editor.vimInUse = false;
     }
 
+    override initializeGlobalDependentProperties(): void {
+        super.initializeGlobalDependentProperties();
+
+        this.settings = Settings.getStoredSettings();
+        this.langKeys = Object.keys(languages);
+    }
+
+    override initializeStateDependentProperties(state: MonacoPaneState & EditorState): void {
+        super.initializeStateDependentProperties(state);
+
+        this.filename = state.filename ?? false;
+        this.selection = state.selection;
+        this.legacyReadOnly = state.options && !!state.options.readOnly;
+
+        this.currentLanguage = this.getLanguageFromState(state);
+        if (!this.currentLanguage) {
+            //this.currentLanguage = options.defaultCompiler;
+        }
+    }
+
     override registerButtons(state: MonacoPaneState & EditorState): void {
         super.registerButtons(state);
 
@@ -547,6 +526,35 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             } else {
                 this.enableVim();
             }
+        });
+
+        // Ensure that the button is disabled if we don't have anything to select
+        // Note that is might be disabled for other reasons beforehand
+        if (this.langKeys.length <= 1) {
+            this.languageBtn.prop('disabled', true);
+        }
+
+        const usableLanguages = Object.values(languages).filter(language => {
+            return this.hub.compilerService.compilersByLang[language?.id ?? ''];
+        });
+
+        this.languageBtn = this.domRoot.find('.change-language');
+        this.selectize = new TomSelect(this.languageBtn as any, {
+            sortField: 'name',
+            valueField: 'id',
+            labelField: 'name',
+            searchField: ['name'],
+            placeholder: '🔍 Select a language...',
+            options: _.map(usableLanguages, _.identity),
+            items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
+            dropdownParent: 'body',
+            plugins: ['dropdown_input'],
+            onChange: _.bind(this.onLanguageChange, this),
+            closeAfterSelect: true,
+            render: {
+                option: this.renderSelectizeOption.bind(this),
+                item: this.renderSelectizeItem.bind(this),
+            },
         });
 
         // NB a new compilerConfig needs to be created every time; else the state is shared
@@ -883,7 +891,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
     }
 
-    initEditorActions(): void {
+    override registerEditorActions(): void {
         this.editor.addAction({
             id: 'compile',
             label: 'Compile',
@@ -1787,15 +1795,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     onLanguageChange(newLangId: string, firstTime: boolean): void {
         if (newLangId in languages) {
-            if (newLangId !== this.currentLanguage?.id) {
+            if (firstTime || newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
                 this.currentLanguage = languages[newLangId];
-                if (
-                    !firstTime &&
-                    !this.waitingForLanguage &&
-                    !this.settings.keepSourcesOnLangChange &&
-                    newLangId !== 'cmake'
-                ) {
+                if (!this.waitingForLanguage && !this.settings.keepSourcesOnLangChange && newLangId !== 'cmake') {
                     this.editorSourceByLang[oldLangId ?? ''] = this.getSource();
                     this.updateEditorCode();
                 }
