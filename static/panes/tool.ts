@@ -160,15 +160,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
     }
 
     initCallbacks() {
-        this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
-        this.container.on('destroy', this.close, this);
-
         this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
-        this.eventHub.on('compileResult', this.onCompileResult, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('languageChange', this.onLanguageChange, this);
         this.eventHub.on('toolInputChange', this.onToolInputChange, this);
         this.eventHub.on('toolInputViewClosed', this.onToolInputViewClosed, this);
