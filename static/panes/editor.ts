@@ -74,7 +74,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private fadeTimeoutId: NodeJS.Timeout | null;
     private readonly editorSourceByLang: Record<LanguageKey, string | undefined>;
     private alertSystem: Alert;
-    private filename: string | null;
+    private filename: string | false;
     private awaitingInitialResults: boolean;
     private revealJumpStack: editor.ICodeEditorViewState[];
     private readonly langKeys: string[];
@@ -126,7 +126,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
 
-        this.filename = state.filename || null;
+        this.filename = state.filename ?? false;
 
         this.awaitingInitialResults = false;
         this.selection = state.selection;
@@ -204,9 +204,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //     // movement etc).
         //     this.debouncedEmitChange();
         // }, this));
-
-        this.updateTitle();
-        this.updateState();
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -339,14 +336,18 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     initLanguage(state: MonacoPaneState & EditorState): void {
         let newLanguage = languages[this.langKeys[0]];
         this.waitingForLanguage = Boolean(state.source && !state.lang);
-        if (languages[this.settings.defaultLanguage ?? '']) {
-            newLanguage = languages[this.settings.defaultLanguage ?? ''];
+        if (this.settings.defaultLanguage && this.settings.defaultLanguage in languages) {
+            newLanguage = languages[this.settings.defaultLanguage];
         }
 
-        if (languages[state.lang ?? '']) {
-            newLanguage = languages[state.lang ?? ''];
-        } else if (this.settings.newEditorLastLang && languages[this.hub.lastOpenedLangId ?? '']) {
-            newLanguage = languages[this.hub.lastOpenedLangId ?? ''];
+        if (state.lang && state.lang in languages) {
+            newLanguage = languages[state.lang];
+        } else if (
+            this.settings.newEditorLastLang &&
+            this.hub.lastOpenedLangId &&
+            this.hub.lastOpenedLangId in languages
+        ) {
+            newLanguage = languages[this.hub.lastOpenedLangId];
         }
 
         this.initEditorActions();
@@ -355,17 +356,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override registerCallbacks(): void {
-        this.eventHub.on('broadcastFontScale', scale => {
-            this.fontScale.setScale(scale);
-            this.updateState();
-        });
-
-        this.container.on('resize', this.resize, this);
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
             this.eventHub.emit('editorOpen', this.id);
         });
-        this.container.on('destroy', this.close, this);
         this.container.layoutManager.on('initialised', () => {
             // Once initialized, let everyone know what text we have.
             this.maybeEmitChange();
@@ -379,18 +373,14 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.eventHub.on('compilerOpen', this.onCompilerOpen, this);
         this.eventHub.on('executorOpen', this.onExecutorOpen, this);
         this.eventHub.on('executorClose', this.onExecutorClose, this);
-        this.eventHub.on('compilerClose', this.onCompilerClose, this);
         this.eventHub.on('compiling', this.onCompiling, this);
-        this.eventHub.on('compileResult', this.onCompileResult, this);
         this.eventHub.on('executeResult', this.onExecuteResponse, this);
         this.eventHub.on('selectLine', this.onSelectLine, this);
         this.eventHub.on('editorSetDecoration', this.onEditorSetDecoration, this);
         this.eventHub.on('editorDisplayFlow', this.onEditorDisplayFlow, this);
         this.eventHub.on('editorLinkLine', this.onEditorLinkLine, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('conformanceViewOpen', this.onConformanceViewOpen, this);
         this.eventHub.on('conformanceViewClose', this.onConformanceViewClose, this);
-        this.eventHub.on('resize', this.resize, this);
         this.eventHub.on('newSource', this.onNewSource, this);
         this.eventHub.on('motd', this.onMotd, this);
         this.eventHub.on('findEditors', this.sendEditor, this);
@@ -1401,9 +1391,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const compilerTitle = compilerName + ' #' + compilerId;
         let all = this.addSource(result.stdout, compilerTitle);
 
-        // @ts-expect-error: Property 'buildsteps' does not exist on type 'CompilationResult'
         if (result.buildsteps) {
-            // @ts-expect-error: Property 'buildsteps' does not exist on type 'CompilationResult'
             _.each(result.buildsteps, step => {
                 all = all.concat(this.addSource(step.stdout, compilerTitle));
                 all = all.concat(this.addSource(step.stderr, compilerTitle));
@@ -1586,7 +1574,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
             if (result.buildResult) {
                 output = output.concat(
-                    // @ts-expect-error: buildResult is 'unknown'
                     this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
                 );
             }
@@ -1799,8 +1786,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     onLanguageChange(newLangId: string, firstTime: boolean): void {
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (languages[newLangId]) {
+        if (newLangId in languages) {
             if (newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;
                 this.currentLanguage = languages[newLangId];
@@ -1837,7 +1823,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     override getDefaultPaneName(): string {
-        return '';
+        return 'Editor';
     }
 
     override getPaneName(): string {

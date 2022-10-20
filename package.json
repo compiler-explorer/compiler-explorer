@@ -99,6 +99,7 @@
     "@types/shell-quote": "^1.7.1",
     "@types/tar-fs": "^2.0.1",
     "@types/underscore": "^1.11.4",
+    "@types/webpack-env": "^1.18.0",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
     "@typescript-eslint/parser": "^5.8.0",
     "ajv": "^8.8.2",

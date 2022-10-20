@@ -52,7 +52,12 @@ export type EventMap = {
         treeId: number
     ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
-    compileResult: (compilerId: number, compiler: CompilerInfo, result: CompilationResult, language: Language) => void;
+    compileResult: (
+        compilerId: number,
+        compiler: CompilerInfo,
+        result: CompilationResult,
+        language: Language | undefined
+    ) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
