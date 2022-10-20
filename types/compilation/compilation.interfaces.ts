@@ -86,7 +86,12 @@ export type CompilationResult = {
     haskellCmmOutput?: any;
 
     forceBinaryView?: boolean;
+
     bbcdiskimage?: string;
+    speccytape?: string;
+    miraclesms?: string;
+    jsnesrom?: string;
+
     hints?: string[];
 };
 

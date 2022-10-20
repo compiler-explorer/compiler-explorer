@@ -27,6 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
@@ -91,7 +92,14 @@ export class Cc65Compiler extends BaseCompiler {
         return env;
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+    override async objdump(
+        outputFilename,
+        result: CompilationResult,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        filters: ParseFilters,
+    ) {
         const res = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
 
         const dirPath = path.dirname(outputFilename);
@@ -105,7 +113,7 @@ export class Cc65Compiler extends BaseCompiler {
         return res;
     }
 
-    override async doBuildstepAndAddToResult(result, name, command, args, execParams) {
+    override async doBuildstepAndAddToResult(result: CompilationResult, name, command, args, execParams) {
         const stepResult = await super.doBuildstepAndAddToResult(result, name, command, args, execParams);
         if (name === 'make') {
             const mapFile = path.join(execParams.customCwd, '../map.txt');

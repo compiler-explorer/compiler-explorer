@@ -22,25 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {editor} from 'monaco-editor/';
+export enum CompilationStatusCode {
+    NONE = 0,
+    OK = 1,
+    WITH_WARNINGS = 2,
+    WITH_ERRORS = 3,
+    COMPILING = 4,
+}
 
-export type Decoration = {
-    decoration: editor.IModelDecorationOptions;
-    filter: string[];
-    name: string;
-    regex: string;
-};
-
-export type Ad = {
-    filter: string[];
-    html: string;
-    valid_from?: string;
-    valid_until?: string;
-};
-
-export type Motd = {
-    ads?: Ad[];
-    motd?: string;
-    update?: string;
-    decorations?: Decoration[];
-};
+export interface CompilationStatus {
+    code: CompilationStatusCode;
+    compilerOut: number;
+}
