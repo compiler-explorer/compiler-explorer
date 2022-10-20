@@ -1813,13 +1813,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 // Broadcast the change to other panels
                 this.eventHub.emit('languageChange', this.id, newLangId);
                 this.decorations = {};
-                this.maybeEmitChange(true);
-                this.requestCompilation();
-                ga.proxy('send', {
-                    hitType: 'event',
-                    eventCategory: 'LanguageChange',
-                    eventAction: newLangId,
-                });
+                if (!firstTime) {
+                    this.maybeEmitChange(true);
+                    this.requestCompilation();
+
+                    ga.proxy('send', {
+                        hitType: 'event',
+                        eventCategory: 'LanguageChange',
+                        eventAction: newLangId,
+                    });
+                }
             }
             this.waitingForLanguage = false;
         }
