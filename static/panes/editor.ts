@@ -1187,7 +1187,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    override onSettingsChange(newSettings: SiteSettings): void {
+    override onSettingsChange(newSettings: SiteSettings | Record<string, never>): void {
         const before = this.settings;
         const after = newSettings;
         this.settings = _.clone(newSettings);
