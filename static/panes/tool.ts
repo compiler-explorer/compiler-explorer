@@ -57,30 +57,29 @@ function makeAnsiToHtml(color?: string): AnsiToHtml {
 
 export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
     private hub: Hub;
-    private editorContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private readonly plainContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private readonly optionsToolbar: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private badLangToolbar: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private editorContentRoot: JQuery<HTMLElement>;
+    private readonly plainContentRoot: JQuery<HTMLElement>;
+    private readonly optionsToolbar: JQuery<HTMLElement>;
+    private badLangToolbar: JQuery<HTMLElement>;
     private compilerName: string;
     private monacoStdinField: string;
     private normalAnsiToHtml: AnsiToHtml;
-    private readonly optionsField?: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private readonly localStdinField?: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private readonly createToolInputView: () => ComponentConfig<PopulatedToolInputViewState>;
+    private readonly optionsField?: JQuery<HTMLElement>;
+    private readonly localStdinField?: JQuery<HTMLElement>;
     private readonly compilerId: number;
     private readonly toolId: number;
     private toolName?: string;
     private options: Toggles;
     private monacoEditorOpen: boolean;
     private monacoEditorHasBeenAutoOpened: boolean;
-    private wrapButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private wrapButton: JQuery<HTMLElement>;
     private wrapTitle: JQuery<HTMLElement>;
-    private panelArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private panelStdin: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private toggleArgs: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private toggleStdin: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private artifactBtn: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
-    private artifactText: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private panelArgs: JQuery<HTMLElement>;
+    private panelStdin: JQuery<HTMLElement>;
+    private toggleArgs: JQuery<HTMLElement>;
+    private toggleStdin: JQuery<HTMLElement>;
+    private artifactBtn: JQuery<HTMLElement>;
+    private artifactText: JQuery<HTMLElement>;
     private readonly editorId?: number;
     private compilerService: any;
     private readonly monacoStdin: string | null;
@@ -115,10 +114,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             this.saveState();
         });
 
-        this.createToolInputView = () => {
-            return Components.getToolInputViewWith(this.compilerId + '', this.toolId + '', this.toolName ?? '');
-        };
-
         this.initButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', _.bind(this.onOptionsChange, this));
@@ -134,11 +129,15 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.eventHub.emit('requestSettings');
     }
 
+    private createToolInputView(): ComponentConfig<PopulatedToolInputViewState> {
+        return Components.getToolInputViewWith(this.compilerId + '', this.toolId + '', this.toolName ?? '');
+    }
+
     override getInitialHTML(): string {
         return $('#tool-output').html();
     }
 
-    override registerOpeningAnalyticsEvent() {
+    override registerOpeningAnalyticsEvent(): void {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenViewPane',
@@ -159,7 +158,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         );
     }
 
-    initCallbacks() {
+    initCallbacks(): void {
         this.container.on('shown', this.resize, this);
         this.paneRenaming.on('renamePane', this.saveState.bind(this));
 
@@ -194,7 +193,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    onLanguageChange(editorId: number | boolean, newLangId: string) {
+    onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (this.editorId && this.editorId === editorId) {
             // @ts-expect-error: 'tools' is of type 'unknown'
             const tools = ceoptions.tools[newLangId];
@@ -202,7 +201,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    toggleUsable(isUsable: boolean) {
+    toggleUsable(isUsable: boolean): void {
         if (isUsable) {
             this.plainContentRoot.css('opacity', '1');
             this.badLangToolbar.hide();
@@ -214,7 +213,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    override onSettingsChange(newSettings: SiteSettings) {
+    override onSettingsChange(newSettings: SiteSettings): void {
         this.editor.updateOptions({
             contextmenu: newSettings.useCustomContextMenu,
             minimap: {
@@ -226,7 +225,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         });
     }
 
-    initArgs(state: MonacoPaneState & ToolState) {
+    initArgs(state: MonacoPaneState & ToolState): void {
         const optionsChange = _.debounce(() => {
             this.onOptionsChange();
 
@@ -262,7 +261,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    onToolInputChange(compilerId: number, toolId: number, input: string) {
+    onToolInputChange(compilerId: number, toolId: number, input: string): void {
         if (this.compilerId === compilerId && this.toolId === toolId) {
             this.monacoStdinField = input;
             this.onOptionsChange();
@@ -270,7 +269,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    onToolInputViewClosed(compilerId: number, toolId: number, input: string) {
+    onToolInputViewClosed(compilerId: number, toolId: number, input: string): void {
         if (this.compilerId === compilerId && this.toolId === toolId) {
             // Duplicate close messages have been seen, with the second having no value.
             // If we have a current value and the new value is empty, ignore the message.
@@ -285,10 +284,10 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    getInputStdin() {
+    getInputStdin(): string {
         if (!this.monacoStdin) {
             if (this.localStdinField) {
-                return this.localStdinField.val();
+                return this.localStdinField.val() as string;
             } else {
                 return '';
             }
@@ -297,7 +296,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    openMonacoEditor() {
+    openMonacoEditor(): void {
         this.monacoEditorHasBeenAutoOpened = true; // just in case we get here in an unexpected way
         this.monacoEditorOpen = true;
         this.toggleStdin.addClass('active');
@@ -308,11 +307,11 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.eventHub.emit('setToolInput', this.compilerId, this.toolId, this.monacoStdinField);
     }
 
-    getEffectiveOptions() {
+    getEffectiveOptions(): Record<string, boolean> {
         return this.options.get();
     }
 
-    override resize() {
+    override resize(): void {
         utils.updateAndCalcTopBarHeight(this.domRoot, this.optionsToolbar, this.hideable);
         let barsHeight = (this.optionsToolbar.outerHeight() ?? 0) + 2;
         if (!this.panelArgs.hasClass('d-none')) {
@@ -338,7 +337,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.saveState();
     }
 
-    initButtons(state: MonacoPaneState & ToolState) {
+    initButtons(state: MonacoPaneState & ToolState): void {
         this.wrapButton = this.domRoot.find('.wrap-lines');
         this.wrapTitle = this.wrapButton.prop('title');
 
@@ -350,7 +349,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.initButtonsVisibility(state);
     }
 
-    initButtonsVisibility(state: MonacoPaneState & ToolState) {
+    initButtonsVisibility(state: MonacoPaneState & ToolState): void {
         this.toggleArgs = this.domRoot.find('.toggle-args');
         this.toggleStdin = this.domRoot.find('.toggle-stdin');
         this.artifactBtn = this.domRoot.find('.artifact-btn');
@@ -384,7 +383,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.resize();
     }
 
-    togglePanel(button: JQuery<HTMLElement>, panel: JQuery<HTMLElement>) {
+    togglePanel(button: JQuery<HTMLElement>, panel: JQuery<HTMLElement>): void {
         if (panel.hasClass('d-none')) {
             this.showPanel(button, panel);
         } else {
@@ -393,9 +392,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.saveState();
     }
 
-    currentState() {
+    currentState(): ToolState {
         const options = this.getEffectiveOptions();
-        const state = {
+        const state: ToolState = {
             compiler: this.compilerId,
             editor: this.editorId,
             tree: this.treeId,
@@ -406,21 +405,21 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             stdinPanelShown:
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 (this.monacoStdin && this.monacoEditorOpen) || (this.panelStdin && !this.panelStdin.hasClass('d-none')),
-            monacoStdin: this.monacoStdin,
+            monacoStdin: this.monacoStdin ?? undefined,
             monacoEditorOpen: this.monacoEditorOpen,
             monacoEditorHasBeenAutoOpened: this.monacoEditorHasBeenAutoOpened,
-            argsPanelShow: !this.panelArgs.hasClass('d-none'),
+            argsPanelShown: !this.panelArgs.hasClass('d-none'),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
         return state;
     }
 
-    saveState() {
+    saveState(): void {
         this.container.setState(this.currentState());
     }
 
-    setLanguage(languageId) {
+    setLanguage(languageId?: string | null): void {
         if (languageId) {
             this.options.enableToggle('wrap', false);
             const model = this.editor.getModel();
@@ -441,7 +440,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    clickableUrls(text) {
+    urlToHTMLLink(text: string): string {
         return text.replace(
             // URL detection regex grabbed from https://stackoverflow.com/a/3809435
             /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
@@ -449,7 +448,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         );
     }
 
-    onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
+    onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
         try {
             if (id !== this.compilerId) return;
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -536,7 +535,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                                 this.add('<br/>');
                             } else {
                                 this.add(
-                                    this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
+                                    this.urlToHTMLLink(this.normalAnsiToHtml.toHtml(obj.text)),
                                     obj.tag ? obj.tag.line : obj.line,
                                     obj.tag ? obj.tag.column : 0,
                                     obj.tag ? obj.tag.flow : null
@@ -590,7 +589,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 this.setEditorContent('No tool result');
             }
         } catch (e: any) {
-            this.setLanguage(false);
+            this.setLanguage(null);
             this.add('javascript error: ' + e.message);
         }
     }
@@ -622,7 +621,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    setEditorContent(content) {
+    setEditorContent(content: string): void {
         const editorModel = this.editor.getModel();
         if (!editorModel) return;
         const visibleRanges = this.editor.getVisibleRanges();
@@ -632,7 +631,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         this.setNormalContent();
     }
 
-    setNormalContent() {
+    setNormalContent(): void {
         this.editor.updateOptions({
             lineNumbers: 'on',
             codeLens: false,

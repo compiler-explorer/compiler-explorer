@@ -33,4 +33,6 @@ export type ToolState = {
     stdinPanelShown?: boolean;
     args?: string;
     stdin?: string;
+    editor?: number;
+    wrap?: boolean;
 };
