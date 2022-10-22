@@ -27,6 +27,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
@@ -44,23 +45,23 @@ export class AdaCompiler extends BaseCompiler {
         this.compiler.supportsGnatDebugViews = true;
     }
 
-    getExecutableFilename(dirPath) {
+    override getExecutableFilename(dirPath) {
         // The name here must match the value used in the pragma Source_File
         // in the user provided source.
         return path.join(dirPath, 'example');
     }
 
-    getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath) {
         // The basename here must match the value used in the pragma Source_File
         // in the user provided source.
         return path.join(dirPath, 'example.out');
     }
 
-    prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
         backendOptions = backendOptions || {};
 
         // super call is needed as it handles the GCC Dump files.
-        let backend_opts = super.optionsForBackend(backendOptions, outputFilename);
+        const backend_opts = super.optionsForBackend(backendOptions, outputFilename);
 
         // gnatmake  opts  name  {[-cargs opts] [-bargs opts] [-largs opts] [-margs opts]}
         //                 ^                 ^    ^             ^             ^
@@ -70,10 +71,10 @@ export class AdaCompiler extends BaseCompiler {
         //                                   |    `-- for binder (unused here)
         //                                   `-- for compiler (gcc)
 
-        let gnatmake_opts = [];
-        let compiler_opts = [];
-        let binder_opts = [];
-        let linker_opts = [''];
+        const gnatmake_opts: string[] = [];
+        const compiler_opts: string[] = [];
+        const binder_opts: string[] = [];
+        const linker_opts: string[] = [''];
 
         if (this.compiler.adarts) {
             gnatmake_opts.push(`--RTS=${this.compiler.adarts}`);
@@ -146,15 +147,23 @@ export class AdaCompiler extends BaseCompiler {
         return gnatmake_opts.concat('-cargs', compiler_opts, '-largs', linker_opts, '-bargs', binder_opts);
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
-        const appHome = path.dirname(inputFilename);
+        if (!execOptions.customCwd) {
+            execOptions.customCwd = path.dirname(inputFilename);
+        }
 
         // create a subdir so that files automatically created by GNAT don't
         // conflict with anything else in parent dir.
+        const appHome = path.dirname(inputFilename);
         const temp_dir = path.join(appHome, 'tempsub');
         await fs.mkdir(temp_dir);
 
@@ -163,11 +172,9 @@ export class AdaCompiler extends BaseCompiler {
         execOptions.customCwd = temp_dir;
 
         const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
-
-        const baseFilename = path.basename(inputFilename);
-        result.stdout = utils.parseOutput(result.stdout, baseFilename, execOptions.customCwd);
-        result.stderr = utils.parseOutput(result.stderr, baseFilename, execOptions.customCwd);
-        return result;
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(),
+        };
     }
 }
