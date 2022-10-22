@@ -35,7 +35,7 @@ import * as exec from '../exec';
 import {logger} from '../logger';
 import {parseOutput} from '../utils';
 
-import {ToolEnv, ToolInfo, ToolTypeKey} from './base-tool.interface';
+import {Tool, ToolEnv, ToolInfo, ToolTypeKey} from './base-tool.interface';
 
 const toolCounter = new PromClient.Counter({
     name: 'tool_invocations_total',
@@ -43,8 +43,8 @@ const toolCounter = new PromClient.Counter({
     labelNames: ['language', 'name'],
 });
 
-export class BaseTool {
-    protected tool: ToolInfo;
+export class BaseTool implements Tool {
+    public readonly tool: ToolInfo;
     private env: ToolEnv;
     protected addOptionsToToolArgs = true;
 

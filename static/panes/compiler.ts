@@ -2335,7 +2335,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isSupportedTool(tool: ToolInfo) {
+    isSupportedTool(tool: ToolInfo): boolean {
         if (this.sourceTreeId) {
             return tool.type === 'postcompilation';
         } else {
@@ -2343,10 +2343,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    supportsTool(toolId: string): ToolInfo | undefined {
-        if (!this.compiler) return;
+    supportsTool(toolId: string): boolean {
+        if (!this.compiler) return false;
 
-        return Object.values(this.compiler.tools).find(tool => {
+        return !!Object.values(this.compiler.tools).find(tool => {
             return tool.tool.id === toolId && this.isSupportedTool(tool.tool);
         });
     }

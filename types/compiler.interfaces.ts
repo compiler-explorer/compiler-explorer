@@ -23,10 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Minimal Compiler properties until a better one can be sync'ed with the backend
-import {ToolInfo} from '../lib/tooling/base-tool.interface';
+import {Tool, ToolInfo} from '../lib/tooling/base-tool.interface';
 
 import {Library} from './libraries/libraries.interfaces';
-import {BaseTool} from '../lib/tooling';
 
 export type CompilerInfo = {
     id: string;
@@ -72,7 +71,7 @@ export type CompilerInfo = {
     isSemVer: boolean;
     semver: string;
     libsArr: Library['id'][];
-    tools: Record<ToolInfo['id'], BaseTool>;
+    tools: Record<ToolInfo['id'], Tool>;
     unwiseOptions: string[];
     hidden: boolean;
     buildenvsetup: {

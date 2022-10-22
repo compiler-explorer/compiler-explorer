@@ -47,3 +47,7 @@ export type ToolEnv = {
     ceProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
     compilerProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
 };
+
+export interface Tool {
+    readonly tool: ToolInfo;
+}
