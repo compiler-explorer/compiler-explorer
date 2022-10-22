@@ -53,7 +53,7 @@ import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {CompilerFilters} from '../../types/features/filters.interfaces';
 import {GccSelectedPass} from './gccdump-view.interfaces';
-import {ToolInfo} from '../../lib/tooling/base-tool.interface';
+import {Tool} from '../../lib/tooling/base-tool.interface';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
@@ -2335,9 +2335,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isSupportedTool(tool: ToolInfo): boolean {
+    isSupportedTool(tool: Tool): boolean {
         if (this.sourceTreeId) {
-            return tool.type === 'postcompilation';
+            return tool.tool.type === 'postcompilation';
         } else {
             return true;
         }
@@ -2347,7 +2347,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (!this.compiler) return false;
 
         return !!Object.values(this.compiler.tools).find(tool => {
-            return tool.tool.id === toolId && this.isSupportedTool(tool.tool);
+            return tool.tool.id === toolId && this.isSupportedTool(tool);
         });
     }
 
@@ -2431,12 +2431,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             tools.forEach(tool => {
                 if (this.isSupportedTool(tool)) {
-                    addTool(
-                        (tool as any).tool.id,
-                        (tool as any).tool.name,
-                        (tool as any).tool.icon,
-                        (tool as any).tool.darkIcon
-                    );
+                    addTool(tool.tool.id, tool.tool.name || tool.tool.id, tool.tool.icon, tool.tool.darkIcon);
                 }
             });
         }
