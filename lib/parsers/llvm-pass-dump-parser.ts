@@ -453,16 +453,6 @@ export class LlvmPassDumpParser {
         }
     }
 
-    // findLastIndex is currently unavailable in node, replacement essentially taken from
-    // https://stackoverflow.com/a/53187807/89706
-    findLastIndex<T>(array: Array<T>, predicate: (value: T) => boolean): number {
-        let l = array.length;
-        while (l--) {
-            if (predicate(array[l])) return l;
-        }
-        return 0; // if not found slice entire array. -1 would slice only the *last* element
-    }
-
     applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
         // Additional filters conditionally enabled by `filterDebugInfo`
         let filters = this.filters;
@@ -472,35 +462,36 @@ export class LlvmPassDumpParser {
             lineFilters = lineFilters.concat(this.debugInfoLineFilters);
         }
 
-        // Filter junk
-        // prettier-ignore
-        const idxAfterHeaders = this.findLastIndex(
-            ir,
-            line => (line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)) !== null);
-
-        return ir
-            .slice(idxAfterHeaders)
-            .filter(line => filters.every(re => line.text.match(re) === null)) // apply filters
-            .map(_line => {
-                let line = _line.text;
-                // eslint-disable-next-line no-constant-condition
-                while (true) {
-                    let newLine = line;
-                    for (const re of lineFilters) {
-                        newLine = newLine.replace(re, '');
+        return (
+            ir
+                // whole-line filters
+                .filter(line => filters.every(re => line.text.match(re) === null))
+                // intra-line filters
+                .map(_line => {
+                    let line = _line.text;
+                    // eslint-disable-next-line no-constant-condition
+                    while (true) {
+                        let newLine = line;
+                        for (const re of lineFilters) {
+                            newLine = newLine.replace(re, '');
+                        }
+                        if (newLine === line) {
+                            break;
+                        } else {
+                            line = newLine;
+                        }
                     }
-                    if (newLine === line) {
-                        break;
-                    } else {
-                        line = newLine;
-                    }
-                }
-                _line.text = line;
-                return _line;
-            });
+                    _line.text = line;
+                    return _line;
+                })
+        );
     }
 
-    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    process(output: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        // Crop out any junk before the pass dumps (e.g. warnings)
+        const ir = output.slice(
+            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
+        );
         const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);
     }
