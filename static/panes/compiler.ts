@@ -258,6 +258,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compilerLicenseButton: JQuery<HTMLElement>;
     private filterBinaryButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private filterBinaryTitle: JQuery<HTMLElement>;
+    private filterBinaryObjectButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private filterBinaryObjectTitle: JQuery<HTMLElement>;
     private filterExecuteButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private filterExecuteTitle: JQuery<HTMLElement>;
     private filterLabelsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;

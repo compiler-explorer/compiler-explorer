@@ -43,8 +43,27 @@ export class JaktCompiler extends BaseCompiler {
         return 'cppp';
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
-        const objdumpResult = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+    override async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        staticReloc,
+        dynamicReloc,
+        filters: ParseFilters,
+    ) {
+        const objdumpResult = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
+
         objdumpResult.languageId = 'asm';
         return objdumpResult;
     }

@@ -392,7 +392,16 @@ export class BaseCompiler {
         return output;
     }
 
-    async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, staticReloc, dynamicReloc, filters: ParseFilters) {
+    async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        staticReloc,
+        dynamicReloc,
+        filters: ParseFilters,
+    ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         if (!(await utils.fileExists(outputFilename))) {
@@ -2100,8 +2109,9 @@ export class BaseCompiler {
             for (const key in filters) {
                 filters[key] = false;
             }
-            if (filters.binaryobject && !this.compiler.supportsBinaryObject){
-             delete filters.binaryobject;
+
+            if (filters.binaryobject && !this.compiler.supportsBinaryObject) {
+                delete filters.binaryobject;
             }
         }
 
@@ -2455,8 +2465,17 @@ but nothing was dumped. Possible causes are:
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
-              (filters.binary || filters.binaryobject) && this.supportsObjdump()
-                ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters.binaryobject, false, filters)
+            (filters.binary || filters.binaryobject) && this.supportsObjdump()
+                ? this.objdump(
+                      outputFilename,
+                      result,
+                      maxSize,
+                      filters.intel,
+                      filters.demangle,
+                      filters.binaryobject,
+                      false,
+                      filters,
+                  )
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
