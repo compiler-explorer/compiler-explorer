@@ -48,7 +48,7 @@ import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {CompilerState} from './compiler.interfaces';
-import {GccDumpOptions} from '../components.interfaces';
+import {ComponentConfig, GccDumpOptions, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {CompilerFilters} from '../../types/features/filters.interfaces';
@@ -2337,7 +2337,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     isSupportedTool(tool: ToolInfo) {
         if (this.sourceTreeId) {
-            return (tool as any).tool.type === 'postcompilation';
+            return tool.type === 'postcompilation';
         } else {
             return true;
         }
@@ -2347,12 +2347,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (!this.compiler) return;
 
         return Object.values(this.compiler.tools).find(tool => {
-            return tool.id === toolId && this.isSupportedTool(tool);
+            return tool.tool.id === toolId && this.isSupportedTool(tool.tool);
         });
     }
 
-    initToolButton(togglePannerAdder: () => void, button: JQuery<HTMLElement>, toolId: string) {
-        const createToolView = () => {
+    initToolButton(togglePannerAdder: () => void, button: JQuery<HTMLElement>, toolId: string): void {
+        const createToolView: () => ComponentConfig<ToolViewState> = () => {
             let args = '';
             let monacoStdin = false;
             const langTools = (options.tools as any)[this.currentLangId ?? ''];

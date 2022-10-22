@@ -26,6 +26,7 @@
 import {ToolInfo} from '../lib/tooling/base-tool.interface';
 
 import {Library} from './libraries/libraries.interfaces';
+import {BaseTool} from '../lib/tooling';
 
 export type CompilerInfo = {
     id: string;
@@ -71,7 +72,7 @@ export type CompilerInfo = {
     isSemVer: boolean;
     semver: string;
     libsArr: Library['id'][];
-    tools: Record<ToolInfo['id'], ToolInfo>;
+    tools: Record<ToolInfo['id'], BaseTool>;
     unwiseOptions: string[];
     hidden: boolean;
     buildenvsetup: {

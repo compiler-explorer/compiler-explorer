@@ -46,7 +46,7 @@ const toolCounter = new PromClient.Counter({
 export class BaseTool {
     protected tool: ToolInfo;
     private env: ToolEnv;
-    private addOptionsToToolArgs = true;
+    protected addOptionsToToolArgs = true;
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         this.tool = toolInfo;
