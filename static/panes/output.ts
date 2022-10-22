@@ -45,7 +45,6 @@ function makeAnsiToHtml(color?) {
 }
 
 export class Output extends Pane<OutputState> {
-    hub: Hub;
     contentRoot: JQuery<HTMLElement>;
     optionsToolbar: JQuery<HTMLElement>;
     fontScale: FontScale;
