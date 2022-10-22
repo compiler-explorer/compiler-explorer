@@ -67,7 +67,7 @@ export type CompilerInfo = {
     ldPath: string[];
     // [env, setting][]
     envVars: [string, string][];
-    notification: string[];
+    notification: string;
     isSemVer: boolean;
     semver: string;
     libsArr: Library['id'][];
