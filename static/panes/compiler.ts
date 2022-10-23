@@ -3228,33 +3228,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return result;
     }
 
-    private getAsmInfo(opcode: string, instructionSet: string): Promise<AssemblyInstructionInfo | undefined> {
+    private async getAsmInfo(opcode: string, instructionSet: string): Promise<AssemblyInstructionInfo | undefined> {
         const cacheName = 'asm/' + (instructionSet ? instructionSet + '/' : '') + opcode;
         const cached = OpcodeCache.get(cacheName);
         if (cached) {
-            if (cached.found) {
-                return Promise.resolve(cached.data);
-            }
-            return Promise.reject(cached.data);
+            if (cached.found) return cached.data;
+            throw new Error(cached.data);
         }
 
-        return new Promise((resolve, reject) => {
-            getAssemblyDocumentation({opcode: opcode, instructionSet: instructionSet as any})
-                .then(response => {
-                    response.json().then(body => {
-                        if (response.status === 200) {
-                            OpcodeCache.set(cacheName, {found: true, data: body});
-                            resolve(body);
-                        } else {
-                            OpcodeCache.set(cacheName, {found: false, data: (body as any).error});
-                            reject((body as any).error);
-                        }
-                    });
-                })
-                .catch(error => {
-                    reject('Fetch error: ' + error);
-                });
-        });
+        const response = await getAssemblyDocumentation({opcode: opcode, instructionSet: instructionSet as any});
+        const body = await response.json();
+        if (response.status === 200) {
+            OpcodeCache.set(cacheName, {found: true, data: body});
+            return body;
+        } else {
+            const error = (body as any).error;
+            OpcodeCache.set(cacheName, {found: false, data: error});
+            throw new Error(error);
+        }
     }
 
     override onDidChangeCursorSelection(e) {
@@ -3272,7 +3263,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onMouseMove(e: any): void {
+    async onMouseMove(e: any) {
         if (e === null || e.target === null || e.target.position === null) return;
         const hoverShowSource = this.settings.hoverShowSource === true;
         const hoverAsm = this.assembly[e.target.position.lineNumber - 1];
@@ -3353,7 +3344,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.compiler.supportsAsmDocs &&
                 this.isWordAsmKeyword(currentWord)
             ) {
-                this.getAsmInfo(currentWord.word, this.compiler.instructionSet).then(response => {
+                try {
+                    const response = await this.getAsmInfo(currentWord.word, this.compiler.instructionSet);
                     if (!response) return;
                     this.decorations.asmToolTip = {
                         // @ts-ignore
@@ -3369,7 +3361,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         },
                     };
                     this.updateDecorations();
-                });
+                } catch {
+                    // ignore errors fetching tooltips
+                }
             }
         }
     }
@@ -3389,7 +3383,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
     }
 
-    onAsmToolTip(ed: monaco.editor.ICodeEditor): void {
+    async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenModalPane',
@@ -3425,32 +3419,27 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        this.getAsmInfo(word.word, this.compiler?.instructionSet ?? '').then(
-            asmHelp => {
-                if (asmHelp) {
-                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), () => {
-                        ed.focus();
-                        ed.setPosition(pos);
-                    });
-                } else {
-                    this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                        group: 'notokenindocs',
-                        alertClass: 'notification-error',
-                        dismissTime: 5000,
-                    });
-                }
-            },
-            rejection => {
-                this.alertSystem.notify(
-                    'There was an error fetching the documentation for this opcode (' + rejection + ').',
-                    {
-                        group: 'notokenindocs',
-                        alertClass: 'notification-error',
-                        dismissTime: 5000,
-                    }
-                );
+        try {
+            const asmHelp = await this.getAsmInfo(word.word, this.compiler?.instructionSet ?? '');
+            if (asmHelp) {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), () => {
+                    ed.focus();
+                    ed.setPosition(pos);
+                });
+            } else {
+                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
             }
-        );
+        } catch (error) {
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
+                group: 'notokenindocs',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }
     }
 
     handleCompilationStatus(status: CompilationStatus): void {
