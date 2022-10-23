@@ -1005,44 +1005,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Hiding the 'Jump to label' context menu option if no label can be found
         // in the clicked position.
-        const contextmenu = this.editor.getContribution('editor.contrib.contextmenu');
-        // Member is private
-        const realMethod = (contextmenu as any)?._onContextMenu;
-        if (realMethod)
-            (contextmenu as any)._onContextMenu = (e, ...args: any[]) => {
-                if (e && e.target && e.target.position) {
-                    if (this.isLabelCtxKey.get()) {
-                        const label = this.getLabelAtPosition(e.target.position);
-                        this.isLabelCtxKey.set(label !== null);
-                    }
+        this.editor.onContextMenu(e => {
+            if (e.target.position) {
+                const label = this.getLabelAtPosition(e.target.position);
+                this.isLabelCtxKey.set(label !== null);
 
-                    if (this.isAsmKeywordCtxKey.get()) {
-                        if (!this.compiler?.supportsAsmDocs) {
-                            // No need to show the "Show asm documentation" if it's just going to fail.
-                            // This is useful for things like xtensa which define an instructionSet but have no docs associated
-                            this.isAsmKeywordCtxKey.set(false);
-                        } else {
-                            const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-                            if (currentWord) {
-                                // @ts-ignore
-                                currentWord.range = new monaco.Range(
-                                    e.target.position.lineNumber,
-                                    Math.max(currentWord.startColumn, 1),
-                                    e.target.position.lineNumber,
-                                    currentWord.endColumn
-                                );
-                                if (currentWord.word) {
-                                    this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
-                                }
-                            }
-                        }
+                if (!this.compiler?.supportsAsmDocs) {
+                    // No need to show the "Show asm documentation" if it's just going to fail.
+                    // This is useful for things like xtensa which define an instructionSet but have no docs associated
+                    this.isAsmKeywordCtxKey.set(false);
+                } else {
+                    const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+                    if (currentWord?.word) {
+                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(e.target.position.lineNumber, currentWord));
                     }
                 }
-
-                if (realMethod) {
-                    realMethod.apply(contextmenu, e, ...args);
-                }
-            };
+            }
+        });
 
         this.editor.addAction({
             id: 'returnfromreveal',
@@ -3299,7 +3278,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         }
         const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-        if (currentWord && currentWord.word) {
+        if (currentWord?.word) {
             let word = currentWord.word;
             let startColumn = currentWord.startColumn;
             // Avoid throwing an exception if somehow (How?) we have a non-existent lineNumber.
@@ -3313,8 +3292,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     startColumn -= 1;
                 }
             }
-            // @ts-ignore
-            currentWord.range = new monaco.Range(
+            const range = new monaco.Range(
                 e.target.position.lineNumber,
                 Math.max(startColumn, 1),
                 e.target.position.lineNumber,
@@ -3323,8 +3301,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const numericToolTip = this.getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
-                    // @ts-ignore
-                    range: currentWord.range,
+                    range: range,
                     options: {
                         isWholeLine: false,
                         hoverMessage: [
@@ -3342,14 +3319,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 hoverShowAsmDoc &&
                 this.compiler &&
                 this.compiler.supportsAsmDocs &&
-                this.isWordAsmKeyword(currentWord)
+                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
                     const response = await this.getAsmInfo(currentWord.word, this.compiler.instructionSet);
                     if (!response) return;
                     this.decorations.asmToolTip = {
-                        // @ts-ignore
-                        range: currentWord.range,
+                        range: range,
                         options: {
                             isWholeLine: false,
                             hoverMessage: [
@@ -3376,9 +3352,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return tokens.length > 0 ? tokens[0] : [];
     }
 
-    isWordAsmKeyword(word: monaco.editor.IWordAtPosition): boolean {
-        // @ts-ignore
-        return this.getLineTokens(word.range.startLineNumber).some(t => {
+    isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
+        return this.getLineTokens(lineNumber).some(t => {
             return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
         });
     }
