@@ -1016,17 +1016,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     this.isAsmKeywordCtxKey.set(false);
                 } else {
                     const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-                    if (currentWord) {
-                        // @ts-ignore
-                        currentWord.range = new monaco.Range(
-                            e.target.position.lineNumber,
-                            Math.max(currentWord.startColumn, 1),
-                            e.target.position.lineNumber,
-                            currentWord.endColumn
-                        );
-                        if (currentWord.word) {
-                            this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
-                        }
+                    if (currentWord?.word) {
+                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(e.target.position.lineNumber, currentWord));
                     }
                 }
             }
@@ -3287,7 +3278,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         }
         const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-        if (currentWord && currentWord.word) {
+        if (currentWord?.word) {
             let word = currentWord.word;
             let startColumn = currentWord.startColumn;
             // Avoid throwing an exception if somehow (How?) we have a non-existent lineNumber.
@@ -3301,8 +3292,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     startColumn -= 1;
                 }
             }
-            // @ts-ignore
-            currentWord.range = new monaco.Range(
+            const range = new monaco.Range(
                 e.target.position.lineNumber,
                 Math.max(startColumn, 1),
                 e.target.position.lineNumber,
@@ -3311,8 +3301,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const numericToolTip = this.getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
-                    // @ts-ignore
-                    range: currentWord.range,
+                    range: range,
                     options: {
                         isWholeLine: false,
                         hoverMessage: [
@@ -3330,14 +3319,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 hoverShowAsmDoc &&
                 this.compiler &&
                 this.compiler.supportsAsmDocs &&
-                this.isWordAsmKeyword(currentWord)
+                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
                 try {
                     const response = await this.getAsmInfo(currentWord.word, this.compiler.instructionSet);
                     if (!response) return;
                     this.decorations.asmToolTip = {
-                        // @ts-ignore
-                        range: currentWord.range,
+                        range: range,
                         options: {
                             isWholeLine: false,
                             hoverMessage: [
@@ -3364,9 +3352,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return tokens.length > 0 ? tokens[0] : [];
     }
 
-    isWordAsmKeyword(word: monaco.editor.IWordAtPosition): boolean {
-        // @ts-ignore
-        return this.getLineTokens(word.range.startLineNumber).some(t => {
+    isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
+        return this.getLineTokens(lineNumber).some(t => {
             return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
         });
     }
