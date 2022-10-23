@@ -28,6 +28,7 @@ import * as colour from '../colour';
 import * as loadSaveLib from '../widgets/load-save';
 import * as Components from '../components';
 import * as monaco from 'monaco-editor';
+import {Buffer} from 'buffer';
 import {options} from '../options';
 import {Alert} from '../alert';
 import {ga} from '../analytics';
@@ -52,6 +53,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces'
 import {Decoration, Motd} from '../motd.interfaces';
 import type {escape_html} from 'tom-select/dist/types/utils';
 import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
+import {Compiler} from './compiler';
 
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages as Record<string, Language | undefined>;
@@ -706,12 +708,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         for (const compilerIdStr of Object.keys(this.ourCompilers)) {
             const compilerId = parseInt(compilerIdStr);
 
-            const glCompiler = _.find(this.container.layoutManager.root.getComponentsByName('compiler'), function (c) {
-                return c.id === compilerId;
-            });
+            const glCompiler: Compiler | undefined = _.find(
+                this.container.layoutManager.root.getComponentsByName('compiler'),
+                function (c) {
+                    return c.id === compilerId;
+                }
+            );
 
             if (glCompiler) {
-                const state = glCompiler.currentState();
+                const state = glCompiler.getCurrentState();
                 states.push(state);
             }
         }
