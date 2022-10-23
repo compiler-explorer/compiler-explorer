@@ -31,7 +31,7 @@ import * as monaco from 'monaco-editor';
 import {options} from '../options';
 import {Alert} from '../alert';
 import {ga} from '../analytics';
-import monacoVim from 'monaco-vim';
+import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config';
 import * as quickFixesHandler from '../quick-fixes-handler';
 import TomSelect from 'tom-select';
@@ -471,7 +471,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     enableVim(): void {
-        this.vimMode = monacoVim.initVimMode(this.editor, this.domRoot.find('#v-status')[0]);
+        const statusElem = this.domRoot.find('#v-status')[0];
+        const vimMode = monacoVim.initVimMode(this.editor, statusElem);
+        this.vimMode = vimMode;
         this.vimFlag.prop('class', 'btn btn-info');
         // @ts-expect-error: IStandaloneCodeEditor is missing this property
         this.editor.vimInUse = true;
