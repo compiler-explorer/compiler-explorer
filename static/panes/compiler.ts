@@ -1552,7 +1552,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Delete trailing empty lines
         if (Array.isArray(result.asm)) {
-            const indexToDiscard = result.asm.findLastIndex(line => {
+            const indexToDiscard = _.findLastIndex(result.asm, line => {
                 return !_.isEmpty(line.text);
             });
             result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
