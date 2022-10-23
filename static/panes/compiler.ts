@@ -1005,44 +1005,32 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Hiding the 'Jump to label' context menu option if no label can be found
         // in the clicked position.
-        const contextmenu = this.editor.getContribution('editor.contrib.contextmenu');
-        // Member is private
-        const realMethod = (contextmenu as any)?._onContextMenu;
-        if (realMethod)
-            (contextmenu as any)._onContextMenu = (e, ...args: any[]) => {
-                if (e && e.target && e.target.position) {
-                    if (this.isLabelCtxKey.get()) {
-                        const label = this.getLabelAtPosition(e.target.position);
-                        this.isLabelCtxKey.set(label !== null);
-                    }
+        this.editor.onContextMenu(e => {
+            if (e.target.position) {
+                const label = this.getLabelAtPosition(e.target.position);
+                this.isLabelCtxKey.set(label !== null);
 
-                    if (this.isAsmKeywordCtxKey.get()) {
-                        if (!this.compiler?.supportsAsmDocs) {
-                            // No need to show the "Show asm documentation" if it's just going to fail.
-                            // This is useful for things like xtensa which define an instructionSet but have no docs associated
-                            this.isAsmKeywordCtxKey.set(false);
-                        } else {
-                            const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-                            if (currentWord) {
-                                // @ts-ignore
-                                currentWord.range = new monaco.Range(
-                                    e.target.position.lineNumber,
-                                    Math.max(currentWord.startColumn, 1),
-                                    e.target.position.lineNumber,
-                                    currentWord.endColumn
-                                );
-                                if (currentWord.word) {
-                                    this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
-                                }
-                            }
+                if (!this.compiler?.supportsAsmDocs) {
+                    // No need to show the "Show asm documentation" if it's just going to fail.
+                    // This is useful for things like xtensa which define an instructionSet but have no docs associated
+                    this.isAsmKeywordCtxKey.set(false);
+                } else {
+                    const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+                    if (currentWord) {
+                        // @ts-ignore
+                        currentWord.range = new monaco.Range(
+                            e.target.position.lineNumber,
+                            Math.max(currentWord.startColumn, 1),
+                            e.target.position.lineNumber,
+                            currentWord.endColumn
+                        );
+                        if (currentWord.word) {
+                            this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
                         }
                     }
                 }
-
-                if (realMethod) {
-                    realMethod.apply(contextmenu, e, ...args);
-                }
-            };
+            }
+        });
 
         this.editor.addAction({
             id: 'returnfromreveal',
