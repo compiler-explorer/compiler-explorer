@@ -60,20 +60,20 @@ const languages = options.languages as Record<string, Language | undefined>;
 
 // eslint-disable-next-line max-statements
 export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, EditorState> {
-    private readonly id: number;
-    private readonly ourCompilers: Record<string, boolean>;
-    private readonly ourExecutors: Record<number, boolean>;
-    private readonly httpRoot: string;
-    private readonly asmByCompiler: Record<string, ResultLine[] | undefined>;
-    private readonly defaultFileByCompiler: Record<number, string>;
-    private readonly busyCompilers: Record<number, boolean>;
+    private id: number;
+    private ourCompilers: Record<string, boolean>;
+    private ourExecutors: Record<number, boolean>;
+    private httpRoot: string;
+    private asmByCompiler: Record<string, ResultLine[] | undefined>;
+    private defaultFileByCompiler: Record<number, string>;
+    private busyCompilers: Record<number, boolean>;
     private colours: string[];
-    private readonly treeCompilers: Record<number, Record<number, boolean> | undefined>;
+    private treeCompilers: Record<number, Record<number, boolean> | undefined>;
     private decorations: Record<string, IModelDeltaDecoration[] | undefined>;
     private prevDecorations: string[];
     private extraDecorations?: Decoration[];
     private fadeTimeoutId: NodeJS.Timeout | null;
-    private readonly editorSourceByLang: Record<LanguageKey, string | undefined>;
+    private editorSourceByLang: Record<LanguageKey, string | undefined>;
     private alertSystem: Alert;
     private filename: string | false;
     private awaitingInitialResults: boolean;
@@ -104,29 +104,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     constructor(hub: Hub, state: MonacoPaneState & EditorState, container: Container) {
         super(hub, container, state);
-        this.id = state.id || hub.nextEditorId();
-        this.ourCompilers = {};
-        this.ourExecutors = {};
-        this.httpRoot = window.httpRoot;
-        this.asmByCompiler = {};
-        this.defaultFileByCompiler = {};
-        this.busyCompilers = {};
-        this.colours = [];
-        this.treeCompilers = {};
 
-        this.decorations = {};
-        this.prevDecorations = [];
-        this.extraDecorations = [];
-
-        this.fadeTimeoutId = null;
-
-        this.editorSourceByLang = {} as Record<LanguageKey, string | undefined>;
         this.alertSystem = new Alert();
         this.alertSystem.prefixMessage = 'Editor #' + this.id;
-
-        this.awaitingInitialResults = false;
-
-        this.revealJumpStack = [];
 
         if (this.currentLanguage) this.onLanguageChange(this.currentLanguage.id, true);
 
@@ -166,6 +146,28 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //     // movement etc).
         //     this.debouncedEmitChange();
         // }, this));
+    }
+
+    override initializeDefaults(): void {
+        this.ourCompilers = {};
+        this.ourExecutors = {};
+        this.asmByCompiler = {};
+        this.defaultFileByCompiler = {};
+        this.busyCompilers = {};
+        this.colours = [];
+        this.treeCompilers = {};
+
+        this.decorations = {};
+        this.prevDecorations = [];
+        this.extraDecorations = [];
+
+        this.fadeTimeoutId = null;
+
+        this.editorSourceByLang = {} as Record<LanguageKey, string | undefined>;
+
+        this.awaitingInitialResults = false;
+
+        this.revealJumpStack = [];
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -492,12 +494,15 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override initializeGlobalDependentProperties(): void {
         super.initializeGlobalDependentProperties();
 
+        this.httpRoot = window.httpRoot;
         this.settings = Settings.getStoredSettings();
         this.langKeys = Object.keys(languages);
     }
 
     override initializeStateDependentProperties(state: MonacoPaneState & EditorState): void {
         super.initializeStateDependentProperties(state);
+
+        this.id = state.id || this.hub.nextEditorId();
 
         this.filename = state.filename ?? false;
         this.selection = state.selection;
