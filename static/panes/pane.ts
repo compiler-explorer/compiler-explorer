@@ -79,6 +79,7 @@ export abstract class Pane<S> {
 
         this.paneRenaming = new PaneRenaming(this, state);
 
+        this.initializeDefaults();
         this.initializeGlobalDependentProperties();
         this.initializeStateDependentProperties(state);
 
@@ -115,6 +116,8 @@ export abstract class Pane<S> {
      * ```
      */
     abstract registerOpeningAnalyticsEvent(): void;
+
+    initializeDefaults(): void {}
 
     initializeGlobalDependentProperties(): void {}
 
