@@ -130,7 +130,7 @@ export class Tree {
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: usableLanguages,
+            options: usableLanguages as any[],
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
