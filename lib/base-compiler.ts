@@ -36,7 +36,6 @@ import {
     CompilationResult,
     CustomInputForTool,
     ExecutionOptions,
-    ToolResult,
 } from '../types/compilation/compilation.interfaces';
 import {
     LLVMOptPipelineBackendOptions,
@@ -75,7 +74,7 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
-import {ToolTypeKey} from './tooling/base-tool.interface';
+import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
 export class BaseCompiler {
@@ -95,7 +94,7 @@ export class BaseCompiler {
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
     protected possibleArguments: CompilerArguments;
-    protected possibleTools: any[];
+    protected possibleTools: Tool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
     public outputFilebase: string;
@@ -1670,12 +1669,11 @@ export class BaseCompiler {
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         const makeAst = backendOptions.produceAst && this.compiler.supportsAstView;
-        const makePp = typeof backendOptions.producePp === 'object' && this.compiler.supportsPpView;
+        const makePp = backendOptions.producePp && this.compiler.supportsPpView;
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
-        const makeLLVMOptPipeline =
-            typeof backendOptions.produceLLVMOptPipeline == 'object' && this.compiler.supportsLLVMOptPipelineView;
+        const makeLLVMOptPipeline = backendOptions.produceLLVMOptPipeline && this.compiler.supportsLLVMOptPipelineView;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;

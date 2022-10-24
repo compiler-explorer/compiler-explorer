@@ -1,6 +1,5 @@
-import * as properties from '../lib/properties';
-
 import {LlvmPassDumpParser} from '../lib/parsers/llvm-pass-dump-parser';
+import * as properties from '../lib/properties';
 
 const languages = {
     'c++': {id: 'c++'},

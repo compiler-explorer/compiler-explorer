@@ -47,6 +47,7 @@ export abstract class Pane<S> {
     domRoot: JQuery;
     topBar: JQuery;
     hideable: JQuery;
+    protected hub: Hub;
     eventHub: EventHub;
     isAwaitingInitialResults = false;
     settings: SiteSettings | Record<string, never> = {};
@@ -61,6 +62,7 @@ export abstract class Pane<S> {
      */
     protected constructor(hub: Hub, container: Container, state: S & PaneState) {
         this.container = container;
+        this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
         this.domRoot.html(this.getInitialHTML());
@@ -76,6 +78,10 @@ export abstract class Pane<S> {
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
+
+        this.initializeDefaults();
+        this.initializeGlobalDependentProperties();
+        this.initializeStateDependentProperties(state);
 
         this.registerDynamicElements(state);
 
@@ -110,6 +116,12 @@ export abstract class Pane<S> {
      * ```
      */
     abstract registerOpeningAnalyticsEvent(): void;
+
+    initializeDefaults(): void {}
+
+    initializeGlobalDependentProperties(): void {}
+
+    initializeStateDependentProperties(state: S): void {}
 
     /** Optional overridable code for initializing necessary elements before rest of registers **/
     registerDynamicElements(state: S): void {}

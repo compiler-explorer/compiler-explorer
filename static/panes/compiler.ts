@@ -27,7 +27,6 @@ import $ from 'jquery';
 import {ga} from '../analytics';
 import * as colour from '../colour';
 import {Toggles} from '../widgets/toggles';
-import {FontScale} from '../widgets/fontscale';
 import * as Components from '../components';
 import LruCache from 'lru-cache';
 import {options} from '../options';
@@ -43,19 +42,18 @@ import {CompilerService} from '../compiler-service';
 import {Settings, SiteSettings} from '../settings';
 import * as LibUtils from '../lib-utils';
 import {getAssemblyDocumentation} from '../api/api';
-import {PaneRenaming} from '../widgets/pane-renaming';
 import {MonacoPane} from './pane';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {CompilerState} from './compiler.interfaces';
-import {GccDumpOptions} from '../components.interfaces';
+import {ComponentConfig, GccDumpOptions, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {CompilerFilters} from '../../types/features/filters.interfaces';
 import {GccSelectedPass} from './gccdump-view.interfaces';
-import {ToolInfo} from '../../lib/tooling/base-tool.interface';
+import {Tool} from '../../lib/tooling/base-tool.interface';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
@@ -65,7 +63,6 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces'
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import * as utils from '../utils';
 
-// @ts-ignore
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
 const OpcodeCache = new LruCache({
@@ -91,23 +88,6 @@ function patchOldFilters(filters) {
 }
 
 const languages = options.languages;
-
-type LastResult = {
-    ppOutput: unknown;
-    astOutput: unknown;
-    irOutput: unknown;
-    devices: unknown;
-    rustMirOutput: unknown;
-    rustMacroExpOutput: unknown;
-    rustHirOutput: unknown;
-    haskellCoreOutput: unknown;
-    haskellStgOutput: unknown;
-    haskellCmmOutput: unknown;
-    gccDumpOutput?: Record<GccDumpOptions, unknown>;
-    gnatDebugTreeOutput: unknown;
-    gnatDebugOutput: unknown;
-    optOutput: unknown;
-};
 
 type CompilerCurrentState = CompilerState &
     MonacoPaneState & {
@@ -225,7 +205,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private source: string;
     private assembly: Assembly[];
     private colours: string[];
-    private lastResult: CompilationResult;
+    private lastResult: CompilationResult | null;
     private lastTimeTaken: number;
     private pendingRequestSentAt: number;
     private pendingCMakeRequestSentAt: number;
@@ -332,7 +312,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private mouseUpThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
 
     // eslint-disable-next-line max-statements
-    constructor(private readonly hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
+    constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
         this.id = state.id || hub.nextCompilerId();
@@ -354,23 +334,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.source = '';
         this.assembly = [];
         this.colours = [];
-        this.lastResult = {
-            astOutput: '',
-            irOutput: '',
-            // @ts-expect-error: This type does not exist in CompilationResult
-            gnatDebugOutput: '',
-            // @ts-expect-error: This type does not exist in CompilationResult
-            gnatDebugTreeOutput: '',
-            rustMirOutput: '',
-            rustMacroExpOutput: '',
-            rustHirOutput: '',
-            haskellCoreOutput: '',
-            haskellStgOutput: '',
-            haskellCmmOutput: '',
-            devices: undefined,
-            optOutput: '',
-            ppOutput: '',
-        };
+        this.lastResult = null;
 
         this.lastTimeTaken = 0;
         this.pendingRequestSentAt = 0;
@@ -397,11 +361,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.revealJumpStack = [];
 
-        this.paneRenaming = new PaneRenaming(this, state);
+        // MonacoPane's registerButtons is not called late enough, we still need to init some buttons with new data
+        this.initPanerButtons();
 
-        this.initButtons(state);
-
-        this.fontScale = new FontScale(this.domRoot, state, this.editor);
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
             this.hub,
@@ -412,9 +374,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.initLibraries(state);
 
-        this.initEditorActions();
-        this.initEditorCommands();
-
+        // MonacoPane's registerCallbacks is not called late enough either
         this.initCallbacks();
         // Handle initial settings
         this.onSettingsChange(this.settings);
@@ -440,7 +400,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     readOnly: true,
                     language: 'asm',
                     glyphMargin: !options.embedded,
-                    //guides: false,
+                    // guides: false,
                     vimInUse: false,
                 },
                 this.settings as SiteSettings
@@ -522,8 +482,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getOptViewWith(
                 this.id,
                 this.source as unknown as number,
-                // @ts-expect-error: CompilationResult does not have this type
-                this.lastResult.optOutput,
+                this.lastResult?.optOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -542,7 +501,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getPpViewWith(
                 this.id,
                 this.source as unknown as number,
-                this.lastResult.ppOutput,
+                this.lastResult?.ppOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -553,7 +512,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getAstViewWith(
                 this.id,
                 this.source as unknown as number,
-                this.lastResult.astOutput,
+                this.lastResult?.astOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -564,7 +523,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getIrViewWith(
                 this.id,
                 this.source,
-                this.lastResult.irOutput,
+                this.lastResult?.irOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -584,7 +543,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getDeviceViewWith(
                 this.id,
                 this.source,
-                this.lastResult.devices,
+                // FIXME: A (probable) typo makes this unused in the pane
+                this.lastResult?.devices,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -595,7 +555,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getRustMirViewWith(
                 this.id,
                 this.source,
-                this.lastResult.rustMirOutput,
+                this.lastResult?.rustMirOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -606,7 +566,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getRustMacroExpViewWith(
                 this.id,
                 this.source,
-                this.lastResult.rustMacroExpOutput,
+                this.lastResult?.rustMacroExpOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -617,7 +577,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getRustHirViewWith(
                 this.id,
                 this.source,
-                this.lastResult.rustHirOutput,
+                this.lastResult?.rustHirOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -628,7 +588,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getHaskellCoreViewWith(
                 this.id,
                 this.source,
-                this.lastResult.haskellCoreOutput,
+                this.lastResult?.haskellCoreOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -639,7 +599,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getHaskellStgViewWith(
                 this.id,
                 this.source,
-                this.lastResult.haskellStgOutput,
+                this.lastResult?.haskellStgOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -650,7 +610,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getHaskellCmmViewWith(
                 this.id,
                 this.source,
-                this.lastResult.haskellCmmOutput,
+                this.lastResult?.haskellCmmOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -663,7 +623,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
-                this.lastResult.gccDumpOutput
+                this.lastResult?.gccDumpOutput
             );
         };
 
@@ -671,7 +631,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getGnatDebugTreeViewWith(
                 this.id,
                 this.source,
-                this.lastResult.gnatDebugTreeOutput,
+                this.lastResult?.gnatDebugTreeOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -682,7 +642,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getGnatDebugViewWith(
                 this.id,
                 this.source,
-                this.lastResult.gnatDebugOutput,
+                this.lastResult?.gnatDebugOutput,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0
@@ -738,7 +698,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
-        this.optButton.click(() => {
+        this.optButton.on('click', () => {
             const insertPoint =
                 this.hub.findParentRowOrColumn(this.container.parent) ||
                 this.container.layoutManager.root.contentItems[0];
@@ -1023,7 +983,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    initEditorActions(): void {
+    override registerEditorActions(): void {
         this.isLabelCtxKey = this.editor.createContextKey('isLabel', true);
         this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
         this.isAsmKeywordCtxKey = this.editor.createContextKey('isAsmKeyword', true);
@@ -1045,45 +1005,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Hiding the 'Jump to label' context menu option if no label can be found
         // in the clicked position.
-        const contextmenu = this.editor.getContribution('editor.contrib.contextmenu');
-        // @ts-ignore
-        const realMethod = contextmenu?._onContextMenu;
-        // @ts-ignore
-        if (contextmenu?._onContextMenu)
-            (contextmenu as any)._onContextMenu = (e, ...args: any[]) => {
-                if (e && e.target && e.target.position) {
-                    if (this.isLabelCtxKey.get()) {
-                        const label = this.getLabelAtPosition(e.target.position);
-                        this.isLabelCtxKey.set(label !== null);
-                    }
+        this.editor.onContextMenu(e => {
+            if (e.target.position) {
+                const label = this.getLabelAtPosition(e.target.position);
+                this.isLabelCtxKey.set(label !== null);
 
-                    if (this.isAsmKeywordCtxKey.get()) {
-                        if (!this.compiler?.supportsAsmDocs) {
-                            // No need to show the "Show asm documentation" if it's just going to fail.
-                            // This is useful for things like xtensa which define an instructionSet but have no docs associated
-                            this.isAsmKeywordCtxKey.set(false);
-                        } else {
-                            const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-                            if (currentWord) {
-                                // @ts-ignore
-                                currentWord.range = new monaco.Range(
-                                    e.target.position.lineNumber,
-                                    Math.max(currentWord.startColumn, 1),
-                                    e.target.position.lineNumber,
-                                    currentWord.endColumn
-                                );
-                                if (currentWord.word) {
-                                    this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(currentWord));
-                                }
-                            }
-                        }
+                if (!this.compiler?.supportsAsmDocs) {
+                    // No need to show the "Show asm documentation" if it's just going to fail.
+                    // This is useful for things like xtensa which define an instructionSet but have no docs associated
+                    this.isAsmKeywordCtxKey.set(false);
+                } else {
+                    const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+                    if (currentWord?.word) {
+                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(e.target.position.lineNumber, currentWord));
                     }
                 }
-
-                if (realMethod) {
-                    realMethod.apply(contextmenu, e, ...args);
-                }
-            };
+            }
+        });
 
         this.editor.addAction({
             id: 'returnfromreveal',
@@ -1142,9 +1080,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 });
             },
         });
-    }
 
-    initEditorCommands(): void {
         this.editor.addAction({
             id: 'dumpAsm',
             label: 'Developer: Dump asm',
@@ -1357,7 +1293,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // After a short delay, give the user some indication that we're working on their
         // compilation.
         const progress = setTimeout(() => {
-            // @ts-expect-error: Those types do actually match
+            // @ts-ignore
             this.setAssembly({asm: this.fakeAsm('<Compiling...>')}, 0);
         }, 500);
         this.compilerService
@@ -1452,11 +1388,14 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             if (result.languageId) {
                 monaco.editor.setModelLanguage(editorModel, result.languageId);
             } else {
-                const monacoDisassembly =
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                    (languages[this.currentLangId ?? '']
-                        ? languages[this.currentLangId ?? ''].monacoDisassembly
-                        : null) || 'asm';
+                let monacoDisassembly = 'asm';
+                if (this.currentLangId && this.currentLangId in languages) {
+                    // TS compiler trips if you try to fold this condition in one if
+                    const disasam = languages[this.currentLangId].monacoDisassembly;
+                    if (disasam !== null) {
+                        monacoDisassembly = disasam;
+                    }
+                }
                 monaco.editor.setModelLanguage(editorModel, monacoDisassembly);
             }
         }
@@ -1555,9 +1494,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return {asm: this.fakeAsm(text), code: -1, stdout: '', stderr: ''};
     }
 
-    private fakeAsm(text: string): (ResultLine & CompilationResult)[] {
-        // @ts-expect-error: Those types don't overlap
-        return [{text: text, source: undefined, fake: true}];
+    // TODO: Figure out if this is ResultLine or Assembly
+    private fakeAsm(text: string): ResultLine[] {
+        // @ts-ignore
+        return [{text: text, fake: true}];
     }
 
     doNextCompileRequest(): void {
@@ -1612,7 +1552,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         // Delete trailing empty lines
         if (Array.isArray(result.asm)) {
-            const indexToDiscard = result.asm.findLastIndex(line => {
+            const indexToDiscard = _.findLastIndex(result.asm, line => {
                 return !_.isEmpty(line.text);
             });
             result.asm.splice(indexToDiscard + 1, result.asm.length - indexToDiscard);
@@ -2263,7 +2203,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.noBinaryFiltersButtons = this.domRoot.find('.nonbinary');
     }
 
-    initButtons(state) {
+    override registerButtons(state) {
+        super.registerButtons(state);
         this.filters = new Toggles(this.domRoot.find('.filters'), patchOldFilters(state.filters));
 
         this.optButton = this.domRoot.find('.btn.view-optimization');
@@ -2338,8 +2279,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.statusIcon = this.domRoot.find('.status-icon');
 
         this.monacoPlaceholder = this.domRoot.find('.monaco-placeholder');
-
-        this.initPanerButtons();
     }
 
     onLibsChanged(): void {
@@ -2377,24 +2316,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    isSupportedTool(tool: ToolInfo) {
+    isSupportedTool(tool: Tool): boolean {
         if (this.sourceTreeId) {
-            return (tool as any).tool.type === 'postcompilation';
+            return tool.tool.type === 'postcompilation';
         } else {
             return true;
         }
     }
 
-    supportsTool(toolId: string): ToolInfo | undefined {
-        if (!this.compiler) return;
+    supportsTool(toolId: string): boolean {
+        if (!this.compiler) return false;
 
-        return Object.values(this.compiler.tools).find(tool => {
-            return tool.id === toolId && this.isSupportedTool(tool);
+        return !!Object.values(this.compiler.tools).find(tool => {
+            return tool.tool.id === toolId && this.isSupportedTool(tool);
         });
     }
 
-    initToolButton(togglePannerAdder: () => void, button: JQuery<HTMLElement>, toolId: string) {
-        const createToolView = () => {
+    initToolButton(togglePannerAdder: () => void, button: JQuery<HTMLElement>, toolId: string): void {
+        const createToolView: () => ComponentConfig<ToolViewState> = () => {
             let args = '';
             let monacoStdin = false;
             const langTools = (options.tools as any)[this.currentLangId ?? ''];
@@ -2473,12 +2412,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             tools.forEach(tool => {
                 if (this.isSupportedTool(tool)) {
-                    addTool(
-                        (tool as any).tool.id,
-                        (tool as any).tool.name,
-                        (tool as any).tool.icon,
-                        (tool as any).tool.darkIcon
-                    );
+                    addTool(tool.tool.id, tool.tool.name || tool.tool.id, tool.tool.icon, tool.tool.darkIcon);
                 }
             });
         }
@@ -2556,7 +2490,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.astButton.prop('disabled', this.astViewOpen);
         this.irButton.prop('disabled', this.irViewOpen);
         // As per #4112, it's useful to have this available more than once: Don't disable it when it opens
-        //this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
+        // this.llvmOptPipelineButton.prop('disabled', this.llvmOptPipelineViewOpen);
         this.deviceButton.prop('disabled', this.deviceViewOpen);
         this.rustMirButton.prop('disabled', this.rustMirViewOpen);
         this.haskellCoreButton.prop('disabled', this.haskellCoreViewOpen);
@@ -2682,19 +2616,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateState();
     }
 
-    // Disable only for initListeners as there are more and more callbacks.
+    // Disable only for registerCallbacks as there are more and more callbacks.
     // eslint-disable-next-line max-statements
-    initListeners(): void {
-        this.filters.on('change', this.onFilterChange.bind(this));
-        this.fontScale.on('change', this.onFontScale.bind(this));
-        this.eventHub.on('broadcastFontScale', scale => {
-            this.fontScale.setScale(scale);
-            this.updateState();
-        });
-        this.paneRenaming.on('renamePane', this.updateState.bind(this));
-
-        this.container.on('destroy', this.close, this);
-        this.container.on('resize', this.resize, this);
+    override registerCallbacks(): void {
         this.container.on('shown', this.resize, this);
         this.container.on('open', () => {
             this.eventHub.emit('compilerOpen', this.id, this.sourceEditorId ?? 0, this.sourceTreeId ?? 0);
@@ -2709,7 +2633,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('findCompilers', this.sendCompiler, this);
         this.eventHub.on('compilerSetDecorations', this.onCompilerSetDecorations, this);
         this.eventHub.on('panesLinkLine', this.onPanesLinkLine, this);
-        this.eventHub.on('settingsChange', this.onSettingsChange, this);
         this.eventHub.on('requestCompilation', this.onRequestCompilation, this);
 
         this.eventHub.on('toolSettingsChange', this.onToolSettingsChange, this);
@@ -2760,7 +2683,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.eventHub.on('cfgViewOpened', this.onCfgViewOpened, this);
         this.eventHub.on('cfgViewClosed', this.onCfgViewClosed, this);
-        this.eventHub.on('resize', this.resize, this);
         this.eventHub.on('requestFilters', id => {
             if (id === this.id) {
                 this.eventHub.emit('filtersChange', this.id, this.getEffectiveFilters() as any);
@@ -2773,13 +2695,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
         this.eventHub.on('languageChange', this.onLanguageChange, this);
 
-        this.fullTimingInfo.off('click').click(() => {
-            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
-        });
+        this.eventHub.on('initialised', this.undefer, this);
     }
 
     initCallbacks(): void {
-        this.initListeners();
+        this.filters.on('change', this.onFilterChange.bind(this));
+
+        this.fullTimingInfo.off('click').on('click', () => {
+            TimingWidget.displayCompilationTiming(this.lastResult, this.lastTimeTaken);
+        });
 
         const optionsChange = _.debounce(e => {
             this.onOptionsChange($(e.target).val() as string);
@@ -2832,8 +2756,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 elem.popover('hide');
             }
         });
-
-        this.eventHub.on('initialised', this.undefer, this);
     }
 
     onOptionsChange(options: string): void {
@@ -2863,10 +2785,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    checkForUnwiseArguments(optionsArray: string[], wasCmake: boolean): void {
+    checkForUnwiseArguments(optionsArray: string[] | undefined, wasCmake: boolean): void {
         if (!this.compiler) return;
 
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!optionsArray) optionsArray = [];
 
         // Check if any options are in the unwiseOptions array and remember them
@@ -2882,8 +2803,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const are = unwiseOptions.length === 1 ? ' is ' : ' are ';
         const msg = options + names + are + 'not recommended, as behaviour might change based on server hardware.';
 
-        // @ts-ignore
-        if (optionsArray.some(opt => opt === '-flto') && !this.filters.state.binary && !wasCmake) {
+        if (optionsArray.some(opt => opt === '-flto') && !this.filters.isSet('binary') && !wasCmake) {
             this.alertSystem.notify('Option -flto is being used without Compile to Binary.', {
                 group: 'unwiseOption',
                 collapseSimilar: true,
@@ -2901,15 +2821,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     updateCompilerInfo(): void {
         this.updateCompilerName();
         if (this.compiler) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (this.compiler.notification) {
-                this.compiler.notification.forEach(notification =>
-                    this.alertSystem.notify(notification, {
-                        group: 'compilerwarning',
-                        alertClass: 'notification-info',
-                        dismissTime: 7000,
-                    })
-                );
+            if (this.compiler.notification.length > 0) {
+                this.alertSystem.notify(this.compiler.notification, {
+                    group: 'compilerwarning',
+                    alertClass: 'notification-info',
+                    dismissTime: 7000,
+                });
             }
             this.prependOptions.data('content', this.compiler.options);
         }
@@ -3062,9 +2979,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     resendResult(): boolean {
-        if (!$.isEmptyObject(this.lastResult)) {
-            if (this.compiler)
-                this.eventHub.emit('compileResult', this.id, this.compiler, this.lastResult, this.currentLangId as any);
+        if (this.lastResult) {
+            if (this.compiler) {
+                this.eventHub.emit(
+                    'compileResult',
+                    this.id,
+                    this.compiler,
+                    this.lastResult,
+                    this.currentLangId ? languages[this.currentLangId] : undefined
+                );
+            }
             return true;
         }
         return false;
@@ -3214,9 +3138,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.fullCompilerName.popover({
             html: true,
-            // @ts-ignore
             title: notification
-                ? $.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0]
+                ? ($.parseHTML('<span>Compiler Version: ' + notification + '</span>')[0] as Element)
                 : 'Full compiler version',
             content: bodyContent,
             template:
@@ -3290,33 +3213,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return result;
     }
 
-    private getAsmInfo(opcode: string, instructionSet: string): Promise<AssemblyInstructionInfo | undefined> {
+    private async getAsmInfo(opcode: string, instructionSet: string): Promise<AssemblyInstructionInfo | undefined> {
         const cacheName = 'asm/' + (instructionSet ? instructionSet + '/' : '') + opcode;
         const cached = OpcodeCache.get(cacheName);
         if (cached) {
-            if (cached.found) {
-                return Promise.resolve(cached.data);
-            }
-            return Promise.reject(cached.data);
+            if (cached.found) return cached.data;
+            throw new Error(cached.data);
         }
 
-        return new Promise((resolve, reject) => {
-            getAssemblyDocumentation({opcode: opcode, instructionSet: instructionSet as any})
-                .then(response => {
-                    response.json().then(body => {
-                        if (response.status === 200) {
-                            OpcodeCache.set(cacheName, {found: true, data: body});
-                            resolve(body);
-                        } else {
-                            OpcodeCache.set(cacheName, {found: false, data: (body as any).error});
-                            reject((body as any).error);
-                        }
-                    });
-                })
-                .catch(error => {
-                    reject('Fetch error: ' + error);
-                });
-        });
+        const response = await getAssemblyDocumentation({opcode: opcode, instructionSet: instructionSet as any});
+        const body = await response.json();
+        if (response.status === 200) {
+            OpcodeCache.set(cacheName, {found: true, data: body});
+            return body;
+        } else {
+            const error = (body as any).error;
+            OpcodeCache.set(cacheName, {found: false, data: error});
+            throw new Error(error);
+        }
     }
 
     override onDidChangeCursorSelection(e) {
@@ -3334,7 +3248,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onMouseMove(e: any): void {
+    async onMouseMove(e: any) {
         if (e === null || e.target === null || e.target.position === null) return;
         const hoverShowSource = this.settings.hoverShowSource === true;
         const hoverAsm = this.assembly[e.target.position.lineNumber - 1];
@@ -3370,7 +3284,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }
         }
         const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-        if (currentWord && currentWord.word) {
+        if (currentWord?.word) {
             let word = currentWord.word;
             let startColumn = currentWord.startColumn;
             // Avoid throwing an exception if somehow (How?) we have a non-existent lineNumber.
@@ -3384,8 +3298,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     startColumn -= 1;
                 }
             }
-            // @ts-ignore
-            currentWord.range = new monaco.Range(
+            const range = new monaco.Range(
                 e.target.position.lineNumber,
                 Math.max(startColumn, 1),
                 e.target.position.lineNumber,
@@ -3394,8 +3307,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const numericToolTip = this.getNumericToolTip(word);
             if (numericToolTip) {
                 this.decorations.numericToolTip = {
-                    // @ts-ignore
-                    range: currentWord.range,
+                    range: range,
                     options: {
                         isWholeLine: false,
                         hoverMessage: [
@@ -3413,18 +3325,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 hoverShowAsmDoc &&
                 this.compiler &&
                 this.compiler.supportsAsmDocs &&
-                this.isWordAsmKeyword(currentWord)
+                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
             ) {
-                this.getAsmInfo(currentWord.word, this.compiler.instructionSet).then(response => {
+                try {
+                    const response = await this.getAsmInfo(currentWord.word, this.compiler.instructionSet);
                     if (!response) return;
                     this.decorations.asmToolTip = {
-                        // @ts-ignore
-                        range: currentWord.range,
+                        range: range,
                         options: {
                             isWholeLine: false,
                             hoverMessage: [
                                 {
-                                    // @ts-ignore
                                     value: response.tooltip + '\n\nMore information available in the context menu.',
                                     isTrusted: true,
                                 },
@@ -3432,7 +3343,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         },
                     };
                     this.updateDecorations();
-                });
+                } catch {
+                    // ignore errors fetching tooltips
+                }
             }
         }
     }
@@ -3445,14 +3358,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         return tokens.length > 0 ? tokens[0] : [];
     }
 
-    isWordAsmKeyword(word: monaco.editor.IWordAtPosition): boolean {
-        // @ts-ignore
-        return this.getLineTokens(word.range.startLineNumber).some(t => {
+    isWordAsmKeyword(lineNumber: number, word: monaco.editor.IWordAtPosition): boolean {
+        return this.getLineTokens(lineNumber).some(t => {
             return t.offset + 1 === word.startColumn && t.type === 'keyword.asm';
         });
     }
 
-    onAsmToolTip(ed: monaco.editor.ICodeEditor): void {
+    async onAsmToolTip(ed: monaco.editor.ICodeEditor) {
         ga.proxy('send', {
             hitType: 'event',
             eventCategory: 'OpenModalPane',
@@ -3488,32 +3400,27 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             );
         }
 
-        this.getAsmInfo(word.word, this.compiler?.instructionSet ?? '').then(
-            asmHelp => {
-                if (asmHelp) {
-                    this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), () => {
-                        ed.focus();
-                        ed.setPosition(pos);
-                    });
-                } else {
-                    this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
-                        group: 'notokenindocs',
-                        alertClass: 'notification-error',
-                        dismissTime: 5000,
-                    });
-                }
-            },
-            rejection => {
-                this.alertSystem.notify(
-                    'There was an error fetching the documentation for this opcode (' + rejection + ').',
-                    {
-                        group: 'notokenindocs',
-                        alertClass: 'notification-error',
-                        dismissTime: 5000,
-                    }
-                );
+        try {
+            const asmHelp = await this.getAsmInfo(word.word, this.compiler?.instructionSet ?? '');
+            if (asmHelp) {
+                this.alertSystem.alert(opcode + ' help', asmHelp.html + appendInfo(asmHelp.url), () => {
+                    ed.focus();
+                    ed.setPosition(pos);
+                });
+            } else {
+                this.alertSystem.notify('This token was not found in the documentation. Sorry!', {
+                    group: 'notokenindocs',
+                    alertClass: 'notification-error',
+                    dismissTime: 5000,
+                });
             }
-        );
+        } catch (error) {
+            this.alertSystem.notify('There was an error fetching the documentation for this opcode (' + error + ').', {
+                group: 'notokenindocs',
+                alertClass: 'notification-error',
+                dismissTime: 5000,
+            });
+        }
     }
 
     handleCompilationStatus(status: CompilationStatus): void {
@@ -3539,8 +3446,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.updateCompilersSelector(info);
             this.updateState();
             this.updateCompilerUI();
-            // @ts-expect-error: Those types do actually match
-            this.setAssembly(this.fakeAsm(''));
+            // @ts-ignore It's either Assembly or ResultLine
+            this.setAssembly({asm: this.fakeAsm('')});
             // this is a workaround to delay compilation further until the Editor sends a compile request
             this.needsCompile = false;
 
