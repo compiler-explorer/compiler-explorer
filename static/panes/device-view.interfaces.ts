@@ -22,15 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
+
 export type DeviceAsmState = {
     device?: string;
-    irOutput?: DeviceAsmCode[];
-};
-
-export type DeviceAsmCode = {
-    source?: {
-        file?: string;
-        line: number;
-    };
-    text: string;
+    deviceOutput?: ResultLine[];
+    devices?: Record<string, CompilationResult>;
 };
