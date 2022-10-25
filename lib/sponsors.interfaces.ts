@@ -24,11 +24,11 @@
 
 export type Sponsor = {
     name: string;
-    description: string;
-    img: string;
-    icon: string;
-    icon_dark: string;
-    url: string;
+    description?: string;
+    img?: string;
+    icon?: string;
+    icon_dark?: string;
+    url?: string;
     onclick: string;
     priority: number;
     topIcon: boolean;

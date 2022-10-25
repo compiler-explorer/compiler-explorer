@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {loadSponsorsFromString, parse} from '../lib/sponsors';
+import {should} from './utils';
 
 describe('Sponsors', () => {
     it('should expand names to objects', () => {
@@ -33,15 +34,15 @@ describe('Sponsors', () => {
     });
     it('should default empty params', () => {
         const obj = parse('moo');
-        obj.description.should.eq('');
-        obj.url.should.eq('');
+        should.equal(obj.description, undefined);
+        should.equal(obj.url, undefined);
         obj.onclick.should.eq('');
-        obj.img.should.eq('');
-        obj.icon.should.eq('');
-        obj.icon_dark.should.eq('');
+        should.equal(obj.img, undefined);
+        should.equal(obj.icon, undefined);
+        should.equal(obj.icon_dark, undefined);
         obj.topIcon.should.be.false;
         obj.sideBySide.should.be.false;
-        obj.statsId.should.eq('');
+        should.equal(obj.statsId, undefined);
     });
     it('should pass through descriptions', () => {
         parse({name: 'moo', description: 'desc'}).description.should.eq('desc');
@@ -57,9 +58,6 @@ describe('Sponsors', () => {
     });
     it('should pick dark icons if specified', () => {
         parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark.should.eq('icon_dark');
-    });
-    it('should use light as dark icons if not specified', () => {
-        parse({name: 'bob', icon: 'icon'}).icon_dark.should.eq('icon');
     });
     it('should handle topIcons', () => {
         parse({name: 'bob', topIcon: true}).topIcon.should.be.true;

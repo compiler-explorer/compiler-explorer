@@ -30,16 +30,16 @@ export function parse(mapOrString: Record<string, any> | string): Sponsor {
     if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};
     return {
         name: mapOrString.name,
-        description: mapOrString.description || '',
-        url: mapOrString.url || '',
+        description: mapOrString.description,
+        url: mapOrString.url,
         onclick: mapOrString.url ? `window.onSponsorClick(${JSON.stringify(mapOrString.url)});` : '',
-        img: mapOrString.img || '',
-        icon: mapOrString.icon || mapOrString.img || '',
-        icon_dark: mapOrString.icon_dark || mapOrString.icon || mapOrString.img || '',
+        img: mapOrString.img,
+        icon: mapOrString.icon || mapOrString.img,
+        icon_dark: mapOrString.icon_dark,
         topIcon: !!mapOrString.topIcon,
         sideBySide: !!mapOrString.sideBySide,
         priority: mapOrString.priority || 0,
-        statsId: mapOrString.statsId || '',
+        statsId: mapOrString.statsId,
     };
 }
 
