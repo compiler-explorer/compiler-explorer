@@ -71,9 +71,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.lastColours = [];
         this.lastColourScheme = '';
 
-        // FIXME: State has deviceOutput, but no irOutput. Typo or broken?
-        if (state.irOutput) {
-            this.showDeviceAsmResults(state.irOutput);
+        if (state.deviceOutput) {
+            this.showDeviceAsmResults(state.deviceOutput);
         }
     }
 

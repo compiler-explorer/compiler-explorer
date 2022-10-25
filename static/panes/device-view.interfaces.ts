@@ -24,7 +24,7 @@
 
 export type DeviceAsmState = {
     device?: string;
-    irOutput?: DeviceAsmCode[];
+    deviceOutput?: DeviceAsmCode[];
 };
 
 export type DeviceAsmCode = {
