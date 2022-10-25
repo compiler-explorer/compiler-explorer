@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,43 +22,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import yaml from 'yaml';
+export type Sponsor = {
+    name: string;
+    description?: string;
+    img?: string;
+    icon?: string;
+    icon_dark?: string;
+    url?: string;
+    onclick: string;
+    priority: number;
+    topIcon: boolean;
+    sideBySide: boolean;
+    statsId?: string;
+};
 
-function namify(mapOrString) {
-    if (typeof mapOrString == 'string') return {name: mapOrString};
-    return mapOrString;
-}
+export type Level = {
+    name: string;
+    description: string;
+    class?: string;
+    sponsors: Sponsor[];
+};
 
-function clickify(sponsor) {
-    if (sponsor.url) {
-        sponsor.onclick = `window.onSponsorClick(${JSON.stringify(sponsor)});`;
-    }
-    return sponsor;
-}
-
-function getIconUrl(sponsor) {
-    const icon = sponsor.icon || sponsor.img;
-    if (icon) {
-        sponsor.icon = icon;
-    }
-    return sponsor;
-}
-
-function compareSponsors(lhs, rhs) {
-    const lhsPrio = lhs.priority || 0;
-    const rhsPrio = rhs.priority || 0;
-    if (lhsPrio !== rhsPrio) return rhsPrio - lhsPrio;
-    return lhs.name.localeCompare(rhs.name);
-}
-
-export function loadSponsorsFromString(stringConfig) {
-    const sponsorConfig = yaml.parse(stringConfig);
-    sponsorConfig.icons = [];
-    for (const level of sponsorConfig.levels) {
-        for (const required of ['name', 'description'])
-            if (!level[required]) throw new Error(`Level is missing '${required}'`);
-        level.sponsors = level.sponsors.map(namify).map(clickify).map(getIconUrl).sort(compareSponsors);
-        sponsorConfig.icons.push(...level.sponsors.filter(sponsor => sponsor.topIcon && sponsor.icon));
-    }
-    return sponsorConfig;
-}
+export type Sponsors = {
+    icons: Sponsor[];
+    levels: Level[];
+};
