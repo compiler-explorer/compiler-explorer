@@ -46,6 +46,7 @@ export type CompilerInfo = {
     instructionSet: string;
     needsMulti: boolean;
     adarts: string;
+    supportsDeviceAsmView: boolean;
     supportsDemangle: boolean;
     supportsBinary: boolean;
     supportsIntel: boolean;

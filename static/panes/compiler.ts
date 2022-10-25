@@ -329,7 +329,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        this.deviceViewOpen = false;
+        this.deviceViewOpen = !!(this.compiler?.supportsDeviceAsmView && state.deviceViewOpen);
         this.options = state.options || (options.compileOptions as any)[this.currentLangId ?? ''];
         this.source = '';
         this.assembly = [];
@@ -1938,6 +1938,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.id === id) {
             this.deviceButton.prop('disabled', true);
             this.deviceViewOpen = true;
+            this.updateState();
             this.compile();
         }
     }
@@ -1946,6 +1947,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.id === id) {
             this.deviceButton.prop('disabled', false);
             this.deviceViewOpen = false;
+            this.updateState();
         }
     }
 
@@ -2834,6 +2836,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initToolButtons();
         this.updateButtons();
         this.updateCompilerInfo();
+        if (this.compiler?.supportsDeviceAsmView && !this.deviceViewOpen) {
+            this.deviceButton.trigger('click');
+        }
         // Resize in case the new compiler name is too big
         this.resize();
     }
@@ -2910,6 +2915,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
+            deviceViewOpen: !!(this.compiler?.supportsDeviceAsmView && this.deviceViewOpen),
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
@@ -3271,8 +3277,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         sourceColBegin,
                         sourceColEnd,
                         false,
-                        this.getPaneName()
-                        //editorId
+                        this.getPaneName(),
+                        editorId
                     );
                 }
             }

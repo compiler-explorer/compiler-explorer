@@ -554,7 +554,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             labelField: 'name',
             searchField: ['name'],
             placeholder: '🔍 Select a language...',
-            options: _.map(usableLanguages, _.identity),
+            options: _.map(usableLanguages, _.identity) as any[],
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
@@ -885,7 +885,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 selectedToken.colBegin,
                 selectedToken.colEnd,
                 reveal,
-                this.id + ''
+                this.getPaneName(),
+                this.id
             );
         }
     }
@@ -1572,13 +1573,25 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.setDecorationTags(collectedOutput.widgets, String(compilerId));
         this.setQuickFixes(collectedOutput.fixes);
 
+        let asm: ResultLine[] = [];
+
         // @ts-expect-error: result has no property 'result'
         if (result.result && result.result.asm) {
             // @ts-expect-error: result has no property 'result'
-            this.asmByCompiler[compilerId] = result.result.asm;
-        } else {
-            this.asmByCompiler[compilerId] = result.asm;
+            asm = result.result.asm;
+        } else if (result.asm) {
+            asm = result.asm;
         }
+
+        if (result.devices && Array.isArray(asm)) {
+            asm = asm.concat(
+                Object.values(result.devices).flatMap(device => {
+                    return device.asm ?? [];
+                })
+            );
+        }
+
+        this.asmByCompiler[compilerId] = asm;
 
         if (result.inputFilename) {
             this.defaultFileByCompiler[compilerId] = result.inputFilename;
