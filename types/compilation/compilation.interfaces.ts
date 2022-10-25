@@ -35,7 +35,7 @@ export type CompilationResult = {
     buildsteps?: BuildStep[];
     inputFilename?: string;
     asm?: ResultLine[];
-    devices?: {[key: string]: CompilationResult};
+    devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
