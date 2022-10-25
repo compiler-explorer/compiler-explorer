@@ -329,7 +329,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        this.deviceViewOpen = !!(state.deviceViewOpen);
+        this.deviceViewOpen = !!state.deviceViewOpen;
         this.options = state.options || (options.compileOptions as any)[this.currentLangId ?? ''];
         this.source = '';
         this.assembly = [];
@@ -1616,7 +1616,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.postCompilationResult(request, result);
         }
 
-        if (this.compiler?.supportsDeviceAsmView && !this.deviceViewOpen && result.devices && Object.keys(result.devices).length > 0) {
+        if (
+            this.compiler?.supportsDeviceAsmView &&
+            !this.deviceViewOpen &&
+            result.devices &&
+            Object.keys(result.devices).length > 0
+        ) {
             this.deviceButton.trigger('click');
         }
 
