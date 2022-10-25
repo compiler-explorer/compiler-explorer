@@ -471,6 +471,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    racket: {
+        name: 'Racket',
+        monaco: 'scheme',
+        extensions: ['.rkt'],
+        alias: [],
+        logoUrl: 'racket.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'scheme',
+    },
     ruby: {
         name: 'Ruby',
         monaco: 'ruby',

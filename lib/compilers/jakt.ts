@@ -27,7 +27,6 @@ import path from 'path';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {
@@ -37,9 +36,17 @@ export class JaktCompiler extends BaseCompiler {
     constructor(info, env) {
         super(info, env);
 
-        // TODO: The jakt compiler emits a file by the same name as the input,
-        // so this won't work if we have another input file that isn't called example.jakt
         this.outputFilebase = 'example';
+    }
+
+    override getCompilerResultLanguageId() {
+        return 'cppp';
+    }
+
+    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+        const objdumpResult = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+        objdumpResult.languageId = 'asm';
+        return objdumpResult;
     }
 
     override optionsForFilter(filters: ParseFilters, outputFilename: any) {
@@ -49,7 +56,7 @@ export class JaktCompiler extends BaseCompiler {
     override getObjdumpOutputFilename(defaultOutputFilename) {
         const parsed_path = path.parse(defaultOutputFilename);
 
-        return path.join(parsed_path.dir, parsed_path.name);
+        return path.join(parsed_path.dir, this.outputFilebase);
     }
 
     override getExecutableFilename(dirPath, outputFilebase, key?) {
@@ -67,17 +74,6 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, `${outputFilebase}.cpp`);
-    }
-
-    override async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
-        return exec.execute(filepath, args, execOptions).then(result => {
-            if (result.code !== 0) {
-                // We still want to display the transpiled C++, even if it can't execute.
-                // So fake a successful execute here.
-                result.code = 0;
-            }
-            return result;
-        });
+        return path.join(dirPath, 'Root Module.cpp');
     }
 }
