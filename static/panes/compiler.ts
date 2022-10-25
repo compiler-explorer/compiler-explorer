@@ -329,7 +329,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        this.deviceViewOpen = !!(this.compiler?.supportsDeviceAsmView && state.deviceViewOpen);
+        this.deviceViewOpen = !!state.deviceViewOpen;
         this.options = state.options || (options.compileOptions as any)[this.currentLangId ?? ''];
         this.source = '';
         this.assembly = [];
@@ -543,7 +543,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             return Components.getDeviceViewWith(
                 this.id,
                 this.source,
-                // FIXME: A (probable) typo makes this unused in the pane
                 this.lastResult?.devices,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
@@ -1615,6 +1614,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.postCompilationResult(request, result.result, wasCmake);
         } else {
             this.postCompilationResult(request, result);
+        }
+
+        if (
+            this.compiler?.supportsDeviceAsmView &&
+            !this.deviceViewOpen &&
+            result.devices &&
+            Object.keys(result.devices).length > 0
+        ) {
+            this.deviceButton.trigger('click');
         }
 
         if (this.compiler)
@@ -2836,9 +2844,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.initToolButtons();
         this.updateButtons();
         this.updateCompilerInfo();
-        if (this.compiler?.supportsDeviceAsmView && !this.deviceViewOpen) {
-            this.deviceButton.trigger('click');
-        }
         // Resize in case the new compiler name is too big
         this.resize();
     }
@@ -2915,7 +2920,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             lang: this.currentLangId ?? undefined,
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
-            deviceViewOpen: !!(this.compiler?.supportsDeviceAsmView && this.deviceViewOpen),
+            deviceViewOpen: this.deviceViewOpen,
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
