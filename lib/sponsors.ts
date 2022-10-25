@@ -50,7 +50,7 @@ function compareSponsors(lhs: Sponsor, rhs: Sponsor): number {
     return lhs.name.localeCompare(rhs.name);
 }
 
-export function loadSponsorsFromString(stringConfig): Sponsors {
+export function loadSponsorsFromString(stringConfig: string): Sponsors {
     const sponsorConfig = yaml.parse(stringConfig);
     sponsorConfig.icons = [];
     for (const level of sponsorConfig.levels) {
