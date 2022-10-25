@@ -88,8 +88,6 @@ export type CompilationResult = {
     hasHaskellCmmOutput?: boolean;
     haskellCmmOutput?: any;
 
-    devices?: unknown;
-
     forceBinaryView?: boolean;
 
     bbcdiskimage?: string;
