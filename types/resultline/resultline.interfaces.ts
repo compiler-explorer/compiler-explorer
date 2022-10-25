@@ -27,6 +27,7 @@ export type ResultLineTag = MessageWithLocation & {
 export type ResultLineSource = {
     file: string | null;
     line: number;
+    mainsource?: boolean;
 };
 
 export type ResultLine = {
