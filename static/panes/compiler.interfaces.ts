@@ -30,6 +30,7 @@ export type CompilerState = WidgetState & {
     compiler: string;
     options?: string;
     flagsViewOpen?: boolean;
+    deviceViewOpen?: boolean;
     wantOptInfo?: boolean;
     lang?: string;
 };

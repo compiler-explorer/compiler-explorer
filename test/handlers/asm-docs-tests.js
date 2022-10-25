@@ -68,7 +68,7 @@ export const TEST_MATRIX = {
             'iload_0',
             'Load int from local variable',
             'Load int from local variable',
-            'https://docs.oracle.com/javase/specs/jvms/se16/html/',
+            'https://docs.oracle.com/javase/specs/jvms/se18/html/',
         ],
     ],
     llvm: [
