@@ -124,10 +124,6 @@ export type BuildStep = BasicExecutionResult & {
     step: string;
 };
 
-export type BuildStep = BasicExecutionResult & {
-    step: string;
-};
-
 export type CompilationInfo = {
     mtime: Date | null;
     compiler: CompilerInfo & Record<string, unknown>;

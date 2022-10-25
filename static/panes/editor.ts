@@ -147,6 +147,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         //     this.debouncedEmitChange();
         // }, this));
     }
+
     override initializeDefaults(): void {
         this.ourCompilers = {};
         this.ourExecutors = {};
