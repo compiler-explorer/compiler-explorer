@@ -35,6 +35,7 @@ export type CompilationResult = {
     buildsteps?: BuildStep[];
     inputFilename?: string;
     asm?: ResultLine[];
+    devices?: {[key: string]: CompilationResult};
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
@@ -86,8 +87,6 @@ export type CompilationResult = {
 
     hasHaskellCmmOutput?: boolean;
     haskellCmmOutput?: any;
-
-    devices?: unknown;
 
     forceBinaryView?: boolean;
     bbcdiskimage?: string;

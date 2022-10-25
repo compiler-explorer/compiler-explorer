@@ -46,7 +46,7 @@ export class ZigCompiler extends BaseCompiler {
 
         this.self_hosted_cli =
             this.compiler.semver === 'trunk' ||
-            (this.compiler.semver && Semver.gt(asSafeVer(this.compiler.semver), '0.6.0', true));
+            !!(this.compiler.semver && Semver.gt(asSafeVer(this.compiler.semver), '0.6.0', true));
 
         if (this.self_hosted_cli) {
             this.compiler.irArg = ['-femit-llvm-ir'];
