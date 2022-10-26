@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {loadSponsorsFromString, parse} from '../lib/sponsors';
+
 import {should} from './utils';
 
 describe('Sponsors', () => {
