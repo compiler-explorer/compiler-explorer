@@ -76,24 +76,24 @@ textarea.form-control {
     max-width: 250px;
 
     span {
-      &.argtitle {
-        font-weight: bold;
-        display: block;
-        overflow-x: hidden;
-        text-overflow: ellipsis;
-      }
+        &.argtitle {
+            font-weight: bold;
+            display: block;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
 
-      &.argdescription {
-        max-height: 150px;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        font-style: italic;
-        font-size: smaller;
-        display: block;
-        white-space: normal;
-        text-overflow: ellipsis;
-        overflow-y: hidden;
-      }
+        &.argdescription {
+            max-height: 150px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-style: italic;
+            font-size: smaller;
+            display: block;
+            white-space: normal;
+            text-overflow: ellipsis;
+            overflow-y: hidden;
+        }
     }
 }
 
