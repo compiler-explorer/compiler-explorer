@@ -58,6 +58,10 @@ import {Compiler} from './compiler';
 const loadSave = new loadSaveLib.LoadSave();
 const languages = options.languages as Record<string, Language | undefined>;
 
+type ResultLineWithSourcePane = ResultLine & {
+    sourcePane: string;
+};
+
 // eslint-disable-next-line max-statements
 export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, EditorState> {
     private id: number;
@@ -554,7 +558,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             labelField: 'name',
             searchField: ['name'],
             placeholder: '🔍 Select a language...',
-            options: _.map(usableLanguages, _.identity),
+            options: _.map(usableLanguages, _.identity) as any[],
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
@@ -885,7 +889,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 selectedToken.colBegin,
                 selectedToken.colEnd,
                 reveal,
-                this.id + ''
+                this.getPaneName(),
+                this.id
             );
         }
     }
@@ -1263,12 +1268,9 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                             const defaultFile = this.defaultFileByCompiler[compilerId];
                             foundInTrees = true;
 
-                            // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                             if (asmLine.source && asmLine.source.line > 0) {
-                                // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                                 const sourcefilename = asmLine.source.file ? asmLine.source.file : defaultFile;
                                 if (this.id === tree.multifileService.getEditorIdByFilename(sourcefilename)) {
-                                    // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                                     result[asmLine.source.line - 1] = true;
                                 }
                             }
@@ -1278,14 +1280,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
                 if (!foundInTrees) {
                     if (
-                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                         asmLine.source &&
-                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                         (asmLine.source.file === null || asmLine.source.mainsource) &&
-                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                         asmLine.source.line > 0
                     ) {
-                        // @ts-expect-error: Property 'source' does not exist on type 'ResultLine'
                         result[asmLine.source.line - 1] = true;
                     }
                 }
@@ -1395,19 +1393,26 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.busyCompilers[compilerId] = true;
     }
 
-    addSource(arr: (ResultLine & {source?: string})[] | undefined, source: string): (ResultLine & {source: string})[] {
-        arr?.forEach(element => {
-            element.source = source;
-        });
+    addSource(arr: ResultLine[] | undefined, sourcePane: string): ResultLineWithSourcePane[] {
+        if (arr) {
+            const newArr: ResultLineWithSourcePane[] = arr.map(element => {
+                return {
+                    sourcePane: sourcePane,
+                    ...element,
+                };
+            });
 
-        return (arr as (ResultLine & {source: string})[] | undefined) ?? [];
+            return newArr;
+        } else {
+            return [];
+        }
     }
 
     getAllOutputAndErrors(
         result: CompilationResult,
         compilerName: string,
         compilerId: number | string
-    ): (ResultLine & {source: string})[] {
+    ): (ResultLine & {sourcePane: string})[] {
         const compilerTitle = compilerName + ' #' + compilerId;
         let all = this.addSource(result.stdout, compilerTitle);
 
@@ -1428,7 +1433,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return all;
     }
 
-    collectOutputWidgets(output: (ResultLine & {source: string})[]): {
+    collectOutputWidgets(output: (ResultLine & {sourcePane: string})[]): {
         fixes: monaco.languages.CodeAction[];
         widgets: editor.IMarkerData[];
     } {
@@ -1480,7 +1485,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 const diag: monaco.editor.IMarkerData = {
                     severity: obj.tag.severity,
                     message: obj.tag.text,
-                    source: obj.source,
+                    source: obj.sourcePane,
                     startLineNumber: lineBegin ?? 0,
                     startColumn: colBegin,
                     endLineNumber: lineEnd ?? 0,
@@ -1572,13 +1577,25 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.setDecorationTags(collectedOutput.widgets, String(compilerId));
         this.setQuickFixes(collectedOutput.fixes);
 
+        let asm: ResultLine[] = [];
+
         // @ts-expect-error: result has no property 'result'
         if (result.result && result.result.asm) {
             // @ts-expect-error: result has no property 'result'
-            this.asmByCompiler[compilerId] = result.result.asm;
-        } else {
-            this.asmByCompiler[compilerId] = result.asm;
+            asm = result.result.asm;
+        } else if (result.asm) {
+            asm = result.asm;
         }
+
+        if (result.devices && Array.isArray(asm)) {
+            asm = asm.concat(
+                Object.values(result.devices).flatMap(device => {
+                    return device.asm ?? [];
+                })
+            );
+        }
+
+        this.asmByCompiler[compilerId] = asm;
 
         if (result.inputFilename) {
             this.defaultFileByCompiler[compilerId] = result.inputFilename;

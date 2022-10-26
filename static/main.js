@@ -672,15 +672,15 @@ function start() {
         $('[name="editor-btn-toolbar"]').addClass('d-none');
     }
 
-    window.onSponsorClick = function (sponsor) {
+    window.onSponsorClick = function (sponsorUrl) {
         analytics.proxy('send', {
             hitType: 'event',
             eventCategory: 'Sponsors',
             eventAction: 'click',
-            eventLabel: sponsor.url,
+            eventLabel: sponsorUrl,
             transport: 'beacon',
         });
-        window.open(sponsor.url);
+        window.open(sponsorUrl);
     };
 
     if (options.pageloadUrl) {

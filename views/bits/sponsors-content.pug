@@ -31,7 +31,7 @@ block content
                       .ces-item-title
                         img.ces-logo-large(src=sponsor.img alt=sponsor.name)
                       .ces-item-description
-                        != sponsor.description
+                        != sponsor.description[Math.floor(Math.random() * sponsor.description.length)]
                   else
                     .ces-item-title
                       if sponsor.img
@@ -39,4 +39,4 @@ block content
                       = sponsor.name
                     if sponsor.description
                       .ces-item-description
-                        = sponsor.description
+                        = sponsor.description[Math.floor(Math.random() * sponsor.description.length)]

@@ -1310,7 +1310,7 @@ export class BaseCompiler {
         } catch (e) {
             // Ignore errors
         }
-        return this.postProcess(asmResult, outputFilename, filters);
+        return await this.postProcess(asmResult, outputFilename, filters);
     }
 
     runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
@@ -2272,7 +2272,7 @@ export class BaseCompiler {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this);
 
-        return demangler.process(result);
+        return await demangler.process(result);
     }
 
     async processOptOutput(optPath) {
@@ -2465,7 +2465,7 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                       if (postProcess.length > 0) {
-                          return this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       } else {
                           const contents = await fs.readFile(outputFilename);
                           result.asm = contents.toString();

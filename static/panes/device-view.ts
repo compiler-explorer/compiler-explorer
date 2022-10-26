@@ -32,23 +32,19 @@ import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
 import {Hub} from '../hub';
 import {MonacoPane} from './pane';
-import {DeviceAsmCode, DeviceAsmState} from './device-view.interfaces';
+import {DeviceAsmState} from './device-view.interfaces';
 import {MonacoPaneState} from './pane.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-
-type DeviceType = {
-    languageId: string;
-    asm: DeviceAsmCode[];
-};
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<'linkedCode', monaco.editor.IModelDeltaDecoration[]>;
     private prevDecorations: string[];
     private selectedDevice: string;
-    private devices: Record<string, DeviceType> | null;
+    private devices: Record<string, CompilationResult> | null;
     private colours: string[];
-    private deviceCode: DeviceAsmCode[];
+    private deviceCode: ResultLine[];
     private lastColours: Record<number, number>;
     private lastColourScheme: string;
     private selectize: TomSelect;
@@ -71,9 +67,14 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.lastColours = [];
         this.lastColourScheme = '';
 
-        // FIXME: State has deviceOutput, but no irOutput. Typo or broken?
-        if (state.irOutput) {
-            this.showDeviceAsmResults(state.irOutput);
+        if (state.devices) {
+            this.devices = state.devices;
+        }
+
+        if (state.deviceOutput) {
+            this.showDeviceAsmResults(state.deviceOutput);
+        } else if (state.devices) {
+            this.onDevices(state.devices);
         }
     }
 
@@ -157,11 +158,11 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.container.on('shown', this.resize, this);
     }
 
-    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
-        if (this.compilerInfo.compilerId !== id) return;
-        // @ts-expect-error: CompilationResult does not have the 'devices' type
-        this.devices = result.devices;
+    onDevices(devices: Record<string, CompilationResult>): void {
+        this.devices = devices;
+
         let deviceNames: string[] = [];
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!this.devices) {
             this.showDeviceAsmResults([{text: '<No output>'}]);
         } else {
@@ -176,11 +177,18 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
     }
 
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult): void {
+        if (this.compilerInfo.compilerId !== id) return;
+
+        // @ts-expect-error: CompilationResult does not have the 'devices' type
+        this.onDevices(result.devices);
+    }
+
     makeDeviceSelector(deviceNames: string[]): void {
         const selectize = this.selectize;
 
         for (const key in selectize.options) {
-            if (deviceNames.includes(selectize.options[key].name)) {
+            if (!deviceNames.includes(selectize.options[key].name)) {
                 selectize.removeOption(selectize.options[key].name);
             }
         }
@@ -205,12 +213,20 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         this.selectedDevice = this.selectize.getValue() as string;
         this.updateState();
         this.updateDeviceAsm();
+        this.onColours(this.compilerInfo.compilerId, this.lastColours, this.lastColourScheme);
     }
 
     updateDeviceAsm(): void {
         if (this.selectedDevice && this.devices != null && this.selectedDevice in this.devices) {
-            const languageId = this.devices[this.selectedDevice].languageId;
-            this.showDeviceAsmResults(this.devices[this.selectedDevice].asm, languageId);
+            const devOutput = this.devices[this.selectedDevice];
+            const languageId = devOutput.languageId;
+            if (devOutput.asm) {
+                this.showDeviceAsmResults(devOutput.asm, languageId);
+            } else {
+                this.showDeviceAsmResults(
+                    [{text: `<Device ${this.selectedDevice} has errors>`}].concat(devOutput.stderr)
+                );
+            }
         } else {
             this.showDeviceAsmResults([{text: `<Device ${this.selectedDevice} not found>`}]);
         }
@@ -220,7 +236,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         return 'Device Viewer';
     }
 
-    showDeviceAsmResults(deviceCode: DeviceAsmCode[], languageId?: string): void {
+    showDeviceAsmResults(deviceCode: ResultLine[], languageId?: string): void {
         this.deviceCode = deviceCode;
 
         if (!languageId) {
@@ -254,7 +270,6 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
             this.compilerInfo.editorId = editorId;
             this.compilerInfo.treeId = treeId;
             this.updateTitle();
-            // @ts-expect-error: CompilerInfo does not have the 'supportsDeviceAsmView' type
             if (compiler && !compiler.supportsDeviceAsmView) {
                 this.editor.setValue('<Device output is not supported for this compiler>');
             }
@@ -268,7 +283,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (id === this.compilerInfo.compilerId && this.deviceCode) {
             const irColours = {};
-            this.deviceCode.forEach((x: DeviceAsmCode, index: number) => {
+            this.deviceCode.forEach((x: ResultLine, index: number) => {
                 if (x.source && x.source.file == null && x.source.line > 0 && colours[x.source.line - 1]) {
                     irColours[index] = colours[x.source.line - 1];
                 }
@@ -331,10 +346,11 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         revealLine: boolean,
         sender: string
     ): void {
-        if (Number(compilerId) === this.compilerInfo.compilerId) {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {
             const lineNums: number[] = [];
-            this.deviceCode.forEach((irLine: DeviceAsmCode, i: number) => {
-                if (irLine.source && irLine.source.file == null && irLine.source.line === lineNumber) {
+            this.deviceCode.forEach((line: ResultLine, i: number) => {
+                if (line.source && line.source.file == null && line.source.line === lineNumber) {
                     const line = i + 1;
                     lineNums.push(line);
                 }

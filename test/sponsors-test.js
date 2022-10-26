@@ -22,9 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {loadSponsorsFromString} from '../lib/sponsors';
+import {loadSponsorsFromString, parse} from '../lib/sponsors';
+
+import {should} from './utils';
 
 describe('Sponsors', () => {
+    it('should expand names to objects', () => {
+        parse('moo').name.should.eq('moo');
+    });
+    it('should handle just names', () => {
+        parse({name: 'moo'}).name.should.eq('moo');
+    });
+    it('should default empty params', () => {
+        const obj = parse('moo');
+        should.equal(obj.description, undefined);
+        should.equal(obj.url, undefined);
+        obj.onclick.should.eq('');
+        should.equal(obj.img, undefined);
+        should.equal(obj.icon, undefined);
+        should.equal(obj.icon_dark, undefined);
+        obj.topIcon.should.be.false;
+        obj.sideBySide.should.be.false;
+        should.equal(obj.statsId, undefined);
+    });
+    it('should make descriptions always one-sized arrays', () => {
+        parse({name: 'moo', description: 'desc'}).description.should.deep.eq(['desc']);
+    });
+    it('should pass through descriptions', () => {
+        parse({name: 'moo', description: ['desc1', 'desc2']}).description.should.deep.eq(['desc1', 'desc2']);
+    });
+    it('should pass through icons', () => {
+        parse({name: 'bob', icon: 'icon'}).icon.should.eq('icon');
+    });
+    it('should pick icons over images', () => {
+        parse({name: 'bob', img: 'img', icon: 'icon'}).icon.should.eq('icon');
+    });
+    it('should pick icons if not img', () => {
+        parse({name: 'bob', img: 'img'}).icon.should.eq('img');
+    });
+    it('should pick dark icons if specified', () => {
+        parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark.should.eq('icon_dark');
+    });
+    it('should handle topIcons', () => {
+        parse({name: 'bob', topIcon: true}).topIcon.should.be.true;
+    });
+    it('should handle clicks', () => {
+        parse({
+            name: 'bob',
+            url: 'https://some.host/click',
+        }).onclick.should.eq('window.onSponsorClick("https://some.host/click");');
+    });
+
     it('should load a simple example', () => {
         const sample = loadSponsorsFromString(`
 ---
@@ -49,19 +97,6 @@ levels:
         sample.levels[1].name.should.eq('Patreons');
     });
 
-    it('should expand names to objects', () => {
-        const folks = loadSponsorsFromString(`
----
-levels:
-  - name: a
-    description: d
-    sponsors:
-    - Just a string
-    - name: An object
-        `).levels[0].sponsors;
-        folks.should.deep.equalInAnyOrder([{name: 'An object'}, {name: 'Just a string'}]);
-    });
-
     it('should sort sponsors by name', () => {
         const peeps = loadSponsorsFromString(`
 ---
@@ -74,7 +109,7 @@ levels:
     - A
     - B
         `).levels[0].sponsors;
-        peeps.should.deep.equals([{name: 'A'}, {name: 'B'}, {name: 'C'}, {name: 'D'}]);
+        peeps.map(sponsor => sponsor.name).should.deep.equals(['A', 'B', 'C', 'D']);
     });
     it('should sort sponsors by priority then name', () => {
         const peeps = loadSponsorsFromString(`
@@ -90,44 +125,15 @@ levels:
     - name: B
       priority: 50
         `).levels[0].sponsors;
-        peeps.should.deep.equals([
-            {name: 'D', priority: 100},
-            {name: 'B', priority: 50},
-            {name: 'C', priority: 50},
-        ]);
-    });
-    it('should pick icon over img', () => {
-        const things = loadSponsorsFromString(`
----
-levels:
-  - name: a
-    description: d
-    sponsors:
-    - name: one
-      img: image
-    - name: two
-      img: not_an_icon
-      icon: icon
-        `).levels[0].sponsors;
-        things.should.deep.equalInAnyOrder([
-            {name: 'one', icon: 'image', img: 'image'},
-            {name: 'two', icon: 'icon', img: 'not_an_icon'},
-        ]);
-    });
-
-    it('should pick up dark icon if set', () => {
-        const things = loadSponsorsFromString(`
----
-levels:
-  - name: a
-    description: d
-    sponsors:
-    - name: batman
-      img: not_an_icon
-      icon: icon
-      icon_dark: dark
-        `).levels[0].sponsors;
-        things.should.deep.equalInAnyOrder([{name: 'batman', icon: 'icon', icon_dark: 'dark', img: 'not_an_icon'}]);
+        peeps
+            .map(sponsor => {
+                return {name: sponsor.name, priority: sponsor.priority};
+            })
+            .should.deep.equals([
+                {name: 'D', priority: 100},
+                {name: 'B', priority: 50},
+                {name: 'C', priority: 50},
+            ]);
     });
 
     it('should pick out the top level icons', () => {
@@ -154,9 +160,6 @@ levels:
     - name: five
       topIcon: true
         `).icons;
-        icons.should.deep.equalInAnyOrder([
-            {name: 'one', icon: 'pick_me', img: 'pick_me', topIcon: true},
-            {name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true},
-        ]);
+        icons.map(s => s.name).should.deep.equals(['one', 'four']);
     });
 });
