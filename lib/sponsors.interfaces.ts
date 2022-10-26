@@ -24,7 +24,7 @@
 
 export type Sponsor = {
     name: string;
-    description?: string;
+    description?: string[];
     img?: string;
     icon?: string;
     icon_dark?: string;

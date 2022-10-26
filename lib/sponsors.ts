@@ -30,7 +30,7 @@ export function parse(mapOrString: Record<string, any> | string): Sponsor {
     if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};
     return {
         name: mapOrString.name,
-        description: mapOrString.description,
+        description: typeof mapOrString.description === 'string' ? [mapOrString.description] : mapOrString.description,
         url: mapOrString.url,
         onclick: mapOrString.url ? `window.onSponsorClick(${JSON.stringify(mapOrString.url)});` : '',
         img: mapOrString.img,

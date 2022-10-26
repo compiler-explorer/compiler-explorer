@@ -45,8 +45,11 @@ describe('Sponsors', () => {
         obj.sideBySide.should.be.false;
         should.equal(obj.statsId, undefined);
     });
+    it('should make descriptions always one-sized arrays', () => {
+        parse({name: 'moo', description: 'desc'}).description.should.deep.eq(['desc']);
+    });
     it('should pass through descriptions', () => {
-        parse({name: 'moo', description: 'desc'}).description.should.eq('desc');
+        parse({name: 'moo', description: ['desc1', 'desc2']}).description.should.deep.eq(['desc1', 'desc2']);
     });
     it('should pass through icons', () => {
         parse({name: 'bob', icon: 'icon'}).icon.should.eq('icon');
