@@ -195,7 +195,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private compilerService: CompilerService;
     private readonly id: number;
     private sourceTreeId: number | null;
-    private readonly sourceEditorId: number | null;
+    private sourceEditorId: number | null;
     private originalCompilerId: string;
     private readonly infoByLang: Record<string, {compiler: string; options: string}>;
     private deferCompiles: boolean;
@@ -314,23 +314,15 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     // eslint-disable-next-line max-statements
     constructor(hub: Hub, container: Container, state: MonacoPaneState & CompilerState) {
         super(hub, container, state);
-        this.compilerService = hub.compilerService;
-        this.id = state.id || hub.nextCompilerId();
-        this.sourceTreeId = state.tree ? state.tree : null;
-        if (this.sourceTreeId) {
-            this.sourceEditorId = null;
-        } else {
-            this.sourceEditorId = state.source || 1;
-        }
 
+        this.id = state.id || hub.nextCompilerId();
         this.settings = Settings.getStoredSettings();
-        this.originalCompilerId = state.compiler;
-        this.initLangAndCompiler(state);
+
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        this.deviceViewOpen = !!state.deviceViewOpen;
-        this.options = state.options || (options.compileOptions as any)[this.currentLangId ?? ''];
+        this.initLangAndCompiler(state);
+
         this.source = '';
         this.assembly = [];
         this.colours = [];
@@ -342,9 +334,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.nextRequest = null;
         this.nextCMakeRequest = null;
         this.optViewOpen = false;
-        this.flagsViewOpen = state.flagsViewOpen || false;
+
         this.cfgViewOpen = false;
-        this.wantOptInfo = state.wantOptInfo;
+
         this.decorations = {
             labelUsages: [],
         };
@@ -354,7 +346,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.alertSystem.prefixMessage = 'Compiler #' + this.id;
 
         this.awaitingInitialResults = false;
-        this.selection = state.selection;
+
 
         this.linkedFadeTimeoutId = null;
         this.toolsMenu = null;
@@ -371,9 +363,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compiler?.id ?? '',
             this.onCompilerChange.bind(this)
         );
-
         this.initLibraries(state);
-
         // MonacoPane's registerCallbacks is not called late enough either
         this.initCallbacks();
         // Handle initial settings
@@ -386,6 +376,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (this.sourceTreeId) {
             this.compile();
         }
+    }
+
+    override initializeStateDependentProperties(state: MonacoPaneState & CompilerState) {
+        this.compilerService = this.hub.compilerService;
+        this.sourceTreeId = state.tree ? state.tree : null;
+        if (this.sourceTreeId) {
+            this.sourceEditorId = null;
+        } else {
+            this.sourceEditorId = state.source || 1;
+        }
+        this.options = state.options || (options.compileOptions[this.currentLangId ?? ''] ?? '');
+
+        this.deviceViewOpen = !!state.deviceViewOpen;
+        this.flagsViewOpen = state.flagsViewOpen || false;
+        this.wantOptInfo = state.wantOptInfo;
+        this.originalCompilerId = state.compiler;
+        this.selection = state.selection;
     }
 
     override getInitialHTML() {
@@ -679,9 +686,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             newPaneDropdown.dropdown('toggle');
         };
 
-        // Note that the .d.ts file lies. createDragSource returns the newly created DragSource
+        // Note that the .d.ts file lies in more than 1 way!
+        // createDragSource returns the newly created DragSource
+        // the second parameter can be a function that returns the config!
         this.container.layoutManager
-            .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent())
+            .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
@@ -3197,8 +3206,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     override onSettingsChange(newSettings: SiteSettings): void {
         const before = this.settings;
-        this.settings = _.clone(newSettings);
-        if (!(before as any).lastHoverShowSource && this.settings.hoverShowSource) {
+        this.settings = {...newSettings};
+        if (!before.hoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
         this.editor.updateOptions({

@@ -21,7 +21,9 @@ levels:
         sideBySide: true
         statsId: intel
       - name: Backtrace
-        description: Deliver uninterrupted experiences by automating your response to player-impacting errors. Get started for free.
+        description:
+          - Deliver uninterrupted experiences by automating your response to player-impacting errors. Get started for free.
+          - Capture, prioritize, and resolve errors and crashes automatically for uninterrupted user experiences. Get started for free.
         icon: https://static.ce-cdn.net/bt/Black-BT-Logo-A.svg
         icon_dark: https://static.ce-cdn.net/bt/White-BT-Logo-A.svg
         img: https://static.ce-cdn.net/bt/BT-logo (1).png
@@ -68,6 +70,8 @@ levels:
       - name: Molecular Matters GmbH
         url: https://liveplusplus.tech/
       - Rui Ueyama
+      - name: Rohan Verma
+        url: https://twitter.com/rohan_devarc
   - name: Patreons
     description: 'Thanks to all my patrons:'
     sponsors:
@@ -408,3 +412,5 @@ levels:
       - Vezel
       - lcnr
       - Abhishek Bhrushundi
+      - Jacob Van Buren
+      - Martin Ertsås
