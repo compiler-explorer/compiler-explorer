@@ -3174,8 +3174,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     override onSettingsChange(newSettings: SiteSettings): void {
         const before = this.settings;
-        this.settings = _.clone(newSettings);
-        if (!(before as any).lastHoverShowSource && this.settings.hoverShowSource) {
+        this.settings = {...newSettings};
+        if (!before.hoverShowSource && this.settings.hoverShowSource) {
             this.onCompilerSetDecorations(this.id, []);
         }
         this.editor.updateOptions({
