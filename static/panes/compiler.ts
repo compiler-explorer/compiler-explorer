@@ -347,7 +347,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.awaitingInitialResults = false;
 
-
         this.linkedFadeTimeoutId = null;
         this.toolsMenu = null;
 
