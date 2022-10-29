@@ -295,7 +295,8 @@ export class Conformance extends Pane<ConformanceViewState> {
             );
         };
 
-        this.container.layoutManager.createDragSource(popCompilerButton, getCompilerConfig());
+        // The .d.ts for GL lies. You can pass a function that returns the config as a second parameter
+        this.container.layoutManager.createDragSource(popCompilerButton, getCompilerConfig as any);
 
         popCompilerButton.on('click', () => {
             const insertPoint =

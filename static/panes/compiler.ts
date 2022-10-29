@@ -679,9 +679,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             newPaneDropdown.dropdown('toggle');
         };
 
-        // Note that the .d.ts file lies. createDragSource returns the newly created DragSource
+        // Note that the .d.ts file lies in more than 1 way!
+        // createDragSource returns the newly created DragSource
+        // the second parameter can be a function that returns the config!
         this.container.layoutManager
-            .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent())
+            .createDragSource(this.domRoot.find('.btn.add-compiler'), cloneComponent as any)
             // @ts-ignore
             ._dragListener.on('dragStart', togglePannerAdder);
 
