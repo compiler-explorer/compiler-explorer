@@ -1,4 +1,4 @@
-each icon in sponsors.icons
+each icon in sponsors.pickTopIcons()
   if !icon.icon_dark || icon.icon === icon.icon_dark
     img.ces-icon(src=icon.icon alt=icon.name data-statsid=icon.statsId)
   else

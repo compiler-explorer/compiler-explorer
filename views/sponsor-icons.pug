@@ -1,6 +1,6 @@
 .ces-icons
   if noscript
-    each icon in sponsors.icons
+    each icon in sponsors.pickTopIcons(3)
         a(href=icon.url)
           img.ces-icon(src=icon.icon alt=icon.name data-statsid=icon.statsId)
         span &nbsp;

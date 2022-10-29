@@ -92,9 +92,10 @@ levels:
       - Yay
 `);
         sample.should.not.be.null;
-        sample.levels.length.should.eq(2);
-        sample.levels[0].name.should.eq('Patreon Legends');
-        sample.levels[1].name.should.eq('Patreons');
+        const levels = sample.getLevels();
+        levels.length.should.eq(2);
+        levels[0].name.should.eq('Patreon Legends');
+        levels[1].name.should.eq('Patreons');
     });
 
     it('should sort sponsors by name', () => {
@@ -108,7 +109,7 @@ levels:
     - C
     - A
     - B
-        `).levels[0].sponsors;
+        `).getLevels()[0].sponsors;
         peeps.map(sponsor => sponsor.name).should.deep.equals(['A', 'B', 'C', 'D']);
     });
     it('should sort sponsors by priority then name', () => {
@@ -124,7 +125,7 @@ levels:
       priority: 50
     - name: B
       priority: 50
-        `).levels[0].sponsors;
+        `).getLevels()[0].sponsors;
         peeps
             .map(sponsor => {
                 return {name: sponsor.name, priority: sponsor.priority};
@@ -136,7 +137,7 @@ levels:
             ]);
     });
 
-    it('should pick out the top level icons', () => {
+    it('should pick out all the top level icons', () => {
         const icons = loadSponsorsFromString(`
 ---
 levels:
@@ -159,7 +160,7 @@ levels:
       topIcon: true
     - name: five
       topIcon: true
-        `).icons;
+        `).getAllTopIcons();
         icons.map(s => s.name).should.deep.equals(['one', 'four']);
     });
 });

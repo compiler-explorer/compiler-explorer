@@ -24,7 +24,7 @@
 
 import yaml from 'yaml';
 
-import {Sponsor, Sponsors} from './sponsors.interfaces';
+import {Level, Sponsor, Sponsors} from './sponsors.interfaces';
 
 export function parse(mapOrString: Record<string, any> | string): Sponsor {
     if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};
@@ -50,14 +50,37 @@ function compareSponsors(lhs: Sponsor, rhs: Sponsor): number {
     return lhs.name.localeCompare(rhs.name);
 }
 
+export class SponsorsImpl implements Sponsors {
+    private readonly _levels: Level[];
+    private readonly _icons: Sponsor[];
+
+    constructor(levels: Level[]) {
+        this._levels = levels;
+        this._icons = [];
+        for (const level of levels) {
+            this._icons.push(...level.sponsors.filter(sponsor => sponsor.topIcon && sponsor.icon));
+        }
+    }
+
+    getLevels(): Level[] {
+        return this._levels;
+    }
+
+    getAllTopIcons(): Sponsor[] {
+        return this._icons;
+    }
+
+    pickTopIcons(maxIcons: number): Sponsor[] {
+        return this._icons.slice(0, maxIcons);
+    }
+}
+
 export function loadSponsorsFromString(stringConfig: string): Sponsors {
     const sponsorConfig = yaml.parse(stringConfig);
-    sponsorConfig.icons = [];
     for (const level of sponsorConfig.levels) {
         for (const required of ['name', 'description', 'sponsors'])
             if (!level[required]) throw new Error(`Level is missing '${required}'`);
         level.sponsors = level.sponsors.map(parse).sort(compareSponsors);
-        sponsorConfig.icons.push(...level.sponsors.filter(sponsor => sponsor.topIcon && sponsor.icon));
     }
-    return sponsorConfig;
+    return new SponsorsImpl(sponsorConfig.levels);
 }
