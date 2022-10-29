@@ -347,7 +347,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.awaitingInitialResults = false;
 
-
         this.linkedFadeTimeoutId = null;
         this.toolsMenu = null;
 
@@ -1672,12 +1671,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         this.checkForHints(result);
 
+        this.offerEmulationIfPossible(result);
+    }
+
+    offerEmulationIfPossible(result: CompilationResult) {
         if (result.bbcdiskimage) {
             this.emulateBbcDisk(result.bbcdiskimage);
         } else if (result.speccytape) {
             this.emulateSpeccyTape(result.speccytape);
         } else if (result.miraclesms) {
             this.emulateMiracleSMS(result.miraclesms);
+        } else if (result.jsnesrom) {
+            this.emulateNESROM(result.jsnesrom);
         }
     }
 
@@ -1693,7 +1698,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 collapseSimilar: true,
                 dismissTime: 10000,
                 onBeforeShow: function (elem) {
-                    elem.find('#miracle_emulink').on('click', function () {
+                    elem.find('#miracle_emulink').on('click', () => {
                         dialog.modal();
 
                         const miracleMenuFrame = dialog.find('#miracleemuframe')[0];
@@ -1746,7 +1751,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 collapseSimilar: true,
                 dismissTime: 10000,
                 onBeforeShow: elem => {
-                    elem.find('#emulink').on('click', function () {
+                    elem.find('#emulink').on('click', () => {
                         dialog.modal();
 
                         const jsbeebemuframe = dialog.find('#jsbeebemuframe')[0];
@@ -1755,6 +1760,32 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                             const tmstr = Date.now();
                             emuwindow.location =
                                 'https://bbc.godbolt.org/?' + tmstr + '#embed&autoboot&disc1=b64data:' + bbcdiskimage;
+                        }
+                    });
+                },
+            }
+        );
+    }
+
+    emulateNESROM(nesrom: string): void {
+        const dialog = $('#jsnesemu');
+
+        this.alertSystem.notify(
+            'Click <a target="_blank" id="emulink" style="cursor:pointer;" click="javascript:;">here</a> to emulate',
+            {
+                group: 'emulation',
+                collapseSimilar: true,
+                dismissTime: 10000,
+                onBeforeShow: function (elem) {
+                    elem.find('#emulink').on('click', () => {
+                        dialog.modal();
+
+                        const jsnesemuframe = dialog.find('#jsnesemuframe')[0];
+                        if ('contentWindow' in jsnesemuframe) {
+                            const emuwindow = (jsnesemuframe as any).contentWindow;
+                            const tmstr = Date.now();
+                            emuwindow.location =
+                                'https://static.ce-cdn.net/jsnes-ceweb/index.html?' + tmstr + '#b64nes=' + nesrom;
                         }
                     });
                 },

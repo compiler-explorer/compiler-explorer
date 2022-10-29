@@ -89,7 +89,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     assembly: {
         name: 'Assembly',
         monaco: 'asm',
-        extensions: ['.asm', '.6502'],
+        extensions: ['.asm', '.6502', '.s'],
         alias: ['asm'],
         logoUrl: 'assembly.png', // TODO: Find a better alternative
         logoUrlDark: null,
