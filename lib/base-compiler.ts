@@ -401,9 +401,7 @@ export class BaseCompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = ['-d', outputFilename, '-l', ...objdumper.widthOptions];
-        if (demangle) args.push('-C');
-        if (intelAsm) args.push(...objdumper.intelAsmOptions);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);

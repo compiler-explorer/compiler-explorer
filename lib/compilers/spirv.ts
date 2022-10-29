@@ -42,7 +42,7 @@ export class SPIRVCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.asm = new SPIRVAsmParser();
+        this.asm = new SPIRVAsmParser(this.compilerProps);
 
         this.translatorPath = this.compilerProps('translatorPath');
         this.disassemblerPath = this.compilerProps('disassemblerPath');

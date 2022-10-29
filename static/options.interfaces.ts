@@ -59,5 +59,5 @@ export type Options = {
     sentryDsn?: string;
     release?: string;
     sentryEnvironment?: string;
-    compileOptions: Record<LanguageKey, string>
+    compileOptions: Record<LanguageKey, string>;
 };

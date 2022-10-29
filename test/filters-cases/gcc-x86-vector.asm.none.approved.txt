@@ -24150,7 +24150,15 @@
       "text": ".LASF192:"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": "clear",
+          "range": {
+            "endCol": 23,
+            "startCol": 18
+          }
+        }
+      ],
       "source": null,
       "text": "        .string \"clear\""
     },
