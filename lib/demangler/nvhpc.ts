@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {CppDemangler} from './cpp';
-export {DefaultDemangler} from './default';
-export {PascalDemangler} from './pascal';
-export {Win32Demangler} from './win32';
-export {NVHPCDemangler} from './nvhpc';
+import {BaseDemangler} from './base';
+import {LLVMIRDemangler} from './llvm';
+
+export class NVHPCDemangler extends BaseDemangler {
+    llvmDemangler: LLVMIRDemangler;
+
+    static get key() {
+        return 'nvhpc';
+    }
+
+    constructor(demanglerExe, compiler) {
+        super(demanglerExe, compiler);
+        this.llvmDemangler = new LLVMIRDemangler(demanglerExe, compiler);
+    }
+
+    override collectLabels() {
+        this.llvmDemangler.collect(this.result as any);
+        this.symbolstore = this.llvmDemangler.symbolstore;
+    }
+}
