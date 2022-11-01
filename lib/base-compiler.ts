@@ -294,7 +294,7 @@ export class BaseCompiler {
 
     async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
         // Here only so can be overridden by compiler implementations.
-        return exec.execute(filepath, args, execOptions);
+        return await exec.execute(filepath, args, execOptions);
     }
 
     protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
@@ -314,7 +314,7 @@ export class BaseCompiler {
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key);
         if (!result) {
-            result = await this.env.enqueue(async () => exec.execute(compiler, args, options));
+            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
                 this.env
                     .compilerCachePut(key, result)
