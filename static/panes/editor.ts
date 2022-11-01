@@ -1207,12 +1207,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override onSettingsChange(newSettings: SiteSettings | Record<string, never>): void {
         const before = this.settings;
         const after = newSettings;
-        this.settings = _.clone(newSettings);
+        this.settings = {...newSettings};
 
         this.editor.updateOptions({
             autoIndent: this.settings.autoIndent ? 'advanced' : 'none',
-            // @ts-expect-error: boolean is not assignable to editor.EditorAutoClosingStrategy
-            autoClosingBrackets: this.settings.autoCloseBrackets,
+            autoClosingBrackets: this.settings.autoCloseBrackets ? 'always' : 'never',
+            // @ts-ignore useVim is added by the vim plugin, not present in base editor options
             useVim: this.settings.useVim,
             quickSuggestions: this.settings.showQuickSuggestions,
             contextmenu: this.settings.useCustomContextMenu,
