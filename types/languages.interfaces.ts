@@ -53,6 +53,7 @@ export type LanguageKey =
     | 'ispc'
     | 'jakt'
     | 'java'
+    | 'julia'
     | 'kotlin'
     | 'llvm'
     | 'mlir'
