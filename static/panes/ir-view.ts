@@ -38,7 +38,7 @@ import {applyColours} from '../colour';
 import {Hub} from '../hub';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
-    linkedFadeTimeoutId = -1;
+    linkedFadeTimeoutId: NodeJS.Timeout | null = null;
     irCode: any[] = [];
     colours: any[] = [];
     decorations: any = {};
@@ -269,14 +269,16 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         );
         this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
 
-        if (this.linkedFadeTimeoutId !== -1) {
-            clearTimeout(this.linkedFadeTimeoutId);
+        if (!this.settings.indefiniteLineHighlight) {
+            if (this.linkedFadeTimeoutId !== null) {
+                clearTimeout(this.linkedFadeTimeoutId);
+            }
+
+            this.linkedFadeTimeoutId = setTimeout(() => {
+                this.clearLinkedLines();
+                this.linkedFadeTimeoutId = null;
+            }, 5000);
         }
-        // @ts-expect-error mismatched type on setTimeout, assumes NodeJS.Timeout
-        this.linkedFadeTimeoutId = setTimeout(() => {
-            this.clearLinkedLines();
-            this.linkedFadeTimeoutId = -1;
-        }, 5000);
         this.updateDecorations();
     }
 
