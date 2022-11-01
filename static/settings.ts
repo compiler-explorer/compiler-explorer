@@ -57,6 +57,7 @@ export interface SiteSettings {
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
     hoverShowSource: boolean;
+    indefiniteLineHighlight: boolean;
     keepMultipleTabs: boolean;
     keepSourcesOnLangChange: boolean;
     newEditorLastLang: boolean;
@@ -266,6 +267,7 @@ export class Settings {
             ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
+            ['.indefiniteLineHighlight', 'indefiniteLineHighlight', false],
             ['.keepMultipleTabs', 'keepMultipleTabs', false],
             ['.keepSourcesOnLangChange', 'keepSourcesOnLangChange', false],
             ['.newEditorLastLang', 'newEditorLastLang', true],
