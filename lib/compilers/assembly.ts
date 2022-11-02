@@ -25,9 +25,13 @@
 import fs from 'fs';
 import path from 'path';
 
+import _ from 'underscore';
+
+import {BuildResult} from '../../types/compilation/compilation.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmRaw} from '../parsers/asm-raw';
-import * as utils from '../utils';
+import {fileExists} from '../utils';
 
 import {BaseParser} from './argument-parsers';
 
@@ -41,15 +45,15 @@ export class AssemblyCompiler extends BaseCompiler {
         this.asm = new AsmRaw();
     }
 
-    getSharedLibraryPathsAsArguments() {
+    override getSharedLibraryPathsAsArguments() {
         return [];
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return BaseParser;
     }
 
-    optionsForFilter(filters) {
+    override optionsForFilter(filters) {
         filters.binary = true;
         return [];
     }
@@ -68,12 +72,12 @@ export class AssemblyCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath) {
         return this.getGeneratedOutputFilename(path.join(dirPath, 'example.asm'));
     }
 
     async runReadelf(fullResult, objectFilename) {
-        let execOptions = this.getDefaultExecOptions();
+        const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = path.dirname(objectFilename);
         return await this.doBuildstepAndAddToResult(
             fullResult,
@@ -100,7 +104,7 @@ export class AssemblyCompiler extends BaseCompiler {
     }
 
     async runLinker(fullResult, inputArch, objectFilename, outputFilename) {
-        let execOptions = this.getDefaultExecOptions();
+        const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = path.dirname(objectFilename);
 
         const options = ['-o', outputFilename];
@@ -122,41 +126,63 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.doBuildstepAndAddToResult(fullResult, 'ld', this.env.ceProps('ld'), options, execOptions);
     }
 
-    getExecutableFilename(dirPath) {
+    override getExecutableFilename(dirPath) {
         return path.join(dirPath, 'ce-asm-executable');
     }
 
-    async buildExecutable(compiler, options, inputFilename, execOptions) {
-        const fullResult = {
-            code: -1,
-            executableFilename: '',
+    override async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
+        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
+
+        const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
+        const inputFilename = writeSummary.inputFilename;
+
+        const outputFilename = this.getExecutableFilename(dirPath);
+
+        const buildFilters: ParseFilters = Object.assign({}, key.filters);
+        buildFilters.binary = true;
+        buildFilters.execute = false;
+
+        const compilerArguments = _.compact(
+            this.prepareArguments(
+                key.options,
+                buildFilters,
+                key.backendOptions,
+                inputFilename,
+                outputFilename,
+                key.libraries,
+            ),
+        );
+
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
+
+        const downloads = await buildEnvironment;
+        const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
+
+        const fullResult: BuildResult = {
+            ...result,
             buildsteps: [],
+            downloads,
+            executableFilename: outputFilename,
+            compilationOptions: compilerArguments,
         };
 
-        const compilationResult = await this.runCompiler(compiler, options, inputFilename, execOptions);
-        compilationResult.step = 'Assembling';
-        fullResult.buildsteps.push(compilationResult);
-
-        const dirPath = path.dirname(inputFilename);
-        fullResult.executableFilename = this.getExecutableFilename(dirPath);
         const objectFilename = this.getOutputFilename(dirPath);
+        if (objectFilename !== inputFilename && (await fileExists(objectFilename))) {
+            const inputArch = await this.getArchitecture(fullResult, objectFilename);
+            const ldResult = await this.runLinker(fullResult, inputArch, objectFilename, outputFilename);
 
-        const inputArch = await this.getArchitecture(fullResult, objectFilename);
-        const ldResult = await this.runLinker(fullResult, inputArch, objectFilename, fullResult.executableFilename);
-
-        fullResult.code = ldResult.code;
-        if (ldResult.stderr.length > 0) {
-            fullResult.stderr = ldResult.stderr;
+            fullResult.stderr = fullResult.stderr.concat(ldResult.stderr);
         }
 
         return fullResult;
     }
 
-    checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters) {
+    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters) {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename) {
         return this.getGeneratedOutputFilename(defaultOutputFilename);
     }
 }
