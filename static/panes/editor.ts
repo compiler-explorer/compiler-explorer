@@ -1715,15 +1715,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     },
                 });
             }
+            if (!this.settings.indefiniteLineHighlight) {
+                if (this.fadeTimeoutId !== null) {
+                    clearTimeout(this.fadeTimeoutId);
+                }
+                this.fadeTimeoutId = setTimeout(() => {
+                    this.clearLinkedLine();
+                    this.fadeTimeoutId = null;
+                }, 5000);
 
-            if (this.fadeTimeoutId !== null) {
-                clearTimeout(this.fadeTimeoutId);
             }
-            this.fadeTimeoutId = setTimeout(() => {
-                this.clearLinkedLine();
-                this.fadeTimeoutId = null;
-            }, 5000);
-
             this.updateDecorations();
         }
     }
