@@ -27,11 +27,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {BuildResult} from '../../types/compilation/compilation.interfaces';
+import {BuildResult, BuildStep} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmRaw} from '../parsers/asm-raw';
-import {fileExists} from '../utils';
+import {fileExists, splitArguments} from '../utils';
 
 import {BaseParser} from './argument-parsers';
 
@@ -53,7 +53,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(filters): string[] {
         filters.binary = true;
         return [];
     }
@@ -88,7 +88,7 @@ export class AssemblyCompiler extends BaseCompiler {
         );
     }
 
-    async getArchitecture(fullResult, objectFilename) {
+    async getArchitecture(fullResult, objectFilename): Promise<string | false> {
         const result = await this.runReadelf(fullResult, objectFilename);
         const output = result.stdout.map(line => line.text).join('\n');
         if (output.includes('ELF32') && output.includes('80386')) {
@@ -103,31 +103,70 @@ export class AssemblyCompiler extends BaseCompiler {
         return false;
     }
 
-    async runLinker(fullResult, inputArch, objectFilename, outputFilename) {
+    async runLinker(
+        fullResult: BuildResult,
+        inputArch: string | false,
+        objectFilename: string,
+        outputFilename: string,
+        extraOptions: string[],
+    ) {
         const execOptions = this.getDefaultExecOptions();
         execOptions.customCwd = path.dirname(objectFilename);
 
-        const options = ['-o', outputFilename];
+        let options = ['-o', outputFilename];
         if (inputArch === 'x86') {
             options.push('-m', 'elf_i386');
         } else if (inputArch === 'x86_64') {
             // default target
         } else {
-            const result = {
+            const result: BuildStep = {
                 code: -1,
+                okToCache: false,
+                execTime: '0',
                 step: 'ld',
+                timedOut: false,
+                filenameTransform: f => f,
                 stderr: [{text: 'Invalid architecture for linking and execution'}],
+                stdout: [],
             };
-            fullResult.buildsteps.push(result);
+            if (fullResult.buildsteps) fullResult.buildsteps.push(result);
             return result;
         }
         options.push(objectFilename);
+        options = options.concat(extraOptions);
 
         return this.doBuildstepAndAddToResult(fullResult, 'ld', this.env.ceProps('ld'), options, execOptions);
     }
 
     override getExecutableFilename(dirPath) {
         return path.join(dirPath, 'ce-asm-executable');
+    }
+
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFilters,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
+        let options = this.optionsForFilter(filters);
+        backendOptions = backendOptions || {};
+
+        options = options.concat(this.optionsForBackend(backendOptions, outputFilename));
+
+        if (this.compiler.options) {
+            options = options.concat(splitArguments(this.compiler.options));
+        }
+
+        if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
+            options = options.concat(this.compiler.optArg);
+        }
+
+        const libIncludes = this.getIncludeArguments(libraries);
+        userOptions = this.filterUserOptions(userOptions) || [];
+        options = this.fixIncompatibleOptions(options, userOptions);
+        return this.orderArguments(options, inputFilename, libIncludes, [], [], [], userOptions, []);
     }
 
     override async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
@@ -170,7 +209,10 @@ export class AssemblyCompiler extends BaseCompiler {
         const objectFilename = this.getOutputFilename(dirPath);
         if (objectFilename !== inputFilename && (await fileExists(objectFilename))) {
             const inputArch = await this.getArchitecture(fullResult, objectFilename);
-            const ldResult = await this.runLinker(fullResult, inputArch, objectFilename, outputFilename);
+
+            const libOpts = this.getSharedLibraryLinks(key.libraries);
+
+            const ldResult = await this.runLinker(fullResult, inputArch, objectFilename, outputFilename, libOpts);
 
             fullResult.stderr = fullResult.stderr.concat(ldResult.stderr);
         }

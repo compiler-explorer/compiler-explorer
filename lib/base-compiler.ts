@@ -1858,6 +1858,7 @@ export class BaseCompiler {
     async doBuildstepAndAddToResult(result, name, command, args, execParams) {
         const stepResult = {
             ...(await this.doBuildstep(command, args, execParams)),
+            compilationOptions: args,
             step: name,
         };
         logger.debug(name);
