@@ -3109,14 +3109,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             }));
 
             this.decorations.linkedCode = linkedLinesDecoration.concat(directlyLinkedLinesDecoration);
-            if (this.linkedFadeTimeoutId !== null) {
-                clearTimeout(this.linkedFadeTimeoutId);
-            }
 
-            this.linkedFadeTimeoutId = setTimeout(() => {
-                this.clearLinkedLines();
-                this.linkedFadeTimeoutId = null;
-            }, 5000);
+            if (!this.settings.indefiniteLineHighlight) {
+                if (this.linkedFadeTimeoutId !== null) {
+                    clearTimeout(this.linkedFadeTimeoutId);
+                }
+
+                this.linkedFadeTimeoutId = setTimeout(() => {
+                    this.clearLinkedLines();
+                    this.linkedFadeTimeoutId = null;
+                }, 5000);
+            }
             this.updateDecorations();
         }
     }
