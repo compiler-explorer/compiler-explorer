@@ -34,7 +34,10 @@ mixin newPaneButton(classId, text, title, label, icon)
     .btn-group.btn-group-sm.mx-auto
       button.btn.btn-sm.btn-outline-info.ctrlSNothing(disabled=true style="display: none")
         span.fas.fa-smile
+
     .btn-group.btn-group-sm.ml-auto(role="group" aria-label="Editor language")
+      button.btn.btn-sm.language-info
+        span.fas.fa-info
       select.change-language(title="Change this editor's (and associated panels) language" placeholder="Language" disabled=embedded && readOnly)
   div.currentCursorPosition
   div#v-status
