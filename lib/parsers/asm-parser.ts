@@ -60,6 +60,8 @@ export class AsmParser extends AsmRegex {
     binaryHideFuncRe: RegExp | null;
     maxAsmLines: number;
     asmOpcodeRe: RegExp;
+    relocationRe: RegExp;
+    relocDataSymNameRe: RegExp;
     lineRe: RegExp;
     labelRe: RegExp;
     destRe: RegExp;
