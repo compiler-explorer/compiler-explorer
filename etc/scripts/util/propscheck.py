@@ -202,8 +202,16 @@ def process_file(file: str):
             match_and_update(line, TOOLS_LIST_RE, listed_tools)
             match_and_update(line, LIBS_LIST_RE, listed_libs_ids)
 
-    bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
-    bad_compilers_ids = listed_compilers.symmetric_difference(seen_compilers_id)
+    if len(seen_compilers_exe) > 0:
+        bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
+    else:
+        bad_compilers_exe = set()
+
+    if len(seen_compilers_id) > 0:
+        bad_compilers_ids = listed_compilers.symmetric_difference(seen_compilers_id)
+    else:
+        bad_compilers_ids = set()
+
     bad_groups = listed_groups.symmetric_difference(seen_groups)
     bad_formatters_exe = listed_formatters.symmetric_difference(seen_formatters_exe)
     bad_formatters_id = listed_formatters.symmetric_difference(seen_formatters_id)
