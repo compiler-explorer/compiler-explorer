@@ -84,6 +84,7 @@ export class LlvmPassDumpParser {
     lineFilters: RegExp[];
     debugInfoFilters: RegExp[];
     debugInfoLineFilters: RegExp[];
+    metadataLineFilters: RegExp[];
     irDumpHeader: RegExp;
     machineCodeDumpHeader: RegExp;
     functionDefine: RegExp;
@@ -119,6 +120,12 @@ export class LlvmPassDumpParser {
         ];
         this.debugInfoLineFilters = [
             /,? !dbg !\d+/, // instruction/function debug metadata
+            /,? debug-location !\d+/, // Direct source locations like 'example.cpp:8:1' not filtered
+        ];
+
+        // Conditionally enabled by `filterIRMetadata`
+        this.metadataLineFilters = [
+            /,?(?: ![\d.A-Za-z]+){2}/, // any instruction metadata
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
@@ -454,12 +461,15 @@ export class LlvmPassDumpParser {
     }
 
     applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
-        // Additional filters conditionally enabled by `filterDebugInfo`
+        // Additional filters conditionally enabled by `filterDebugInfo`/`filterIRMetadata`
         let filters = this.filters;
         let lineFilters = this.lineFilters;
         if (llvmOptPipelineOptions.filterDebugInfo) {
             filters = filters.concat(this.debugInfoFilters);
             lineFilters = lineFilters.concat(this.debugInfoLineFilters);
+        }
+        if (llvmOptPipelineOptions.filterIRMetadata) {
+            lineFilters = lineFilters.concat(this.metadataLineFilters);
         }
 
         return (
