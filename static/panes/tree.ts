@@ -500,6 +500,8 @@ export class Tree {
                     }
                 });
             }
+
+            loadProjectFromFile.val('');
         });
 
         this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
