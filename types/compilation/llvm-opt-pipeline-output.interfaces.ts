@@ -42,6 +42,7 @@ export type LLVMOptPipelineOutput = {
 
 export type LLVMOptPipelineBackendOptions = {
     filterDebugInfo: boolean;
+    filterIRMetadata: boolean;
     fullModule: boolean;
     noDiscardValueNames: boolean;
     demangle: boolean;

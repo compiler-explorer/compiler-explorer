@@ -64,6 +64,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     state: LLVMOptPipelineViewState;
     lastOptions: LLVMOptPipelineBackendOptions = {
         filterDebugInfo: true,
+        filterIRMetadata: false,
         fullModule: false,
         noDiscardValueNames: true,
         demangle: true,
@@ -195,6 +196,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
             filterDebugInfo: filters['filter-debug-info'],
+            filterIRMetadata: filters['filter-instruction-metadata'],
             fullModule: options['dump-full-module'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
