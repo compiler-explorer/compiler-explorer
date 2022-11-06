@@ -559,7 +559,7 @@ export class Tree {
         }
 
         await new Promise(resolve => {
-            var fr = new FileReader();
+            const fr = new FileReader();
             fr.onload = () => {
                 this.multifileService.addNewTextFile(htmlfile.name, fr.result?.toString() || '');
                 this.refresh();
