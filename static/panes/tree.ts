@@ -488,17 +488,7 @@ export class Tree {
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
             if (files && files.length > 0) {
-                this.multifileService.forEachFile((file: MultifileFile) => {
-                    this.removeFile(file.fileId);
-                });
-
-                await this.multifileService.loadProjectFromFile(files[0], (file: MultifileFile) => {
-                    this.refresh();
-                    if (file.filename === 'CMakeLists.txt') {
-                        // todo: find a way to toggle on CMake checkbox...
-                        this.editFile(file.fileId);
-                    }
-                });
+                await this.openZipFile(files[0]);
             }
         });
 
@@ -518,6 +508,65 @@ export class Tree {
             this.domRoot.find('.options'),
             state as unknown as Record<string, boolean>
         );
+
+        this.root.on('dragover', ev => {
+            ev.preventDefault();
+        });
+        this.root.on('drop', async (ev: any) => {
+            ev.preventDefault();
+            const dataTransfer = ev.originalEvent.dataTransfer;
+            if (dataTransfer.items) {
+                [...dataTransfer.items].forEach(async (item, i) => {
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file.name.endsWith('.zip')) {
+                            this.openZipFile(file);
+                        } else {
+                            await this.addSingleFile(file);
+                        }
+                    }
+                });
+            } else {
+                [...dataTransfer.files].forEach(async (file, i) => {
+                    if (file.name.endsWith('.zip')) {
+                        this.openZipFile(file);
+                    } else {
+                        await this.addSingleFile(file);
+                    }
+                });
+            }
+        });
+    }
+
+    private async openZipFile(htmlfile) {
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            this.removeFile(file.fileId);
+        });
+
+        await this.multifileService.loadProjectFromFile(htmlfile, (file: MultifileFile) => {
+            this.refresh();
+            if (file.filename === 'CMakeLists.txt') {
+                // todo: find a way to toggle on CMake checkbox...
+                this.editFile(file.fileId);
+            }
+        });
+    }
+
+    private async addSingleFile(htmlfile) {
+        if (this.multifileService.fileExists(htmlfile.name)) {
+            // todo: overwrite yes/no
+            return;
+        }
+
+        await new Promise(resolve => {
+            var fr = new FileReader();
+            fr.onload = () => {
+                this.multifileService.addNewTextFile(htmlfile.name, fr.result?.toString() || '');
+                this.refresh();
+                resolve(true);
+            };
+            fr.readAsText(htmlfile);
+        });
     }
 
     private numberUsedLines() {

@@ -470,10 +470,27 @@ export class MultifileService {
         return suggestedFilename;
     }
 
-    private fileExists(filename: string, excludeFile: MultifileFile): boolean {
+    public fileExists(filename: string, excludeFile?: MultifileFile): boolean {
         return !!_.find(this.files, (file: MultifileFile) => {
-            return file !== excludeFile && file.filename === filename;
+            if (excludeFile && file === excludeFile) return false;
+
+            return file.filename === filename;
         });
+    }
+
+    public addNewTextFile(filename: string, content: string) {
+        const file: MultifileFile = {
+            fileId: this.newFileId,
+            isIncluded: false,
+            isOpen: false,
+            isMainSource: false,
+            filename: filename,
+            content: content,
+            editorId: -1,
+            langId: '',
+        };
+
+        this.addFile(file);
     }
 
     public async renameFile(fileId: number): Promise<boolean> {
