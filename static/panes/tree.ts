@@ -509,11 +509,29 @@ export class Tree {
             state as unknown as Record<string, boolean>
         );
 
+        let drophereHideTimeout;
         this.root.on('dragover', ev => {
             ev.preventDefault();
+
+            if (drophereHideTimeout) clearTimeout(drophereHideTimeout);
+
+            const drophere = this.root.find('.drophere');
+            drophere.show();
         });
+
+        this.root.on('dragleave', () => {
+            const drophere = this.root.find('.drophere');
+            drophereHideTimeout = setTimeout(() => {
+                drophere.hide();
+            }, 1000);
+        });
+
         this.root.on('drop', async (ev: any) => {
             ev.preventDefault();
+
+            const drophere = this.root.find('.drophere');
+            drophere.hide();
+
             const dataTransfer = ev.originalEvent.dataTransfer;
             if (dataTransfer.items) {
                 [...dataTransfer.items].forEach(async (item, i) => {
