@@ -350,6 +350,12 @@ export class MultifileService {
         return file && file.editorId > 0 ? file.editorId : null;
     }
 
+    private getFileByFilename(filename: string): MultifileFile | undefined {
+        return _.find(this.files, (file: MultifileFile) => {
+            return file.filename === filename;
+        });
+    }
+
     public getMainSourceEditorId(): number | null {
         const file = _.find(this.files, (file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
@@ -384,6 +390,14 @@ export class MultifileService {
         const file = this.getFileByFileId(fileId);
         if (file) {
             this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== fileId);
+        }
+        return file;
+    }
+
+    public removeFileByFilename(filename: string): MultifileFile | undefined {
+        const file = this.getFileByFilename(filename);
+        if (file) {
+            this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== file.fileId);
         }
         return file;
     }

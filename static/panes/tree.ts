@@ -313,6 +313,20 @@ export class Tree {
         this.refresh();
     }
 
+    private removeFileByFilename(filename: string) {
+        const file = this.multifileService.removeFileByFilename(filename);
+        if (file) {
+            if (file.isOpen) {
+                const editor = this.hub.getEditorById(file.editorId);
+                if (editor) {
+                    editor.container.close();
+                }
+            }
+        }
+
+        this.refresh();
+    }
+
     private addRowToTreelist(file: MultifileFile) {
         const item = $(this.rowTemplate.children()[0].cloneNode(true));
         const stageButton = item.find('.stage-file');
@@ -570,21 +584,47 @@ export class Tree {
         });
     }
 
-    private async addSingleFile(htmlfile) {
-        if (this.multifileService.fileExists(htmlfile.name)) {
-            // todo: overwrite yes/no
-            return;
-        }
-
-        await new Promise(resolve => {
-            const fr = new FileReader();
-            fr.onload = () => {
-                this.multifileService.addNewTextFile(htmlfile.name, fr.result?.toString() || '');
-                this.refresh();
-                resolve(true);
-            };
-            fr.readAsText(htmlfile);
+    private async askForOverwriteAndDo(filename): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.multifileService.fileExists(filename)) {
+                this.alertSystem.ask('Overwrite file', `${_.escape(filename)} already exists, overwrite this file?`, {
+                    yes: () => {
+                        this.removeFileByFilename(filename);
+                        resolve();
+                    },
+                    no: () => {
+                        reject();
+                    },
+                    onClose: () => {
+                        reject();
+                    },
+                    yesClass: 'btn-danger',
+                    yesHtml: 'Yes',
+                    noClass: 'btn-primary',
+                    noHtml: 'No',
+                });
+            } else {
+                resolve();
+            }
         });
+    }
+
+    private async addSingleFile(htmlfile): Promise<void> {
+        try {
+            await this.askForOverwriteAndDo(htmlfile.name);
+
+            return new Promise(resolve => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    this.multifileService.addNewTextFile(htmlfile.name, fr.result?.toString() || '');
+                    this.refresh();
+                    resolve();
+                };
+                fr.readAsText(htmlfile);
+            });
+        } catch {
+            // expected when user says no
+        }
     }
 
     private numberUsedLines() {

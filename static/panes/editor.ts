@@ -1723,7 +1723,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     this.clearLinkedLine();
                     this.fadeTimeoutId = null;
                 }, 5000);
-
             }
             this.updateDecorations();
         }
