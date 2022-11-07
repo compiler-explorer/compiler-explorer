@@ -114,7 +114,10 @@ export class MultifileService {
         });
 
         if (possibleLang.length > 0) {
-            return possibleLang[0].id;
+            const sorted = _.sortBy(possibleLang, a => {
+                return a.extensions.indexOf(filenameExt);
+            });
+            return sorted[0].id;
         }
 
         if (this.isCMakeFile(filename)) {
@@ -487,7 +490,7 @@ export class MultifileService {
             filename: filename,
             content: content,
             editorId: -1,
-            langId: '',
+            langId: this.getLanguageIdFromFilename(filename),
         };
 
         this.addFile(file);
