@@ -31,7 +31,7 @@ export type Sponsor = {
     url?: string;
     onclick: string;
     priority: number;
-    topIcon: boolean;
+    topIconShowEvery: number;
     sideBySide: boolean;
     statsId?: string;
 };
@@ -47,5 +47,6 @@ export interface Sponsors {
     getLevels(): Level[];
 
     pickTopIcons(max: number): Sponsor[];
+
     getAllTopIcons(): Sponsor[];
 }

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {loadSponsorsFromString, parse} from '../lib/sponsors';
+import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors';
 
 import {should} from './utils';
 
@@ -41,7 +41,7 @@ describe('Sponsors', () => {
         should.equal(obj.img, undefined);
         should.equal(obj.icon, undefined);
         should.equal(obj.icon_dark, undefined);
-        obj.topIcon.should.be.false;
+        obj.topIconShowEvery.should.eq(0);
         obj.sideBySide.should.be.false;
         should.equal(obj.statsId, undefined);
     });
@@ -64,7 +64,7 @@ describe('Sponsors', () => {
         parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark.should.eq('icon_dark');
     });
     it('should handle topIcons', () => {
-        parse({name: 'bob', topIcon: true}).topIcon.should.be.true;
+        parse({name: 'bob', topIconShowEvery: 2}).topIconShowEvery.should.eq(2);
     });
     it('should handle clicks', () => {
         parse({
@@ -146,7 +146,7 @@ levels:
     sponsors:
     - name: one
       img: pick_me
-      topIcon: true
+      topIconShowEvery: 1
     - name: two
       img: not_me
   - name: another level
@@ -154,13 +154,38 @@ levels:
     sponsors:
     - name: three
       img: not_me_either
-      topIcon: false
+      topIconShowEvery: 0
     - name: four
       img: pick_me_also
-      topIcon: true
+      topIconShowEvery: 2
     - name: five
-      topIcon: true
+      topIconShowEvery: 3
         `).getAllTopIcons();
         icons.map(s => s.name).should.deep.equals(['one', 'four']);
+    });
+
+    it('should pick icons appropriately when all required every 3', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 3, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 3, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
+        const icons = [sponsor1, sponsor2, sponsor3];
+        makeIconSets(icons, 10).should.deep.eq([icons]);
+        makeIconSets(icons, 3).should.deep.eq([icons]);
+        // Erk this isn't true as...
+        // 12 23 13
+        // will solve this
+        should.throw(() => makeIconSets(icons, 2), 'Unable to evenly distribute');
+    });
+    it('should pick icons appropriately when not required on different schedules', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 2, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
+        const icons = [sponsor1, sponsor2, sponsor3];
+        // 6 identical copies...could be the same one
+        makeIconSets(icons, 10).should.deep.eq([icons]);
+        makeIconSets(icons, 3).should.deep.eq([icons]);
+        // a solution would be:
+        // 12 13
+        should.throw(() => makeIconSets(icons, 2), 'Unable to evenly distribute');
     });
 });

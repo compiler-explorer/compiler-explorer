@@ -36,7 +36,7 @@ export function parse(mapOrString: Record<string, any> | string): Sponsor {
         img: mapOrString.img,
         icon: mapOrString.icon || mapOrString.img,
         icon_dark: mapOrString.icon_dark,
-        topIcon: !!mapOrString.topIcon,
+        topIconShowEvery: mapOrString.topIconShowEvery || 0,
         sideBySide: !!mapOrString.sideBySide,
         priority: mapOrString.priority || 0,
         statsId: mapOrString.statsId,
@@ -50,7 +50,61 @@ function compareSponsors(lhs: Sponsor, rhs: Sponsor): number {
     return lhs.name.localeCompare(rhs.name);
 }
 
-export class SponsorsImpl implements Sponsors {
+function gcd(a: number, b: number): number {
+    return a === 0 ? b : gcd(b % a, a);
+}
+
+function gcd_array(arr: number[]): number {
+    if (arr.length === 0) return 1;
+    let result = arr[0];
+    for (let i = 1; i < arr.length; ++i) {
+        result = gcd(arr[i], result);
+
+        if (result === 1) return 1;
+    }
+    return result;
+}
+
+function lcm(a: number, b: number): number {
+    return Math.floor((a * b) / gcd(a, b));
+}
+
+export function makeIconSets(icons: Sponsor[], maxIcons: number): Sponsor[][] {
+    const gcd = gcd_array(icons.map(s => s.topIconShowEvery));
+    const every: Map<number, Sponsor[]> = new Map();
+    let setSize = 1;
+    for (const icon of icons) {
+        const index = Math.floor(icon.topIconShowEvery / gcd);
+        if (!every.has(index)) {
+            every.set(index, [icon]);
+            setSize = lcm(setSize, index);
+        }
+        else every.set(index, icons);
+    }
+    const result: Sponsor[][] = [];
+    for (let index = 0; index < setSize; ++index) {
+        const thisSlot: Sponsor[] = [];
+        const notChosen: Sponsor[] = [];
+        for (const [showEvery, icons] of every) {
+            if (index % showEvery === 0) thisSlot.push(...icons);
+            else notChosen.push(...icons);
+        }
+        if (thisSlot.length > maxIcons) {
+            throw new Error(`Unable to evenly distribute icons, slot ${index} has ${thisSlot.length} vs ${maxIcons}`);
+        }
+        while (thisSlot.length < maxIcons && notChosen.length > 0) {
+            // const totalProb = notChosen.reduce((x, y) => x + 1 / y.topIconShowEvery, 0);
+            // const randomChoice = Math.random() * totalProb;
+            const randomChoice = Math.floor(Math.random() * notChosen.length);
+            thisSlot.push(notChosen[randomChoice]);
+            notChosen.splice(randomChoice, 1);
+        }
+        result.push(thisSlot.sort(compareSponsors));
+    }
+    return result;
+}
+
+class SponsorsImpl implements Sponsors {
     private readonly _levels: Level[];
     private readonly _icons: Sponsor[];
 
@@ -58,7 +112,7 @@ export class SponsorsImpl implements Sponsors {
         this._levels = levels;
         this._icons = [];
         for (const level of levels) {
-            this._icons.push(...level.sponsors.filter(sponsor => sponsor.topIcon && sponsor.icon));
+            this._icons.push(...level.sponsors.filter(sponsor => sponsor.topIconShowEvery && sponsor.icon));
         }
     }
 
@@ -70,9 +124,35 @@ export class SponsorsImpl implements Sponsors {
         return this._icons;
     }
 
-    pickTopIcons(maxIcons: number): Sponsor[] {
+    pickTopIcons(maxIcons: number, randFunc: () => number = Math.random): Sponsor[] {
+        // // Grab the icons we always show.
+        // const result = this._icons.filter(sponsor => sponsor.topIconShowEvery);
+        // // get number of slots left...
+        // // generate 100 pick patterns until  the "at least 1 in N" fits? then cycle them.
+        // // can do this in the constructor se we know ahead of time
+        // // X: one 1 in two
+        // // Y, Z: one in 3
+        // // need a pattern length of 2*3*3 = 18?
+        // // XY XZ YZ XY XZ
+        // if (result.length > maxIcons) {
+        //     throw new Error('Unable to do the thing with the stuff');
+        // }
+        // const possibleChoices = this._icons.filter(sponsor => typeof sponsor.topIcon === 'number');
+        // while (result.length < maxIcons && possibleChoices.length > 0) {
+        //     const totalVisibility = possibleChoices
+        //         .map(sponsor => sponsor.topIcon as number)
+        //         .reduce((x, y) => x + y, 0);
+        //     const randomPick = Math.floor(randFunc() * totalVisibility);
+        //     result.push(possibleChoices[randomPick]);
+        //     possibleChoices.splice(randomPick, 1);
+        // }
+        // // some icons on always
         return this._icons.slice(0, maxIcons);
     }
+}
+
+export function loadSponsorsFromLevels(levels: Level[]): Sponsors {
+    return new SponsorsImpl(levels);
 }
 
 export function loadSponsorsFromString(stringConfig: string): Sponsors {
@@ -82,5 +162,5 @@ export function loadSponsorsFromString(stringConfig: string): Sponsors {
             if (!level[required]) throw new Error(`Level is missing '${required}'`);
         level.sponsors = level.sponsors.map(parse).sort(compareSponsors);
     }
-    return new SponsorsImpl(sponsorConfig.levels);
+    return loadSponsorsFromLevels(sponsorConfig.levels);
 }
