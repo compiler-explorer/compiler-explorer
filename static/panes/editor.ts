@@ -553,6 +553,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
 
         this.languageInfoButton = this.domRoot.find('.language-info');
+        this.languageInfoButton.popover({});
         this.languageBtn = this.domRoot.find('.change-language');
         this.selectize = new TomSelect(this.languageBtn as any, {
             sortField: 'name',
@@ -1951,12 +1952,19 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
 
     updateLanguageTooltip() {
+        this.languageInfoButton.popover('dispose');
         if (this.currentLanguage?.tooltip) {
+            this.languageInfoButton.popover({
+                title: 'More info about this language',
+                content: this.currentLanguage.tooltip,
+                container: 'body',
+                trigger: 'focus',
+                placement: 'left',
+            });
             this.languageInfoButton.show();
             this.languageInfoButton.prop('title', this.currentLanguage.tooltip);
         } else {
             this.languageInfoButton.hide();
         }
-
     }
 }
