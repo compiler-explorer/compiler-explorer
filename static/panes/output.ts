@@ -34,6 +34,8 @@ import {Hub} from '../hub';
 import * as AnsiToHtml from '../ansi-to-html';
 import {OutputState} from './output.interfaces';
 import {FontScale} from '../widgets/fontscale';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({
@@ -166,10 +168,11 @@ export class Output extends Pane<OutputState> {
         return state as any;
     }
 
-    addOutputLines(result) {
-        const stdout = result.stdout || [];
-        const stderr = result.stderr || [];
+    addOutputLines(result: CompilationResult) {
+        const stdout = result.stdout;
+        const stderr = result.stderr;
         for (const obj of stdout.concat(stderr)) {
+            // @ts-ignore Line not part of ResultLine. Unclear if type bug or code bug
             const lineNumber = obj.tag ? obj.tag.line : obj.line;
             const columnNumber = obj.tag ? obj.tag.column : -1;
             if (obj.text === '') {
@@ -178,8 +181,7 @@ export class Output extends Pane<OutputState> {
                 this.add(
                     this.normalAnsiToHtml.toHtml(obj.text),
                     lineNumber,
-                    columnNumber,
-                    obj.tag ? obj.tag.file : false
+                    columnNumber,obj.tag?.file
                 );
             }
         }
@@ -191,9 +193,9 @@ export class Output extends Pane<OutputState> {
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (compilerId !== this.compilerInfo.compilerId) return;
-        if (compiler) this.compilerInfo.compilerName = compiler.name;
+        this.compilerInfo.compilerName = compiler.name;
 
         this.contentRoot.empty();
 
@@ -212,15 +214,17 @@ export class Output extends Pane<OutputState> {
                 this.add('Compiler returned: ' + result.code);
             } else {
                 this.add('ASM generation compiler returned: ' + result.code);
-                this.addOutputLines(result.execResult.buildResult);
-                this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+                if (result.execResult.buildResult) {
+                    this.addOutputLines(result.execResult.buildResult);
+                    this.add('Execution build compiler returned: ' + result.execResult.buildResult.code);
+                }
             }
         }
 
         if (result.execResult && (result.execResult.didExecute || result.didExecute)) {
             this.add('Program returned: ' + result.execResult.code);
-            if (result.execResult.stderr.length || result.execResult.stdout.length) {
-                for (const obj of result.execResult.stderr) {
+            if (result.execResult.stderr?.length || result.execResult.stdout?.length) {
+                for (const obj of result.execResult.stderr ?? []) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');
@@ -229,7 +233,7 @@ export class Output extends Pane<OutputState> {
                     }
                 }
 
-                for (const obj of result.execResult.stdout) {
+                for (const obj of result.execResult.stdout ?? []) {
                     // Conserve empty lines as they are discarded by ansiToHtml
                     if (obj.text === '') {
                         this.programOutput('<br/>');

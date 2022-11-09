@@ -42,6 +42,9 @@ export type CompilationResult = {
     execResult?: {
         stdout?: ResultLine[];
         stderr?: ResultLine[];
+        code: number;
+        didExecute: boolean;
+        buildResult?: BuildResult;
     };
     hasGnatDebugOutput?: boolean;
     gnatDebugOutput?: ResultLine[];
