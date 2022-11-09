@@ -1,0 +1,680 @@
+{
+  "asm": [
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file   \"example.c\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .intel_syntax noprefix"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ltext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file 0 \"/home/partouf/Documents/intsizetest\" \"example.c\""
+    },
+    {
+      "labels": [
+        {
+          "name": "size",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .globl  size"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .bss"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .align 4"
+    },
+    {
+      "labels": [
+        {
+          "name": "size",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .type   size, @object"
+    },
+    {
+      "labels": [
+        {
+          "name": "size",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .size   size, 4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "size:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .zero   4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .text"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Letext0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .file 1 \"example.c\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_info,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_info0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x38"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_abbrev0",
+          "range": {
+            "endCol": 32,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_abbrev0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF2",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1d"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF0",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF0"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF1",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF1"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_line0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_line0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".LASF3",
+          "range": {
+            "endCol": 23,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .LASF3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x34"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x9"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x3"
+    },
+    {
+      "labels": [
+        {
+          "name": "size",
+          "range": {
+            "endCol": 21,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .quad   size"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x4"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x5"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"int\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_abbrev,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_abbrev0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x11"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x25"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x1f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x10"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x17"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x34"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xe"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3a"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3b"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x39"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x49"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x13"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3f"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x19"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x2"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x18"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x24"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3e"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0xb"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x3"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .uleb128 0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_aranges,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .long   0x1c"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0x2"
+    },
+    {
+      "labels": [
+        {
+          "name": ".Ldebug_info0",
+          "range": {
+            "endCol": 30,
+            "startCol": 17
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .long   .Ldebug_info0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0x8"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .byte   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .value  0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .quad   0"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line,\"\",@progbits"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".Ldebug_line0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_str,\"MS\",@progbits,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF2:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"GNU C17 12.2.0 -masm=intel -mtune=generic -march=x86-64 -g -O2\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF3:"
+    },
+    {
+      "labels": [
+        {
+          "name": "size",
+          "range": {
+            "endCol": 22,
+            "startCol": 18
+          }
+        }
+      ],
+      "source": null,
+      "text": "        .string \"size\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .debug_line_str,\"MS\",@progbits,1"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF0:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"example.c\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": ".LASF1:"
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .string \"/home/partouf/Documents/intsizetest\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .ident  \"GCC: (Compiler-Explorer-Build-gcc--binutils-2.38) 12.2.0\""
+    },
+    {
+      "labels": [],
+      "source": null,
+      "text": "        .section        .note.GNU-stack,\"\",@progbits"
+    }
+  ],
+  "labelDefinitions": {
+    ".LASF0": 109,
+    ".LASF1": 111,
+    ".LASF2": 104,
+    ".LASF3": 106,
+    ".Ldebug_abbrev0": 44,
+    ".Ldebug_info0": 17,
+    ".Ldebug_line0": 102,
+    "size": 11
+  }
+}
