@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {Language} from '../../types/languages.interfaces';
+
 export type EditorState = {
     filename?: string;
     options?: {
@@ -30,3 +32,8 @@ export type EditorState = {
     source?: string;
     lang?: string;
 };
+
+export type LanguageSelectData = Language & {
+    logoData?: string;
+    logoDataDark?: string;
+}

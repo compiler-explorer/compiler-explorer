@@ -2289,24 +2289,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.fullTimingInfo = this.domRoot.find('.full-timing-info');
         this.compilerLicenseButton = this.domRoot.find('.compiler-license');
         this.setCompilationOptionsPopover(this.compiler ? this.compiler.options : null);
-        // Dismiss on any click that isn't either in the opening element, inside
-        // the popover or on any alert
-        $(document).on('mouseup', e => {
-            const target = $(e.target);
-            if (
-                !target.is(this.prependOptions) &&
-                this.prependOptions.has(target as unknown as Element).length === 0 &&
-                target.closest('.popover').length === 0
-            )
-                this.prependOptions.popover('hide');
-
-            if (
-                !target.is(this.fullCompilerName) &&
-                this.fullCompilerName.has(target as unknown as Element).length === 0 &&
-                target.closest('.popover').length === 0
-            )
-                this.fullCompilerName.popover('hide');
-        });
 
         this.initFilterButtons();
 
@@ -2744,6 +2726,25 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.on('languageChange', this.onLanguageChange, this);
 
         this.eventHub.on('initialised', this.undefer, this);
+
+        // Dismiss on any click that isn't either in the opening element, inside
+        // the popover or on any alert
+        $(document).on('mouseup', e => {
+            const target = $(e.target);
+            if (
+                !target.is(this.prependOptions) &&
+                this.prependOptions.has(target as unknown as Element).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.prependOptions.popover('hide');
+
+            if (
+                !target.is(this.fullCompilerName) &&
+                this.fullCompilerName.has(target as unknown as Element).length === 0 &&
+                target.closest('.popover').length === 0
+            )
+                this.fullCompilerName.popover('hide');
+        });
     }
 
     initCallbacks(): void {

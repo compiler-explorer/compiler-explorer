@@ -97,4 +97,6 @@ export interface Language {
     previewFilter: RegExp | null;
     /** The override for the output (default is "asm") */
     monacoDisassembly: string | null;
+    /** Brief description of the language */
+    tooltip?: string;
 }
