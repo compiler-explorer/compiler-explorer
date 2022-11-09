@@ -77,16 +77,18 @@ import {getToolchainPath} from './toolchain-utils';
 import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
+
 export class BaseCompiler {
     public compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
+    // Note that this can also return undefined and boolean | number, but we still need properties.js to ts
     protected compilerProps: (key: string, defaultValue?: string) => string;
     protected alwaysResetLdPath: any;
     protected delayCleanupTemp: any;
     protected stubRe: RegExp;
-    protected stubText: any;
+    protected stubText: string;
     protected compilerWrapper: any;
     protected asm: IAsmParser;
     protected llvmIr: LlvmIrParser;
@@ -125,8 +127,8 @@ export class BaseCompiler {
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
         this.delayCleanupTemp = this.env.ceProps('delayCleanupTemp', false);
-        this.stubRe = new RegExp(this.compilerProps('stubRe'));
-        this.stubText = this.compilerProps('stubText');
+        this.stubRe = new RegExp(this.compilerProps('stubRe', ''));
+        this.stubText = this.compilerProps('stubText', '');
         this.compilerWrapper = this.compilerProps('compiler-wrapper');
 
         if (!this.compiler.options) this.compiler.options = '';
