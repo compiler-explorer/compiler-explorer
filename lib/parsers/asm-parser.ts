@@ -497,7 +497,7 @@ export class AsmParser extends AsmRegex {
                     if (labelDef) {
                         asm.pop();
                         keepInlineCode = false;
-                        delete labelDefinitions[labelDef[1]];
+                        labelDefinitions.delete(labelDef[1]);
                     } else {
                         keepInlineCode = true;
                     }
@@ -539,7 +539,7 @@ export class AsmParser extends AsmRegex {
                 } else {
                     // A used label.
                     prevLabel = match[1];
-                    labelDefinitions[match[1]] = asm.length + 1;
+                    labelDefinitions.set(match[1], asm.length + 1);
                 }
             }
             if (inNvccDef) {
@@ -654,7 +654,7 @@ export class AsmParser extends AsmRegex {
                         source: null,
                         labels: labelsInLine,
                     });
-                    labelDefinitions[func] = asm.length;
+                    labelDefinitions.set(func, asm.length);
                 }
                 continue;
             }
