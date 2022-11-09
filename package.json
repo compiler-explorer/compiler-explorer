@@ -180,14 +180,5 @@
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production"
   },
-  "lint-staged": {
-    "*.[jt]s": [
-      "npm run format-files --",
-      "npm run lint-files --"
-    ],
-    "*.{html,md}": [
-      "npm run format-files --"
-    ]
-  },
   "license": "BSD-2-Clause"
 }

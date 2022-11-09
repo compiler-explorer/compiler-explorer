@@ -51,7 +51,7 @@ function setupOnError(stream, name) {
     });
 }
 
-export async function executeDirect(
+export function executeDirect(
     command: string,
     args: string[],
     options: ExecutionOptions,
@@ -322,7 +322,7 @@ export async function sandbox(
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    return dispatchEntry(command, args, options);
+    return await dispatchEntry(command, args, options);
 }
 
 const wineSandboxName = 'ce-wineserver';
@@ -466,7 +466,7 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return executeDirect(execProps('wine'), args, options);
+    return await executeDirect(execProps('wine'), args, options);
 }
 
 async function executeFirejail(command, args, options) {
@@ -485,7 +485,7 @@ async function executeFirejail(command, args, options) {
         delete options.customCwd;
         baseOptions.push(command);
         await wineInitPromise;
-        return executeDirect(firejail, baseOptions.concat(args), options);
+        return await executeDirect(firejail, baseOptions.concat(args), options);
     }
 
     logger.debug('Regular execution via firejail', {command, args});
@@ -510,14 +510,14 @@ async function executeFirejail(command, args, options) {
         baseOptions.push('--private');
     }
     baseOptions.push(command);
-    return executeDirect(firejail, baseOptions.concat(args), options, filenameTransform);
+    return await executeDirect(firejail, baseOptions.concat(args), options, filenameTransform);
 }
 
 async function executeNone(command, args, options) {
     if (needsWine(command)) {
-        return executeWineDirect(command, args, options);
+        return await executeWineDirect(command, args, options);
     }
-    return executeDirect(command, args, options);
+    return await executeDirect(command, args, options);
 }
 
 const executeDispatchTable = {
@@ -535,5 +535,5 @@ export async function execute(
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
-    return dispatchEntry(command, args, options);
+    return await dispatchEntry(command, args, options);
 }

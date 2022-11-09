@@ -26,7 +26,7 @@ block prepend content
               span.dropdown-icon.fas.fa-sliders-h
               | Settings
             div.dropdown-divider
-            button.dropdown-item.btn#ui-brokenlink
+            a.dropdown-item.btn#ui-brokenlink
               span.dropdown-icon.fas.fa-undo-alt
               | Reset UI layout
             button.dropdown-item.btn#ui-reset(data-cy="reset-ui-btn")
@@ -100,4 +100,4 @@ block prepend content
             include menu-other.pug
 
 block append footer
-  include popups/popups
+  include popups/_all

@@ -294,7 +294,7 @@ export class BaseCompiler {
 
     async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
         // Here only so can be overridden by compiler implementations.
-        return exec.execute(filepath, args, execOptions);
+        return await exec.execute(filepath, args, execOptions);
     }
 
     protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
@@ -314,7 +314,7 @@ export class BaseCompiler {
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key);
         if (!result) {
-            result = await this.env.enqueue(async () => exec.execute(compiler, args, options));
+            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
                 this.env
                     .compilerCachePut(key, result)
@@ -401,9 +401,7 @@ export class BaseCompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = ['-d', outputFilename, '-l', ...objdumper.widthOptions];
-        if (demangle) args.push('-C');
-        if (intelAsm) args.push(...objdumper.intelAsmOptions);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);

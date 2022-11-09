@@ -24,11 +24,58 @@
 
 import _ from 'underscore';
 
+import {
+    AsmResultLabel,
+    AsmResultSource,
+    ParsedAsmResult,
+    ParsedAsmResultLine,
+} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import * as utils from '../utils';
 
 import {AsmRegex} from './asmregex';
 
 export class AsmParser extends AsmRegex {
+    labelFindNonMips: RegExp;
+    labelFindMips: RegExp;
+    mipsLabelDefinition: RegExp;
+    dataDefn: RegExp;
+    fileFind: RegExp;
+    hasOpcodeRe: RegExp;
+    instructionRe: RegExp;
+    identifierFindRe: RegExp;
+    hasNvccOpcodeRe: RegExp;
+    definesFunction: RegExp;
+    definesGlobal: RegExp;
+    definesWeak: RegExp;
+    indentedLabelDef: RegExp;
+    assignmentDef: RegExp;
+    directive: RegExp;
+    startAppBlock: RegExp;
+    endAppBlock: RegExp;
+    startAsmNesting: RegExp;
+    endAsmNesting: RegExp;
+    cudaBeginDef: RegExp;
+    cudaEndDef: RegExp;
+    binaryHideFuncRe: RegExp | null;
+    maxAsmLines: number;
+    asmOpcodeRe: RegExp;
+    lineRe: RegExp;
+    labelRe: RegExp;
+    destRe: RegExp;
+    commentRe: RegExp;
+    instOpcodeRe: RegExp;
+    commentOnly: RegExp;
+    commentOnlyNvcc: RegExp;
+    sourceTag: RegExp;
+    sourceD2Tag: RegExp;
+    sourceCVTag: RegExp;
+    source6502Dbg: RegExp;
+    source6502DbgEnd: RegExp;
+    sourceStab: RegExp;
+    stdInLooking: RegExp;
+    endBlock: RegExp;
+    blockComments: RegExp;
     constructor(compilerProps) {
         super();
 
@@ -125,7 +172,7 @@ export class AsmParser extends AsmRegex {
         // bar:
         //    add r0, r0, #1
         // in this case [foo, bar] would be the label set for the add instruction.
-        let currentLabelSet = [];
+        let currentLabelSet: string[] = [];
         let inLabelGroup = false;
         let inCustomAssembly = 0;
         const startBlock = /\.cfi_startproc/;
@@ -212,10 +259,10 @@ export class AsmParser extends AsmRegex {
 
         const MaxLabelIterations = 10;
         for (let iter = 0; iter < MaxLabelIterations; ++iter) {
-            let toAdd = [];
+            const toAdd: string[] = [];
             _.each(labelsUsed, (t, label) => {
                 // jshint ignore:line
-                _.each(weakUsages[label], nowused => {
+                _.each(weakUsages[label], (nowused: string) => {
                     if (labelsUsed[nowused]) return;
                     toAdd.push(nowused);
                 });
@@ -252,7 +299,7 @@ export class AsmParser extends AsmRegex {
 
     // Get labels which are used in the given line.
     getUsedLabelsInLine(line) {
-        const labelsInLine = [];
+        const labelsInLine: AsmResultLabel[] = [];
 
         // Strip any comments
         const instruction = line.split(this.commentRe, 1)[0];
@@ -275,7 +322,7 @@ export class AsmParser extends AsmRegex {
         return labelsInLine;
     }
 
-    processAsm(asmResult, filters) {
+    processAsm(asmResult, filters: ParseFilters): ParsedAsmResult {
         if (filters.binary) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
@@ -285,8 +332,8 @@ export class AsmParser extends AsmRegex {
             asmResult = asmResult.replace(this.blockComments, '');
         }
 
-        const asm = [];
-        const labelDefinitions = {};
+        const asm: ParsedAsmResultLine[] = [];
+        const labelDefinitions: Map<string, number> = new Map<string, number>();
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
@@ -298,11 +345,11 @@ export class AsmParser extends AsmRegex {
         const files = this.parseFiles(asmLines);
         let prevLabel = '';
 
-        let source = null;
+        let source: AsmResultSource | undefined | null;
         let mayRemovePreviousLabel = true;
         let keepInlineCode = false;
 
-        let lastOwnSource = null;
+        let lastOwnSource: AsmResultSource | undefined | null;
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         function maybeAddBlank() {
@@ -381,7 +428,7 @@ export class AsmParser extends AsmRegex {
                 case 132:
                 case 100:
                     source = null;
-                    prevLabel = null;
+                    prevLabel = '';
                     break;
             }
         };
@@ -437,7 +484,7 @@ export class AsmParser extends AsmRegex {
 
             if (this.endBlock.test(line) || (inNvccCode && /}/.test(line))) {
                 source = null;
-                prevLabel = null;
+                prevLabel = '';
                 lastOwnSource = null;
             }
 
@@ -491,7 +538,7 @@ export class AsmParser extends AsmRegex {
                     }
                 } else {
                     // A used label.
-                    prevLabel = match;
+                    prevLabel = match[1];
                     labelDefinitions[match[1]] = asm.length + 1;
                 }
             }
@@ -517,7 +564,7 @@ export class AsmParser extends AsmRegex {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? source : null,
+                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
                 labels: labelsInLine,
             });
         }
@@ -548,16 +595,16 @@ export class AsmParser extends AsmRegex {
         return !this.binaryHideFuncRe.test(func);
     }
 
-    processBinaryAsm(asmResult, filters) {
+    processBinaryAsm(asmResult, filters): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
-        const asm = [];
-        const labelDefinitions = {};
+        const asm: ParsedAsmResultLine[] = [];
+        const labelDefinitions: Map<string, number> = new Map<string, number>();
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');
         const startingLineCount = asmLines.length;
-        let source = null;
-        let func = null;
+        let source: AsmResultSource | undefined | null = null;
+        let func: string | null = null;
         let mayRemovePreviousLabel = true;
 
         // Handle "error" documents.
@@ -572,7 +619,7 @@ export class AsmParser extends AsmRegex {
         }
 
         for (const line of asmLines) {
-            const labelsInLine = [];
+            const labelsInLine: AsmResultLabel[] = [];
 
             if (asm.length >= this.maxAsmLines) {
                 if (asm.length === this.maxAsmLines) {
@@ -601,7 +648,7 @@ export class AsmParser extends AsmRegex {
             match = line.match(this.labelRe);
             if (match) {
                 func = match[2];
-                if (this.isUserFunction(func)) {
+                if (func && this.isUserFunction(func)) {
                     asm.push({
                         text: func + ':',
                         source: null,

@@ -1,3 +1,20 @@
+mixin checkbox(cls, text)
+  .checkbox
+    label
+      input(class=cls type="checkbox")
+      != text
+
+mixin select(cls, text)
+  div
+    label!= text
+    select(class=cls)
+
+mixin input(cls, type, text, style)
+  div
+    label!= text
+    input(class=cls type=type style=style)
+
+
 #settings.modal.fade.gl_keep(tabindex="-1" role="dialog")
   .modal-dialog.modal-lg(role="document")
     .modal-content
@@ -20,48 +37,22 @@
               li.nav-item(role="presentation"): a.nav-link(href="#compilation" role="tab" data-toggle="tab") Compilation
           .card-body.tab-content
             #colouring.tab-pane.active.form-group(role="group")
-              div
-                label
-                  | Site theme
-                select.theme
-              .checkbox
-                label
-                  input.colourise(type="checkbox")
-                  | Colourise lines to show how the source maps to the output
-              .checkbox
-                label
-                  input.alwaysEnableAllSchemes(type="checkbox")
-                  | Make all colour schemes available regardless of theme
-              label
-                | Line highlighting colour scheme&nbsp;
-                select.colourScheme
+              +select("theme", "Site theme")
+              +checkbox("colourise", "Colourise lines to show how the source maps to the output")
+              +checkbox("alwaysEnableAllSchemes", "Make all colour schemes available regardless of theme")
+              +select("colourScheme", "Line highlighting colour scheme")
             #site-behaviour.tab-pane.form-group(role="group")
               label
                 | Default language
                 small(style="margin-left: 3px")
                   span.fas.fa-info-circle(title="New editors only (Reset UI to clear yours)" aria-label="New editors only (Reset UI to clear yours)")
               select.defaultLanguage
-              .checkbox
-                label
-                  input.keepMultipleTabs(type="checkbox")
-                  | Keep page status per tab
-              .checkbox
-                label
-                  input.allowStoreCodeDebug(type="checkbox")
-                  | Allow my source code to be temporarily stored for diagnostic purposes in the event of an error
-              .checkbox
-                label
-                  input.newEditorLastLang(type="checkbox")
-                  | Use last selected language when opening new Editors
-              .checkbox
-                label
-                  input.enableCommunityAds(type="checkbox")
-                  | Show community events
+              +checkbox("keepMultipleTabs", "Keep page status per tab")
+              +checkbox("allowStoreCodeDebug", "Allow my source code to be temporarily stored for diagnostic purposes in the event of an error")
+              +checkbox("newEditorLastLang", "Use last selected language when opening new Editors")
+              +checkbox("enableCommunityAds", "Show community events")
             #keybindings.tab-pane.form-group(role="group")
-              .checkbox
-                label
-                  input.useVim(type="checkbox")
-                  | Vim editor mode
+              +checkbox("useVim", "Vim editor mode")
               .the-save-option-to-auto-share
                 label
                   kbd Ctrl
@@ -86,72 +77,26 @@
                   kbd S
                   | &nbsp; is set to create a short link.
             #editor.tab-pane.form-group(role="group")
-              div
-                label
-                  | Desired Font Family in editors
-                input.editorsFFont(type="text" style="width:100%")
-              label Default font scale
-              select.defaultFontScale
-              .checkbox
-                label
-                  input.editorsFLigatures(type="checkbox")
-                  | Enable font ligatures
-              .checkbox
-                label
-                  input.autoCloseBrackets(type="checkbox")
-                  | Automatically insert matching brackets and parentheses
-              .checkbox
-                label
-                  input.autoIndent(type="checkbox")
-                  | Automatically indent code (reload page after changing)
-              .checkbox
-                label
-                  input.hoverShowSource(type="checkbox")
-                  | Highlight linked code lines on hover
-              .checkbox
-                label
-                  input.hoverShowAsmDoc(type="checkbox")
-                  | Show asm description on hover
-              .checkbox
-                label
-                  input.showQuickSuggestions(type="checkbox")
-                  | Show quick suggestions
-              .checkbox
-                label
-                  input.useCustomContextMenu(type="checkbox")
-                  | Use custom context menu
-              .checkbox
-                label
-                  input.showMinimap(type="checkbox")
-                  | Show editor minimap
-              .checkbox
-                label
-                  input.keepSourcesOnLangChange(type="checkbox")
-                  | Keep editor source on language change
-              .checkbox
-                label
-                  input.useSpaces(type="checkbox")
-                  | Use spaces for indentation
-              div
-                label Tab width
-                input.tabWidth(type="number")
-              div
-                label Format based on
-                select.formatBase
-              .checkbox
-                label
-                  input.wordWrap(type="checkbox")
-                  | Enable Word Wrapping
-              .checkbox
-                label
-                  input.enableCodeLens(type="checkbox")
-                  | Enable CodeLens features (requires refresh to take effect)
+              +input("editorsFFont", "text", "Desired Font Family in editors", "width:100%")
+              +select("defaultFontScale", "Default font scale")
+              +checkbox("editorsFLigatures", "Enable font ligatures")
+              +checkbox("autoCloseBrackets", "Automatically insert matching brackets and parentheses")
+              +checkbox("autoIndent", "Automatically indent code (reload page after changing)")
+              +checkbox("hoverShowSource", "Highlight linked code lines on hover")
+              +checkbox("indefiniteLineHighlight", "Highlight linked code indefinitely")
+              +checkbox("hoverShowAsmDoc", "Show asm description on hover")
+              +checkbox("showQuickSuggestions", "Show quick suggestions")
+              +checkbox("useCustomContextMenu", "Use custom context menu")
+              +checkbox("showMinimap", "Show editor minimap")
+              +checkbox("keepSourcesOnLangChange", "Keep editor source on language change")
+              +checkbox("useSpaces", "Use spaces for indentation")
+              +input("tabWidth", "number", "Tab width")
+              +select("formatBase", "Format based on")
+              +checkbox("wordWrap", "Enable Word Wrapping")
+              +checkbox("enableCodeLens", "Enable CodeLens features (requires refresh to take effect)")
             #compilation.tab-pane.form-group(role="group")
               div
-                .checkbox
-                  label
-                    input.compileOnChange(type="checkbox")
-                    | Compile automatically when source changes
+                +checkbox("compileOnChange", "Compile automatically when source changes")
                 div
                   label Delay before compiling:&nbsp;
                     span.delay-current-value &nbsp;
@@ -159,13 +104,7 @@
                     b 0.25s
                     input.delay(type="range")
                     b 3s
-                .checkbox
-                  label
-                    input.formatOnCompile(type="checkbox")
-                    | Enable formatting on compilation (for supported languages)
-                .checkbox
-                  label
-                    input.executorCompileOnChange(type="checkbox")
-                    | Compile executor automatically when arguments change
+                +checkbox("formatOnCompile", "Enable formatting on compilation (for supported languages)")
+                +checkbox("executorCompileOnChange", "Compile executor automatically when arguments change")
       .modal-footer
         button.btn.btn-outline-primary(type="button" data-dismiss="modal") Close

@@ -365,13 +365,16 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                     className: lineClass,
                 },
             }));
-            if (this.linkedFadeTimeoutId !== null) {
-                clearTimeout(this.linkedFadeTimeoutId);
+
+            if (!this.settings.indefiniteLineHighlight) {
+                if (this.linkedFadeTimeoutId !== null) {
+                    clearTimeout(this.linkedFadeTimeoutId);
+                }
+                this.linkedFadeTimeoutId = setTimeout(() => {
+                    this.clearLinkedLines();
+                    this.linkedFadeTimeoutId = null;
+                }, 5000);
             }
-            this.linkedFadeTimeoutId = setTimeout(() => {
-                this.clearLinkedLines();
-                this.linkedFadeTimeoutId = null;
-            }, 5000);
             this.updateDecorations();
         }
     }
