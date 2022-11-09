@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        browser: ['chrome', 'firefox']
+        browser: ['chrome']
     steps:
       - name: Checkout
         uses: actions/checkout@v3
