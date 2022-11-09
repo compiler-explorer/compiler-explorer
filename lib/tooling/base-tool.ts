@@ -27,7 +27,7 @@ import path from 'path';
 import PromClient from 'prom-client';
 import _ from 'underscore';
 
-import {ExecutionOptions, ToolResult} from '../../types/compilation/compilation.interfaces';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
@@ -35,7 +35,7 @@ import * as exec from '../exec';
 import {logger} from '../logger';
 import {parseOutput} from '../utils';
 
-import {ToolEnv, ToolInfo, ToolTypeKey} from './base-tool.interface';
+import {Tool, ToolEnv, ToolInfo, ToolResult, ToolTypeKey} from './base-tool.interface';
 
 const toolCounter = new PromClient.Counter({
     name: 'tool_invocations_total',
@@ -43,10 +43,10 @@ const toolCounter = new PromClient.Counter({
     labelNames: ['language', 'name'],
 });
 
-export class BaseTool {
-    protected tool: ToolInfo;
+export class BaseTool implements Tool {
+    public readonly tool: ToolInfo;
     private env: ToolEnv;
-    private addOptionsToToolArgs = true;
+    protected addOptionsToToolArgs = true;
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         this.tool = toolInfo;

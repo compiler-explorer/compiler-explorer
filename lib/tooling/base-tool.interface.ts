@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {LanguageKey} from '../../types/languages.interfaces';
+import {Library} from '../../types/libraries/libraries.interfaces';
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
 
 export type ToolTypeKey = 'independent' | 'postcompilation';
 
@@ -47,3 +49,36 @@ export type ToolEnv = {
     ceProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
     compilerProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
 };
+
+export type Artifact = {
+    content: string;
+    type: string;
+    name: string;
+    title: string;
+};
+
+export type ToolResult = {
+    id: string;
+    name?: string;
+    code: number;
+    languageId?: LanguageKey | 'stderr';
+    stderr: ResultLine[];
+    stdout: ResultLine[];
+    artifact?: Artifact;
+};
+
+export interface Tool {
+    readonly tool: ToolInfo;
+
+    getId(): string;
+
+    getType(): string;
+
+    runTool(
+        compilationInfo: Record<any, any>,
+        inputFilepath?: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, Library>,
+    ): Promise<ToolResult>;
+}

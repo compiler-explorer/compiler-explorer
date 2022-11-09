@@ -424,8 +424,8 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     return result;
 }
 
-export function asSafeVer(semver: string | number | null) {
-    if (semver !== null) {
+export function asSafeVer(semver: string | number | null | undefined) {
+    if (semver != null) {
         if (typeof semver === 'number') {
             semver = `${semver}`;
         }

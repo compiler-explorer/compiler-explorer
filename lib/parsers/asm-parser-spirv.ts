@@ -98,7 +98,7 @@ export class SPIRVAsmParser extends AsmParser {
         const endTime = process.hrtime.bigint();
         return {
             asm: asm,
-            labelDefinitions: {},
+            labelDefinitions: new Map<string, number>(),
             parsingTime: ((endTime - startTime) / BigInt(1000000)).toString(),
             filteredCount: startingLineCount - asm.length,
         };

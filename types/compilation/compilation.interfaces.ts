@@ -25,21 +25,26 @@
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
 import {CompilerInfo} from '../compiler.interfaces';
-import {LanguageKey} from '../languages.interfaces';
+import {BasicExecutionResult} from '../execution/execution.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
 
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
-    buildResult?: unknown;
+    buildResult?: BuildResult;
+    buildsteps?: BuildStep[];
     inputFilename?: string;
     asm?: ResultLine[];
+    devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
     execResult?: {
         stdout?: ResultLine[];
         stderr?: ResultLine[];
+        code: number;
+        didExecute: boolean;
+        buildResult?: BuildResult;
     };
     hasGnatDebugOutput?: boolean;
     gnatDebugOutput?: ResultLine[];
@@ -50,11 +55,13 @@ export type CompilationResult = {
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
+    languageId?: string;
 
     hasPpOutput?: boolean;
     ppOutput?: any;
 
     hasOptOutput?: boolean;
+    optOutput?: any;
     optPath?: string;
 
     hasAstOutput?: boolean;
@@ -85,7 +92,12 @@ export type CompilationResult = {
     haskellCmmOutput?: any;
 
     forceBinaryView?: boolean;
+
     bbcdiskimage?: string;
+    speccytape?: string;
+    miraclesms?: string;
+    jsnesrom?: string;
+
     hints?: string[];
 };
 
@@ -98,31 +110,19 @@ export type ExecutionOptions = {
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    // Stdin
     input?: any;
     killChild?: () => void;
 };
 
-export type BuildResult = {
+export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: any[];
 };
 
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
-    id: string;
-    name?: string;
-    code: number;
-    languageId?: LanguageKey | 'stderr';
-    stderr: ResultLine[];
-    stdout: ResultLine[];
-    artifact?: Artifact;
+export type BuildStep = BasicExecutionResult & {
+    step: string;
 };
 
 export type CompilationInfo = {

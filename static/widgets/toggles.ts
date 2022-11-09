@@ -97,6 +97,10 @@ export class Toggles extends EventEmitter {
         return {...this.state};
     }
 
+    isSet(key: string): boolean {
+        return key in this.state && this.state[key];
+    }
+
     set(key: string, value: boolean) {
         const before = this.get();
         this.state[key] = value;

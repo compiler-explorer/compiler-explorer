@@ -42,7 +42,7 @@ export class SPIRVCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.asm = new SPIRVAsmParser();
+        this.asm = new SPIRVAsmParser(this.compilerProps);
 
         this.translatorPath = this.compilerProps('translatorPath');
         this.disassemblerPath = this.compilerProps('disassemblerPath');
@@ -142,6 +142,7 @@ export class SPIRVCompiler extends BaseCompiler {
 
         result.stdout = result.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
         result.stderr = result.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
+        result.languageId = 'spirv';
         return result;
     }
 

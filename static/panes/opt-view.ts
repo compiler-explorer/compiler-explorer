@@ -28,32 +28,14 @@ import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
 import {MonacoPane} from './pane';
-import {OptState} from './opt-view.interfaces';
+import {OptState, OptCodeEntry} from './opt-view.interfaces';
 import {MonacoPaneState} from './pane.interfaces';
 
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
 
-type SourceLocation = {
-    File: string;
-    Line: number;
-    Column: number;
-};
-
-type OptCodeEntry = {
-    // TODO: Not fully correct type yet, will do for now
-    DebugLoc: SourceLocation;
-    Function: string;
-    Pass: string;
-    Name: string;
-    text: string;
-    optType: string;
-    displayString: string;
-};
-
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
-    decorations: any = {};
     currentDecorations: string[] = [];
     // Note: bool | undef here instead of just bool because of an issue with field initialization order
     isCompilerSupported?: boolean;

@@ -46,7 +46,7 @@ export class ZigCompiler extends BaseCompiler {
 
         this.self_hosted_cli =
             this.compiler.semver === 'trunk' ||
-            (this.compiler.semver && Semver.gt(asSafeVer(this.compiler.semver), '0.6.0', true));
+            !!(this.compiler.semver && Semver.gt(asSafeVer(this.compiler.semver), '0.6.0', true));
 
         if (this.self_hosted_cli) {
             this.compiler.irArg = ['-femit-llvm-ir'];
@@ -75,7 +75,10 @@ export class ZigCompiler extends BaseCompiler {
             source += 'pub fn panic(msg: []const u8, error_return_trace: ?*@import("builtin").StackTrace) noreturn {\n';
             source += '    zig_panic();\n';
             source += '}\n';
-        } else {
+        } else if (
+            Semver.gte(asSafeVer(this.compiler.semver), '0.8.0', true) &&
+            Semver.lte(asSafeVer(this.compiler.semver), '0.9.0', true)
+        ) {
             source += '\n';
             source += 'extern fn zig_panic() noreturn;\n';
             source +=
@@ -83,6 +86,17 @@ export class ZigCompiler extends BaseCompiler {
                 '?*@import("std").builtin.StackTrace) noreturn {\n';
             source += '    _ = msg;\n';
             source += '    _ = error_return_trace;\n';
+            source += '    zig_panic();\n';
+            source += '}\n';
+        } else {
+            source += '\n';
+            source += 'extern fn zig_panic() noreturn;\n';
+            source +=
+                'pub fn panic(msg: []const u8, error_return_trace: ' +
+                '?*@import("std").builtin.StackTrace, ret_addr: ?usize) noreturn {\n';
+            source += '    _ = msg;\n';
+            source += '    _ = error_return_trace;\n';
+            source += '    _ = ret_addr;\n';
             source += '    zig_panic();\n';
             source += '}\n';
         }

@@ -281,7 +281,7 @@ export type PopulatedRustHirViewState = StateWithId & {
 export type EmptyDeviceViewState = EmptyState;
 export type PopulatedDeviceViewState = StateWithId & {
     source: string;
-    deviceOutput: unknown;
+    devices: unknown;
     compilerName: string;
     editorid: number;
     treeid: number;

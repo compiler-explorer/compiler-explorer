@@ -237,7 +237,7 @@ export class MultifileService {
 
         if (file.isOpen) {
             const editor = this.hub.getEditorById(file.editorId);
-            return editor.getSource();
+            return editor?.getSource() ?? '';
         } else {
             return file.content;
         }

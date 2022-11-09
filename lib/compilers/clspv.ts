@@ -41,7 +41,7 @@ export class CLSPVCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.asm = new SPIRVAsmParser();
+        this.asm = new SPIRVAsmParser(this.compilerProps);
 
         this.disassemblerPath = this.compilerProps('disassemblerPath');
     }
@@ -87,6 +87,7 @@ export class CLSPVCompiler extends BaseCompiler {
 
         result.stdout = result.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
         result.stderr = result.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
+        result.languageId = 'spirv';
         return result;
     }
 }

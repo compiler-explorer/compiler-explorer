@@ -38,7 +38,8 @@ type DefKeys =
     | 'formatter'
     | 'logoUrl'
     | 'logoUrlDark'
-    | 'monacoDisassembly';
+    | 'monacoDisassembly'
+    | 'tooltip';
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
@@ -85,11 +86,12 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        tooltip: 'A collection of asm analysis tools',
     },
     assembly: {
         name: 'Assembly',
         monaco: 'asm',
-        extensions: ['.asm', '.6502'],
+        extensions: ['.asm', '.6502', '.s'],
         alias: ['asm'],
         logoUrl: 'assembly.png', // TODO: Find a better alternative
         logoUrlDark: null,
@@ -470,6 +472,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+    },
+    racket: {
+        name: 'Racket',
+        monaco: 'scheme',
+        extensions: ['.rkt'],
+        alias: [],
+        logoUrl: 'racket.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'scheme',
     },
     ruby: {
         name: 'Ruby',

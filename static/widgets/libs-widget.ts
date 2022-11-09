@@ -26,25 +26,14 @@ import $ from 'jquery';
 import {options} from '../options';
 import * as local from '../local';
 import {Library, LibraryVersion} from '../options.interfaces';
+import {Lib, WidgetState} from './libs-widget.interfaces';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
-
-interface StateLib {
-    id?: string;
-    name?: string;
-    ver?: string;
-    version?: string;
-}
-
-interface WidgetState {
-    libs?: StateLib[];
-}
 
 export type CompilerLibs = Record<string, Library>;
 type LangLibs = Record<string, CompilerLibs>;
 type AvailableLibs = Record<string, LangLibs>;
 type LibInUse = {libId: string; versionId: string} & LibraryVersion;
-type Lib = {name: string; ver: string};
 
 type FavLibraries = Record<string, string[]>;
 
@@ -292,7 +281,13 @@ export class LibsWidget {
         versions.append(noVersionSelectedOption);
         let hasVisibleVersions = false;
 
-        for (const versionId in lib.versions) {
+        const versionsArr = Object.keys(lib.versions).map(id => {
+            return {id: id, order: lib.versions[id]['$order']};
+        });
+        versionsArr.sort((a, b) => b.order - a.order);
+
+        for (const libVersion of versionsArr) {
+            const versionId = libVersion.id;
             const version = lib.versions[versionId];
             const option = $('<option>');
             if (version.used) {

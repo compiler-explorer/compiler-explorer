@@ -84,6 +84,7 @@ export class LlvmPassDumpParser {
     lineFilters: RegExp[];
     debugInfoFilters: RegExp[];
     debugInfoLineFilters: RegExp[];
+    metadataLineFilters: RegExp[];
     irDumpHeader: RegExp;
     machineCodeDumpHeader: RegExp;
     functionDefine: RegExp;
@@ -118,7 +119,13 @@ export class LlvmPassDumpParser {
             /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
         ];
         this.debugInfoLineFilters = [
-            /,? ![\dA-Za-z]+((?=( {)?$))/, // debug annotation
+            /,? !dbg !\d+/, // instruction/function debug metadata
+            /,? debug-location !\d+/, // Direct source locations like 'example.cpp:8:1' not filtered
+        ];
+
+        // Conditionally enabled by `filterIRMetadata`
+        this.metadataLineFilters = [
+            /,?(?: ![\d.A-Za-z]+){2}/, // any instruction metadata
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
@@ -453,39 +460,49 @@ export class LlvmPassDumpParser {
         }
     }
 
-    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
-        // Additional filters conditionally enabled by `filterDebugInfo`
+    applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        // Additional filters conditionally enabled by `filterDebugInfo`/`filterIRMetadata`
         let filters = this.filters;
         let lineFilters = this.lineFilters;
         if (llvmOptPipelineOptions.filterDebugInfo) {
             filters = filters.concat(this.debugInfoFilters);
             lineFilters = lineFilters.concat(this.debugInfoLineFilters);
         }
+        if (llvmOptPipelineOptions.filterIRMetadata) {
+            lineFilters = lineFilters.concat(this.metadataLineFilters);
+        }
 
-        // Filter a lot of junk before processing
-        const preprocessed_lines = ir
-            .slice(
-                ir.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
-            )
-            .filter(line => filters.every(re => line.text.match(re) === null)) // apply filters
-            .map(_line => {
-                let line = _line.text;
-                // eslint-disable-next-line no-constant-condition
-                while (true) {
-                    let newLine = line;
-                    for (const re of lineFilters) {
-                        newLine = newLine.replace(re, '');
+        return (
+            ir
+                // whole-line filters
+                .filter(line => filters.every(re => line.text.match(re) === null))
+                // intra-line filters
+                .map(_line => {
+                    let line = _line.text;
+                    // eslint-disable-next-line no-constant-condition
+                    while (true) {
+                        let newLine = line;
+                        for (const re of lineFilters) {
+                            newLine = newLine.replace(re, '');
+                        }
+                        if (newLine === line) {
+                            break;
+                        } else {
+                            line = newLine;
+                        }
                     }
-                    if (newLine === line) {
-                        break;
-                    } else {
-                        line = newLine;
-                    }
-                }
-                _line.text = line;
-                return _line;
-            });
+                    _line.text = line;
+                    return _line;
+                })
+        );
+    }
 
+    process(output: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        // Crop out any junk before the pass dumps (e.g. warnings)
+        const ir = output.slice(
+            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
+        );
+        const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);
     }
 }

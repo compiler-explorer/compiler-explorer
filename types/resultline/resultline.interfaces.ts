@@ -24,7 +24,14 @@ export type ResultLineTag = MessageWithLocation & {
     fixes?: Fix[];
 };
 
+export type ResultLineSource = {
+    file: string | null;
+    line: number;
+    mainsource?: boolean;
+};
+
 export type ResultLine = {
     text: string;
     tag?: ResultLineTag;
+    source?: ResultLineSource;
 };

@@ -36,7 +36,6 @@ import {
     CompilationResult,
     CustomInputForTool,
     ExecutionOptions,
-    ToolResult,
 } from '../types/compilation/compilation.interfaces';
 import {
     LLVMOptPipelineBackendOptions,
@@ -75,7 +74,7 @@ import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {getToolchainPath} from './toolchain-utils';
-import {ToolTypeKey} from './tooling/base-tool.interface';
+import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
 export class BaseCompiler {
@@ -95,7 +94,7 @@ export class BaseCompiler {
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
     protected possibleArguments: CompilerArguments;
-    protected possibleTools: any[];
+    protected possibleTools: Tool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
     public outputFilebase: string;
@@ -295,7 +294,7 @@ export class BaseCompiler {
 
     async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
         // Here only so can be overridden by compiler implementations.
-        return exec.execute(filepath, args, execOptions);
+        return await exec.execute(filepath, args, execOptions);
     }
 
     protected getCompilerCacheKey(compiler, args, options): CompilationCacheKey {
@@ -315,7 +314,7 @@ export class BaseCompiler {
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key);
         if (!result) {
-            result = await this.env.enqueue(async () => exec.execute(compiler, args, options));
+            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
                 this.env
                     .compilerCachePut(key, result)
@@ -340,6 +339,10 @@ export class BaseCompiler {
         };
     }
 
+    getCompilerResultLanguageId(): string | undefined {
+        return undefined;
+    }
+
     async runCompiler(
         compiler: string,
         options: string[],
@@ -355,7 +358,10 @@ export class BaseCompiler {
         }
 
         const result = await this.exec(compiler, options, execOptions);
-        return this.transformToCompilationResult(result, inputFilename);
+        return {
+            ...this.transformToCompilationResult(result, inputFilename),
+            languageId: this.getCompilerResultLanguageId(),
+        };
     }
 
     async runCompilerRawOutput(compiler, options, inputFilename, execOptions) {
@@ -395,9 +401,7 @@ export class BaseCompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = ['-d', outputFilename, '-l', ...objdumper.widthOptions];
-        if (demangle) args.push('-C');
-        if (intelAsm) args.push(...objdumper.intelAsmOptions);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
@@ -451,6 +455,7 @@ export class BaseCompiler {
 
         return {
             inputFilename,
+            languageId: input.languageId,
             ...this.processExecutionResult(input, transformedInput),
         };
     }
@@ -1001,7 +1006,7 @@ export class BaseCompiler {
 
     async generateIR(inputFilename: string, options: string[], filters: ParseFilters) {
         // These options make Clang produce an IR
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
+        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1016,7 +1021,7 @@ export class BaseCompiler {
     }
 
     async processIrOutput(output, filters: ParseFilters) {
-        const irPath = this.getIrOutputFilename(output.inputFilename);
+        const irPath = this.getIrOutputFilename(output.inputFilename, filters);
         if (await fs.pathExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf-8');
             // uses same filters as main compiler
@@ -1029,13 +1034,14 @@ export class BaseCompiler {
     }
 
     async generateLLVMOptPipeline(
-        inputFilename,
-        options,
+        inputFilename: string,
+        options: string[],
         filters: ParseFilters,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
     ): Promise<LLVMOptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
-        const newOptions = _.filter(options, option => option !== '-fcolor-diagnostics')
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
             .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
             .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : []);
@@ -1177,7 +1183,7 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename) {
+    getIrOutputFilename(inputFilename: string, filters: ParseFilters): string {
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -1302,7 +1308,7 @@ export class BaseCompiler {
         } catch (e) {
             // Ignore errors
         }
-        return this.postProcess(asmResult, outputFilename, filters);
+        return await this.postProcess(asmResult, outputFilename, filters);
     }
 
     runToolsOfType(tools, type: ToolTypeKey, compilationInfo): Promise<ToolResult>[] {
@@ -1661,12 +1667,11 @@ export class BaseCompiler {
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths([]);
 
         const makeAst = backendOptions.produceAst && this.compiler.supportsAstView;
-        const makePp = typeof backendOptions.producePp === 'object' && this.compiler.supportsPpView;
+        const makePp = backendOptions.producePp && this.compiler.supportsPpView;
         const makeGnatDebug = backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews;
         const makeGnatDebugTree = backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews;
         const makeIr = backendOptions.produceIr && this.compiler.supportsIrView;
-        const makeLLVMOptPipeline =
-            typeof backendOptions.produceLLVMOptPipeline == 'object' && this.compiler.supportsLLVMOptPipelineView;
+        const makeLLVMOptPipeline = backendOptions.produceLLVMOptPipeline && this.compiler.supportsLLVMOptPipelineView;
         const makeRustMir = backendOptions.produceRustMir && this.compiler.supportsRustMirView;
         const makeRustMacroExp = backendOptions.produceRustMacroExp && this.compiler.supportsRustMacroExpView;
         const makeRustHir = backendOptions.produceRustHir && this.compiler.supportsRustHirView;
@@ -2265,7 +2270,7 @@ export class BaseCompiler {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this);
 
-        return demangler.process(result);
+        return await demangler.process(result);
     }
 
     async processOptOutput(optPath) {
@@ -2458,7 +2463,7 @@ but nothing was dumped. Possible causes are:
                           return result;
                       }
                       if (postProcess.length > 0) {
-                          return this.execPostProcess(result, postProcess, outputFilename, maxSize);
+                          return await this.execPostProcess(result, postProcess, outputFilename, maxSize);
                       } else {
                           const contents = await fs.readFile(outputFilename);
                           result.asm = contents.toString();

@@ -27,6 +27,7 @@ import path from 'path';
 import approvals from 'approvals';
 
 import {AsmParser} from '../lib/parsers/asm-parser';
+import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
 
@@ -39,6 +40,7 @@ function processAsm(filename, filters) {
     let parser;
     if (file.includes('Microsoft')) parser = new VcAsmParser();
     else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else if (filename.includes('cc65-')) parser = new CC65AsmParser();
     else {
         parser = new AsmParser();
         parser.binaryHideFuncRe =
