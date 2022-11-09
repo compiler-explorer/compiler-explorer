@@ -38,7 +38,8 @@ type DefKeys =
     | 'formatter'
     | 'logoUrl'
     | 'logoUrlDark'
-    | 'monacoDisassembly';
+    | 'monacoDisassembly'
+    | 'tooltip';
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
@@ -85,6 +86,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         previewFilter: null,
         monacoDisassembly: null,
+        tooltip: 'A collection of asm analysis tools',
     },
     assembly: {
         name: 'Assembly',

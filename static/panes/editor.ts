@@ -43,7 +43,7 @@ import {MonacoPane} from './pane';
 import {Hub} from '../hub';
 import {MonacoPaneState} from './pane.interfaces';
 import {Container} from 'golden-layout';
-import {EditorState} from './editor.interfaces';
+import {EditorState, LanguageSelectData} from './editor.interfaces';
 import {Language, LanguageKey} from '../../types/languages.interfaces';
 import {editor} from 'monaco-editor';
 import IModelDeltaDecoration = editor.IModelDeltaDecoration;
@@ -99,6 +99,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private conformanceViewerButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private cppInsightsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private quickBenchButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private languageInfoButton: JQuery;
     private nothingCtrlSSince?: number;
     private nothingCtrlSTimes?: number;
     private isCpp: editor.IContextKey<boolean>;
@@ -551,6 +552,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             return this.hub.compilerService.compilersByLang[language?.id ?? ''];
         });
 
+        this.languageInfoButton = this.domRoot.find('.language-info');
+        this.languageInfoButton.popover({});
         this.languageBtn = this.domRoot.find('.change-language');
         this.selectize = new TomSelect(this.languageBtn as any, {
             sortField: 'name',
@@ -1838,6 +1841,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     monaco.editor.setModelLanguage(editorModel, this.currentLanguage.monaco);
                 this.isCpp.set(this.currentLanguage?.id === 'c++');
                 this.isClean.set(this.currentLanguage?.id === 'clean');
+                this.updateLanguageTooltip();
                 this.updateTitle();
                 this.updateState();
                 // Broadcast the change to other panels
@@ -1900,7 +1904,12 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.hub.removeEditor(this.id);
     }
 
-    getSelectizeRenderHtml(data: any, escape: typeof escape_html, width: number, height: number): string {
+    getSelectizeRenderHtml(
+        data: LanguageSelectData,
+        escape: typeof escape_html,
+        width: number,
+        height: number
+    ): string {
         let result =
             '<div class="d-flex" style="align-items: center">' +
             '<div class="mr-1 d-flex" style="align-items: center">' +
@@ -1924,17 +1933,38 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 'px"/>';
         }
 
-        result += '</div><div>' + escape(data.name) + '</div></div>';
+        result += '</div><div';
+        if (data.tooltip) {
+            result += ' title="' + data.tooltip + '"';
+        }
+        result += '>' + escape(data.name) + '</div></div>';
         return result;
     }
 
-    renderSelectizeOption(data: any, escape: typeof escape_html) {
+    renderSelectizeOption(data: LanguageSelectData, escape: typeof escape_html) {
         return this.getSelectizeRenderHtml(data, escape, 23, 23);
     }
 
-    renderSelectizeItem(data: any, escape: typeof escape_html) {
+    renderSelectizeItem(data: LanguageSelectData, escape: typeof escape_html) {
         return this.getSelectizeRenderHtml(data, escape, 20, 20);
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
+
+    updateLanguageTooltip() {
+        this.languageInfoButton.popover('dispose');
+        if (this.currentLanguage?.tooltip) {
+            this.languageInfoButton.popover({
+                title: 'More info about this language',
+                content: this.currentLanguage.tooltip,
+                container: 'body',
+                trigger: 'focus',
+                placement: 'left',
+            });
+            this.languageInfoButton.show();
+            this.languageInfoButton.prop('title', this.currentLanguage.tooltip);
+        } else {
+            this.languageInfoButton.hide();
+        }
+    }
 }
