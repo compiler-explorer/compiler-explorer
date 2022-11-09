@@ -33,7 +33,7 @@ export type ParsedAsmResultLine = {
 
 export type ParsedAsmResult = {
     asm: ParsedAsmResultLine[];
-    labelDefinitions?: Map<string, number>;
+    labelDefinitions?: Record<string, number>;
     parsingTime?: string;
     filteredCount?: number;
     externalParserUsed?: boolean;

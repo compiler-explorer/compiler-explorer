@@ -77,7 +77,7 @@ export class CC65AsmParser extends AsmParser {
             return {asm: [{text: asmLines[0], source: null}]};
         }
 
-        const labelDefinitions: Map<string, number> = new Map<string, number>();
+        const labelDefinitions: Record<string, number> = {};
 
         for (const line of asmLines) {
             let match = line.match(this.commentRe);

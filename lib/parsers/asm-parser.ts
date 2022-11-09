@@ -333,7 +333,7 @@ export class AsmParser extends AsmRegex {
         }
 
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions: Map<string, number> = new Map<string, number>();
+        const labelDefinitions: Record<string, number> = {};
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
@@ -598,7 +598,7 @@ export class AsmParser extends AsmRegex {
     processBinaryAsm(asmResult, filters): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions: Map<string, number> = new Map<string, number>();
+        const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');
