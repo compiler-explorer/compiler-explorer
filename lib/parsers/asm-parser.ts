@@ -333,7 +333,7 @@ export class AsmParser extends AsmRegex {
         }
 
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions: Map<string, number> = new Map<string, number>();
+        const labelDefinitions: Record<string, number> = {};
 
         let asmLines = utils.splitLines(asmResult);
         const startingLineCount = asmLines.length;
@@ -497,7 +497,7 @@ export class AsmParser extends AsmRegex {
                     if (labelDef) {
                         asm.pop();
                         keepInlineCode = false;
-                        labelDefinitions.delete(labelDef[1]);
+                        delete labelDefinitions[labelDef[1]];
                     } else {
                         keepInlineCode = true;
                     }
@@ -539,7 +539,7 @@ export class AsmParser extends AsmRegex {
                 } else {
                     // A used label.
                     prevLabel = match[1];
-                    labelDefinitions.set(match[1], asm.length + 1);
+                    labelDefinitions[match[1]] = asm.length + 1;
                 }
             }
             if (inNvccDef) {
@@ -598,7 +598,7 @@ export class AsmParser extends AsmRegex {
     processBinaryAsm(asmResult, filters): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
-        const labelDefinitions: Map<string, number> = new Map<string, number>();
+        const labelDefinitions: Record<string, number> = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');
@@ -654,7 +654,7 @@ export class AsmParser extends AsmRegex {
                         source: null,
                         labels: labelsInLine,
                     });
-                    labelDefinitions.set(func, asm.length);
+                    labelDefinitions[func] = asm.length;
                 }
                 continue;
             }
