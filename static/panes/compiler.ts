@@ -1497,8 +1497,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    private errorResult(text: string) {
-        return {asm: this.fakeAsm(text), code: -1, stdout: '', stderr: ''};
+    private errorResult(text: string): CompilationResult {
+        return {timedOut: false, asm: this.fakeAsm(text), code: -1, stdout: [], stderr: []};
     }
 
     // TODO: Figure out if this is ResultLine or Assembly
