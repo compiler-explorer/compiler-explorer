@@ -50,56 +50,56 @@ function compareSponsors(lhs: Sponsor, rhs: Sponsor): number {
     return lhs.name.localeCompare(rhs.name);
 }
 
-function gcd(a: number, b: number): number {
-    return a === 0 ? b : gcd(b % a, a);
+function calcMean(values: number[]): number {
+    return values.reduce((x, y) => x + y, 0) / values.length;
 }
 
-function gcd_array(arr: number[]): number {
-    if (arr.length === 0) return 1;
-    let result = arr[0];
-    for (let i = 1; i < arr.length; ++i) {
-        result = gcd(arr[i], result);
-
-        if (result === 1) return 1;
-    }
-    return result;
+function squareSumFromMean(values: number[]): number {
+    const mean = calcMean(values);
+    return values.reduce((x, y) => x + (y - mean) * (y - mean), 0);
 }
 
-function lcm(a: number, b: number): number {
-    return Math.floor((a * b) / gcd(a, b));
-}
-
-export function makeIconSets(icons: Sponsor[], maxIcons: number): Sponsor[][] {
-    const gcd = gcd_array(icons.map(s => s.topIconShowEvery));
-    const every: Map<number, Sponsor[]> = new Map();
-    let setSize = 1;
-    for (const icon of icons) {
-        const index = Math.floor(icon.topIconShowEvery / gcd);
-        if (!every.has(index)) {
-            every.set(index, [icon]);
-            setSize = lcm(setSize, index);
+function sponsorIconSetsOk(sponsorAppearanceCount: Map<Sponsor, number>, totalAppearances: number): boolean {
+    const byEvery: Map<number, number[]> = new Map();
+    for (const [icon, count] of sponsorAppearanceCount.entries()) {
+        const seenEvery = count > 0 ? totalAppearances / count : Infinity;
+        if (seenEvery > icon.topIconShowEvery) {
+            return false;
         }
-        else every.set(index, icons);
+        const others = byEvery.get(icon.topIconShowEvery) || [];
+        others.push(seenEvery);
+        byEvery.set(icon.topIconShowEvery, others);
     }
+    const maxStandardDeviation = Math.max(
+        ...[...byEvery.values()].map(vals =>
+            vals.length < 2 ? 0 : Math.sqrt(squareSumFromMean(vals) / (vals.length - 1)),
+        ),
+    );
+    return maxStandardDeviation < 0.25; // TODO made up number
+}
+
+export function makeIconSets(icons: Sponsor[], maxIcons: number, maxIters = 100): Sponsor[][] {
     const result: Sponsor[][] = [];
-    for (let index = 0; index < setSize; ++index) {
-        const thisSlot: Sponsor[] = [];
-        const notChosen: Sponsor[] = [];
-        for (const [showEvery, icons] of every) {
-            if (index % showEvery === 0) thisSlot.push(...icons);
-            else notChosen.push(...icons);
+    const sponsorAppearanceCount: Map<Sponsor, number> = new Map();
+    for (const icon of icons) sponsorAppearanceCount.set(icon, 0);
+    while (!sponsorIconSetsOk(sponsorAppearanceCount, result.length)) {
+        if (result.length > maxIters) {
+            throw new Error(`Unable to find a solution in ${maxIters}`);
         }
-        if (thisSlot.length > maxIcons) {
-            throw new Error(`Unable to evenly distribute icons, slot ${index} has ${thisSlot.length} vs ${maxIcons}`);
-        }
-        while (thisSlot.length < maxIcons && notChosen.length > 0) {
-            // const totalProb = notChosen.reduce((x, y) => x + 1 / y.topIconShowEvery, 0);
-            // const randomChoice = Math.random() * totalProb;
-            const randomChoice = Math.floor(Math.random() * notChosen.length);
-            thisSlot.push(notChosen[randomChoice]);
-            notChosen.splice(randomChoice, 1);
-        }
-        result.push(thisSlot.sort(compareSponsors));
+        const toPick = icons.map(icon => {
+            return {
+                icon: icon,
+                // TODO this is subtly different from the seenEvery calc in setsOk; is that ok?
+                error: (sponsorAppearanceCount.get(icon) || 0) - result.length / icon.topIconShowEvery,
+            };
+        });
+        toPick.sort((lhs, rhs) => lhs.error - rhs.error);
+        const chosen = toPick
+            .slice(0, maxIcons)
+            .map(x => x.icon)
+            .sort(compareSponsors);
+        for (const c of chosen) sponsorAppearanceCount.set(c, (sponsorAppearanceCount.get(c) || 0) + 1);
+        result.push(chosen);
     }
     return result;
 }
@@ -107,13 +107,17 @@ export function makeIconSets(icons: Sponsor[], maxIcons: number): Sponsor[][] {
 class SponsorsImpl implements Sponsors {
     private readonly _levels: Level[];
     private readonly _icons: Sponsor[];
+    private readonly _iconSets: Sponsor[][];
+    private _nextSet: number;
 
-    constructor(levels: Level[]) {
+    constructor(levels: Level[], maxTopIcons = 3) {
         this._levels = levels;
         this._icons = [];
         for (const level of levels) {
             this._icons.push(...level.sponsors.filter(sponsor => sponsor.topIconShowEvery && sponsor.icon));
         }
+        this._iconSets = makeIconSets(this._icons, maxTopIcons);
+        this._nextSet = 0;
     }
 
     getLevels(): Level[] {
@@ -125,29 +129,9 @@ class SponsorsImpl implements Sponsors {
     }
 
     pickTopIcons(maxIcons: number, randFunc: () => number = Math.random): Sponsor[] {
-        // // Grab the icons we always show.
-        // const result = this._icons.filter(sponsor => sponsor.topIconShowEvery);
-        // // get number of slots left...
-        // // generate 100 pick patterns until  the "at least 1 in N" fits? then cycle them.
-        // // can do this in the constructor se we know ahead of time
-        // // X: one 1 in two
-        // // Y, Z: one in 3
-        // // need a pattern length of 2*3*3 = 18?
-        // // XY XZ YZ XY XZ
-        // if (result.length > maxIcons) {
-        //     throw new Error('Unable to do the thing with the stuff');
-        // }
-        // const possibleChoices = this._icons.filter(sponsor => typeof sponsor.topIcon === 'number');
-        // while (result.length < maxIcons && possibleChoices.length > 0) {
-        //     const totalVisibility = possibleChoices
-        //         .map(sponsor => sponsor.topIcon as number)
-        //         .reduce((x, y) => x + y, 0);
-        //     const randomPick = Math.floor(randFunc() * totalVisibility);
-        //     result.push(possibleChoices[randomPick]);
-        //     possibleChoices.splice(randomPick, 1);
-        // }
-        // // some icons on always
-        return this._icons.slice(0, maxIcons);
+        const result = this._iconSets[this._nextSet];
+        this._nextSet = (this._nextSet + 1) % this._iconSets.length;
+        return result;
     }
 }
 

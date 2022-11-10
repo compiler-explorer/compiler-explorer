@@ -171,21 +171,22 @@ levels:
         const icons = [sponsor1, sponsor2, sponsor3];
         makeIconSets(icons, 10).should.deep.eq([icons]);
         makeIconSets(icons, 3).should.deep.eq([icons]);
-        // Erk this isn't true as...
-        // 12 23 13
-        // will solve this
-        should.throw(() => makeIconSets(icons, 2), 'Unable to evenly distribute');
+        makeIconSets(icons, 2).should.deep.eq([
+            [sponsor1, sponsor2],
+            [sponsor1, sponsor3],
+            [sponsor2, sponsor3],
+        ]);
     });
     it('should pick icons appropriately when not required on different schedules', () => {
         const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
         const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 2, icon: '2'});
         const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
         const icons = [sponsor1, sponsor2, sponsor3];
-        // 6 identical copies...could be the same one
         makeIconSets(icons, 10).should.deep.eq([icons]);
         makeIconSets(icons, 3).should.deep.eq([icons]);
-        // a solution would be:
-        // 12 13
-        should.throw(() => makeIconSets(icons, 2), 'Unable to evenly distribute');
+        makeIconSets(icons, 2).should.deep.eq([
+            [sponsor1, sponsor2],
+            [sponsor1, sponsor3],
+        ]);
     });
 });
