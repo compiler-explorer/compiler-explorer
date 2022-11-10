@@ -77,7 +77,6 @@ import {getToolchainPath} from './toolchain-utils';
 import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
-
 export class BaseCompiler {
     public compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
