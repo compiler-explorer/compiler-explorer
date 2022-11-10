@@ -2573,7 +2573,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
 
         if (result && !this.flagsViewOpen) {
-            Object.values(result).forEach((arg, key) => {
+            Object.entries(result).forEach(([key, arg]) => {
                 const argumentButton = $(document.createElement('button'));
                 argumentButton.addClass('dropdown-item btn btn-light btn-sm');
                 argumentButton.attr('title', arg.description);
