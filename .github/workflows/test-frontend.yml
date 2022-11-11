@@ -5,6 +5,9 @@ jobs:
   cypress-run:
     if: github.repository_owner == 'compiler-explorer'
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        browser: ['chrome']
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -12,9 +15,16 @@ jobs:
         run: make clean
       - name: Install prerequisites
         run: make prereqs
+      - name: Setup Firefox
+        uses: browser-actions/setup-firefox@latest
+        if: matrix.browser == 'firefox'
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        if: matrix.browser == 'chrome'
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
           start: npm run dev
           wait-on: 'http://localhost:10240'
           config: screenshotOnRunFailure=false,video=false
+          browser: ${{ matrix.browser }}
