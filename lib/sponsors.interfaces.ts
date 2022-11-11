@@ -46,7 +46,7 @@ export type Level = {
 export interface Sponsors {
     getLevels(): Level[];
 
-    pickTopIcons(max: number): Sponsor[];
+    pickTopIcons(): Sponsor[];
 
     getAllTopIcons(): Sponsor[];
 }

@@ -122,7 +122,7 @@ class SponsorsImpl implements Sponsors {
     private readonly _iconSets: Sponsor[][];
     private _nextSet: number;
 
-    constructor(levels: Level[], maxTopIcons = 3) {
+    constructor(levels: Level[], maxTopIcons) {
         this._levels = levels;
         this._icons = [];
         for (const level of levels) {
@@ -140,15 +140,15 @@ class SponsorsImpl implements Sponsors {
         return this._icons;
     }
 
-    pickTopIcons(maxIcons: number, randFunc: () => number = Math.random): Sponsor[] {
+    pickTopIcons(): Sponsor[] {
         const result = this._iconSets[this._nextSet];
         this._nextSet = (this._nextSet + 1) % this._iconSets.length;
         return result;
     }
 }
 
-export function loadSponsorsFromLevels(levels: Level[]): Sponsors {
-    return new SponsorsImpl(levels);
+export function loadSponsorsFromLevels(levels: Level[], maxTopIcons: number): Sponsors {
+    return new SponsorsImpl(levels, maxTopIcons);
 }
 
 export function loadSponsorsFromString(stringConfig: string): Sponsors {
@@ -158,5 +158,5 @@ export function loadSponsorsFromString(stringConfig: string): Sponsors {
             if (!level[required]) throw new Error(`Level is missing '${required}'`);
         level.sponsors = level.sponsors.map(parse).sort(compareSponsors);
     }
-    return loadSponsorsFromLevels(sponsorConfig.levels);
+    return loadSponsorsFromLevels(sponsorConfig.levels, sponsorConfig.maxTopIcons || 3);
 }

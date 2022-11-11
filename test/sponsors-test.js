@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'fs';
 import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors';
 
-import {should} from './utils';
+import {resolvePathFromTestRoot, should} from './utils';
 
 describe('Sponsors', () => {
     it('should expand names to objects', () => {
@@ -201,5 +202,33 @@ levels:
             [sponsor1, sponsor2, sponsor3],
             [sponsor1, sponsor4, sponsor5],
         ]);
+    });
+});
+
+describe('Our specific sponsor file', () => {
+    const stringConfig = fs.readFileSync(resolvePathFromTestRoot('../etc/config/sponsors.yaml')).toString();
+    it('should parse the current config', () => {
+        loadSponsorsFromString(stringConfig);
+    });
+    it('should pick appropriate sponsor icons', () => {
+        const numLoads = 100;
+        const expectedNumIcons = 3;
+
+        const sponsors = loadSponsorsFromString(stringConfig);
+        const picks = [];
+        for (let load = 0; load < numLoads; ++load) {
+            picks.push(sponsors.pickTopIcons());
+        }
+        const countBySponsor = new Map();
+        for (const pick of picks) {
+            for (const sponsor of pick) {
+                countBySponsor.set(sponsor, (countBySponsor.get(sponsor) || 0) + 1);
+            }
+            pick.length.should.eq(expectedNumIcons);
+        }
+        for (const topIcon of sponsors.getAllTopIcons()) {
+            const appearsEvery = countBySponsor.get(topIcon) / numLoads;
+            appearsEvery.should.gte(topIcon.topIconShowEvery);
+        }
     });
 });

@@ -1,4 +1,5 @@
 ---
+maxTopIcons: 3
 levels:
   - name: Corporate Sponsors
     description: 'Enormous thanks to our corporate sponsors. Please visit their websites below:'
