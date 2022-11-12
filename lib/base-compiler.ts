@@ -1049,6 +1049,7 @@ export class BaseCompiler {
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
+        execOptions.timeoutMs = 40000;
 
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
 
