@@ -111,6 +111,10 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
         }
     }
 
+    if (compileResult.processExecutionResultTime !== undefined) {
+        pushTimingInfo(data, 'Process execution result', compileResult.processExecutionResultTime);
+    }
+
     if (compileResult.hasLLVMOptPipelineOutput && !_.isString(compileResult.llvmOptPipelineOutput)) {
         if (compileResult.llvmOptPipelineOutput?.clangTime !== undefined) {
             pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clangTime);

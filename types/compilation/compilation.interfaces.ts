@@ -107,6 +107,7 @@ export type CompilationResult = {
     retreivedFromCacheTime?: number;
     packageDownloadAndUnzipTime?: number;
     execTime?: number | string;
+    processExecutionResultTime?: number;
     objdumpTime?: number;
     parsingTime?: number;
 };

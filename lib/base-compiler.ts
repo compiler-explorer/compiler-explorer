@@ -431,10 +431,15 @@ export class BaseCompiler {
     }
 
     processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        const start = performance.now();
+        const stdout = utils.parseOutput(input.stdout, inputFilename);
+        const stderr = utils.parseOutput(input.stderr, inputFilename);
+        const end = performance.now();
         return {
             ...input,
-            stdout: utils.parseOutput(input.stdout, inputFilename),
-            stderr: utils.parseOutput(input.stderr, inputFilename),
+            stdout,
+            stderr,
+            processExecutionResultTime: end - start,
         };
     }
 
