@@ -285,6 +285,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private isLabelCtxKey: monaco.editor.IContextKey<boolean>;
     private revealJumpStackHasElementsCtxKey: monaco.editor.IContextKey<boolean>;
     private isAsmKeywordCtxKey: monaco.editor.IContextKey<boolean>;
+    private lineHasLinkedSourceCtxKey: monaco.editor.IContextKey<boolean>;
 
     private ppViewOpen: boolean;
     private astViewOpen: boolean;
@@ -994,6 +995,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.isLabelCtxKey = this.editor.createContextKey('isLabel', true);
         this.revealJumpStackHasElementsCtxKey = this.editor.createContextKey('hasRevealJumpStackElements', false);
         this.isAsmKeywordCtxKey = this.editor.createContextKey('isAsmKeyword', true);
+        this.lineHasLinkedSourceCtxKey = this.editor.createContextKey('lineHasLinkedSource', false);
 
         this.editor.addAction({
             id: 'jumptolabel',
@@ -1027,6 +1029,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(e.target.position.lineNumber, currentWord));
                     }
                 }
+
+                const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
+
+                this.lineHasLinkedSourceCtxKey.set( lineSource != null && lineSource.line > 0);
             }
         });
 
@@ -1049,11 +1055,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             keybindingContext: undefined,
             contextMenuGroupId: 'navigation',
             contextMenuOrder: 1.5,
+            precondition: 'lineHasLinkedSource',
             run: ed => {
                 const position = ed.getPosition();
                 if (position != null) {
                     const desiredLine = position.lineNumber - 1;
                     const source = this.assembly[desiredLine].source;
+                    // The precondition ensures that this is always true, but lets not blindly belive it
                     if (source && source.line > 0) {
                         const editorId = this.getEditorIdBySourcefile(source);
                         if (editorId) {
