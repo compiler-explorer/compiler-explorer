@@ -1995,9 +1995,9 @@ export class BaseCompiler {
 
             const makeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
-                'make',
-                this.env.ceProps('make'),
-                [],
+                'build',
+                this.env.ceProps('cmake'),
+                ['--build', '.'],
                 execParams,
             );
 
