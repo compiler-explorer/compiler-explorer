@@ -504,6 +504,8 @@ export class Tree {
             if (files && files.length > 0) {
                 await this.openZipFile(files[0]);
             }
+
+            loadProjectFromFile.val('');
         });
 
         this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
