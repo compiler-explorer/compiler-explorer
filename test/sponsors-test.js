@@ -245,7 +245,7 @@ describe('Our specific sponsor file', () => {
         }
         for (const topIcon of sponsors.getAllTopIcons()) {
             const appearsEvery = countBySponsor.get(topIcon) / numLoads;
-            appearsEvery.should.gte(topIcon.topIconShowEvery);
+            appearsEvery.should.lte(topIcon.topIconShowEvery);
         }
     });
 });
