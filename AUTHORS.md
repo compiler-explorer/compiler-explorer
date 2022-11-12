@@ -5,6 +5,7 @@ Explorer are:
 - [Rubén Rincón](https://rinconblanco.es)
 - [Patrick Quist](https://github.com/partouf)
 - [Austin Morton](https://github.com/apmorton)
+- [Marc Poulhiès](https://poulhies.fr)
 
 ---
 
@@ -15,7 +16,6 @@ Additionally, these people have been immensely helpful in the development of Com
 - [Simon Brand](https://blog.tartanllama.xyz/)
 - [Filipe Cabecinhas](https://github.com/filcab)
 - [Mats Larsen](https://supergrecko.dev)
-- [Marc Poulhiès](https://poulhies.fr)
 - [Jeremy Rifkin](https://github.com/jeremy-rifkin)
 
 Please also see our [Contributors](CONTRIBUTORS.md) for a full list.
