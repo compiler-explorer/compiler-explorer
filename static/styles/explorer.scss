@@ -866,6 +866,13 @@ html[data-theme='dark'] {
     float: right;
     padding: 4px 10px 4px 0;
 }
+.tree .drophere {
+    margin: 5px;
+    border: dashed rgba(127, 127, 127, 0.2);
+    border-radius: 16px;
+    height: 150px;
+}
+
 .mainbar .cmake-project {
     margin-top: 2px;
 }

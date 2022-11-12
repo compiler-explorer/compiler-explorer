@@ -114,7 +114,10 @@ export class MultifileService {
         });
 
         if (possibleLang.length > 0) {
-            return possibleLang[0].id;
+            const sorted = _.sortBy(possibleLang, a => {
+                return a.extensions.indexOf(filenameExt);
+            });
+            return sorted[0].id;
         }
 
         if (this.isCMakeFile(filename)) {
@@ -244,7 +247,7 @@ export class MultifileService {
     }
 
     public isEditorPartOfProject(editorId: number) {
-        const found = _.find(this.files, (file: MultifileFile) => {
+        const found = this.files.find((file: MultifileFile) => {
             return file.isIncluded && file.isOpen && editorId === file.editorId;
         });
 
@@ -252,7 +255,7 @@ export class MultifileService {
     }
 
     public getFileByFileId(fileId: number): MultifileFile | undefined {
-        const file = _.find(this.files, (file: MultifileFile) => {
+        const file = this.files.find((file: MultifileFile) => {
             return file.fileId === fileId;
         });
 
@@ -277,17 +280,17 @@ export class MultifileService {
     }
 
     private filterOutNonsense() {
-        this.files = _.filter(this.files, (file: MultifileFile) => MultifileService.isValidFile(file));
+        this.files = this.files.filter((file: MultifileFile) => MultifileService.isValidFile(file));
     }
 
     public getFiles(): Array<FiledataPair> {
         this.filterOutNonsense();
 
-        const filtered = _.filter(this.files, (file: MultifileFile) => {
+        const filtered = this.files.filter((file: MultifileFile) => {
             return !file.isMainSource && file.isIncluded;
         });
 
-        return _.map(filtered, (file: MultifileFile) => {
+        return filtered.map((file: MultifileFile) => {
             return {
                 filename: file.filename,
                 contents: this.getFileContents(file),
@@ -322,7 +325,7 @@ export class MultifileService {
     }
 
     public getMainSource(): string {
-        const mainFile = _.find(this.files, (file: MultifileFile) => {
+        const mainFile = this.files.find((file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -334,21 +337,27 @@ export class MultifileService {
     }
 
     public getFileByEditorId(editorId: number): MultifileFile | undefined {
-        return _.find(this.files, (file: MultifileFile) => {
+        return this.files.find((file: MultifileFile) => {
             return file.editorId === editorId;
         });
     }
 
     public getEditorIdByFilename(filename: string): number | null {
-        const file = _.find(this.files, (file: MultifileFile) => {
+        const file = this.files.find((file: MultifileFile) => {
             return file.isIncluded && file.filename === filename;
         });
 
         return file && file.editorId > 0 ? file.editorId : null;
     }
 
+    private getFileByFilename(filename: string): MultifileFile | undefined {
+        return this.files.find((file: MultifileFile) => {
+            return file.filename === filename;
+        });
+    }
+
     public getMainSourceEditorId(): number | null {
-        const file = _.find(this.files, (file: MultifileFile) => {
+        const file = this.files.find((file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -381,6 +390,14 @@ export class MultifileService {
         const file = this.getFileByFileId(fileId);
         if (file) {
             this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== fileId);
+        }
+        return file;
+    }
+
+    public removeFileByFilename(filename: string): MultifileFile | undefined {
+        const file = this.getFileByFilename(filename);
+        if (file) {
+            this.files = this.files.filter((obj: MultifileFile) => obj.fileId !== file.fileId);
         }
         return file;
     }
@@ -470,10 +487,27 @@ export class MultifileService {
         return suggestedFilename;
     }
 
-    private fileExists(filename: string, excludeFile: MultifileFile): boolean {
-        return !!_.find(this.files, (file: MultifileFile) => {
-            return file !== excludeFile && file.filename === filename;
+    public fileExists(filename: string, excludeFile?: MultifileFile): boolean {
+        return this.files.some((file: MultifileFile) => {
+            if (excludeFile && file === excludeFile) return false;
+
+            return file.filename === filename;
         });
+    }
+
+    public addNewTextFile(filename: string, content: string) {
+        const file: MultifileFile = {
+            fileId: this.newFileId,
+            isIncluded: false,
+            isOpen: false,
+            isMainSource: false,
+            filename: filename,
+            content: content,
+            editorId: -1,
+            langId: this.getLanguageIdFromFilename(filename),
+        };
+
+        this.addFile(file);
     }
 
     public async renameFile(fileId: number): Promise<boolean> {
