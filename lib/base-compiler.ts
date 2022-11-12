@@ -432,10 +432,15 @@ export class BaseCompiler {
     }
 
     processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        const start = performance.now();
+        const stdout = utils.parseOutput(input.stdout, inputFilename);
+        const stderr = utils.parseOutput(input.stderr, inputFilename);
+        const end = performance.now();
         return {
             ...input,
-            stdout: utils.parseOutput(input.stdout, inputFilename),
-            stderr: utils.parseOutput(input.stderr, inputFilename),
+            stdout,
+            stderr,
+            processExecutionResultTime: end - start,
         };
     }
 
@@ -1050,12 +1055,15 @@ export class BaseCompiler {
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
+        const compileStart = performance.now();
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const compileEnd = performance.now();
 
         if (output.timedOut) {
             return {
-                error: 'Compilation timed out',
+                error: 'Clang invocation timed out',
                 results: {},
+                clangTime: output.execTime ? output.execTime : compileEnd - compileStart,
             };
         }
 
@@ -1064,7 +1072,9 @@ export class BaseCompiler {
         }
 
         try {
+            const parseStart = performance.now();
             const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+            const parseEnd = performance.now();
 
             if (llvmOptPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
@@ -1074,16 +1084,21 @@ export class BaseCompiler {
                 await demangler.collect({asm: output.stderr});
                 return {
                     results: await demangler.demangleLLVMPasses(llvmOptPipeline),
+                    clangTime: compileEnd - compileStart,
+                    parseTime: parseEnd - parseStart,
                 };
             } else {
                 return {
                     results: llvmOptPipeline,
+                    clangTime: compileEnd - compileStart,
+                    parseTime: parseEnd - parseStart,
                 };
             }
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
+                clangTime: compileEnd - compileStart,
             };
         }
     }
