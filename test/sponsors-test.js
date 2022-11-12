@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'fs';
+
 import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors';
 
 import {resolvePathFromTestRoot, should} from './utils';
