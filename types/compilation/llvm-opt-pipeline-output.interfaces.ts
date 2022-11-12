@@ -38,7 +38,7 @@ export type LLVMOptPipelineResults = Record<string, Pass[]>;
 export type LLVMOptPipelineOutput = {
     error?: string;
     results: LLVMOptPipelineResults;
-    clangTime?: number;
+    clangTime?: number | string;
     parseTime?: number;
 };
 

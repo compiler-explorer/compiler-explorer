@@ -35,7 +35,7 @@ function pushTimingInfo(data: Data, step: string, time: number | string) {
     if (typeof time === 'string') {
         time = parseInt(time, 10);
     }
-    data.labels?.push(`${step} (${time}ms)`);
+    data.labels?.push(`${step} (${Math.round(time * 100) / 100}ms)`);
     data.datasets[0].data.push(time);
     data.steps += time;
 }

@@ -1057,7 +1057,7 @@ export class BaseCompiler {
             return {
                 error: 'Clang invocation timed out',
                 results: {},
-                clangTime: compileEnd - compileStart,
+                clangTime: output.execTime ? output.execTime : compileEnd - compileStart,
             };
         }
 
@@ -1080,7 +1080,7 @@ export class BaseCompiler {
                     results: await demangler.demangleLLVMPasses(llvmOptPipeline),
                     clangTime: compileEnd - compileStart,
                     parseTime: parseEnd - parseStart,
-                }
+                };
             } else {
                 return {
                     results: llvmOptPipeline,
