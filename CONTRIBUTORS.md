@@ -125,3 +125,4 @@ From oldest to newest contributor, we would like to thank:
 - [Fábio S. V. Medeiros](https://github.com/fabiosvm)
 - [Jackson Machado](https://github.com/jacksjm)
 - [Cordell Bloor](https://github.com/cgmb)
+- [Sebastian Büttner](https://github.com/bueddl)
