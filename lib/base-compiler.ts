@@ -258,6 +258,8 @@ export class BaseCompiler {
             }
         } else if (this.lang.id === 'fortran') {
             env.FC = this.compiler.exe;
+        } else if (this.lang.id === 'cuda') {
+            env.CUDACXX = this.compiler.exe;
         } else {
             env.CC = this.compiler.exe;
         }
@@ -1850,6 +1852,8 @@ export class BaseCompiler {
             return {...this.cmakeBaseEnv, CXXFLAGS: compilerflags};
         } else if (this.lang.id === 'fortran') {
             return {...this.cmakeBaseEnv, FFLAGS: compilerflags};
+        } else if (this.lang.id === 'cuda') {
+            return {...this.cmakeBaseEnv, CUDAFLAGS: compilerflags};
         } else {
             return {...this.cmakeBaseEnv, CFLAGS: compilerflags};
         }
@@ -2029,6 +2033,8 @@ export class BaseCompiler {
                 fullResult.result.compilationOptions = makeExecParams.env.CXXFLAGS.split(' ');
             } else if (this.lang.id === 'fortran') {
                 fullResult.result.compilationOptions = makeExecParams.env.FFLAGS.split(' ');
+            } else if (this.lang.id === 'cuda') {
+                fullResult.result.compilationOptions = makeExecParams.env.CUDAFLAGS.split(' ');
             } else {
                 fullResult.result.compilationOptions = makeExecParams.env.CFLAGS.split(' ');
             }
