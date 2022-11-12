@@ -1973,7 +1973,14 @@ export class BaseCompiler {
             }
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...cmakeArgs, '..'];
+            const partArgs: string[] = [toolchainparam, ...cmakeArgs, '..'];
+            let fullArgs: string[] = [];
+            const useNinja = this.env.ceProps('useninja');
+            if (useNinja) {
+                fullArgs = ['-GNinja'].concat(partArgs);
+            } else {
+                fullArgs = partArgs;
+            }
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
