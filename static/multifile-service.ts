@@ -247,7 +247,7 @@ export class MultifileService {
     }
 
     public isEditorPartOfProject(editorId: number) {
-        const found = _.find(this.files, (file: MultifileFile) => {
+        const found = this.files.find((file: MultifileFile) => {
             return file.isIncluded && file.isOpen && editorId === file.editorId;
         });
 
@@ -255,7 +255,7 @@ export class MultifileService {
     }
 
     public getFileByFileId(fileId: number): MultifileFile | undefined {
-        const file = _.find(this.files, (file: MultifileFile) => {
+        const file = this.files.find((file: MultifileFile) => {
             return file.fileId === fileId;
         });
 
@@ -280,17 +280,17 @@ export class MultifileService {
     }
 
     private filterOutNonsense() {
-        this.files = _.filter(this.files, (file: MultifileFile) => MultifileService.isValidFile(file));
+        this.files = this.files.filter((file: MultifileFile) => MultifileService.isValidFile(file));
     }
 
     public getFiles(): Array<FiledataPair> {
         this.filterOutNonsense();
 
-        const filtered = _.filter(this.files, (file: MultifileFile) => {
+        const filtered = this.files.filter((file: MultifileFile) => {
             return !file.isMainSource && file.isIncluded;
         });
 
-        return _.map(filtered, (file: MultifileFile) => {
+        return filtered.map((file: MultifileFile) => {
             return {
                 filename: file.filename,
                 contents: this.getFileContents(file),
@@ -325,7 +325,7 @@ export class MultifileService {
     }
 
     public getMainSource(): string {
-        const mainFile = _.find(this.files, (file: MultifileFile) => {
+        const mainFile = this.files.find((file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -337,13 +337,13 @@ export class MultifileService {
     }
 
     public getFileByEditorId(editorId: number): MultifileFile | undefined {
-        return _.find(this.files, (file: MultifileFile) => {
+        return this.files.find((file: MultifileFile) => {
             return file.editorId === editorId;
         });
     }
 
     public getEditorIdByFilename(filename: string): number | null {
-        const file = _.find(this.files, (file: MultifileFile) => {
+        const file = this.files.find((file: MultifileFile) => {
             return file.isIncluded && file.filename === filename;
         });
 
@@ -351,13 +351,13 @@ export class MultifileService {
     }
 
     private getFileByFilename(filename: string): MultifileFile | undefined {
-        return _.find(this.files, (file: MultifileFile) => {
+        return this.files.find((file: MultifileFile) => {
             return file.filename === filename;
         });
     }
 
     public getMainSourceEditorId(): number | null {
-        const file = _.find(this.files, (file: MultifileFile) => {
+        const file = this.files.find((file: MultifileFile) => {
             return file.isIncluded && this.isMainSourceFile(file);
         });
 
@@ -488,7 +488,7 @@ export class MultifileService {
     }
 
     public fileExists(filename: string, excludeFile?: MultifileFile): boolean {
-        return !!_.find(this.files, (file: MultifileFile) => {
+        return this.files.some((file: MultifileFile) => {
             if (excludeFile && file === excludeFile) return false;
 
             return file.filename === filename;
