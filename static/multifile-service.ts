@@ -70,6 +70,7 @@ export class MultifileService {
 
         this.isCMakeProject = state.isCMakeProject || false;
         this.compilerLanguageId = state.compilerLanguageId || '';
+        /// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.files = state.files || [];
         this.newFileId = state.newFileId || 1;
 
@@ -118,10 +119,7 @@ export class MultifileService {
                 return a.extensions.indexOf(filenameExt);
             });
             return sorted[0].id;
-        }
-
-        if (this.isCMakeFile(filename)) {
-            return this.cmakeLangId;
+        }eslint-disable-next-line 
         }
 
         return this.defaultLangIdUnknownExt;
