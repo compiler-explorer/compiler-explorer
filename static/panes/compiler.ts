@@ -62,6 +62,9 @@ import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pi
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import * as utils from '../utils';
+import * as Sentry from '@sentry/browser';
+import {editor} from 'monaco-editor';
+import IEditorMouseEvent = editor.IEditorMouseEvent;
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1012,29 +1015,47 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             },
         });
 
-        // Hiding the 'Jump to label' context menu option if no label can be found
-        // in the clicked position.
-        this.editor.onContextMenu(e => {
-            if (e.target.position) {
-                const label = this.getLabelAtPosition(e.target.position);
-                this.isLabelCtxKey.set(label !== null);
+        // This returns a vscode's ContextMenuController, but that type is not exposed in Monaco
+        const contextMenuContrib = this.editor.getContribution<any>('editor.contrib.contextmenu');
 
-                if (!this.compiler?.supportsAsmDocs) {
-                    // No need to show the "Show asm documentation" if it's just going to fail.
-                    // This is useful for things like xtensa which define an instructionSet but have no docs associated
-                    this.isAsmKeywordCtxKey.set(false);
-                } else {
-                    const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
-                    if (currentWord?.word) {
-                        this.isAsmKeywordCtxKey.set(this.isWordAsmKeyword(e.target.position.lineNumber, currentWord));
+        // This is hacked this way to be able to update the precondition keys before the context menu is shown.
+        // Right now Monaco does not expose a proper way to update those preconditions before the menu is shown,
+        // because the editor.onContextMenu callback fires after it's been shown, so it's of little use here
+        // The original source is src/vs/editor/contrib/contextmenu/browser/contextmenu.ts in vscode
+        const originalOnContextMenu: ((e: IEditorMouseEvent) => void) | undefined = contextMenuContrib._onContextMenu;
+        if (originalOnContextMenu) {
+            contextMenuContrib._onContextMenu = (e: IEditorMouseEvent) => {
+                if (e.target.position) {
+                    // Hiding the 'Jump to label' context menu option if no label can be found
+                    // in the clicked position.
+                    const label = this.getLabelAtPosition(e.target.position);
+                    this.isLabelCtxKey.set(label !== null);
+
+                    if (!this.compiler?.supportsAsmDocs) {
+                        // No need to show the "Show asm documentation" if it's just going to fail.
+                        // This is useful for things like xtensa which define an instructionSet but have no docs associated
+                        this.isAsmKeywordCtxKey.set(false);
+                    } else {
+                        const currentWord = this.editor.getModel()?.getWordAtPosition(e.target.position);
+                        if (currentWord?.word) {
+                            this.isAsmKeywordCtxKey.set(
+                                this.isWordAsmKeyword(e.target.position.lineNumber, currentWord)
+                            );
+                        }
                     }
+
+                    const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
+
+                    this.lineHasLinkedSourceCtxKey.set(lineSource != null && lineSource.line > 0);
+
+                    // And call the original method now that we've updated the context keys
+                    originalOnContextMenu.apply(contextMenuContrib, [e]);
                 }
-
-                const lineSource = this.assembly[e.target.position.lineNumber - 1].source;
-
-                this.lineHasLinkedSourceCtxKey.set( lineSource != null && lineSource.line > 0);
-            }
-        });
+            };
+        } else {
+            // In case this ever stops working, we'll be notified
+            Sentry.captureException(new Error('Context menu hack did not return valid original method'));
+        }
 
         this.editor.addAction({
             id: 'returnfromreveal',
