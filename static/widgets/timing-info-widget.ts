@@ -26,6 +26,8 @@ import $ from 'jquery';
 import {Settings} from '../settings';
 import {Chart, ChartData, defaults} from 'chart.js';
 import 'chart.js/auto';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import _ from 'underscore';
 
 type Data = ChartData<'bar', number[], string> & {steps: number};
 
@@ -62,7 +64,7 @@ function addBuildResultToTimings(data: Data, buildResult: any) {
     }
 }
 
-function initializeChartDataFromResult(compileResult: any, totalTime: number): Data {
+function initializeChartDataFromResult(compileResult: CompilationResult, totalTime: number): Data {
     const data: Data = {
         steps: 0,
         labels: [],
@@ -78,10 +80,10 @@ function initializeChartDataFromResult(compileResult: any, totalTime: number): D
     };
 
     if (compileResult.retreivedFromCache) {
-        pushTimingInfo(data, 'Retrieve result from cache', compileResult.retreivedFromCacheTime);
+        pushTimingInfo(data, 'Retrieve result from cache', compileResult.retreivedFromCacheTime as number);
 
         if (compileResult.packageDownloadAndUnzipTime) {
-            pushTimingInfo(data, 'Download binary from cache', compileResult.execTime);
+            pushTimingInfo(data, 'Download binary from cache', compileResult.execTime as string | number);
         }
 
         if (compileResult.execResult && compileResult.execResult.execTime) {
@@ -105,9 +107,19 @@ function initializeChartDataFromResult(compileResult: any, totalTime: number): D
         if (compileResult.execResult && compileResult.execResult.execTime) {
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         } else {
-            pushTimingInfo(data, 'Execution', compileResult.execTime);
+            pushTimingInfo(data, 'Execution', compileResult.execTime as string | number);
         }
     }
+
+    if (compileResult.hasLLVMOptPipelineOutput && !_.isString(compileResult.llvmOptPipelineOutput)) {
+        if (compileResult.llvmOptPipelineOutput?.clang_time !== undefined) {
+            pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clang_time);
+        }
+        if (compileResult.llvmOptPipelineOutput?.parse_time !== undefined) {
+            pushTimingInfo(data, 'Llvm opt pipeline parse time', compileResult.llvmOptPipelineOutput.parse_time);
+        }
+    }
+
     const stepsTotal = data.steps;
     pushTimingInfo(data, 'Network, JS, waiting, etc.', totalTime - stepsTotal);
 
@@ -169,7 +181,9 @@ function displayData(data: Data) {
     modal.modal('show');
 }
 
-export function displayCompilationTiming(compileResult: any, totalTime: number) {
-    const data = initializeChartDataFromResult(compileResult, totalTime);
-    displayData(data);
+export function displayCompilationTiming(compileResult: CompilationResult | null, totalTime: number) {
+    if (compileResult) {
+        const data = initializeChartDataFromResult(compileResult, totalTime);
+        displayData(data);
+    }
 }

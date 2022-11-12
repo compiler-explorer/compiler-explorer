@@ -38,6 +38,8 @@ export type LLVMOptPipelineResults = Record<string, Pass[]>;
 export type LLVMOptPipelineOutput = {
     error?: string;
     results: LLVMOptPipelineResults;
+    clang_time?: number;
+    parse_time?: number;
 };
 
 export type LLVMOptPipelineBackendOptions = {
