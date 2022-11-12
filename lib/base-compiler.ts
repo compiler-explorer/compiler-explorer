@@ -1049,14 +1049,15 @@ export class BaseCompiler {
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
-        const compile_start = performance.now();
+        const compileStart = performance.now();
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
-        const compile_end = performance.now();
+        const compileEnd = performance.now();
 
         if (output.timedOut) {
             return {
                 error: 'Clang invocation timed out',
                 results: {},
+                clangTime: compileEnd - compileStart,
             };
         }
 
@@ -1065,9 +1066,9 @@ export class BaseCompiler {
         }
 
         try {
-            const parse_start = performance.now();
+            const parseStart = performance.now();
             const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
-            const parse_end = performance.now();
+            const parseEnd = performance.now();
 
             if (llvmOptPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
@@ -1077,21 +1078,21 @@ export class BaseCompiler {
                 await demangler.collect({asm: output.stderr});
                 return {
                     results: await demangler.demangleLLVMPasses(llvmOptPipeline),
-                    clang_time: compile_end - compile_start,
-                    parse_time: parse_end - parse_start,
-                };
+                    clangTime: compileEnd - compileStart,
+                    parseTime: parseEnd - parseStart,
+                }
             } else {
                 return {
                     results: llvmOptPipeline,
-                    clang_time: compile_end - compile_start,
-                    parse_time: parse_end - parse_start,
+                    clangTime: compileEnd - compileStart,
+                    parseTime: parseEnd - parseStart,
                 };
             }
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
-                clang_time: compile_end - compile_start,
+                clangTime: compileEnd - compileStart,
             };
         }
     }

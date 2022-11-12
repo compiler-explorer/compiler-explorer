@@ -112,11 +112,11 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
     }
 
     if (compileResult.hasLLVMOptPipelineOutput && !_.isString(compileResult.llvmOptPipelineOutput)) {
-        if (compileResult.llvmOptPipelineOutput?.clang_time !== undefined) {
-            pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clang_time);
+        if (compileResult.llvmOptPipelineOutput?.clangTime !== undefined) {
+            pushTimingInfo(data, 'Llvm opt pipeline clang time', compileResult.llvmOptPipelineOutput.clangTime);
         }
-        if (compileResult.llvmOptPipelineOutput?.parse_time !== undefined) {
-            pushTimingInfo(data, 'Llvm opt pipeline parse time', compileResult.llvmOptPipelineOutput.parse_time);
+        if (compileResult.llvmOptPipelineOutput?.parseTime !== undefined) {
+            pushTimingInfo(data, 'Llvm opt pipeline parse time', compileResult.llvmOptPipelineOutput.parseTime);
         }
     }
 
