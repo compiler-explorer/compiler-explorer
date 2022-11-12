@@ -119,7 +119,10 @@ export class MultifileService {
                 return a.extensions.indexOf(filenameExt);
             });
             return sorted[0].id;
-        }eslint-disable-next-line 
+        }
+
+        if (this.isCMakeFile(filename)) {
+            return this.cmakeLangId;
         }
 
         return this.defaultLangIdUnknownExt;
