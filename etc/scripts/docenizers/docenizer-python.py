@@ -3,9 +3,7 @@
 import argparse
 import json
 import os
-import re
 import sys
-import tarfile
 import urllib
 from urllib import request
 from urllib import parse
