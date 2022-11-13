@@ -1,4 +1,5 @@
 ---
+maxTopIcons: 3
 levels:
   - name: Corporate Sponsors
     description: 'Enormous thanks to our corporate sponsors. Please visit their websites below:'
@@ -9,7 +10,7 @@ levels:
         img: https://static.ce-cdn.net/SOLID+SANDS-LOGO-RGB-500px.png
         url: https://solidsands.com/
         priority: 100
-        topIcon: true
+        topIconShowEvery: 3
         statsId: solid_sands
       - name: Intel
         description: We engineer solutions for our customers’ greatest challenges with reliable, cloud to edge computing, inspired by Moore’s Law.
@@ -17,7 +18,7 @@ levels:
         img: https://static.ce-cdn.net/intel/logo-classicblue-3000px.png
         url: https://intel.com/
         priority: 400
-        topIcon: true
+        topIconShowEvery: 1
         sideBySide: true
         statsId: intel
       - name: Backtrace
@@ -29,7 +30,7 @@ levels:
         img: https://static.ce-cdn.net/bt/BT-logo (1).png
         url: https://backtrace.io/sign-up?utm_source=website&utm_medium=paiddisplay&utm_campaign=00O8Y000008JiuiUAC&utm_content=godboltbannerad
         priority: 500
-        topIcon: true
+        topIconShowEvery: 3
         sideBySide: true
         statsId: backtrace
   - name: Patreon Legends

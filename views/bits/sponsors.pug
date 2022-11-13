@@ -1,6 +1,6 @@
 div.ces-level-selectors.d-flex.justify-content-center.mt-3
   div.btn-group.btn-group
-    each level, index in sponsors.levels
+    each level, index in sponsors.getLevels()
       button.btn.btn-primary(onclick='document.getElementById("ces_hop_' + index + '").scrollIntoView({behavior:"smooth"});')=level.name
 
 block content
