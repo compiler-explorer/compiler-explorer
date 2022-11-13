@@ -196,6 +196,14 @@ function setupButtons(options, hub) {
         alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
     });
 
+    $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
+        .done(function (data) {
+            $('#ces .ces-icons').html(data);
+        })
+        .fail(function (err) {
+            Sentry.captureException(err);
+        });
+
     $('#ces').on('click', function () {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
             .done(function (data) {
