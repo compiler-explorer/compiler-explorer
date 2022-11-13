@@ -1548,7 +1548,7 @@ export class BaseCompiler {
         return this.execBinary(executable, maxExecOutputSize, executeParameters, homeDir);
     }
 
-    async handleInterpreting(key, executeParameters) {
+    async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1558,11 +1558,19 @@ export class BaseCompiler {
         return {
             ...result,
             didExecute: true,
-            buildResult: {code: 0},
+            buildResult: {
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
+                downloads: [],
+                executableFilename: outputFilename,
+                compilationOptions: [],
+            },
         };
     }
 
-    async handleExecution(key, executeParameters) {
+    async handleExecution(key, executeParameters): Promise<CompilationResult> {
         if (this.compiler.interpreted) return this.handleInterpreting(key, executeParameters);
         const buildResult = await this.getOrBuildExecutable(key);
         if (buildResult.code !== 0) {
@@ -1572,6 +1580,7 @@ export class BaseCompiler {
                 buildResult,
                 stderr: [{text: 'Build failed'}],
                 stdout: [],
+                timedOut: false,
             };
         } else {
             if (!(await utils.fileExists(buildResult.executableFilename))) {
@@ -1581,6 +1590,7 @@ export class BaseCompiler {
                     buildResult,
                     stderr: [{text: 'Executable not found'}],
                     stdout: [],
+                    timedOut: false,
                 };
 
                 verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
@@ -1596,6 +1606,7 @@ export class BaseCompiler {
                 buildResult,
                 stderr: [{text: 'Compiler does not support execution'}],
                 stdout: [],
+                timedOut: false,
             };
         }
 
