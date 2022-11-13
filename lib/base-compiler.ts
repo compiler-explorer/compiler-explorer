@@ -31,6 +31,7 @@ import _ from 'underscore';
 
 import {
     BuildResult,
+    BuildStep,
     CompilationCacheKey,
     CompilationInfo,
     CompilationResult,
@@ -1882,9 +1883,10 @@ export class BaseCompiler {
         };
     }
 
-    async doBuildstepAndAddToResult(result, name, command, args, execParams) {
-        const stepResult = {
+    async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
+        const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
+            compilationOptions: args,
             step: name,
         };
         logger.debug(name);
