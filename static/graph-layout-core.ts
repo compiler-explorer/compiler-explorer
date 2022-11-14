@@ -539,18 +539,18 @@ export class GraphLayoutCore {
                                 (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
                                 (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                             ) {
-                                throw Error('foobar');
+                                throw Error("Segment type doesn't match coordinates");
                             }
                             if (j > 0) {
                                 const prev = edge.path[j - 1];
                                 if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
-                                    throw Error('foobar');
+                                    throw Error("Adjacent segment start/endpoints don't match");
                                 }
                             }
                             if (j < edge.path.length - 1) {
                                 const next = edge.path[j + 1];
                                 if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
-                                    throw Error('foobar');
+                                    throw Error("Adjacent segment start/endpoints don't match");
                                 }
                             }
                         }
@@ -573,7 +573,9 @@ export class GraphLayoutCore {
                                 (prevSegment.type === SegmentType.Horizontal &&
                                     prevSegment.start.row !== segment.start.row)
                             ) {
-                                throw Error('foobar');
+                                throw Error(
+                                    "Adjacent horizontal or vertical segments don't share a common row or column"
+                                );
                             }
                             prevSegment.end = segment.end;
                             edge.path.splice(i, 1);
@@ -589,18 +591,18 @@ export class GraphLayoutCore {
                         (segment.type === SegmentType.Vertical && segment.start.col !== segment.end.col) ||
                         (segment.type === SegmentType.Horizontal && segment.start.row !== segment.end.row)
                     ) {
-                        throw Error('foobar');
+                        throw Error("Segment type doesn't match coordinates (post-simplification)");
                     }
                     if (j > 0) {
                         const prev = edge.path[j - 1];
                         if (prev.end.row !== segment.start.row || prev.end.col !== segment.start.col) {
-                            throw Error('foobar');
+                            throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
                         }
                     }
                     if (j < edge.path.length - 1) {
                         const next = edge.path[j + 1];
                         if (segment.end.row !== next.start.row || segment.end.col !== next.start.col) {
-                            throw Error('foobar');
+                            throw Error("Adjacent segment start/endpoints don't match (post-simplification)");
                         }
                     }
                 }
@@ -608,7 +610,7 @@ export class GraphLayoutCore {
                 for (const segment of edge.path) {
                     if (segment.type === SegmentType.Vertical) {
                         if (segment.start.col !== segment.end.col) {
-                            throw Error('foobar');
+                            throw Error('Vertical segment changes column');
                         }
                         const col = this.edgeColumns[segment.start.col];
                         let inserted = false;
@@ -628,7 +630,7 @@ export class GraphLayoutCore {
                     } else {
                         // horizontal
                         if (segment.start.row !== segment.end.row) {
-                            throw Error('foobar');
+                            throw Error('Horizontal segment changes row');
                         }
                         const row = this.edgeRows[segment.start.row];
                         let inserted = false;
@@ -783,7 +785,7 @@ export class GraphLayoutCore {
                     }
                 }
                 if (!inserted) {
-                    throw Error('foobar');
+                    throw Error("Vertical segment couldn't be inserted");
                 }
             } else {
                 // Horizontal
@@ -797,8 +799,7 @@ export class GraphLayoutCore {
                     }
                 }
                 if (!inserted) {
-                    console.log('ERROR: FOOBAR');
-                    //throw Error('foobar');
+                    throw Error("Horizontal segment couldn't be inserted");
                 }
             }
         }
@@ -947,112 +948,3 @@ export class GraphLayoutCore {
         return lastRow.totalOffset + lastRow.height;
     }
 }
-
-/*
-
--Os, -O3
-
-int sum(int* arr, int n) {
-    int s = 0;
-    for(int i = 0; i < n; i++) {
-        s += arr[i];
-    }
-    if(s % 2 == 0) {
-        return s / 2;
-    } else {
-        return s;
-    }
-}
-
--Os, -O3
-
-void foo(), bar();
-
-int baz(int n) {
-    if(n % 2 == 0) {
-        foo();
-    } else {
-        bar();
-    }
-    return 4;
-}
-
--O3 -march=skylake on clang
-
-int fact(int n) {
-    if(n == 0) return 1;
-    else return n * fact(n - 1);
-}
-
--O0
-
-int foo(int n) {
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    if(n > 0) {
-        goto bar;
-    }
-    return 2;
-    bar:
-    return 1;
-}
-
-*/

@@ -184,8 +184,8 @@ export class Cfg extends Pane<CfgState> {
         if (result.cfg) {
             const cfg = result.cfg as CFGResult;
             this.results = cfg;
-            let selectedFunction = this.state.selectedFunction;
-            this.functionSelector.clear();
+            let selectedFunction: string | null = this.state.selectedFunction;
+            this.functionSelector.clear(true);
             this.functionSelector.clearOptions();
             const keys = Object.keys(cfg);
             if (keys.length === 0) {
@@ -204,13 +204,17 @@ export class Cfg extends Pane<CfgState> {
                 if (selectedFunction === '' || !(selectedFunction in cfg)) {
                     selectedFunction = keys[0];
                 }
-                this.functionSelector.setValue(selectedFunction);
-            } else {
-                // restore this.selectedFunction, next time the compilation results aren't errors the selected function will
-                // still be the same
+                this.functionSelector.setValue(selectedFunction, true);
                 this.state.selectedFunction = selectedFunction;
+            } else {
+                // this.state.selectedFunction won't change, next time the compilation results aren't errors or empty
+                // the selected function will still be the same
+                selectedFunction = null;
             }
-            this.selectFunction(this.state.selectedFunction);
+            this.selectFunction(selectedFunction);
+        } else {
+            // this case can be fallen into with a blank input file
+            this.selectFunction(null);
         }
     }
 
@@ -220,7 +224,7 @@ export class Cfg extends Pane<CfgState> {
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
             if (node.id in this.bbMap) {
-                throw 'foobar';
+                throw Error("Duplicate basic block node id's found while drawing cfg");
             }
             this.bbMap[node.id] = div;
             this.blockContainer.appendChild(div);
@@ -242,7 +246,7 @@ export class Cfg extends Pane<CfgState> {
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
                 if (edge.path.length === 0) {
-                    throw Error('foobar');
+                    throw Error('Mal-formed edge: Zero segments');
                 }
                 const points: [number, number][] = [];
                 points.push([edge.path[0].start.x, edge.path[0].start.y - 1]);
@@ -295,10 +299,13 @@ export class Cfg extends Pane<CfgState> {
         }
     }
 
-    // eslint-disable-next-line max-statements
-    async selectFunction(name: string) {
+    // display the cfg for the specified function if it exists
+    // this function does not change or use this.state.selectedFunction
+    async selectFunction(name: string | null) {
+        console.log('selectFunction');
         this.blockContainer.innerHTML = '';
-        if (!(name in this.results)) {
+        this.svg.innerHTML = '';
+        if (!name || !(name in this.results)) {
             return;
         }
         const fn = this.results[name];
