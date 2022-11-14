@@ -128,6 +128,7 @@ export class GraphLayoutCore {
     blockRows: RowDescriptor[];
     edgeColumns: (ColumnDescriptor & EdgeColumnMetadata)[];
     edgeRows: (RowDescriptor & EdgeRowMetadata)[];
+    readonly layoutTime: number;
 
     constructor(cfg: AnnotatedCfgDescriptor) {
         // block id -> block
@@ -171,7 +172,7 @@ export class GraphLayoutCore {
         const start = performance.now();
         this.layout();
         const end = performance.now();
-        console.log(`Graph layout: ${end - start}ms`);
+        this.layoutTime = end - start;
     }
 
     dfs(visited: DfsState[], order: number[], node: number) {

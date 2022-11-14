@@ -32,6 +32,7 @@ import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {PaneState} from './pane.interfaces';
 import {ga} from '../analytics';
+import * as utils from '../utils';
 
 import {
     AnnotatedCfgDescriptor,
@@ -64,6 +65,7 @@ export class Cfg extends Pane<CfgState> {
     blockContainer: HTMLElement;
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
+    infoElement: HTMLElement;
     currentPosition: Coordinate = {x: 0, y: 0};
     dragging = false;
     dragStart: Coordinate = {x: 0, y: 0};
@@ -121,17 +123,18 @@ export class Cfg extends Pane<CfgState> {
         this.blockContainer = this.domRoot.find('.block-container')[0];
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
+        this.infoElement = this.domRoot.find('.cfg-info')[0];
     }
 
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
             const div = (e.target as Element).closest('div');
-            if (div && div.classList.contains('block')) {
-                // pass, let the user select block contents
-            } else {
+            if (div && div.classList.contains('block-container')) {
                 this.dragging = true;
                 this.dragStart = {x: e.clientX, y: e.clientY};
                 this.dragStartPosition = {...this.currentPosition};
+            } else {
+                // pass, let the user select block contents and other text
             }
         });
         this.graphContainer.addEventListener('mouseup', e => {
@@ -219,7 +222,10 @@ export class Cfg extends Pane<CfgState> {
     }
 
     async createBasicBlocks(fn: CfgDescriptor) {
+        //console.log(fn);
+        //console.log(this.bbMap);
         for (const node of fn.nodes) {
+            // console.log(node);
             const div = document.createElement('div');
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
@@ -241,7 +247,6 @@ export class Cfg extends Pane<CfgState> {
         const width = this.layout.getWidth();
         const height = this.layout.getHeight();
         this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
-        this.svg.innerHTML = '';
         const documentFragment = document.createDocumentFragment();
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
@@ -314,14 +319,15 @@ export class Cfg extends Pane<CfgState> {
         this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
         this.applyLayout();
         this.drawEdges();
+        this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms`;
     }
 
     override resize() {
-        //const topBarHeight = this.topBar.outerHeight(true) as number;
-        //this.editor.layout({
-        //    width: this.domRoot.width() as number,
-        //    height: (this.domRoot.height() as number) - topBarHeight,
-        //});
+        _.defer(() => {
+            const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
+            this.graphContainer.style.width = `${this.domRoot.width() as number}px`;
+            this.graphContainer.style.height = `${(this.domRoot.height() as number) - topBarHeight}px`;
+        });
     }
 
     override close(): void {

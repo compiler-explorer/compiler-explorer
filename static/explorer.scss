@@ -383,15 +383,20 @@ pre.content.wrap * {
     height: 100%;
 }
 
-.cfg-toolbar table {
-    width: 100%;
-}
-
 .graph-container {
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
+    .cfg-info {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        color: #aaa;
+        font-size: x-small;
+        font-style: italic;
+        z-index: 1;
+    }
     .graph {
         position: absolute;
         top: 0;
