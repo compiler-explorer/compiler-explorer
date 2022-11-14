@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// TODO(jeremy-rifkin): re-visit all the types here once the back-end is more typescripted
+
 export type EdgeDescriptor = {
     from: string;
     to: string;
