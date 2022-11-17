@@ -64,8 +64,6 @@ export class DosboxCompiler extends BaseCompiler {
         await fs.writeFile(inputFilename, source.replaceAll(/\n/g, '\r\n'));
 
         if (files && files.length > 0) {
-            (filters as any).dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 

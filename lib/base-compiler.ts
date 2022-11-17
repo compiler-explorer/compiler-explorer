@@ -1395,8 +1395,6 @@ export class BaseCompiler {
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
-            filters.dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -1412,8 +1410,6 @@ export class BaseCompiler {
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
-            filters.dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -2128,10 +2124,15 @@ export class BaseCompiler {
             }
         }
 
+        if (files && files.length > 0) {
+            filters.dontMaskFilenames = true;
+        }
+
         const executeParameters = {
             args: executionParameters.args || [],
             stdin: executionParameters.stdin || '',
         };
+
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
 
         const doExecute = filters.execute;
