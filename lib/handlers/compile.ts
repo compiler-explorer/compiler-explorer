@@ -26,12 +26,14 @@ import path from 'path';
 
 import * as Sentry from '@sentry/node';
 import fs from 'fs-extra';
-import httpProxy from 'http-proxy';
-import PromClient from 'prom-client';
+import Server from 'http-proxy';
+import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
+import {BaseCompiler} from '../base-compiler';
+import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
 import {logger} from '../logger';
 import * as utils from '../utils';
@@ -67,11 +69,22 @@ function initialise(compilerEnv) {
 }
 
 export class CompileHandler {
-    constructor(compilationEnvironment, awsProps) {
+    private compilersById: Record<string, BaseCompiler>;
+    private readonly compilerEnv: CompilationEnvironment;
+    private readonly textBanner: string;
+    private proxy: Server;
+    private readonly awsProps: (name: string, def?: string) => string;
+    private clientOptions: null;
+    private readonly compileCounter: Counter<string>;
+    private readonly executeCounter: Counter<string>;
+    private readonly cmakeCounter: Counter<string>;
+    private readonly cmakeExecuteCounter: Counter<string>;
+
+    constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
         this.compilersById = {};
         this.compilerEnv = compilationEnvironment;
         this.textBanner = this.compilerEnv.ceProps('textBanner');
-        this.proxy = httpProxy.createProxyServer({});
+        this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
         this.clientOptions = null;
         initialise(this.compilerEnv);
@@ -105,19 +118,21 @@ export class CompileHandler {
         // We just keep the body as-is though: no encoding using queryString.stringify(), as we don't use a form
         // decoding middleware.
         this.proxy.on('proxyReq', function (proxyReq, req) {
-            if (!req.body || Object.keys(req.body).length === 0) {
+            // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
+            //  object we get here does.
+            const body = (req as any).body;
+            if (!body || Object.keys(body).length === 0) {
                 return;
             }
-
             const contentType = proxyReq.getHeader('Content-Type');
             let bodyData;
 
             if (contentType === 'application/json') {
-                bodyData = JSON.stringify(req.body);
+                bodyData = JSON.stringify(body);
             }
 
             if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = req.body;
+                bodyData = body;
             }
 
             if (bodyData) {
@@ -127,7 +142,7 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler) {
+    async create(compiler): Promise<BaseCompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -138,7 +153,6 @@ export class CompileHandler {
             logger.error(`Compiler ID: ${compiler.id}`);
             logger.error(e);
             process.exit(1);
-            return;
         }
 
         // attempt to resolve non absolute exe paths
@@ -278,11 +292,11 @@ export class CompileHandler {
     parseRequest(req, compiler) {
         let source,
             options,
-            backendOptions = {},
+            backendOptions: Record<string, any> = {},
             filters,
             bypassCache = false,
-            tools,
-            executionParameters = {};
+            tools;
+        const executionParameters: Record<string, any> = {};
         let libraries = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {

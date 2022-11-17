@@ -95,7 +95,7 @@ export class BaseCompiler {
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
-    protected possibleArguments: CompilerArguments;
+    public possibleArguments: CompilerArguments;
     protected possibleTools: Tool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
