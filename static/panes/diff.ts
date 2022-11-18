@@ -260,7 +260,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override createEditor(editorRoot: HTMLElement) {
         return monaco.editor.createDiffEditor(editorRoot, {
-            fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+            fontFamily: this.settings.editorsFFont,
+            fontLigatures: this.settings.editorsFLigatures,
             scrollBeyondLastLine: true,
             readOnly: true,
         });
@@ -272,7 +273,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateState();
     }
 
-    onCompileResult(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
+    override onCompileResult(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);

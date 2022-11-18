@@ -39,7 +39,7 @@ import * as monacoConfig from '../monaco-config';
 import * as TimingWidget from '../widgets/timing-info-widget';
 import {CompilerPicker} from '../compiler-picker';
 import {CompilerService} from '../compiler-service';
-import {Settings, SiteSettings} from '../settings';
+import {SiteSettings} from '../settings';
 import * as LibUtils from '../lib-utils';
 import {getAssemblyDocumentation} from '../api/api';
 import {MonacoPane} from './pane';
@@ -48,7 +48,7 @@ import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {CompilerState} from './compiler.interfaces';
-import {ComponentConfig, GccDumpOptions, ToolViewState} from '../components.interfaces';
+import {ComponentConfig, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {CompilerFilters} from '../../types/features/filters.interfaces';
@@ -320,7 +320,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         super(hub, container, state);
 
         this.id = state.id || hub.nextCompilerId();
-        this.settings = Settings.getStoredSettings();
 
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;

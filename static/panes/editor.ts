@@ -500,7 +500,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         super.initializeGlobalDependentProperties();
 
         this.httpRoot = window.httpRoot;
-        this.settings = Settings.getStoredSettings();
         this.langKeys = Object.keys(languages);
     }
 
