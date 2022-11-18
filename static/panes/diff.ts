@@ -323,9 +323,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         if (!compiler) return;
         options = options || '';
         let name = compiler.name + ' ' + options;
-        // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
-        // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
-        // but it doesn't look easy to integrate.
+        // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
         const maxLength = 30;
         if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + '...';
         this.compilers[id] = {
