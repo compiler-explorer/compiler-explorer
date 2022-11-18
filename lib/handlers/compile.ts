@@ -69,7 +69,7 @@ function initialise(compilerEnv) {
 }
 
 export class CompileHandler {
-    private compilersById: Record<string, BaseCompiler>;
+    private compilersById: Record<string, Record<string, BaseCompiler>>; // TODO check
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
     private proxy: Server;
@@ -194,7 +194,7 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers, clientOptions) {
+    async setCompilers(compilers: BaseCompiler[], clientOptions) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -222,18 +222,18 @@ export class CompileHandler {
         }
     }
 
-    compilerAliasMatch(compiler, compilerId) {
+    compilerAliasMatch(compiler, compilerId): boolean {
         return compiler.compiler.alias && compiler.compiler.alias.includes(compilerId);
     }
 
-    compilerIdOrAliasMatch(compiler, compilerId) {
+    compilerIdOrAliasMatch(compiler, compilerId): boolean {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
-    findCompiler(langId, compilerId) {
+    findCompiler(langId, compilerId): BaseCompiler | undefined {
         if (!compilerId) return;
 
-        const langCompilers = this.compilersById[langId];
+        const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
         if (langCompilers) {
             if (langCompilers[compilerId]) {
                 return langCompilers[compilerId];
@@ -247,7 +247,7 @@ export class CompileHandler {
         }
 
         // If the lang is bad, try to find it in every language
-        let response;
+        let response: BaseCompiler|undefined;
         _.each(this.compilersById, compilerInLang => {
             if (!response) {
                 response = _.find(compilerInLang, compiler => {
