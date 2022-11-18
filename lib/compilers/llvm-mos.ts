@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import path from 'path';
+
 import fs from 'fs-extra';
 import _ from 'underscore';
-import path from 'path';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
@@ -45,6 +46,14 @@ export class LLVMMOSCompiler extends ClangCompiler {
 
     override getExtraCMakeArgs(key): string[] {
         return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
+    }
+
+    override fixFiltersBeforeCacheKey(filters, options, files) {
+        filters.binary = false;
+    }
+
+    override getCMakeExtToolchainParam(): string {
+        return '';
     }
 
     override async objdump(
