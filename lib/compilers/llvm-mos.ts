@@ -24,6 +24,7 @@
 
 import fs from 'fs-extra';
 import _ from 'underscore';
+import path from 'path';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
@@ -39,6 +40,11 @@ export class LLVMMOSCompiler extends ClangCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
+        this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
+    }
+
+    override getExtraCMakeArgs(key): string[] {
+        return [`-DCMAKE_PREFIX_PATH=${this.toolchainPath}`];
     }
 
     override async objdump(

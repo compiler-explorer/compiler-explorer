@@ -1916,6 +1916,10 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    getExtraCMakeArgs(key): string[] {
+        return [];
+    }
+
     async cmake(files, key) {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
 
@@ -1982,7 +1986,7 @@ export class BaseCompiler {
             }
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...cmakeArgs, '..'];
+            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
