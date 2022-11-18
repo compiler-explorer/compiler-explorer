@@ -2664,11 +2664,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 result = 'No license information to display for ' + this.compiler.name;
             } else {
                 result +=
-                    '<br/><br/>If the displayed information is wrong, please submit an issue to ' +
+                    '<div><p>If the displayed information is wrong, please submit an issue to ' +
                     // eslint-disable-next-line max-len
-                    '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&template=bug_report.yml&title=%5BBUG%5D%3A+' +
+                    '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&template=bug_report.yml&title=%5BBUG%5D%3A' +
                     encodeURIComponent(this.compiler.name + ' license is wrong') +
-                    ' target="_blank">https://github.com/compiler-explorer/compiler-explorer/issues</a>';
+                    '" target="_blank">https://github.com/compiler-explorer/compiler-explorer/issues</a></p></div>';
             }
 
             return result;
