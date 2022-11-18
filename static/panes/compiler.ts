@@ -2650,7 +2650,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const link = this.compiler.license.link;
 
             if (name || link) {
-                result += this.compiler.name + ' is licensed under its ';
+                result += this.compiler.name + ' is licensed under ';
 
                 if (link) {
                     const aText = name ? name : link;
@@ -2658,12 +2658,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else {
                     result += name;
                 }
-
-                result += ' license';
             }
 
             if (!result) {
                 result = 'No license information to display for ' + this.compiler.name;
+            } else {
+                result +=
+                    '<div><p>If the displayed information is wrong, please submit an issue to ' +
+                    // eslint-disable-next-line max-len
+                    '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&template=bug_report.yml&title=%5BBUG%5D%3A' +
+                    encodeURIComponent(this.compiler.name + ' license is wrong') +
+                    '" target="_blank">https://github.com/compiler-explorer/compiler-explorer/issues</a></p></div>';
             }
 
             return result;
