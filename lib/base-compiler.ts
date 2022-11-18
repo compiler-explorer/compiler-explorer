@@ -1916,6 +1916,18 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    getExtraCMakeArgs(key): string[] {
+        return [];
+    }
+
+    getCMakeExtToolchainParam(): string {
+        if (this.toolchainPath) {
+            return `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
+        }
+
+        return '';
+    }
+
     async cmake(files, key) {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
 
@@ -1976,13 +1988,10 @@ export class BaseCompiler {
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-            let toolchainparam = '';
-            if (this.toolchainPath) {
-                toolchainparam = `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
-            }
+            const toolchainparam = this.getCMakeExtToolchainParam();
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...cmakeArgs, '..'];
+            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
