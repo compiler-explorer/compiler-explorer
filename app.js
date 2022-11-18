@@ -197,6 +197,7 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
+defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
 
 let languages = allLanguages;
 if (defArgs.wantedLanguages) {

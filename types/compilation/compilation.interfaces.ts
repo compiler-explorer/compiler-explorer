@@ -129,10 +129,11 @@ export type ExecutionOptions = {
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
-    compilationOptions: any[];
+    compilationOptions: string[];
 };
 
 export type BuildStep = BasicExecutionResult & {
+    compilationOptions: string[];
     step: string;
 };
 
