@@ -185,17 +185,19 @@ a.navbar-brand img.logo.normal {
     color: black;
 }
 
-.analysis,
-.mixed {
-    background: #fdfd96;
-}
+.opt-decoration {
+    &.analysis,
+    &.mixed {
+        background: #fdfd96;
+    }
 
-.passed {
-    background: #77dd77;
-}
+    &.passed {
+        background: #77dd77;
+    }
 
-.missed {
-    background: #ff6961;
+    &.missed {
+        background: #ff6961;
+    }
 }
 
 .conformance-wrapper {

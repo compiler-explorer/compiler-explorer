@@ -458,19 +458,22 @@ textarea.form-control {
 }
 
 .opt-decoration {
-    .analysis,
-    .mixed {
+
+    &.analysis,
+    &.mixed {
         background: #fdfd96 !important;
     }
 
-    .passed {
+    &.passed {
         background: #77dd77 !important;
     }
 
-    .missed {
+    &.missed {
         background: #ff6961 !important;
     }
 }
+
+
 
 .popover,
 .popover-content,
