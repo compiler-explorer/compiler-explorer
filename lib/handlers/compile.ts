@@ -25,6 +25,7 @@
 import path from 'path';
 
 import * as Sentry from '@sentry/node';
+import express from 'express';
 import fs from 'fs-extra';
 import Server from 'http-proxy';
 import PromClient, {Counter} from 'prom-client';
@@ -37,7 +38,7 @@ import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
 import {logger} from '../logger';
 import * as utils from '../utils';
-import express from 'express';
+
 import {
     CompileRequestJsonBody,
     CompileRequestQueryArgs,
@@ -92,49 +93,39 @@ type ParsedRequest = {
 };
 
 export class CompileHandler {
-    private compilersById: Record<string, Record<string, BaseCompiler>>; // TODO check
+    private compilersById: Record<string, Record<string, BaseCompiler>> = {};
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
-    private proxy: Server;
+    private readonly proxy: Server;
     private readonly awsProps: (name: string, def?: string) => string;
-    private clientOptions: null;
-    private readonly compileCounter: Counter<string>;
-    private readonly executeCounter: Counter<string>;
-    private readonly cmakeCounter: Counter<string>;
-    private readonly cmakeExecuteCounter: Counter<string>;
+    private clientOptions: Record<string, any> | null = null;
+    private readonly compileCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_compilations_total',
+        help: 'Number of compilations',
+        labelNames: ['language'],
+    });
+    private readonly executeCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_executions_total',
+        help: 'Number of executions',
+        labelNames: ['language'],
+    });
+    private readonly cmakeCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_cmake_compilations_total',
+        help: 'Number of CMake compilations',
+        labelNames: ['language'],
+    });
+    private readonly cmakeExecuteCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_cmake_executions_total',
+        help: 'Number of executions after CMake',
+        labelNames: ['language'],
+    });
 
     constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
-        this.compilersById = {};
         this.compilerEnv = compilationEnvironment;
         this.textBanner = this.compilerEnv.ceProps('textBanner');
         this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
-        this.clientOptions = null;
         initialise(this.compilerEnv);
-
-        this.compileCounter = new PromClient.Counter({
-            name: 'ce_compilations_total',
-            help: 'Number of compilations',
-            labelNames: ['language'],
-        });
-
-        this.executeCounter = new PromClient.Counter({
-            name: 'ce_executions_total',
-            help: 'Number of executions',
-            labelNames: ['language'],
-        });
-
-        this.cmakeCounter = new PromClient.Counter({
-            name: 'ce_cmake_compilations_total',
-            help: 'Number of CMake compilations',
-            labelNames: ['language'],
-        });
-
-        this.cmakeExecuteCounter = new PromClient.Counter({
-            name: 'ce_cmake_executions_total',
-            help: 'Number of executions after CMake',
-            labelNames: ['language'],
-        });
 
         // Mostly cribbed from
         // https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
@@ -217,7 +208,7 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: BaseCompiler[], clientOptions) {
+    async setCompilers(compilers: BaseCompiler[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -430,7 +421,7 @@ export class CompileHandler {
         return false;
     }
 
-    handleApiError(error, res, next) {
+    handleApiError(error, res: express.Response, next: express.NextFunction) {
         if (error.message) {
             return res.status(400).send({
                 error: true,
@@ -441,7 +432,7 @@ export class CompileHandler {
         }
     }
 
-    handleCmake(req: express.Request, res, next) {
+    handleCmake(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -477,7 +468,7 @@ export class CompileHandler {
         }
     }
 
-    handle(req: express.Request, res, next) {
+    handle(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
