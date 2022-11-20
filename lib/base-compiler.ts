@@ -1395,8 +1395,6 @@ export class BaseCompiler {
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
-            filters.dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -1412,8 +1410,6 @@ export class BaseCompiler {
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
-            filters.dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -1920,6 +1916,18 @@ export class BaseCompiler {
         return libsAndOptions;
     }
 
+    getExtraCMakeArgs(key): string[] {
+        return [];
+    }
+
+    getCMakeExtToolchainParam(): string {
+        if (this.toolchainPath) {
+            return `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
+        }
+
+        return '';
+    }
+
     async cmake(files, key) {
         // key = {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
 
@@ -1980,13 +1988,10 @@ export class BaseCompiler {
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-            let toolchainparam = '';
-            if (this.toolchainPath) {
-                toolchainparam = `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
-            }
+            const toolchainparam = this.getCMakeExtToolchainParam();
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...cmakeArgs, '..'];
+            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
@@ -2102,18 +2107,7 @@ export class BaseCompiler {
         return normalized;
     }
 
-    async compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
-        const optionsError = this.checkOptions(options);
-        if (optionsError) throw optionsError;
-        const sourceError = this.checkSource(source);
-        if (sourceError) throw sourceError;
-
-        const libsAndOptions = {libraries, options};
-        if (this.tryAutodetectLibraries(libsAndOptions)) {
-            libraries = libsAndOptions.libraries;
-            options = libsAndOptions.options;
-        }
-
+    fixFiltersBeforeCacheKey(filters, options, files) {
         // Don't run binary for unsupported compilers, even if we're asked.
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
@@ -2128,10 +2122,30 @@ export class BaseCompiler {
             }
         }
 
+        if (files && files.length > 0) {
+            filters.dontMaskFilenames = true;
+        }
+    }
+
+    async compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
+        const optionsError = this.checkOptions(options);
+        if (optionsError) throw optionsError;
+        const sourceError = this.checkSource(source);
+        if (sourceError) throw sourceError;
+
+        const libsAndOptions = {libraries, options};
+        if (this.tryAutodetectLibraries(libsAndOptions)) {
+            libraries = libsAndOptions.libraries;
+            options = libsAndOptions.options;
+        }
+
+        this.fixFiltersBeforeCacheKey(filters, options, files);
+
         const executeParameters = {
             args: executionParameters.args || [],
             stdin: executionParameters.stdin || '',
         };
+
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
 
         const doExecute = filters.execute;

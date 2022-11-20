@@ -22,33 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {resolvePathFromAppRoot} from '../utils';
 
 import {BaseParser} from './argument-parsers';
 
 export class PythonCompiler extends BaseCompiler {
+    private readonly disasmScriptPath: string;
+
     static get key() {
         return 'python';
     }
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
-        this.compiler.demangler = null;
+        this.compiler.demangler = '';
         this.demanglerClass = null;
         this.disasmScriptPath =
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
     }
 
-    // eslint-disable-next-line no-unused-vars
-    processAsm(result, filters) {
+    override processAsm(result) {
         const lineRe = /^\s{0,4}(\d+)(.*)/;
 
         const bytecodeLines = result.asm.split('\n');
 
-        const bytecodeResult = [];
-        let lastLineNo = null;
-        let sourceLoc = null;
+        const bytecodeResult: ParsedAsmResultLine[] = [];
+        let lastLineNo: number | undefined;
+        let sourceLoc: AsmResultSource | null = null;
 
         for (const line of bytecodeLines) {
             const match = line.match(lineRe);
@@ -58,8 +60,8 @@ export class PythonCompiler extends BaseCompiler {
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
             } else if (!line) {
-                sourceLoc = {line: null, file: null};
-                lastLineNo = null;
+                sourceLoc = {line: undefined, file: null};
+                lastLineNo = undefined;
             } else {
                 sourceLoc = {line: lastLineNo, file: null};
             }
@@ -70,11 +72,32 @@ export class PythonCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return BaseParser;
+    }
+
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
+        return options.concat(
+            [this.filename(inputFilename)],
+            libIncludes,
+            libOptions,
+            libPaths,
+            libLinks,
+            userOptions,
+            staticLibLinks,
+        );
     }
 }
