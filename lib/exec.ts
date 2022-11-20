@@ -175,7 +175,7 @@ export function getNsJailCfgFilePath(configName: string): string {
         logger.error(`Could not find ${propKey}. Are you missing a definition?`);
         throw new Error(`Missing nsjail execution config property key ${propKey}`);
     }
-    return configPath;
+    return configPath as string;
 }
 
 export function getFirejailProfileFilePath(profileName: string): string {
@@ -185,7 +185,7 @@ export function getFirejailProfileFilePath(profileName: string): string {
         logger.error(`Could not find ${propKey}. Are you missing a definition?`);
         throw new Error(`Missing firejail execution profile property key ${propKey}`);
     }
-    return profilePath;
+    return profilePath as string;
 }
 
 export function getNsJailOptions(
@@ -259,12 +259,12 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
 function sandboxNsjail(command, args, options) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
-    return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    return executeDirect(execProps('nsjail') as string, nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function executeNsjail(command, args, options) {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    return executeDirect(execProps('nsjail') as string, nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function withFirejailTimeout(args: string[], options?) {
@@ -299,7 +299,7 @@ function sandboxFirejail(command: string, args: string[], options) {
     }
     delete options.env;
 
-    return executeDirect(execProps('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
+    return executeDirect(execProps('firejail') as string, jailingOptions.concat([`./${execName}`]).concat(args), options);
 }
 
 const sandboxDispatchTable = {
@@ -319,7 +319,7 @@ export async function sandbox(
     args: string[],
     options: ExecutionOptions,
 ): Promise<UnprocessedExecResult> {
-    const type = execProps('sandboxType', 'firejail');
+    const type = execProps('sandboxType', 'firejail')as string;
     const dispatchEntry = sandboxDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     return await dispatchEntry(command, args, options);
@@ -332,7 +332,7 @@ const wineSandboxName = 'ce-wineserver';
 let wineInitPromise: Promise<void> | null;
 
 export function startWineInit() {
-    const wine = execProps('wine');
+    const wine = execProps('wine') as string|undefined;
     if (!wine) {
         logger.info('WINE not configured');
         return;
@@ -341,7 +341,7 @@ export function startWineInit() {
     const server = execProps('wineServer');
     const executionType = execProps('executionType', 'none');
     // We need to fire up a firejail wine server even in nsjail world (for now).
-    const firejail = executionType === 'firejail' || executionType === 'nsjail' ? execProps('firejail') : null;
+    const firejail = executionType === 'firejail' || executionType === 'nsjail' ? execProps('firejail') as string : null;
     const env = applyWineEnv({PATH: process.env.PATH});
     const prefix = env.WINEPREFIX;
 
@@ -466,12 +466,12 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return await executeDirect(execProps('wine'), args, options);
+    return await executeDirect(execProps('wine') as string, args, options);
 }
 
 async function executeFirejail(command, args, options) {
     options = _.clone(options) || {};
-    const firejail = execProps('firejail');
+    const firejail = execProps('firejail') as string;
     const baseOptions = withFirejailTimeout(
         ['--quiet', '--deterministic-exit-code', '--deterministic-shutdown'],
         options,
@@ -532,7 +532,7 @@ export async function execute(
     args: string[],
     options: ExecutionOptions,
 ): Promise<UnprocessedExecResult> {
-    const type = execProps('executionType', 'none');
+    const type = execProps('executionType', 'none') as string;
     const dispatchEntry = executeDispatchTable[type];
     if (!dispatchEntry) throw new Error(`Bad sandbox type ${type}`);
     return await dispatchEntry(command, args, options);
