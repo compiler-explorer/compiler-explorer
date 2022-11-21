@@ -33,4 +33,5 @@ export type CompilerState = WidgetState & {
     deviceViewOpen?: boolean;
     wantOptInfo?: boolean;
     lang?: string;
+    environs?: string;
 };
