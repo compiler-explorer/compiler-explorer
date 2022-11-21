@@ -67,6 +67,10 @@ mixin newPaneButton(classId, text, title, icon)
         span.fas.fa-screwdriver
         span.hideable Add tool...
       .dropdown-menu.dropdown-menu-right.new-tool-dropdown
+    .btn-group.btn-group-sm(role="group")
+      button.btn.btn-sm.btn-light.environs(type="button")
+        span.fas.fa-toolbox
+        span.hideable Env vars
   .monaco-placeholder
   .bottom-bar.bg-light
     if !embedded

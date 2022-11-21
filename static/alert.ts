@@ -149,11 +149,20 @@ export class Alert {
             this.noHandler?.();
         });
 
-        const answerEdit = modal.find('.modal-body .question-answer');
+        const textareaEdit = $('<textarea class="question-answer">');
+        let answerEdit = modal.find('.modal-body .question-answer');
+        if (askOptions.useTextArea) {
+            answerEdit.replaceWith(textareaEdit);
+            answerEdit = textareaEdit;
+        }
         answerEdit.val(defaultValue);
         answerEdit.on('keyup', e => {
-            if (e.keyCode === 13 || e.which === 13) {
-                yesButton.trigger('click');
+            if (e.code === 'Enter' || e.keyCode === 13 || e.which === 13) {
+                if (askOptions.dismissWithEnter) {
+                    yesButton.trigger('click');
+                } else {
+                    e.preventDefault();
+                }
             }
         });
 

@@ -75,6 +75,7 @@ export class PaneRenaming extends EventEmitter.EventEmitter {
                 yesHtml: 'Rename',
                 noClass: 'btn-outline-info',
                 noHtml: 'Cancel',
+                dismissWithEnter: true,
             });
         });
     }

@@ -550,6 +550,7 @@ export class MultifileService {
                 yesHtml: 'Rename',
                 noClass: 'btn-outline-info',
                 noHtml: 'Cancel',
+                dismissWithEnter: true,
             });
         });
     }

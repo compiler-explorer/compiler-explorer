@@ -248,6 +248,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private cfgButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private executorButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private libsButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private envVarsButton: JQuery;
     private compileInfoLabel: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private outputBtn: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -310,6 +311,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private haskellCmmViewOpen: boolean;
     private ppOptions: PPOptions;
     private llvmOptPipelineOptions: LLVMOptPipelineBackendOptions;
+    private environs: string;
     private isOutputOpened: boolean;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
     private cursorSelectionThrottledFunction?: ((e: monaco.editor.ICursorSelectionChangedEvent) => void) & _.Cancelable;
@@ -331,6 +333,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.assembly = [];
         this.colours = [];
         this.lastResult = null;
+        this.environs = state.environs || '';
 
         this.lastTimeTaken = 0;
         this.pendingRequestSentAt = 0;
@@ -2303,6 +2306,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.cfgButton = this.domRoot.find('.btn.view-cfg');
         this.executorButton = this.domRoot.find('.create-executor');
         this.libsButton = this.domRoot.find('.btn.show-libs');
+        this.envVarsButton = this.domRoot.find('.environs');
 
         this.compileInfoLabel = this.domRoot.find('.compile-info');
         this.compileClearCache = this.domRoot.find('.clear-cache');
@@ -2819,6 +2823,24 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.alertSystem.alert(title, this.generateLicenseInfo());
         });
 
+        this.envVarsButton.on('click', () => {
+            this.alertSystem.enterSomething(
+                'Environment variables',
+                'Input your environment variables',
+                this.environs,
+                {
+                    noClass: 'd-none',
+                    useTextArea: true,
+                    yes: answer => {
+                        this.environs = answer as string;
+                        this.updateState();
+                        this.compile();
+                    },
+                    dismissWithEnter: false,
+                }
+            );
+        });
+
         // Dismiss the popover on escape.
         $(document).on('keyup.editable', e => {
             if (e.which === 27) {
@@ -2996,6 +3018,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             selection: this.selection,
             flagsViewOpen: this.flagsViewOpen,
             deviceViewOpen: this.deviceViewOpen,
+            environs: this.environs,
         };
         this.paneRenaming.addState(state);
         this.fontScale.addState(state);
