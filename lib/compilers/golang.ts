@@ -210,7 +210,7 @@ export class GolangCompiler extends BaseCompiler {
         }
         const logging = this.extractLogging(out);
         result.asm = this.convertNewGoL(out);
-        result.stderr = null;
+        result.stderr = [];
         result.stdout = utils.parseOutput(logging, result.inputFilename);
         return Promise.all([result, '']);
     }
