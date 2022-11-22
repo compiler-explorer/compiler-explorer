@@ -59,7 +59,7 @@ function testGoAsm(basefilename) {
         return output.should.deep.equal({
             asm: expectedOutput.join('\n'),
             stdout: [],
-            stderr: null,
+            stderr: [],
         });
     });
 }
