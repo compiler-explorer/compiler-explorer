@@ -96,12 +96,12 @@ export class BaseCompiler {
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
-    protected possibleArguments: CompilerArguments;
+    public possibleArguments: CompilerArguments;
     protected possibleTools: Tool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
     public outputFilebase: string;
-    protected mtime: null;
+    protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
     protected externalparser: null | ExternalParserBase;
@@ -159,8 +159,6 @@ export class BaseCompiler {
         }
 
         this.outputFilebase = 'output';
-
-        this.mtime = null;
 
         this.cmakeBaseEnv = {};
 
@@ -2584,7 +2582,7 @@ but nothing was dumped. Possible causes are:
         this.supportedLibraries = this.getSupportedLibraries(this.compiler.libsArr, clientOptions.libs[this.lang.id]);
     }
 
-    async initialise(mtime, clientOptions, isPrediscovered = false) {
+    async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
         this.mtime = mtime;
 
         if (this.buildenvsetup) {
@@ -2643,6 +2641,10 @@ but nothing was dumped. Possible causes are:
             }
             return this;
         }
+    }
+
+    getModificationTime(): number | undefined {
+        return this.mtime ? this.mtime.getTime() : undefined;
     }
 
     getInfo() {
