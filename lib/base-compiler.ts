@@ -162,13 +162,13 @@ export class BaseCompiler {
         this.cmakeBaseEnv = {};
 
         this.buildenvsetup = null;
-        if (this.compiler.buildenvsetup && this.compiler.buildenvsetup.id) {
+        if (!this.getRemote() && this.compiler.buildenvsetup && this.compiler.buildenvsetup.id) {
             const buildenvsetupclass = getBuildEnvTypeByKey(this.compiler.buildenvsetup.id);
             this.buildenvsetup = new buildenvsetupclass(this.compiler, this.env);
         }
 
         this.externalparser = null;
-        if (this.compiler.externalparser && this.compiler.externalparser.id) {
+        if (!this.getRemote() && this.compiler.externalparser && this.compiler.externalparser.id) {
             const externalparserclass = getExternalParserByKey(this.compiler.externalparser.id);
             this.externalparser = new externalparserclass(this.compiler, this.env, this.exec);
         }
