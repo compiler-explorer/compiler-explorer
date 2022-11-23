@@ -28,7 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {logger} from './logger';
-import {PropertyGetter, PropertyValue} from './properties.interfaces';
+import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
 import {toProperty} from './utils';
 
 let properties: Record<string, Record<string, PropertyValue>> = {};
@@ -45,7 +45,9 @@ function debug(string) {
     if (propDebug) logger.info(`prop: ${string}`);
 }
 
-export function get(base: string, property: string, defaultValue: PropertyValue): PropertyValue {
+export function get(base: string, property: string, defaultValue: undefined): PropertyValue;
+export function get<T extends PropertyValue>(base: string, property: string, defaultValue: Widen<T>): typeof defaultValue;
+export function get(base: string, property: string, defaultValue: unknown): unknown {
     let result = defaultValue;
     let source = 'default';
     for (const elem of hierarchy) {
