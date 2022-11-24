@@ -36,7 +36,7 @@ class DotNetCompiler extends BaseCompiler {
     private nugetPackagesPath: string;
     private clrBuildDir: string;
     private langVersion: string;
-    private sdkVersion: string;
+    private bclVersion: string;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -46,7 +46,7 @@ class DotNetCompiler extends BaseCompiler {
         this.nugetPackagesPath = this.compilerProps(`compiler.${this.compiler.id}.nugetPackages`);
         this.clrBuildDir = this.compilerProps(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps(`compiler.${this.compiler.id}.langVersion`);
-        this.sdkVersion = this.compilerProps(`compiler.${this.compiler.id}.sdkVersion`);
+        this.bclVersion = this.compilerProps(`compiler.${this.compiler.id}.bclVersion`);
         this.asm = new DotNetAsmParser();
     }
 
@@ -96,15 +96,9 @@ class DotNetCompiler extends BaseCompiler {
 
         const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
         const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
-        const bclPath = path.join(this.clrBuildDir, '.dotnet', 'shared', 'Microsoft.NETCore.App', this.sdkVersion);
+        const bclPath = path.join(this.clrBuildDir, '.dotnet', 'shared', 'Microsoft.NETCore.App', this.bclVersion);
 
-        const programOutputPath = path.join(
-            programDir,
-            'bin',
-            this.buildConfig,
-            this.targetFramework,
-        );
-
+        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
         const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
             <PropertyGroup>
