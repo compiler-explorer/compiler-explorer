@@ -178,11 +178,7 @@ export class Output extends Pane<OutputState> {
             if (obj.text === '') {
                 this.add('<br/>');
             } else {
-                this.add(
-                    this.normalAnsiToHtml.toHtml(obj.text),
-                    lineNumber,
-                    columnNumber,obj.tag?.file
-                );
+                this.add(this.normalAnsiToHtml.toHtml(obj.text), lineNumber, columnNumber, obj.tag?.file);
             }
         }
     }

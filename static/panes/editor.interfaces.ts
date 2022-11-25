@@ -36,4 +36,4 @@ export type EditorState = {
 export type LanguageSelectData = Language & {
     logoData?: string;
     logoDataDark?: string;
-}
+};
