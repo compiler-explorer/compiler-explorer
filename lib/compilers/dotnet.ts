@@ -180,7 +180,7 @@ class DotNetCompiler extends BaseCompiler {
         const crossgen2Options = [
             crossgen2Path,
             '-r',
-            path.join(bclPath, '*'),
+            path.join(bclPath, '/'),
             dllPath,
             '-o',
             'CompilerExplorer.r2r.dll',
