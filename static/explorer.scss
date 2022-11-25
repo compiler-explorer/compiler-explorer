@@ -392,7 +392,6 @@ pre.content.wrap * {
         position: absolute;
         bottom: 5px;
         left: 5px;
-        color: #aaa;
         font-size: x-small;
         font-style: italic;
         z-index: 1;
@@ -413,10 +412,7 @@ pre.content.wrap * {
             left: 0;
             .block {
                 position: absolute;
-                background: black;
-                border: 1px solid white;
                 padding: 5px;
-                color: white;
                 display: inline-block;
                 font-family: Consolas, 'Liberation Mono', Courier, monospace;
                 white-space: nowrap;
