@@ -45,8 +45,6 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         if ((state as any).compilerId) state.id = (state as any).compilerId;
         super(hub, container, state);
 
-        this.settings = Settings.getStoredSettings();
-
         this._toolId = state.toolId;
         this._toolName = state.toolName;
         // TODO according to TS typing this should always be true

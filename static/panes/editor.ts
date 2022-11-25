@@ -500,7 +500,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         super.initializeGlobalDependentProperties();
 
         this.httpRoot = window.httpRoot;
-        this.settings = Settings.getStoredSettings();
         this.langKeys = Object.keys(languages);
     }
 
@@ -1207,7 +1206,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    override onSettingsChange(newSettings: SiteSettings | Record<string, never>): void {
+    override onSettingsChange(newSettings: SiteSettings): void {
         const before = this.settings;
         const after = newSettings;
         this.settings = {...newSettings};
