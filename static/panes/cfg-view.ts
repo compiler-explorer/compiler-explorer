@@ -70,7 +70,6 @@ export class Cfg extends Pane<CfgState> {
     dragging = false;
     dragStart: Coordinate = {x: 0, y: 0};
     dragStartPosition: Coordinate = {x: 0, y: 0};
-    zoom = 1;
     graphDimensions = {width: 0, height: 0};
     functionSelector: TomSelect;
     results: CFGResult;
@@ -79,6 +78,16 @@ export class Cfg extends Pane<CfgState> {
     bbMap: Record<string, HTMLDivElement> = {};
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
+        if ((state as any).selectedFn) {
+            state = {
+                id: state.id,
+                compilerName: state.compilerName,
+                editorid: state.editorid,
+                treeid: state.treeid,
+                selectedFunction: (state as any).selectedFn,
+                zoom: 1,
+            };
+        }
         super(hub, container, state);
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
@@ -129,7 +138,7 @@ export class Cfg extends Pane<CfgState> {
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
             const div = (e.target as Element).closest('div');
-            if (div && div.classList.contains('block-container')) {
+            if (div && (div.classList.contains('block-container') || div.classList.contains('graph-container'))) {
                 this.dragging = true;
                 this.dragStart = {x: e.clientX, y: e.clientY};
                 this.dragStartPosition = {...this.currentPosition};
@@ -151,11 +160,12 @@ export class Cfg extends Pane<CfgState> {
             }
         });
         this.graphContainer.addEventListener('wheel', e => {
-            const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.zoom - 1);
-            const prevZoom = this.zoom;
-            this.zoom += delta;
-            if (this.zoom >= MINZOOM) {
-                this.graphElement.style.transform = `scale(${this.zoom})`;
+            console.log(this.state.zoom);
+            const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.state.zoom - 1);
+            const prevZoom = this.state.zoom;
+            this.state.zoom += delta;
+            if (this.state.zoom >= MINZOOM) {
+                this.graphElement.style.transform = `scale(${this.state.zoom})`;
                 const mouseX = e.clientX - this.graphElement.getBoundingClientRect().x;
                 const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
                 // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
@@ -165,7 +175,7 @@ export class Cfg extends Pane<CfgState> {
                 this.graphElement.style.left = this.currentPosition.x + 'px';
                 this.graphElement.style.top = this.currentPosition.y + 'px';
             } else {
-                this.zoom = MINZOOM;
+                this.state.zoom = MINZOOM;
             }
         });
     }
@@ -204,7 +214,7 @@ export class Cfg extends Pane<CfgState> {
                 });
             }
             if (keys.length > 0) {
-                if (selectedFunction === '' || !(selectedFunction in cfg)) {
+                if (selectedFunction === '' || !(selectedFunction !== null && selectedFunction in cfg)) {
                     selectedFunction = keys[0];
                 }
                 this.functionSelector.setValue(selectedFunction, true);

@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerFilters} from '../types/features/filters.interfaces';
+import {CfgState} from './panes/cfg-view.interfaces';
 import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
 
 export const COMPILER_COMPONENT_NAME = 'compiler';
@@ -176,10 +177,11 @@ export type PopulatedGccDumpViewState = {
 } & (Record<GccDumpOptions, unknown> | EmptyState);
 
 export type EmptyCfgViewState = EmptyState;
-export type PopulatedCfgViewState = StateWithId & {
-    editorid: number;
-    treeid: number;
-};
+export type PopulatedCfgViewState = StateWithId &
+    CfgState & {
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyConformanceViewState = EmptyState; // TODO: unusued?
 export type PopulatedConformanceViewState = {

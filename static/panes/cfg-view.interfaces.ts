@@ -23,6 +23,24 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface CfgState {
-    selectedFunction: string;
-    scale: number;
+    selectedFunction: string | null;
+    zoom: number;
 }
+
+/*
+
+Previous state objects looked like:
+
+export interface CfgOptions {
+    physics?: boolean;
+    navigation?: boolean;
+}
+
+export interface CfgState extends PaneState {
+    selectedFn?: string;
+    pos: vis.Position;
+    scale: number;
+    options?: CfgOptions;
+}
+
+*/

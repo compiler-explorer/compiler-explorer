@@ -522,6 +522,8 @@ export function getCfgViewWith(id: number, editorid: number, treeid: number): Co
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
         componentState: {
+            selectedFunction: null,
+            zoom: 1,
             id,
             editorid,
             treeid,
