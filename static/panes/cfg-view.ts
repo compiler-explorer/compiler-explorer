@@ -24,7 +24,7 @@
 
 import {Pane} from './pane';
 import * as monaco from 'monaco-editor';
-
+import $ from 'jquery';
 import _ from 'underscore';
 
 import {CfgState} from './cfg-view.interfaces';
