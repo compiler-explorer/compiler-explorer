@@ -324,7 +324,9 @@ export class Cfg extends Pane<CfgState> {
         this.layout = new GraphLayoutCore(fn as AnnotatedCfgDescriptor);
         this.applyLayout();
         this.drawEdges();
-        this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms`;
+        this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
+            fn.nodes.length
+        }`;
     }
 
     override resize() {
