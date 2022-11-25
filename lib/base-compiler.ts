@@ -1791,9 +1791,6 @@ export class BaseCompiler {
         }
 
         asmResult.tools = toolsResult;
-        if (asmResult.code !== 0) {
-            return [{...asmResult, asm: '<Compilation failed>'}];
-        }
 
         if (this.compiler.supportsOptOutput && this.optOutputRequested(options)) {
             const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
@@ -1841,6 +1838,9 @@ export class BaseCompiler {
         if (haskellCmmResult) {
             asmResult.hasHaskellCmmOutput = true;
             asmResult.haskellCmmOutput = haskellCmmResult;
+        }
+        if (asmResult.code !== 0) {
+            return [{...asmResult, asm: '<Compilation failed>'}];
         }
 
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
