@@ -33,9 +33,18 @@ export type Pass = {
     irChanged: boolean;
 };
 
-export type LLVMOptPipelineOutput = Record<string, Pass[]>;
+export type LLVMOptPipelineResults = Record<string, Pass[]>;
+
+export type LLVMOptPipelineOutput = {
+    error?: string;
+    results: LLVMOptPipelineResults;
+    clangTime?: number | string;
+    parseTime?: number;
+};
 
 export type LLVMOptPipelineBackendOptions = {
+    filterDebugInfo: boolean;
+    filterIRMetadata: boolean;
     fullModule: boolean;
     noDiscardValueNames: boolean;
     demangle: boolean;

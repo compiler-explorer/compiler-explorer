@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import {saveAs} from 'file-saver';
 import {Alert} from '../alert';
@@ -30,6 +31,8 @@ import * as local from '../local';
 import {Language} from '../../types/languages.interfaces';
 
 const history = require('../history');
+
+type PopulateItem = {name: string; load: () => void; delete?: () => void; overwrite?: () => void};
 
 export class LoadSave {
     private modal: JQuery | null = null;
@@ -95,15 +98,19 @@ export class LoadSave {
         this.modal?.modal('hide');
     }
 
-    private static populate(root: JQuery, list: {name: string; load: () => void; delete?: () => void}[]) {
+    private static populate(root: JQuery, list: PopulateItem[]) {
         root.find('li:not(.template)').remove();
         const template = root.find('.template');
         for (const elem of list) {
             const clone = template.clone();
             clone.removeClass('template').appendTo(root).find('a').text(elem.name).on('click', elem.load);
-            const deleteButton = clone.find('button');
+            const deleteButton = clone.find('button.delete');
             if (elem.delete !== undefined) {
                 deleteButton.on('click', () => elem.delete?.());
+            }
+            const overwriteButton = clone.find('button.overwrite');
+            if (elem.overwrite !== undefined) {
+                overwriteButton.on('click', () => elem.overwrite?.());
             }
         }
     }
@@ -144,6 +151,18 @@ export class LoadSave {
                             {
                                 yes: () => {
                                     LoadSave.removeLocalFile(name);
+                                    this.populateLocalStorage();
+                                },
+                            }
+                        );
+                    },
+                    overwrite: () => {
+                        this.alertSystem.ask(
+                            `Overwrite ${_.escape(name)}?`,
+                            `Do you want to overwrite '${_.escape(name)}'?`,
+                            {
+                                yes: () => {
+                                    LoadSave.setLocalFile(name, this.editorText);
                                     this.populateLocalStorage();
                                 },
                             }
@@ -238,13 +257,13 @@ export class LoadSave {
         }
     }
 
-    private setMinimalOptions(editorText: string, currentLanguage: Language) {
+    setMinimalOptions(editorText: string, currentLanguage: Language) {
         this.editorText = editorText;
         this.currentLanguage = currentLanguage;
         this.extension = currentLanguage.extensions[0] || '.txt';
     }
 
-    private onSaveToFile(fileEditor?: string) {
+    onSaveToFile(fileEditor?: string) {
         try {
             const fileLang = this.currentLanguage?.name ?? '';
             const name = fileLang && fileEditor !== undefined ? fileLang + ' Editor #' + fileEditor + ' ' : '';

@@ -24,11 +24,14 @@
 
 import {Language} from '../types/languages.interfaces';
 import {CompilerFilters} from '../types/features/filters.interfaces';
+import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
 import {GccSelectedPass} from './panes/gccdump-view.interfaces';
 import {Motd} from './motd.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
+import {CompilationResult} from '../types/compilation/compilation.interfaces';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -41,15 +44,26 @@ export type EventMap = {
     colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
-    compiler: (compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number) => void;
+    compiler: (
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number
+    ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
-    compileResult: (compilerId: number, compiler: unknown, result: unknown) => void;
+    compileResult: (
+        compilerId: number,
+        compiler: CompilerInfo,
+        result: CompilationResult,
+        language: Language | undefined
+    ) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
     // Right now nothing emits this event, but it might be useful at some point so we keep it
-    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean) => void;
-    compiling: (compilerId: number, compiler: unknown) => void;
+    compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
+    compiling: (compilerId: number, compiler: CompilerInfo) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
     copyShortLinkToClip: () => void;
@@ -58,10 +72,11 @@ export type EventMap = {
     displaySharingPopover: () => void;
     editorChange: (editorId: number, source: string, langId: string, compilerId?: number) => void;
     editorClose: (editorId: number) => void;
+    editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
     editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
-    executeResult: (executorId: number, compiler: any, result: any, languages?: Language) => void;
+    executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
         compiler: any,
@@ -112,7 +127,8 @@ export type EventMap = {
         colBegin: number,
         colEnd: number,
         reveal: boolean,
-        sender: string
+        sender: string,
+        editorId?: number
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
@@ -142,8 +158,6 @@ export type EventMap = {
     toolInputChange: (compilerId: number, toolId: number, input: string) => void;
     toolInputViewClosed: (compilerId: number, toolId: number, input: string) => void;
     toolInputViewCloseRequest: (compilerId: number, toolId: number) => void;
-    // TODO: Only emitted
-    toolInputViewOpened: (toolId: number) => void;
     toolOpened: (compilerId: number, toolState: unknown) => void;
     toolSettingsChange: (compilerId: number) => void;
     treeClose: (treeId: number) => void;

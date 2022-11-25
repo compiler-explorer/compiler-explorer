@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import * as Sentry from '@sentry/browser';
 import _ from 'underscore';
 import LRU from 'lru-cache';
@@ -33,19 +34,17 @@ import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {Compiler} from '../types/compiler.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
+import {CompilationStatus} from './compiler-service.interfaces';
 
-type CompilationStatus = {
-    code: 0 | 1 | 2 | 3 | 4;
-    compilerOut: number;
-};
+const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
-    private cache: LRU;
-    private readonly compilersByLang: Record<string, Record<string, Compiler>>;
+    cache: LRU;
+    private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
@@ -71,7 +70,7 @@ export class CompilerService {
     public processFromLangAndCompiler(
         langId: string | null,
         compilerId: string
-    ): {langId: string | null; compiler: Compiler | null} | null {
+    ): {langId: string | null; compiler: CompilerInfo | null} | null {
         try {
             if (langId) {
                 if (!compilerId) {
@@ -134,7 +133,7 @@ export class CompilerService {
 
     public getGroupsInUse(langId: string): {value: string; label: string}[] {
         return _.chain(this.getCompilersForLang(langId))
-            .map((compiler: Compiler) => compiler)
+            .map((compiler: CompilerInfo) => compiler)
             .uniq(false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
@@ -145,11 +144,11 @@ export class CompilerService {
             .value();
     }
 
-    private getCompilersForLang(langId: string): Record<string, Compiler> {
+    getCompilersForLang(langId: string): Record<string, CompilerInfo> {
         return langId in this.compilersByLang ? this.compilersByLang[langId] : {};
     }
 
-    private findCompilerInList(compilers: Record<string, Compiler>, compilerId: string) {
+    private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
         if (compilerId in compilers) {
             return compilers[compilerId];
         }
@@ -161,7 +160,7 @@ export class CompilerService {
         return null;
     }
 
-    private findCompiler(langId: string, compilerId: string) {
+    findCompiler(langId: string, compilerId: string): CompilerInfo | null {
         if (!compilerId) return null;
         const compilers = this.getCompilersForLang(langId);
         return this.findCompilerInList(compilers, compilerId);
@@ -428,11 +427,9 @@ export class CompilerService {
         const stdout = result.stdout ?? [];
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const stderr = result.stderr ?? [];
-        // TODO: Make its own const variable at top of module?
-        const asciiColorsRe = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
         function filterAsciiColors(line: ResultLine) {
-            return line.text.replace(asciiColorsRe, '');
+            return line.text.replace(ASCII_COLORS_RE, '');
         }
 
         const output = stdout.map(filterAsciiColors).concat(stderr.map(filterAsciiColors)).join('\n');

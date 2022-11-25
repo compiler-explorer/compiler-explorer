@@ -22,6 +22,8 @@ import {Transform, TransformCallback} from 'stream';
 import * as R from 'ramda';
 import * as YAML from 'yamljs';
 
+import {logger} from './logger';
+
 type Path = string;
 type OptType = 'Missed' | 'Passed' | 'Analysis';
 
@@ -46,9 +48,17 @@ interface DebugLoc {
 
 function DisplayOptInfo(optInfo: LLVMOptInfo) {
     return optInfo.Args.reduce((acc, x) => {
-        return (
-            acc + R.pipe(R.partial(R.pickBy, [(v: any, k: string) => k !== 'DebugLoc']), R.toPairs, R.head, R.last)(x)
-        );
+        let inc = '';
+        for (const [key, value] of Object.entries(x)) {
+            if (key === 'DebugLoc') {
+                if (value['Line'] !== 0) {
+                    inc += ' (' + value['Line'] + ':' + value['Column'] + ')';
+                }
+            } else {
+                inc += value;
+            }
+        }
+        return acc + inc;
     }, '');
 }
 
@@ -63,9 +73,11 @@ const FindDocumentEnd = (x: string) => {
 
 export class LLVMOptTransformer extends Transform {
     _buffer: string;
+    _prevOpts: Set<string>; // Avoid duplicate display of remarks
     constructor(options?: object) {
         super(R.merge(options || {}, {objectMode: true}));
         this._buffer = '';
+        this._prevOpts = new Set<string>();
     }
     override _flush(done: TransformCallback) {
         this.processBuffer();
@@ -85,13 +97,18 @@ export class LLVMOptTransformer extends Transform {
                 const [head, tail] = R.splitAt(endpos, this._buffer);
                 const optTypeMatch = head.match(optTypeMatcher);
                 const opt = YAML.parse(head);
-                if (!optTypeMatch) {
-                    console.warn('missing optimization type');
-                } else {
-                    opt.optType = optTypeMatch[1].replace('!', '');
+                const strOpt = JSON.stringify(opt);
+                if (!this._prevOpts.has(strOpt)) {
+                    this._prevOpts.add(strOpt);
+
+                    if (!optTypeMatch) {
+                        logger.warn('missing optimization type');
+                    } else {
+                        opt.optType = optTypeMatch[1].replace('!', '');
+                    }
+                    opt.displayString = DisplayOptInfo(opt);
+                    this.push(opt as LLVMOptInfo);
                 }
-                opt.displayString = DisplayOptInfo(opt);
-                this.push(opt as LLVMOptInfo);
                 this._buffer = tail.replace(/^\n/, '');
             } else {
                 break;

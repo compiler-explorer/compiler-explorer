@@ -22,7 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import $ from 'jquery';
+
 const monaco = require('monaco-editor');
 const asm = require('./asm-mode');
 

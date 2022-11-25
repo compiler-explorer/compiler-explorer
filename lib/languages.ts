@@ -29,7 +29,17 @@ import _ from 'underscore';
 
 import {Language, LanguageKey} from '../types/languages.interfaces';
 
-type DefKeys = 'name' | 'monaco' | 'extensions' | 'alias' | 'previewFilter' | 'formatter' | 'logoUrl' | 'logoUrlDark';
+type DefKeys =
+    | 'name'
+    | 'monaco'
+    | 'extensions'
+    | 'alias'
+    | 'previewFilter'
+    | 'formatter'
+    | 'logoUrl'
+    | 'logoUrlDark'
+    | 'monacoDisassembly'
+    | 'tooltip';
 type LanguageDefinition = Pick<Language, DefKeys>;
 
 const definitions: Record<LanguageKey, LanguageDefinition> = {
@@ -42,6 +52,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: 'cppp',
     },
     'c++': {
         name: 'C++',
@@ -52,6 +63,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
     },
     ada: {
         name: 'Ada',
@@ -62,6 +74,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'ada-dark.svg',
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     analysis: {
         name: 'Analysis',
@@ -72,16 +85,19 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
+        tooltip: 'A collection of asm analysis tools',
     },
     assembly: {
         name: 'Assembly',
         monaco: 'asm',
-        extensions: ['.asm', '.6502'],
+        extensions: ['.asm', '.6502', '.s'],
         alias: ['asm'],
         logoUrl: 'assembly.png', // TODO: Find a better alternative
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     c: {
         name: 'C',
@@ -92,6 +108,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: 'clangformat',
         previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
+    },
+    carbon: {
+        name: 'Carbon',
+        monaco: 'carbon',
+        extensions: ['.carbon'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
     },
     circle: {
         name: 'C++ (Circle)',
@@ -102,6 +130,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrl: 'c++.svg', // TODO: Find a better alternative
         logoUrlDark: null,
         formatter: null,
+        monacoDisassembly: null,
+    },
+    circt: {
+        name: 'CIRCT',
+        monaco: 'mlir',
+        extensions: ['.mlir'],
+        alias: [],
+        logoUrl: 'circt.svg',
+        formatter: null,
+        logoUrlDark: null,
+        previewFilter: null,
+        monacoDisassembly: 'mlir',
     },
     clean: {
         name: 'Clean',
@@ -112,6 +152,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     cmake: {
         name: 'CMake',
@@ -122,6 +163,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     cpp_for_opencl: {
         name: 'C++ for OpenCL',
@@ -132,6 +174,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'opencl-dark.svg',
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     mlir: {
         name: 'MLIR',
@@ -142,6 +185,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         formatter: null,
         logoUrlDark: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     cppx: {
         name: 'Cppx',
@@ -152,6 +196,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: /^\s*#include/,
+        monacoDisassembly: null,
     },
     cppx_blue: {
         name: 'Cppx-Blue',
@@ -162,6 +207,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     cppx_gold: {
         name: 'Cppx-Gold',
@@ -172,6 +218,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
+    },
+    cpp2_cppfront: {
+        name: 'Cpp2-cppfront',
+        monaco: 'cpp2-cppfront',
+        extensions: ['.cpp2'],
+        alias: [],
+        logoUrl: 'c++.svg', // TODO: Find a better alternative
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'cppp',
     },
     crystal: {
         name: 'Crystal',
@@ -182,6 +240,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'crystal-dark.svg',
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     csharp: {
         name: 'C#',
@@ -192,6 +251,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     cuda: {
         name: 'CUDA C++',
@@ -202,6 +262,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'cuda-dark.svg',
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: 'ptx',
     },
     d: {
         name: 'D',
@@ -212,6 +273,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     dart: {
         name: 'Dart',
@@ -222,6 +284,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: 'dartformat',
         previewFilter: null,
+        monacoDisassembly: null,
     },
     erlang: {
         name: 'Erlang',
@@ -232,6 +295,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     fortran: {
         name: 'Fortran',
@@ -242,6 +306,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     fsharp: {
         name: 'F#',
@@ -252,6 +317,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     go: {
         name: 'Go',
@@ -262,6 +328,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     haskell: {
         name: 'Haskell',
@@ -272,6 +339,29 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
+    },
+    hlsl: {
+        name: 'HLSL',
+        monaco: 'hlsl',
+        extensions: ['.hlsl', '.hlsli'],
+        alias: [],
+        logoUrl: 'hlsl.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
+    hook: {
+        name: 'Hook',
+        monaco: 'hook',
+        extensions: ['.hk', '.hook'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
     },
     ispc: {
         name: 'ispc',
@@ -282,6 +372,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     java: {
         name: 'Java',
@@ -292,6 +383,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     kotlin: {
         name: 'Kotlin',
@@ -302,6 +394,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     llvm: {
         name: 'LLVM IR',
@@ -312,6 +405,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     nim: {
         name: 'Nim',
@@ -322,6 +416,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     ocaml: {
         name: 'OCaml',
@@ -332,6 +427,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     openclc: {
         name: 'OpenCL C',
@@ -342,6 +438,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'opencl-dark.svg',
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     pascal: {
         name: 'Pascal',
@@ -352,6 +449,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'pascal-dark.svg',
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     pony: {
         name: 'Pony',
@@ -362,6 +460,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     python: {
         name: 'Python',
@@ -372,6 +471,18 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
+    },
+    racket: {
+        name: 'Racket',
+        monaco: 'scheme',
+        extensions: ['.rkt'],
+        alias: [],
+        logoUrl: 'racket.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: 'scheme',
     },
     ruby: {
         name: 'Ruby',
@@ -382,6 +493,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: 'asmruby',
     },
     rust: {
         name: 'Rust',
@@ -392,6 +504,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: 'rust-dark.svg',
         formatter: 'rustfmt',
         previewFilter: null,
+        monacoDisassembly: null,
     },
     scala: {
         name: 'Scala',
@@ -402,6 +515,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     solidity: {
         name: 'Solidity',
@@ -412,6 +526,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     swift: {
         name: 'Swift',
@@ -422,6 +537,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     toit: {
         name: 'Toit',
@@ -432,6 +548,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     typescript: {
         name: 'TypeScript Native',
@@ -442,6 +559,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     vb: {
         name: 'Visual Basic',
@@ -452,6 +570,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
     zig: {
         name: 'Zig',
@@ -462,6 +581,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
+        monacoDisassembly: null,
     },
 };
 

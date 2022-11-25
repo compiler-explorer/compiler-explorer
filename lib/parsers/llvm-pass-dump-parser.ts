@@ -26,7 +26,7 @@ import _ from 'underscore';
 
 import {
     LLVMOptPipelineBackendOptions,
-    LLVMOptPipelineOutput,
+    LLVMOptPipelineResults,
     Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFilters} from '../../types/features/filters.interfaces';
@@ -82,6 +82,9 @@ type SplitPassDump = {
 export class LlvmPassDumpParser {
     filters: RegExp[];
     lineFilters: RegExp[];
+    debugInfoFilters: RegExp[];
+    debugInfoLineFilters: RegExp[];
+    metadataLineFilters: RegExp[];
     irDumpHeader: RegExp;
     machineCodeDumpHeader: RegExp;
     functionDefine: RegExp;
@@ -100,17 +103,29 @@ export class LlvmPassDumpParser {
             /^; ModuleID = '.+'$/, // module id line
             /^(source_filename|target datalayout|target triple) = ".+"$/, // module metadata
             /^; Function Attrs: .+$/, // function attributes
-            /^\s+call void @llvm.dbg.value.+$/, // dbg calls
-            /^\s+call void @llvm.dbg.declare.+$/, // dbg calls
             /^declare .+$/, // declare directives
-            /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/, // meta
-            /^(!\d+) = (?:distinct )?!{.*}/, // meta
-            /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
             /^attributes #\d+ = { .+ }$/, // attributes directive
         ];
         this.lineFilters = [
-            /,? ![\dA-Za-z]+((?=( {)?$))/, // debug annotation
             /,? #\d+((?=( {)?$))/, // attribute annotation
+        ];
+
+        // Additional filters conditionally enabled by `filterDebugInfo`
+        this.debugInfoFilters = [
+            /^\s+call void @llvm.dbg.+$/, // dbg calls
+            /^\s+DBG_.+$/, // dbg pseudo-instructions
+            /^(!\d+) = (?:distinct )?!DI([A-Za-z]+)\(([^)]+?)\)/, // meta
+            /^(!\d+) = (?:distinct )?!{.*}/, // meta
+            /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
+        ];
+        this.debugInfoLineFilters = [
+            /,? !dbg !\d+/, // instruction/function debug metadata
+            /,? debug-location !\d+/, // Direct source locations like 'example.cpp:8:1' not filtered
+        ];
+
+        // Conditionally enabled by `filterIRMetadata`
+        this.metadataLineFilters = [
+            /,?(?: ![\d.A-Za-z]+){2}/, // any instruction metadata
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
@@ -358,7 +373,7 @@ export class LlvmPassDumpParser {
     matchPassDumps(passDumpsByFunction: Record<string, PassDump[]>) {
         // We have all the passes for each function, now we will go through each function and match the before/after
         // dumps
-        const final_output: LLVMOptPipelineOutput = {};
+        const final_output: LLVMOptPipelineResults = {};
         for (const [function_name, passDumps] of Object.entries(passDumpsByFunction)) {
             // I had a fantastic chunk2 method to iterate the passes in chunks of 2 but I've been foiled by an edge
             // case: At least the "Delete dead loops" may only print a before dump and no after dump
@@ -402,6 +417,17 @@ export class LlvmPassDumpParser {
                     assert(false, 'Unexpected pass header', current_dump.header);
                 }
                 pass.machine = current_dump.machine;
+
+                // The first machine pass outputs the same MIR before and after,
+                // making it seem like it did nothing.
+                // Assuming we ran some IR pass before this, grab its output as
+                // the before text, ensuring the first MIR pass appears when
+                // inconsequential passes are filtered away.
+                const previousPass = passes.at(-1);
+                if (previousPass && previousPass.machine !== pass.machine) {
+                    pass.before = previousPass.after;
+                }
+
                 // check for equality
                 pass.irChanged = pass.before.map(x => x.text).join('\n') !== pass.after.map(x => x.text).join('\n');
                 passes.push(pass);
@@ -434,31 +460,49 @@ export class LlvmPassDumpParser {
         }
     }
 
-    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
-        // Filter a lot of junk before processing
-        const preprocessed_lines = ir
-            .slice(
-                ir.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
-            )
-            .filter(line => this.filters.every(re => line.text.match(re) === null)) // apply filters
-            .map(_line => {
-                let line = _line.text;
-                // eslint-disable-next-line no-constant-condition
-                while (true) {
-                    let newLine = line;
-                    for (const re of this.lineFilters) {
-                        newLine = newLine.replace(re, '');
-                    }
-                    if (newLine === line) {
-                        break;
-                    } else {
-                        line = newLine;
-                    }
-                }
-                _line.text = line;
-                return _line;
-            });
+    applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        // Additional filters conditionally enabled by `filterDebugInfo`/`filterIRMetadata`
+        let filters = this.filters;
+        let lineFilters = this.lineFilters;
+        if (llvmOptPipelineOptions.filterDebugInfo) {
+            filters = filters.concat(this.debugInfoFilters);
+            lineFilters = lineFilters.concat(this.debugInfoLineFilters);
+        }
+        if (llvmOptPipelineOptions.filterIRMetadata) {
+            lineFilters = lineFilters.concat(this.metadataLineFilters);
+        }
 
+        return (
+            ir
+                // whole-line filters
+                .filter(line => filters.every(re => line.text.match(re) === null))
+                // intra-line filters
+                .map(_line => {
+                    let line = _line.text;
+                    // eslint-disable-next-line no-constant-condition
+                    while (true) {
+                        let newLine = line;
+                        for (const re of lineFilters) {
+                            newLine = newLine.replace(re, '');
+                        }
+                        if (newLine === line) {
+                            break;
+                        } else {
+                            line = newLine;
+                        }
+                    }
+                    _line.text = line;
+                    return _line;
+                })
+        );
+    }
+
+    process(output: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        // Crop out any junk before the pass dumps (e.g. warnings)
+        const ir = output.slice(
+            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
+        );
+        const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);
     }
 }

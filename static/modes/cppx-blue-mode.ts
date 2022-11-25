@@ -22,14 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
+import $ from 'jquery';
+
 const monaco = require('monaco-editor');
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const cppp = require('./cppp-mode');
 
 function definition() {
     const cppx_blue = $.extend(true, {}, cppp); // deep copy
-    cppx_blue.tokenPostfix = '.cppx-blue';
+    cppx_blue.tokenPostfix = '.herb';
 
     // add the 'type' keyword
     cppx_blue.keywords.push('type');

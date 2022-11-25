@@ -86,14 +86,14 @@ describe('Parses compiler output', () => {
         utils.parseOutput('Line one\nbob.cpp:1 Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 0, line: 1, text: 'Line two', severity: 3},
+                tag: {column: 0, line: 1, text: 'Line two', severity: 3, file: 'bob.cpp'},
                 text: '<source>:1 Line two',
             },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 5, line: 1, text: 'Line two', severity: 3},
+                tag: {column: 5, line: 1, text: 'Line two', severity: 3, file: 'bob.cpp'},
                 text: '<source>:1:5: Line two',
             },
         ]);
@@ -101,7 +101,7 @@ describe('Parses compiler output', () => {
     it('handles windows output', () => {
         utils.parseOutput('bob.cpp(1) Oh noes', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'Oh noes', severity: 3},
+                tag: {column: 0, line: 1, text: 'Oh noes', severity: 3, file: 'bob.cpp'},
                 text: '<source>(1) Oh noes',
             },
         ]);
@@ -109,7 +109,7 @@ describe('Parses compiler output', () => {
     it('replaces all references to input source', () => {
         utils.parseOutput('bob.cpp:1 error in bob.cpp', 'bob.cpp').should.deep.equals([
             {
-                tag: {column: 0, line: 1, text: 'error in <source>', severity: 3},
+                tag: {column: 0, line: 1, text: 'error in <source>', severity: 3, file: 'bob.cpp'},
                 text: '<source>:1 error in <source>',
             },
         ]);
@@ -118,14 +118,14 @@ describe('Parses compiler output', () => {
         utils.parseOutput('Line one\nbob.cpp:1:5: warning Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 5, line: 1, text: 'warning Line two', severity: 2},
+                tag: {column: 5, line: 1, text: 'warning Line two', severity: 2, file: 'bob.cpp'},
                 text: '<source>:1:5: warning Line two',
             },
         ]);
         utils.parseOutput('Line one\nbob.cpp:1:5: note Line two', 'bob.cpp').should.deep.equals([
             {text: 'Line one'},
             {
-                tag: {column: 5, line: 1, text: 'note Line two', severity: 1},
+                tag: {column: 5, line: 1, text: 'note Line two', severity: 1, file: 'bob.cpp'},
                 text: '<source>:1:5: note Line two',
             },
         ]);
@@ -140,10 +140,26 @@ describe('Parses compiler output', () => {
                         line: 120,
                         text: "error: variable or field 'transform_data' declared void",
                         severity: 3,
+                        file: 'bob.cpp',
                     },
                     text: "<source>:120:25: error: variable or field 'transform_data' declared void",
                 },
             ]);
+    });
+
+    it('parser error with full path', () => {
+        utils.parseOutput("/app/example.cl:5:30: error: use of undeclared identifier 'ad'").should.deep.equals([
+            {
+                tag: {
+                    file: 'example.cl',
+                    column: 30,
+                    line: 5,
+                    text: "error: use of undeclared identifier 'ad'",
+                    severity: 3,
+                },
+                text: "example.cl:5:30: error: use of undeclared identifier 'ad'",
+            },
+        ]);
     });
 });
 
@@ -156,6 +172,7 @@ describe('Pascal compiler output', () => {
                     line: 13,
                     text: 'Error: Identifier not found "adsadasd"',
                     severity: 3,
+                    file: 'output.pas',
                 },
                 text: '<source>(13,23) Error: Identifier not found "adsadasd"',
             },
@@ -172,6 +189,7 @@ describe('Pascal compiler output', () => {
                         line: 17,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
                         severity: 3,
+                        file: 'output.pas',
                     },
                     text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
                 },
@@ -195,6 +213,7 @@ describe('Pascal compiler output', () => {
                         line: 17,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
                         severity: 3,
+                        file: 'output.pas',
                     },
                     text: '<source>(17) Fatal: There were 1 errors compiling module, stopping',
                 },
@@ -269,6 +288,7 @@ describe('Tool output', () => {
                         line: 1,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
                         severity: 3,
+                        file: 'example.cpp',
                     },
                     text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
                 },
@@ -285,6 +305,7 @@ describe('Tool output', () => {
                         line: 5,
                         text: "error: No explicit type declared for 'y'",
                         severity: 3,
+                        file: 'example.f90',
                     },
                     text: "<source>:5:22: error: No explicit type declared for 'y'",
                 },
@@ -304,6 +325,7 @@ describe('Tool output', () => {
                         line: 1,
                         text: 'Fatal: There were 1 errors compiling module, stopping',
                         severity: 3,
+                        file: 'example.cpp',
                     },
                     text: '<source>:1:1: Fatal: There were 1 errors compiling module, stopping',
                 },

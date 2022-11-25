@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import {MonacoPane} from './pane';
@@ -44,8 +45,6 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         if ((state as any).compilerId) state.id = (state as any).compilerId;
         super(hub, container, state);
 
-        this.settings = Settings.getStoredSettings();
-
         this._toolId = state.toolId;
         this._toolName = state.toolName;
         // TODO according to TS typing this should always be true
@@ -53,7 +52,6 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
 
         this.updateTitle();
         this.onSettingsChange(this.settings);
-        this.eventHub.emit('toolInputViewOpened', this._toolId);
     }
 
     override getInitialHTML() {

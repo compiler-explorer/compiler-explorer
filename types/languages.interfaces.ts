@@ -23,49 +23,55 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export type LanguageKey =
-    | 'mlir'
-    | 'jakt'
-    | 'c++'
-    | 'llvm'
-    | 'cppx'
-    | 'cppx_gold'
-    | 'cppx_blue'
+    | 'ada'
+    | 'analysis'
+    | 'assembly'
     | 'c'
-    | 'openclc'
+    | 'c++'
+    | 'carbon'
+    | 'circle'
+    | 'circt'
+    | 'clean'
+    | 'cmake'
     | 'cpp_for_opencl'
-    | 'rust'
+    | 'cppx'
+    | 'cppx_blue'
+    | 'cppx_gold'
+    | 'cpp2_cppfront'
+    | 'crystal'
+    | 'csharp'
+    | 'cuda'
     | 'd'
+    | 'dart'
     | 'erlang'
+    | 'fortran'
+    | 'fsharp'
     | 'go'
-    | 'ispc'
     | 'haskell'
+    | 'hlsl'
+    | 'hook'
+    | 'ispc'
+    | 'jakt'
     | 'java'
     | 'kotlin'
-    | 'scala'
+    | 'llvm'
+    | 'mlir'
+    | 'nim'
     | 'ocaml'
+    | 'openclc'
+    | 'pascal'
     | 'pony'
     | 'python'
-    | 'swift'
-    | 'pascal'
-    | 'fortran'
-    | 'assembly'
-    | 'analysis'
-    | 'cuda'
-    | 'zig'
-    | 'clean'
-    | 'ada'
-    | 'nim'
-    | 'crystal'
-    | 'circle'
+    | 'racket'
     | 'ruby'
-    | 'cmake'
-    | 'csharp'
-    | 'fsharp'
-    | 'vb'
-    | 'dart'
-    | 'typescript'
+    | 'rust'
+    | 'scala'
     | 'solidity'
-    | 'toit';
+    | 'swift'
+    | 'toit'
+    | 'typescript'
+    | 'vb'
+    | 'zig';
 
 export interface Language {
     /** Id of language. Added programmatically based on CELanguages key */
@@ -83,10 +89,14 @@ export interface Language {
     /** Whether there's at least 1 compiler in this language that supportsExecute */
     supportsExecute: boolean | null;
     /** Path in /views/resources/logos to the logo of the language */
-    logoUrl: string;
+    logoUrl: string | null;
     /** Path in /views/resources/logos to the logo of the language for dark mode use */
     logoUrlDark: string | null;
     /** Example code to show in the language's editor */
     example: string;
     previewFilter: RegExp | null;
+    /** The override for the output (default is "asm") */
+    monacoDisassembly: string | null;
+    /** Brief description of the language */
+    tooltip?: string;
 }

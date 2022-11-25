@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
 import {Settings} from '../settings';
 
@@ -45,7 +46,16 @@ class SiteTemplatesWidget {
         return this.templatesConfig as SiteTemplatesType;
     }
     getCurrentTheme() {
-        return Settings.getStoredSettings()['theme'];
+        const theme = Settings.getStoredSettings()['theme'];
+        if (theme === 'system') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                return 'dark';
+            } else {
+                return 'default';
+            }
+        } else {
+            return theme;
+        }
     }
     getAsset(name: string) {
         return this.siteTemplateScreenshots(`./${name}.${this.getCurrentTheme()}.png`);

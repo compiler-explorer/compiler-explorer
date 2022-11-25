@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
@@ -41,12 +42,13 @@ import {Toggles} from '../widgets/toggles';
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
+    LLVMOptPipelineResults,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
 export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEditor, LLVMOptPipelineViewState> {
-    results: LLVMOptPipelineOutput = {};
+    results: LLVMOptPipelineResults = {};
     passesColumn: JQuery;
     passesList: JQuery;
     passesColumnResizer: JQuery;
@@ -58,8 +60,11 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     originalModel: any;
     modifiedModel: any;
     options: Toggles;
+    filters: Toggles;
     state: LLVMOptPipelineViewState;
     lastOptions: LLVMOptPipelineBackendOptions = {
+        filterDebugInfo: true,
+        filterIRMetadata: false,
         fullModule: false,
         noDiscardValueNames: true,
         demangle: true,
@@ -149,6 +154,8 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         super.registerButtons(state);
         this.options = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
         this.options.on('change', this.onOptionsChange.bind(this));
+        this.filters = new Toggles(this.domRoot.find('.filters'), state as unknown as Record<string, boolean>);
+        this.filters.on('change', this.onOptionsChange.bind(this));
 
         this.passesColumnResizer = this.domRoot.find('.passes-column-resizer');
         this.passesColumnResizer.get()[0].addEventListener('mousedown', this.initResizeDrag.bind(this), false);
@@ -183,10 +190,13 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
 
     emitOptions(force = false) {
         const options = this.options.get();
+        const filters = this.filters.get();
         // TODO: Make use of filter-inconsequential-passes on the back end? Maybe provide a specific function arg to
         // the backend? Would be a data transfer optimization.
         const newOptions: LLVMOptPipelineBackendOptions = {
             //'filter-inconsequential-passes': options['filter-inconsequential-passes'],
+            filterDebugInfo: filters['filter-debug-info'],
+            filterIRMetadata: filters['filter-instruction-metadata'],
             fullModule: options['dump-full-module'],
             noDiscardValueNames: options['-fno-discard-value-names'],
             demangle: options['demangle-symbols'],
@@ -214,7 +224,16 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     override onCompileResult(compilerId: number, compiler: any, result: any): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
-            this.updateResults(result.llvmOptPipelineOutput as LLVMOptPipelineOutput);
+            const output: LLVMOptPipelineOutput = result.llvmOptPipelineOutput;
+            if (output.error) {
+                this.editor
+                    .getModel()
+                    ?.original.setValue(
+                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`
+                    );
+                this.editor.getModel()?.modified.setValue('');
+            }
+            this.updateResults(output.results);
         } else if (compiler.supportsLLVMOptPipelineView) {
             this.updateResults({});
             this.editor.getModel()?.original.setValue('<Error>');
@@ -233,7 +252,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         }
     }
 
-    updateResults(results: LLVMOptPipelineOutput): void {
+    updateResults(results: LLVMOptPipelineResults): void {
         this.results = results;
         //const functions = Object.keys(result);
         let selectedFunction = this.state.selectedFunction; // one of the .clear calls below will end up resetting this
@@ -270,7 +289,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (!(name in this.results)) {
             return;
         }
-        const filterInconsequentialPasses = this.options.get()['filter-inconsequential-passes'];
+        const filterInconsequentialPasses = this.filters.get()['filter-inconsequential-passes'];
         const passes = this.results[name];
         this.passesList.empty();
         let isFirstMachinePass = true;
@@ -365,6 +384,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     override getCurrentState() {
         return {
             ...this.options.get(),
+            ...this.filters.get(),
             ...super.getCurrentState(),
             selectedFunction: this.state.selectedFunction,
             selectedIndex: this.state.selectedIndex,

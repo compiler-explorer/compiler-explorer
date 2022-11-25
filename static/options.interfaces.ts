@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../types/languages.interfaces';
-import {Compiler} from '../types/compiler.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 
 export type LibraryVersion = {
     alias: string[];
@@ -51,12 +51,13 @@ export type LibsPerRemote = Record<string, LanguageLibs>;
 export type Options = {
     libs: Libs;
     remoteLibs: LibsPerRemote;
-    languages: Record<string, Language>;
-    compilers: Compiler[];
-    defaultCompiler: Record<string, string>;
-    defaultLibs: Record<string, string | null>;
+    languages: Record<LanguageKey, Language>;
+    compilers: CompilerInfo[];
+    defaultCompiler: Record<LanguageKey, string>;
+    defaultLibs: Record<LanguageKey, string | null>;
     defaultFontScale: number;
     sentryDsn?: string;
     release?: string;
     sentryEnvironment?: string;
+    compileOptions: Record<LanguageKey, string>;
 };

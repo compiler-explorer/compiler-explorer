@@ -31,11 +31,12 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {DefinePlugin, HotModuleReplacementPlugin, ProvidePlugin} from 'webpack';
+import {DefinePlugin, HotModuleReplacementPlugin} from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
+// eslint-disable-next-line no-console
 console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
@@ -44,7 +45,7 @@ const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v9.';
+const webjackJsHack = '.v12.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -64,12 +65,9 @@ const plugins = [
             'dart',
             'typescript',
             'solidity',
+            'scheme',
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
-    }),
-    new ProvidePlugin({
-        $: 'jquery',
-        jQuery: 'jquery',
     }),
     new MiniCssExtractPlugin({
         filename: isDev ? '[name].css' : `[name]${webjackJsHack}[contenthash].css`,
@@ -115,7 +113,7 @@ export default {
             path: 'path-browserify',
         },
         modules: ['./static', './node_modules'],
-        extensions: ['.tsx', '.ts', '.js'],
+        extensions: ['.ts', '.js'],
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -168,7 +166,7 @@ export default {
                 loader: './etc/scripts/parsed_pug_file.js',
             },
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 loader: 'ts-loader',
             },
             {

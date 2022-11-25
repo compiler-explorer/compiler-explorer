@@ -26,15 +26,17 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {ParseFilters} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
-import {logger} from '../logger';
 import {parseRustOutput} from '../utils';
 
 import {RustParser} from './argument-parsers';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
+
     static get key() {
         return 'rust';
     }
@@ -69,24 +71,19 @@ export class RustCompiler extends BaseCompiler {
 
     override getIncludeArguments(libraries) {
         const includeFlag = '--extern';
-        return _.flatten(
-            _.map(libraries, selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
-                if (!foundVersion.name) return false;
-                const list: string[] = [];
-                const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
-                for (const rlib of foundVersion.path) {
-                    list.push(
-                        includeFlag,
-                        `${lowercaseLibName}=${foundVersion.name}/build/debug/${rlib}`,
-                        '-L',
-                        `dependency=${foundVersion.name}/build/debug/deps`,
-                    );
-                }
-                return list;
-            }),
-        );
+        return libraries.flatMap(selectedLib => {
+            const foundVersion = this.findLibVersion(selectedLib);
+            if (!foundVersion || !foundVersion.name) return [];
+            const lowercaseLibName = foundVersion.name.replaceAll('-', '_');
+            return foundVersion.path.flatMap(rlib => {
+                return [
+                    includeFlag,
+                    `${lowercaseLibName}=${foundVersion.name}/build/debug/${rlib}`,
+                    '-L',
+                    `dependency=${foundVersion.name}/build/debug/deps`,
+                ];
+            });
+        });
     }
 
     override orderArguments(
@@ -113,6 +110,13 @@ export class RustCompiler extends BaseCompiler {
         }
     }
 
+    override fixIncompatibleOptions(options: string[], userOptions: string[]): string[] {
+        if (userOptions.filter(option => option.startsWith('--color=')).length > 0) {
+            options = options.filter(option => !option.startsWith('--color='));
+        }
+        return options;
+    }
+
     override optionsForBackend(backendOptions, outputFilename) {
         // The super class handles the GCC dump files that may be needed by
         // rustc-cg-gcc subclass.
@@ -134,7 +138,7 @@ export class RustCompiler extends BaseCompiler {
             if (this.linker) {
                 options = options.concat(`-Clinker=${this.linker}`);
             }
-        } else if (!filters.binary) {
+        } else {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
             }
@@ -145,8 +149,13 @@ export class RustCompiler extends BaseCompiler {
     }
 
     // Override the IR file name method for rustc because the output file is different from clang.
-    override getIrOutputFilename(inputFilename) {
-        return this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase).replace('.s', '.ll');
+    override getIrOutputFilename(inputFilename: string, filters: ParseFilters): string {
+        const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
+        // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
+        if (!filters.binary) {
+            return outputFilename.replace('.s', '.ll');
+        }
+        return outputFilename;
     }
 
     override getArgumentParser() {
@@ -157,8 +166,11 @@ export class RustCompiler extends BaseCompiler {
         return true;
     }
 
-    override parseCompilationOutput(result, inputFilename) {
-        result.stdout = parseRustOutput(result.stdout, inputFilename);
-        result.stderr = parseRustOutput(result.stderr, inputFilename);
+    override processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        return {
+            ...input,
+            stdout: parseRustOutput(input.stdout, inputFilename),
+            stderr: parseRustOutput(input.stderr, inputFilename),
+        };
     }
 }

@@ -507,7 +507,15 @@
       "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC3",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "column": 10,
         "file": null,
@@ -578,7 +586,15 @@
       "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC4",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "column": 10,
         "file": null,
@@ -649,7 +665,15 @@
       "text": "        call    _ZN5Eigen15DenseCoeffsBaseINS_6MatrixIdLin1ELin1ELi0ELin1ELin1EEELi1EEclEll"
     },
     {
-      "labels": [],
+      "labels": [
+        {
+          "name": ".LC5",
+          "range": {
+            "endCol": 37,
+            "startCol": 33
+          }
+        }
+      ],
       "source": {
         "column": 10,
         "file": null,

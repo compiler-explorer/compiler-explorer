@@ -23,6 +23,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 
 import {Container} from 'golden-layout';
@@ -83,7 +84,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         if (state._treeid) state.treeid = state._treeid;
         super(hub, container, state);
 
-        if (state.selectedPass) {
+        if (state.selectedPass && typeof state.selectedPass === 'string') {
             // To keep URL format stable wrt GccDump, only a string of the form 'r.expand' is stored.
             // Old links also have the pass number prefixed but this can be ignored.
             // Create the object that will be used instead of this bare string.
@@ -262,7 +263,6 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
     onPassSelect(passId: string) {
         const selectedPass = this.selectize.options[passId] as unknown as any;
-        console.log(selectedPass);
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);
@@ -290,7 +290,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = true;
 
         selectize.clear(true);
-        selectize.clearOptions(true);
+        selectize.clearOptions();
 
         for (const p of passes) {
             selectize.addOption(p);

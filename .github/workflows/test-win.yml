@@ -7,7 +7,11 @@ jobs:
     runs-on: windows-2019
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Ask Git to use LF line endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Use Node.js 16.x

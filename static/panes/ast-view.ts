@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
@@ -309,13 +310,16 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 },
             }));
             this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
-            if (this.linkedFadeTimeoutId) {
-                clearTimeout(this.linkedFadeTimeoutId);
+
+            if (!this.settings.indefiniteLineHighlight) {
+                if (this.linkedFadeTimeoutId) {
+                    clearTimeout(this.linkedFadeTimeoutId);
+                }
+                this.linkedFadeTimeoutId = setTimeout(() => {
+                    this.clearLinkedLines();
+                    this.linkedFadeTimeoutId = undefined;
+                }, 5000);
             }
-            this.linkedFadeTimeoutId = setTimeout(() => {
-                this.clearLinkedLines();
-                this.linkedFadeTimeoutId = undefined;
-            }, 5000);
             this.updateDecorations();
         }
     }

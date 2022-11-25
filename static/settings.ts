@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import {options} from './options';
 import * as colour from './colour';
 import * as local from './local';
@@ -50,11 +51,14 @@ export interface SiteSettings {
     enableCtrlStree: boolean;
     editorsFFont: string;
     editorsFLigatures: boolean;
+    executorCompileOnChange: boolean;
     defaultFontScale?: number; // the font scale widget can check this setting before the default has been populated
     formatBase: FormatBase;
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
     hoverShowSource: boolean;
+    indefiniteLineHighlight: boolean;
+    keepMultipleTabs: boolean;
     keepSourcesOnLangChange: boolean;
     newEditorLastLang: boolean;
     showMinimap: boolean;
@@ -259,9 +263,12 @@ export class Settings {
             ['.enableCommunityAds', 'enableCommunityAds', true],
             ['.enableCtrlStree', 'enableCtrlStree', true],
             ['.enableSharingPopover', 'enableSharingPopover', true],
+            ['.executorCompileOnChange', 'executorCompileOnChange', true],
             ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
+            ['.indefiniteLineHighlight', 'indefiniteLineHighlight', false],
+            ['.keepMultipleTabs', 'keepMultipleTabs', false],
             ['.keepSourcesOnLangChange', 'keepSourcesOnLangChange', false],
             ['.newEditorLastLang', 'newEditorLastLang', true],
             ['.showMinimap', 'showMinimap', true],
@@ -295,10 +302,7 @@ export class Settings {
         const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
-        let defaultThemeId = themes.default.id;
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            defaultThemeId = themes.dark.id;
-        }
+        const defaultThemeId = themes.system.id;
 
         const colourSchemesData = colour.schemes
             .filter(scheme => this.isSchemeUsable(scheme, defaultThemeId))
@@ -410,9 +414,18 @@ export class Settings {
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
         $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+        this.onThemeChange();
     }
 
-    private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+    private fillColourSchemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+        colourSchemeSelect.empty();
+        if (newTheme === 'system') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                newTheme = themes.dark.id;
+            } else {
+                newTheme = themes.default.id;
+            }
+        }
         for (const scheme of colour.schemes) {
             if (this.isSchemeUsable(scheme, newTheme)) {
                 colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
@@ -444,8 +457,7 @@ export class Settings {
         const oldScheme = colourSchemeSelect.val() as string;
         const newTheme = themeSelect.val() as colour.AppTheme;
 
-        colourSchemeSelect.empty();
-        this.fillThemeSelector(colourSchemeSelect, newTheme);
+        this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones

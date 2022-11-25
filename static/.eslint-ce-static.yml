@@ -36,6 +36,7 @@ rules:
   max-statements:
     - error
     - 50
+  no-console: error
   no-control-regex: 0
   no-useless-call: error
   no-useless-computed-key: error

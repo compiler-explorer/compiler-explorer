@@ -26,22 +26,15 @@ import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import {MonacoPaneState, PaneState} from './pane.interfaces';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
 
 import {FontScale} from '../widgets/fontscale';
-import {SiteSettings} from '../settings';
+import {Settings, SiteSettings} from '../settings';
 import * as utils from '../utils';
 
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
-
-class PaneCompilerState {
-    compilerId: number;
-    compilerName: string;
-    editorId?: number;
-    treeId?: number;
-}
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -54,9 +47,10 @@ export abstract class Pane<S> {
     domRoot: JQuery;
     topBar: JQuery;
     hideable: JQuery;
+    protected hub: Hub;
     eventHub: EventHub;
     isAwaitingInitialResults = false;
-    settings: SiteSettings | Record<string, never> = {};
+    settings: SiteSettings;
     paneName: string | undefined = undefined;
     paneRenaming: PaneRenaming;
 
@@ -68,11 +62,12 @@ export abstract class Pane<S> {
      */
     protected constructor(hub: Hub, container: Container, state: S & PaneState) {
         this.container = container;
+        this.hub = hub;
         this.eventHub = hub.createEventHub();
         this.domRoot = container.getElement();
-        this.hideable = this.domRoot.find('.hideable');
-
         this.domRoot.html(this.getInitialHTML());
+
+        this.hideable = this.domRoot.find('.hideable');
 
         this.compilerInfo = {
             compilerId: state.id,
@@ -83,6 +78,10 @@ export abstract class Pane<S> {
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
+
+        this.initializeDefaults();
+        this.initializeGlobalDependentProperties();
+        this.initializeStateDependentProperties(state);
 
         this.registerDynamicElements(state);
 
@@ -117,6 +116,14 @@ export abstract class Pane<S> {
      * ```
      */
     abstract registerOpeningAnalyticsEvent(): void;
+
+    initializeDefaults(): void {}
+
+    initializeGlobalDependentProperties(): void {
+        this.settings = Settings.getStoredSettings();
+    }
+
+    initializeStateDependentProperties(state: S): void {}
 
     /** Optional overridable code for initializing necessary elements before rest of registers **/
     registerDynamicElements(state: S): void {}
@@ -329,7 +336,8 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
     /** Initialize standard lifecycle hooks */
     protected override registerStandardCallbacks(): void {
         super.registerStandardCallbacks();
-        this.fontScale.on('change', this.updateState.bind(this));
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (this.fontScale) this.fontScale.on('change', this.updateState.bind(this));
         this.eventHub.on('broadcastFontScale', (scale: number) => {
             this.fontScale.setScale(scale);
             this.updateState();

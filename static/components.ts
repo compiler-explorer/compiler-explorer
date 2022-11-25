@@ -881,7 +881,7 @@ export function getDeviceView(): ComponentConfig<EmptyDeviceViewState> {
 export function getDeviceViewWith(
     id: number,
     source: string,
-    deviceOutput: unknown,
+    devices: unknown,
     compilerName: string,
     editorid: number,
     treeid: number
@@ -892,7 +892,7 @@ export function getDeviceViewWith(
         componentState: {
             id: id,
             source: source,
-            deviceOutput: deviceOutput,
+            devices: devices,
             compilerName: compilerName,
             editorid: editorid,
             treeid: treeid,

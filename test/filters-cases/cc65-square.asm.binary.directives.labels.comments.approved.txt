@@ -1,0 +1,14 @@
+{
+  "asm": [
+    {
+      "address": 1,
+      "text": "L0001:"
+    },
+    {
+      "text": "  jsr     incsp2"
+    }
+  ],
+  "labelDefinitions": {
+    "L0001": 2
+  }
+}

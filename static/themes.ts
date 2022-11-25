@@ -22,18 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings';
 
-export type Themes = 'default' | 'dark' | 'darkplus';
+export type Themes = 'default' | 'dark' | 'darkplus' | 'system';
 
-export interface Theme {
+export type Theme = {
     path: string;
     id: Themes;
     name: string;
     mainColor: string;
     monaco: string;
-}
+};
 
 export const themes: Record<Themes, Theme> = {
     default: {
@@ -57,6 +58,13 @@ export const themes: Record<Themes, Theme> = {
         mainColor: '#333333',
         monaco: 'ce-dark-plus',
     },
+    system: {
+        id: 'system',
+        name: 'Same as system',
+        path: 'default',
+        mainColor: '#f2f2f2',
+        monaco: 'ce',
+    },
 };
 
 editor.defineTheme('ce', {
@@ -64,7 +72,7 @@ editor.defineTheme('ce', {
     inherit: true,
     rules: [
         {
-            token: 'identifier.definition.cppx-blue',
+            token: 'identifier.definition.herb',
             foreground: '008a00',
             fontStyle: 'bold',
         },
@@ -77,7 +85,7 @@ editor.defineTheme('ce-dark', {
     inherit: true,
     rules: [
         {
-            token: 'identifier.definition.cppx-blue',
+            token: 'identifier.definition.herb',
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
@@ -90,7 +98,7 @@ editor.defineTheme('ce-dark-plus', {
     inherit: true,
     rules: [
         {
-            token: 'identifier.definition.cppx-blue',
+            token: 'identifier.definition.herb',
             foreground: '7c9c7c',
             fontStyle: 'bold',
         },
@@ -132,6 +140,13 @@ export class Themer {
 
     public setTheme(theme: Theme) {
         if (this.currentTheme === theme) return;
+        if (theme.id === 'system') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = themes.dark;
+            } else {
+                theme = themes.default;
+            }
+        }
         $('html').attr('data-theme', theme.path);
         $('#meta-theme').prop('content', theme.mainColor);
         editor.setTheme(theme.monaco);
