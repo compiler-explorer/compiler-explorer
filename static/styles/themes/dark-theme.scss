@@ -128,7 +128,8 @@ textarea.form-control {
         background-color: #23272b !important;
     }
 
-    &:disabled, &:disabled:hover {
+    &:disabled,
+    &:disabled:hover {
         background-color: #575757 !important;
         color: #fff !important;
     }
@@ -280,11 +281,9 @@ textarea.form-control {
     background: #444444;
 }
 
-
 .linked-code-decoration-line {
     background: rgb(26, 53, 76) !important;
 }
-
 
 .linked-code-decoration-margin {
     background: #433b4b !important;
@@ -458,7 +457,6 @@ textarea.form-control {
 }
 
 .opt-decoration {
-
     &.analysis,
     &.mixed {
         background: #fdfd96 !important;
@@ -472,8 +470,6 @@ textarea.form-control {
         background: #ff6961 !important;
     }
 }
-
-
 
 .popover,
 .popover-content,
@@ -510,16 +506,16 @@ textarea.form-control {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-image: -webkit-gradient(
-                    linear,
-                    left top,
-                    right bottom,
-                    color-stop(0, red),
-                    color-stop(16%, orange),
-                    color-stop(32%, yellow),
-                    color-stop(48%, green),
-                    color-stop(60%, blue),
-                    color-stop(76%, indigo),
-                    color-stop(1, violet)
+        linear,
+        left top,
+        right bottom,
+        color-stop(0, red),
+        color-stop(16%, orange),
+        color-stop(32%, yellow),
+        color-stop(48%, green),
+        color-stop(60%, blue),
+        color-stop(76%, indigo),
+        color-stop(1, violet)
     );
 }
 
@@ -554,7 +550,8 @@ textarea.form-control {
 }
 
 .tree {
-    ul, li {
+    ul,
+    li {
         background-color: #222222 !important;
         color: white;
     }
