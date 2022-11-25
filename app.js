@@ -529,9 +529,6 @@ async function main() {
         }
         logger.info(`Compiler scan count: ${_.size(compilers)}`);
         logger.debug('Compilers:', compilers);
-        if (compilers.length === 0) {
-            logger.error('#### No compilers found: no compilation will be done!');
-        }
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);
         routeApi.apiHandler.setCompilers(compilers);

@@ -1,0 +1,59 @@
+name: Language request
+description: Request a new language
+title: '[LANGUAGE REQUEST]: '
+labels: ['request', 'new-language']
+body:
+  - type: input
+    id: language-name
+    attributes:
+      label: Language name
+      description: What is the name of the language?
+      placeholder: C++
+    validations:
+      required: true
+  - type: input
+    id: language-version
+    attributes:
+      label: Language version
+      description: |
+        Sometimes there are a lot of versions for any given compiler. Tell us which ones would be a good starting point if needed.
+      placeholder: C++23
+    validations:
+      required: false
+  - type: input
+    id: language-homepage
+    attributes:
+      label: Language homepage
+      description: |
+        URL of where we can find the language.
+    validations:
+      required: false
+  - type: input
+    id: compiler-homepage
+    attributes:
+      label: Compiler homepage
+      description: |
+        URL of where we can find the compiler for this language.
+        Ideally, it's also easy to find installation/building instructions there, but if it's not, please also link that.
+      placeholder: https://releases.llvm.org/13.0.0/docs/ReleaseNotes.html
+    validations:
+      required: true
+  - type: input
+    id: compiler-version
+    attributes:
+      label: Compiler version
+      description: |
+        Sometimes there are a lot of versions for any given compiler. Tell us which ones would be a good starting point if this is a new compiler.
+        If we already support this compiler, but we have fallen back on our available versions, tell us which ones are missing.
+        Note that we might say no to minor versions for some compilers
+      placeholder: 13.0.1 x86-64 Linux
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Is there any specific reason as to why you want this language to be added?
+      placeholder: Compiler Explorer has similar languages and it would be useful :)
+    validations:
+      required: true
