@@ -62,7 +62,7 @@ export class ClangCompiler extends BaseCompiler {
         if (fs.existsSync(llvmDisassemblerPath)) {
             this.llvmDisassemblerPath = llvmDisassemblerPath;
         } else {
-            this.llvmDisassemblerPath = this.compilerProps('llvmDisassembler');
+            this.llvmDisassemblerPath = this.compilerProps<string | undefined>('llvmDisassembler');
         }
     }
 

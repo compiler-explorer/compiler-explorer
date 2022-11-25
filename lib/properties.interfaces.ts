@@ -30,16 +30,19 @@ interface TypeMap {
     b: boolean;
     c: number;
     d: undefined;
-};
+}
 
-export type Widen<T> = T extends T ? {
-    [P in keyof TypeMap]: T extends TypeMap[P] ? TypeMap[P] : never
-}[keyof TypeMap] : T;
+export type Widen<T> = T extends T
+    ? {
+          [P in keyof TypeMap]: T extends TypeMap[P] ? TypeMap[P] : never;
+      }[keyof TypeMap]
+    : T;
 
 function superficialGetter(property: string, defaultValue?: undefined): PropertyValue;
 function superficialGetter<T extends PropertyValue>(property: string, defaultValue: Widen<T>): typeof defaultValue;
+function superficialGetter<T extends PropertyValue>(property: string, defaultValue?: unknown): T;
 function superficialGetter(property: string, defaultValue?: unknown): unknown {
-    return;
+    return; // eslint-disable-line no-useless-return
 }
 
 export type PropertyGetter = typeof superficialGetter;

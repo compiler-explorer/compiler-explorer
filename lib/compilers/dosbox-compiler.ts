@@ -38,8 +38,8 @@ export class DosboxCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.dosbox = this.compilerProps(`compiler.${this.compiler.id}.dosbox`);
-        this.root = this.compilerProps(`compiler.${this.compiler.id}.root`);
+        this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);
+        this.root = this.compilerProps<string>(`compiler.${this.compiler.id}.root`);
         this.asm = new TurboCAsmParser(this.compilerProps);
     }
 

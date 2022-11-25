@@ -46,8 +46,13 @@ function debug(string) {
 }
 
 export function get(base: string, property: string, defaultValue: undefined): PropertyValue;
-export function get<T extends PropertyValue>(base: string, property: string, defaultValue: Widen<T>): typeof defaultValue;
-export function get(base: string, property: string, defaultValue: unknown): unknown {
+export function get<T extends PropertyValue>(
+    base: string,
+    property: string,
+    defaultValue: Widen<T>,
+): typeof defaultValue;
+export function get<T extends PropertyValue>(base: string, property: string, defaultValue?: unknown): T;
+export function get(base: string, property: string, defaultValue?: unknown): unknown {
     let result = defaultValue;
     let source = 'default';
     for (const elem of hierarchy) {

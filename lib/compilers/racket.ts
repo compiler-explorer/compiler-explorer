@@ -42,7 +42,7 @@ export class RacketCompiler extends BaseCompiler {
             info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
         }
         super(info, env);
-        this.raco = this.compilerProps(`compiler.${this.compiler.id}.raco`);
+        this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
     }
 
     override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {

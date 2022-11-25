@@ -40,7 +40,8 @@ export class PythonCompiler extends BaseCompiler {
         this.compiler.demangler = '';
         this.demanglerClass = null;
         this.disasmScriptPath =
-            this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
+            this.compilerProps<string>('disasmScript') ||
+            resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'dis_all.py');
     }
 
     override processAsm(result) {
