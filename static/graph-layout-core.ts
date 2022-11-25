@@ -772,7 +772,7 @@ export class GraphLayoutCore {
                 }
             }
         });
-        console.log(segments);
+        ///console.log(segments);
         for (const segmentEntry of segments) {
             const {segment} = segmentEntry;
             if (segment.type === SegmentType.Vertical) {
@@ -936,7 +936,7 @@ export class GraphLayoutCore {
         // Add pixel coordinates
         this.computeCoordinates();
         //
-        console.log(this);
+        ///console.log(this);
     }
 
     getWidth() {

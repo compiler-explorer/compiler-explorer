@@ -160,7 +160,6 @@ export class Cfg extends Pane<CfgState> {
             }
         });
         this.graphContainer.addEventListener('wheel', e => {
-            console.log(this.state.zoom);
             const delta = DZOOM * -Math.sign(e.deltaY) * Math.max(1, this.state.zoom - 1);
             const prevZoom = this.state.zoom;
             this.state.zoom += delta;
@@ -232,10 +231,7 @@ export class Cfg extends Pane<CfgState> {
     }
 
     async createBasicBlocks(fn: CfgDescriptor) {
-        //console.log(fn);
-        //console.log(this.bbMap);
         for (const node of fn.nodes) {
-            // console.log(node);
             const div = document.createElement('div');
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
@@ -317,7 +313,6 @@ export class Cfg extends Pane<CfgState> {
     // display the cfg for the specified function if it exists
     // this function does not change or use this.state.selectedFunction
     async selectFunction(name: string | null) {
-        console.log('selectFunction');
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
         if (!name || !(name in this.results)) {
