@@ -154,7 +154,7 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo'];
-        const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
+        await this.exec(compiler, restoreOptions, execOptions);
 
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
