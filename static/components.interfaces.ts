@@ -25,6 +25,7 @@
 import {CompilerOutputOptions} from '../types/features/filters.interfaces';
 import {CfgState} from './panes/cfg-view.interfaces';
 import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -153,27 +154,12 @@ export type PopulatedAstViewState = StateWithId &
     };
 
 export type EmptyGccDumpViewState = EmptyState;
-export type GccDumpOptions =
-    | 'treeDump'
-    | 'rtlDump'
-    | 'ipaDump'
-    | 'addressOption'
-    | 'slimOption'
-    | 'rawOption'
-    | 'detailsOption'
-    | 'statsOption'
-    | 'blocksOption'
-    | 'vopsOption'
-    | 'linenoOption'
-    | 'uidOption'
-    | 'allOption'
-    | 'selectedPass';
-export type PopulatedGccDumpViewState = {
-    _compilerid: string;
-    _compilerName: string;
-    _editorid: number;
-    _treeid: number;
-} & (Record<GccDumpOptions, unknown> | EmptyState);
+export type PopulatedGccDumpViewState = StateWithId &
+    GccDumpViewState & {
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyCfgViewState = EmptyState;
 export type PopulatedCfgViewState = StateWithId &
