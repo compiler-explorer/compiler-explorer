@@ -39,10 +39,10 @@ class DotNetCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.targetFramework = this.compilerProps(`compiler.${this.compiler.id}.targetFramework`);
-        this.buildConfig = this.compilerProps(`compiler.${this.compiler.id}.buildConfig`);
-        this.clrBuildDir = this.compilerProps(`compiler.${this.compiler.id}.clrDir`);
-        this.langVersion = this.compilerProps(`compiler.${this.compiler.id}.langVersion`);
+        this.targetFramework = this.compilerProps<string>(`compiler.${this.compiler.id}.targetFramework`);
+        this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
+        this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
+        this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
         this.asm = new DotNetAsmParser();
     }
 

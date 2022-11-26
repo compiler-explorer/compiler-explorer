@@ -74,6 +74,7 @@ import {Packager} from './packager';
 import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
+import {PropertyGetter} from './properties.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
@@ -83,8 +84,7 @@ export class BaseCompiler {
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
-    // Note that this can also return undefined and boolean | number, but we still need properties.js to ts
-    protected compilerProps: (key: string, defaultValue?: string) => string;
+    protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: any;
     protected delayCleanupTemp: any;
     protected stubRe: RegExp;

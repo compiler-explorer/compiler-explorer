@@ -50,7 +50,7 @@ export class RGACompiler extends BaseCompiler {
         super(info, env);
 
         this.compiler.supportsIntel = false;
-        this.dxcPath = this.compilerProps(`compiler.${this.compiler.id}.dxcPath`);
+        this.dxcPath = this.compilerProps<string>(`compiler.${this.compiler.id}.dxcPath`);
         logger.debug(`RGA compiler ${this.compiler.id} configured to use DXC at ${this.dxcPath}`);
     }
 

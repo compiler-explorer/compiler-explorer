@@ -44,8 +44,8 @@ export class SPIRVCompiler extends BaseCompiler {
 
         this.asm = new SPIRVAsmParser(this.compilerProps);
 
-        this.translatorPath = this.compilerProps('translatorPath');
-        this.disassemblerPath = this.compilerProps('disassemblerPath');
+        this.translatorPath = this.compilerProps<string>('translatorPath');
+        this.disassemblerPath = this.compilerProps<string>('disassemblerPath');
     }
 
     override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
