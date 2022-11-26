@@ -103,6 +103,7 @@ class DotNetCompiler extends BaseCompiler {
                 <AssemblyName>CompilerExplorer</AssemblyName>
                 <LangVersion>${this.langVersion}</LangVersion>
                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                <Nullable>enable</Nullable>
             </PropertyGroup>
             <ItemGroup>
                 <Compile Include="${sourceFile}" />
