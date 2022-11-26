@@ -47,7 +47,7 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     get compilerOptions() {
-        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore'];
+        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore', '/clp:NoSummary'];
     }
 
     get configurableOptions() {
@@ -103,16 +103,24 @@ class DotNetCompiler extends BaseCompiler {
                 <AssemblyName>CompilerExplorer</AssemblyName>
                 <LangVersion>${this.langVersion}</LangVersion>
                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                <Nullable>enable</Nullable>
             </PropertyGroup>
             <ItemGroup>
                 <Compile Include="${sourceFile}" />
             </ItemGroup>
          </Project>
         `;
+        const sdkBaseDir = path.join(path.dirname(compiler), 'sdk');
+        const sdkVersions = await fs.readdir(sdkBaseDir);
         const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
         <configuration>
             <packageSources>
                 <clear />
+                <packageSource key="fsharp" value="${path.join(
+                    sdkBaseDir,
+                    sdkVersions[0],
+                    '/FSharp/library-packs/',
+                )}" />
             </packageSources>
         </configuration>
         `;
@@ -146,8 +154,8 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
-        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo'];
-        const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
+        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo', '/clp:NoSummary'];
+        await this.exec(compiler, restoreOptions, execOptions);
 
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
