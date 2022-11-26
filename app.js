@@ -197,6 +197,7 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
+defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
 
 let languages = allLanguages;
 if (defArgs.wantedLanguages) {
@@ -528,9 +529,6 @@ async function main() {
         }
         logger.info(`Compiler scan count: ${_.size(compilers)}`);
         logger.debug('Compilers:', compilers);
-        if (compilers.length === 0) {
-            logger.error('#### No compilers found: no compilation will be done!');
-        }
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);
         routeApi.apiHandler.setCompilers(compilers);

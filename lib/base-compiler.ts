@@ -31,6 +31,7 @@ import _ from 'underscore';
 
 import {
     BuildResult,
+    BuildStep,
     CompilationCacheKey,
     CompilationInfo,
     CompilationResult,
@@ -94,12 +95,12 @@ export class BaseCompiler {
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
-    protected possibleArguments: CompilerArguments;
+    public possibleArguments: CompilerArguments;
     protected possibleTools: Tool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
     public outputFilebase: string;
-    protected mtime: null;
+    protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
     protected externalparser: null | ExternalParserBase;
@@ -158,18 +159,16 @@ export class BaseCompiler {
 
         this.outputFilebase = 'output';
 
-        this.mtime = null;
-
         this.cmakeBaseEnv = {};
 
         this.buildenvsetup = null;
-        if (this.compiler.buildenvsetup && this.compiler.buildenvsetup.id) {
+        if (!this.getRemote() && this.compiler.buildenvsetup && this.compiler.buildenvsetup.id) {
             const buildenvsetupclass = getBuildEnvTypeByKey(this.compiler.buildenvsetup.id);
             this.buildenvsetup = new buildenvsetupclass(this.compiler, this.env);
         }
 
         this.externalparser = null;
-        if (this.compiler.externalparser && this.compiler.externalparser.id) {
+        if (!this.getRemote() && this.compiler.externalparser && this.compiler.externalparser.id) {
             const externalparserclass = getExternalParserByKey(this.compiler.externalparser.id);
             this.externalparser = new externalparserclass(this.compiler, this.env, this.exec);
         }
@@ -432,10 +431,15 @@ export class BaseCompiler {
     }
 
     processExecutionResult(input: UnprocessedExecResult, inputFilename?: string): BasicExecutionResult {
+        const start = performance.now();
+        const stdout = utils.parseOutput(input.stdout, inputFilename);
+        const stderr = utils.parseOutput(input.stderr, inputFilename);
+        const end = performance.now();
         return {
             ...input,
-            stdout: utils.parseOutput(input.stdout, inputFilename),
-            stderr: utils.parseOutput(input.stderr, inputFilename),
+            stdout,
+            stderr,
+            processExecutionResultTime: end - start,
         };
     }
 
@@ -1051,12 +1055,15 @@ export class BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
         execOptions.timeoutMs = 40000;
 
+        const compileStart = performance.now();
         const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const compileEnd = performance.now();
 
         if (output.timedOut) {
             return {
-                error: 'Compilation timed out',
+                error: 'Clang invocation timed out',
                 results: {},
+                clangTime: output.execTime ? output.execTime : compileEnd - compileStart,
             };
         }
 
@@ -1065,7 +1072,9 @@ export class BaseCompiler {
         }
 
         try {
+            const parseStart = performance.now();
             const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+            const parseEnd = performance.now();
 
             if (llvmOptPipelineOptions.demangle) {
                 // apply demangles after parsing, would otherwise greatly complicate the parsing of the passes
@@ -1075,16 +1084,21 @@ export class BaseCompiler {
                 await demangler.collect({asm: output.stderr});
                 return {
                     results: await demangler.demangleLLVMPasses(llvmOptPipeline),
+                    clangTime: compileEnd - compileStart,
+                    parseTime: parseEnd - parseStart,
                 };
             } else {
                 return {
                     results: llvmOptPipeline,
+                    clangTime: compileEnd - compileStart,
+                    parseTime: parseEnd - parseStart,
                 };
             }
         } catch (e: any) {
             return {
                 error: e.toString(),
                 results: {},
+                clangTime: compileEnd - compileStart,
             };
         }
     }
@@ -1380,8 +1394,6 @@ export class BaseCompiler {
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
-            filters.dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -1397,8 +1409,6 @@ export class BaseCompiler {
         await fs.writeFile(inputFilename, source);
 
         if (files && files.length > 0) {
-            filters.dontMaskFilenames = true;
-
             await this.writeMultipleFiles(files, dirPath);
         }
 
@@ -1534,7 +1544,7 @@ export class BaseCompiler {
         return this.execBinary(executable, maxExecOutputSize, executeParameters, homeDir);
     }
 
-    async handleInterpreting(key, executeParameters) {
+    async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
@@ -1544,11 +1554,19 @@ export class BaseCompiler {
         return {
             ...result,
             didExecute: true,
-            buildResult: {code: 0},
+            buildResult: {
+                code: 0,
+                timedOut: false,
+                stdout: [],
+                stderr: [],
+                downloads: [],
+                executableFilename: outputFilename,
+                compilationOptions: [],
+            },
         };
     }
 
-    async handleExecution(key, executeParameters) {
+    async handleExecution(key, executeParameters): Promise<CompilationResult> {
         if (this.compiler.interpreted) return this.handleInterpreting(key, executeParameters);
         const buildResult = await this.getOrBuildExecutable(key);
         if (buildResult.code !== 0) {
@@ -1558,6 +1576,7 @@ export class BaseCompiler {
                 buildResult,
                 stderr: [{text: 'Build failed'}],
                 stdout: [],
+                timedOut: false,
             };
         } else {
             if (!(await utils.fileExists(buildResult.executableFilename))) {
@@ -1567,6 +1586,7 @@ export class BaseCompiler {
                     buildResult,
                     stderr: [{text: 'Executable not found'}],
                     stdout: [],
+                    timedOut: false,
                 };
 
                 verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
@@ -1582,6 +1602,7 @@ export class BaseCompiler {
                 buildResult,
                 stderr: [{text: 'Compiler does not support execution'}],
                 stdout: [],
+                timedOut: false,
             };
         }
 
@@ -1857,9 +1878,10 @@ export class BaseCompiler {
         };
     }
 
-    async doBuildstepAndAddToResult(result, name, command, args, execParams) {
-        const stepResult = {
+    async doBuildstepAndAddToResult(result, name, command, args, execParams): Promise<BuildStep> {
+        const stepResult: BuildStep = {
             ...(await this.doBuildstep(command, args, execParams)),
+            compilationOptions: args,
             step: name,
         };
         logger.debug(name);
@@ -1891,6 +1913,18 @@ export class BaseCompiler {
             key.options = libsAndOptions.options;
         }
         return libsAndOptions;
+    }
+
+    getExtraCMakeArgs(key): string[] {
+        return [];
+    }
+
+    getCMakeExtToolchainParam(): string {
+        if (this.toolchainPath) {
+            return `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
+        }
+
+        return '';
     }
 
     async cmake(files, key) {
@@ -1953,13 +1987,10 @@ export class BaseCompiler {
 
             fullResult.downloads = await this.setupBuildEnvironment(cacheKey, dirPath, true);
 
-            let toolchainparam = '';
-            if (this.toolchainPath) {
-                toolchainparam = `-DCMAKE_CXX_COMPILER_EXTERNAL_TOOLCHAIN=${this.toolchainPath}`;
-            }
+            const toolchainparam = this.getCMakeExtToolchainParam();
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...cmakeArgs, '..'];
+            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
@@ -2075,18 +2106,7 @@ export class BaseCompiler {
         return normalized;
     }
 
-    async compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
-        const optionsError = this.checkOptions(options);
-        if (optionsError) throw optionsError;
-        const sourceError = this.checkSource(source);
-        if (sourceError) throw sourceError;
-
-        const libsAndOptions = {libraries, options};
-        if (this.tryAutodetectLibraries(libsAndOptions)) {
-            libraries = libsAndOptions.libraries;
-            options = libsAndOptions.options;
-        }
-
+    fixFiltersBeforeCacheKey(filters, options, files) {
         // Don't run binary for unsupported compilers, even if we're asked.
         if (filters.binary && !this.compiler.supportsBinary) {
             delete filters.binary;
@@ -2101,10 +2121,30 @@ export class BaseCompiler {
             }
         }
 
+        if (files && files.length > 0) {
+            filters.dontMaskFilenames = true;
+        }
+    }
+
+    async compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
+        const optionsError = this.checkOptions(options);
+        if (optionsError) throw optionsError;
+        const sourceError = this.checkSource(source);
+        if (sourceError) throw sourceError;
+
+        const libsAndOptions = {libraries, options};
+        if (this.tryAutodetectLibraries(libsAndOptions)) {
+            libraries = libsAndOptions.libraries;
+            options = libsAndOptions.options;
+        }
+
+        this.fixFiltersBeforeCacheKey(filters, options, files);
+
         const executeParameters = {
             args: executionParameters.args || [],
             stdin: executionParameters.stdin || '',
         };
+
         const key = this.getCacheKey(source, options, backendOptions, filters, tools, libraries, files);
 
         const doExecute = filters.execute;
@@ -2542,7 +2582,7 @@ but nothing was dumped. Possible causes are:
         this.supportedLibraries = this.getSupportedLibraries(this.compiler.libsArr, clientOptions.libs[this.lang.id]);
     }
 
-    async initialise(mtime, clientOptions, isPrediscovered = false) {
+    async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
         this.mtime = mtime;
 
         if (this.buildenvsetup) {
@@ -2601,6 +2641,10 @@ but nothing was dumped. Possible causes are:
             }
             return this;
         }
+    }
+
+    getModificationTime(): number | undefined {
+        return this.mtime ? this.mtime.getTime() : undefined;
     }
 
     getInfo() {

@@ -25,22 +25,32 @@
 import path from 'path';
 
 import * as Sentry from '@sentry/node';
+import express from 'express';
 import fs from 'fs-extra';
-import httpProxy from 'http-proxy';
-import PromClient from 'prom-client';
+import Server from 'http-proxy';
+import PromClient, {Counter} from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
+import {BaseCompiler} from '../base-compiler';
+import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
 import {logger} from '../logger';
 import * as utils from '../utils';
+
+import {
+    CompileRequestJsonBody,
+    CompileRequestQueryArgs,
+    CompileRequestTextBody,
+    ExecutionRequestParams,
+} from './compile.interfaces';
 
 temp.track();
 
 let hasSetUpAutoClean = false;
 
-function initialise(compilerEnv) {
+function initialise(compilerEnv: CompilationEnvironment) {
     if (hasSetUpAutoClean) return;
     hasSetUpAutoClean = true;
     const tempDirCleanupSecs = compilerEnv.ceProps('tempDirCleanupSecs', 600);
@@ -66,58 +76,77 @@ function initialise(compilerEnv) {
     }, tempDirCleanupSecs * 1000);
 }
 
+export type ExecutionParams = {
+    args: string[];
+    stdin: string;
+};
+
+type ParsedRequest = {
+    source: string;
+    options: string[];
+    backendOptions: Record<string, any>;
+    filters: Record<string, boolean>;
+    bypassCache: boolean;
+    tools: any;
+    executionParameters: ExecutionParams;
+    libraries: any[];
+};
+
 export class CompileHandler {
-    constructor(compilationEnvironment, awsProps) {
-        this.compilersById = {};
+    private compilersById: Record<string, Record<string, BaseCompiler>> = {};
+    private readonly compilerEnv: CompilationEnvironment;
+    private readonly textBanner: string;
+    private readonly proxy: Server;
+    private readonly awsProps: (name: string, def?: string) => string;
+    private clientOptions: Record<string, any> | null = null;
+    private readonly compileCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_compilations_total',
+        help: 'Number of compilations',
+        labelNames: ['language'],
+    });
+    private readonly executeCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_executions_total',
+        help: 'Number of executions',
+        labelNames: ['language'],
+    });
+    private readonly cmakeCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_cmake_compilations_total',
+        help: 'Number of CMake compilations',
+        labelNames: ['language'],
+    });
+    private readonly cmakeExecuteCounter: Counter<string> = new PromClient.Counter({
+        name: 'ce_cmake_executions_total',
+        help: 'Number of executions after CMake',
+        labelNames: ['language'],
+    });
+
+    constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
         this.compilerEnv = compilationEnvironment;
         this.textBanner = this.compilerEnv.ceProps('textBanner');
-        this.proxy = httpProxy.createProxyServer({});
+        this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
-        this.clientOptions = null;
         initialise(this.compilerEnv);
-
-        this.compileCounter = new PromClient.Counter({
-            name: 'ce_compilations_total',
-            help: 'Number of compilations',
-            labelNames: ['language'],
-        });
-
-        this.executeCounter = new PromClient.Counter({
-            name: 'ce_executions_total',
-            help: 'Number of executions',
-            labelNames: ['language'],
-        });
-
-        this.cmakeCounter = new PromClient.Counter({
-            name: 'ce_cmake_compilations_total',
-            help: 'Number of CMake compilations',
-            labelNames: ['language'],
-        });
-
-        this.cmakeExecuteCounter = new PromClient.Counter({
-            name: 'ce_cmake_executions_total',
-            help: 'Number of executions after CMake',
-            labelNames: ['language'],
-        });
 
         // Mostly cribbed from
         // https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
         // We just keep the body as-is though: no encoding using queryString.stringify(), as we don't use a form
         // decoding middleware.
         this.proxy.on('proxyReq', function (proxyReq, req) {
-            if (!req.body || Object.keys(req.body).length === 0) {
+            // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
+            //  object we get here does.
+            const body = (req as any).body;
+            if (!body || Object.keys(body).length === 0) {
                 return;
             }
-
             const contentType = proxyReq.getHeader('Content-Type');
             let bodyData;
 
             if (contentType === 'application/json') {
-                bodyData = JSON.stringify(req.body);
+                bodyData = JSON.stringify(body);
             }
 
             if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = req.body;
+                bodyData = body;
             }
 
             if (bodyData) {
@@ -127,7 +156,7 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler) {
+    async create(compiler): Promise<BaseCompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -138,7 +167,6 @@ export class CompileHandler {
             logger.error(`Compiler ID: ${compiler.id}`);
             logger.error(e);
             process.exit(1);
-            return;
         }
 
         // attempt to resolve non absolute exe paths
@@ -162,7 +190,7 @@ export class CompileHandler {
                     const res = await fs.stat(compiler.exe);
                     modificationTime = res.mtime;
                     const cached = this.findCompiler(compiler.lang, compiler.id);
-                    if (cached && cached.mtime.getTime() === res.mtime.getTime()) {
+                    if (cached && cached.getModificationTime() === res.mtime.getTime()) {
                         logger.debug(`${compiler.id} is unchanged`);
                         return cached;
                     }
@@ -180,7 +208,7 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers, clientOptions) {
+    async setCompilers(compilers: BaseCompiler[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -208,18 +236,18 @@ export class CompileHandler {
         }
     }
 
-    compilerAliasMatch(compiler, compilerId) {
+    compilerAliasMatch(compiler, compilerId): boolean {
         return compiler.compiler.alias && compiler.compiler.alias.includes(compilerId);
     }
 
-    compilerIdOrAliasMatch(compiler, compilerId) {
+    compilerIdOrAliasMatch(compiler, compilerId): boolean {
         return compiler.compiler.id === compilerId || this.compilerAliasMatch(compiler, compilerId);
     }
 
-    findCompiler(langId, compilerId) {
+    findCompiler(langId, compilerId): BaseCompiler | undefined {
         if (!compilerId) return;
 
-        const langCompilers = this.compilersById[langId];
+        const langCompilers: Record<string, BaseCompiler> | undefined = this.compilersById[langId];
         if (langCompilers) {
             if (langCompilers[compilerId]) {
                 return langCompilers[compilerId];
@@ -233,7 +261,7 @@ export class CompileHandler {
         }
 
         // If the lang is bad, try to find it in every language
-        let response;
+        let response: BaseCompiler | undefined;
         _.each(this.compilersById, compilerInLang => {
             if (!response) {
                 response = _.find(compilerInLang, compiler => {
@@ -270,84 +298,101 @@ export class CompileHandler {
         }
     }
 
-    checkRequestRequirements(req) {
+    checkRequestRequirements(req: express.Request): CompileRequestJsonBody {
         if (req.body.options === undefined) throw new Error('Missing options property');
         if (req.body.source === undefined) throw new Error('Missing source property');
+        return req.body;
     }
 
-    parseRequest(req, compiler) {
-        let source,
-            options,
-            backendOptions = {},
-            filters,
+    parseRequest(req: express.Request, compiler: BaseCompiler): ParsedRequest {
+        let source: string,
+            options: string,
+            backendOptions: Record<string, any> = {},
+            filters: Record<string, boolean>,
             bypassCache = false,
-            tools,
-            executionParameters = {};
-        let libraries = [];
+            tools;
+        const execReqParams: ExecutionRequestParams = {};
+        let libraries: any[] = [];
         // IF YOU MODIFY ANYTHING HERE PLEASE UPDATE THE DOCUMENTATION!
         if (req.is('json')) {
             // JSON-style request
-            this.checkRequestRequirements(req);
-            const requestOptions = req.body.options;
-            source = req.body.source;
-            if (req.body.bypassCache) bypassCache = true;
+            const jsonRequest = this.checkRequestRequirements(req);
+            const requestOptions = jsonRequest.options;
+            source = jsonRequest.source;
+            if (jsonRequest.bypassCache) bypassCache = true;
             options = requestOptions.userArguments;
             const execParams = requestOptions.executeParameters || {};
-            executionParameters.args = execParams.args;
-            executionParameters.stdin = execParams.stdin;
+            execReqParams.args = execParams.args;
+            execReqParams.stdin = execParams.stdin;
             backendOptions = requestOptions.compilerOptions || {};
             filters = {...compiler.getDefaultFilters(), ...requestOptions.filters};
             tools = requestOptions.tools;
             libraries = requestOptions.libraries || [];
         } else if (req.body && req.body.compiler) {
-            source = req.body.source;
-            if (req.body.bypassCache) bypassCache = true;
-            options = req.body.userArguments;
-            executionParameters.args = req.body.executeParametersArgs;
-            executionParameters.stdin = req.body.executeParametersStdin;
+            const textRequest = req.body as CompileRequestTextBody;
+            source = textRequest.source;
+            if (textRequest.bypassCache) bypassCache = true;
+            options = textRequest.userArguments;
+            execReqParams.args = textRequest.executeParametersArgs;
+            execReqParams.stdin = textRequest.executeParametersStdin;
 
             filters = compiler.getDefaultFilters();
             _.each(filters, (value, item) => {
-                filters[item] = req.body[item] === 'true';
+                filters[item] = textRequest[item] === 'true';
             });
 
-            backendOptions.skipAsm = req.body.skipAsm === 'true';
+            backendOptions.skipAsm = textRequest.skipAsm === 'true';
         } else {
             // API-style
             source = req.body;
-            options = req.query.options;
+            const query = req.query as CompileRequestQueryArgs;
+            options = query.options || '';
             // By default we get the default filters.
             filters = compiler.getDefaultFilters();
             // If specified exactly, we'll take that with ?filters=a,b,c
-            if (req.query.filters) {
-                filters = _.object(_.map(req.query.filters.split(','), filter => [filter, true]));
+            if (query.filters) {
+                filters = _.object(_.map(query.filters.split(','), filter => [filter, true])) as Record<
+                    string,
+                    boolean
+                >;
             }
             // Add a filter. ?addFilters=binary
-            _.each((req.query.addFilters || '').split(','), filter => {
+            _.each((query.addFilters || '').split(','), filter => {
                 if (filter) filters[filter] = true;
             });
             // Remove a filter. ?removeFilter=intel
-            _.each((req.query.removeFilters || '').split(','), filter => {
+            _.each((query.removeFilters || '').split(','), filter => {
                 if (filter) delete filters[filter];
             });
             // Ask for asm not to be returned
-            backendOptions.skipAsm = req.query.skipAsm === 'true';
+            backendOptions.skipAsm = query.skipAsm === 'true';
 
-            backendOptions.skipPopArgs = req.query.skipPopArgs === 'true';
+            backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
-        options = utils.splitArguments(options);
-        if (!Array.isArray(executionParameters.args)) {
-            executionParameters.args = utils.splitArguments(executionParameters.args);
-        }
+        const executionParameters: ExecutionParams = {
+            args: !Array.isArray(execReqParams.args)
+                ? utils.splitArguments(execReqParams.args)
+                : execReqParams.args || '',
+            stdin: execReqParams.stdin || '',
+        };
 
         tools = tools || [];
         for (const tool of tools) {
             tool.args = utils.splitArguments(tool.args);
         }
-        return {source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries};
+        return {
+            source,
+            options: utils.splitArguments(options),
+            backendOptions,
+            filters,
+            bypassCache,
+            tools,
+            executionParameters,
+            libraries,
+        };
     }
 
-    handlePopularArguments(req, res) {
+    handlePopularArguments(req: express.Request, res) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -355,7 +400,7 @@ export class CompileHandler {
         res.send(compiler.possibleArguments.getPopularArguments(this.getUsedOptions(req)));
     }
 
-    handleOptimizationArguments(req, res) {
+    handleOptimizationArguments(req: express.Request, res) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -363,7 +408,7 @@ export class CompileHandler {
         res.send(compiler.possibleArguments.getOptimizationArguments(this.getUsedOptions(req)));
     }
 
-    getUsedOptions(req) {
+    getUsedOptions(req: express.Request) {
         if (req.body) {
             const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
 
@@ -376,7 +421,7 @@ export class CompileHandler {
         return false;
     }
 
-    handleApiError(error, res, next) {
+    handleApiError(error, res: express.Response, next: express.NextFunction) {
         if (error.message) {
             return res.status(400).send({
                 error: true,
@@ -387,7 +432,7 @@ export class CompileHandler {
         }
     }
 
-    handleCmake(req, res, next) {
+    handleCmake(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -423,7 +468,7 @@ export class CompileHandler {
         }
     }
 
-    handle(req, res, next) {
+    handle(req: express.Request, res: express.Response, next: express.NextFunction) {
         const compiler = this.compilerFor(req);
         if (!compiler) {
             return res.sendStatus(404);
@@ -439,7 +484,7 @@ export class CompileHandler {
             return;
         }
 
-        let parsedRequest;
+        let parsedRequest: ParsedRequest | undefined;
         try {
             parsedRequest = this.parseRequest(req, compiler);
         } catch (error) {

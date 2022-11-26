@@ -313,6 +313,20 @@ export class Tree {
         this.refresh();
     }
 
+    private removeFileByFilename(filename: string) {
+        const file = this.multifileService.removeFileByFilename(filename);
+        if (file) {
+            if (file.isOpen) {
+                const editor = this.hub.getEditorById(file.editorId);
+                if (editor) {
+                    editor.container.close();
+                }
+            }
+        }
+
+        this.refresh();
+    }
+
     private addRowToTreelist(file: MultifileFile) {
         const item = $(this.rowTemplate.children()[0].cloneNode(true));
         const stageButton = item.find('.stage-file');
@@ -488,18 +502,10 @@ export class Tree {
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
             if (files && files.length > 0) {
-                this.multifileService.forEachFile((file: MultifileFile) => {
-                    this.removeFile(file.fileId);
-                });
-
-                await this.multifileService.loadProjectFromFile(files[0], (file: MultifileFile) => {
-                    this.refresh();
-                    if (file.filename === 'CMakeLists.txt') {
-                        // todo: find a way to toggle on CMake checkbox...
-                        this.editFile(file.fileId);
-                    }
-                });
+                await this.openZipFile(files[0]);
             }
+
+            loadProjectFromFile.val('');
         });
 
         this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
@@ -518,6 +524,109 @@ export class Tree {
             this.domRoot.find('.options'),
             state as unknown as Record<string, boolean>
         );
+
+        let drophereHideTimeout;
+        this.root.on('dragover', ev => {
+            ev.preventDefault();
+
+            if (drophereHideTimeout) clearTimeout(drophereHideTimeout);
+
+            const drophere = this.root.find('.drophere');
+            drophere.show();
+        });
+
+        this.root.on('dragleave', () => {
+            const drophere = this.root.find('.drophere');
+            drophereHideTimeout = setTimeout(() => {
+                drophere.hide();
+            }, 1000);
+        });
+
+        this.root.on('drop', async (ev: any) => {
+            ev.preventDefault();
+
+            const drophere = this.root.find('.drophere');
+            drophere.hide();
+
+            const dataTransfer = ev.originalEvent.dataTransfer;
+            if (dataTransfer.items) {
+                [...dataTransfer.items].forEach(async (item, i) => {
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file.name.endsWith('.zip')) {
+                            this.openZipFile(file);
+                        } else {
+                            await this.addSingleFile(file);
+                        }
+                    }
+                });
+            } else {
+                [...dataTransfer.files].forEach(async (file, i) => {
+                    if (file.name.endsWith('.zip')) {
+                        this.openZipFile(file);
+                    } else {
+                        await this.addSingleFile(file);
+                    }
+                });
+            }
+        });
+    }
+
+    private async openZipFile(htmlfile) {
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            this.removeFile(file.fileId);
+        });
+
+        await this.multifileService.loadProjectFromFile(htmlfile, (file: MultifileFile) => {
+            this.refresh();
+            if (file.filename === 'CMakeLists.txt') {
+                // todo: find a way to toggle on CMake checkbox...
+                this.editFile(file.fileId);
+            }
+        });
+    }
+
+    private async askForOverwriteAndDo(filename): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.multifileService.fileExists(filename)) {
+                this.alertSystem.ask('Overwrite file', `${_.escape(filename)} already exists, overwrite this file?`, {
+                    yes: () => {
+                        this.removeFileByFilename(filename);
+                        resolve();
+                    },
+                    no: () => {
+                        reject();
+                    },
+                    onClose: () => {
+                        reject();
+                    },
+                    yesClass: 'btn-danger',
+                    yesHtml: 'Yes',
+                    noClass: 'btn-primary',
+                    noHtml: 'No',
+                });
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    private async addSingleFile(htmlfile): Promise<void> {
+        try {
+            await this.askForOverwriteAndDo(htmlfile.name);
+
+            return new Promise(resolve => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    this.multifileService.addNewTextFile(htmlfile.name, fr.result?.toString() || '');
+                    this.refresh();
+                    resolve();
+                };
+                fr.readAsText(htmlfile);
+            });
+        } catch {
+            // expected when user says no
+        }
     }
 
     private numberUsedLines() {

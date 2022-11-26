@@ -39,7 +39,7 @@ import * as monacoConfig from '../monaco-config';
 import * as TimingWidget from '../widgets/timing-info-widget';
 import {CompilerPicker} from '../compiler-picker';
 import {CompilerService} from '../compiler-service';
-import {Settings, SiteSettings} from '../settings';
+import {SiteSettings} from '../settings';
 import * as LibUtils from '../lib-utils';
 import {getAssemblyDocumentation} from '../api/api';
 import {MonacoPane} from './pane';
@@ -48,7 +48,7 @@ import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {CompilerState} from './compiler.interfaces';
-import {ComponentConfig, GccDumpOptions, ToolViewState} from '../components.interfaces';
+import {ComponentConfig, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {CompilerFilters} from '../../types/features/filters.interfaces';
@@ -320,7 +320,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         super(hub, container, state);
 
         this.id = state.id || hub.nextCompilerId();
-        this.settings = Settings.getStoredSettings();
 
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
@@ -2650,7 +2649,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             const link = this.compiler.license.link;
 
             if (name || link) {
-                result += this.compiler.name + ' is licensed under its ';
+                result += this.compiler.name + ' is licensed under ';
 
                 if (link) {
                     const aText = name ? name : link;
@@ -2658,12 +2657,17 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                 } else {
                     result += name;
                 }
-
-                result += ' license';
             }
 
             if (!result) {
                 result = 'No license information to display for ' + this.compiler.name;
+            } else {
+                result +=
+                    '<div><p>If the displayed information is wrong, please submit an issue to ' +
+                    // eslint-disable-next-line max-len
+                    '<a href="https://github.com/compiler-explorer/compiler-explorer/issues/new?assignees=&labels=bug&template=bug_report.yml&title=%5BBUG%5D%3A' +
+                    encodeURIComponent(this.compiler.name + ' license is wrong') +
+                    '" target="_blank">https://github.com/compiler-explorer/compiler-explorer/issues</a></p></div>';
             }
 
             return result;

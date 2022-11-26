@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,11 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {Amd64DocumentationProvider} from './amd64';
-export {Arm32DocumentationProvider} from './arm32';
-export {AvrDocumentationProvider} from './avr';
-export {EvmDocumentationProvider} from './evm';
-export {JavaDocumentationProvider} from './java';
-export {LLVMDocumentationProvider} from './llvm';
-export {Mos6502DocumentationProvider} from './mos6502';
-export {PythonDocumentationProvider} from './python';
+import {AssemblyInstructionInfo, BaseAssemblyDocumentationProvider} from './base';
+import {getAsmOpcode} from './generated/asm-docs-python';
+
+export class PythonDocumentationProvider extends BaseAssemblyDocumentationProvider {
+    public static get key() {
+        return 'python';
+    }
+    public override getInstructionInformation(instruction: string): AssemblyInstructionInfo | null {
+        return getAsmOpcode(instruction) || null;
+    }
+}
