@@ -47,7 +47,7 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     get compilerOptions() {
-        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore'];
+        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore', '/clp:NoSummary'];
     }
 
     get configurableOptions() {
@@ -154,7 +154,7 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
-        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo'];
+        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo', '/clp:NoSummary'];
         await this.exec(compiler, restoreOptions, execOptions);
 
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
