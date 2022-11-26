@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import * as utils from '../utils';
 
 import {ClangCompiler} from './clang';
@@ -62,7 +62,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        filters: ParseFilters,
+        filters: ParseFiltersAndOutputOptions,
     ) {
         if (!outputFilename.endsWith('.elf') && (await utils.fileExists(outputFilename + '.elf'))) {
             outputFilename = outputFilename + '.elf';

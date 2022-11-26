@@ -1,5 +1,5 @@
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 export interface IAsmParser {
-    process(asm: string, filters: ParseFilters);
+    process(asm: string, filters: ParseFiltersAndOutputOptions);
 }
