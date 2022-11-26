@@ -22,7 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface GccDumpFilters {
+export interface GccDumpViewSelectedPass {
+    filename_suffix: string;
+    name: string;
+    command_prefix: string;
+
+    selectedPass: string | null;
+}
+
+export type GccDumpViewState = {
     treeDump: any;
     rtlDump: any;
     ipaDump: any;
@@ -34,21 +42,13 @@ export interface GccDumpFilters {
     blocksOption: any;
     vopsOption: any;
     linenoOption: any;
+
     uidOption: any;
     allOption: any;
-}
 
-export interface GccDumpState extends GccDumpFilters {
-    selectedPass: string | null;
-    // legacy
-    _compilerid?: number;
-    _compilerName?: string;
-    _editorid?: number;
-    _treeid?: number;
-}
+    _compilerid: number;
+    _compilerName: string;
+    _editorid: number;
+    _treeid: number;
 
-export type GccSelectedPass = {
-    filename_suffix: string;
-    name: string;
-    command_prefix: string;
-};
+} & GccDumpViewSelectedPass;

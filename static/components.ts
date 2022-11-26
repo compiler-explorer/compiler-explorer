@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+
 import {
     EmptyCompilerState,
     ComponentConfig,
@@ -49,8 +51,6 @@ import {
     EmptyAstViewState,
     PopulatedAstViewState,
     EmptyGccDumpViewState,
-    PopulatedGccDumpViewState,
-    GccDumpOptions,
     EmptyCfgViewState,
     PopulatedCfgViewState,
     PopulatedConformanceViewState,
@@ -477,8 +477,8 @@ export function getGccDumpViewWith(
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput?: Record<GccDumpOptions, unknown>
-): ComponentConfig<PopulatedGccDumpViewState> {
+    gccDumpOutput?: GccDumpViewState
+): ComponentConfig<GccDumpViewState> {
     // TODO: remove any
     const ret: any = {
         _compilerid: id,
@@ -487,22 +487,31 @@ export function getGccDumpViewWith(
         _treeid: treeid,
     };
 
-    if (gccDumpOutput) {
-        ret.treeDump = gccDumpOutput.treeDump;
-        ret.rtlDump = gccDumpOutput.rtlDump;
-        ret.ipaDump = gccDumpOutput.ipaDump;
-        ret.addressOption = gccDumpOutput.addressOption;
-        ret.slimOption = gccDumpOutput.slimOption;
-        ret.rawOption = gccDumpOutput.rawOption;
-        ret.detailsOption = gccDumpOutput.detailsOption;
-        ret.statsOption = gccDumpOutput.statsOption;
-        ret.blocksOption = gccDumpOutput.blocksOption;
-        ret.vopsOption = gccDumpOutput.vopsOption;
-        ret.linenoOption = gccDumpOutput.linenoOption;
-        ret.uidOption = gccDumpOutput.uidOption;
-        ret.allOption = gccDumpOutput.allOption;
-        ret.selectedPass = gccDumpOutput.selectedPass;
-    }
+    // We want the state to be compatible with GccDumpState.
+    // Not sure when gccDumpOutput would be null, but we probably need to keep
+    // the object compliant.
+
+    // GccDumpViewState
+    ret.treeDump = gccDumpOutput?.treeDump;
+    ret.rtlDump = gccDumpOutput?.rtlDump;
+    ret.ipaDump = gccDumpOutput?.ipaDump;
+    ret.addressOption = gccDumpOutput?.addressOption;
+    ret.slimOption = gccDumpOutput?.slimOption;
+    ret.rawOption = gccDumpOutput?.rawOption;
+    ret.detailsOption = gccDumpOutput?.detailsOption;
+    ret.statsOption = gccDumpOutput?.statsOption;
+    ret.blocksOption = gccDumpOutput?.blocksOption;
+    ret.vopsOption = gccDumpOutput?.vopsOption;
+    ret.linenoOption = gccDumpOutput?.linenoOption;
+    ret.uidOption = gccDumpOutput?.uidOption;
+    ret.allOption = gccDumpOutput?.allOption;
+    ret.selectedPass = gccDumpOutput?.selectedPass;
+
+    // & GccDumpViewSelectedPass
+    ret.filename_suffix = gccDumpOutput?.filename_suffix;
+    ret.name = gccDumpOutput?.name;
+    ret.command_prefix = gccDumpOutput?.command_prefix;
+    ret.selectedPass = gccDumpOutput?.selectedPass;
 
     return {
         type: 'component',
