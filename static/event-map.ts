@@ -28,7 +28,7 @@ import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
-import {GccSelectedPass} from './panes/gccdump-view.interfaces';
+import {GccDumpViewSelectedPass, GccDumpViewState} from './panes/gccdump-view.interfaces';
 import {Motd} from './motd.interfaces';
 import {CompilerInfo} from '../types/compiler.interfaces';
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
@@ -94,10 +94,10 @@ export type EventMap = {
     flagsViewOpened: (compilerId: number) => void;
     gccDumpFiltersChanged: (
         compilerId: number,
-        filters: CompilerOutputOptions,
+        filters: GccDumpViewState,
         recompile: boolean
     ) => void;
-    gccDumpPassSelected: (compilerId: number, pass: GccSelectedPass, recompile: boolean) => void;
+    gccDumpPassSelected: (compilerId: number, pass: GccDumpViewSelectedPass, recompile: boolean) => void;
     gccDumpUIInit: (compilerId: number) => void;
     gccDumpViewClosed: (compilerId: number) => void;
     gccDumpViewOpened: (compilerId: number) => void;
