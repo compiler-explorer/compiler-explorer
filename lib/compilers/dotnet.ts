@@ -125,9 +125,19 @@ class DotNetCompiler extends BaseCompiler {
         </configuration>
         `;
 
+        // See https://github.com/dotnet/runtime/issues/50391 - the .NET runtime tries to make a 2TB memfile if we have
+        // this feature enabled (which is on by default on .NET 7) This blows out our nsjail sandbox limit, so for now
+        // we disable it.
+        execOptions.env.DOTNET_EnableWriteXorExecute = '0';
+        // Disable any phone-home.
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
-        execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
+        // Some versions of .NET complain if they can't work out what the user's directory is. We force it to the output
+        // directory here.
+        execOptions.env.DOTNET_CLI_HOME = programDir;
+        // Place nuget packages in the output directory.
         execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
+        // Try to be less chatty
+        execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
@@ -155,7 +165,10 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo', '/clp:NoSummary'];
-        await this.exec(compiler, restoreOptions, execOptions);
+        const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
+        if (restoreResult.code !== 0) {
+            return this.transformToCompilationResult(restoreResult, inputFilename);
+        }
 
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
