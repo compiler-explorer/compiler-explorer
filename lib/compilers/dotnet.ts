@@ -109,10 +109,17 @@ class DotNetCompiler extends BaseCompiler {
             </ItemGroup>
          </Project>
         `;
+        const sdkBaseDir = path.join(this.clrBuildDir, 'sdk');
+        const sdkVersions = await fs.readdir(sdkBaseDir);
         const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
         <configuration>
             <packageSources>
                 <clear />
+                <packageSource key="fsharp" value="${path.join(
+                    sdkBaseDir,
+                    sdkVersions[0],
+                    '/FSharp/library-packs/',
+                )}" />
             </packageSources>
         </configuration>
         `;
