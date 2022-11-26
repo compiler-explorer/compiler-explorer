@@ -84,7 +84,6 @@ export class BaseCompiler {
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
-    // Note that this can also return undefined and boolean | number, but we still need properties.ts to ts
     protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: any;
     protected delayCleanupTemp: any;
