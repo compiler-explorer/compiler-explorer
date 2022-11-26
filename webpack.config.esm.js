@@ -162,7 +162,7 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /.pug$/,
+                test: /\.pug$/,
                 loader: './etc/scripts/parsed_pug_file.js',
             },
             {
