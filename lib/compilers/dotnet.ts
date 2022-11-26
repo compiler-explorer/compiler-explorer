@@ -31,29 +31,23 @@ import {BaseCompiler} from '../base-compiler';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 
 class DotNetCompiler extends BaseCompiler {
-    private rID: string;
     private targetFramework: string;
     private buildConfig: string;
-    private nugetPackagesPath: string;
     private clrBuildDir: string;
-    private additionalSources: string;
     private langVersion: string;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.rID = this.compilerProps(`compiler.${this.compiler.id}.runtimeId`);
         this.targetFramework = this.compilerProps(`compiler.${this.compiler.id}.targetFramework`);
         this.buildConfig = this.compilerProps(`compiler.${this.compiler.id}.buildConfig`);
-        this.nugetPackagesPath = this.compilerProps(`compiler.${this.compiler.id}.nugetPackages`);
         this.clrBuildDir = this.compilerProps(`compiler.${this.compiler.id}.clrDir`);
-        this.additionalSources = this.compilerProps(`compiler.${this.compiler.id}.additionalSources`);
         this.langVersion = this.compilerProps(`compiler.${this.compiler.id}.langVersion`);
         this.asm = new DotNetAsmParser();
     }
 
     get compilerOptions() {
-        return ['publish', '-c', this.buildConfig, '--self-contained', '--runtime', this.rID, '-v', 'q', '--nologo'];
+        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore'];
     }
 
     get configurableOptions() {
@@ -98,17 +92,10 @@ class DotNetCompiler extends BaseCompiler {
 
         const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
         const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
+        const nugetConfigPath = path.join(programDir, 'nuget.config');
 
-        const programPublishPath = path.join(
-            programDir,
-            'bin',
-            this.buildConfig,
-            this.targetFramework,
-            this.rID,
-            'publish',
-        );
-
-        const programDllPath = path.join(programPublishPath, 'CompilerExplorer.dll');
+        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
+        const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
         const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
             <PropertyGroup>
                 <TargetFramework>${this.targetFramework}</TargetFramework>
@@ -116,24 +103,28 @@ class DotNetCompiler extends BaseCompiler {
                 <AssemblyName>CompilerExplorer</AssemblyName>
                 <LangVersion>${this.langVersion}</LangVersion>
                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                <EnablePreviewFeatures>${this.langVersion === 'preview' ? 'true' : 'false'}</EnablePreviewFeatures>
-                <RestoreAdditionalProjectSources>
-                  https://api.nuget.org/v3/index.json;${this.additionalSources ? this.additionalSources : ''}
-                </RestoreAdditionalProjectSources>
             </PropertyGroup>
             <ItemGroup>
                 <Compile Include="${sourceFile}" />
             </ItemGroup>
          </Project>
         `;
+        const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+            <packageSources>
+                <clear />
+            </packageSources>
+        </configuration>
+        `;
 
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
         execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
-        execOptions.env.NUGET_PACKAGES = this.nugetPackagesPath;
+        execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
         await fs.writeFile(projectFilePath, projectFileContent);
+        await fs.writeFile(nugetConfigPath, nugetConfigFileContent);
 
         const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
@@ -155,6 +146,9 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
+        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo'];
+        const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
+
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
         if (compilerResult.code !== 0) {
@@ -165,7 +159,7 @@ class DotNetCompiler extends BaseCompiler {
             compiler,
             execOptions,
             crossgen2Path,
-            programPublishPath,
+            this.clrBuildDir,
             programDllPath,
             crossgen2Options,
             this.getOutputFilename(programDir, this.outputFilebase),
@@ -182,16 +176,18 @@ class DotNetCompiler extends BaseCompiler {
         return this.compilerOptions;
     }
 
-    async runCrossgen2(compiler, execOptions, crossgen2Path, publishPath, dllPath, options, outputPath) {
+    async runCrossgen2(compiler, execOptions, crossgen2Path, bclPath, dllPath, options, outputPath) {
         const crossgen2Options = [
             crossgen2Path,
             '-r',
-            path.join(publishPath, '*'),
+            path.join(bclPath, '/'),
             dllPath,
             '-o',
             'CompilerExplorer.r2r.dll',
             '--codegenopt',
             'NgenDisasm=*',
+            '--codegenopt',
+            'JitDisasm=*',
             '--codegenopt',
             'JitDiffableDasm=1',
             '--parallelism',
@@ -205,7 +201,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`),
+            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, ''),
         );
 
         return result;

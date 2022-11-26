@@ -29,7 +29,7 @@ import * as monaco from 'monaco-editor';
 import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
 
 import {FontScale} from '../widgets/fontscale';
-import {SiteSettings} from '../settings';
+import {Settings, SiteSettings} from '../settings';
 import * as utils from '../utils';
 
 import {PaneRenaming} from '../widgets/pane-renaming';
@@ -50,7 +50,7 @@ export abstract class Pane<S> {
     protected hub: Hub;
     eventHub: EventHub;
     isAwaitingInitialResults = false;
-    settings: SiteSettings | Record<string, never> = {};
+    settings: SiteSettings;
     paneName: string | undefined = undefined;
     paneRenaming: PaneRenaming;
 
@@ -119,7 +119,9 @@ export abstract class Pane<S> {
 
     initializeDefaults(): void {}
 
-    initializeGlobalDependentProperties(): void {}
+    initializeGlobalDependentProperties(): void {
+        this.settings = Settings.getStoredSettings();
+    }
 
     initializeStateDependentProperties(state: S): void {}
 

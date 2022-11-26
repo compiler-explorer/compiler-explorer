@@ -95,12 +95,12 @@ export class BaseCompiler {
     protected llvmPassDumpParser: LlvmPassDumpParser;
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
-    protected possibleArguments: CompilerArguments;
+    public possibleArguments: CompilerArguments;
     protected possibleTools: Tool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
     public outputFilebase: string;
-    protected mtime: null;
+    protected mtime: Date | null = null;
     protected cmakeBaseEnv: Record<string, string>;
     protected buildenvsetup: null | any;
     protected externalparser: null | ExternalParserBase;
@@ -159,18 +159,16 @@ export class BaseCompiler {
 
         this.outputFilebase = 'output';
 
-        this.mtime = null;
-
         this.cmakeBaseEnv = {};
 
         this.buildenvsetup = null;
-        if (this.compiler.buildenvsetup && this.compiler.buildenvsetup.id) {
+        if (!this.getRemote() && this.compiler.buildenvsetup && this.compiler.buildenvsetup.id) {
             const buildenvsetupclass = getBuildEnvTypeByKey(this.compiler.buildenvsetup.id);
             this.buildenvsetup = new buildenvsetupclass(this.compiler, this.env);
         }
 
         this.externalparser = null;
-        if (this.compiler.externalparser && this.compiler.externalparser.id) {
+        if (!this.getRemote() && this.compiler.externalparser && this.compiler.externalparser.id) {
             const externalparserclass = getExternalParserByKey(this.compiler.externalparser.id);
             this.externalparser = new externalparserclass(this.compiler, this.env, this.exec);
         }
@@ -2583,7 +2581,7 @@ but nothing was dumped. Possible causes are:
         this.supportedLibraries = this.getSupportedLibraries(this.compiler.libsArr, clientOptions.libs[this.lang.id]);
     }
 
-    async initialise(mtime, clientOptions, isPrediscovered = false) {
+    async initialise(mtime: Date, clientOptions, isPrediscovered = false) {
         this.mtime = mtime;
 
         if (this.buildenvsetup) {
@@ -2642,6 +2640,10 @@ but nothing was dumped. Possible causes are:
             }
             return this;
         }
+    }
+
+    getModificationTime(): number | undefined {
+        return this.mtime ? this.mtime.getTime() : undefined;
     }
 
     getInfo() {
