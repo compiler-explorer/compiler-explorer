@@ -22,19 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
-
 import fs from 'fs-extra';
+import path from 'path';
+import _ from 'underscore';
 
+import * as exec from '../exec';
+import * as utils from '../utils';
+
+import {
+    BasicExecutionResult,
+    ExecutableExecutionOptions,
+    UnprocessedExecResult,
+} from '../../types/execution/execution.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
+import {ParseFilters} from '../../types/features/filters.interfaces';
 
 class DotNetCompiler extends BaseCompiler {
     private targetFramework: string;
     private buildConfig: string;
     private clrBuildDir: string;
     private langVersion: string;
+    private compileToBinary = false;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -104,6 +114,7 @@ class DotNetCompiler extends BaseCompiler {
                 <LangVersion>${this.langVersion}</LangVersion>
                 <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                 <Nullable>enable</Nullable>
+                <OutputType>${this.compileToBinary ? 'Exe' : 'Library'}</OutputType>
             </PropertyGroup>
             <ItemGroup>
                 <Compile Include="${sourceFile}" />
@@ -193,8 +204,51 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    override optionsForFilter() {
+    override optionsForFilter(filters: ParseFilters) {
+        if (filters.binary) {
+            this.compileToBinary = true;
+        }
+
         return this.compilerOptions;
+    }
+
+    override async execBinary(
+        executable: string,
+        maxSize: number | undefined,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir: string | undefined,
+    ): Promise<BasicExecutionResult> {
+        const programDir = path.dirname(executable);
+        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
+        const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = maxSize;
+        execOptions.timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
+        execOptions.ldPath = _.union(this.compiler.ldPath, executeParameters.ldPath);
+        execOptions.customCwd = homeDir;
+        execOptions.appHome = homeDir;
+        execOptions.env = executeParameters.env;
+        execOptions.env.DOTNET_EnableWriteXorExecute = '0';
+        execOptions.env.DOTNET_CLI_HOME = programDir;
+        execOptions.env.CORE_ROOT = this.clrBuildDir;
+        execOptions.input = executeParameters.stdin;
+        const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
+        const corerun = path.join(this.clrBuildDir, 'corerun');
+        try {
+            const execResult: UnprocessedExecResult = await exec.sandbox(corerun, execArgs, execOptions);
+            return this.processExecutionResult(execResult);
+        } catch (err: UnprocessedExecResult | any) {
+            if (err.code && err.stderr) {
+                return this.processExecutionResult(err);
+            } else {
+                return {
+                    ...this.getEmptyExecutionResult(),
+                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
+                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
+                    code: err.code !== undefined ? err.code : -1,
+                };
+            }
+        }
     }
 
     async runCrossgen2(compiler, execOptions, crossgen2Path, bclPath, dllPath, options, outputPath) {
