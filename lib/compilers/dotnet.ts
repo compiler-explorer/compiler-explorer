@@ -231,7 +231,7 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.DOTNET_EnableWriteXorExecute = '0';
         execOptions.env.DOTNET_CLI_HOME = programDir;
         execOptions.env.CORE_ROOT = this.clrBuildDir;
-        const execArgs = [programDllPath, ...executeParameters.args];
+        const execArgs = [...executeParameters.args, programDllPath];
         const corerun = path.join(this.clrBuildDir, 'corerun');
         try {
             const execResult: UnprocessedExecResult = await exec.sandbox(corerun, execArgs, execOptions);
