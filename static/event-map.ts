@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces';
-import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';

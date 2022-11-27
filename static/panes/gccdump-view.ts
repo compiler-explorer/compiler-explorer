@@ -40,7 +40,7 @@ import * as monacoConfig from '../monaco-config';
 import {GccDumpFilters, GccDumpState} from './gccdump-view.interfaces';
 
 import {ga} from '../analytics';
-import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {CompilerOutputOptions} from '../../types/features/filters.interfaces';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpState> {
     selectize: TomSelect;
