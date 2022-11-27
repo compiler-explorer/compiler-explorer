@@ -381,7 +381,7 @@ export class BaseCompiler {
     }
 
     supportsObjdump() {
-        return this.objdumperClass !== '';
+        return !!this.objdumperClass;
     }
 
     getObjdumpOutputFilename(defaultOutputFilename) {
