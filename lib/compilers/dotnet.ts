@@ -44,7 +44,6 @@ class DotNetCompiler extends BaseCompiler {
     private buildConfig: string;
     private clrBuildDir: string;
     private langVersion: string;
-    private compileToBinary = false;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -87,6 +86,35 @@ class DotNetCompiler extends BaseCompiler {
         ];
     }
 
+    async writeProjectfile(programDir: string, compileToBinary: boolean, sourceFile: string) {
+        const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+                <TargetFramework>${this.targetFramework}</TargetFramework>
+                <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+                <AssemblyName>CompilerExplorer</AssemblyName>
+                <LangVersion>${this.langVersion}</LangVersion>
+                <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                <Nullable>enable</Nullable>
+                <OutputType>${compileToBinary ? 'Exe' : 'Library'}</OutputType>
+            </PropertyGroup>
+            <ItemGroup>
+                <Compile Include="${sourceFile}" />
+            </ItemGroup>
+        </Project>
+        `;
+
+        const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
+        await fs.writeFile(projectFilePath, projectFileContent);
+    }
+
+    override async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
+        const inputFilenameSafe = this.filename(inputFilename);
+        const sourceFile = path.basename(inputFilenameSafe);
+        await this.writeProjectfile(dirPath, filters.binary, sourceFile);
+
+        return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -98,29 +126,13 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const programDir = path.dirname(inputFilename);
-        const sourceFile = path.basename(inputFilename);
 
-        const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
         const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
         const nugetConfigPath = path.join(programDir, 'nuget.config');
 
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
-        const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
-            <PropertyGroup>
-                <TargetFramework>${this.targetFramework}</TargetFramework>
-                <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-                <AssemblyName>CompilerExplorer</AssemblyName>
-                <LangVersion>${this.langVersion}</LangVersion>
-                <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                <Nullable>enable</Nullable>
-                <OutputType>${this.compileToBinary ? 'Exe' : 'Library'}</OutputType>
-            </PropertyGroup>
-            <ItemGroup>
-                <Compile Include="${sourceFile}" />
-            </ItemGroup>
-         </Project>
-        `;
+
         const sdkBaseDir = path.join(path.dirname(compiler), 'sdk');
         const sdkVersions = await fs.readdir(sdkBaseDir);
         const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
@@ -152,7 +164,6 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
-        await fs.writeFile(projectFilePath, projectFileContent);
         await fs.writeFile(nugetConfigPath, nugetConfigFileContent);
 
         const crossgen2Options: string[] = [];
@@ -205,10 +216,6 @@ class DotNetCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFilters) {
-        if (filters.binary) {
-            this.compileToBinary = true;
-        }
-
         return this.compilerOptions;
     }
 
