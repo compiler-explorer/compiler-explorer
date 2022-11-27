@@ -225,12 +225,13 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.maxOutput = maxSize;
         execOptions.timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
         execOptions.ldPath = _.union(this.compiler.ldPath, executeParameters.ldPath);
-        execOptions.env = executeParameters.env;
         execOptions.customCwd = homeDir;
         execOptions.appHome = homeDir;
+        execOptions.env = executeParameters.env;
         execOptions.env.DOTNET_EnableWriteXorExecute = '0';
         execOptions.env.DOTNET_CLI_HOME = programDir;
         execOptions.env.CORE_ROOT = this.clrBuildDir;
+        execOptions.input = executeParameters.stdin;
         const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
         const corerun = path.join(this.clrBuildDir, 'corerun');
         try {
