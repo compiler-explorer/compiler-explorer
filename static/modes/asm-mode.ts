@@ -96,8 +96,8 @@ function definition() {
                 [/(')(@escapes)(')/, ['string', 'string.escape', 'string']],
                 [/'/, 'string.invalid'],
 
-                // Assume anything else is a label reference
-                [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@]*/, 'type.identifier'],
+                // Assume anything else is a label reference. .NET uses ` in some identifiers
+                [/%?[.?_$a-zA-Z@][.?_$a-zA-Z0-9@`]*/, 'type.identifier'],
 
                 // whitespace
                 {include: '@whitespace'},
