@@ -40,6 +40,8 @@ import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 class DotNetCompiler extends BaseCompiler {
+    private sdkBaseDir: string;
+    private sdkVersion: string;
     private targetFramework: string;
     private buildConfig: string;
     private clrBuildDir: string;
@@ -49,7 +51,12 @@ class DotNetCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.targetFramework = this.compilerProps<string>(`compiler.${this.compiler.id}.targetFramework`);
+        this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
+        this.sdkVersion = fs.readdirSync(this.sdkBaseDir)[0];
+
+        const parts = this.sdkVersion.split('.');
+        this.targetFramework = `net${parts[0]}.${parts[1]}`;
+
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
@@ -121,15 +128,14 @@ class DotNetCompiler extends BaseCompiler {
             </ItemGroup>
          </Project>
         `;
-        const sdkBaseDir = path.join(path.dirname(compiler), 'sdk');
-        const sdkVersions = await fs.readdir(sdkBaseDir);
+
         const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
         <configuration>
             <packageSources>
                 <clear />
                 <packageSource key="fsharp" value="${path.join(
-                    sdkBaseDir,
-                    sdkVersions[0],
+                    this.sdkBaseDir,
+                    this.sdkVersion,
                     '/FSharp/library-packs/',
                 )}" />
             </packageSources>
