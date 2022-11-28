@@ -92,11 +92,7 @@ export type EventMap = {
     findExecutors: () => void;
     flagsViewClosed: (compilerId: number, options: string) => void;
     flagsViewOpened: (compilerId: number) => void;
-    gccDumpFiltersChanged: (
-        compilerId: number,
-        filters: CompilerOutputOptions,
-        recompile: boolean
-    ) => void;
+    gccDumpFiltersChanged: (compilerId: number, filters: CompilerOutputOptions, recompile: boolean) => void;
     gccDumpPassSelected: (compilerId: number, pass: GccSelectedPass, recompile: boolean) => void;
     gccDumpUIInit: (compilerId: number) => void;
     gccDumpViewClosed: (compilerId: number) => void;

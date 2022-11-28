@@ -22,22 +22,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
 import path from 'path';
+
+import fs from 'fs-extra';
 import _ from 'underscore';
 
-import * as exec from '../exec';
-import * as utils from '../utils';
-
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces';
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
+import * as exec from '../exec';
+import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
+import * as utils from '../utils';
 
 class DotNetCompiler extends BaseCompiler {
     private sdkBaseDir: string;
