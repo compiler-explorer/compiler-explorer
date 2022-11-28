@@ -37,7 +37,7 @@ import {
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 class DotNetCompiler extends BaseCompiler {
     private targetFramework: string;
@@ -204,7 +204,7 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    override optionsForFilter(filters: ParseFilters) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             this.compileToBinary = true;
         }

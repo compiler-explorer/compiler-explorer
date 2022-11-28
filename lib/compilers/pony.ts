@@ -27,7 +27,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 export class PonyCompiler extends BaseCompiler {
@@ -42,7 +42,7 @@ export class PonyCompiler extends BaseCompiler {
         this.compiler.irArg = ['--pass', 'ir'];
     } */
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): string[] {
         let options = ['-d', '-b', path.parse(outputFilename).name];
 
         if (!filters.binary) {
@@ -61,7 +61,7 @@ export class PonyCompiler extends BaseCompiler {
         return source;
     }
 
-    override async generateIR(inputFilename: string, options: string[], filters: ParseFilters) {
+    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(this.compiler.irArg);
 
         const execOptions = this.getDefaultExecOptions();

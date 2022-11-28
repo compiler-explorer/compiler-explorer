@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {ErlangParser} from './argument-parsers';
@@ -34,7 +34,7 @@ export class ErlangCompiler extends BaseCompiler {
         return 'erlang';
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: string): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [
             '-noshell',
             '-eval',

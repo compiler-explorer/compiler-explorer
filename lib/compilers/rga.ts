@@ -27,7 +27,7 @@ import path from 'path';
 import {readdir, readFile, rename, writeFile} from 'fs-extra';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
@@ -54,7 +54,7 @@ export class RGACompiler extends BaseCompiler {
         logger.debug(`RGA compiler ${this.compiler.id} configured to use DXC at ${this.dxcPath}`);
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): any[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): any[] {
         return [outputFilename];
     }
 

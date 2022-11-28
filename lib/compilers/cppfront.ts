@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserCpp} from '../parsers/asm-parser-cpp';
 
@@ -44,7 +44,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return 'cppp';
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         return [];
     }
 
