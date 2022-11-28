@@ -27,7 +27,7 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
@@ -104,7 +104,11 @@ export class ZigCompiler extends BaseCompiler {
         return source;
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions: string[]): string[] {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions: string[],
+    ): string[] {
         let options = [filters.execute ? 'build-exe' : 'build-obj'];
 
         const desiredName = path.basename(outputFilename);

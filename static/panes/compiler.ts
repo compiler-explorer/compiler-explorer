@@ -51,8 +51,8 @@ import {CompilerState} from './compiler.interfaces';
 import {ComponentConfig, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
-import {CompilerFilters} from '../../types/features/filters.interfaces';
 import {GccSelectedPass} from './gccdump-view.interfaces';
+import {CompilerOutputOptions} from '../../types/features/filters.interfaces';
 import {Tool} from '../../lib/tooling/base-tool.interface';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {PPOptions} from './pp-view.interfaces';
@@ -2155,9 +2155,10 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     onGccDumpFiltersChanged(
         id: number,
-        filters: CompilerFilters & Record<string, boolean | undefined>,
+        filters: CompilerOutputOptions & Record<string, boolean | undefined>,
         reqCompile: boolean
     ): void {
+
         if (this.id === id) {
             this.treeDumpEnabled = filters.treeDump !== false;
             this.rtlDumpEnabled = filters.rtlDump !== false;
