@@ -487,11 +487,14 @@ export function getGccDumpViewWith(
         _treeid: treeid,
     };
 
-    // We want the state to be compatible with GccDumpState.
-    // Not sure when gccDumpOutput would be null, but we probably need to keep
-    // the object compliant.
+    // We need to return a valid object wrt. GccDumpViewState.
+    // Original code was checking gccDumpOutput is not null/undef.
+    // Keeping this here but not clear when this can happen.
 
-    // GccDumpViewState
+    // FIXME(dkm) track if gccDumpOutput can be null/undef and document or
+    // remove test.
+
+    // GccDumpViewState base type
     ret.treeDump = gccDumpOutput?.treeDump;
     ret.rtlDump = gccDumpOutput?.rtlDump;
     ret.ipaDump = gccDumpOutput?.ipaDump;
