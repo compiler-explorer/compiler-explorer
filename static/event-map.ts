@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces';
-import {CompilerFilters} from '../types/features/filters.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
@@ -86,13 +86,17 @@ export type EventMap = {
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
-    filtersChange: (compilerId: number, filters: CompilerFilters) => void;
+    filtersChange: (compilerId: number, filters: CompilerOutputOptions) => void;
     findCompilers: () => void;
     findEditors: () => void;
     findExecutors: () => void;
     flagsViewClosed: (compilerId: number, options: string) => void;
     flagsViewOpened: (compilerId: number) => void;
-    gccDumpFiltersChanged: (compilerId: number, filters: CompilerFilters, recompile: boolean) => void;
+    gccDumpFiltersChanged: (
+        compilerId: number,
+        filters: CompilerOutputOptions,
+        recompile: boolean
+    ) => void;
     gccDumpPassSelected: (compilerId: number, pass: GccSelectedPass, recompile: boolean) => void;
     gccDumpUIInit: (compilerId: number) => void;
     gccDumpViewClosed: (compilerId: number) => void;

@@ -28,7 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {BuildResult} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmRaw} from '../parsers/asm-raw';
 import {fileExists} from '../utils';
@@ -138,7 +138,7 @@ export class AssemblyCompiler extends BaseCompiler {
 
         const outputFilename = this.getExecutableFilename(dirPath);
 
-        const buildFilters: ParseFilters = Object.assign({}, key.filters);
+        const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binary = true;
         buildFilters.execute = false;
 
