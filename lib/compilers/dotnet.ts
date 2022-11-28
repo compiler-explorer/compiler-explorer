@@ -149,9 +149,6 @@ class DotNetCompiler extends BaseCompiler {
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
 
-        const sdkBaseDir = path.join(path.dirname(compiler), 'sdk');
-        const sdkVersions = await fs.readdir(sdkBaseDir);
-
         const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
         <configuration>
             <packageSources>
