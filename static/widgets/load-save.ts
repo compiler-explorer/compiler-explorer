@@ -25,7 +25,7 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import {saveAs} from 'file-saver';
-import {Alert} from '../alert';
+import {Alert} from './alert';
 import {ga} from '../analytics';
 import * as local from '../local';
 import {Language} from '../../types/languages.interfaces';
