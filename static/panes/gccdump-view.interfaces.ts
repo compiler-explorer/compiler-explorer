@@ -22,33 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface GccDumpFilters {
-    treeDump: any;
-    rtlDump: any;
-    ipaDump: any;
-    addressOption: any;
-    slimOption: any;
-    rawOption: any;
-    detailsOption: any;
-    statsOption: any;
-    blocksOption: any;
-    vopsOption: any;
-    linenoOption: any;
-    uidOption: any;
-    allOption: any;
-}
-
-export interface GccDumpState extends GccDumpFilters {
+// Extra information used to serialize the state
+export interface GccDumpViewSelectedPass {
+    // FIXME(dkm): this type needs to be refactored.
+    // In particular, see in gccdump-view.ts:{constructor, getCurrentState}
+    // There is a mix of 'selectedPass' being a filename_prefix and a
+    // GccDumpViewSelectedPass object.
+    filename_suffix: string | null;
+    name: string | null;
+    command_prefix: string | null;
     selectedPass: string | null;
-    // legacy
-    _compilerid?: number;
-    _compilerName?: string;
-    _editorid?: number;
-    _treeid?: number;
 }
 
-export type GccSelectedPass = {
-    filename_suffix: string;
-    name: string;
-    command_prefix: string;
+// This should reflect the corresponding UI widget in gccdump.pug
+// Each optionButton should have a matching boolean here.
+export type GccDumpFiltersState = {
+    treeDump: boolean;
+    rtlDump: boolean;
+    ipaDump: boolean;
+
+    rawOption: boolean;
+    slimOption: boolean;
+    allOption: boolean;
+
+    addressOption: boolean;
+    blocksOption: boolean;
+    linenoOption: boolean;
+    detailsOption: boolean;
+    statsOption: boolean;
+    uidOption: boolean;
+    vopsOption: boolean;
 };
+
+// state = selected pass + all option flags
+export type GccDumpViewState = GccDumpFiltersState & GccDumpViewSelectedPass;
