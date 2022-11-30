@@ -22,25 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export interface CfgState {
-    selectedFunction: string | null;
-    zoom: number;
-}
+// TODO(jeremy-rifkin): re-visit all the types here once the back-end is more typescripted
 
-/*
+export type EdgeDescriptor = {
+    from: string;
+    to: string;
+    arrows: string; // <- useless
+    color: string;
+};
 
-Previous state objects looked like:
+export type NodeDescriptor = {
+    color: string; // <- useless
+    id: string; // typically label for the bb
+    label: string; // really the source
+    shape: string; // <- useless
+};
 
-export interface CfgOptions {
-    physics?: boolean;
-    navigation?: boolean;
-}
+export type AnnotatedNodeDescriptor = NodeDescriptor & {
+    width: number; // in pixels
+    height: number; // in pixels
+};
 
-export interface CfgState extends PaneState {
-    selectedFn?: string;
-    pos: vis.Position;
-    scale: number;
-    options?: CfgOptions;
-}
+type CfgDescriptor_<ND> = {
+    edges: EdgeDescriptor[];
+    nodes: ND[];
+};
 
-*/
+export type CfgDescriptor = CfgDescriptor_<NodeDescriptor>;
+export type AnnotatedCfgDescriptor = CfgDescriptor_<AnnotatedNodeDescriptor>;
+
+// function name -> cfg data
+export type CFGResult = Record<string, CfgDescriptor>;
+export type AnnotatedCFGResult = Record<string, AnnotatedCfgDescriptor>;
