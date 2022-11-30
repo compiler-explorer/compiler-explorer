@@ -60,7 +60,7 @@ class DotNetCompiler extends BaseCompiler {
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
-        this.nugetPackages = this.compilerProps<string>(`compiler.${this.compiler.id}.nugetPackages`);
+        this.nugetPackages = this.compilerProps<string>(`group.${this.compiler.group}.nugetPackages`);
         this.asm = new DotNetAsmParser();
     }
 
