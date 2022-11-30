@@ -27,7 +27,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
 import {parseRustOutput} from '../utils';
@@ -58,7 +58,7 @@ export class RustCompiler extends BaseCompiler {
         this.compiler.llvmOptArg = ['-C', 'llvm-args=-print-after-all -print-before-all'];
         this.compiler.llvmOptModuleScopeArg = ['-C', 'llvm-args=-print-module-scope'];
         this.compiler.llvmOptNoDiscardValueNamesArg = isNightly ? ['-Z', 'fewer-names=no'] : [];
-        this.linker = this.compilerProps('linker');
+        this.linker = this.compilerProps<string>('linker');
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
@@ -149,7 +149,7 @@ export class RustCompiler extends BaseCompiler {
     }
 
     // Override the IR file name method for rustc because the output file is different from clang.
-    override getIrOutputFilename(inputFilename: string, filters: ParseFilters): string {
+    override getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         const outputFilename = this.getOutputFilename(path.dirname(inputFilename), this.outputFilebase);
         // As per #4054, if we are asked for binary mode, the output will be in the .s file, no .ll will be emited
         if (!filters.binary) {

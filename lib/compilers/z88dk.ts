@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
@@ -82,7 +82,7 @@ export class z88dkCompiler extends BaseCompiler {
         );
     }
 
-    protected override optionsForFilter(filters: ParseFilters, outputFilename: string): string[] {
+    protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         if (!filters.binary) {
             return ['-S'];
         } else {
@@ -110,7 +110,14 @@ export class z88dkCompiler extends BaseCompiler {
         return `${this.outputFilebase}.sms`;
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+    override async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         // sometimes (with +z80 for example) the .bin file is written and the .s file is empty

@@ -25,12 +25,23 @@
 import path from 'path';
 
 import fs from 'fs-extra';
+import _ from 'underscore';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {
+    BasicExecutionResult,
+    ExecutableExecutionOptions,
+    UnprocessedExecResult,
+} from '../../types/execution/execution.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import * as exec from '../exec';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
+import * as utils from '../utils';
 
 class DotNetCompiler extends BaseCompiler {
+    private sdkBaseDir: string;
+    private sdkVersion: string;
     private targetFramework: string;
     private buildConfig: string;
     private clrBuildDir: string;
@@ -39,15 +50,20 @@ class DotNetCompiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.targetFramework = this.compilerProps(`compiler.${this.compiler.id}.targetFramework`);
-        this.buildConfig = this.compilerProps(`compiler.${this.compiler.id}.buildConfig`);
-        this.clrBuildDir = this.compilerProps(`compiler.${this.compiler.id}.clrDir`);
-        this.langVersion = this.compilerProps(`compiler.${this.compiler.id}.langVersion`);
+        this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
+        this.sdkVersion = fs.readdirSync(this.sdkBaseDir)[0];
+
+        const parts = this.sdkVersion.split('.');
+        this.targetFramework = `net${parts[0]}.${parts[1]}`;
+
+        this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
+        this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
+        this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
         this.asm = new DotNetAsmParser();
     }
 
     get compilerOptions() {
-        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore'];
+        return ['build', '-c', this.buildConfig, '-v', 'q', '--nologo', '--no-restore', '/clp:NoSummary'];
     }
 
     get configurableOptions() {
@@ -77,6 +93,44 @@ class DotNetCompiler extends BaseCompiler {
         ];
     }
 
+    async writeProjectfile(programDir: string, compileToBinary: boolean, sourceFile: string) {
+        const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+                <TargetFramework>${this.targetFramework}</TargetFramework>
+                <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+                <AssemblyName>CompilerExplorer</AssemblyName>
+                <LangVersion>${this.langVersion}</LangVersion>
+                <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                <Nullable>enable</Nullable>
+                <OutputType>${compileToBinary ? 'Exe' : 'Library'}</OutputType>
+            </PropertyGroup>
+            <ItemGroup>
+                <Compile Include="${sourceFile}" />
+            </ItemGroup>
+        </Project>
+        `;
+
+        const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
+        await fs.writeFile(projectFilePath, projectFileContent);
+    }
+
+    override async buildExecutable(compiler, options, inputFilename, execOptions) {
+        const dirPath = path.dirname(inputFilename);
+        const inputFilenameSafe = this.filename(inputFilename);
+        const sourceFile = path.basename(inputFilenameSafe);
+        await this.writeProjectfile(dirPath, true, sourceFile);
+
+        return super.buildExecutable(compiler, options, inputFilename, execOptions);
+    }
+
+    override async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
+        const inputFilenameSafe = this.filename(inputFilename);
+        const sourceFile = path.basename(inputFilenameSafe);
+        await this.writeProjectfile(dirPath, filters.binary, sourceFile);
+
+        return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
@@ -88,42 +142,42 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const programDir = path.dirname(inputFilename);
-        const sourceFile = path.basename(inputFilename);
 
-        const projectFilePath = path.join(programDir, `CompilerExplorer${this.lang.extensions[0]}proj`);
         const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
         const nugetConfigPath = path.join(programDir, 'nuget.config');
 
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
         const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
-        const projectFileContent = `<Project Sdk="Microsoft.NET.Sdk">
-            <PropertyGroup>
-                <TargetFramework>${this.targetFramework}</TargetFramework>
-                <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-                <AssemblyName>CompilerExplorer</AssemblyName>
-                <LangVersion>${this.langVersion}</LangVersion>
-                <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-            </PropertyGroup>
-            <ItemGroup>
-                <Compile Include="${sourceFile}" />
-            </ItemGroup>
-         </Project>
-        `;
+
         const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
         <configuration>
             <packageSources>
                 <clear />
+                <packageSource key="fsharp" value="${path.join(
+                    this.sdkBaseDir,
+                    this.sdkVersion,
+                    '/FSharp/library-packs/',
+                )}" />
             </packageSources>
         </configuration>
         `;
 
+        // See https://github.com/dotnet/runtime/issues/50391 - the .NET runtime tries to make a 2TB memfile if we have
+        // this feature enabled (which is on by default on .NET 7) This blows out our nsjail sandbox limit, so for now
+        // we disable it.
+        execOptions.env.DOTNET_EnableWriteXorExecute = '0';
+        // Disable any phone-home.
         execOptions.env.DOTNET_CLI_TELEMETRY_OPTOUT = 'true';
-        execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
+        // Some versions of .NET complain if they can't work out what the user's directory is. We force it to the output
+        // directory here.
+        execOptions.env.DOTNET_CLI_HOME = programDir;
+        // Place nuget packages in the output directory.
         execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
+        // Try to be less chatty
+        execOptions.env.DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true';
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
-        await fs.writeFile(projectFilePath, projectFileContent);
         await fs.writeFile(nugetConfigPath, nugetConfigFileContent);
 
         const crossgen2Options: string[] = [];
@@ -146,8 +200,11 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
-        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo'];
+        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo', '/clp:NoSummary'];
         const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
+        if (restoreResult.code !== 0) {
+            return this.transformToCompilationResult(restoreResult, inputFilename);
+        }
 
         const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
 
@@ -172,15 +229,54 @@ class DotNetCompiler extends BaseCompiler {
         return compilerResult;
     }
 
-    override optionsForFilter() {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         return this.compilerOptions;
+    }
+
+    override async execBinary(
+        executable: string,
+        maxSize: number | undefined,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir: string | undefined,
+    ): Promise<BasicExecutionResult> {
+        const programDir = path.dirname(executable);
+        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
+        const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
+        const execOptions = this.getDefaultExecOptions();
+        execOptions.maxOutput = maxSize;
+        execOptions.timeoutMs = this.env.ceProps('binaryExecTimeoutMs', 2000);
+        execOptions.ldPath = _.union(this.compiler.ldPath, executeParameters.ldPath);
+        execOptions.customCwd = homeDir;
+        execOptions.appHome = homeDir;
+        execOptions.env = executeParameters.env;
+        execOptions.env.DOTNET_EnableWriteXorExecute = '0';
+        execOptions.env.DOTNET_CLI_HOME = programDir;
+        execOptions.env.CORE_ROOT = this.clrBuildDir;
+        execOptions.input = executeParameters.stdin;
+        const execArgs = ['-p', 'System.Runtime.TieredCompilation=false', programDllPath, ...executeParameters.args];
+        const corerun = path.join(this.clrBuildDir, 'corerun');
+        try {
+            const execResult: UnprocessedExecResult = await exec.sandbox(corerun, execArgs, execOptions);
+            return this.processExecutionResult(execResult);
+        } catch (err: UnprocessedExecResult | any) {
+            if (err.code && err.stderr) {
+                return this.processExecutionResult(err);
+            } else {
+                return {
+                    ...this.getEmptyExecutionResult(),
+                    stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
+                    stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
+                    code: err.code !== undefined ? err.code : -1,
+                };
+            }
+        }
     }
 
     async runCrossgen2(compiler, execOptions, crossgen2Path, bclPath, dllPath, options, outputPath) {
         const crossgen2Options = [
             crossgen2Path,
             '-r',
-            path.join(bclPath, '*'),
+            path.join(bclPath, '/'),
             dllPath,
             '-o',
             'CompilerExplorer.r2r.dll',

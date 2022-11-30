@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
@@ -98,7 +98,7 @@ export class Cc65Compiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        filters: ParseFilters,
+        filters: ParseFiltersAndOutputOptions,
     ) {
         const res = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
 

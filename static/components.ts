@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerFilters} from '../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
 import {
     EmptyCompilerState,
     ComponentConfig,
@@ -126,7 +126,7 @@ export function getCompiler(editorId: number, lang: string): ComponentConfig<Emp
  */
 export function getCompilerWith(
     editorId: number,
-    filters: CompilerFilters,
+    filters: ParseFiltersAndOutputOptions,
     options: unknown,
     compilerId: string,
     langId?: string,
@@ -222,7 +222,11 @@ export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEd
 }
 
 /** Get an editor component with the given configuration. */
-export function getEditorWith(id: number, source: string, options): ComponentConfig<PopulatedEditorState> {
+export function getEditorWith(
+    id: number,
+    source: string,
+    options: ParseFiltersAndOutputOptions
+): ComponentConfig<PopulatedEditorState> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,

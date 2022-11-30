@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AsmResultLabel, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 import {AsmParser} from './asm-parser';
 
@@ -69,7 +69,7 @@ export class CC65AsmParser extends AsmParser {
         return undefined;
     }
 
-    override processBinaryAsm(asm, filters: ParseFilters) {
+    override processBinaryAsm(asm, filters: ParseFiltersAndOutputOptions) {
         const result: ParsedAsmResultLine[] = [];
         const asmLines = asm.split('\n');
 

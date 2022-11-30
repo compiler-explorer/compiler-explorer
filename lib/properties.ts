@@ -28,24 +28,31 @@ import path from 'path';
 import _ from 'underscore';
 
 import {logger} from './logger';
+import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
 import {toProperty} from './utils';
 
-let properties = {};
+let properties: Record<string, Record<string, PropertyValue>> = {};
 
-let hierarchy = [];
+let hierarchy: string[] = [];
 
 let propDebug = false;
 
-function findProps(base, elem) {
-    const name = base + '.' + elem;
-    return properties[name];
+function findProps(base: string, elem: string): Record<string, PropertyValue> {
+    return properties[`${base}.${elem}`];
 }
 
 function debug(string) {
     if (propDebug) logger.info(`prop: ${string}`);
 }
 
-export function get(base, property, defaultValue) {
+export function get(base: string, property: string, defaultValue: undefined): PropertyValue;
+export function get<T extends PropertyValue>(
+    base: string,
+    property: string,
+    defaultValue: Widen<T>,
+): typeof defaultValue;
+export function get<T extends PropertyValue>(base: string, property: string, defaultValue?: unknown): T;
+export function get(base: string, property: string, defaultValue?: unknown): unknown {
     let result = defaultValue;
     let source = 'default';
     for (const elem of hierarchy) {
@@ -62,15 +69,15 @@ export function get(base, property, defaultValue) {
 
 export function parseProperties(blob, name) {
     const props = {};
-    for (let [index, line] of blob.split('\n').entries()) {
-        line = line.replace(/#.*/, '').trim();
+    for (const [index, lineOrig] of blob.split('\n').entries()) {
+        const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
-        let split = line.match(/([^=]+)=(.*)/);
+        const split = line.match(/([^=]+)=(.*)/);
         if (!split) {
             logger.error(`Bad line: ${line} in ${name}: ${index + 1}`);
             continue;
         }
-        let prop = split[1].trim();
+        const prop = split[1].trim();
         let val = split[2].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
@@ -105,7 +112,7 @@ export function reset() {
     logger.debug('Properties reset');
 }
 
-export function propsFor(base) {
+export function propsFor(base): PropertyGetter {
     return function (property, defaultValue) {
         return get(base, property, defaultValue);
     };
@@ -117,17 +124,22 @@ export function propsFor(base) {
 //     return funcB();
 // }
 
+type LanguageDef = {
+    id: string;
+};
+
 /***
  * Compiler property fetcher
  */
 export class CompilerProps {
+    private languages: Record<string, any>;
+    private propsByLangId: Record<string, PropertyGetter>;
+    private ceProps: any;
+
     /***
      * Creates a CompilerProps lookup function
-     *
-     * @param {CELanguages} languages - Supported languages
-     * @param {function} ceProps - propsFor function to get Compiler Explorer values from
      */
-    constructor(languages, ceProps) {
+    constructor(languages: Record<string, LanguageDef>, ceProps: PropertyGetter) {
         this.languages = languages;
         this.propsByLangId = {};
 
@@ -137,7 +149,7 @@ export class CompilerProps {
         _.each(this.languages, lang => (this.propsByLangId[lang.id] = propsFor(lang.id)));
     }
 
-    $getInternal(langId, key, defaultValue) {
+    $getInternal(langId: string, key: string, defaultValue: PropertyValue): PropertyValue {
         const languagePropertyValue = this.propsByLangId[langId](key);
         if (languagePropertyValue !== undefined) {
             return languagePropertyValue;
@@ -148,7 +160,7 @@ export class CompilerProps {
     /***
      * Gets a value for a given key associated to the given languages from the properties
      *
-     * @param {?(string|CELanguages)} langs - Which langs to search in
+     * @param langs - Which langs to search in
      *  For compatibility, {null} means looking into the Compiler Explorer properties (Not on any language)
      *  If langs is a {string}, it refers to the language id we want to search into
      *  If langs is a {CELanguages}, it refers to which languages we want to search into
@@ -158,7 +170,12 @@ export class CompilerProps {
      * @param {?function} fn - Transformation to give to each value found
      * @returns {*} Transformed value(s) found or fn(defaultValue)
      */
-    get(langs, key, defaultValue, fn = _.identity) {
+    get(
+        langs: string | LanguageDef[],
+        key: string,
+        defaultValue: PropertyValue,
+        fn: (item: PropertyValue, language?: any) => PropertyValue = _.identity,
+    ) {
         fn = fn || _.identity;
         if (_.isEmpty(langs)) {
             return fn(this.ceProps(key, defaultValue));
@@ -179,10 +196,10 @@ export class CompilerProps {
     }
 }
 
-export function setDebug(debug) {
+export function setDebug(debug: boolean) {
     propDebug = debug;
 }
 
-export function fakeProps(fake) {
+export function fakeProps(fake: Record<string, PropertyValue>): PropertyGetter {
     return (prop, def) => (fake[prop] === undefined ? def : fake[prop]);
 }

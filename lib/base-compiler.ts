@@ -48,7 +48,7 @@ import {
     ExecutableExecutionOptions,
     UnprocessedExecResult,
 } from '../types/execution/execution.interfaces';
-import {CompilerFilters, ParseFilters} from '../types/features/filters.interfaces';
+import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
@@ -74,6 +74,7 @@ import {Packager} from './packager';
 import {AsmParser} from './parsers/asm-parser';
 import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
+import {PropertyGetter} from './properties.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
@@ -83,8 +84,7 @@ export class BaseCompiler {
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
-    // Note that this can also return undefined and boolean | number, but we still need properties.js to ts
-    protected compilerProps: (key: string, defaultValue?: string) => string;
+    protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: any;
     protected delayCleanupTemp: any;
     protected stubRe: RegExp;
@@ -381,7 +381,7 @@ export class BaseCompiler {
     }
 
     supportsObjdump() {
-        return this.objdumperClass !== '';
+        return !!this.objdumperClass;
     }
 
     getObjdumpOutputFilename(defaultOutputFilename) {
@@ -392,7 +392,14 @@ export class BaseCompiler {
         return output;
     }
 
-    async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+    async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         if (!(await utils.fileExists(outputFilename))) {
@@ -585,7 +592,11 @@ export class BaseCompiler {
         return addOpts;
     }
 
-    protected optionsForFilter(filters: ParseFilters, outputFilename: string, userOptions?: string[]): string[] {
+    protected optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
@@ -844,7 +855,7 @@ export class BaseCompiler {
 
     prepareArguments(
         userOptions: string[],
-        filters: ParseFilters,
+        filters: ParseFiltersAndOutputOptions,
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
@@ -1009,7 +1020,7 @@ export class BaseCompiler {
         }
     }
 
-    async generateIR(inputFilename: string, options: string[], filters: ParseFilters) {
+    async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
         const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
 
@@ -1025,7 +1036,7 @@ export class BaseCompiler {
         return ir.asm;
     }
 
-    async processIrOutput(output, filters: ParseFilters) {
+    async processIrOutput(output, filters: ParseFiltersAndOutputOptions) {
         const irPath = this.getIrOutputFilename(output.inputFilename, filters);
         if (await fs.pathExists(irPath)) {
             const output = await fs.readFile(irPath, 'utf-8');
@@ -1041,7 +1052,7 @@ export class BaseCompiler {
     async generateLLVMOptPipeline(
         inputFilename: string,
         options: string[],
-        filters: ParseFilters,
+        filters: ParseFiltersAndOutputOptions,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
     ): Promise<LLVMOptPipelineOutput | undefined> {
         // These options make Clang produce the pass dumps
@@ -1102,7 +1113,11 @@ export class BaseCompiler {
         }
     }
 
-    async processLLVMOptPipeline(output, filters: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    async processLLVMOptPipeline(
+        output,
+        filters: ParseFiltersAndOutputOptions,
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+    ) {
         return this.llvmPassDumpParser.process(output.stderr, filters, llvmOptPipelineOptions);
     }
 
@@ -1198,7 +1213,7 @@ export class BaseCompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters: ParseFilters): string {
+    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -1316,7 +1331,7 @@ export class BaseCompiler {
         else return null;
     }
 
-    async checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFilters) {
+    async checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
         try {
             const stat = await fs.stat(outputFilename);
             asmResult.asmSize = stat.size;
@@ -1386,7 +1401,7 @@ export class BaseCompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(dirPath, source, files, filters: ParseFilters) {
+    protected async writeAllFiles(dirPath, source, files, filters: ParseFiltersAndOutputOptions) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -1401,7 +1416,7 @@ export class BaseCompiler {
         };
     }
 
-    protected async writeAllFilesCMake(dirPath, source, files, filters: ParseFilters) {
+    protected async writeAllFilesCMake(dirPath, source, files, filters: ParseFiltersAndOutputOptions) {
         if (!source) throw new Error('File CMakeLists.txt has no content or file is missing');
 
         const inputFilename = path.join(dirPath, 'CMakeLists.txt');
@@ -1424,7 +1439,7 @@ export class BaseCompiler {
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
 
-        const buildFilters: ParseFilters = Object.assign({}, key.filters);
+        const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
         buildFilters.binary = true;
         buildFilters.execute = true;
 
@@ -1789,9 +1804,6 @@ export class BaseCompiler {
         }
 
         asmResult.tools = toolsResult;
-        if (asmResult.code !== 0) {
-            return [{...asmResult, asm: '<Compilation failed>'}];
-        }
 
         if (this.compiler.supportsOptOutput && this.optOutputRequested(options)) {
             const optPath = path.join(dirPath, `${this.outputFilebase}.opt.yaml`);
@@ -1839,6 +1851,9 @@ export class BaseCompiler {
         if (haskellCmmResult) {
             asmResult.hasHaskellCmmOutput = true;
             asmResult.haskellCmmOutput = haskellCmmResult;
+        }
+        if (asmResult.code !== 0) {
+            return [{...asmResult, asm: '<Compilation failed>'}];
         }
 
         return this.checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters);
@@ -2307,7 +2322,7 @@ export class BaseCompiler {
         return this.asm.process(result.asm, filters);
     }
 
-    async postProcessAsm(result, filters?: ParseFilters) {
+    async postProcessAsm(result, filters?: ParseFiltersAndOutputOptions) {
         if (!result.okToCache || !this.demanglerClass || !result.asm) return result;
         const demangler = new this.demanglerClass(this.compiler.demangler, this);
 
@@ -2478,14 +2493,14 @@ but nothing was dumped. Possible causes are:
         return this.handlePostProcessResult(result, await this.exec('bash', ['-c', postCommand], {maxOutput: maxSize}));
     }
 
-    preProcess(source: string, filters: CompilerFilters): string {
+    preProcess(source: string, filters: CompilerOutputOptions): string {
         if (filters.binary && !this.stubRe.test(source)) {
             source += `\n${this.stubText}\n`;
         }
         return source;
     }
 
-    async postProcess(result, outputFilename: string, filters: ParseFilters) {
+    async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const postProcess = _.compact(this.compiler.postProcess);
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';

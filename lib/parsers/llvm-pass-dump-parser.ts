@@ -29,7 +29,7 @@ import {
     LLVMOptPipelineResults,
     Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 
 // Note(jeremy-rifkin):
@@ -497,7 +497,11 @@ export class LlvmPassDumpParser {
         );
     }
 
-    process(output: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+    process(
+        output: ResultLine[],
+        _: ParseFiltersAndOutputOptions,
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+    ) {
         // Crop out any junk before the pass dumps (e.g. warnings)
         const ir = output.slice(
             output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),

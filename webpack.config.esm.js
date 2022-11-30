@@ -45,7 +45,7 @@ const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v12.';
+const webjackJsHack = '.v13.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -162,7 +162,7 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /.pug$/,
+                test: /\.pug$/,
                 loader: './etc/scripts/parsed_pug_file.js',
             },
             {

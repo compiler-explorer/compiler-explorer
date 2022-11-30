@@ -22,41 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+export type PropertyValue = string | boolean | number | undefined;
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmParserCpp} from '../parsers/asm-parser-cpp';
-
-export class CppFrontCompiler extends BaseCompiler {
-    static get key() {
-        return 'cppfront';
-    }
-
-    constructor(info, env) {
-        super(info, env);
-
-        this.asm = new AsmParserCpp();
-        this.outputFilebase = 'example';
-    }
-
-    override getCompilerResultLanguageId() {
-        return 'cppp';
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
-        return [];
-    }
-
-    override getSharedLibraryPathsAsArguments(libraries, libDownloadPath) {
-        return [];
-    }
-
-    override getSharedLibraryLinks(libraries): string[] {
-        return [];
-    }
-
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, `${outputFilebase}.cpp`);
-    }
+// names don't matter
+interface TypeMap {
+    a: string;
+    b: boolean;
+    c: number;
+    d: undefined;
 }
+
+export type Widen<T> = T extends T
+    ? {
+          [P in keyof TypeMap]: T extends TypeMap[P] ? TypeMap[P] : never;
+      }[keyof TypeMap]
+    : T;
+
+function superficialGetter(property: string, defaultValue?: undefined): PropertyValue;
+function superficialGetter<T extends PropertyValue>(property: string, defaultValue: Widen<T>): typeof defaultValue;
+function superficialGetter<T extends PropertyValue>(property: string, defaultValue?: unknown): T;
+function superficialGetter(property: string, defaultValue?: unknown): unknown {
+    return; // eslint-disable-line no-useless-return
+}
+
+export type PropertyGetter = typeof superficialGetter;

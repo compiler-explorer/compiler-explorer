@@ -3,5 +3,4 @@
 
 make prereqs
 npx lint-staged
-npm run test
 python3 ./etc/scripts/util/propscheck.py

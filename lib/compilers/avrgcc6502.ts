@@ -38,9 +38,9 @@ export class AvrGcc6502Compiler extends BaseCompiler {
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
 
-        this.avrgccpath = this.compilerProps(`compiler.${this.compiler.id}.avrgccpath`);
-        this.xapath = this.compilerProps(`compiler.${this.compiler.id}.xapath`);
-        this.avrlibstdcpppath = this.compilerProps(`compiler.${this.compiler.id}.avrlibstdcpppath`);
+        this.avrgccpath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrgccpath`);
+        this.xapath = this.compilerProps<string>(`compiler.${this.compiler.id}.xapath`);
+        this.avrlibstdcpppath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrlibstdcpppath`);
         this.outputFilebase = 'example';
     }
 
