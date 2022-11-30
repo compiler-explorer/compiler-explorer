@@ -100,8 +100,9 @@ export class Cfg extends Pane<CfgState> {
             valueField: 'value',
             labelField: 'title',
             searchField: ['title'],
+            placeholder: '🔍 Select a function...',
             dropdownParent: 'body',
-            plugins: ['input_autogrow'],
+            plugins: ['dropdown_input'],
             sortField: 'title',
             onChange: e => {
                 this.selectFunction(e as any as string);
@@ -192,13 +193,12 @@ export class Cfg extends Pane<CfgState> {
 
     override onCompileResult(compilerId: number, compiler: any, result: any) {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        //console.log(result);
+        this.functionSelector.clear(true);
+        this.functionSelector.clearOptions();
         if (result.cfg) {
             const cfg = result.cfg as CFGResult;
             this.results = cfg;
             let selectedFunction: string | null = this.state.selectedFunction;
-            this.functionSelector.clear(true);
-            this.functionSelector.clearOptions();
             const keys = Object.keys(cfg);
             if (keys.length === 0) {
                 this.functionSelector.addOption({
@@ -253,28 +253,37 @@ export class Cfg extends Pane<CfgState> {
         const width = this.layout.getWidth();
         const height = this.layout.getHeight();
         this.svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        // We want to assembly everything in a document fragment first, then add it to the dom
+        // If we add to the dom every iteration the performance is awful, presumably because of layout computation and
+        // rendering and whatnot.
         const documentFragment = document.createDocumentFragment();
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
+                // Sanity check
                 if (edge.path.length === 0) {
                     throw Error('Mal-formed edge: Zero segments');
                 }
                 const points: [number, number][] = [];
+                // -1 offset is to create an overlap between the block's bottom border and start of the path, avoid any
+                // visual artifacts
                 points.push([edge.path[0].start.x, edge.path[0].start.y - 1]);
-                const endpoint = edge.path[edge.path.length - 1].end;
-                const triangleHeight = 7;
-                const triangleWidth = 7;
                 for (const segment of edge.path.slice(0, edge.path.length - 1)) {
                     points.push([segment.end.x, segment.end.y]);
                 }
+                // Edge arrow is going to be a triangle
+                const triangleHeight = 7;
+                const triangleWidth = 7;
+                const endpoint = edge.path[edge.path.length - 1].end;
+                // +1 offset to create an overlap with the triangle
                 points.push([endpoint.x, endpoint.y - triangleHeight + 1]);
+                // Create the poly line
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
                 line.setAttribute('points', points.map(coord => coord.join(',')).join(' '));
                 line.setAttribute('fill', 'none');
                 line.setAttribute('stroke', ColorTable[edge.color]);
                 line.setAttribute('stroke-width', '2');
                 documentFragment.appendChild(line);
-
+                // Create teh triangle
                 const trianglePoints: [number, number][] = [];
                 trianglePoints.push([endpoint.x - triangleWidth / 2, endpoint.y - triangleHeight]);
                 trianglePoints.push([endpoint.x + triangleWidth / 2, endpoint.y - triangleHeight]);
