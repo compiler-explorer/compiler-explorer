@@ -26,7 +26,7 @@
 export interface GccDumpViewSelectedPass {
     // FIXME(dkm): this type needs to be refactored.
     // In particular, see in gccdump-view.ts:{constructor, getCurrentState}
-    // There a mix of 'selectedPass' being a filename_prefix and a
+    // There is a mix of 'selectedPass' being a filename_prefix and a
     // GccDumpViewSelectedPass object.
     filename_suffix: string | null;
     name: string | null;
