@@ -1,5 +1,4 @@
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
-@import '~vis-network/styles/vis-network.css';
 
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
@@ -384,13 +383,44 @@ pre.content.wrap * {
     height: 100%;
 }
 
-.cfg-toolbar table {
-    width: 100%;
-}
-
-.graph-placeholder {
+.graph-container {
+    position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    .cfg-info {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        font-size: x-small;
+        font-style: italic;
+        z-index: 1;
+    }
+    .graph {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform-origin: top left;
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .block-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            .block {
+                position: absolute;
+                padding: 5px;
+                display: inline-block;
+                // TODO(jeremy-rifkin) settings.editorsFont
+                font-family: Consolas, 'Liberation Mono', Courier, monospace;
+                white-space: nowrap;
+                line-height: 100%;
+            }
+        }
+    }
 }
 
 .clear-cache {

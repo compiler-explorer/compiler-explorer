@@ -2158,7 +2158,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         filters: CompilerOutputOptions & Record<string, boolean | undefined>,
         reqCompile: boolean
     ): void {
-
         if (this.id === id) {
             this.treeDumpEnabled = filters.treeDump !== false;
             this.rtlDumpEnabled = filters.rtlDump !== false;

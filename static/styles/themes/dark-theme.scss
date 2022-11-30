@@ -238,8 +238,15 @@ textarea.form-control {
     background-color: darken(#474747, 10%);
 }
 
-.graph-placeholder {
-    background-color: #1e1e1e !important;
+.graph-container {
+    .cfg-info {
+        color: #aaa;
+    }
+    .graph .block-container .block {
+        background: black;
+        border: 1px solid white;
+        color: white;
+    }
 }
 
 .input-group-text {
