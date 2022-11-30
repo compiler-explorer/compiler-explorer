@@ -25,7 +25,7 @@
 import $ from 'jquery';
 import {Tab} from 'golden-layout';
 import {EventEmitter} from 'events';
-import {Alert} from '../alert';
+import {Alert} from './alert';
 
 export class PaneRenaming extends EventEmitter.EventEmitter {
     private pane: any;

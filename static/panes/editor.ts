@@ -30,7 +30,7 @@ import * as Components from '../components';
 import * as monaco from 'monaco-editor';
 import {Buffer} from 'buffer';
 import {options} from '../options';
-import {Alert} from '../alert';
+import {Alert} from '../widgets/alert';
 import {ga} from '../analytics';
 import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config';

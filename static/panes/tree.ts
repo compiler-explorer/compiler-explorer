@@ -30,7 +30,7 @@ import {Settings, SiteSettings} from '../settings';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {Hub} from '../hub';
 import {EventHub} from '../event-hub';
-import {Alert} from '../alert';
+import {Alert} from '../widgets/alert';
 import * as Components from '../components';
 import {ga} from '../analytics';
 import TomSelect from 'tom-select';

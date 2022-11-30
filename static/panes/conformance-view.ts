@@ -28,7 +28,7 @@ import $ from 'jquery';
 import {ga} from '../analytics';
 import * as Components from '../components';
 import {CompilerLibs, LibsWidget} from '../widgets/libs-widget';
-import {CompilerPicker} from '../compiler-picker';
+import {CompilerPicker} from '../widgets/compiler-picker';
 import * as utils from '../utils';
 import * as LibUtils from '../lib-utils';
 import {PaneRenaming} from '../widgets/pane-renaming';
