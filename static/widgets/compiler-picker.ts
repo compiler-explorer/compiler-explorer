@@ -25,11 +25,11 @@
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 
-import {ga} from './analytics';
-import * as local from './local';
-import {EventHub} from './event-hub';
-import {Hub} from './hub';
-import {CompilerService} from './compiler-service';
+import {ga} from '../analytics';
+import * as local from '../local';
+import {EventHub} from '../event-hub';
+import {Hub} from '../hub';
+import {CompilerService} from '../compiler-service';
 
 type Favourites = {
     [compilerId: string]: boolean;
