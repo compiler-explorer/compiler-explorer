@@ -37,6 +37,7 @@ import {
     CompilationResult,
     CustomInputForTool,
     ExecutionOptions,
+    ICompiler,
 } from '../types/compilation/compilation.interfaces';
 import {
     LLVMOptPipelineBackendOptions,
@@ -79,8 +80,8 @@ import {getToolchainPath} from './toolchain-utils';
 import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
-export class BaseCompiler {
-    public compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
+export class BaseCompiler implements ICompiler {
+    protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: any;
