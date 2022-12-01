@@ -33,7 +33,7 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler} from '../../types/compilation/compilation.interfaces';
+import {ICompiler} from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';

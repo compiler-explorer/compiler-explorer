@@ -37,13 +37,12 @@ import {
     CompilationResult,
     CustomInputForTool,
     ExecutionOptions,
-    ICompiler,
 } from '../types/compilation/compilation.interfaces';
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
+import {CompilerInfo, ICompiler} from '../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,

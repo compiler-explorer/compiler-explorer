@@ -23,7 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
-import {CompilerArguments} from '../../lib/compiler-arguments';
 import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
 import {CompilerInfo} from '../compiler.interfaces';
 import {BasicExecutionResult} from '../execution/execution.interfaces';
@@ -162,11 +161,3 @@ export type CustomInputForTool = {
     dirPath: string;
     outputFilename: string;
 };
-
-export interface ICompiler {
-    possibleArguments: CompilerArguments;
-    compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
-    cmake(files, key);
-    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
-    getInfo();
-}
