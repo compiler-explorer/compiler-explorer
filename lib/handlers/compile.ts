@@ -209,7 +209,7 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: BaseCompiler[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: ICompiler[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {

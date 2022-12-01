@@ -25,6 +25,7 @@
 import {CompilerArguments} from '../lib/compiler-arguments';
 import {Tool, ToolInfo} from '../lib/tooling/base-tool.interface';
 
+import {Language} from './languages.interfaces';
 import {Library} from './libraries/libraries.interfaces';
 
 export type CompilerInfo = {
@@ -88,6 +89,7 @@ export type CompilerInfo = {
 
 export interface ICompiler {
     possibleArguments: CompilerArguments;
+    lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
