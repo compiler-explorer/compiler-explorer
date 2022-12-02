@@ -7,7 +7,7 @@ import re
 import urllib.request
 
 
-DOC_URL_BASE = "https://raw.githubusercontent.com/mist64/c64ref/master/6502/"
+DOC_URL_BASE = "https://raw.githubusercontent.com/mist64/c64ref/4274bd8782c5d3b18c68e6b9479b0ec751eb96b1/Source/6502/"
 doc_files = {f"{DOC_URL_BASE}{filename}":cpu_type for filename, cpu_type in {
     "cpu_6502.txt" : "6502",
     "cpu_65c02.txt" : "65c02",
@@ -176,7 +176,7 @@ def escape_quotes(string):
 def get_arguments():
     parser = argparse.ArgumentParser()
     help_text = "the location to which the script will be written"
-    relative_path = "/../../../lib/handlers/asm-docs-6502.js"
+    relative_path = "../../../../lib/asm-docs/generated/asm-docs-6502.ts"
     script_path = os.path.realpath(__file__)
     script_dir = os.path.dirname(script_path)
     default_path = os.path.normpath(script_dir + relative_path)
