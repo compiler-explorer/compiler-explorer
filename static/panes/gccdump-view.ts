@@ -365,7 +365,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
     }
 
-    override onCompiler(compilerId: number, compiler : CompilerInfo | null, options: unknown, editorId: number, treeId: number) {
+    override onCompiler(compilerId: number, compiler : CompilerInfo | null, options: string, editorId: number, treeId: number) {
         if (compilerId === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
