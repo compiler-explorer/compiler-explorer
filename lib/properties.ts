@@ -213,21 +213,21 @@ export class CompilerProps {
         defaultValue?: PropertyValue,
         fn?: (item: PropertyValue, language?: any) => unknown,
     ) {
-        fn = fn || _.identity;
+        const map_fn = fn || _.identity;
         if (_.isEmpty(langs)) {
-            return fn(this.ceProps(key, defaultValue));
+            return map_fn(this.ceProps(key, defaultValue));
         }
         if (!_.isString(langs)) {
             return _.chain(langs)
-                .map(lang => [lang.id, fn!(this.$getInternal(lang.id, key, defaultValue), lang)])
+                .map(lang => [lang.id, map_fn(this.$getInternal(lang.id, key, defaultValue), lang)])
                 .object()
                 .value();
         } else {
             if (this.propsByLangId[langs]) {
-                return fn(this.$getInternal(langs, key, defaultValue), this.languages[langs]);
+                return map_fn(this.$getInternal(langs, key, defaultValue), this.languages[langs]);
             } else {
                 logger.error(`Tried to pass ${langs} as a language ID`);
-                return fn(defaultValue);
+                return map_fn(defaultValue);
             }
         }
     }

@@ -27,17 +27,19 @@ import https from 'https';
 import path from 'path';
 import {promisify} from 'util';
 
+import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
+import {Language} from '../types/languages.interfaces';
+
 import {InstanceFetcher} from './aws';
-import {logger} from './logger';
-import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
-import {CompilerProps, RawPropertiesGetter} from './properties';
-import AWS from 'aws-sdk';
-import {ClientOptionsHandler} from './options-handler';
 import {CompileHandler} from './handlers/compile';
+import {logger} from './logger';
+import {ClientOptionsHandler} from './options-handler';
+import {CompilerProps, RawPropertiesGetter} from './properties';
+import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
 
 const sleep = promisify(setTimeout);
 
@@ -64,7 +66,7 @@ export class CompilerFinder {
     awsProps: PropertyGetter;
     args: CompilerFinderArguments;
     compileHandler: CompileHandler;
-    languages: Record<string, any>;
+    languages: Record<string, Language>;
     awsPoller: InstanceFetcher | null = null;
     optionsHandler: ClientOptionsHandler;
 
@@ -349,7 +351,6 @@ export class CompilerFinder {
                 }
                 return this.compilerProps(langId, `group.${groupName}.${name}`, parentProps(langId, name, def));
             };
-            // TODO: Eliminate this cast
             const exes = _.compact(this.compilerProps(langId, `group.${groupName}.compilers`, '').split(':'));
             logger.debug(`Processing compilers from group ${groupName}`);
             return Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)));
@@ -412,8 +413,7 @@ export class CompilerFinder {
     }
 
     addNdkExes(langToCompilers) {
-        // TODO: Fix types here
-        const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as _.Dictionary<any>;
+        const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as Record<string, string>;
         _.each(ndkPaths, (ndkPath, langId) => {
             if (ndkPath) {
                 const toolchains = fs.readdirSync(`${ndkPath}/toolchains`);
