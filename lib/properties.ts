@@ -67,6 +67,8 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
     return result;
 }
 
+export type RawPropertiesGetter = typeof get;
+
 export function parseProperties(blob, name) {
     const props = {};
     for (const [index, lineOrig] of blob.split('\n').entries()) {
@@ -132,9 +134,9 @@ type LanguageDef = {
  * Compiler property fetcher
  */
 export class CompilerProps {
-    private languages: Record<string, any>;
-    private propsByLangId: Record<string, PropertyGetter>;
-    private ceProps: any;
+    public readonly languages: Record<string, any>;
+    public readonly propsByLangId: Record<string, PropertyGetter>;
+    public readonly ceProps: any;
 
     /***
      * Creates a CompilerProps lookup function
@@ -171,9 +173,9 @@ export class CompilerProps {
      * @returns {*} Transformed value(s) found or fn(defaultValue)
      */
     get(
-        langs: string | LanguageDef[],
+        langs: string | LanguageDef[] | Record<string, any>,
         key: string,
-        defaultValue: PropertyValue,
+        defaultValue?: PropertyValue,
         fn: (item: PropertyValue, language?: any) => PropertyValue = _.identity,
     ) {
         fn = fn || _.identity;
