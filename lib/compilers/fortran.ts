@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
@@ -33,7 +33,12 @@ export class FortranCompiler extends BaseCompiler {
         return 'fortran';
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions): Promise<CompilationResult> {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
