@@ -2152,11 +2152,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onGccDumpFiltersChanged(
-        id: number,
-        dumpOpts: GccDumpFiltersState,
-        reqCompile: boolean
-    ): void {
+    onGccDumpFiltersChanged(id: number, dumpOpts: GccDumpFiltersState, reqCompile: boolean): void {
         if (this.id === id) {
             this.treeDumpEnabled = dumpOpts.treeDump;
             this.rtlDumpEnabled = dumpOpts.rtlDump;
