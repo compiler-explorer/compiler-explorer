@@ -2,5 +2,5 @@
 . "$(dirname "$0")/_/husky.sh"
 
 make prereqs
-npx lint-staged
+npx lint-staged --verbose
 python3 ./etc/scripts/util/propscheck.py
