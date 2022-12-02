@@ -34,8 +34,9 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import * as utils from '../utils';
 
 import {AsmRegex} from './asmregex';
+import {IAsmParser} from './asm-parser.interfaces';
 
-export class AsmParser extends AsmRegex {
+export class AsmParser extends AsmRegex implements IAsmParser {
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
     mipsLabelDefinition: RegExp;
