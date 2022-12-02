@@ -35,6 +35,8 @@ import * as monacoConfig from '../monaco-config';
 
 import {ga} from '../analytics';
 import {Hub} from '../hub';
+import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -171,7 +173,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         return this.editor.getModel()?.getLanguageId();
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler : CompilerInfo, result : CompilationResult) {
         if (this.compilerInfo.compilerId !== id) return;
 
         if (result.hasAstOutput) {

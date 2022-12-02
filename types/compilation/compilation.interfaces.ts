@@ -59,7 +59,7 @@ export type CompilationResult = {
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
     languageId?: string;
-
+    source?: string;
     hasPpOutput?: boolean;
     ppOutput?: any;
 

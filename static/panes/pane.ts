@@ -35,6 +35,8 @@ import * as utils from '../utils';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -154,7 +156,7 @@ export abstract class Pane<S> {
      * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void;
+    abstract onCompiler(compilerId: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number): void;
 
     /**
      * Handle compilation result.
@@ -174,7 +176,7 @@ export abstract class Pane<S> {
      * @param compiler - The compiler object
      * @param result - The entire HTTP request response
      */
-    abstract onCompileResult(compilerId: number, compiler: unknown, result: unknown): void;
+    abstract onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void;
 
     /**
      * Perform any clean-up events when the pane is closed.

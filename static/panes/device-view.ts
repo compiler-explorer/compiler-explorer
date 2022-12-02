@@ -260,7 +260,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
 
     override onCompiler(
         id: number,
-        compiler: CompilerInfo | undefined,
+        compiler: CompilerInfo | null,
         options: string,
         editorId: number,
         treeId: number

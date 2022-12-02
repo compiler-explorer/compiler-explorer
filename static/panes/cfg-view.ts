@@ -43,6 +43,7 @@ import {
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
+import { CompilerInfo } from '../compiler.interfaces';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -180,7 +181,7 @@ export class Cfg extends Pane<CfgState> {
         });
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
+    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         this.compilerInfo.compilerName = compiler ? compiler.name : '';
         this.compilerInfo.editorId = editorId;

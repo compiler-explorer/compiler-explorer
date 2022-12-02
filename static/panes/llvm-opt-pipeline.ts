@@ -44,6 +44,8 @@ import {
     LLVMOptPipelineOutput,
     LLVMOptPipelineResults,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -221,10 +223,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.emitOptions();
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasLLVMOptPipelineOutput) {
-            const output: LLVMOptPipelineOutput = result.llvmOptPipelineOutput;
+            const output = result.llvmOptPipelineOutput as LLVMOptPipelineOutput;
             if (output.error) {
                 this.editor
                     .getModel()

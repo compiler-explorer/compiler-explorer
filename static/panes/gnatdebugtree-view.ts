@@ -34,6 +34,8 @@ import {MonacoPaneState} from './pane.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugTreeState> {
     constructor(hub: Hub, container: Container, state: GnatDebugTreeState & MonacoPaneState) {
@@ -78,16 +80,16 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
-        if (result.hasGnatDebugTreeOutput) {
+        if (result.hasGnatDebugTreeOutput && result.gnatDebugTreeOutput) {
             this.showGnatDebugTreeResults(result.gnatDebugTreeOutput);
         } else if (compiler.supportsGnatDebugViews) {
             this.showGnatDebugTreeResults([{text: '<No output>'}]);
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: any, editorId?: number, treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

@@ -34,6 +34,8 @@ import {HaskellStgState} from './haskellstg-view.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
+import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
 
 export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellStgState> {
     constructor(hub: Hub, container: Container, state: HaskellStgState & MonacoPaneState) {
@@ -78,7 +80,7 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasHaskellStgOutput) {
             this.showHaskellStgResults(result.haskellStgOutput);

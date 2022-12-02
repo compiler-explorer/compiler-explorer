@@ -33,6 +33,8 @@ import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces';
 import {Settings, SiteSettings} from '../settings';
 import {Hub} from '../hub';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
     debouncedEmitChange: ((e: boolean) => void) & Cancelable = (() => {}) as any;
@@ -99,7 +101,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         return 'Detailed Compiler Flags';
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number) {
+    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: unknown, editorId: number, treeId: number) {
         if (compilerId === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;
@@ -108,7 +110,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
         }
     }
 
-    override onCompileResult(compilerId: number, compiler: unknown, result: unknown) {}
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {}
 
     override close() {
         this.eventHub.unsubscribe();

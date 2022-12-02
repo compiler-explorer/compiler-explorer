@@ -36,6 +36,8 @@ import {extendConfig} from '../monaco-config';
 import {applyColours} from '../colour';
 
 import {Hub} from '../hub';
+import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -127,7 +129,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasIrOutput) {
             this.showIrResults(result.irOutput);

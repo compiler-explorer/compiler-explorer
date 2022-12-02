@@ -25,15 +25,17 @@
 import $ from 'jquery';
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
-import {Container} from 'golden-layout';
+import { Container } from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {OptState, OptCodeEntry} from './opt-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import { MonacoPane } from './pane';
+import { OptState, OptCodeEntry } from './opt-view.interfaces';
+import { MonacoPaneState } from './pane.interfaces';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
+import { ga } from '../analytics';
+import { extendConfig } from '../monaco-config';
+import { Hub } from '../hub';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptState> {
     currentDecorations: string[] = [];
@@ -83,9 +85,11 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         });
     }
 
-    override onCompileResult(id: number, compiler, result) {
+    override onCompileResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !this.isCompilerSupported) return;
-        this.editor.setValue(result.source);
+        if (result.source) {
+            this.editor.setValue(result.source);
+        }
         if (result.hasOptOutput) {
             this.showOptResults(result.optOutput);
         }
@@ -155,7 +159,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         this.currentDecorations = this.editor.deltaDecorations(this.currentDecorations, opt);
     }
 
-    override onCompiler(id: number, compiler) {
+    override onCompiler(id: number, compiler: CompilerInfo | null) {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.updateTitle();

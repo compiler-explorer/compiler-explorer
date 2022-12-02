@@ -34,6 +34,8 @@ import {RustMacroExpState} from './rustmacroexp-view.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
+import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
 
 export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMacroExpState> {
     constructor(hub: Hub, container: Container, state: RustMacroExpState & MonacoPaneState) {
@@ -78,7 +80,7 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
         this.eventHub.emit('requestSettings');
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any): void {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {
         if (this.compilerInfo.compilerId !== compilerId) return;
         if (result.hasRustMacroExpOutput) {
             this.showRustMacroExpResults(result.rustMacroExpOutput);
@@ -87,7 +89,7 @@ export class RustMacroExp extends MonacoPane<monaco.editor.IStandaloneCodeEditor
         }
     }
 
-    override onCompiler(compilerId: number, compiler: any, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: any, editorId?: number, treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

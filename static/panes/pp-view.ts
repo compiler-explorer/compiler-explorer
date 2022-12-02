@@ -33,6 +33,8 @@ import {PPViewState} from './pp-view.interfaces';
 import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
+import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
@@ -107,7 +109,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         });
     }
 
-    override onCompileResult(compilerId: number, compiler: any, result: any) {
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {
         if (this.compilerInfo.compilerId !== compilerId) return;
 
         if (result.hasPpOutput) {

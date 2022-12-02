@@ -41,6 +41,8 @@ import {GccDumpFilters, GccDumpState} from './gccdump-view.interfaces';
 
 import {ga} from '../analytics';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpState> {
     selectize: TomSelect;
@@ -304,7 +306,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.inhibitPassSelect = false;
     }
 
-    override onCompileResult(id, compiler, result) {
+    override onCompileResult(id : number, compiler : CompilerInfo, result : CompilationResult) {
         if (this.compilerInfo.compilerId !== id || !compiler) return;
 
         const model = this.editor.getModel();
@@ -363,7 +365,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
     }
 
-    override onCompiler(compilerId: number, compiler, options: unknown, editorId: number, treeId: number) {
+    override onCompiler(compilerId: number, compiler : CompilerInfo | null, options: unknown, editorId: number, treeId: number) {
         if (compilerId === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

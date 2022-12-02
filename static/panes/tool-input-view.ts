@@ -33,6 +33,8 @@ import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {ToolInputViewState} from './tool-input-view.interfaces';
 import {Settings} from '../settings';
+import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../compilation/compilation.interfaces';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
     _toolId: number;
@@ -119,9 +121,9 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         };
     }
 
-    override onCompiler(compilerId: number, compiler: unknown, options: unknown, editorId: number, treeId: number) {}
+    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: unknown, editorId: number, treeId: number) {}
 
-    override onCompileResult(compilerId: number, compiler: unknown, result: unknown) {}
+    override onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult) {}
 
     override close() {
         this.eventHub.unsubscribe();

@@ -316,7 +316,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
     override onCompiler(
         compilerId: number,
-        compiler: CompilerInfo,
+        compiler: CompilerInfo | null,
         options: string,
         editorId: number,
         treeId: number
@@ -619,5 +619,5 @@ export class Conformance extends Pane<ConformanceViewState> {
         return '';
     }
 
-    onCompileResult(compilerId: number, compiler: unknown, result: unknown): void {}
+    onCompileResult(compilerId: number, compiler: CompilerInfo, result: CompilationResult): void {}
 }

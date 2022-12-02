@@ -315,7 +315,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override onCompiler(
         id: number | string,
-        compiler: CompilerInfo | undefined,
+        compiler: CompilerInfo | null,
         options: unknown,
         editorId: number,
         treeId: number
