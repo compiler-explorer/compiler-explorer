@@ -350,9 +350,7 @@ export class CompilerFinder {
                 return this.compilerProps(langId, `group.${groupName}.${name}`, parentProps(langId, name, def));
             };
             // TODO: Eliminate this cast
-            const exes = _.compact(
-                (this.compilerProps(langId, `group.${groupName}.compilers`, '') as string).split(':'),
-            );
+            const exes = _.compact(this.compilerProps(langId, `group.${groupName}.compilers`, '').split(':'));
             logger.debug(`Processing compilers from group ${groupName}`);
             return Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)));
         }
@@ -405,12 +403,8 @@ export class CompilerFinder {
     }
 
     getExes() {
-        // TODO: Fix typing here
-        const langToCompilers = this.compilerProps(
-            this.languages,
-            'compilers',
-            '',
-            exs => _.compact((exs as string).split(':')) as unknown as string[],
+        const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs =>
+            _.compact((exs as string).split(':')),
         );
         this.addNdkExes(langToCompilers);
         logger.info('Exes found:', langToCompilers);
@@ -418,6 +412,7 @@ export class CompilerFinder {
     }
 
     addNdkExes(langToCompilers) {
+        // TODO: Fix types here
         const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as _.Dictionary<any>;
         _.each(ndkPaths, (ndkPath, langId) => {
             if (ndkPath) {
