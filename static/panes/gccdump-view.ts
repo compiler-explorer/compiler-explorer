@@ -91,13 +91,13 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
             };
             const match = state.selectedPass.match(selectedPassRe);
             if (match) {
-                const selectedPassO : GccDumpViewSelectedPass = {
+                const selectedPassO: GccDumpViewSelectedPass = {
                     filename_suffix: match[1] + '.' + match[2],
                     name: match[2] + ' (' + passType[match[1]] + ')',
                     command_prefix: '-fdump-' + passType[match[1]] + '-' + match[2],
 
                     // FIXME(dkm): maybe this could be avoided by better typing.
-                    selectedPass : null,
+                    selectedPass: null,
                 };
 
                 this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPassO, false);
@@ -109,12 +109,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.uiIsReady = false;
         this.onUiNotReady();
 
-        this.eventHub.emit(
-            'gccDumpFiltersChanged',
-            this.compilerInfo.compilerId,
-            this.getEffectiveFilters(),
-            false
-        );
+        this.eventHub.emit('gccDumpFiltersChanged', this.compilerInfo.compilerId, this.getEffectiveFilters(), false);
 
         this.updateButtons();
         this.updateState();
@@ -383,7 +378,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         }
     }
 
-    getEffectiveFilters() : GccDumpFiltersState {
+    getEffectiveFilters(): GccDumpFiltersState {
         // This cast only works if gccdump.pug and gccdump-view.interfaces are
         // kept synchronized. See comment in gccdump-view.interfaces.ts.
 
@@ -395,12 +390,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.updateButtons();
 
         if (this.inhibitPassSelect !== true) {
-            this.eventHub.emit(
-                'gccDumpFiltersChanged',
-                this.compilerInfo.compilerId,
-                this.getEffectiveFilters(),
-                true
-            );
+            this.eventHub.emit('gccDumpFiltersChanged', this.compilerInfo.compilerId, this.getEffectiveFilters(), true);
         }
     }
 
