@@ -36,9 +36,9 @@ export class BaseParser {
         return _.keys(options).find(option => option.includes(forOption));
     }
 
-    static parseLines(stdout, optionRegex) {
-        let previousOption = false;
-        let options = {};
+    static parseLines(stdout, optionRegex: RegExp) {
+        let previousOption: false | string = false;
+        const options = {};
 
         utils.eachLine(stdout, line => {
             const match = line.match(optionRegex);
@@ -113,7 +113,7 @@ export class GCCParser extends BaseParser {
         }
     }
 
-    static async parse(compiler) {
+    static override async parse(compiler) {
         const results = await Promise.all([
             GCCParser.getOptions(compiler, '-fsyntax-only --help'),
             GCCParser.getOptions(compiler, '-fsyntax-only --target-help'),
@@ -126,7 +126,7 @@ export class GCCParser extends BaseParser {
         return compiler;
     }
 
-    static async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -136,6 +136,8 @@ export class GCCParser extends BaseParser {
 }
 
 export class ClangParser extends BaseParser {
+    static mllvmOptions = new Set<string>();
+
     static setCompilerSettingsFromOptions(compiler, options) {
         logger.debug(`clang-like compiler options: ${_.keys(options).join(' ')}`);
         if (BaseParser.hasSupport(options, '-fsave-optimization-record')) {
@@ -169,7 +171,7 @@ export class ClangParser extends BaseParser {
             compiler.compiler.options += ' -fno-crash-diagnostics';
     }
 
-    static async parse(compiler) {
+    static override async parse(compiler) {
         try {
             const options = await ClangParser.getOptions(compiler, '--help');
 
@@ -188,7 +190,7 @@ export class ClangParser extends BaseParser {
         }
     }
 
-    static async getOptions(compiler, helpArg, populate = true) {
+    static override async getOptions(compiler, helpArg, populate = true) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -227,13 +229,13 @@ export class LDCParser extends BaseParser {
         }
     }
 
-    static async parse(compiler) {
+    static override async parse(compiler) {
         const options = await LDCParser.getOptions(compiler, '--help-hidden');
         this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
 
-    static async getOptions(compiler, helpArg, populate = true) {
+    static override async getOptions(compiler, helpArg, populate = true) {
         const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -245,14 +247,14 @@ export class LDCParser extends BaseParser {
 }
 
 export class ErlangParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await ErlangParser.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class PascalParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await PascalParser.getOptions(compiler, '-help');
         return compiler;
     }
@@ -266,13 +268,13 @@ export class ISPCParser extends BaseParser {
         }
     }
 
-    static async parse(compiler) {
+    static override async parse(compiler) {
         const options = await ISPCParser.getOptions(compiler, '--help');
         await this.setCompilerSettingsFromOptions(compiler, options);
         return compiler;
     }
 
-    static async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg) {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const optionFinder = /^\s*\[(--?[\d\s()+,/<=>a-z{|}-]*)]\s*(.*)/i;
         const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
@@ -282,35 +284,35 @@ export class ISPCParser extends BaseParser {
 }
 
 export class JavaParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await JavaParser.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class KotlinParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await KotlinParser.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class ScalaParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await ScalaParser.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class VCParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await VCParser.getOptions(compiler, '/help');
         return compiler;
     }
 
-    static parseLines(stdout, optionRegex) {
-        let previousOption = false;
-        let options = {};
+    static override parseLines(stdout, optionRegex) {
+        let previousOption: string | false = false;
+        const options = {};
 
         const matchLine = line => {
             if (line.startsWith('/?')) return;
@@ -362,7 +364,7 @@ export class VCParser extends BaseParser {
         return options;
     }
 
-    static async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg) {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, [helpArg]);
         const optionFinder = /^\s*(\/[\w#+,.:<=>[\]{|}-]*)\s*(.*)/i;
         const options = result.code === 0 ? this.parseLines(result.stdout, optionFinder) : {};
@@ -379,7 +381,7 @@ export class RustParser extends BaseParser {
         }
     }
 
-    static async parse(compiler) {
+    static override async parse(compiler) {
         const results = await Promise.all([
             RustParser.getOptions(compiler, '--help'),
             RustParser.getOptions(compiler, '-C help'),
@@ -390,7 +392,7 @@ export class RustParser extends BaseParser {
         return compiler;
     }
 
-    static async getOptions(compiler, helpArg) {
+    static override async getOptions(compiler, helpArg) {
         const result = await compiler.execCompilerCached(compiler.compiler.exe, helpArg.split(' '));
         let options = {};
         if (result.code === 0) {
@@ -410,42 +412,42 @@ export class RustParser extends BaseParser {
 }
 
 export class MrustcParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await MrustcParser.getOptions(compiler, '--help');
         return compiler;
     }
 }
 
 export class NimParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await NimParser.getOptions(compiler, '-help');
         return compiler;
     }
 }
 
 export class CrystalParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await CrystalParser.getOptions(compiler, 'build');
         return compiler;
     }
 }
 
 export class TypeScriptNativeParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await TypeScriptNativeParser.getOptions(compiler, '--help');
         return compiler;
     }
 }
 
 export class TurboCParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await TurboCParser.getOptions(compiler, '');
         return compiler;
     }
 }
 
 export class ToitParser extends BaseParser {
-    static async parse(compiler) {
+    static override async parse(compiler) {
         await ToitParser.getOptions(compiler, '-help');
         return compiler;
     }
