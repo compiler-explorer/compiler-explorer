@@ -24,7 +24,16 @@
 
 import _ from 'underscore';
 
-export class FakeCompiler {
+import {ICompiler} from '../../types/compiler.interfaces';
+import {Language} from '../../types/languages.interfaces';
+import {CompilerArguments} from '../compiler-arguments';
+
+export class FakeCompiler implements ICompiler {
+    public possibleArguments: CompilerArguments;
+    public lang: any;
+    private compiler: any;
+    private info: any;
+
     static get key() {
         return 'fake-for-test';
     }
@@ -40,10 +49,15 @@ export class FakeCompiler {
         );
         this.lang = {id: this.compiler.lang, name: `Language ${this.compiler.lang}`};
         this.info = info;
+        this.possibleArguments = new CompilerArguments();
+    }
+
+    initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean) {
+        throw new Error('Method not implemented.');
     }
 
     getInfo() {
-        return null;
+        return this.compiler;
     }
 
     getDefaultFilters() {
@@ -61,6 +75,7 @@ export class FakeCompiler {
                 options: options,
                 backendOptions: backendOptions,
                 filters: filters,
+                files: undefined,
             },
         };
 
@@ -78,9 +93,5 @@ export class FakeCompiler {
                 },
             }),
         );
-    }
-
-    initalize() {
-        return null;
     }
 }
