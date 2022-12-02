@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
@@ -32,7 +33,12 @@ export class FortranCompiler extends BaseCompiler {
         return 'fortran';
     }
 
-    async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -41,10 +47,12 @@ export class FortranCompiler extends BaseCompiler {
         execOptions.customCwd = path.dirname(inputFilename);
 
         const result = await this.exec(compiler, options, execOptions);
-        result.inputFilename = inputFilename;
         const baseFilename = './' + path.basename(inputFilename);
-        result.stdout = utils.parseOutput(result.stdout, baseFilename);
-        result.stderr = utils.parseOutput(result.stderr, baseFilename);
-        return result;
+        return {
+            ...result,
+            stdout: utils.parseOutput(result.stdout, baseFilename),
+            stderr: utils.parseOutput(result.stderr, baseFilename),
+            inputFilename: inputFilename,
+        };
     }
 }
