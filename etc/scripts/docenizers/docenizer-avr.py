@@ -36,7 +36,7 @@ def main():
 def get_arguments():
     parser = argparse.ArgumentParser()
     help_text = "the location to which the script will be written"
-    relative_path = "/../../../lib/handlers/asm-docs-avr.js"
+    relative_path = "../../../../lib/asm-docs/generated/asm-docs-avr.ts"
     script_path = os.path.realpath(__file__)
     script_dir = os.path.dirname(script_path)
     default_path = os.path.normpath(script_dir + relative_path)
@@ -89,7 +89,9 @@ def process_description(desc):
 def write_script(filename, instructions):
     log_message(f"writing to {filename}...")
     with open(filename, "w") as script:
-        script.write("export function getAsmOpcode(opcode) {\n")
+        script.write("import {AssemblyInstructionInfo} from '../base';\n")
+        script.write("\n")
+        script.write("export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {\n")
         script.write("    if (!opcode) return;\n")
         script.write("    switch (opcode.toUpperCase()) {\n")
         for inst in instructions.values():

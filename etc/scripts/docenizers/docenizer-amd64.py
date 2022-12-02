@@ -19,8 +19,8 @@ parser = argparse.ArgumentParser(description='Docenizes HTML version of the offi
 parser.add_argument('-i', '--inputfolder', type=str,
                     help='Folder where the input files reside as .html. Default is ./asm-docs/',
                     default='asm-docs')
-parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js file. Default is ./asm-docs.js',
-                    default='./asm-docs.js')
+parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .ts file. Default is ./asm-docs-amd64.ts',
+                    default='./asm-docs-amd64.ts')
 parser.add_argument('-d', '--downloadfolder', type=str,
                     help='Folder where the archive will be downloaded and extracted', default='asm-docs')
 
@@ -354,10 +354,12 @@ def main():
     print(f"Writing {len(instructions)} instructions")
     with open(args.outputpath, 'w') as f:
         f.write("""
-export function getAsmOpcode(opcode) {
+import {AssemblyInstructionInfo} from '../base';
+
+export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
-""")
+""".lstrip())
         for inst in instructions:
             for name in sorted(inst.names):
                 f.write(f'        case "{name}":\n')
