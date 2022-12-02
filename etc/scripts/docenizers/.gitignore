@@ -1,4 +1,4 @@
 asm-docs
 asm-docs-arm
 evm-inst-docs
-vendor/jvms.html
+vendor/*.html
