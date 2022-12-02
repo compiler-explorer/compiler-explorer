@@ -89,7 +89,9 @@ const main = async () => {
         .slice(1) // Drop 1 because the first is the "mne monic"
         .map(it => extract($(it), $))
         .flat();
-    console.log('export function getAsmOpcode(opcode) {');
+    console.log('import {AssemblyInstructionInfo} from \'../base\';');
+    console.log('');
+    console.log('export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {');
     console.log('    if (!opcode) return;');
     console.log('    switch (opcode.toUpperCase()) {');
     for (const instruction of instructions) {
