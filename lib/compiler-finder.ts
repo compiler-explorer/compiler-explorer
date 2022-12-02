@@ -410,15 +410,15 @@ export class CompilerFinder {
             this.languages,
             'compilers',
             '',
-            exs => _.compact((exs as string).split(':')) as unknown as PropertyValue,
-        ) as _.Dictionary<any>;
+            exs => _.compact((exs as string).split(':')) as unknown as string[],
+        );
         this.addNdkExes(langToCompilers);
         logger.info('Exes found:', langToCompilers);
         return langToCompilers;
     }
 
     addNdkExes(langToCompilers) {
-        const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as _.Dictionary<any>;
+        const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as _.Dictionary<any>;
         _.each(ndkPaths, (ndkPath, langId) => {
             if (ndkPath) {
                 const toolchains = fs.readdirSync(`${ndkPath}/toolchains`);

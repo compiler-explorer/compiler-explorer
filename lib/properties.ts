@@ -136,7 +136,7 @@ type LanguageDef = {
 export class CompilerProps {
     public readonly languages: Record<string, any>;
     public readonly propsByLangId: Record<string, PropertyGetter>;
-    public readonly ceProps: any;
+    public readonly ceProps: PropertyGetter;
 
     /***
      * Creates a CompilerProps lookup function
@@ -151,6 +151,9 @@ export class CompilerProps {
         _.each(this.languages, lang => (this.propsByLangId[lang.id] = propsFor(lang.id)));
     }
 
+    $getInternal(base: string, property: string, defaultValue: undefined): PropertyValue;
+    $getInternal<T extends PropertyValue>(base: string, property: string, defaultValue: Widen<T>): typeof defaultValue;
+    $getInternal<T extends PropertyValue>(base: string, property: string, defaultValue?: PropertyValue): T;
     $getInternal(langId: string, key: string, defaultValue: PropertyValue): PropertyValue {
         const languagePropertyValue = this.propsByLangId[langId](key);
         if (languagePropertyValue !== undefined) {
@@ -173,10 +176,42 @@ export class CompilerProps {
      * @returns {*} Transformed value(s) found or fn(defaultValue)
      */
     get(
+        base: string | LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: undefined,
+        fn?: undefined,
+    ): PropertyValue;
+    get<T extends PropertyValue>(
+        base: string | LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: undefined,
+    ): typeof defaultValue;
+    get<T extends PropertyValue>(
+        base: string | LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: PropertyValue,
+        fn?: undefined,
+    ): T;
+
+    get<R>(
+        base: string | LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: undefined,
+        fn?: (item: PropertyValue, language?: any) => R,
+    ): R;
+    get<T extends PropertyValue, R>(
+        base: string | LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: (item: PropertyValue, language?: any) => R,
+    ): typeof defaultValue | R;
+
+    get(
         langs: string | LanguageDef[] | Record<string, any>,
         key: string,
         defaultValue?: PropertyValue,
-        fn: (item: PropertyValue, language?: any) => PropertyValue = _.identity,
+        fn?: (item: PropertyValue, language?: any) => unknown,
     ) {
         fn = fn || _.identity;
         if (_.isEmpty(langs)) {
@@ -184,7 +219,7 @@ export class CompilerProps {
         }
         if (!_.isString(langs)) {
             return _.chain(langs)
-                .map(lang => [lang.id, fn(this.$getInternal(lang.id, key, defaultValue), lang)])
+                .map(lang => [lang.id, fn!(this.$getInternal(lang.id, key, defaultValue), lang)])
                 .object()
                 .value();
         } else {
