@@ -19,8 +19,8 @@ parser = argparse.ArgumentParser(description='Docenizes XML version of the offic
 parser.add_argument('-i', '--inputfolder', type=str,
                     help='Folder where the input files reside as .xml. Default is ./asm-docs-arm/',
                     default='asm-docs-arm')
-parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js file. Default is ./asm-docs-arm.js',
-                    default='./asm-docs-arm.js')
+parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .ts file. Default is ./asm-docs-arm32.ts',
+                    default='./asm-docs-arm32.ts')
 parser.add_argument('-d', '--downloadfolder', type=str,
                     help='Folder where the archive will be downloaded and extracted', default='asm-docs-arm')
 
@@ -178,10 +178,13 @@ def docenizer():
         sys.exit(3)
     print("Writing {} instructions".format(len(instructions)))
     with open(args.outputpath, 'w') as f:
-        f.write("""export function getAsmOpcode(opcode) {
+        f.write("""
+import {AssemblyInstructionInfo} from '../base';
+
+export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode) {
-""")
+""".lstrip())
         for inst in instructions:
             for name in sorted(inst.names):
                 f.write('        case "{}":\n'.format(name))

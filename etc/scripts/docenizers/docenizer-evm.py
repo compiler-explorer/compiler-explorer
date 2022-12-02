@@ -13,8 +13,8 @@ parser = argparse.ArgumentParser(description='Docenizes the EVM documentation')
 parser.add_argument('-i', '--inputfolder', type=str,
                     help='Folder where the input files reside as .html. Default is ./evm-inst-docs/',
                     default='evm-inst-docs')
-parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .js file. Default is ./evm-inst-docs.js',
-                    default='./evm-inst-docs.js')
+parser.add_argument('-o', '--outputpath', type=str, help='Final path of the .ts file. Default is ./asm-docs-evm.ts',
+                    default='./asm-docs-evm.ts')
 parser.add_argument('-d', '--downloadfolder', type=str,
                     help='Folder where the archive will be downloaded and extracted', default='evm-inst-docs')
 
@@ -126,10 +126,12 @@ def main():
     print(f"Writing {len(instructions)} instructions")
     with open(args.outputpath, 'w') as f:
         f.write("""
-export function getAsmOpcode(opcode) {
+import {AssemblyInstructionInfo} from '../base';
+
+export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
-""")
+""".lstrip())
         for inst in instructions:
             f.write(f'        case "{inst.mnemonic}":\n')
             f.write('            return {}'.format(json.dumps({

@@ -1,5 +1,6 @@
+import {AssemblyInstructionInfo} from '../base';
 
-export function getAsmOpcode(opcode) {
+export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
         case "STOP":

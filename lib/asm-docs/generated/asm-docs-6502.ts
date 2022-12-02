@@ -1,4 +1,6 @@
-export function getAsmOpcode(opcode) {
+import {AssemblyInstructionInfo} from '../base';
+
+export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {
     if (!opcode) return;
     switch (opcode.toUpperCase()) {
         case "ADC":
@@ -17,7 +19,7 @@ export function getAsmOpcode(opcode) {
 
         case "ASL":
             return {
-                "html": "<p>The shift left instruction shifts either the accumulator or the address memory location 1 bit to the left, with the bit 0 always being set to 0 and the bit 7 output always being contained in the carry flag. ASL either shifts the accumulator left 1 bit or is a read/modify/write instruction that affects only memory.</p><p>The instruction does not affect the overflow bit, sets N equal to the result bit 7 (bit 6 in the input), sets Z flag if the result is equal to 0, otherwise resets Z and stores the input bit 7 in the carry flag.</p>",
+                "html": "<p>The shift left instruction shifts either the accumulator or the address memory location 1 bit to the left, with the bit 0 always being set to 0 and the the input bit 7 being stored in the carry flag. ASL either shifts the accumulator left 1 bit or is a read/modify/write instruction that affects only memory.</p><p>The instruction does not affect the overflow bit, sets N equal to the result bit 7 (bit 6 in the input), sets Z flag if the result is equal to 0, otherwise resets Z and stores the input bit 7 in the carry flag.</p>",
                 "tooltip": "Arithmetic Shift Left",
                 "url": "https://www.pagetable.com/c64ref/6502/?cpu=6502&tab=2#ASL",
             };
