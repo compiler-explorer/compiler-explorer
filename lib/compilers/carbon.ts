@@ -25,28 +25,47 @@
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
 
 export class CarbonCompiler extends BaseCompiler {
     static get key() {
         return 'carbon';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return ['--color', `--trace_file=${outputFilename}`];
     }
 
-    processAsm(result, filters, options) {
+    override processAsm(result, filters, options): ParsedAsmResult {
         // Really should write a custom parser, but for now just don't filter anything.
-        return super.processAsm(result, {}, options);
+        return super.processAsm(
+            result,
+            {
+                labels: false,
+                binary: false,
+                commentOnly: false,
+                demangle: false,
+                optOutput: false,
+                directives: false,
+                dontMaskFilenames: false,
+                execute: false,
+                intel: false,
+                libraryCode: false,
+                trim: false,
+            },
+            options,
+        );
     }
 
-    async afterCompilation(
+    override async afterCompilation(
         result,
         doExecute,
         key,
@@ -87,7 +106,7 @@ export class CarbonCompiler extends BaseCompiler {
         return result;
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         // TODO: may need a custom one, based on/borrowing from ClangParser
         return BaseParser;
     }
