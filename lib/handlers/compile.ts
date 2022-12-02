@@ -33,6 +33,7 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
+import {ICompiler} from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
@@ -156,7 +157,7 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler): Promise<BaseCompiler | null> {
+    async create(compiler): Promise<ICompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -208,7 +209,7 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: BaseCompiler[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: ICompiler[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
@@ -217,9 +218,9 @@ export class CompileHandler {
             let compilersCreated = 0;
             const createdCompilers = _.compact(await Promise.all(_.map(compilers, this.create, this)));
             for (const compiler of createdCompilers) {
-                const langId = compiler.compiler.lang;
+                const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};
-                compilersById[langId][compiler.compiler.id] = compiler;
+                compilersById[langId][compiler.getInfo().id] = compiler;
                 compilersCreated++;
             }
             logger.info('Compilers created: ' + compilersCreated);

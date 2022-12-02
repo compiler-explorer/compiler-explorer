@@ -23,6 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+
 import {
     EmptyCompilerState,
     ComponentConfig,
@@ -50,7 +52,6 @@ import {
     PopulatedAstViewState,
     EmptyGccDumpViewState,
     PopulatedGccDumpViewState,
-    GccDumpOptions,
     EmptyCfgViewState,
     PopulatedCfgViewState,
     PopulatedConformanceViewState,
@@ -473,41 +474,25 @@ export function getGccDumpView(): ComponentConfig<EmptyGccDumpViewState> {
 
 /** Get a gcc dump view with the given configuration. */
 export function getGccDumpViewWith(
-    id: string,
+    id: number,
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput?: Record<GccDumpOptions, unknown>
+    gccDumpOutput: GccDumpViewState
 ): ComponentConfig<PopulatedGccDumpViewState> {
-    // TODO: remove any
-    const ret: any = {
-        _compilerid: id,
-        _compilerName: compilerName,
-        _editorid: editorid,
-        _treeid: treeid,
-    };
-
-    if (gccDumpOutput) {
-        ret.treeDump = gccDumpOutput.treeDump;
-        ret.rtlDump = gccDumpOutput.rtlDump;
-        ret.ipaDump = gccDumpOutput.ipaDump;
-        ret.addressOption = gccDumpOutput.addressOption;
-        ret.slimOption = gccDumpOutput.slimOption;
-        ret.rawOption = gccDumpOutput.rawOption;
-        ret.detailsOption = gccDumpOutput.detailsOption;
-        ret.statsOption = gccDumpOutput.statsOption;
-        ret.blocksOption = gccDumpOutput.blocksOption;
-        ret.vopsOption = gccDumpOutput.vopsOption;
-        ret.linenoOption = gccDumpOutput.linenoOption;
-        ret.uidOption = gccDumpOutput.uidOption;
-        ret.allOption = gccDumpOutput.allOption;
-        ret.selectedPass = gccDumpOutput.selectedPass;
-    }
-
     return {
         type: 'component',
         componentName: GCC_DUMP_VIEW_COMPONENT_NAME,
-        componentState: ret,
+        componentState: {
+            // PopulatedGccDumpViewState
+            id,
+            compilerName,
+            editorid,
+            treeid,
+
+            // & GccDumpFiltersState
+            ...gccDumpOutput,
+        },
     };
 }
 

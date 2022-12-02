@@ -1,0 +1,5 @@
+asm-docs
+asm-docs-arm
+evm-inst-docs
+python-inst-docs
+vendor/*.html
