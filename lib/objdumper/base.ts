@@ -22,18 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export class BaseObjdumper {
-    constructor() {
-        this.intelAsmOptions = null;
-        this.widthOptions = null;
-    }
+export abstract class BaseObjdumper {
+    constructor(protected readonly intelAsmOptions: string[], protected readonly widthOptions: string[]) {}
 
-    getDefaultArgs(outputFilename, demangle, intelAsm) {
+    getDefaultArgs(outputFilename: string, demangle?: boolean, intelAsm?: boolean) {
         const args = ['-d', outputFilename, '-l', ...this.widthOptions];
 
         if (demangle) args.push('-C');
         if (intelAsm) args.push(...this.intelAsmOptions);
 
         return args;
+    }
+
+    // There's no way in TS to do an abstract static members and interfaces don't allow "static" at all.
+    // There's apparently a hack with InstanceType but I couldn't get it working. I think this is the best solution.
+    static get key(): string {
+        throw new Error('Objdumper must provide a `static get key()` implementation');
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BinutilsObjdumper} from './binutils';
+import {BaseObjdumper} from './base';
 
-export class DefaultObjdumper extends BinutilsObjdumper {
-    static get key() {
-        return 'default';
+export class Da65Objdumper extends BaseObjdumper {
+    constructor() {
+        super([], []);
+    }
+
+    override getDefaultArgs(outputFilename: string) {
+        return [outputFilename];
+    }
+
+    static override get key() {
+        return 'da65';
     }
 }

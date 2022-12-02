@@ -24,15 +24,12 @@
 
 import {BaseObjdumper} from './base';
 
-export class ElfToolChainObjdumper extends BaseObjdumper {
-    static get key() {
-        return 'elftoolchain';
+export class BinutilsObjdumper extends BaseObjdumper {
+    constructor() {
+        super(['-M', 'intel'], ['--insn-width=16']);
     }
 
-    constructor() {
-        super();
-
-        this.intelAsmOptions = ['-M', 'intel'];
-        this.widthOptions = [];
+    static override get key() {
+        return 'binutils';
     }
 }

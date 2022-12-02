@@ -25,14 +25,11 @@
 import {BaseObjdumper} from './base';
 
 export class LlvmObjdumper extends BaseObjdumper {
-    static get key() {
-        return 'llvm';
+    constructor() {
+        super(['--x86-asm-syntax=intel'], []);
     }
 
-    constructor() {
-        super();
-
-        this.intelAsmOptions = ['--x86-asm-syntax=intel'];
-        this.widthOptions = [];
+    static override get key() {
+        return 'llvm';
     }
 }
