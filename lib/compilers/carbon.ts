@@ -22,12 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
 
 export class CarbonCompiler extends BaseCompiler {
     static get key() {
