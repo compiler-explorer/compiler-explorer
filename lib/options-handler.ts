@@ -267,6 +267,8 @@ export class ClientOptionsHandler {
             libpath: string[];
             liblink: string[];
             lookupversion: null | PropertyValue;
+            options: string[];
+            hidden: boolean;
         };
         type Library = {
             name: string;
@@ -301,7 +303,7 @@ export class ClientOptionsHandler {
                     if (listedVersions) {
                         for (const version of listedVersions.split(':')) {
                             const libVersionName = libBaseName + `.versions.${version}`;
-                            const versionObject = {
+                            const versionObject: VersionInfo = {
                                 version: this.compilerProps<string>(lang, libVersionName + '.version'),
                                 staticliblink: splitIntoArray(
                                     this.compilerProps<string>(lang, libVersionName + '.staticliblink'),
@@ -312,8 +314,8 @@ export class ClientOptionsHandler {
                                     this.compilerProps<string>(lang, libVersionName + '.dependencies'),
                                     libraries[lang][lib].dependencies,
                                 ),
-                                path: [] as string[],
-                                libpath: [] as string[],
+                                path: [],
+                                libpath: [],
                                 liblink: splitIntoArray(
                                     this.compilerProps<string>(lang, libVersionName + '.liblink'),
                                     libraries[lang][lib].liblink,
@@ -321,7 +323,7 @@ export class ClientOptionsHandler {
                                 // Library options might get overridden later
                                 options: libraries[lang][lib].options,
                                 hidden: this.compilerProps(lang, libVersionName + '.hidden', false),
-                                lookupversion: null as null | PropertyValue,
+                                lookupversion: null,
                             };
 
                             const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
@@ -357,6 +359,8 @@ export class ClientOptionsHandler {
         for (const langGroup of Object.values(libraries)) {
             for (const libGroup of Object.values(langGroup)) {
                 const versions = Object.values(libGroup.versions);
+                // TODO: A and B don't contain any property called semver here. It's probably leftover from old code
+                // and should be removed in the future.
                 versions.sort((a, b) =>
                     semverParser.compare(asSafeVer((a as any).semver), asSafeVer((b as any).semver), true),
                 );
