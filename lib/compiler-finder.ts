@@ -27,27 +27,56 @@ import https from 'https';
 import path from 'path';
 import {promisify} from 'util';
 
+import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
+import {Language} from '../types/languages.interfaces';
+
 import {InstanceFetcher} from './aws';
+import {CompileHandler} from './handlers/compile';
 import {logger} from './logger';
+import {ClientOptionsHandler} from './options-handler';
+import {CompilerProps, RawPropertiesGetter} from './properties';
+import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
 
 const sleep = promisify(setTimeout);
+
+export type CompilerFinderArguments = {
+    rootDir: string;
+    env: string[];
+    hostname: string[];
+    port: number;
+    gitReleaseName: string;
+    releaseBuildNumber: string;
+    wantedLanguages: string | null;
+    doCache: boolean;
+    fetchCompilersFromRemote: boolean;
+    ensureNoCompilerClash: boolean;
+    suppressConsoleLog: boolean;
+};
 
 /***
  * Finds and initializes the compilers stored on the properties files
  */
 export class CompilerFinder {
-    /***
-     * @param {CompileHandler} compileHandler
-     * @param {CompilerProps} compilerProps
-     * @param {propsFor} awsProps
-     * @param {Object} args
-     * @param {Object} optionsHandler
-     */
-    constructor(compileHandler, compilerProps, awsProps, args, optionsHandler) {
+    compilerProps: CompilerProps['get'];
+    ceProps: PropertyGetter;
+    awsProps: PropertyGetter;
+    args: CompilerFinderArguments;
+    compileHandler: CompileHandler;
+    languages: Record<string, Language>;
+    awsPoller: InstanceFetcher | null = null;
+    optionsHandler: ClientOptionsHandler;
+
+    constructor(
+        compileHandler: CompileHandler,
+        compilerProps: CompilerProps,
+        awsProps: PropertyGetter,
+        args: CompilerFinderArguments,
+        optionsHandler: ClientOptionsHandler,
+    ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
         this.awsProps = awsProps;
@@ -95,7 +124,7 @@ export class CompilerFinder {
                                             `${uriSchema}://${host}:${port}${apiPath}\n` +
                                             `Status Code: ${statusCode}`,
                                     );
-                                } else if (!/^application\/json/.test(contentType)) {
+                                } else if (!contentType || !/^application\/json/.test(contentType)) {
                                     error = new Error(
                                         'Invalid content-type.\n' +
                                             `Expected application/json but received ${contentType}`,
@@ -129,7 +158,7 @@ export class CompilerFinder {
                                             return compiler;
                                         });
                                         resolve(compilers);
-                                    } catch (e) {
+                                    } catch (e: any) {
                                         logger.error(`Error parsing response from ${uri} '${str}': ${e.message}`);
                                         reject(e);
                                     }
@@ -154,7 +183,7 @@ export class CompilerFinder {
         logger.info('Fetching instances from AWS');
         const instances = await this.awsInstances();
         return Promise.all(
-            instances.map(instance => {
+            (instances.filter(instance => instance !== undefined) as AWS.EC2.Instance[]).map(instance => {
                 logger.info('Checking instance ' + instance.InstanceId);
                 const address = this.awsProps('externalTestMode', false)
                     ? instance.PublicDnsName
@@ -164,13 +193,16 @@ export class CompilerFinder {
         );
     }
 
-    async compilerConfigFor(langId, compilerId, parentProps) {
+    async compilerConfigFor(langId: string, compilerId: string, parentProps: RawPropertiesGetter) {
         const base = `compiler.${compilerId}.`;
 
-        function props(propName, def) {
+        function props(propName: string, defaultValue: undefined): PropertyValue;
+        function props<T extends PropertyValue>(propName: string, defaultValue: Widen<T>): typeof defaultValue;
+        function props<T extends PropertyValue>(propName: string, defaultValue?: unknown): T;
+        function props(propName: string, defaultValue?: unknown) {
             const propsForCompiler = parentProps(langId, base + propName);
             if (propsForCompiler !== undefined) return propsForCompiler;
-            return parentProps(langId, propName, def);
+            return parentProps(langId, propName, defaultValue);
         }
 
         const ceToolsPath = props('ceToolsPath', './');
@@ -206,7 +238,7 @@ export class CompilerFinder {
             if (envVarsString === '') {
                 return [];
             }
-            const arr = [];
+            const arr: [string, string][] = [];
             for (const el of envVarsString.split(':')) {
                 const [env, setting] = el.split('=');
                 arr.push([env, setting]);
@@ -261,7 +293,7 @@ export class CompilerFinder {
             notification: props('notification', ''),
             isSemVer: isSemVer,
             semver: semverVer,
-            libsArr: this.getSupportedLibrariesArr(props, langId),
+            libsArr: this.getSupportedLibrariesArr(props),
             tools: _.omit(this.optionsHandler.get().tools[langId], tool => tool.isCompilerExcluded(compilerId, props)),
             unwiseOptions: props('unwiseOptions', '').split('|'),
             hidden: props('hidden', false),
@@ -328,15 +360,15 @@ export class CompilerFinder {
     }
 
     async getCompilers() {
-        const compilers = [];
+        const compilers: any[] = [];
         _.each(this.getExes(), (exs, langId) => {
             _.each(exs, exe => compilers.push(this.recurseGetCompilers(langId, exe, this.compilerProps)));
         });
         return Promise.all(compilers);
     }
 
-    ensureDistinct(compilers) {
-        const ids = {};
+    ensureDistinct(compilers: any[]) {
+        const ids: Record<string, any> = {};
         let foundClash = false;
         _.each(compilers, compiler => {
             if (!ids[compiler.id]) ids[compiler.id] = [];
@@ -372,14 +404,16 @@ export class CompilerFinder {
     }
 
     getExes() {
-        const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs => _.compact(exs.split(':')));
+        const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs =>
+            _.compact((exs as string).split(':')),
+        );
         this.addNdkExes(langToCompilers);
         logger.info('Exes found:', langToCompilers);
         return langToCompilers;
     }
 
     addNdkExes(langToCompilers) {
-        const ndkPaths = this.compilerProps(this.languages, 'androidNdk');
+        const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as Record<string, string>;
         _.each(ndkPaths, (ndkPath, langId) => {
             if (ndkPath) {
                 const toolchains = fs.readdirSync(`${ndkPath}/toolchains`);
