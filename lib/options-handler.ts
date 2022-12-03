@@ -266,7 +266,7 @@ export class ClientOptionsHandler {
             path: string[];
             libpath: string[];
             liblink: string[];
-            lookupversion: null | PropertyValue;
+            lookupversion?: PropertyValue;
             options: string[];
             hidden: boolean;
         };
@@ -323,7 +323,6 @@ export class ClientOptionsHandler {
                                 // Library options might get overridden later
                                 options: libraries[lang][lib].options,
                                 hidden: this.compilerProps(lang, libVersionName + '.hidden', false),
-                                lookupversion: null,
                             };
 
                             const lookupversion = this.compilerProps(lang, libVersionName + '.lookupversion');
