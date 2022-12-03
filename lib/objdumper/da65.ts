@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,8 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BinutilsObjdumper} from './binutils';
-export {DefaultObjdumper} from './default';
-export {ElfToolChainObjdumper} from './elftoolchain';
-export {LlvmObjdumper} from './llvm';
-export {Da65Objdumper} from './da65';
+import {BaseObjdumper} from './base';
+
+export class Da65Objdumper extends BaseObjdumper {
+    constructor() {
+        super([], []);
+    }
+
+    override getDefaultArgs(outputFilename: string) {
+        return [outputFilename];
+    }
+
+    static override get key() {
+        return 'da65';
+    }
+}

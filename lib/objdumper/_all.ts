@@ -22,21 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseObjdumper} from './base';
-
-export class Da65Objdumper extends BaseObjdumper {
-    static get key() {
-        return 'da65';
-    }
-
-    constructor() {
-        super();
-
-        this.intelAsmOptions = [];
-        this.widthOptions = [];
-    }
-
-    getDefaultArgs(outputFilename) {
-        return [outputFilename];
-    }
-}
+export {BinutilsObjdumper} from './binutils';
+export {DefaultObjdumper} from './default';
+export {ElfToolChainObjdumper} from './elftoolchain';
+export {LlvmObjdumper} from './llvm';
+export {Da65Objdumper} from './da65';

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BinutilsObjdumper} from './binutils';
+import {makeKeyedTypeGetter} from '../keyed-type';
 
-export class DefaultObjdumper extends BinutilsObjdumper {
-    static get key() {
-        return 'default';
-    }
-}
+import * as all from './_all';
+
+export {BaseObjdumper} from './base';
+export * from './_all';
+
+export const getObjdumperTypeByKey = makeKeyedTypeGetter('objdumper', all);

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -25,14 +25,11 @@
 import {BaseObjdumper} from './base';
 
 export class BinutilsObjdumper extends BaseObjdumper {
-    static get key() {
-        return 'binutils';
+    constructor() {
+        super(['-M', 'intel'], ['--insn-width=16']);
     }
 
-    constructor() {
-        super();
-
-        this.intelAsmOptions = ['-M', 'intel'];
-        this.widthOptions = ['--insn-width=16'];
+    static override get key() {
+        return 'binutils';
     }
 }
