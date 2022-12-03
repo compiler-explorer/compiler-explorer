@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,18 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export class BaseObjdumper {
+import {BaseObjdumper} from './base';
+
+export class LlvmObjdumper extends BaseObjdumper {
     constructor() {
-        this.intelAsmOptions = null;
-        this.widthOptions = null;
+        super(['--x86-asm-syntax=intel'], []);
     }
 
-    getDefaultArgs(outputFilename, demangle, intelAsm) {
-        const args = ['-d', outputFilename, '-l', ...this.widthOptions];
-
-        if (demangle) args.push('-C');
-        if (intelAsm) args.push(...this.intelAsmOptions);
-
-        return args;
+    static override get key() {
+        return 'llvm';
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseObjdumper} from './base';
+import {BinutilsObjdumper} from './binutils';
 
-export class ElfToolChainObjdumper extends BaseObjdumper {
-    static get key() {
-        return 'elftoolchain';
-    }
-
-    constructor() {
-        super();
-
-        this.intelAsmOptions = ['-M', 'intel'];
-        this.widthOptions = [];
+export class DefaultObjdumper extends BinutilsObjdumper {
+    static override get key() {
+        return 'default';
     }
 }

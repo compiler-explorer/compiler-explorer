@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,11 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {makeKeyedTypeGetter} from '../keyed-type';
+import {BaseObjdumper} from './base';
 
-import * as all from './_all';
+export class ElfToolChainObjdumper extends BaseObjdumper {
+    constructor() {
+        super(['-M', 'intel'], []);
+    }
 
-export {BaseObjdumper} from './base';
-export * from './_all';
-
-export const getObjdumperTypeByKey = makeKeyedTypeGetter('objdumper', all);
+    static override get key() {
+        return 'elftoolchain';
+    }
+}
