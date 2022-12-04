@@ -29,14 +29,96 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 import _ from 'underscore';
 
+import {LanguageKey} from '../types/languages.interfaces';
+
 import {logger} from './logger';
-import {getToolTypeByKey} from './tooling';
+import {CompilerProps} from './properties';
+import {PropertyGetter, PropertyValue} from './properties.interfaces';
+import {Source} from './sources';
+import {BaseTool, getToolTypeByKey} from './tooling';
+import {ToolTypeKey} from './tooling/base-tool.interface';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils';
+
+// TODO: There is surely a better name for this type. Used both here and in the compiler finder.
+export type OptionHandlerArguments = {
+    rootDir: string;
+    env: string[];
+    hostname: string[];
+    port: number;
+    gitReleaseName: string;
+    releaseBuildNumber: string;
+    wantedLanguages: string | null;
+    doCache: boolean;
+    fetchCompilersFromRemote: boolean;
+    ensureNoCompilerClash: boolean;
+    suppressConsoleLog: boolean;
+};
+
+type OptionsType = {
+    googleAnalyticsAccount: string;
+    googleAnalyticsEnabled: boolean;
+    sharingEnabled: boolean;
+    githubEnabled: boolean;
+    showSponsors: boolean;
+    gapiKey: string;
+    googleShortLinkRewrite: string[];
+    urlShortenService: string;
+    defaultSource: string;
+    compilers: never[];
+    libs: Record<any, any>;
+    remoteLibs: Record<any, any>;
+    tools: Record<any, any>;
+    defaultLibs: string;
+    defaultCompiler: string;
+    compileOptions: string;
+    supportsBinary: boolean;
+    supportsExecute: boolean;
+    supportsLibraryCodeFilter: boolean;
+    languages: Record<string, any>;
+    sources: {
+        name: string;
+        urlpart: string;
+    }[];
+    sentryDsn: string;
+    sentryEnvironment: string | number | true;
+    release: string;
+    gitReleaseCommit: string;
+    cookieDomainRe: string;
+    localStoragePrefix: PropertyValue;
+    cvCompilerCountMax: number;
+    defaultFontScale: number;
+    doCache: boolean;
+    thirdPartyIntegrationEnabled: boolean;
+    statusTrackingEnabled: boolean;
+    policies: {
+        cookies: {
+            enabled: boolean;
+            key: string;
+        };
+        privacy: {
+            enabled: boolean;
+            key: string;
+        };
+    };
+    motdUrl: string;
+    pageloadUrl: string;
+};
 
 /***
  * Handles the setup of the options object passed on each page request
  */
 export class ClientOptionsHandler {
+    compilerProps: CompilerProps['get'];
+    ceProps: PropertyGetter;
+    supportsBinary: boolean;
+    supportsExecutePerLanguage: boolean;
+    supportsExecute: boolean;
+    supportsLibraryCodeFilterPerLanguage: boolean;
+    supportsLibraryCodeFilter: boolean;
+    remoteLibs: Record<any, any>;
+    options: OptionsType;
+    optionsJSON: string;
+    optionsHash: string;
     /***
      *
      * @param {Object[]} fileSources - Files to show in the Load/Save pane
@@ -45,7 +127,7 @@ export class ClientOptionsHandler {
      * @param {CompilerProps} compilerProps
      * @param {Object} defArgs - Compiler Explorer arguments
      */
-    constructor(fileSources, compilerProps, defArgs) {
+    constructor(fileSources: Source[], compilerProps: CompilerProps, defArgs: OptionHandlerArguments) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
         const ceProps = compilerProps.ceProps;
@@ -68,8 +150,9 @@ export class ClientOptionsHandler {
         this.supportsLibraryCodeFilterPerLanguage = this.compilerProps(languages, 'supportsLibraryCodeFilter', false);
         this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(value => value);
 
-        const libs = this.parseLibraries(this.compilerProps(languages, 'libs'));
-        const tools = this.parseTools(this.compilerProps(languages, 'tools'));
+        // TODO: Shouldn't have to cast here
+        const libs = this.parseLibraries(this.compilerProps(languages, 'libs') as any);
+        const tools = this.parseTools(this.compilerProps(languages, 'tools') as any);
 
         this.remoteLibs = {};
 
@@ -122,37 +205,43 @@ export class ClientOptionsHandler {
             motdUrl: ceProps('motdUrl', ''),
             pageloadUrl: ceProps('pageloadUrl', ''),
         };
+        // Will be immediately replaced with actual values
+        this.optionsJSON = '';
+        this.optionsHash = '';
         this._updateOptionsHash();
     }
 
-    parseTools(baseTools) {
-        const tools = {};
+    parseTools(baseTools: Record<string, string>) {
+        const tools: Record<string, Record<string, BaseTool>> = {};
         for (const [lang, forLang] of Object.entries(baseTools)) {
             if (lang && forLang) {
                 tools[lang] = {};
                 for (const tool of forLang.split(':')) {
                     const toolBaseName = `tools.${tool}`;
-                    const className = this.compilerProps(lang, toolBaseName + '.class');
+                    const className = this.compilerProps<string>(lang, toolBaseName + '.class');
                     const Tool = getToolTypeByKey(className);
 
-                    const toolPath = this.compilerProps(lang, toolBaseName + '.exe');
+                    const toolPath = this.compilerProps<string>(lang, toolBaseName + '.exe');
                     if (fs.existsSync(toolPath)) {
                         tools[lang][tool] = new Tool(
                             {
                                 id: tool,
-                                name: this.compilerProps(lang, toolBaseName + '.name'),
-                                type: this.compilerProps(lang, toolBaseName + '.type'),
+                                name: this.compilerProps<string>(lang, toolBaseName + '.name'),
+                                type: this.compilerProps<string>(lang, toolBaseName + '.type') as ToolTypeKey,
                                 exe: toolPath,
-                                exclude: splitIntoArray(this.compilerProps(lang, toolBaseName + '.exclude')),
-                                includeKey: this.compilerProps(lang, toolBaseName + '.includeKey'),
-                                options: splitArguments(this.compilerProps(lang, toolBaseName + '.options')),
-                                args: this.compilerProps(lang, toolBaseName + '.args'),
-                                languageId: this.compilerProps(lang, toolBaseName + '.languageId'),
-                                stdinHint: this.compilerProps(lang, toolBaseName + '.stdinHint'),
-                                monacoStdin: this.compilerProps(lang, toolBaseName + '.monacoStdin'),
-                                icon: this.compilerProps(lang, toolBaseName + '.icon'),
-                                darkIcon: this.compilerProps(lang, toolBaseName + '.darkIcon'),
-                                compilerLanguage: lang,
+                                exclude: splitIntoArray(this.compilerProps<string>(lang, toolBaseName + '.exclude')),
+                                includeKey: this.compilerProps<string>(lang, toolBaseName + '.includeKey'),
+                                options: splitArguments(this.compilerProps<string>(lang, toolBaseName + '.options')),
+                                args: this.compilerProps<string>(lang, toolBaseName + '.args'),
+                                languageId: this.compilerProps<string>(
+                                    lang,
+                                    toolBaseName + '.languageId',
+                                ) as LanguageKey,
+                                stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
+                                monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
+                                icon: this.compilerProps<string>(lang, toolBaseName + '.icon'),
+                                darkIcon: this.compilerProps<string>(lang, toolBaseName + '.darkIcon'),
+                                compilerLanguage: lang as LanguageKey,
                             },
                             {
                                 ceProps: this.ceProps,
@@ -168,43 +257,67 @@ export class ClientOptionsHandler {
         return tools;
     }
 
-    parseLibraries(baseLibs) {
-        const libraries = {};
+    parseLibraries(baseLibs: Record<string, string>) {
+        type VersionInfo = {
+            version: string;
+            staticliblink: string[];
+            alias: string[];
+            dependencies: string[];
+            path: string[];
+            libpath: string[];
+            liblink: string[];
+            lookupversion?: PropertyValue;
+            options: string[];
+            hidden: boolean;
+        };
+        type Library = {
+            name: string;
+            url: string;
+            description: string;
+            staticliblink: string[];
+            liblink: string[];
+            dependencies: string[];
+            versions: Record<string, VersionInfo>;
+            examples: string[];
+            options: string[];
+        };
+        // Record language -> {Record lib name -> lib}
+        const libraries: Record<string, Record<string, Library>> = {};
         for (const [lang, forLang] of Object.entries(baseLibs)) {
             if (lang && forLang) {
                 libraries[lang] = {};
                 for (const lib of forLang.split(':')) {
                     const libBaseName = `libs.${lib}`;
                     libraries[lang][lib] = {
-                        name: this.compilerProps(lang, libBaseName + '.name'),
-                        url: this.compilerProps(lang, libBaseName + '.url'),
-                        description: this.compilerProps(lang, libBaseName + '.description'),
-                        staticliblink: splitIntoArray(this.compilerProps(lang, libBaseName + '.staticliblink')),
-                        liblink: splitIntoArray(this.compilerProps(lang, libBaseName + '.liblink')),
-                        dependencies: splitIntoArray(this.compilerProps(lang, libBaseName + '.dependencies')),
+                        name: this.compilerProps<string>(lang, libBaseName + '.name'),
+                        url: this.compilerProps<string>(lang, libBaseName + '.url'),
+                        description: this.compilerProps<string>(lang, libBaseName + '.description'),
+                        staticliblink: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.staticliblink')),
+                        liblink: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.liblink')),
+                        dependencies: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.dependencies')),
                         versions: {},
-                        examples: splitIntoArray(this.compilerProps(lang, libBaseName + '.examples')),
+                        examples: splitIntoArray(this.compilerProps<string>(lang, libBaseName + '.examples')),
                         options: splitArguments(this.compilerProps(lang, libBaseName + '.options', '')),
                     };
                     const listedVersions = `${this.compilerProps(lang, libBaseName + '.versions')}`;
                     if (listedVersions) {
                         for (const version of listedVersions.split(':')) {
                             const libVersionName = libBaseName + `.versions.${version}`;
-                            const versionObject = {
-                                version: this.compilerProps(lang, libVersionName + '.version'),
+                            const versionObject: VersionInfo = {
+                                version: this.compilerProps<string>(lang, libVersionName + '.version'),
                                 staticliblink: splitIntoArray(
-                                    this.compilerProps(lang, libVersionName + '.staticliblink'),
+                                    this.compilerProps<string>(lang, libVersionName + '.staticliblink'),
                                     libraries[lang][lib].staticliblink,
                                 ),
-                                alias: splitIntoArray(this.compilerProps(lang, libVersionName + '.alias')),
+                                alias: splitIntoArray(this.compilerProps<string>(lang, libVersionName + '.alias')),
                                 dependencies: splitIntoArray(
-                                    this.compilerProps(lang, libVersionName + '.dependencies'),
+                                    this.compilerProps<string>(lang, libVersionName + '.dependencies'),
                                     libraries[lang][lib].dependencies,
                                 ),
                                 path: [],
                                 libpath: [],
                                 liblink: splitIntoArray(
-                                    this.compilerProps(lang, libVersionName + '.liblink'),
+                                    this.compilerProps<string>(lang, libVersionName + '.liblink'),
                                     libraries[lang][lib].liblink,
                                 ),
                                 // Library options might get overridden later
@@ -217,19 +330,19 @@ export class ClientOptionsHandler {
                                 versionObject.lookupversion = lookupversion;
                             }
 
-                            const includes = this.compilerProps(lang, libVersionName + '.path');
+                            const includes = this.compilerProps<string>(lang, libVersionName + '.path');
                             if (includes) {
                                 versionObject.path = includes.split(path.delimiter);
                             } else {
                                 logger.warn(`Library ${lib} ${version} (${lang}) has no include paths`);
                             }
 
-                            const libpath = this.compilerProps(lang, libVersionName + '.libpath');
+                            const libpath = this.compilerProps<string>(lang, libVersionName + '.libpath');
                             if (libpath) {
                                 versionObject.libpath = libpath.split(path.delimiter);
                             }
 
-                            const options = this.compilerProps(lang, libVersionName + '.options');
+                            const options = this.compilerProps<string>(lang, libVersionName + '.options');
                             if (options !== undefined) {
                                 versionObject.options = splitArguments(options);
                             }
@@ -245,7 +358,11 @@ export class ClientOptionsHandler {
         for (const langGroup of Object.values(libraries)) {
             for (const libGroup of Object.values(langGroup)) {
                 const versions = Object.values(libGroup.versions);
-                versions.sort((a, b) => semverParser.compare(asSafeVer(a.semver), asSafeVer(b.semver), true));
+                // TODO: A and B don't contain any property called semver here. It's probably leftover from old code
+                // and should be removed in the future.
+                versions.sort((a, b) =>
+                    semverParser.compare(asSafeVer((a as any).semver), asSafeVer((b as any).semver), true),
+                );
                 let order = 0;
                 // Set $order to index on array. As group is an array, iteration order is guaranteed.
                 for (const lib of versions) {
@@ -309,7 +426,7 @@ export class ClientOptionsHandler {
         await this.getRemoteLibraries(language, remote.target);
     }
 
-    async setCompilers(compilers) {
+    async setCompilers(compilers: any[]) {
         const forbiddenKeys = new Set([
             'exe',
             'versionFlag',
@@ -322,7 +439,7 @@ export class ClientOptionsHandler {
             'isSemVer',
         ]);
         const copiedCompilers = JSON.parse(JSON.stringify(compilers));
-        let semverGroups = {};
+        const semverGroups: Record<string, any> = {};
         // Reset the supportsExecute flag in case critical compilers change
 
         for (const key of Object.keys(this.options.languages)) {
