@@ -150,9 +150,8 @@ export class ClientOptionsHandler {
         this.supportsLibraryCodeFilterPerLanguage = this.compilerProps(languages, 'supportsLibraryCodeFilter', false);
         this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(value => value);
 
-        // TODO: Shouldn't have to cast here
-        const libs = this.parseLibraries(this.compilerProps(languages, 'libs') as any);
-        const tools = this.parseTools(this.compilerProps(languages, 'tools') as any);
+        const libs = this.parseLibraries(this.compilerProps<string>(languages, 'libs'));
+        const tools = this.parseTools(this.compilerProps<string>(languages, 'tools'));
 
         this.remoteLibs = {};
 
