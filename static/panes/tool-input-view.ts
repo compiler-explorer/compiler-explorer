@@ -33,8 +33,8 @@ import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {ToolInputViewState} from './tool-input-view.interfaces';
 import {Settings} from '../settings';
-import { CompilerInfo } from '../compiler.interfaces';
-import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
     _toolId: number;

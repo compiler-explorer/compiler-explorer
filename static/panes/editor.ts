@@ -1947,7 +1947,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return this.getSelectizeRenderHtml(data, escape, 20, 20);
     }
 
-    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number): void {}
+    override onCompiler(compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number): void {}
 
     updateLanguageTooltip() {
         this.languageInfoButton.popover('dispose');

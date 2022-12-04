@@ -35,8 +35,8 @@ import * as monacoConfig from '../monaco-config';
 
 import {ga} from '../analytics';
 import {Hub} from '../hub';
-import { CompilationResult } from '../compilation/compilation.interfaces';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
 
 type DecorationEntry = {
     linkedCode: any[];

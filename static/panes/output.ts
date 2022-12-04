@@ -243,7 +243,10 @@ export class Output extends Pane<OutputState> {
         this.updateTitle();
     }
 
-    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number) {}
+    override onCompiler(compilerId: number,
+        compiler: CompilerInfo | null,
+        options: any, editorId?: number,
+        treeId?: number): void {}
 
     programOutput(msg: string, color?: string) {
         const elem = $('<div/>').appendTo(this.contentRoot).html(msg).addClass('program-exec-output');

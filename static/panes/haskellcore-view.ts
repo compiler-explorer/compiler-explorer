@@ -34,8 +34,8 @@ import {HaskellCoreState} from './haskellcore-view.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
-import { CompilationResult } from '../compilation/compilation.interfaces';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class HaskellCore extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellCoreState> {
     constructor(hub: Hub, container: Container, state: HaskellCoreState & MonacoPaneState) {

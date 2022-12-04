@@ -34,8 +34,8 @@ import {MonacoPaneState} from './pane.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
-import { CompilerInfo } from '../compiler.interfaces';
-import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
 
 export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GnatDebugTreeState> {
     constructor(hub: Hub, container: Container, state: GnatDebugTreeState & MonacoPaneState) {
@@ -89,7 +89,10 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
         }
     }
 
-    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(compilerId: number,
+        compiler: CompilerInfo | null,
+        options: any, editorId?: number,
+        treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

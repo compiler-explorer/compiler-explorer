@@ -43,7 +43,7 @@ import {
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 const ColorTable = {
     red: '#FE5D5D',

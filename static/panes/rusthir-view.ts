@@ -34,8 +34,8 @@ import {RustHirState} from './rusthir-view.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
-import { CompilationResult } from '../compilation/compilation.interfaces';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustHirState> {
     constructor(hub: Hub, container: Container, state: RustHirState & MonacoPaneState) {
@@ -89,7 +89,10 @@ export class RustHir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
         }
     }
 
-    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(compilerId: number,
+        compiler: CompilerInfo | null,
+        options: any, editorId?: number,
+        treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

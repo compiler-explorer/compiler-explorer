@@ -33,8 +33,8 @@ import {PPViewState} from './pp-view.interfaces';
 import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
-import { CompilationResult } from '../compilation/compilation.interfaces';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;

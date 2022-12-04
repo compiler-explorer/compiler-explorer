@@ -36,8 +36,8 @@ import {extendConfig} from '../monaco-config';
 import {applyColours} from '../colour';
 
 import {Hub} from '../hub';
-import { CompilationResult } from '../compilation/compilation.interfaces';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;

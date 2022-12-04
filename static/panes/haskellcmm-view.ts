@@ -34,7 +34,7 @@ import {HaskellCmmState} from './haskellcmm-view.interfaces';
 import {ga} from '../analytics';
 import {extendConfig} from '../monaco-config';
 import {Hub} from '../hub';
-import { CompilerInfo } from '../compiler.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, HaskellCmmState> {
     constructor(hub: Hub, container: Container, state: HaskellCmmState & MonacoPaneState) {
@@ -88,7 +88,10 @@ export class HaskellCmm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
         }
     }
 
-    override onCompiler(compilerId: number, compiler: CompilerInfo | null, options: any, editorId?: number, treeId?: number): void {
+    override onCompiler(compilerId: number,
+        compiler: CompilerInfo | null,
+        options: any, editorId?: number,
+        treeId?: number): void {
         if (this.compilerInfo.compilerId === compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
             this.compilerInfo.editorId = editorId;

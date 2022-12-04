@@ -44,8 +44,8 @@ import {
     LLVMOptPipelineOutput,
     LLVMOptPipelineResults,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import { CompilerInfo } from '../compiler.interfaces';
-import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
 
 const MIN_SIDEBAR_WIDTH = 100;
 

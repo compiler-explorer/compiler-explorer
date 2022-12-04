@@ -35,8 +35,8 @@ import * as utils from '../utils';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
-import { CompilerInfo } from '../compiler.interfaces';
-import { CompilationResult } from '../compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { CompilationResult } from '../../types/compilation/compilation.interfaces';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -156,7 +156,11 @@ export abstract class Pane<S> {
      * @param options - User commandline args
      * @param editorId - The editor id the updated compiler is attached to
      */
-    abstract onCompiler(compilerId: number, compiler: CompilerInfo | null, options: string, editorId: number, treeId: number): void;
+    abstract onCompiler(
+            compilerId: number,
+            compiler: CompilerInfo | null,
+            options: string, editorId: number,
+            treeId: number): void;
 
     /**
      * Handle compilation result.
