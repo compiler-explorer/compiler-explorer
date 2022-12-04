@@ -37,25 +37,11 @@ import {Language} from '../types/languages.interfaces';
 import {InstanceFetcher} from './aws';
 import {CompileHandler} from './handlers/compile';
 import {logger} from './logger';
-import {ClientOptionsHandler} from './options-handler';
+import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler';
 import {CompilerProps, RawPropertiesGetter} from './properties';
 import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
 
 const sleep = promisify(setTimeout);
-
-export type CompilerFinderArguments = {
-    rootDir: string;
-    env: string[];
-    hostname: string[];
-    port: number;
-    gitReleaseName: string;
-    releaseBuildNumber: string;
-    wantedLanguages: string | null;
-    doCache: boolean;
-    fetchCompilersFromRemote: boolean;
-    ensureNoCompilerClash: boolean;
-    suppressConsoleLog: boolean;
-};
 
 /***
  * Finds and initializes the compilers stored on the properties files
@@ -64,7 +50,7 @@ export class CompilerFinder {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
     awsProps: PropertyGetter;
-    args: CompilerFinderArguments;
+    args: OptionHandlerArguments;
     compileHandler: CompileHandler;
     languages: Record<string, Language>;
     awsPoller: InstanceFetcher | null = null;
@@ -74,7 +60,7 @@ export class CompilerFinder {
         compileHandler: CompileHandler,
         compilerProps: CompilerProps,
         awsProps: PropertyGetter,
-        args: CompilerFinderArguments,
+        args: OptionHandlerArguments,
         optionsHandler: ClientOptionsHandler,
     ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
