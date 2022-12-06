@@ -25,23 +25,13 @@
 import {MapFileReader} from './map-file';
 
 export class MapFileReaderDelphi extends MapFileReader {
-    /**
-     * constructor
-     *
-     * @param {string} mapFilename
-     */
-    constructor(mapFilename) {
-        super(mapFilename);
-
-        this.regexDelphiCodeSegmentOffset = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)h\s*(\.[$a-z]*)\s*([a-z]*)$/i;
-        this.regexDelphiCodeSegment = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)\s*c=code\s*s=.text\s*g=.*m=([\w.]*)\s.*/i;
-        this.regexDelphiICodeSegment =
-            /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)\s*c=icode\s*s=.itext\s*g=.*m=([\w.]*)\s.*/i;
-        this.regexDelphiNames = /^\s([\da-f]*):([\da-f]*)\s*([\w$.<>@{}]*)$/i;
-        this.regexDelphiLineNumbersStart = /line numbers for (.*)\(.*\) segment \.text/i;
-        this.regexDelphiLineNumber = /^(\d*)\s([\da-f]*):([\da-f]*)/i;
-        this.regexDelphiLineNumbersStartIText = /line numbers for (.*)\(.*\) segment \.itext/i;
-    }
+    regexDelphiCodeSegmentOffset = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)h\s*(\.[$a-z]*)\s*([a-z]*)$/i;
+    regexDelphiCodeSegment = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)\s*c=code\s*s=.text\s*g=.*m=([\w.]*)\s.*/i;
+    regexDelphiICodeSegment = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)\s*c=icode\s*s=.itext\s*g=.*m=([\w.]*)\s.*/i;
+    regexDelphiNames = /^\s([\da-f]*):([\da-f]*)\s*([\w$.<>@{}]*)$/i;
+    regexDelphiLineNumbersStart = /line numbers for (.*)\(.*\) segment \.text/i;
+    regexDelphiLineNumber = /^(\d*)\s([\da-f]*):([\da-f]*)/i;
+    regexDelphiLineNumbersStartIText = /line numbers for (.*)\(.*\) segment \.itext/i;
 
     /**
      * Tries to match the given line to code segment information
@@ -50,12 +40,8 @@ export class MapFileReaderDelphi extends MapFileReader {
      *   2. code segment delphi map
      *   3. icode segment delphi map
      *   4. code segment vs map
-     *
-     * @param {string} line
      */
-    tryReadingCodeSegmentInfo(line) {
-        let codesegmentObject = false;
-
+    override tryReadingCodeSegmentInfo(line: string) {
         let matches = line.match(this.regexDelphiCodeSegmentOffset);
         if (matches && !matches[4].includes('$') && parseInt(matches[2], 16) >= this.preferredLoadAddress) {
             const addressWithOffset = parseInt(matches[2], 16);
@@ -68,33 +54,21 @@ export class MapFileReaderDelphi extends MapFileReader {
         } else {
             matches = line.match(this.regexDelphiCodeSegment);
             if (matches) {
-                codesegmentObject = this.addressToObject(matches[1], matches[2]);
-                codesegmentObject.id = this.segments.length + 1;
-                codesegmentObject.segmentLength = parseInt(matches[3], 16);
-                codesegmentObject.unitName = matches[4];
-
-                if (codesegmentObject.unitName === 'prog') {
-                    codesegmentObject.unitName = 'prog.dpr';
-                } else {
-                    codesegmentObject.unitName = codesegmentObject.unitName + '.pas';
-                }
-
-                this.segments.push(codesegmentObject);
+                this.segments.push({
+                    ...this.addressToObject(matches[1], matches[2]),
+                    id: this.segments.length + 1,
+                    segmentLength: parseInt(matches[3], 16),
+                    unitName: matches[4] === 'prog' ? 'prog.dpr' : matches[4] + '.pas',
+                });
             } else {
                 matches = line.match(this.regexDelphiICodeSegment);
                 if (matches) {
-                    codesegmentObject = this.addressToObject(matches[1], matches[2]);
-                    codesegmentObject.id = this.isegments.length + 1;
-                    codesegmentObject.segmentLength = parseInt(matches[3], 16);
-                    codesegmentObject.unitName = matches[4];
-
-                    if (codesegmentObject.unitName === 'prog') {
-                        codesegmentObject.unitName = 'prog.dpr';
-                    } else {
-                        codesegmentObject.unitName = codesegmentObject.unitName + '.pas';
-                    }
-
-                    this.isegments.push(codesegmentObject);
+                    this.isegments.push({
+                        ...this.addressToObject(matches[1], matches[2]),
+                        id: this.isegments.length + 1,
+                        segmentLength: parseInt(matches[3], 16),
+                        unitName: matches[4] === 'prog' ? 'prog.dpr' : matches[4] + '.pas',
+                    });
                 }
             }
         }
@@ -102,49 +76,39 @@ export class MapFileReaderDelphi extends MapFileReader {
 
     /**
      * Try to match information about the address where a symbol is
-     *
-     * @param {string} line
      */
-    tryReadingNamedAddress(line) {
-        let symbolObject = false;
-
+    override tryReadingNamedAddress(line: string) {
         const matches = line.match(this.regexDelphiNames);
         if (matches) {
             if (!this.getSymbolInfoByName(matches[3])) {
-                symbolObject = this.addressToObject(matches[1], matches[2]);
-                symbolObject.displayName = matches[3];
-
-                this.namedAddresses.push(symbolObject);
+                this.namedAddresses.push({
+                    ...this.addressToObject(matches[1], matches[2]),
+                    displayName: matches[3],
+                    segmentLength: 0,
+                });
             }
         }
     }
 
-    /**
-     *
-     * @param {string} line
-     */
-    isStartOfLineNumbers(line) {
+    override isStartOfLineNumbers(line: string) {
         const matches = line.match(this.regexDelphiLineNumbersStart);
         return !!matches;
     }
 
     /**
      * Retreives line number references from supplied Map line
-     *
-     * @param {string} line
-     * @returns {boolean}
      */
-    tryReadingLineNumbers(line) {
+    override tryReadingLineNumbers(line: string) {
         let hasLineNumbers = false;
 
         const references = line.split('    '); // 4 spaces
         for (const reference of references) {
             const matches = reference.match(this.regexDelphiLineNumber);
             if (matches) {
-                const lineObject = this.addressToObject(matches[2], matches[3]);
-                lineObject.lineNumber = parseInt(matches[1], 10);
-
-                this.lineNumbers.push(lineObject);
+                this.lineNumbers.push({
+                    ...this.addressToObject(matches[2], matches[3]),
+                    lineNumber: parseInt(matches[1], 10),
+                });
 
                 hasLineNumbers = true;
             }
