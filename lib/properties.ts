@@ -211,8 +211,8 @@ export class CompilerProps {
         base: string,
         property: string,
         defaultValue: Widen<T>,
-        fn?: (item: PropertyValue, language?: any) => R,
-    ): typeof defaultValue | R;
+        fn?: (item: typeof defaultValue, language?: any) => R,
+    ): R;
     // container base general overloads
     get(
         base: LanguageDef[] | Record<string, any>,
@@ -243,8 +243,8 @@ export class CompilerProps {
         base: LanguageDef[] | Record<string, any>,
         property: string,
         defaultValue: Widen<T>,
-        fn?: (item: PropertyValue, language?: any) => R,
-    ): Record<LanguageKey, typeof defaultValue | R>;
+        fn?: (item: typeof defaultValue, language?: any) => R,
+    ): Record<LanguageKey, R>;
 
     get(
         langs: string | LanguageDef[] | Record<string, any>,
