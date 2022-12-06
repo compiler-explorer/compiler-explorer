@@ -26,30 +26,73 @@ import fs from 'fs';
 
 import * as utils from '../utils';
 
+type SegmentOffset = {
+    segment: string;
+    addressInt: number;
+    address: string;
+    segmentLength: number;
+};
+
+type Segment = {
+    segment: string;
+    addressInt: number;
+    address: string;
+    addressWithoutOffset: number;
+    segmentLength: number;
+    unitName?: string | false;
+    id?: number;
+    displayName?: string;
+};
+
+type ReconstructedSegment = {
+    addressInt: number;
+    address: string;
+    endAddress?: string;
+    segmentLength: number;
+    unitName?: string | false;
+};
+
+type EntryPoint = {
+    segment: string;
+    addressWithoutOffset: string;
+};
+
+type LineNumber = {
+    addressInt: number;
+    address: string;
+    segment: string;
+    addressWithoutOffset: number;
+    lineNumber?: number;
+};
+
+type AddressRangeInformation = {
+    startAddress: number;
+    startAddressHex: string;
+    endAddress: number;
+    endAddressHex: string;
+};
+
 export class MapFileReader {
+    preferredLoadAddress = 0x400000;
+    segmentMultiplier = 0x1000;
+    segmentOffsets: SegmentOffset[] = [];
+    segments: Segment[] = [];
+    isegments: Segment[] = [];
+    namedAddresses: Segment[] = [];
+    entryPoint: '' | EntryPoint = '';
+
+    lineNumbers: LineNumber[] = [];
+    reconstructedSegments: ReconstructedSegment[] = [];
+
+    regexEntryPoint = /^\sentry point at\s*([\da-f]*):([\da-f]*)$/i;
+
     /**
      * constructor of MapFileReader
      *  Note that this is a base class and should be overriden. (see for example map-file-vs.js)
      *  Note that this base class retains and uses state,
      *   so when you want to read a new file you need to instantiate a new object.
-     *
-     * @param {string} mapFilename
      */
-    constructor(mapFilename) {
-        this.mapFilename = mapFilename;
-        this.preferredLoadAddress = 0x400000;
-        this.segmentMultiplier = 0x1000;
-        this.segmentOffsets = [];
-        this.segments = [];
-        this.isegments = [];
-        this.namedAddresses = [];
-        this.entryPoint = '';
-
-        this.lineNumbers = [];
-        this.reconstructedSegments = [];
-
-        this.regexEntryPoint = /^\sentry point at\s*([\da-f]*):([\da-f]*)$/i;
-    }
+    constructor(protected readonly mapFilename: string) {}
 
     /**
      * The function to call to load a map file (not async)
@@ -60,13 +103,7 @@ export class MapFileReader {
         }
     }
 
-    /**
-     *
-     * @param {(string|boolean)} segment
-     * @param {number} address
-     * @returns {(object | boolean)}
-     */
-    getLineInfoByAddress(segment, address) {
+    getLineInfoByAddress(segment: string | boolean, address: number) {
         for (let idx = 0; idx < this.lineNumbers.length; idx++) {
             const lineInfo = this.lineNumbers[idx];
             if (!segment && lineInfo.addressInt === address) {
@@ -79,12 +116,7 @@ export class MapFileReader {
         return false;
     }
 
-    /**
-     *
-     * @param {string} segment
-     * @returns {number}
-     */
-    getSegmentOffset(segment) {
+    getSegmentOffset(segment: string): number {
         if (this.segmentOffsets.length > 0) {
             for (let idx = 0; idx < this.segmentOffsets.length; idx++) {
                 const info = this.segmentOffsets[idx];
@@ -97,17 +129,9 @@ export class MapFileReader {
         return this.preferredLoadAddress + parseInt(segment, 16) * this.segmentMultiplier;
     }
 
-    /**
-     *
-     * @param {string} segment
-     * @param {number} address
-     */
-    setSegmentOffset(segment, address) {
-        let info = false;
-        let idx = 0;
-
-        for (idx = 0; idx < this.segments.length; idx++) {
-            info = this.segments[idx];
+    setSegmentOffset(segment: string, address: number) {
+        for (let idx = 0; idx < this.segments.length; idx++) {
+            const info = this.segments[idx];
             if (info.segment === segment) {
                 this.segments[idx].addressInt = address;
                 this.segments[idx].address = address.toString(16);
@@ -115,8 +139,8 @@ export class MapFileReader {
         }
 
         if (this.segmentOffsets.length > 0) {
-            for (idx = 0; idx < this.segmentOffsets.length; idx++) {
-                info = this.segmentOffsets[idx];
+            for (let idx = 0; idx < this.segmentOffsets.length; idx++) {
+                const info = this.segmentOffsets[idx];
                 if (info.segment === segment) {
                     this.segmentOffsets[idx].addressInt = address;
                     this.segmentOffsets[idx].address = address.toString(16);
@@ -133,12 +157,7 @@ export class MapFileReader {
         });
     }
 
-    /**
-     *
-     * @param {string} unitName
-     * @returns {(object | boolean)}
-     */
-    getSegmentInfoByUnitName(unitName) {
+    getSegmentInfoByUnitName(unitName: string) {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (info.unitName === unitName) {
@@ -149,12 +168,7 @@ export class MapFileReader {
         return false;
     }
 
-    /**
-     *
-     * @param {string} unitName
-     * @returns {(object | boolean)}
-     */
-    getICodeSegmentInfoByUnitName(unitName) {
+    getICodeSegmentInfoByUnitName(unitName: string) {
         for (let idx = 0; idx < this.isegments.length; idx++) {
             const info = this.isegments[idx];
             if (info.unitName === unitName) {
@@ -165,12 +179,7 @@ export class MapFileReader {
         return false;
     }
 
-    /**
-     *
-     * @param {string} unitName
-     * @returns {number}
-     */
-    getSegmentIdByUnitName(unitName) {
+    getSegmentIdByUnitName(unitName: string) {
         const info = this.getSegmentInfoByUnitName(unitName);
         if (info) {
             return info.id;
@@ -181,12 +190,8 @@ export class MapFileReader {
 
     /**
      * Get Segment info for exact address
-     *
-     * @param {(string|boolean)} segment
-     * @param {number} address
-     * @returns {(object | boolean)}
      */
-    getSegmentInfoByStartingAddress(segment, address) {
+    getSegmentInfoByStartingAddress(segment: string | boolean, address: number) {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (!segment && info.addressInt === address) {
@@ -201,12 +206,8 @@ export class MapFileReader {
 
     /**
      * Get Segment info for the segment where the given address is in
-     *
-     * @param {(string|boolean)} segment
-     * @param {number} address
-     * @returns {(object | boolean)}
      */
-    getSegmentInfoAddressIsIn(segment, address) {
+    getSegmentInfoAddressIsIn(segment: string | boolean, address: number) {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (!segment && address >= info.addressInt && address < info.addressInt + info.segmentLength) {
@@ -225,12 +226,8 @@ export class MapFileReader {
 
     /**
      * Get Segment info for the segment where the given address is in
-     *
-     * @param {string} segment
-     * @param {number} address
-     * @returns {(object | boolean)}
      */
-    getSegmentInfoAddressWithoutOffsetIsIn(segment, address) {
+    getSegmentInfoAddressWithoutOffsetIsIn(segment: string, address: number) {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (
@@ -245,13 +242,7 @@ export class MapFileReader {
         return false;
     }
 
-    /**
-     *
-     * @param {string} segment
-     * @param {number} address
-     * @returns {(object | boolean)}
-     */
-    getSymbolAt(segment, address) {
+    getSymbolAt(segment: string, address: number) {
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];
             if (!segment && info.addressInt === address) {
@@ -264,14 +255,8 @@ export class MapFileReader {
         return false;
     }
 
-    /**
-     *
-     * @param {string} segment
-     * @param {number} address
-     * @returns {(object | boolean)}
-     */
-    getSymbolBefore(segment, address) {
-        let maxNamed = false;
+    getSymbolBefore(segment: string, address: number) {
+        let maxNamed: false | Segment = false;
 
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];
@@ -289,12 +274,7 @@ export class MapFileReader {
         return maxNamed;
     }
 
-    /**
-     *
-     * @param {string} name
-     * @returns {(object | boolean)}
-     */
-    getSymbolInfoByName(name) {
+    getSymbolInfoByName(name: string) {
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];
             if (info.displayName === name) {
@@ -305,12 +285,7 @@ export class MapFileReader {
         return false;
     }
 
-    /**
-     *
-     * @param {string} segment
-     * @param {string} address
-     */
-    addressToObject(segment, address) {
+    addressToObject(segment: string, address: string): LineNumber {
         const addressWithoutOffset = parseInt(address, 16);
         const addressWithOffset = this.getSegmentOffset(segment) + addressWithoutOffset;
 
@@ -324,26 +299,18 @@ export class MapFileReader {
 
     /**
      * Try to match information about the address where a symbol is
-     *
-     * @param {string} line
      */
     // eslint-disable-next-line no-unused-vars
-    tryReadingNamedAddress(line) {}
+    tryReadingNamedAddress(line: string) {}
 
     /**
      * Tries to match the given line to code segment information.
      *  Implementation specific, so this base function is empty
-     *
-     * @param {string} line
      */
     // eslint-disable-next-line no-unused-vars
-    tryReadingCodeSegmentInfo(line) {}
+    tryReadingCodeSegmentInfo(line: string) {}
 
-    /**
-     *
-     * @param {string} line
-     */
-    tryReadingEntryPoint(line) {
+    tryReadingEntryPoint(line: string) {
         const matches = line.match(this.regexEntryPoint);
         if (matches) {
             this.entryPoint = {
@@ -353,30 +320,16 @@ export class MapFileReader {
         }
     }
 
-    /**
-     *
-     * @param {string} line
-     */
     // eslint-disable-next-line no-unused-vars
-    tryReadingPreferredAddress(line) {}
+    tryReadingPreferredAddress(line: string) {}
 
-    /**
-     * Retreives line number references from supplied Map line
-     *
-     * @param {string} line
-     * @returns {boolean}
-     */
     // eslint-disable-next-line no-unused-vars
-    tryReadingLineNumbers(line) {
+    tryReadingLineNumbers(line: string): boolean {
         return false;
     }
 
-    /**
-     *
-     * @param {string} line
-     */
     // eslint-disable-next-line no-unused-vars
-    isStartOfLineNumbers(line) {
+    isStartOfLineNumbers(line: string) {
         return false;
     }
 
@@ -384,7 +337,7 @@ export class MapFileReader {
      * Tries to reconstruct segments information from contiguous named addresses
      */
     reconstructSegmentsFromNamedAddresses() {
-        let currentUnit = false;
+        let currentUnit: false | string | undefined = false;
         let addressStart = 0;
         for (let idxSymbol = 0; idxSymbol < this.namedAddresses.length; ++idxSymbol) {
             const symbolObject = this.namedAddresses[idxSymbol];
@@ -422,12 +375,9 @@ export class MapFileReader {
 
     /**
      * Returns an array of objects with address range information for a given unit (filename)
-     *  [{startAddress: int, startAddressHex: string, endAddress: int, endAddressHex: string}]
-     *
-     * @param {string} unitName
      */
-    getReconstructedUnitAddressSpace(unitName) {
-        let addressSpace = [];
+    getReconstructedUnitAddressSpace(unitName: string): AddressRangeInformation[] {
+        const addressSpace: AddressRangeInformation[] = [];
 
         for (let idxSegment = 0; idxSegment < this.reconstructedSegments.length; ++idxSegment) {
             const segment = this.reconstructedSegments[idxSegment];
@@ -447,12 +397,8 @@ export class MapFileReader {
     /**
      * Returns true if the address (and every address until address+size) is within
      *  one of the given spaces. Spaces should be of format returned by getReconstructedUnitAddressSpace()
-     *
-     * @param {object[]} spaces
-     * @param {number} address
-     * @param {number} size
      */
-    isWithinAddressSpace(spaces, address, size) {
+    isWithinAddressSpace(spaces: AddressRangeInformation[], address: number, size: number) {
         for (const spaceAddress of spaces) {
             if (
                 (address >= spaceAddress.startAddress && address < spaceAddress.endAddress) ||
@@ -467,10 +413,8 @@ export class MapFileReader {
 
     /**
      * Retreives information from Map file contents
-     *
-     * @param {string} contents
      */
-    loadMapFromString(contents) {
+    loadMapFromString(contents: string) {
         const mapLines = utils.splitLines(contents);
 
         let readLineNumbersMode = false;
