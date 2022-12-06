@@ -25,24 +25,11 @@
 import {MapFileReader} from './map-file';
 
 export class MapFileReaderVS extends MapFileReader {
-    /**
-     * constructor
-     *
-     * @param {string} mapFilename
-     */
-    constructor(mapFilename) {
-        super(mapFilename);
+    regexVsNames = /^\s([\da-f]*):([\da-f]*)\s*([\w$.?@]*)\s*([\da-f]*)(\sf\si\s*|\sf\s*|\s*)([\w.:<>-]*)$/i;
+    regexVSLoadAddress = /\spreferred load address is ([\da-f]*)/i;
+    regexVsCodeSegment = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)h\s*\.text\$mn\s*code.*/i;
 
-        this.regexVsNames = /^\s([\da-f]*):([\da-f]*)\s*([\w$.?@]*)\s*([\da-f]*)(\sf\si\s*|\sf\s*|\s*)([\w.:<>-]*)$/i;
-        this.regexVSLoadAddress = /\spreferred load address is ([\da-f]*)/i;
-        this.regexVsCodeSegment = /^\s([\da-f]*):([\da-f]*)\s*([\da-f]*)h\s*\.text\$mn\s*code.*/i;
-    }
-
-    /**
-     *
-     * @param {string} line
-     */
-    tryReadingPreferredAddress(line) {
+    override tryReadingPreferredAddress(line: string) {
         const matches = line.match(this.regexVSLoadAddress);
         if (matches) {
             this.preferredLoadAddress = parseInt(matches[1], 16);
@@ -56,35 +43,27 @@ export class MapFileReaderVS extends MapFileReader {
      *   2. code segment delphi map
      *   3. icode segment delphi map
      *   4. code segment vs map
-     *
-     * @param {string} line
      */
-    tryReadingCodeSegmentInfo(line) {
-        let codesegmentObject = false;
-
+    override tryReadingCodeSegmentInfo(line: string) {
         const matches = line.match(this.regexVsCodeSegment);
         if (matches) {
-            codesegmentObject = this.addressToObject(matches[1], matches[2]);
-            codesegmentObject.id = this.segments.length + 1;
-            codesegmentObject.segmentLength = parseInt(matches[3], 16);
-            codesegmentObject.unitName = false;
-
-            this.segments.push(codesegmentObject);
+            this.segments.push({
+                ...this.addressToObject(matches[1], matches[2]),
+                id: this.segments.length + 1,
+                segmentLength: parseInt(matches[3], 16),
+                unitName: false,
+            });
         }
     }
 
     /**
      * Try to match information about the address where a symbol is
-     *
-     * @param {string} line
      */
-    tryReadingNamedAddress(line) {
-        let symbolObject = false;
-
+    override tryReadingNamedAddress(line: string) {
         const matches = line.match(this.regexVsNames);
         if (matches && matches.length >= 7 && matches[4] !== '') {
             const addressWithOffset = parseInt(matches[4], 16);
-            symbolObject = {
+            const symbolObject = {
                 segment: matches[1],
                 addressWithoutOffset: parseInt(matches[2], 16),
                 addressInt: addressWithOffset,
@@ -92,6 +71,7 @@ export class MapFileReaderVS extends MapFileReader {
                 displayName: matches[3],
                 unitName: matches[6],
                 isStaticSymbol: false,
+                segmentLength: 0,
             };
             this.namedAddresses.push(symbolObject);
 
