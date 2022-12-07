@@ -869,6 +869,15 @@ html[data-theme='dark'] {
     text-transform: uppercase;
 }
 
+.ts-wrapper.single .ts-control {
+    /* This is a workaround for a bug where the arrow overlaps the text in the tomselect item. This issue only effects
+     * staging (and presumably prod), it does not occur locally. Tomselect already styles this as `padding-right: 2rem;`
+     * but for some reason on staging/prod it's `--ts-pr-caret: 2rem;`. Changing it to `padding-right: 2rem;` in dev
+     * tools doesn't work, the property is greyed out as though something else is taking precedent but it's not.
+     */
+    padding-right: 2rem !important;
+}
+
 .copy-link-btn {
     padding-top: 0;
 }
