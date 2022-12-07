@@ -27,6 +27,8 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {LanguageKey} from '../types/languages.interfaces';
+
 import {logger} from './logger';
 import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
 import {toProperty} from './utils';
@@ -175,37 +177,74 @@ export class CompilerProps {
      * @param {?function} fn - Transformation to give to each value found
      * @returns {*} Transformed value(s) found or fn(defaultValue)
      */
-    get(
-        base: string | LanguageDef[] | Record<string, any>,
-        property: string,
-        defaultValue?: undefined,
-        fn?: undefined,
-    ): PropertyValue;
+
+    // A lot of overloads for a lot of different variants:
+    // const a = this.compilerProps(lang, property); // PropertyValue
+    // const b = this.compilerProps<number>(lang, property); // number
+    // const c = this.compilerProps(lang, property, 42); // number
+    // const d = this.compilerProps(lang, property, undefined, (x) => ["foobar"]); // string[]
+    // const e = this.compilerProps(lang, property, 42, (x) => ["foobar"]); // number | string[]
+    // if more than one language:
+    // const f = this.compilerProps(languages, property); // Record<LanguageKey, PropertyValue>
+    // const g = this.compilerProps<number>(languages, property); // Record<LanguageKey, number>
+    // const h = this.compilerProps(languages, property, 42); // Record<LanguageKey, number>
+    // const i = this.compilerProps(languages, property, undefined, (x) => ["foobar"]); // Record<LanguageKey, string[]>
+    // const j = this.compilerProps(languages, property, 42, (x) => ["foobar"]);//Record<LanguageKey, number | string[]>
+
+    // general overloads
+    get(base: string, property: string, defaultValue?: undefined, fn?: undefined): PropertyValue;
     get<T extends PropertyValue>(
-        base: string | LanguageDef[] | Record<string, any>,
+        base: string,
         property: string,
         defaultValue: Widen<T>,
         fn?: undefined,
     ): typeof defaultValue;
-    get<T extends PropertyValue>(
-        base: string | LanguageDef[] | Record<string, any>,
-        property: string,
-        defaultValue?: PropertyValue,
-        fn?: undefined,
-    ): T;
-
+    get<T extends PropertyValue>(base: string, property: string, defaultValue?: PropertyValue, fn?: undefined): T;
+    // fn overloads
     get<R>(
-        base: string | LanguageDef[] | Record<string, any>,
+        base: string,
         property: string,
         defaultValue?: undefined,
         fn?: (item: PropertyValue, language?: any) => R,
     ): R;
     get<T extends PropertyValue, R>(
-        base: string | LanguageDef[] | Record<string, any>,
+        base: string,
         property: string,
         defaultValue: Widen<T>,
+        fn?: (item: typeof defaultValue, language?: any) => R,
+    ): R;
+    // container base general overloads
+    get(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: undefined,
+        fn?: undefined,
+    ): Record<LanguageKey, PropertyValue>;
+    get<T extends PropertyValue>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: undefined,
+    ): Record<LanguageKey, typeof defaultValue>;
+    get<T extends PropertyValue>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: PropertyValue,
+        fn?: undefined,
+    ): Record<LanguageKey, T>;
+    // container base fn overloads
+    get<R>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue?: undefined,
         fn?: (item: PropertyValue, language?: any) => R,
-    ): typeof defaultValue | R;
+    ): Record<LanguageKey, R>;
+    get<T extends PropertyValue, R>(
+        base: LanguageDef[] | Record<string, any>,
+        property: string,
+        defaultValue: Widen<T>,
+        fn?: (item: typeof defaultValue, language?: any) => R,
+    ): Record<LanguageKey, R>;
 
     get(
         langs: string | LanguageDef[] | Record<string, any>,

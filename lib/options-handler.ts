@@ -68,10 +68,10 @@ type OptionsType = {
     libs: Record<any, any>;
     remoteLibs: Record<any, any>;
     tools: Record<any, any>;
-    defaultLibs: string;
-    defaultCompiler: string;
-    compileOptions: string;
-    supportsBinary: boolean;
+    defaultLibs: Record<LanguageKey, string>;
+    defaultCompiler: Record<LanguageKey, string>;
+    compileOptions: Record<LanguageKey, string>;
+    supportsBinary: Record<LanguageKey, boolean>;
     supportsExecute: boolean;
     supportsLibraryCodeFilter: boolean;
     languages: Record<string, any>;
@@ -110,10 +110,10 @@ type OptionsType = {
 export class ClientOptionsHandler {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
-    supportsBinary: boolean;
-    supportsExecutePerLanguage: boolean;
+    supportsBinary: Record<LanguageKey, boolean>;
+    supportsExecutePerLanguage: Record<LanguageKey, boolean>;
     supportsExecute: boolean;
-    supportsLibraryCodeFilterPerLanguage: boolean;
+    supportsLibraryCodeFilterPerLanguage: Record<LanguageKey, boolean>;
     supportsLibraryCodeFilter: boolean;
     remoteLibs: Record<any, any>;
     options: OptionsType;
@@ -150,9 +150,8 @@ export class ClientOptionsHandler {
         this.supportsLibraryCodeFilterPerLanguage = this.compilerProps(languages, 'supportsLibraryCodeFilter', false);
         this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(value => value);
 
-        // TODO: Shouldn't have to cast here
-        const libs = this.parseLibraries(this.compilerProps(languages, 'libs') as any);
-        const tools = this.parseTools(this.compilerProps(languages, 'tools') as any);
+        const libs = this.parseLibraries(this.compilerProps<string>(languages, 'libs'));
+        const tools = this.parseTools(this.compilerProps<string>(languages, 'tools'));
 
         this.remoteLibs = {};
 
