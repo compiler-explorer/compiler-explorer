@@ -1562,8 +1562,17 @@ export class BaseCompiler implements ICompiler {
         const source = key.source;
         const dirPath = await this.newTempDir();
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase);
+
+        // cant use this.writeAllFiles here because outputFilename is used as the file to execute
+        //  instead of inputFilename
+
         await fs.writeFile(outputFilename, source);
+        if (key.files && key.files.length > 0) {
+            await this.writeMultipleFiles(key.files, dirPath);
+        }
+
         executeParameters.args.unshift(outputFilename);
+
         const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
         return {
             ...result,
