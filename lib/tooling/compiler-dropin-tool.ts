@@ -24,10 +24,12 @@
 
 import _ from 'underscore';
 
+import {Library} from '../../types/libraries/libraries.interfaces';
 import {getToolchainPath} from '../toolchain-utils';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
+import {ToolResult} from './base-tool.interface';
 
 export class CompilerDropinTool extends BaseTool {
     static get key() {
@@ -40,19 +42,19 @@ export class CompilerDropinTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    getToolchainPath(compilationInfo) {
+    getToolchainPath(compilationInfo): string | false {
         return getToolchainPath(compilationInfo.compiler.exe, compilationInfo.compiler.options);
     }
 
-    getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile) {
+    getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile): string[] | false {
         // order should be:
         //  1) options from the compiler config (compilationInfo.compiler.options)
         //  2) includes from the libraries (includeflags)
         //  3) options from the tool config (this.tool.options)
         //  4) options manually specified in the compiler tab (options)
         //  5) flags from the clang-tidy tab
-        let compileFlags = [];
-        let argsToFilterOut = new Set([sourcefile, '-stdlib=libc++']);
+        let compileFlags: string[] = [];
+        const argsToFilterOut = new Set([sourcefile, '-stdlib=libc++']);
 
         const toolchainPath = this.getToolchainPath(compilationInfo);
 
@@ -62,8 +64,8 @@ export class CompilerDropinTool extends BaseTool {
 
         if (toolchainPath) {
             // note: needs toolchain argument twice as the first time its sometimes ignored
-            compileFlags = compileFlags.concat('--gcc-toolchain=' + toolchainPath);
-            compileFlags = compileFlags.concat('--gcc-toolchain=' + toolchainPath);
+            compileFlags = compileFlags.concat(['--gcc-toolchain=' + toolchainPath]);
+            compileFlags = compileFlags.concat(['--gcc-toolchain=' + toolchainPath]);
 
             compilerOptions = _.filter(compilerOptions, option => {
                 return !(option.indexOf('--gcc-toolchain=') === 0 || option.indexOf('--gxx-name=') === 0);
@@ -85,7 +87,7 @@ export class CompilerDropinTool extends BaseTool {
         args ? args : [];
         compileFlags = compileFlags.concat(args);
 
-        compileFlags = _.map(compileFlags, option => {
+        const pathFilteredFlags: (string | false)[] = _.map(compileFlags, option => {
             if (option && option.length > 1) {
                 if (option[0] === '/') {
                     return false;
@@ -95,14 +97,20 @@ export class CompilerDropinTool extends BaseTool {
             return option;
         });
 
-        return _.filter(compileFlags);
+        return _.filter(pathFilteredFlags) as string[];
     }
 
-    async runTool(compilationInfo, inputFilepath, args, stdin, supportedLibraries) {
+    override async runTool(
+        compilationInfo: Record<any, any>,
+        inputFilepath?: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, Library>,
+    ): Promise<ToolResult> {
         const sourcefile = inputFilepath;
 
-        const includeflags = this.getIncludeArguments(compilationInfo.libraries, supportedLibraries);
-        const libOptions = this.getLibraryOptions(compilationInfo.libraries, supportedLibraries);
+        const includeflags = this.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const libOptions = this.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
         const compileFlags = this.getOrderedArguments(compilationInfo, includeflags, libOptions, args, sourcefile);
         if (!compileFlags) {
