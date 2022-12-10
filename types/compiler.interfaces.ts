@@ -38,6 +38,7 @@ export type CompilerInfo = {
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
+    debugPatched: boolean;
     demangler: string;
     demanglerType: string;
     objdumper: string;
