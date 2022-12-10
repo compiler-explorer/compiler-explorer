@@ -1060,7 +1060,8 @@ export class BaseCompiler implements ICompiler {
             .filter(option => option !== '-fcolor-diagnostics')
             .concat(this.compiler.llvmOptArg)
             .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
-            .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : []);
+            .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : [])
+            .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
         const execOptions = this.getDefaultExecOptions();
         execOptions.maxOutput = 1024 * 1024 * 1024;
@@ -1083,7 +1084,12 @@ export class BaseCompiler implements ICompiler {
 
         try {
             const parseStart = performance.now();
-            const llvmOptPipeline = await this.processLLVMOptPipeline(output, filters, llvmOptPipelineOptions);
+            const llvmOptPipeline = await this.processLLVMOptPipeline(
+                output,
+                filters,
+                llvmOptPipelineOptions,
+                this.compiler.debugPatched,
+            );
             const parseEnd = performance.now();
 
             if (llvmOptPipelineOptions.demangle) {
@@ -1117,8 +1123,13 @@ export class BaseCompiler implements ICompiler {
         output,
         filters: ParseFiltersAndOutputOptions,
         llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+        debugPatched?: boolean,
     ) {
-        return this.llvmPassDumpParser.process(output.stderr, filters, llvmOptPipelineOptions);
+        return this.llvmPassDumpParser.process(
+            debugPatched ? output.stdout : output.stderr,
+            filters,
+            llvmOptPipelineOptions,
+        );
     }
 
     getRustMacroExpansionOutputFilename(inputFilename) {
