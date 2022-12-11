@@ -59,7 +59,7 @@ export type LanguageKey =
     | 'nim'
     | 'ocaml'
     | 'objc'
-    | 'objcxx'
+    | 'objc++'
     | 'openclc'
     | 'pascal'
     | 'pony'

@@ -429,7 +429,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
-    objcxx: {
+    'objc++': {
         name: 'Objective-C++',
         monaco: 'objective-c',
         extensions: ['.mm'],
