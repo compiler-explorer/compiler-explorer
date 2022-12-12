@@ -398,30 +398,30 @@ export class Cfg extends Pane<CfgState> {
         doc += this.svg.innerHTML;
         // the blocks we'll have to copy over
         for (const block of this.layout.blocks) {
-            const elem = this.bbMap[block.data.id];
-            const elem_style = window.getComputedStyle(elem);
-            const elem_box = elem.getBoundingClientRect();
+            const block_elem = this.bbMap[block.data.id];
+            const block_style = window.getComputedStyle(block_elem);
+            const block_bounding_box = block_elem.getBoundingClientRect();
             doc += `<rect ${attrs({
                 x: block.coordinates.x,
                 y: block.coordinates.y,
                 width: block.data.width,
                 height: block.data.height,
-                fill: elem_style.background,
-                stroke: elem_style.borderColor,
-                'stroke-width': elem_style.borderWidth,
+                fill: block_style.background,
+                stroke: block_style.borderColor,
+                'stroke-width': block_style.borderWidth,
             })} />`;
-            for (const [_, span] of elem.querySelectorAll('span[class]').entries()) {
+            for (const [_, span] of block_elem.querySelectorAll('span[class]').entries()) {
                 const text = new DOMParser().parseFromString(span.innerHTML, 'text/html').documentElement.textContent;
                 if (!text || text.trim() === '') {
                     continue;
                 }
                 const span_style = window.getComputedStyle(span);
                 const span_box = span.getBoundingClientRect();
-                const top = span_box.top - elem_box.top;
-                const left = span_box.left - elem_box.left;
+                const top = span_box.top - block_bounding_box.top;
+                const left = span_box.left - block_bounding_box.left;
                 doc += `<text ${attrs({
                     x: block.coordinates.x + left,
-                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(elem_style.paddingTop),
+                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
                     class: 'code',
                     fill: span_style.color,
                 })}>${escapeSVG(text)}</text>`;
