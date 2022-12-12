@@ -2,6 +2,10 @@
   .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
     .btn-group.btn-group-sm(role="group")
       select.function-selector
+    .btn-group.btn-group-sm(role="group" aria-label="Cfg actions")
+      button.btn.btn-sm.btn-light.export(title="Export graph" aria-label="Export graph as an image")
+        span.fas.fa-file-arrow-down
+        span.dp-text.hideable Export
   .graph-container
     span.cfg-info
     .graph

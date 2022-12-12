@@ -26,6 +26,7 @@ import {Pane} from './pane';
 import * as monaco from 'monaco-editor';
 import $ from 'jquery';
 import _ from 'underscore';
+import * as fileSaver from 'file-saver';
 
 import {CfgState} from './cfg-view.interfaces';
 import {Hub} from '../hub';
@@ -59,6 +60,22 @@ type Coordinate = {
 const DZOOM = 0.1;
 const MINZOOM = 0.1;
 
+// https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+function escapeSVG(text: string) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function attrs(attributes: Record<string, string | number | null>) {
+    return Object.entries(attributes)
+        .map(([k, v]) => `${k}="${v}"`)
+        .join(' ');
+}
+
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
     svg: SVGElement;
@@ -66,6 +83,7 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
+    exportButton: JQuery;
     currentPosition: Coordinate = {x: 0, y: 0};
     dragging = false;
     dragStart: Coordinate = {x: 0, y: 0};
@@ -138,6 +156,7 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
+        this.exportButton = this.domRoot.find('.export').first();
     }
 
     override registerCallbacks() {
@@ -169,7 +188,7 @@ export class Cfg extends Pane<CfgState> {
             const prevZoom = this.state.zoom;
             this.state.zoom += delta;
             if (this.state.zoom >= MINZOOM) {
-                this.graphElement.style.transform = `scale(${this.state.zoom})${this.extraTransforms}`;
+                this.zoom(this.state.zoom);
                 const mouseX = e.clientX - this.graphElement.getBoundingClientRect().x;
                 const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
                 // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
@@ -182,6 +201,13 @@ export class Cfg extends Pane<CfgState> {
                 this.state.zoom = MINZOOM;
             }
         });
+        this.exportButton.on('click', () => {
+            this.exportSVG();
+        });
+    }
+
+    exportSVG() {
+        fileSaver.saveAs(new Blob([this.createSVG()], {type: 'text/plain;charset=utf-8'}), 'cfg.svg');
     }
 
     override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
@@ -340,6 +366,74 @@ export class Cfg extends Pane<CfgState> {
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
             fn.nodes.length
         }`;
+    }
+
+    zoom(zoom: number) {
+        this.graphElement.style.transform = `scale(${zoom})${this.extraTransforms}`;
+    }
+
+    createSVG() {
+        this.zoom(1);
+        let doc = '';
+        doc += '<?xml version="1.0"?>';
+        doc += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+        doc += `<svg ${attrs({
+            xmlns: 'http://www.w3.org/2000/svg',
+            version: '1.1',
+            width: this.svg.style.width,
+            height: this.svg.style.height,
+            viewBox: this.svg.getAttribute('viewBox'),
+        })}>`;
+        doc += '<style>.code{font: 16px Consolas;}</style>';
+        // insert the background
+        const pane = this.graphContainer.parentElement;
+        if (!pane || !pane.classList.contains('lm_content')) {
+            throw Error('unknown parent');
+        }
+        const pane_style = window.getComputedStyle(pane);
+        doc += `<rect ${attrs({
+            x: '0',
+            y: '0',
+            width: this.svg.style.width,
+            height: this.svg.style.height,
+            fill: pane_style.backgroundColor,
+        })} />`;
+        // just grab the edges/arrows directly
+        doc += this.svg.innerHTML;
+        // the blocks we'll have to copy over
+        for (const block of this.layout.blocks) {
+            const block_elem = this.bbMap[block.data.id];
+            const block_style = window.getComputedStyle(block_elem);
+            const block_bounding_box = block_elem.getBoundingClientRect();
+            doc += `<rect ${attrs({
+                x: block.coordinates.x,
+                y: block.coordinates.y,
+                width: block.data.width,
+                height: block.data.height,
+                fill: block_style.background,
+                stroke: block_style.borderColor,
+                'stroke-width': block_style.borderWidth,
+            })} />`;
+            for (const [_, span] of block_elem.querySelectorAll('span[class]').entries()) {
+                const text = new DOMParser().parseFromString(span.innerHTML, 'text/html').documentElement.textContent;
+                if (!text || text.trim() === '') {
+                    continue;
+                }
+                const span_style = window.getComputedStyle(span);
+                const span_box = span.getBoundingClientRect();
+                const top = span_box.top - block_bounding_box.top;
+                const left = span_box.left - block_bounding_box.left;
+                doc += `<text ${attrs({
+                    x: block.coordinates.x + left,
+                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
+                    class: 'code',
+                    fill: span_style.color,
+                })}>${escapeSVG(text)}</text>`;
+            }
+        }
+        doc += '</svg>';
+        this.zoom(this.state.zoom);
+        return doc;
     }
 
     override resize() {
