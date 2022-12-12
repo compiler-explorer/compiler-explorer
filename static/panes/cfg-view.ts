@@ -76,6 +76,7 @@ export class Cfg extends Pane<CfgState> {
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
+    readonly extraTransforms: string;
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -109,6 +110,9 @@ export class Cfg extends Pane<CfgState> {
             },
         });
         this.state = state;
+        // This is a workaround for a chrome render bug that's existed since at least 2013
+        // https://github.com/compiler-explorer/compiler-explorer/issues/4421
+        this.extraTransforms = navigator.userAgent.indexOf('AppleWebKit') === -1 ? '' : ' translateZ(0)';
     }
 
     override getInitialHTML() {
@@ -165,7 +169,7 @@ export class Cfg extends Pane<CfgState> {
             const prevZoom = this.state.zoom;
             this.state.zoom += delta;
             if (this.state.zoom >= MINZOOM) {
-                this.graphElement.style.transform = `scale(${this.state.zoom})`;
+                this.graphElement.style.transform = `scale(${this.state.zoom})${this.extraTransforms}`;
                 const mouseX = e.clientX - this.graphElement.getBoundingClientRect().x;
                 const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
                 // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
