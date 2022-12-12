@@ -396,7 +396,7 @@ export class Cfg extends Pane<CfgState> {
             y: '0',
             width: this.svg.style.width,
             height: this.svg.style.height,
-            fill: pane_style.background,
+            fill: pane_style.backgroundColor,
         })} />`;
         // just grab the edges/arrows directly
         doc += this.svg.innerHTML;
