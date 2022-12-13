@@ -23,13 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import os from 'os';
+import {Writable} from 'stream';
 
 import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
 import {Papertrail} from 'winston-papertrail';
 import TransportStream, {TransportStreamOptions} from 'winston-transport';
-import {Writable} from 'stream';
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
