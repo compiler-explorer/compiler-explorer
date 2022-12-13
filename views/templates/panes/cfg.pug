@@ -2,10 +2,17 @@
   .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
     .btn-group.btn-group-sm(role="group")
       select.function-selector
-    .btn-group.btn-group-sm(role="group" aria-label="Cfg actions")
-      button.btn.btn-sm.btn-light.export(title="Export graph" aria-label="Export graph as an image")
-        span.fas.fa-file-arrow-down
-        span.dp-text.hideable Export
+    .btn-group.btn-group-sm(role="group" aria-label="CFG Export")
+      button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="LLVM Opt Pass Options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Set output options")
+        span.fas.fa-arrow-down
+        span.hideable Export
+      .dropdown-menu
+        button.btn.btn-sm.btn-light.dropdown-item.export-png(title="Export graph" aria-label="Export graph as an image")
+          span.fas.fa-image
+          span.hideable Export PNG
+        button.btn.btn-sm.btn-light.dropdown-item.export-svg(title="Export graph" aria-label="Export graph as an image")
+          span.fas.fa-vector-square
+          span.hideable Export SVG
   .graph-container
     span.cfg-info
     .graph
