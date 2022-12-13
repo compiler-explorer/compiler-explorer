@@ -234,7 +234,16 @@ export class Cfg extends Pane<CfgState> {
         for (const node of fn.nodes) {
             const div = document.createElement('div');
             div.classList.add('block');
-            div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
+            div.innerHTML = (
+                await monaco.editor.colorize(
+                    node.label
+                        .split('\n')
+                        .map(line => (line.length <= 100 ? line : line.slice(0, 100) + ';;%%%fold%%%'))
+                        .join('\n'),
+                    'asm',
+                    MonacoConfig.extendConfig({})
+                )
+            ).replace(/;;%%%fold%%%/gi, '<div class="fold"></div>');
             if (node.id in this.bbMap) {
                 throw Error("Duplicate basic block node id's found while drawing cfg");
             }

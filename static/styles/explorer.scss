@@ -418,6 +418,17 @@ pre.content.wrap * {
                 font-family: Consolas, 'Liberation Mono', Courier, monospace;
                 white-space: nowrap;
                 line-height: 100%;
+                .fold {
+                    display: inline-block;
+                    &:after {
+                        color: grey;
+                        margin: .1em .1em 0 .2em;
+                        content: "\22EF";
+                        display: inline;
+                        line-height: 1em;
+                        cursor: pointer;
+                    }
+                }
             }
         }
     }
