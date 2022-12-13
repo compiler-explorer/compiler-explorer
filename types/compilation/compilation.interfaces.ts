@@ -130,6 +130,9 @@ export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
     compilationOptions: string[];
+    stdout: ResultLine[];
+    stderr: ResultLine[];
+    code: number;
 };
 
 export type BuildStep = BasicExecutionResult & {

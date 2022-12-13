@@ -2324,6 +2324,8 @@ export class BaseCompiler implements ICompiler {
 
         if (!backendOptions.skipPopArgs) result.popularArguments = this.possibleArguments.getPopularArguments(options);
 
+        result = this.postCompilationPreCacheHook(result);
+
         if (result.okToCache) {
             await this.env.cachePut(key, result);
         }
@@ -2335,6 +2337,10 @@ export class BaseCompiler implements ICompiler {
                 this.doTempfolderCleanup(result.execResult.buildResult);
             }
         }
+        return result;
+    }
+
+    postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
         return result;
     }
 
