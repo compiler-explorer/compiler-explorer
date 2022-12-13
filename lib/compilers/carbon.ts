@@ -68,10 +68,8 @@ export class CarbonCompiler extends BaseCompiler {
     }
 
     lastLine(lines?: ResultLine[]): string {
-        if (!lines) return '';
-        const lastLine = lines.at(-1);
-        if (!lastLine) return '';
-        return lastLine.text;
+        if (!lines || lines.length === 0) return '';
+        return (lines.at(-1) as ResultLine).text;
     }
 
     override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
