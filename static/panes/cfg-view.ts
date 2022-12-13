@@ -83,7 +83,8 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
-    exportButton: JQuery;
+    exportPNGButton: JQuery;
+    exportSVGButton: JQuery;
     currentPosition: Coordinate = {x: 0, y: 0};
     dragging = false;
     dragStart: Coordinate = {x: 0, y: 0};
@@ -156,7 +157,8 @@ export class Cfg extends Pane<CfgState> {
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
-        this.exportButton = this.domRoot.find('.export').first();
+        this.exportPNGButton = this.domRoot.find('.export-png').first();
+        this.exportSVGButton = this.domRoot.find('.export-svg').first();
     }
 
     override registerCallbacks() {
@@ -201,9 +203,16 @@ export class Cfg extends Pane<CfgState> {
                 this.state.zoom = MINZOOM;
             }
         });
-        this.exportButton.on('click', () => {
+        this.exportPNGButton.on('click', () => {
+            this.exportPNG();
+        });
+        this.exportSVGButton.on('click', () => {
             this.exportSVG();
         });
+    }
+
+    async exportPNG() {
+        fileSaver.saveAs(await this.createPNG(), 'cfg.png');
     }
 
     exportSVG() {
@@ -434,6 +443,40 @@ export class Cfg extends Pane<CfgState> {
         doc += '</svg>';
         this.zoom(this.state.zoom);
         return doc;
+    }
+
+    async createPNG() {
+        const svg_blob = new Blob([this.createSVG()], {type: 'image/svg+xml;charset=utf-8'});
+        const svg_url = URL.createObjectURL(svg_blob);
+        const image = new Image();
+        const width = this.layout.getWidth();
+        const height = this.layout.getHeight();
+        image.width = width;
+        image.height = height;
+        const canvas = await new Promise<HTMLCanvasElement>((resolve, reject) => {
+            image.onerror = reject;
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    throw new Error('Null ctx');
+                }
+                ctx.drawImage(image, 0, 0, width, height);
+                resolve(canvas);
+            };
+            image.src = svg_url;
+        });
+        return await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (blob) {
+                    resolve(blob);
+                } else {
+                    reject(blob);
+                }
+            }, 'image/png');
+        });
     }
 
     override resize() {
