@@ -37,7 +37,7 @@ export const logger = winston.createLogger({
     transports: [consoleTransportInstance],
 });
 
-export function makeLogStream(level: string): {write: (string) => void} {
+export function makeLogStream(level: string, logger_: winston.Logger = logger): {write: (string) => void} {
     let buffer = '';
     return new Writable({
         write: (chunk: string, encoding, callback: () => void) => {
@@ -45,7 +45,7 @@ export function makeLogStream(level: string): {write: (string) => void} {
             while (buffer.length > 0) {
                 const eol = buffer.indexOf('\n');
                 if (eol < 0) break;
-                logger.log(level, buffer.substring(0, eol));
+                logger_.log(level, buffer.substring(0, eol));
                 buffer = buffer.substring(eol + 1);
             }
             callback();
