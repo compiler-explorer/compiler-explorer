@@ -53,6 +53,7 @@ import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
 
+import * as assert_utils from './assert';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
 import * as cfg from './cfg';
@@ -2312,6 +2313,7 @@ export class BaseCompiler implements ICompiler {
             result = filters.demangle ? await this.postProcessAsm(result, filters) : result;
             if (this.compiler.supportsCfg && backendOptions.produceCfg) {
                 if (!options.includes('-emit-llvm')) {
+                    assert_utils.assert(false, 'test');
                     result.cfg = cfg.generateStructure(this.compiler.compilerType, this.compiler.version, result.asm);
                 } else {
                     // for now do not generate a cfg for llvm ir
