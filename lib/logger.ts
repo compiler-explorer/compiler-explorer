@@ -37,6 +37,8 @@ export const logger = winston.createLogger({
     transports: [consoleTransportInstance],
 });
 
+// Creates a log stream, suitable to passing to something that writes complete lines of output to a stream, for example
+// morgan's http logger. We look for complete text lines and output each as a winston log entry.
 export function makeLogStream(level: string, logger_: winston.Logger = logger): {write: (string) => void} {
     let buffer = '';
     return new Writable({
