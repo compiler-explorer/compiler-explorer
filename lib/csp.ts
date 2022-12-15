@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
 export const data = {
     'default-src': ["'self'", 'https://*.godbolt.org', 'localhost:*', 'https://*.compiler-explorer.com'],
     'style-src': [
@@ -95,4 +93,6 @@ export const data = {
     ],
 };
 
-export const policy = _.map(data, (value, policyKey) => `${policyKey} ${value.join(' ')}`).join(';');
+export const policy = Object.values(data)
+    .map((value, policyKey) => `${policyKey} ${value.join(' ')}`)
+    .join(';');
