@@ -42,14 +42,13 @@ const queueCompleted = new PromClient.Counter({
     help: 'Total number of jobs completed',
 });
 
-declare type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
+type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
 
 export class CompilationQueue {
-    private readonly _running: Set<number>;
+    private readonly _running: Set<number> = new Set();
     private readonly _queue: Queue;
 
     constructor(concurrency: number, timeout: number) {
-        this._running = new Set();
         this._queue = new Queue({
             concurrency,
             timeout,
@@ -62,14 +61,14 @@ export class CompilationQueue {
     }
 
     enqueue<Result>(job: Job<Result>): PromiseLike<Result> {
-        const enqueueAsyncId: number = executionAsyncId();
+        const enqueueAsyncId = executionAsyncId();
         // If we're asked to enqueue a job when we're already in a async queued job context, just run it.
         // This prevents a deadlock.
         if (this._running.has(enqueueAsyncId)) return job();
         queueEnqueued.inc();
         return this._queue.add(() => {
             queueDequeued.inc();
-            const jobAsyncId: number = executionAsyncId();
+            const jobAsyncId = executionAsyncId();
             if (this._running.has(jobAsyncId)) throw new Error('somehow we entered the context twice');
             try {
                 this._running.add(jobAsyncId);
@@ -82,8 +81,8 @@ export class CompilationQueue {
     }
 
     status(): {busy: boolean; pending: number; size: number} {
-        const pending: number = this._queue.pending;
-        const size: number = this._queue.size;
+        const pending = this._queue.pending;
+        const size = this._queue.size;
         return {
             busy: pending > 0 || size > 0,
             pending,
