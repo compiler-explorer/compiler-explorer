@@ -22,48 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs-extra';
+import * as fs from 'fs';
+import path from 'path';
 
-/* eslint-disable unicorn/no-abusive-eslint-disable */
-/* eslint-disable */
-namespace stacktrace {
-    export function get(belowFn) {
-        const oldLimit = Error.stackTraceLimit;
-        Error.stackTraceLimit = Infinity;
+// Based on stack-trace https://github.com/felixge/node-stack-trace
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace stacktrace {
+    type StackFrame = {
+        fileName: string | undefined;
+        lineNumber?: number;
+        functionName?: string;
+        typeName?: string;
+        methodName?: string;
+        columnNumber?: number;
+        native?: boolean;
+    };
 
-        const dummyObject: any = {};
-
-        const v8Handler = Error.prepareStackTrace;
-        Error.prepareStackTrace = function (dummyObject, v8StackTrace) {
-            return v8StackTrace;
-        };
-        Error.captureStackTrace(dummyObject, belowFn || get);
-
-        const v8StackTrace = dummyObject.stack;
-        Error.prepareStackTrace = v8Handler;
-        Error.stackTraceLimit = oldLimit;
-
-        return v8StackTrace;
-    }
-
-    export function parse(err) {
+    export function parse(err: Error) {
         if (!err.stack) {
             return [];
         }
 
-        const lines = err.stack.split('\n').slice(1);
-        return lines
-            .map(function (line) {
-                if (line.match(/^\s*[-]{4,}$/)) {
-                    return createParsedCallSite({
+        return err.stack
+            .split('\n')
+            .slice(1)
+            .map((line): StackFrame | undefined => {
+                if (/^\s*-{4,}$/.test(line)) {
+                    return {
                         fileName: line,
-                        lineNumber: null,
-                        functionName: null,
-                        typeName: null,
-                        methodName: null,
-                        columnNumber: null,
-                        native: null,
-                    });
+                    };
                 }
 
                 const lineMatch = line.match(/at (?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?|([^)]+))\)?/);
@@ -71,24 +58,24 @@ namespace stacktrace {
                     return;
                 }
 
-                let object: string | null = null;
-                let method: string | null = null;
-                let functionName: string | null = null;
-                let typeName: string | null = null;
-                let methodName: string | null = null;
-                let isNative = lineMatch[5] === 'native';
+                let object: string | undefined;
+                let method: string | undefined;
+                let functionName: string | undefined;
+                let typeName: string | undefined;
+                let methodName: string | undefined;
+                const isNative = lineMatch[5] === 'native';
 
                 if (lineMatch[1]) {
                     functionName = lineMatch[1];
-                    let methodStart = functionName!.lastIndexOf('.');
-                    if (functionName![methodStart - 1] == '.') methodStart--;
+                    let methodStart = functionName.lastIndexOf('.');
+                    if (functionName[methodStart - 1] === '.') methodStart--;
                     if (methodStart > 0) {
-                        object = functionName!.substr(0, methodStart);
-                        method = functionName!.substr(methodStart + 1);
+                        object = functionName.substring(0, methodStart);
+                        method = functionName.substring(methodStart + 1);
                         const objectEnd = object.indexOf('.Module');
                         if (objectEnd > 0) {
-                            functionName = functionName!.substr(objectEnd + 1);
-                            object = object.substr(0, objectEnd);
+                            functionName = functionName.substring(objectEnd + 1);
+                            object = object.substring(0, objectEnd);
                         }
                     }
                 }
@@ -99,80 +86,88 @@ namespace stacktrace {
                 }
 
                 if (method === '<anonymous>') {
-                    methodName = null;
-                    functionName = null;
+                    methodName = undefined;
+                    functionName = undefined;
                 }
 
-                const properties = {
-                    fileName: lineMatch[2] || null,
-                    lineNumber: parseInt(lineMatch[3], 10) || null,
+                return {
+                    fileName: lineMatch[2] || undefined,
+                    lineNumber: parseInt(lineMatch[3], 10) || undefined,
                     functionName: functionName,
                     typeName: typeName,
                     methodName: methodName,
-                    columnNumber: parseInt(lineMatch[4], 10) || null,
+                    columnNumber: parseInt(lineMatch[4], 10) || undefined,
                     native: isNative,
                 };
-
-                return createParsedCallSite(properties);
             })
-            .filter(function (callSite) {
-                return !!callSite;
-            });
+            .filter(frame => frame !== undefined) as StackFrame[];
     }
+}
 
-    function CallSite(this: any, properties) {
-        for (const property in properties) {
-            this[property] = properties[property];
+function check_path(parent: string, directory: string) {
+    // https://stackoverflow.com/a/45242825/15675011
+    const relative = path.relative(parent, directory);
+    if (relative && !relative.startsWith('..') && !path.isAbsolute(relative)) {
+        return relative;
+    } else {
+        return false;
+    }
+}
+
+function get_diagnostic() {
+    const e = new Error(); // eslint-disable-line unicorn/error-message
+    const trace = stacktrace.parse(e);
+    const invoker_frame = trace[3];
+    if (invoker_frame.fileName && invoker_frame.lineNumber) {
+        // Just out of an abundance of caution...
+        const relative = check_path(global.ce_base_directory, invoker_frame.fileName);
+        if (relative) {
+            try {
+                const file = fs.readFileSync(invoker_frame.fileName, 'utf-8');
+                const lines = file.split('\n');
+                return {
+                    file: relative,
+                    line: invoker_frame.lineNumber,
+                    src: lines[invoker_frame.lineNumber - 1].trim(),
+                };
+            } catch (e: any) {}
         }
     }
+}
 
-    const strProperties = [
-        'this',
-        'typeName',
-        'functionName',
-        'methodName',
-        'fileName',
-        'lineNumber',
-        'columnNumber',
-        'function',
-        'evalOrigin',
-    ];
+function fail(fail_message: string, user_message: string | undefined, args: any[]): never {
+    // Assertions will look like:
+    // Assertion failed
+    // Assertion failed: Foobar
+    // Assertion failed: Foobar, [{"foo": "bar"}]
+    // Assertion failed: Foobar, [{"foo": "bar"}], at `assert(x.foo.length < 2, "Foobar", x)`
+    let assert_line = fail_message;
+    if (user_message) {
+        assert_line += `: ${user_message}`;
+    }
+    if (args.length > 0) {
+        try {
+            assert_line += ', ' + JSON.stringify(args);
+        } catch (e) {}
+    }
 
-    const boolProperties = ['topLevel', 'eval', 'native', 'constructor'];
-
-    strProperties.forEach(function (property) {
-        CallSite.prototype[property] = null;
-        CallSite.prototype['get' + property[0].toUpperCase() + property.substr(1)] = function () {
-            return this[property];
-        };
-    });
-
-    boolProperties.forEach(function (property) {
-        CallSite.prototype[property] = false;
-        CallSite.prototype['is' + property[0].toUpperCase() + property.substr(1)] = function () {
-            return this[property];
-        };
-    });
-
-    function createParsedCallSite(properties) {
-        return new CallSite(properties);
+    const diagnostic = get_diagnostic();
+    if (diagnostic) {
+        throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line} \`${diagnostic.src}\``);
+    } else {
+        throw new Error(assert_line);
     }
 }
-/* eslint-enable */
-/* eslint-enable unicorn/no-abusive-eslint-disable */
 
-export function assert<C>(c: C, message?: string): asserts c {
+export function assert<C>(c: C, message?: string, ...args: any[]): asserts c {
     if (!c) {
-        const e = new Error(); // eslint-disable-line unicorn/error-message
-        const trace = stacktrace.parse(e);
-        // eslint-disable-next-line import/namespace
-        const file = fs.readFileSync(trace[1].fileName, 'utf-8');
-        const lines = file.split('\n');
-        throw new Error('Assertion failed' + (message ? ': ' + message : '') + '\n\n' + lines[trace[1].lineNumber - 1]);
+        fail('Assertion failed', message, args);
     }
 }
 
-export function unwrap<T>(x: T | undefined | null, message?: string): T {
-    assert(x, message);
+export function unwrap<T>(x: T | undefined | null, message?: string, ...args: any[]): T {
+    if (x === undefined || x === null) {
+        fail('Unwrap failed', message, args);
+    }
     return x;
 }
