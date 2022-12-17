@@ -25,84 +25,7 @@
 import * as fs from 'fs';
 import path from 'path';
 
-// Based on stack-trace https://github.com/felixge/node-stack-trace
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace stacktrace {
-    type StackFrame = {
-        fileName: string | undefined;
-        lineNumber?: number;
-        functionName?: string;
-        typeName?: string;
-        methodName?: string;
-        columnNumber?: number;
-        native?: boolean;
-    };
-
-    export function parse(err: Error) {
-        if (!err.stack) {
-            return [];
-        }
-
-        return err.stack
-            .split('\n')
-            .slice(1)
-            .map((line): StackFrame | undefined => {
-                if (/^\s*-{4,}$/.test(line)) {
-                    return {
-                        fileName: line,
-                    };
-                }
-
-                const lineMatch = line.match(/at (?:(.+?)\s+\()?(?:(.+?):(\d+)(?::(\d+))?|([^)]+))\)?/);
-                if (!lineMatch) {
-                    return;
-                }
-
-                let object: string | undefined;
-                let method: string | undefined;
-                let functionName: string | undefined;
-                let typeName: string | undefined;
-                let methodName: string | undefined;
-                const isNative = lineMatch[5] === 'native';
-
-                if (lineMatch[1]) {
-                    functionName = lineMatch[1];
-                    let methodStart = functionName.lastIndexOf('.');
-                    if (functionName[methodStart - 1] === '.') methodStart--;
-                    if (methodStart > 0) {
-                        object = functionName.substring(0, methodStart);
-                        method = functionName.substring(methodStart + 1);
-                        const objectEnd = object.indexOf('.Module');
-                        if (objectEnd > 0) {
-                            functionName = functionName.substring(objectEnd + 1);
-                            object = object.substring(0, objectEnd);
-                        }
-                    }
-                }
-
-                if (method) {
-                    typeName = object;
-                    methodName = method;
-                }
-
-                if (method === '<anonymous>') {
-                    methodName = undefined;
-                    functionName = undefined;
-                }
-
-                return {
-                    fileName: lineMatch[2] || undefined,
-                    lineNumber: parseInt(lineMatch[3], 10) || undefined,
-                    functionName: functionName,
-                    typeName: typeName,
-                    methodName: methodName,
-                    columnNumber: parseInt(lineMatch[4], 10) || undefined,
-                    native: isNative,
-                };
-            })
-            .filter(frame => frame !== undefined) as StackFrame[];
-    }
-}
+import stacktrace from './stacktrace';
 
 function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
@@ -117,20 +40,22 @@ function check_path(parent: string, directory: string) {
 function get_diagnostic() {
     const e = new Error(); // eslint-disable-line unicorn/error-message
     const trace = stacktrace.parse(e);
-    const invoker_frame = trace[3];
-    if (invoker_frame.fileName && invoker_frame.lineNumber) {
-        // Just out of an abundance of caution...
-        const relative = check_path(global.ce_base_directory, invoker_frame.fileName);
-        if (relative) {
-            try {
-                const file = fs.readFileSync(invoker_frame.fileName, 'utf-8');
-                const lines = file.split('\n');
-                return {
-                    file: relative,
-                    line: invoker_frame.lineNumber,
-                    src: lines[invoker_frame.lineNumber - 1].trim(),
-                };
-            } catch (e: any) {}
+    if (trace.length >= 4) {
+        const invoker_frame = trace[3];
+        if (invoker_frame.fileName && invoker_frame.lineNumber) {
+            // Just out of an abundance of caution...
+            const relative = check_path(global.ce_base_directory, invoker_frame.fileName);
+            if (relative) {
+                try {
+                    const file = fs.readFileSync(invoker_frame.fileName, 'utf-8');
+                    const lines = file.split('\n');
+                    return {
+                        file: relative,
+                        line: invoker_frame.lineNumber,
+                        src: lines[invoker_frame.lineNumber - 1].trim(),
+                    };
+                } catch (e: any) {}
+            }
         }
     }
 }
@@ -159,15 +84,15 @@ function fail(fail_message: string, user_message: string | undefined, args: any[
     }
 }
 
-export function assert<C>(c: C, message?: string, ...args: any[]): asserts c {
+export function assert<C>(c: C, message?: string, ...extra_info: any[]): asserts c {
     if (!c) {
-        fail('Assertion failed', message, args);
+        fail('Assertion failed', message, extra_info);
     }
 }
 
-export function unwrap<T>(x: T | undefined | null, message?: string, ...args: any[]): T {
+export function unwrap<T>(x: T | undefined | null, message?: string, ...extra_info: any[]): T {
     if (x === undefined || x === null) {
-        fail('Unwrap failed', message, args);
+        fail('Unwrap failed', message, extra_info);
     }
     return x;
 }

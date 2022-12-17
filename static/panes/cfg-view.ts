@@ -273,6 +273,9 @@ export class Cfg extends Pane<CfgState> {
             const div = document.createElement('div');
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
+            // So because this is async there's a race condition here if you rapidly switch functions.
+            // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
+            // to another PR. TODO(jeremy-rifkin)
             assert(!(node.id in this.bbMap), "Duplicate basic block node id's found while drawing cfg");
             this.bbMap[node.id] = div;
             this.blockContainer.appendChild(div);

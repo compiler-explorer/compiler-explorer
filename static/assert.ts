@@ -22,13 +22,59 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export function assert<C>(c: C, message?: string): asserts c {
-    if (!c) {
-        throw new Error('Assertion failed' + (message ? ': ' + message : ''));
+import stacktrace from '../lib/stacktrace';
+
+// This file defines three assert utilities:
+// assert(condition, message?, extra_info...?): asserts condition
+// unwrap(x: T | undefined | null, message?, extra_info...?): T
+// assert_type(x, class, message?, extra_info...?)
+
+function get_diagnostic() {
+    const e = new Error(); // eslint-disable-line unicorn/error-message
+    const trace = stacktrace.parse(e);
+    if (trace.length >= 4) {
+        const invoker_frame = trace[3];
+        if (invoker_frame.fileName && invoker_frame.lineNumber) {
+            return {
+                file: invoker_frame.fileName,
+                line: invoker_frame.lineNumber,
+            };
+        }
     }
 }
 
-export function unwrap<T>(x: T | undefined | null, message?: string): T {
-    assert(x, message);
+function fail(fail_message: string, user_message: string | undefined, args: any[]): never {
+    // Assertions will look like:
+    // Assertion failed
+    // Assertion failed: Foobar
+    // Assertion failed: Foobar, [{"foo": "bar"}]
+    let assert_line = fail_message;
+    if (user_message) {
+        assert_line += `: ${user_message}`;
+    }
+    if (args.length > 0) {
+        try {
+            assert_line += ', ' + JSON.stringify(args);
+        } catch (e) {}
+    }
+
+    const diagnostic = get_diagnostic();
+    if (diagnostic) {
+        throw new Error(assert_line + `, at ${diagnostic.file}:${diagnostic.line}`);
+    } else {
+        throw new Error(assert_line);
+    }
+}
+
+export function assert<C>(c: C, message?: string, ...extra_info: any[]): asserts c {
+    if (!c) {
+        fail('Assertion failed', message, extra_info);
+    }
+}
+
+export function unwrap<T>(x: T | undefined | null, message?: string, ...extra_info: any[]): T {
+    if (x === undefined || x === null) {
+        fail('Unwrap failed', message, extra_info);
+    }
     return x;
 }
