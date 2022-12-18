@@ -124,7 +124,7 @@ export class Cfg extends Pane<CfgState> {
             plugins: ['dropdown_input'],
             sortField: 'title',
             onChange: e => {
-                this.selectFunction(e as string);
+                this.selectFunction(e as unknown as string);
             },
         });
         this.state = state;
