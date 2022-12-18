@@ -1501,9 +1501,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         },
                         id: address,
                         command: {
-                            id: address,
                             title: obj.opcodes.join(' '),
-                        },
+                        } as any, // This any cast fixes a bug
                     });
                 }
             });
