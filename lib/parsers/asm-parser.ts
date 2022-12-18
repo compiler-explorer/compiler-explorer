@@ -31,6 +31,7 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {IAsmParser} from './asm-parser.interfaces';
@@ -280,7 +281,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             const match = line.match(this.fileFind);
             if (match) {
                 const lineNum = parseInt(match[1]);
-                if (match[4]) {
+                if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
                     files[lineNum] = match[2] + '/' + match[4];
                 } else {
