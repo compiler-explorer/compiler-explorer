@@ -23,12 +23,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import os from 'os';
+import {Writable} from 'stream';
 
 import {LEVEL, MESSAGE} from 'triple-beam';
 import winston from 'winston';
 import LokiTransport from 'winston-loki';
 import {Papertrail} from 'winston-papertrail';
-import TransportStream from 'winston-transport';
+import TransportStream, {TransportStreamOptions} from 'winston-transport';
 
 const consoleTransportInstance = new winston.transports.Console();
 export const logger = winston.createLogger({
@@ -36,28 +37,31 @@ export const logger = winston.createLogger({
     transports: [consoleTransportInstance],
 });
 
-logger.stream = {
-    write: message => {
-        logger.info(message.trim());
-    },
-};
+// Creates a log stream, suitable to passing to something that writes complete lines of output to a stream, for example
+// morgan's http logger. We look for complete text lines and output each as a winston log entry.
+export function makeLogStream(level: string, logger_: winston.Logger = logger): {write: (string) => void} {
+    let buffer = '';
+    return new Writable({
+        write: (chunk: string, encoding, callback: () => void) => {
+            buffer += chunk;
+            while (buffer.length > 0) {
+                const eol = buffer.indexOf('\n');
+                if (eol < 0) break;
+                logger_.log(level, buffer.substring(0, eol));
+                buffer = buffer.substring(eol + 1);
+            }
+            callback();
+        },
+    });
+}
 
-logger.warnStream = {
-    write: message => {
-        logger.warn(message.trim());
-    },
-};
-
-logger.errStream = {
-    write: message => {
-        logger.error(message.trim());
-    },
-};
-
-// Our own transport which uses Papertrail under the hood but better adapts it to work
-// in winston 3.0
+// Our own transport which uses Papertrail under the hood but better adapts it to work in winston 3.0
 class MyPapertrailTransport extends TransportStream {
-    constructor(opts) {
+    private readonly hostname: string;
+    private readonly program: string;
+    public readonly transport: Papertrail;
+
+    constructor(opts: TransportStreamOptions & {host: string; port: number; identifier: string}) {
         super(opts);
 
         this.hostname = os.hostname();
@@ -70,7 +74,7 @@ class MyPapertrailTransport extends TransportStream {
         });
     }
 
-    log(info, callback) {
+    override log(info: any, callback: () => void) {
         setImmediate(() => {
             this.emit('logged', info);
         });
@@ -98,7 +102,7 @@ export function logToLoki(url) {
     logger.info('Configured loki');
 }
 
-export function logToPapertrail(host, port, identifier) {
+export function logToPapertrail(host: string, port: number, identifier: string) {
     const transport = new MyPapertrailTransport({
         host: host,
         port: port,
@@ -116,7 +120,7 @@ export function logToPapertrail(host, port, identifier) {
 }
 
 class Blackhole extends TransportStream {
-    log(info, callback) {
+    override log(info: any, callback: () => void) {
         callback();
     }
 }

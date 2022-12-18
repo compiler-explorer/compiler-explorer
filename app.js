@@ -57,7 +57,7 @@ import {RouteAPI} from './lib/handlers/route-api';
 import {loadSiteTemplates} from './lib/handlers/site-templates';
 import {SourceHandler} from './lib/handlers/source';
 import {languages as allLanguages} from './lib/languages';
-import {logger, logToLoki, logToPapertrail, suppressConsoleLog} from './lib/logger';
+import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger';
 import {setupMetricsServer} from './lib/metrics-server';
 import {ClientOptionsHandler} from './lib/options-handler';
 import * as props from './lib/properties';
@@ -710,21 +710,21 @@ async function main() {
     router
         .use(
             morgan(morganFormat, {
-                stream: logger.stream,
+                stream: makeLogStream('info'),
                 // Skip for non errors (2xx, 3xx)
                 skip: (req, res) => res.statusCode >= 400,
             }),
         )
         .use(
             morgan(morganFormat, {
-                stream: logger.warnStream,
+                stream: makeLogStream('warn'),
                 // Skip for non user errors (4xx)
                 skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
             }),
         )
         .use(
             morgan(morganFormat, {
-                stream: logger.errStream,
+                stream: makeLogStream('error'),
                 // Skip for non server errors (5xx)
                 skip: (req, res) => res.statusCode < 500,
             }),
