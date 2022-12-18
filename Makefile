@@ -70,11 +70,19 @@ pre-commit: $(NODE_MODULES) test-min lint
 clean:  ## Cleans up everything
 	rm -rf node_modules .*-updated .*-bin out
 
-.PHONY: run
-run: prereqs  ## Runs the site like it runs in production
+.PHONY: prebuild
+prebuild: prereqs
 	$(NPM) run webpack
 	$(NPM) run ts-compile
+
+.PHONY: run-only
+run-only: node-installed  ## Runs the site like it runs in production without building it
 	env NODE_ENV=production $(NODE) $(NODE_ARGS) -r esm ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
+
+.PHONY: run
+run:  ## Runs the site like it runs in production
+	$(MAKE) prebuild
+	$(MAKE) run-only
 
 .PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
