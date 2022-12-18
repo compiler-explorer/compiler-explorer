@@ -47,7 +47,9 @@ class SiteTemplatesWidget {
     }
     getCurrentTheme() {
         const theme = Settings.getStoredSettings()['theme'];
-        if (theme === 'system') {
+        if (!theme) {
+            return 'default'; // just default to dark if undefined, apparently this can happen
+        } else if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
             } else {
