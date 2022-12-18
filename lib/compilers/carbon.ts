@@ -27,6 +27,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces'
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
@@ -69,7 +70,7 @@ export class CarbonCompiler extends BaseCompiler {
 
     lastLine(lines?: ResultLine[]): string {
         if (!lines || lines.length === 0) return '';
-        return (lines.at(-1) as ResultLine).text;
+        return unwrap(lines.at(-1)).text;
     }
 
     override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
