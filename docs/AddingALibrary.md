@@ -6,6 +6,8 @@ and then how to submit PRs to get it into the main CE site.
 Note that most libraries are Header-only. This is the easiest form of library to support. If the library needs to be
 built, there are some caveats, best practices and good to knows. Consult the bottom of this page for details.
 
+If you're specifically looking for adding a Rust crate to CE, go here https://github.com/compiler-explorer/infra/blob/main/docs/adding_rust_crates.md
+
 ## Configuration
 
 Library configurations are part of the compiler's properties, which is done through the `etc/config/c++.*.properties`
