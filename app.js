@@ -67,6 +67,9 @@ import {loadSponsorsFromString} from './lib/sponsors';
 import {getStorageTypeByKey} from './lib/storage';
 import * as utils from './lib/utils';
 
+// Used by assert.ts
+global.ce_base_directory = __dirname; // eslint-disable-line unicorn/prefer-module
+
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
     env: [String, Array],
