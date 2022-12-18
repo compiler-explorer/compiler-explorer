@@ -583,7 +583,12 @@ textarea.form-control {
     }
 
     .active {
-        background-color: #68688e;
+        background-color: #68688e !important;
+    }
+
+    .selected {
+        background-color: #21525f !important;
+        color: #dddddd !important;
     }
 
     .optgroup-header {
