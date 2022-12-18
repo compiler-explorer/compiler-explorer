@@ -366,6 +366,10 @@ div.argmenuitem span.argdescription {
     background-color: #f6f6f6;
 }
 
+.ts-dropdown .selected {
+    background-color: #dae0e5;
+}
+
 .currentCursorPosition {
     color: #15a3b9;
     background-color: darken(rgba(248, 249, 250, 0.85), 3%);
