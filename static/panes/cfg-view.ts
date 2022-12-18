@@ -44,6 +44,7 @@ import {
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
+import {assert, unwrap} from '../assert';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -113,9 +114,7 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
         const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
-        if (!(selector instanceof HTMLSelectElement)) {
-            throw new Error('.function-selector is not an HTMLSelectElement');
-        }
+        assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
         this.functionSelector = new TomSelect(selector, {
             valueField: 'value',
             labelField: 'title',
@@ -125,7 +124,7 @@ export class Cfg extends Pane<CfgState> {
             plugins: ['dropdown_input'],
             sortField: 'title',
             onChange: e => {
-                this.selectFunction(e as any as string);
+                this.selectFunction(e as string);
             },
         });
         this.state = state;
@@ -152,7 +151,7 @@ export class Cfg extends Pane<CfgState> {
 
     override registerDynamicElements(state: CfgState) {
         this.graphDiv = this.domRoot.find('.graph')[0];
-        this.svg = this.domRoot.find('svg')[0] as SVGElement;
+        this.svg = this.domRoot.find('svg')[0];
         this.blockContainer = this.domRoot.find('.block-container')[0];
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
@@ -163,7 +162,7 @@ export class Cfg extends Pane<CfgState> {
 
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
-            const div = (e.target as Element).closest('div');
+            const div = (unwrap(e.target) as Element).closest('div');
             if (div && (div.classList.contains('block-container') || div.classList.contains('graph-container'))) {
                 this.dragging = true;
                 this.dragStart = {x: e.clientX, y: e.clientY};
@@ -274,17 +273,18 @@ export class Cfg extends Pane<CfgState> {
             const div = document.createElement('div');
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
-            if (node.id in this.bbMap) {
-                throw Error("Duplicate basic block node id's found while drawing cfg");
-            }
+            // So because this is async there's a race condition here if you rapidly switch functions.
+            // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
+            // to another PR. TODO(jeremy-rifkin)
+            assert(!(node.id in this.bbMap), "Duplicate basic block node id's found while drawing cfg");
             this.bbMap[node.id] = div;
             this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
             const elem = $(this.bbMap[node.id]);
             void this.bbMap[node.id].offsetHeight;
-            (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
-            (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
+            (node as AnnotatedNodeDescriptor).width = unwrap(elem.outerWidth());
+            (node as AnnotatedNodeDescriptor).height = unwrap(elem.outerHeight());
         }
     }
 
@@ -299,9 +299,7 @@ export class Cfg extends Pane<CfgState> {
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
                 // Sanity check
-                if (edge.path.length === 0) {
-                    throw Error('Mal-formed edge: Zero segments');
-                }
+                assert(edge.path.length !== 0, 'Mal-formed edge: Zero segments');
                 const points: [number, number][] = [];
                 // -1 offset is to create an overlap between the block's bottom border and start of the path, avoid any
                 // visual artifacts
@@ -396,9 +394,7 @@ export class Cfg extends Pane<CfgState> {
         doc += '<style>.code{font: 16px Consolas;}</style>';
         // insert the background
         const pane = this.graphContainer.parentElement;
-        if (!pane || !pane.classList.contains('lm_content')) {
-            throw Error('unknown parent');
-        }
+        assert(pane && pane.classList.contains('lm_content'), 'Unknown parent');
         const pane_style = window.getComputedStyle(pane);
         doc += `<rect ${attrs({
             x: '0',
@@ -482,8 +478,8 @@ export class Cfg extends Pane<CfgState> {
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-            this.graphContainer.style.width = `${this.domRoot.width() as number}px`;
-            this.graphContainer.style.height = `${(this.domRoot.height() as number) - topBarHeight}px`;
+            this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
+            this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
         });
     }
 

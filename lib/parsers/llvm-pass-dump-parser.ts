@@ -31,26 +31,13 @@ import {
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {assert} from '../assert';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
 // Maybe at a later date we'll want to allow user-controllable filters
 // It'd be helpful to better display annotations about branch weights
 // and parse debug info too at some point.
-
-// TODO(jeremy-rifkin): Doe we already have an assert utility
-function assert(condition: boolean, message?: string, ...args: any[]): asserts condition {
-    if (!condition) {
-        const stack = new Error('Assertion Error').stack;
-        throw (
-            (message
-                ? `Assertion error in llvm-print-after-all-parser: ${message}`
-                : `Assertion error in llvm-print-after-all-parser`) +
-            (args.length > 0 ? `\n${JSON.stringify(args)}\n` : '') +
-            `\n${stack}`
-        );
-    }
-}
 
 // Just a sanity check
 function passesMatch(before: string, after: string) {
@@ -175,9 +162,7 @@ export class LlvmPassDumpParser {
                 };
                 lastWasBlank = true; // skip leading newlines after the header
             } else {
-                if (pass === null) {
-                    throw 'Internal error during breakdownOutput (1)';
-                }
+                assert(pass);
                 if (line.text.trim() === '') {
                     if (!lastWasBlank) {
                         pass.lines.push(line);
@@ -216,9 +201,7 @@ export class LlvmPassDumpParser {
             // function define line
             if (irFnMatch || machineFnMatch) {
                 // if the last function has not been closed...
-                if (func !== null) {
-                    throw 'Internal error during breakdownPass (1)';
-                }
+                assert(func === null);
                 func = {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     name: (irFnMatch || machineFnMatch)![1],
@@ -236,19 +219,13 @@ export class LlvmPassDumpParser {
                 // close function
                 if (this.functionEnd.test(line.text.trim())) {
                     // if not currently in a function
-                    if (func === null) {
-                        throw 'Internal error during breakdownPass (2)';
-                    }
+                    assert(func);
                     const {name, lines} = func;
                     lines.push(line); // include the }
                     // loop dumps can't be terminated with }
-                    if (name === '<loop>') {
-                        throw 'Internal error during breakdownPass (3)';
-                    }
+                    assert(name !== '<loop>');
                     // somehow dumped twice?
-                    if (name in pass.functions) {
-                        throw 'Internal error during breakdownPass (4)';
-                    }
+                    assert(!(name in pass.functions));
                     pass.functions[name] = lines;
                     func = null;
                 } else {
@@ -269,17 +246,10 @@ export class LlvmPassDumpParser {
         }
         // unterminated function, either a loop dump or an error
         if (func !== null) {
-            if (func.name === '<loop>') {
-                // loop dumps must be alone
-                if (Object.entries(pass.functions).length > 0) {
-                    //console.dir(dump, { depth: 5, maxArrayLength: 100000 });
-                    //console.log(pass.functions);
-                    throw 'Internal error during breakdownPass (5)';
-                }
-                pass.functions[func.name] = func.lines;
-            } else {
-                throw 'Internal error during breakdownPass (6)';
-            }
+            assert(func.name === '<loop>');
+            // loop dumps must be alone
+            assert(Object.entries(pass.functions).length === 0);
+            pass.functions[func.name] = func.lines;
         }
         return pass;
     }
