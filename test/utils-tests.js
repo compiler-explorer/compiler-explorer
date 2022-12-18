@@ -25,7 +25,7 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
-import {logger} from '../lib/logger';
+import {logger, makeLogStream} from '../lib/logger';
 import * as utils from '../lib/utils';
 
 import {fs} from './utils';
@@ -372,14 +372,35 @@ describe('Anonymizes all kind of IPs', () => {
 });
 
 describe('Logger functionality', () => {
-    it('has info stream with a write function', () => {
-        logger.stream.write.should.a('function');
+    it('correctly logs streams split over lines', () => {
+        const logs = [];
+        const fakeLog = {log: (level, msg) => logs.push({level, msg})};
+        const infoStream = makeLogStream('info', fakeLog);
+        infoStream.write('first\n');
+        infoStream.write('part');
+        infoStream.write('ial\n');
+        logs.should.deep.equal([
+            {
+                level: 'info',
+                msg: 'first',
+            },
+            {
+                level: 'info',
+                msg: 'partial',
+            },
+        ]);
     });
-    it('has warning stream with a write function', () => {
-        logger.warnStream.write.should.a('function');
-    });
-    it('has error stream with a write function', () => {
-        logger.errStream.write.should.a('function');
+    it('correctly logs streams to the right destination', () => {
+        const logs = [];
+        const fakeLog = {log: (level, msg) => logs.push({level, msg})};
+        const infoStream = makeLogStream('warn', fakeLog);
+        infoStream.write('ooh\n');
+        logs.should.deep.equal([
+            {
+                level: 'warn',
+                msg: 'ooh',
+            },
+        ]);
     });
 });
 
