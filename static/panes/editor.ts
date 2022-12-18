@@ -1497,16 +1497,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
                 if (obj.tag.fixes && editorModel) {
                     fixes = fixes.concat(
-                        obj.tag.fixes.map((fs, ind) => {
+                        obj.tag.fixes.map((fs, ind): monaco.languages.CodeAction => {
                             return {
                                 title: fs.title,
                                 diagnostics: [diag],
                                 kind: 'quickfix',
                                 edit: {
-                                    edits: fs.edits.map(f => {
+                                    edits: fs.edits.map((f): monaco.languages.IWorkspaceTextEdit => {
                                         return {
                                             resource: editorModel.uri,
-                                            edit: {
+                                            textEdit: {
                                                 range: new monaco.Range(
                                                     f.line ?? 0,
                                                     f.column ?? 0,
@@ -1515,6 +1515,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                                                 ),
                                                 text: f.text,
                                             },
+                                            versionId: undefined,
                                         };
                                     }),
                                 },
