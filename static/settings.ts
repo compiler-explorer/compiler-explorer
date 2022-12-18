@@ -64,7 +64,7 @@ export interface SiteSettings {
     showMinimap: boolean;
     showQuickSuggestions: boolean;
     tabWidth: number;
-    theme: Themes;
+    theme: Themes | undefined;
     useCustomContextMenu: boolean;
     useSpaces: boolean;
     useVim: boolean;
