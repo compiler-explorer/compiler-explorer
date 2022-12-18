@@ -2386,7 +2386,7 @@ export class BaseCompiler implements ICompiler {
         return output;
     }
 
-    couldSupportASTDump(version) {
+    couldSupportASTDump(version: string) {
         const versionRegex = /version (\d+.\d+)/;
         const versionMatch = versionRegex.exec(version);
 
@@ -2398,7 +2398,7 @@ export class BaseCompiler implements ICompiler {
         return false;
     }
 
-    isCfgCompiler(compilerVersion) {
+    isCfgCompiler(compilerVersion: string) {
         return compilerVersion.includes('clang') || compilerVersion.match(/^([\w-]*-)?g((\+\+)|(cc)|(dc))/g) !== null;
     }
 
