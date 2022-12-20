@@ -194,7 +194,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
 
     onLanguageChange(editorId: number | boolean, newLangId: string): void {
         if (this.editorId && this.editorId === editorId) {
-            // @ts-expect-error: 'tools' is of type 'unknown'
             const tools = ceoptions.tools[newLangId];
             this.toggleUsable(tools && tools[this.toolId]);
         }
@@ -260,7 +259,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    onToolInputChange(compilerId: number, toolId: number, input: string): void {
+    onToolInputChange(compilerId: number, toolId: string, input: string): void {
         if (this.compilerId === compilerId && this.toolId === toolId) {
             this.monacoStdinField = input;
             this.onOptionsChange();
@@ -268,7 +267,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    onToolInputViewClosed(compilerId: number, toolId: number, input: string): void {
+    onToolInputViewClosed(compilerId: number, toolId: string, input: string): void {
         if (this.compilerId === compilerId && this.toolId === toolId) {
             // Duplicate close messages have been seen, with the second having no value.
             // If we have a current value and the new value is empty, ignore the message.
@@ -454,8 +453,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             if (compiler) this.compilerName = compiler.name;
 
             const foundTool = Object.values(compiler.tools).find(tool => {
-                // @ts-expect-error: tool.id is typeof string but this.toolId is typeof number
-                return tool.id === this.toolId;
+                return tool.getId() === this.toolId;
             });
 
             this.toggleUsable(!!foundTool);
@@ -511,8 +509,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             this.normalAnsiToHtml.reset();
 
             if (toolResult) {
-                // @ts-expect-error: typescript handles this poorly
-                if (toolResult.languageId && toolResult.languageId === 'stderr') {
+                if (toolResult.languageId && (toolResult.languageId as string) === 'stderr') {
                     toolResult.languageId = undefined;
                 }
 
