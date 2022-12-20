@@ -76,8 +76,9 @@ import {IAsmParser} from './parsers/asm-parser.interfaces';
 import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
 import {PropertyGetter} from './properties.interfaces';
 import {getToolchainPath} from './toolchain-utils';
-import {Tool, ToolResult, ToolTypeKey} from './tooling/base-tool.interface';
+import {ITool, ToolResult} from './tooling/base-tool.interface';
 import * as utils from './utils';
+import {Tool, ToolTypeKey} from '../types/tool.interfaces';
 
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
@@ -96,7 +97,7 @@ export class BaseCompiler implements ICompiler {
     protected llvmAst: LlvmAstParser;
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
-    protected possibleTools: Tool[];
+    protected possibleTools: ITool[];
     protected demanglerClass: any;
     protected objdumperClass: any;
     public outputFilebase: string;
@@ -147,7 +148,7 @@ export class BaseCompiler implements ICompiler {
         this.toolchainPath = getToolchainPath(this.compiler.exe, this.compiler.options);
 
         this.possibleArguments = new CompilerArguments(this.compiler.id);
-        this.possibleTools = _.values(compilerInfo.tools);
+        this.possibleTools = _.values(compilerInfo.tools) as ITool[];
         const demanglerExe = this.compiler.demangler;
         if (demanglerExe && this.compiler.demanglerType) {
             this.demanglerClass = getDemanglerTypeByKey(this.compiler.demanglerType);
@@ -1361,7 +1362,7 @@ export class BaseCompiler implements ICompiler {
         if (tools) {
             for (const tool of tools) {
                 const matches = this.possibleTools.find(possibleTool => {
-                    return possibleTool.getId() === tool.id && possibleTool.getType() === type;
+                    return possibleTool.id === tool.id && possibleTool.type === type;
                 });
 
                 if (matches) {
