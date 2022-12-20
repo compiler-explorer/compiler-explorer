@@ -458,6 +458,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
 
             this.toggleUsable(!!foundTool);
 
+            // clearly not a ToolInfo, and clearly the result.result wtf?
             let toolResult: ToolInfo | null = null;
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (result && result.tools) {
@@ -467,12 +468,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
 
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if (result && result.result && result.result.tools) {
-                toolResult = _.find(
-                    result.result.tools,
-                    tool => {
-                        return tool.id === this.toolId;
-                    }
-                );
+                toolResult = _.find(result.result.tools, tool => {
+                    return tool.id === this.toolId;
+                });
             }
 
             let toolInfo: ToolInterface | null = null;
