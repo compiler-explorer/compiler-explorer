@@ -52,7 +52,6 @@ import {ComponentConfig, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces';
-import {Tool} from '../../lib/tooling/base-tool.interface';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
@@ -64,6 +63,7 @@ import * as utils from '../utils';
 import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
+import {Tool} from '../../types/tool.interfaces';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
