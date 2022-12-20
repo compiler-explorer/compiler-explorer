@@ -31,7 +31,7 @@ import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {ToolInfo, ToolResult, ToolTypeKey} from '../../types/tool.interfaces';
+import {ToolInfo, ToolResult} from '../../types/tool.interfaces';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import {parseOutput} from '../utils';
