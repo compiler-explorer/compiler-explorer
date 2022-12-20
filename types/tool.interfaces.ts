@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {LanguageKey} from './languages.interfaces';
+import {ResultLine} from './resultline/resultline.interfaces';
 
 export type ToolTypeKey = 'independent' | 'postcompilation';
 
@@ -47,4 +48,21 @@ export type Tool = {
     readonly tool: ToolInfo;
     readonly id: string;
     readonly type: string;
+};
+
+export type Artifact = {
+    content: string;
+    type: string;
+    name: string;
+    title: string;
+};
+
+export type ToolResult = {
+    id: string;
+    name?: string;
+    code: number;
+    languageId?: LanguageKey | 'stderr';
+    stderr: ResultLine[];
+    stdout: ResultLine[];
+    artifact?: Artifact;
 };
