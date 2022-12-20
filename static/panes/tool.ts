@@ -44,7 +44,7 @@ import {ComponentConfig, PopulatedToolInputViewState} from '../components.interf
 import {ToolState} from './tool.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {ToolInfo, Tool as ToolInterface} from '../../lib/tooling/base-tool.interface';
+import {ToolInfo, Tool as ToolInterface} from '../../types/tool.interfaces';
 import {MessageWithLocation} from '../../types/resultline/resultline.interfaces';
 
 function makeAnsiToHtml(color?: string): AnsiToHtml {
@@ -453,7 +453,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             if (compiler) this.compilerName = compiler.name;
 
             const foundTool = Object.values(compiler.tools).find(tool => {
-                return tool.getId() === this.toolId;
+                return tool.id === this.toolId;
             });
 
             this.toggleUsable(!!foundTool);
@@ -465,11 +465,9 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                     return tool.id === this.toolId;
                 });
 
-                // @ts-expect-error: CompilationResult has no member 'result'
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             } else if (result && result.result && result.result.tools) {
                 toolResult = _.find(
-                    // @ts-expect-error: CompilationResult has no member 'result'
                     result.result.tools,
                     tool => {
                         return tool.id === this.toolId;
@@ -482,8 +480,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             if (compiler && compiler.tools) {
                 toolInfo =
                     Object.values(compiler.tools).find(tool => {
-                        // @ts-ignore
-                        return tool.getId() === this.toolId;
+                        return tool.id === this.toolId;
                     }) ?? null;
             }
 
@@ -516,12 +513,10 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 this.setLanguage(toolResult.languageId);
 
                 if (toolResult.languageId) {
-                    // @ts-expect-error: ToolInfo has no member 'stdout'
                     this.setEditorContent(_.pluck(toolResult.stdout, 'text').join('\n'));
                 } else {
                     this.plainContentRoot.empty();
                     _.each(
-                        // @ts-expect-error: ToolInfo has no member 'stdout' or 'stderr'
                         (toolResult.stdout || []).concat(toolResult.stderr || []),
                         obj => {
                             if (obj.text === '') {
@@ -542,35 +537,25 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 this.toolName = toolResult.name;
                 this.updateTitle();
 
-                // @ts-expect-error: ToolInfo has no member 'sourceChanged'
                 if (toolResult.sourcechanged && this.editorId) {
-                    // @ts-expect-error: ToolInfo has no member 'newsource'
                     this.eventHub.emit('newSource', this.editorId, toolResult.newsource);
                 }
                 this.artifactBtn.off('click');
-                // @ts-expect-error: ToolInfo has no member 'artifact'
                 if (toolResult.artifact) {
                     this.artifactBtn.removeClass('d-none');
-                    // @ts-expect-error: ToolInfo has no member 'artifact'
                     this.artifactText.text('Download ' + toolResult.artifact.title);
                     this.artifactBtn.on('click', () => {
-                        // @ts-expect-error: ToolInfo has no member 'artifact'
                         // The artifact content can be passed either as plain text or as a base64 encoded binary file
                         if (toolResult.artifact.type === 'application/octet-stream') {
-                            // @ts-expect-error: ToolInfo has no member 'artifact'
                             // Fetch is the most convenient non ES6 way to build a binary blob out of a base64 string
                             fetch('data:application/octet-stream;base64,' + toolResult.artifact.content)
                                 .then(res => res.blob())
-                                // @ts-expect-error: ToolInfo has no member 'artifact'
                                 .then(blob => saveAs(blob, toolResult.artifact.name));
                         } else {
                             saveAs(
-                                // @ts-expect-error: ToolInfo has no member 'artifact'
                                 new Blob([toolResult.artifact.content], {
-                                    // @ts-expect-error: ToolInfo has no member 'artifact'
                                     type: toolResult.artifact.type,
                                 }),
-                                // @ts-expect-error: ToolInfo has no member 'artifact'
                                 toolResult.artifact.name
                             );
                         }
@@ -596,7 +581,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                     .prop('href', 'javascript:;')
                     .html(msg)
                     .on('click', e => {
-                        // @ts-expect-error: 'editorSetDecoration' only accepts 4 arguments
                         this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true, column);
                         if (flow && this.editorId) {
                             this.eventHub.emit('editorDisplayFlow', this.editorId, flow);
@@ -605,7 +589,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                         return false;
                     })
                     .on('mouseover', () => {
-                        // @ts-expect-error: 'editorSetDecoration' only accepts 4 arguments
                         this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false, column);
                     })
             );
