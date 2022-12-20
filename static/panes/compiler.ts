@@ -2388,7 +2388,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const createToolView: () => ComponentConfig<ToolViewState> = () => {
             let args = '';
             let monacoStdin = false;
-            const langTools = (options.tools as any)[this.currentLangId ?? ''];
+            const langTools = options.tools[this.currentLangId ?? ''];
             if (langTools && langTools[toolId] && langTools[toolId].tool) {
                 if (langTools[toolId].tool.args !== undefined) {
                     args = langTools[toolId].tool.args;
