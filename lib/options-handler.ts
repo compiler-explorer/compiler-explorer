@@ -30,6 +30,7 @@ import semverParser from 'semver';
 import _ from 'underscore';
 
 import {LanguageKey} from '../types/languages.interfaces';
+import {ToolTypeKey} from '../types/tool.interfaces';
 
 import {logger} from './logger';
 import {CompilerProps} from './properties';
@@ -37,7 +38,6 @@ import {PropertyGetter, PropertyValue} from './properties.interfaces';
 import {Source} from './sources';
 import {BaseTool, getToolTypeByKey} from './tooling';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils';
-import {ToolTypeKey} from '../types/tool.interfaces';
 
 // TODO: There is surely a better name for this type. Used both here and in the compiler finder.
 export type OptionHandlerArguments = {

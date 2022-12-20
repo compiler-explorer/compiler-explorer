@@ -130,6 +130,7 @@
     "eslint-plugin-requirejs": "^4.0.1",
     "eslint-plugin-sonarjs": "^0.11.0",
     "eslint-plugin-unicorn": "^40.1.0",
+    "eslint-plugin-unused-imports": "^2.0.0",
     "file-loader": "^6.2.0",
     "lint-staged": "^13.0.3",
     "mini-css-extract-plugin": "^2.4.5",

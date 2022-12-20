@@ -52,6 +52,7 @@ import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/feat
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
+import {Tool, ToolTypeKey} from '../types/tool.interfaces';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
@@ -78,7 +79,6 @@ import {PropertyGetter} from './properties.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import {ITool, ToolResult} from './tooling/base-tool.interface';
 import * as utils from './utils';
-import {Tool, ToolTypeKey} from '../types/tool.interfaces';
 
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
