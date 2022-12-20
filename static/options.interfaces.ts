@@ -24,7 +24,7 @@
 
 import {Language, LanguageKey} from '../types/languages.interfaces';
 import {CompilerInfo} from '../types/compiler.interfaces';
-import {Tool} from '../lib/tooling/base-tool.interface';
+import {Tool} from '../types/tool.interfaces';
 
 export type LibraryVersion = {
     alias: string[];
