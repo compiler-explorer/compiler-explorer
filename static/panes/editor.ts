@@ -36,7 +36,7 @@ import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config';
 import * as quickFixesHandler from '../quick-fixes-handler';
 import TomSelect from 'tom-select';
-import {Settings, SiteSettings} from '../settings';
+import {SiteSettings} from '../settings';
 import '../formatter-registry';
 import '../modes/_all';
 import {MonacoPane} from './pane';
@@ -1582,9 +1582,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         let asm: ResultLine[] = [];
 
-        // @ts-expect-error: result has no property 'result'
         if (result.result && result.result.asm) {
-            // @ts-expect-error: result has no property 'result'
             asm = result.result.asm;
         } else if (result.asm) {
             asm = result.asm;
