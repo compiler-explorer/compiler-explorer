@@ -22,39 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LanguageKey} from '../../types/languages.interfaces';
-import {Library} from '../../types/libraries/libraries.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {Tool, ToolInfo} from '../../types/tool.interfaces';
+import {LanguageKey} from './languages.interfaces';
 
-export type ToolEnv = {
-    ceProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
-    compilerProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
-};
+export type ToolTypeKey = 'independent' | 'postcompilation';
 
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
+export type ToolInfo = {
     id: string;
     name?: string;
-    code: number;
-    languageId?: LanguageKey | 'stderr';
-    stderr: ResultLine[];
-    stdout: ResultLine[];
-    artifact?: Artifact;
+    type?: ToolTypeKey;
+    exe: string;
+    exclude: string[];
+    includeKey?: string;
+    options: string[];
+    args?: string;
+    languageId?: LanguageKey;
+    stdinHint?: string;
+    monacoStdin?: string;
+    icon?: string;
+    darkIcon?: string;
+    compilerLanguage: LanguageKey;
 };
 
-export interface ITool extends Tool {
-    runTool(
-        compilationInfo: Record<any, any>,
-        inputFilepath?: string,
-        args?: string[],
-        stdin?: string,
-        supportedLibraries?: Record<string, Library>,
-    ): Promise<ToolResult>;
-}
+export type Tool = {
+    readonly tool: ToolInfo;
+    readonly id: string;
+    readonly type: string;
+};
