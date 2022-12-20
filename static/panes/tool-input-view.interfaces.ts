@@ -23,6 +23,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export interface ToolInputViewState {
-    toolId: number;
+    toolId: string;
     toolName: string;
 }
