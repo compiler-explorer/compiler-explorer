@@ -45,7 +45,7 @@ export class LlvmIrParser {
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
     }
 
-    getFileName(debugInfo, scope) {
+    getFileName(debugInfo, scope): string | null {
         const stdInLooking = /.*<stdin>|^-$|example\.[^/]+$|<source>/;
 
         if (!debugInfo[scope]) {
