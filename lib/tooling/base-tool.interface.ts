@@ -22,31 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LanguageKey} from '../../types/languages.interfaces';
 import {Library} from '../../types/libraries/libraries.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {Tool, ToolInfo} from '../../types/tool.interfaces';
+import {Tool, ToolResult} from '../../types/tool.interfaces';
 
 export type ToolEnv = {
     ceProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
     compilerProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
-};
-
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
-    id: string;
-    name?: string;
-    code: number;
-    languageId?: LanguageKey | 'stderr';
-    stderr: ResultLine[];
-    stdout: ResultLine[];
-    artifact?: Artifact;
 };
 
 export interface ITool extends Tool {
