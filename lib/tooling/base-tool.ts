@@ -35,7 +35,8 @@ import * as exec from '../exec';
 import {logger} from '../logger';
 import {parseOutput} from '../utils';
 
-import {Tool, ToolEnv, ToolInfo, ToolResult, ToolTypeKey} from './base-tool.interface';
+import {ITool, ToolEnv, ToolResult} from './base-tool.interface';
+import {ToolInfo, ToolTypeKey} from '../../types/tool.interfaces';
 
 const toolCounter = new PromClient.Counter({
     name: 'tool_invocations_total',
@@ -43,23 +44,19 @@ const toolCounter = new PromClient.Counter({
     labelNames: ['language', 'name'],
 });
 
-export class BaseTool implements Tool {
+export class BaseTool implements ITool {
     public readonly tool: ToolInfo;
     private env: ToolEnv;
     protected addOptionsToToolArgs = true;
+    public readonly id: string;
+    public readonly type: string;
 
     constructor(toolInfo: ToolInfo, env: ToolEnv) {
         this.tool = toolInfo;
         this.env = env;
         this.addOptionsToToolArgs = true;
-    }
-
-    getId() {
-        return this.tool.id;
-    }
-
-    getType(): ToolTypeKey {
-        return this.tool.type || 'independent';
+        this.id = toolInfo.id;
+        this.type = toolInfo.type || 'independent';
     }
 
     getUniqueFilePrefix() {
