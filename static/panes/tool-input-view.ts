@@ -32,10 +32,9 @@ import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {ToolInputViewState} from './tool-input-view.interfaces';
-import {Settings} from '../settings';
 
 export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolInputViewState> {
-    _toolId: number;
+    _toolId: string;
     _toolName: string;
     shouldSetSelectionInitially: boolean;
     debouncedEmitChange: (() => void) & _.Cancelable;
