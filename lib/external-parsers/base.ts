@@ -73,6 +73,9 @@ export class ExternalParserBase implements IExternalParser {
     }
 
     private parseAsmExecResult(execResult: UnprocessedExecResult): ParsedAsmResult {
+        if (execResult.code !== 0) {
+            throw new Error(`Internal error running asm parser: ${execResult.stdout}\n${execResult.stderr}`);
+        }
         const result = Object.assign({}, execResult, JSON.parse(execResult.stdout));
         delete result.stdout;
         delete result.stderr;
