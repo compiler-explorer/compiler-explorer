@@ -25,7 +25,7 @@
 export type ToolState = {
     compiler: number;
     tree: number;
-    toolId: number;
+    toolId: string;
     monacoStdin?: string;
     monacoEditorOpen?: boolean;
     monacoEditorHasBeenAutoOpened?: boolean;

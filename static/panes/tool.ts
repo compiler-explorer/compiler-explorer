@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import $ from 'jquery';
 import _ from 'underscore';
 import {FontScale} from '../widgets/fontscale';
 import {Filter as AnsiToHtml} from '../ansi-to-html';
@@ -43,7 +44,7 @@ import {ComponentConfig, PopulatedToolInputViewState} from '../components.interf
 import {ToolState} from './tool.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {ToolInfo} from '../../lib/tooling/base-tool.interface';
+import {ToolInfo, Tool as ToolInterface} from '../../lib/tooling/base-tool.interface';
 import {MessageWithLocation} from '../../types/resultline/resultline.interfaces';
 
 function makeAnsiToHtml(color?: string): AnsiToHtml {
@@ -56,7 +57,6 @@ function makeAnsiToHtml(color?: string): AnsiToHtml {
 }
 
 export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
-    private hub: Hub;
     private editorContentRoot: JQuery<HTMLElement>;
     private readonly plainContentRoot: JQuery<HTMLElement>;
     private readonly optionsToolbar: JQuery<HTMLElement>;
@@ -67,7 +67,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
     private readonly optionsField?: JQuery<HTMLElement>;
     private readonly localStdinField?: JQuery<HTMLElement>;
     private readonly compilerId: number;
-    private readonly toolId: number;
+    private readonly toolId: string;
     private toolName?: string;
     private options: Toggles;
     private monacoEditorOpen: boolean;
@@ -88,7 +88,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
 
     constructor(hub: Hub, container: Container, state: MonacoPaneState & ToolState) {
         super(hub, container, state);
-        this.hub = hub;
         this.compilerId = state.compiler;
         this.editorId = state.editorid;
         this.treeId = state.tree;
@@ -443,7 +442,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
     urlToHTMLLink(text: string): string {
         return text.replace(
             // URL detection regex grabbed from https://stackoverflow.com/a/3809435
-            /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
+            /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*))/,
             '<a href="$1" target="_blank">$1</a>'
         );
     }
@@ -480,13 +479,13 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 );
             }
 
-            let toolInfo: ToolInfo | null = null;
+            let toolInfo: ToolInterface | null = null;
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (compiler && compiler.tools) {
                 toolInfo =
                     Object.values(compiler.tools).find(tool => {
-                        // @ts-expect-error: tool.id is typeof string but this.toolId is typeof number
-                        return tool.id === this.toolId;
+                        // @ts-ignore
+                        return tool.getId() === this.toolId;
                     }) ?? null;
             }
 
@@ -496,11 +495,8 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 if (this.monacoStdin && !this.monacoEditorOpen && !this.monacoEditorHasBeenAutoOpened) {
                     this.monacoEditorHasBeenAutoOpened = true;
                     this.openMonacoEditor();
-                    // @ts-expect-error: ToolInfo has no member 'tool'
                 } else if (!this.monacoStdin && toolInfo.tool.stdinHint) {
-                    // @ts-expect-error: ToolInfo has no member 'tool'
                     this.localStdinField?.prop('placeholder', toolInfo.tool.stdinHint);
-                    // @ts-expect-error: ToolInfo has no member 'tool'
                     if (toolInfo.tool.stdinHint === 'disabled') {
                         this.toggleStdin.prop('disabled', true);
                     } else {
