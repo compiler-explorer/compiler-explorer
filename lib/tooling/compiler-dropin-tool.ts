@@ -25,11 +25,11 @@
 import _ from 'underscore';
 
 import {Library} from '../../types/libraries/libraries.interfaces';
+import {ToolResult} from '../../types/tool.interfaces';
 import {getToolchainPath} from '../toolchain-utils';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
-import {ToolResult} from './base-tool.interface';
 
 export class CompilerDropinTool extends BaseTool {
     static get key() {
