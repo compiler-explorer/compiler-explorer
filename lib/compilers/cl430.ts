@@ -23,9 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BaseCompiler} from '../base-compiler';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 export class CL430Compiler extends BaseCompiler {
     static get key() {
         return 'cl430';
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        let options = ['-g', '--output_file', this.filename(outputFilename)];
+        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+            options = options.concat(this.compiler.intelAsm.split(' '));
+        }
+        if (!filters.binary) options = options.concat('-s');
+        return options;
     }
 }
