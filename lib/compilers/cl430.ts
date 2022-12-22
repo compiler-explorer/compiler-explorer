@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Jonathan Reichelt Gjertsen
+// Copyright (c) 2022, Jonathan Reichelt Gjertsen & Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,12 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseCompiler} from '../base-compiler';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
 
 export class CL430Compiler extends BaseCompiler {
     static get key() {
         return 'cl430';
+    }
+
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+        super(compilerInfo, env);
+
+        // We need to have the same name for the C/C++ file as we expect for the output file
+        this.compileFilename = `output${this.lang.extensions[0]}`;
     }
 
     override optionsForFilter(
@@ -35,11 +43,16 @@ export class CL430Compiler extends BaseCompiler {
         outputFilename: string,
         userOptions?: string[],
     ): string[] {
-        let options = ['-g', '--output_file', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
-            options = options.concat(this.compiler.intelAsm.split(' '));
-        }
-        if (!filters.binary) options = options.concat('-s');
-        return options;
+        return [
+            // -g AKA --symdebug:dwarf generates too much noise for the default parser to deal with
+            '--symdebug:none',
+
+            // Generate an object file called output (no extension) and request to keep the ASM
+            // This will generate a corresponding assembly file called output.s
+            '--keep_asm',
+            '--asm_extension=.s',
+            '--output_file',
+            this.filename(outputFilename.replace('.s', '')),
+        ];
     }
 }
