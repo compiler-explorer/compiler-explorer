@@ -201,6 +201,7 @@ export class Cfg extends Pane<CfgState> {
             } else {
                 this.state.zoom = MINZOOM;
             }
+            e.preventDefault();
         });
         this.exportPNGButton.on('click', () => {
             this.exportPNG();
