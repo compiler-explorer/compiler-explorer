@@ -31,7 +31,8 @@ html(lang="en")
       | (function () {
       |   try {
       |     var settings = window.localStorage.getItem("!{localStoragePrefix}settings") || '{}';
-      |     var theme = JSON.parse(settings).theme || 'default';
+      |     var theme = JSON.parse(settings).theme;
+      |     if (theme !== 'default') theme = 'dark';
       |     document.documentElement.setAttribute('data-theme', theme);
       |   } catch (e) {
       |     document.documentElement.setAttribute('data-theme', 'default');
