@@ -30,6 +30,8 @@ import {themes, Themes} from './themes';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 import {Hub} from './hub';
 import {EventHub} from './event-hub';
+import {keys} from '../lib/common-utils';
+import {assert} from './assert';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -118,7 +120,7 @@ class NumericSelect extends Select {
         super(elem, name, populate);
     }
     override getUi(): number {
-        return Number(this.val() as string);
+        return Number(this.val());
     }
 }
 
@@ -298,8 +300,7 @@ export class Settings {
         };
 
         // We need theme data to populate the colour schemes; We don't add the selector until later
-        // keys(themes) is Themes[] but TS does not realize without help
-        const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
+        const themesData = keys(themes).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         const defaultThemeId = themes.system.id;
@@ -345,7 +346,8 @@ export class Settings {
             NumericSelect
         ).elem;
         defaultFontScaleSelector.on('change', e => {
-            this.eventHub.emit('broadcastFontScale', parseInt((e.target as HTMLSelectElement).value));
+            assert(e.target instanceof HTMLSelectElement);
+            this.eventHub.emit('broadcastFontScale', parseInt(e.target.value));
         });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];

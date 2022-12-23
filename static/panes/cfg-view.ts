@@ -123,9 +123,7 @@ export class Cfg extends Pane<CfgState> {
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
             sortField: 'title',
-            onChange: e => {
-                this.selectFunction(e as unknown as string);
-            },
+            onChange: e => this.selectFunction(e as unknown as string),
         });
         this.state = state;
         // This is a workaround for a chrome render bug that's existed since at least 2013

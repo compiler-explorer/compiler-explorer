@@ -24,9 +24,12 @@
 
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 
+// TODO: Shouldn't llvm be here?
+export type AssemblyDocumentationInstructionSet = 'amd64' | 'arm32' | 'java';
+
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */
-    instructionSet: 'amd64' | 'arm32' | 'java';
+    instructionSet: AssemblyDocumentationInstructionSet;
     /** Instruction set opcode to look for */
     opcode: string;
 }

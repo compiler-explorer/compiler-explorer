@@ -61,14 +61,14 @@ export interface ComponentConfig<S> {
 }
 
 type StateWithLanguage = {lang: string};
-type StateWithEditor = {source: number};
+type StateWithEditor = {source: string | number};
 type StateWithTree = {tree: number};
 type StateWithId = {id: number};
 type EmptyState = Record<never, never>;
 
 export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
 export type PopulatedCompilerState = StateWithEditor & {
-    filters: CompilerOutputOptions;
+    filters: CompilerOutputOptions | undefined;
     options: unknown;
     compiler: string;
     libs?: unknown;
@@ -95,12 +95,12 @@ export type PopulatedEditorState = StateWithId & {
 export type EmptyTreeState = Partial<StateWithId>;
 
 export type OutputState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerID
     editor: number; // EditorId
 };
 
 export type ToolViewState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerId
     editor: number; // EditorId
     toolId: string;
     args: unknown;

@@ -35,6 +35,7 @@ import * as monacoConfig from '../monaco-config';
 
 import {ga} from '../analytics';
 import {Hub} from '../hub';
+import {unwrap} from '../assert';
 
 type DecorationEntry = {
     linkedCode: any[];
@@ -148,7 +149,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 }
                 this.eventHub.emit(
                     'editorLinkLine',
-                    this.compilerInfo.editorId as number,
+                    unwrap(this.compilerInfo.editorId),
                     sourceLine,
                     colBegin,
                     colEnd,
@@ -196,7 +197,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
             this.astCode = results.split('\n').map(x => {
                 return {
                     text: x,
-                } as AstCodeEntry;
+                };
             });
         } else {
             this.astCode = results;

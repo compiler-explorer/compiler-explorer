@@ -64,6 +64,7 @@ module.exports = {
                 '@typescript-eslint/no-explicit-any': 'off', // Too much js code still exists
                 '@typescript-eslint/ban-ts-comment': 'off', // We need some @ts-ignore at some points
                 '@typescript-eslint/no-unnecessary-condition': 'error',
+                '@typescript-eslint/no-unnecessary-type-assertion': 'error',
             },
         },
     ],

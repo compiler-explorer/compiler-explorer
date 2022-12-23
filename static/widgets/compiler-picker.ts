@@ -43,7 +43,7 @@ export class CompilerPicker {
     domNode: HTMLSelectElement;
     eventHub: EventHub;
     id: number;
-    compilerService: any;
+    compilerService: CompilerService;
     onCompilerChange: (x: string) => any;
     tomSelect: TomSelect | null;
     lastLangId: string;
@@ -179,7 +179,7 @@ export class CompilerPicker {
 
     getOptions(langId: string, compilerId: string) {
         const favorites = this.getFavorites();
-        return (Object.values(this.compilerService.getCompilersForLang(langId)) as any[])
+        return Object.values(this.compilerService.getCompilersForLang(langId) ?? {})
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
                 e.$groups = [e.group];

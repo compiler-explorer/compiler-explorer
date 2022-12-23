@@ -26,6 +26,7 @@ import _ from 'underscore';
 import path from 'path-browserify';
 import JSZip from 'jszip';
 import {Hub} from './hub';
+import {unwrap} from './assert';
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -148,8 +149,7 @@ export class MultifileService {
                     return;
                 }
 
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                let content = await zip.file(zipEntry.name)!.async('string');
+                let content = await unwrap(zip.file(zipEntry.name)).async('string');
                 if (content.length > this.maxFilesize) {
                     return;
                 }
