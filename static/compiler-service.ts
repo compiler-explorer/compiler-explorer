@@ -79,7 +79,7 @@ export class CompilerService {
 
                 const foundCompiler = this.findCompiler(langId, compilerId);
                 if (!foundCompiler) {
-                    const compilers = Object.values(this.getCompilersForLang(langId));
+                    const compilers = Object.values(this.getCompilersForLang(langId) ?? {});
                     if (compilers.length > 0) {
                         return {
                             compiler: compilers[0],
@@ -144,8 +144,8 @@ export class CompilerService {
             .value();
     }
 
-    getCompilersForLang(langId: string): Record<string, CompilerInfo> {
-        return langId in this.compilersByLang ? this.compilersByLang[langId] : {};
+    getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {
+        return langId in this.compilersByLang ? this.compilersByLang[langId] : undefined;
     }
 
     private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
@@ -162,7 +162,7 @@ export class CompilerService {
 
     findCompiler(langId: string, compilerId: string): CompilerInfo | null {
         if (!compilerId) return null;
-        const compilers = this.getCompilersForLang(langId);
+        const compilers = this.getCompilersForLang(langId) ?? {};
         return this.findCompilerInList(compilers, compilerId);
     }
 

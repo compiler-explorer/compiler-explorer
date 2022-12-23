@@ -32,6 +32,9 @@ export type CompilerInfo = {
     id: string;
     exe: string;
     name: string;
+    version: string;
+    fullVersion: string;
+    baseName: string;
     alias: string[];
     options: string;
     versionFlag?: string;
@@ -55,12 +58,28 @@ export type CompilerInfo = {
     interpreted: boolean;
     // (interpreted || supportsBinary) && supportsExecute
     supportsExecute: boolean;
+    supportsGccDump: boolean;
+    supportsFiltersInBinary: boolean;
+    supportsOptOutput: boolean;
+    supportsPpView: boolean;
+    supportsAstView: boolean;
+    supportsIrView: boolean;
+    supportsLLVMOptPipelineView: boolean;
+    supportsRustMirView: boolean;
+    supportsRustMacroExpView: boolean;
+    supportsRustHirView: boolean;
+    supportsHaskellCoreView: boolean;
+    supportsHaskellStgView: boolean;
+    supportsHaskellCmmView: boolean;
+    supportsCfg: boolean;
+    supportsGnatDebugViews: boolean;
     executionWrapper: string;
     supportsLibraryCodeFilter: boolean;
     postProcess: string[];
     lang: string;
     group: string;
     groupName: string;
+    $groups: string[];
     includeFlag: string;
     includePath: string;
     linkFlag: string;
@@ -86,6 +105,8 @@ export type CompilerInfo = {
         name?: string;
         preamble?: string;
     };
+    remote: any;
+    disabledFilters: string | string[];
 };
 
 export interface ICompiler {

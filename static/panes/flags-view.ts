@@ -35,7 +35,7 @@ import {Settings, SiteSettings} from '../settings';
 import {Hub} from '../hub';
 
 export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, FlagsViewState> {
-    debouncedEmitChange: ((e: boolean) => void) & Cancelable = (() => {}) as any;
+    debouncedEmitChange: (e: boolean) => void = () => {};
     cursorSelectionThrottledFunction: ((e: any) => void) & Cancelable;
     lastChangeEmitted: string;
     constructor(hub: Hub, container: Container, state: FlagsViewState & MonacoPaneState) {
