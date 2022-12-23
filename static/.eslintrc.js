@@ -65,6 +65,7 @@ module.exports = {
                 '@typescript-eslint/ban-ts-comment': 'off', // We need some @ts-ignore at some points
                 '@typescript-eslint/no-unnecessary-condition': 'error',
                 '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+                '@typescript-eslint/prefer-includes': 'error',
             },
         },
     ],

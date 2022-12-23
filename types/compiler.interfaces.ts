@@ -106,7 +106,7 @@ export type CompilerInfo = {
         preamble?: string;
     };
     remote: any;
-    disabledFilters: string | string[];
+    disabledFilters: string[];
 };
 
 export interface ICompiler {

@@ -228,7 +228,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 decoration.filter &&
                 this.currentLanguage?.name &&
-                decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0
+                !decoration.filter.includes(this.currentLanguage.name.toLowerCase())
             )
                 return;
             const match = this.editor.getModel()?.findNextMatch(
@@ -777,7 +777,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     cleanupSemVer(semver: string): string | null {
         if (semver) {
             const semverStr = semver.toString();
-            if (semverStr !== '' && semverStr.indexOf('(') === -1) {
+            if (semverStr !== '' && !semverStr.includes('(')) {
                 const vercomps = semverStr.split('.');
                 return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
             }
@@ -812,10 +812,10 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
                 if (semver && groupOrName) {
                     groupOrName = groupOrName.toLowerCase();
-                    if (groupOrName.indexOf('gcc') !== -1) {
+                    if (groupOrName.includes('gcc')) {
                         quickBenchState.compiler = 'gcc-' + semver;
                         knownCompiler = true;
-                    } else if (groupOrName.indexOf('clang') !== -1) {
+                    } else if (groupOrName.includes('clang')) {
                         quickBenchState.compiler = 'clang-' + semver;
                         knownCompiler = true;
                     }
@@ -1042,7 +1042,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
         // If navigator.languages is supported, we could be a bit more clever and look for a match there too
         let langTag = 'en';
-        if (cpprefLangs.indexOf(preferredLanguage) !== -1) {
+        if (cpprefLangs.includes(preferredLanguage)) {
             langTag = preferredLanguage;
         }
         const url = 'https://' + langTag + '.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);

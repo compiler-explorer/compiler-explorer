@@ -128,7 +128,7 @@ export class Cfg extends Pane<CfgState> {
         this.state = state;
         // This is a workaround for a chrome render bug that's existed since at least 2013
         // https://github.com/compiler-explorer/compiler-explorer/issues/4421
-        this.extraTransforms = navigator.userAgent.indexOf('AppleWebKit') === -1 ? '' : ' translateZ(0)';
+        this.extraTransforms = !navigator.userAgent.includes('AppleWebKit') ? '' : ' translateZ(0)';
     }
 
     override getInitialHTML() {

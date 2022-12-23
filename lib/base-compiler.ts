@@ -137,8 +137,11 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
 
         if (!this.compiler.disabledFilters) this.compiler.disabledFilters = [];
-        else if (typeof this.compiler.disabledFilters === 'string')
-            this.compiler.disabledFilters = this.compiler.disabledFilters.split(',');
+        else if (typeof (this.compiler.disabledFilters as any) === 'string') {
+            // When first loaded from props it may be a string so we split it here
+            // I'd like a better way to do this that doesn't involve type hacks
+            this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
+        }
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIr = new LlvmIrParser(this.compilerProps);

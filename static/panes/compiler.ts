@@ -1140,7 +1140,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
             delete filters.libraryCode;
         }
-        (this.compiler.disabledFilters as string[]).forEach(filter => {
+        this.compiler.disabledFilters.forEach(filter => {
             if (filters[filter]) {
                 delete filters[filter];
             }
@@ -2524,19 +2524,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);
         formatFilterTitle(this.filterLibraryCodeButton, this.filterLibraryCodeTitle);
 
-        this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.indexOf('labels') !== -1); // TODO
+        this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.includes('labels'));
         formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
-        this.filterDirectivesButton.prop(
-            'disabled',
-            this.compiler.disabledFilters.indexOf('directives') !== -1 // TODO
-        );
+        this.filterDirectivesButton.prop('disabled', this.compiler.disabledFilters.includes('directives'));
         formatFilterTitle(this.filterDirectivesButton, this.filterDirectivesTitle);
-        this.filterCommentsButton.prop(
-            'disabled',
-            this.compiler.disabledFilters.indexOf('commentOnly') !== -1 // TODO
-        );
+        this.filterCommentsButton.prop('disabled', this.compiler.disabledFilters.includes('commentOnly'));
         formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
-        this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.indexOf('trim') !== -1); // TODO
+        this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.includes('trim'));
         formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
         if (this.flagsButton) {
