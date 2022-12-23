@@ -24,8 +24,15 @@
 
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 
-// TODO: Shouldn't llvm be here?
-export type AssemblyDocumentationInstructionSet = 'amd64' | 'arm32' | 'java';
+export type AssemblyDocumentationInstructionSet =
+    | 'amd64'
+    | 'arm32'
+    | 'avr'
+    | 'evm'
+    | 'java'
+    | 'llvm'
+    | 'mos6502'
+    | 'python';
 
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */

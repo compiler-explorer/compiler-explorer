@@ -88,7 +88,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
-        this.maxCompilations = (options.cvCompilerCountMax as number) || 6; // TODO
+        this.maxCompilations = options.cvCompilerCountMax;
         this.langId = state.langId || _.keys(options.languages)[0];
         this.source = state.source ?? '';
         this.sourceNeedsExpanding = true;

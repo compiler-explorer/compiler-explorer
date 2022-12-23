@@ -64,4 +64,5 @@ export type Options = {
     tools: Record<LanguageKey, Record<string, Tool>>;
     supportsExecute: boolean;
     supportsLibraryCodeFilter: boolean;
+    cvCompilerCountMax: number;
 };

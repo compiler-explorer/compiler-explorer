@@ -129,7 +129,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         super.registerButtons(state);
 
         const changeDeviceEl = this.domRoot[0].querySelector('.change-device');
-        assert(changeDeviceEl instanceof HTMLInputElement);
+        assert(changeDeviceEl instanceof HTMLSelectElement);
         this.selectize = new TomSelect(changeDeviceEl, {
             sortField: 'name',
             valueField: 'name',
