@@ -27,6 +27,7 @@ import {options} from '../options';
 import * as local from '../local';
 import {Library, LibraryVersion} from '../options.interfaces';
 import {Lib, WidgetState} from './libs-widget.interfaces';
+import {unwrapString} from '../assert';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 
@@ -366,7 +367,7 @@ export class LibsWidget {
     }
 
     startSearching() {
-        const searchText = (this.domRoot.find('.lib-search-input').val() as string).toString();
+        const searchText = unwrapString(this.domRoot.find('.lib-search-input').val());
 
         this.clearSearchResults();
 

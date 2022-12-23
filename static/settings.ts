@@ -31,7 +31,7 @@ import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 import {Hub} from './hub';
 import {EventHub} from './event-hub';
 import {keys} from '../lib/common-utils';
-import {assert} from './assert';
+import {assert, unwrapString} from './assert';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -403,19 +403,19 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         themeSelect.on('change', () => {
             this.onThemeChange();
-            $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+            $.data(themeSelect, 'last-theme', unwrapString(themeSelect.val()));
         });
 
         const colourSchemeSelect = this.root.find('.colourScheme');
         colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
+            $.data(themeSelect, 'theme-' + currentTheme, unwrapString<ColourScheme>(colourSchemeSelect.val()));
         });
 
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
-        $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+        $.data(themeSelect, 'last-theme', unwrapString(themeSelect.val()));
         this.onThemeChange();
     }
 
@@ -456,14 +456,14 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-        const oldScheme = colourSchemeSelect.val() as string;
-        const newTheme = themeSelect.val() as colour.AppTheme;
+        const oldScheme = unwrapString(colourSchemeSelect.val());
+        const newTheme = unwrapString<colour.AppTheme>(themeSelect.val());
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
-        let newScheme = colourSchemeSelect.first().val() as string;
+        let newScheme = unwrapString(colourSchemeSelect.first().val());
         // If we have one old one stored, check if it's still valid and set it if so
         if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;

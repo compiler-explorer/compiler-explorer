@@ -64,7 +64,7 @@ import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
 import {Tool} from '../../types/tool.interfaces';
-import {assert, unwrap} from '../assert';
+import {assert, unwrap, unwrapString} from '../assert';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces';
 import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces';
 
@@ -2612,7 +2612,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
                 argumentButton.on('click', () => {
                     const button = argumentButton;
-                    const curOptions = this.optionsField.val() as string;
+                    const curOptions = unwrapString(this.optionsField.val());
                     if (curOptions && curOptions.length > 0) {
                         this.optionsField.val(curOptions + ' ' + button.data('arg'));
                     } else {
@@ -2781,7 +2781,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         });
 
         const optionsChange = _.debounce(e => {
-            this.onOptionsChange($(e.target).val() as string);
+            this.onOptionsChange(unwrapString($(e.target).val()));
         }, 800);
 
         this.optionsField.on('change', optionsChange).on('keyup', optionsChange);

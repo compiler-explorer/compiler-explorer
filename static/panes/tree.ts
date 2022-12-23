@@ -39,7 +39,7 @@ import {options} from '../options';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
-import {assert, unwrap} from '../assert';
+import {assert, unwrap, unwrapString} from '../assert';
 
 const languages = options.languages;
 
@@ -162,11 +162,11 @@ export class Tree {
     }
 
     private getCmakeArgs(): string {
-        return this.cmakeArgsInput.val() as string;
+        return unwrapString(this.cmakeArgsInput.val());
     }
 
     private getCustomOutputFilename(): string {
-        return _.escape(this.customOutputFilenameInput.val() as string);
+        return _.escape(unwrapString(this.customOutputFilenameInput.val()));
     }
 
     public currentState(): TreeState {

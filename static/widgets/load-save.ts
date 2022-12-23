@@ -29,7 +29,7 @@ import {Alert} from './alert';
 import {ga} from '../analytics';
 import * as local from '../local';
 import {Language} from '../../types/languages.interfaces';
-import {unwrap} from '../assert';
+import {unwrap, unwrapString} from '../assert';
 
 const history = require('../history');
 
@@ -231,7 +231,7 @@ export class LoadSave {
     }
 
     private onSaveToBrowserStorage() {
-        const saveNameValue = this.modal?.find('.save-name').val();
+        const saveNameValue = unwrapString(this.modal?.find('.save-name').val());
         if (!saveNameValue) {
             this.alertSystem.alert('Save name', 'Invalid save name');
             return;
