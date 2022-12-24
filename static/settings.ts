@@ -456,6 +456,9 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
+        if (!colourSchemeSelect.val()) {
+            return;
+        }
         const oldScheme = unwrapString(colourSchemeSelect.val());
         const newTheme = unwrapString<colour.AppTheme>(themeSelect.val());
 
