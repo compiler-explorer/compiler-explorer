@@ -24,9 +24,16 @@
 
 import _ from 'underscore';
 
+import {IRResultLine} from '../types/asmresult/asmresult.interfaces';
+
 import * as utils from './utils';
 
 export class LlvmIrParser {
+    private maxIrLines: number;
+    private debugReference: RegExp;
+    private metaNodeRe: RegExp;
+    private metaNodeOptionsRe: RegExp;
+
     constructor(compilerProps) {
         this.maxIrLines = 5000;
         if (compilerProps) {
@@ -38,7 +45,7 @@ export class LlvmIrParser {
         this.metaNodeOptionsRe = /(\w+): (!?\d+|\w+|""|"(?:[^"]|\\")*[^\\]")/gi;
     }
 
-    getFileName(debugInfo, scope) {
+    getFileName(debugInfo, scope): string | null {
         const stdInLooking = /.*<stdin>|^-$|example\.[^/]+$|<source>/;
 
         if (!debugInfo[scope]) {
@@ -75,9 +82,9 @@ export class LlvmIrParser {
         return null;
     }
 
-    getSourceColumn(debugInfo, scope) {
+    getSourceColumn(debugInfo, scope): number | undefined {
         if (!debugInfo[scope]) {
-            return null;
+            return;
         }
         if (debugInfo[scope].column) {
             return Number(debugInfo[scope].column);
@@ -85,7 +92,6 @@ export class LlvmIrParser {
         if (debugInfo[scope].scope) {
             return this.getSourceColumn(debugInfo, debugInfo[scope].scope);
         }
-        return null;
     }
 
     parseMetaNode(line) {
@@ -95,7 +101,7 @@ export class LlvmIrParser {
         if (!match) {
             return null;
         }
-        let metaNode = {
+        const metaNode = {
             metaId: match[1],
             metaType: match[2],
         };
@@ -114,22 +120,19 @@ export class LlvmIrParser {
     }
 
     processIr(ir, filters) {
-        const result = [];
-        let irLines = utils.splitLines(ir);
-        let debugInfo = {};
+        const result: IRResultLine[] = [];
+        const irLines = utils.splitLines(ir);
+        const debugInfo = {};
         let prevLineEmpty = false;
 
         // Filters
         const commentOnly = /^\s*(;.*)$/;
 
         for (const line of irLines) {
-            let source = null;
-            let match;
-
             if (line.trim().length === 0) {
                 // Avoid multiple successive empty lines.
                 if (!prevLineEmpty) {
-                    result.push({text: '', source: null});
+                    result.push({text: ''});
                 }
                 prevLineEmpty = true;
                 continue;
@@ -140,11 +143,10 @@ export class LlvmIrParser {
             }
 
             // Non-Meta IR line. Metadata is attached to it using "!dbg !123"
-            match = line.match(this.debugReference);
+            const match = line.match(this.debugReference);
             if (match) {
                 result.push({
                     text: filters.trim ? utils.squashHorizontalWhitespace(line) : line,
-                    source: source,
                     scope: match[1],
                 });
                 prevLineEmpty = false;
@@ -159,13 +161,13 @@ export class LlvmIrParser {
             if (filters.directives && this.isLineLlvmDirective(line)) {
                 continue;
             }
-            result.push({text: filters.trim ? utils.squashHorizontalWhitespace(line) : line, source: source});
+            result.push({text: filters.trim ? utils.squashHorizontalWhitespace(line) : line});
             prevLineEmpty = false;
         }
 
         if (result.length >= this.maxIrLines) {
             result.length = this.maxIrLines + 1;
-            result[this.maxIrLines] = {text: '[truncated; too many lines]', source: null};
+            result[this.maxIrLines] = {text: '[truncated; too many lines]'};
         }
 
         for (const line of result) {
