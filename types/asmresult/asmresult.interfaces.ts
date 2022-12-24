@@ -41,3 +41,7 @@ export type ParsedAsmResult = {
     execTime?: string;
     languageId?: string;
 };
+
+export type IRResultLine = ParsedAsmResultLine & {
+    scope?: string;
+};
