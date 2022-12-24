@@ -131,6 +131,15 @@ Libraries can be marked to have their directories available when including their
 supplying the library ids and versions in an array. The id's to supply can be found with the
 `/api/libraries/<language-id>`
 
+Note that using external header files of the type:
+```
+#include <https://some-url.to/a-file.h>
+```
+
+is not supported for this endpoint for security reasons.
+
+The feature for the site is handled client-side, as the compilation nodes have no internet access.
+
 ### `GET /api/formats` - return available code formatters
 
 Returns a list of code formatters. The API returns an array of formatter objects which have the following object
