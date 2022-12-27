@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'fs';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -41,6 +42,7 @@ console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
+const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
@@ -164,6 +166,9 @@ export default {
             {
                 test: /\.pug$/,
                 loader: './etc/scripts/parsed_pug_file.js',
+                options: {
+                    useGit: hasGit,
+                },
             },
             {
                 test: /\.ts$/,
