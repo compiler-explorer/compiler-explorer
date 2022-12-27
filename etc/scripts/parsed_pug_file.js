@@ -12,7 +12,7 @@ const expectedHashes = {
     privacy: '014c73c485dd3625',
 };
 
-function execGit(command) {
+function _execGit(command) {
     const gitResult = execSync(command);
     if (!gitResult) {
         throw new Error(`Failed to execute ${command}`);
@@ -20,17 +20,22 @@ function execGit(command) {
     return gitResult.toString();
 }
 
-const gitChanges = execGit('git log --date=local --after="3 months ago" "--grep=(#[0-9]*)" --oneline')
-    .split('\n')
-    .map(line => line.match(/(?<hash>\w+) (?<description>.*)/))
-    .filter(x => x)
-    .map(match => match.groups);
-
 export default function(content) {
     const filePath = this.resourcePath;
     const filename = path.basename(filePath, '.pug');
+    const options = this.getOptions();
+    if (!options.useGit) {
+        this.emitWarning(new Error(`Running without git: file contents for ${filePath} will be wrong`));
+    }
+    const execGit = options.useGit ? _execGit : () => 'no-git-available';
     const lastTime = execGit(`git log -1 --format=%cd "${filePath}"`).trimEnd();
     const lastCommit = execGit(`git log -1 --format=%h "${filePath}"`).trimEnd();
+    const gitChanges = execGit('git log --date=local --after="3 months ago" "--grep=(#[0-9]*)" --oneline')
+        .split('\n')
+        .map(line => line.match(/(?<hash>\w+) (?<description>.*)/))
+        .filter(x => x)
+        .map(match => match.groups);
+
     const compiled = pug.compile(content.toString(), {filename: filePath});
 
     // When calculating the hash we ignore the hard-to-predict values like lastTime and lastCommit, else every time
@@ -38,7 +43,7 @@ export default function(content) {
     const htmlTextForHash = compiled({gitChanges, lastTime:'some-last-time', lastCommit:'some-last-commit'});
     const hashDigest = getHashDigest(htmlTextForHash, 'sha256', 'hex', 16);
     const expectedHash = expectedHashes[filename];
-    if (expectedHash !== undefined && expectedHash !== hashDigest) {
+    if (options.useGit && expectedHash !== undefined && expectedHash !== hashDigest) {
         this.emitError(
             new Error(
                 `Hash for file '${filePath}' changed from '${expectedHash}' to '${hashDigest}'` +
