@@ -22,22 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as express from 'express';
 import request from 'request';
 
 import {BaseShortener} from './base';
 
 export class TinyUrlShortener extends BaseShortener {
-    override handle(req, res) {
+    override handle(req: express.Request, res: express.Response) {
         const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
         const options = {
             url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
             method: 'GET',
         };
-        const callback = (err, resp, body) => {
+        const callback = (err, resp: request.Response, body) => {
             if (!err && resp.statusCode === 200) {
                 res.send({url: body});
             } else {
-                res.status(resp.statusCode).send(resp.error);
+                res.status(resp.statusCode).send('Tinyurl error');
             }
         };
         request.post(options, callback);

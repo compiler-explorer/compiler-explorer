@@ -22,10 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as express from 'express';
+
 import {BaseShortener} from './base';
 
 export class DefaultShortener extends BaseShortener {
-    override handle(req, res) {
+    override handle(req: express.Request, res: express.Response) {
         return this.storageHandler.handler(req, res);
     }
 
