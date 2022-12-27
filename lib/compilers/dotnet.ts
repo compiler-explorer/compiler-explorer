@@ -46,7 +46,6 @@ class DotNetCompiler extends BaseCompiler {
     private buildConfig: string;
     private clrBuildDir: string;
     private langVersion: string;
-    private nugetPackages: string;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -60,7 +59,6 @@ class DotNetCompiler extends BaseCompiler {
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
-        this.nugetPackages = this.compilerProps<string>(`group.${this.compiler.group}.nugetPackages`);
         this.asm = new DotNetAsmParser();
     }
 
@@ -166,7 +164,6 @@ class DotNetCompiler extends BaseCompiler {
         <configuration>
             <packageSources>
                 <clear />
-                <packageSource key="compiler-explorer" value="${this.nugetPackages}" />
             </packageSources>
         </configuration>
         `;
