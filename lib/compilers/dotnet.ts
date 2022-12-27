@@ -114,53 +114,10 @@ class DotNetCompiler extends BaseCompiler {
         await fs.writeFile(projectFilePath, projectFileContent);
     }
 
-    override async buildExecutable(compiler, options, inputFilename, execOptions) {
-        const dirPath = path.dirname(inputFilename);
-        const inputFilenameSafe = this.filename(inputFilename);
-        const sourceFile = path.basename(inputFilenameSafe);
-        await this.writeProjectfile(dirPath, true, sourceFile);
-
-        return super.buildExecutable(compiler, options, inputFilename, execOptions);
-    }
-
-    override async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
-        const inputFilenameSafe = this.filename(inputFilename);
-        const sourceFile = path.basename(inputFilenameSafe);
-        await this.writeProjectfile(dirPath, filters.binary, sourceFile);
-
-        return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
-    }
-
-    override async runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions,
-    ): Promise<CompilationResult> {
+    setCompilerExecOptions(execOptions: ExecutionOptions, programDir: string) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
-
-        const programDir = path.dirname(inputFilename);
-
-        const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
-        const nugetConfigPath = path.join(programDir, 'nuget.config');
-
-        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
-        const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
-
-        const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
-        <configuration>
-            <packageSources>
-                <clear />
-                <packageSource key="fsharp" value="${path.join(
-                    this.sdkBaseDir,
-                    this.sdkVersion,
-                    '/FSharp/library-packs/',
-                )}" />
-            </packageSources>
-        </configuration>
-        `;
 
         // See https://github.com/dotnet/runtime/issues/50391 - the .NET runtime tries to make a 2TB memfile if we have
         // this feature enabled (which is on by default on .NET 7) This blows out our nsjail sandbox limit, so for now
@@ -178,10 +135,67 @@ class DotNetCompiler extends BaseCompiler {
         execOptions.env.DOTNET_NOLOGO = 'true';
 
         execOptions.customCwd = programDir;
+    }
+
+    override async buildExecutable(compiler, options, inputFilename, execOptions) {
+        const dirPath = path.dirname(inputFilename);
+        const inputFilenameSafe = this.filename(inputFilename);
+        const sourceFile = path.basename(inputFilenameSafe);
+        await this.writeProjectfile(dirPath, true, sourceFile);
+        return await this.buildToDll(compiler, options, inputFilename, execOptions);
+    }
+
+    override async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
+        const inputFilenameSafe = this.filename(inputFilename);
+        const sourceFile = path.basename(inputFilenameSafe);
+        await this.writeProjectfile(dirPath, filters.binary, sourceFile);
+        return super.doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools);
+    }
+
+    async buildToDll(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
+        const programDir = path.dirname(inputFilename);
+        const nugetConfigPath = path.join(programDir, 'nuget.config');
+        const nugetConfigFileContent = `<?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+            <packageSources>
+                <clear />
+            </packageSources>
+        </configuration>
+        `;
+
         await fs.writeFile(nugetConfigPath, nugetConfigFileContent);
 
+        this.setCompilerExecOptions(execOptions, programDir);
+        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo', '/clp:NoSummary'];
+        const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
+        if (restoreResult.code !== 0) {
+            return this.transformToCompilationResult(restoreResult, inputFilename);
+        }
+
+        const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
+        if (compilerResult.code === 0) {
+            await fs.createFile(this.getOutputFilename(programDir, this.outputFilebase));
+        }
+        return compilerResult;
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
+        const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
         const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
+        const programDir = path.dirname(inputFilename);
+        const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
+        const programDllPath = path.join(programOutputPath, 'CompilerExplorer.dll');
 
         for (const configurableOption of configurableOptions) {
             const optionIndex = options.indexOf(configurableOption);
@@ -200,14 +214,8 @@ class DotNetCompiler extends BaseCompiler {
             crossgen2Options.push(options[switchIndex]);
         }
 
-        const restoreOptions = ['restore', '--configfile', nugetConfigPath, '-v', 'q', '--nologo', '/clp:NoSummary'];
-        const restoreResult = await this.exec(compiler, restoreOptions, execOptions);
-        if (restoreResult.code !== 0) {
-            return this.transformToCompilationResult(restoreResult, inputFilename);
-        }
-
-        const compilerResult = await super.runCompiler(compiler, this.compilerOptions, inputFilename, execOptions);
-
+        this.setCompilerExecOptions(execOptions, programDir);
+        const compilerResult = await this.buildToDll(compiler, options, inputFilename, execOptions);
         if (compilerResult.code !== 0) {
             return compilerResult;
         }
