@@ -423,7 +423,11 @@ export class MapFileReader {
         while (lineIdx < mapLines.length) {
             const line = mapLines[lineIdx];
 
-            if (!readLineNumbersMode) {
+            if (readLineNumbersMode) {
+                if (!this.tryReadingLineNumbers(line)) {
+                    readLineNumbersMode = false;
+                }
+            } else {
                 this.tryReadingPreferredAddress(line);
                 this.tryReadingEntryPoint(line);
                 this.tryReadingCodeSegmentInfo(line);
@@ -432,10 +436,6 @@ export class MapFileReader {
                 if (this.isStartOfLineNumbers(line)) {
                     readLineNumbersMode = true;
                     lineIdx++;
-                }
-            } else {
-                if (!this.tryReadingLineNumbers(line)) {
-                    readLineNumbersMode = false;
                 }
             }
 

@@ -44,15 +44,18 @@ const onDocumentationProviderRequest = (
     // Accept either JSON or Plaintext Content-Type
     const requestedContentType = request.accepts(['text', 'json']);
     switch (requestedContentType) {
-        case 'text':
+        case 'text': {
             response.send(information.html);
             break;
-        case 'json':
+        }
+        case 'json': {
             response.send(information);
             break;
-        default:
+        }
+        default: {
             response.status(406).send({error: 'Not Acceptable'});
             break;
+        }
     }
 };
 

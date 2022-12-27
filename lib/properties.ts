@@ -105,7 +105,7 @@ export function initialize(directory, hier) {
         const baseName = file.replace(endsWith, '');
         file = path.join(directory, file);
         debug('Reading config from ' + file);
-        properties[baseName] = parseProperties(fs.readFileSync(file, 'utf-8'), file);
+        properties[baseName] = parseProperties(fs.readFileSync(file, 'utf8'), file);
     }
     logger.debug('props.properties = ', properties);
 }
@@ -256,18 +256,18 @@ export class CompilerProps {
         if (_.isEmpty(langs)) {
             return map_fn(this.ceProps(key, defaultValue));
         }
-        if (!_.isString(langs)) {
-            return _.chain(langs)
-                .map(lang => [lang.id, map_fn(this.$getInternal(lang.id, key, defaultValue), lang)])
-                .object()
-                .value();
-        } else {
+        if (_.isString(langs)) {
             if (this.propsByLangId[langs]) {
                 return map_fn(this.$getInternal(langs, key, defaultValue), this.languages[langs]);
             } else {
                 logger.error(`Tried to pass ${langs} as a language ID`);
                 return map_fn(defaultValue);
             }
+        } else {
+            return _.chain(langs)
+                .map(lang => [lang.id, map_fn(this.$getInternal(lang.id, key, defaultValue), lang)])
+                .object()
+                .value();
         }
     }
 }

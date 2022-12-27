@@ -150,7 +150,7 @@ export class BaseTool implements ITool {
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
-        args = args ? args : [];
+        args = args || [];
         if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
         if (inputFilepath) args.push(inputFilepath);
 

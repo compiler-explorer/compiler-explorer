@@ -213,7 +213,8 @@ export class CompilerFinder {
         // If name set, display that as the name
         // If not, check if we have a baseName + semver and display that
         // Else display compilerId as its name
-        const displayName = name !== undefined ? name : isSemVer && baseName ? `${baseName} ${semverVer}` : compilerId;
+        const displayName =
+            name === undefined ? (isSemVer && baseName ? `${baseName} ${semverVer}` : compilerId) : name;
 
         const baseOptions = props('baseOptions', '');
         const options = props('options', '');

@@ -388,7 +388,7 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+        const timeout = (idleTimeout === undefined ? 300 : idleTimeout) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -598,7 +598,7 @@ async function main() {
             }
         });
 
-    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf8'));
 
     loadSiteTemplates(configDir);
 
@@ -646,7 +646,7 @@ async function main() {
                     mobileViewer: isMobileViewer(req),
                     config: config,
                     metadata: metadata,
-                    storedStateId: req.params.id ? req.params.id : false,
+                    storedStateId: req.params.id || false,
                 },
                 req.query,
             ),
@@ -833,6 +833,8 @@ function terminationHandler(name, code) {
     };
 }
 
+// Once we move to modules, we can remove this and use a top level await.
+// eslint-disable-next-line unicorn/prefer-top-level-await
 main().catch(err => {
     logger.error('Top-level error (shutting down):', err);
     process.exit(1);
