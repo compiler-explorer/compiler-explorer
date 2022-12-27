@@ -22,11 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export class BaseShortener {
-    constructor(storageHandler) {
-        this.storageHandler = storageHandler;
-    }
+export abstract class BaseShortener {
+    constructor(protected storageHandler: any) {}
 
     // eslint-disable-next-line no-unused-vars
-    handle(req, res) {}
+    abstract handle(req, res);
+
+    static get key(): string {
+        throw 'get key() must be overridden';
+    }
 }
