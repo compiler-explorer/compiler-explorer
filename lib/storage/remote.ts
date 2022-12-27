@@ -37,8 +37,8 @@ export class StorageRemote extends StorageBase {
     }
 
     protected readonly baseUrl: string;
-    protected readonly get: (...args: any[]) => Promise<any>;
-    protected readonly post: (...args: any[]) => Promise<any>;
+    protected readonly get: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
+    protected readonly post: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
 
     constructor(httpRootDir, compilerProps) {
         super(httpRootDir, compilerProps);
@@ -49,8 +49,8 @@ export class StorageRemote extends StorageBase {
             baseUrl: this.baseUrl,
         });
 
-        this.get = promisify(req.get);
-        this.post = promisify(req.post);
+        this.get = promisify(req.get as any as (uri: string, options?: request.CoreOptions) => request.Response);
+        this.post = promisify(req.post as any as (uri: string, options?: request.CoreOptions) => request.Response);
     }
 
     override async handler(req: express.Request, res: express.Response) {
