@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -37,8 +38,16 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
-// eslint-disable-next-line no-console
-console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
+
+function log(message) {
+    // eslint-disable-next-line no-console
+    console.log('webpack: ' + message);
+}
+
+log(`compiling for ${isDev ? 'development' : 'production'}.`);
+// Memory limits us in most cases, so restrict parallelism to keep us in a sane amount of RAM
+const parallelism = Math.floor(os.totalmem() / (4 * 1024 * 1024 * 1024)) + 1;
+log(`Limiting parallelism to ${parallelism}`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
@@ -143,6 +152,7 @@ export default {
             }),
         ],
     },
+    parallelism: parallelism,
     module: {
         rules: [
             {
