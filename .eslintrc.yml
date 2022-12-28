@@ -9,6 +9,7 @@ plugins:
   - prettier
   - unicorn
   - '@typescript-eslint'
+  - unused-imports
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended

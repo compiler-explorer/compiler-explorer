@@ -85,7 +85,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
-        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dx]?word|long|quad|value|zero)/;
+        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dhx]?word|long|quad|octa|value|zero)/;
         this.fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
@@ -373,7 +373,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         };
                     } else {
                         source = {
-                            file: !this.stdInLooking.test(file) ? file : null,
+                            file: this.stdInLooking.test(file) ? null : file,
                             line: sourceLine,
                         };
                     }
@@ -406,7 +406,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                             };
                         } else {
                             source = {
-                                file: !this.stdInLooking.test(file) ? file : null,
+                                file: this.stdInLooking.test(file) ? null : file,
                                 line: sourceLine,
                             };
                         }
@@ -424,14 +424,16 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             if (!match) return;
             // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
             switch (parseInt(match[1])) {
-                case 68:
+                case 68: {
                     source = {file: null, line: parseInt(match[2])};
                     break;
+                }
                 case 132:
-                case 100:
+                case 100: {
                     source = null;
                     prevLabel = '';
                     break;
+                }
             }
         };
 
@@ -448,7 +450,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     };
                 } else {
                     source = {
-                        file: !this.stdInLooking.test(file) ? file : null,
+                        file: this.stdInLooking.test(file) ? null : file,
                         line: sourceLine,
                     };
                 }
@@ -566,7 +568,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
+                source: this.hasOpcode(line, inNvccCode) ? source || null : null,
                 labels: labelsInLine,
             });
         }

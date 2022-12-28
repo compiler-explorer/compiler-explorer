@@ -160,7 +160,7 @@ export class ClangCompiler extends BaseCompiler {
                 return disassembleResult.stderr;
             }
 
-            return fs.readFileSync(llvmirFile, 'utf-8');
+            return fs.readFileSync(llvmirFile, 'utf8');
         } else {
             return '<error: no llvm-dis found to disassemble bitcode>';
         }
@@ -203,10 +203,10 @@ export class ClangCudaCompiler extends ClangCompiler {
 
         const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
         result.asm = objResult.stdout;
-        if (objResult.code !== 0) {
-            result.asm = `<No output: nvdisasm returned ${objResult.code}>`;
-        } else {
+        if (objResult.code === 0) {
             result.objdumpTime = objResult.execTime;
+        } else {
+            result.asm = `<No output: nvdisasm returned ${objResult.code}>`;
         }
         return result;
     }

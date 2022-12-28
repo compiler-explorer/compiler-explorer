@@ -36,7 +36,7 @@ import {fs, resolvePathFromTestRoot} from './utils';
 approvals.mocha();
 
 function processAsm(filename, filters) {
-    const file = fs.readFileSync(filename, 'utf-8');
+    const file = fs.readFileSync(filename, 'utf8');
     let parser;
     if (file.includes('Microsoft')) parser = new VcAsmParser();
     else if (filename.includes('sass-')) parser = new SassAsmParser();

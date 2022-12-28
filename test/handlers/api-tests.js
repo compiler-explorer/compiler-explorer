@@ -95,16 +95,21 @@ describe('API handling', () => {
             },
             (key, def) => {
                 switch (key) {
-                    case 'formatters':
+                    case 'formatters': {
                         return 'formatt:badformatt';
-                    case 'formatter.formatt.exe':
+                    }
+                    case 'formatter.formatt.exe': {
                         return 'echo';
-                    case 'formatter.formatt.version':
+                    }
+                    case 'formatter.formatt.version': {
                         return 'Release';
-                    case 'formatter.formatt.name':
+                    }
+                    case 'formatter.formatt.name': {
                         return 'FormatT';
-                    default:
+                    }
+                    default: {
                         return def;
+                    }
                 }
             },
             new StorageNull('/', {}),

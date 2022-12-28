@@ -60,11 +60,11 @@ export class PythonCompiler extends BaseCompiler {
                 const lineno = parseInt(match[1]);
                 sourceLoc = {line: lineno, file: null};
                 lastLineNo = lineno;
-            } else if (!line) {
+            } else if (line) {
+                sourceLoc = {line: lastLineNo, file: null};
+            } else {
                 sourceLoc = {line: undefined, file: null};
                 lastLineNo = undefined;
-            } else {
-                sourceLoc = {line: lastLineNo, file: null};
             }
 
             bytecodeResult.push({text: line, source: sourceLoc});
