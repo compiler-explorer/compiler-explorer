@@ -27,6 +27,7 @@ import assert from 'assert';
 import AWS from 'aws-sdk';
 import _ from 'underscore';
 
+import {unwrap} from '../assert';
 import {logger} from '../logger';
 import {S3Bucket} from '../s3-handler';
 import {anonymizeIp} from '../utils';
@@ -57,6 +58,11 @@ export class StorageS3 extends StorageBase {
     static get key() {
         return 's3';
     }
+
+    protected readonly prefix: string;
+    protected readonly table: string;
+    protected readonly s3: S3Bucket;
+    protected readonly dynamoDb: AWS.DynamoDB;
 
     constructor(httpRootDir, compilerProps, awsProps) {
         super(httpRootDir, compilerProps);
@@ -122,7 +128,7 @@ export class StorageS3 extends StorageBase {
         const subHashes = _.chain(data.Items).pluck('unique_subhash').pluck('S').value();
         const fullHashes = _.chain(data.Items).pluck('full_hash').pluck('S').value();
         for (let i = MIN_STORED_ID_LENGTH; i < hash.length - 1; i++) {
-            let subHash = hash.substring(0, i);
+            const subHash = hash.substring(0, i);
             // Check if the current base is present in the subHashes array
             const index = _.indexOf(subHashes, subHash, true);
             if (index === -1) {
@@ -168,7 +174,7 @@ export class StorageS3 extends StorageBase {
 
         const attributes = item.Item;
         if (!attributes) throw new Error(`ID ${id} not present in links table`);
-        const result = await this.s3.get(attributes.full_hash.S, this.prefix);
+        const result = await this.s3.get(unwrap(attributes.full_hash.S), this.prefix);
         // If we're here, we are pretty confident there is a match. But never hurts to double check
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);
         const metadata = attributes.named_metadata ? attributes.named_metadata.M : null;

@@ -38,6 +38,8 @@ export class StorageLocal extends StorageBase {
         return 'local';
     }
 
+    protected readonly storageFolder: string;
+
     constructor(httpRootDir, compilerProps) {
         super(httpRootDir, compilerProps);
         this.storageFolder = path.normalize(compilerProps.ceProps('localStorageFolder', './lib/storage/data/'));
@@ -57,18 +59,18 @@ export class StorageLocal extends StorageBase {
         return item;
     }
 
-    async findUniqueSubhash(hash) {
+    async findUniqueSubhash(hash: string) {
         logger.info(`Finding local unique subhash for ${hash}`);
         // This currently works on a hardcoded, local directory.
         try {
             const files = await fs.readdir(this.storageFolder);
-            let prefix = hash.substring(0, MIN_STORED_ID_LENGTH);
+            const prefix = hash.substring(0, MIN_STORED_ID_LENGTH);
             const filenames = _.chain(files)
                 .filter(filename => filename.startsWith(prefix))
                 .sort()
                 .value();
             for (let i = MIN_STORED_ID_LENGTH; i < hash.length - 1; i++) {
-                let subHash = hash.substring(0, i);
+                const subHash = hash.substring(0, i);
                 // Check if the current subHash is present in the array
                 const index = _.indexOf(filenames, subHash, true);
                 if (index === -1) {

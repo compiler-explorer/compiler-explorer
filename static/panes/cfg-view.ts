@@ -61,6 +61,8 @@ type Coordinate = {
 const DZOOM = 0.1;
 const MINZOOM = 0.1;
 
+const EST_COMPRESSION_RATIO = 0.022;
+
 // https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
 function escapeSVG(text: string) {
     return text
@@ -77,6 +79,33 @@ function attrs(attributes: Record<string, string | number | null>) {
         .join(' ');
 }
 
+function special_round(x: number) {
+    assert(x >= 0);
+    if (x === 0) {
+        return 0;
+    }
+    const p = Math.pow(10, Math.floor(Math.log10(x)));
+    // prettier-ignore
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
+    return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
+}
+
+function size_to_human(bytes: number) {
+    if (bytes < 1000) {
+        return special_round(bytes) + ' B';
+    } else if (bytes < 1_000_000) {
+        return special_round(bytes / 1_000) + ' KB';
+    } else if (bytes < 1_000_000_000) {
+        return special_round(bytes / 1_000_000) + ' MB';
+    } else {
+        return special_round(bytes / 1_000_000_000) + ' GB';
+    }
+}
+
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
     svg: SVGElement;
@@ -85,6 +114,7 @@ export class Cfg extends Pane<CfgState> {
     graphElement: HTMLElement;
     infoElement: HTMLElement;
     exportPNGButton: JQuery;
+    estimatedPNGSize: Element;
     exportSVGButton: JQuery;
     currentPosition: Coordinate = {x: 0, y: 0};
     dragging = false;
@@ -157,6 +187,7 @@ export class Cfg extends Pane<CfgState> {
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
         this.exportPNGButton = this.domRoot.find('.export-png').first();
+        this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
     }
 
@@ -362,6 +393,7 @@ export class Cfg extends Pane<CfgState> {
     async selectFunction(name: string | null) {
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
+        this.estimatedPNGSize.innerHTML = '';
         if (!name || !(name in this.results)) {
             return;
         }
@@ -374,6 +406,9 @@ export class Cfg extends Pane<CfgState> {
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
             fn.nodes.length
         }`;
+        this.estimatedPNGSize.innerHTML = `(~${size_to_human(
+            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO
+        )})`;
     }
 
     zoom(zoom: number) {
