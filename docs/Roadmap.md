@@ -84,6 +84,7 @@ In lieu of having previously defined goals, I'd like to at least celebrate these
 - Library support for Rust
 - 15 new languages, 600 new compilers across all lagnauges
 - Execution on GPUs
+- Excellent TypeScript conversion progress, making TypeScript the main language on the GitHub repo page
 
 #### 2021
 
