@@ -132,6 +132,7 @@ supplying the library ids and versions in an array. The id's to supply can be fo
 `/api/libraries/<language-id>`
 
 Note that using external header files of the type:
+
 ```
 #include <https://some-url.to/a-file.h>
 ```
