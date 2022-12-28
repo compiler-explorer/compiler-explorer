@@ -85,7 +85,12 @@ function special_round(x: number) {
         return 0;
     }
     const p = Math.pow(10, Math.floor(Math.log10(x)));
-    const candidates = [Math.round(x / p) * p - p / 2, Math.round(x / p) * p, Math.round(x / p) * p + p / 2];
+    // prettier-ignore
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
     return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
 }
 
