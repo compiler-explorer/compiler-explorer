@@ -28,7 +28,7 @@ import GoldenLayout from 'golden-layout';
 const lzstring = require('lz-string');
 const Components = require('./components');
 
-import {rison} from './rison';
+import * as rison from './rison';
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];

@@ -1,4 +1,4 @@
-import {rison} from '../static/rison';
+import * as rison from '../static/rison';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
 const py_testcases = {
