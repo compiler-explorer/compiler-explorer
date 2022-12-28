@@ -106,7 +106,9 @@ export abstract class StorageBase {
                     `Unique subhash '${result.uniqueSubHash}' ` +
                         `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`,
                 );
-                if (!result.alreadyPresent) {
+                if (result.alreadyPresent) {
+                    return result;
+                } else {
                     const storedObject = {
                         prefix: result.prefix,
                         uniqueSubHash: result.uniqueSubHash,
@@ -115,8 +117,6 @@ export abstract class StorageBase {
                     };
 
                     return this.storeItem(storedObject, req);
-                } else {
-                    return result;
                 }
             })
             .then(result => {

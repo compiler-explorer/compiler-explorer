@@ -49,20 +49,24 @@ function createInternal(name: string, config: string): Cache {
     if (!match) throw new Error(`Unable to parse '${config}'`);
     const params = match[2].split(',');
     switch (match[1]) {
-        case 'InMemory':
+        case 'InMemory': {
             if (params.length !== 1) throw new Error(`Bad params: ${config}`);
             return new InMemoryCache(name, paramInt(config, params[0]));
+        }
 
-        case 'OnDisk':
+        case 'OnDisk': {
             if (params.length !== 2) throw new Error(`Bad params: ${config}`);
             return new OnDiskCache(name, params[0], paramInt(config, params[1]));
+        }
 
-        case 'S3':
+        case 'S3': {
             if (params.length !== 3) throw new Error(`Bad params: ${config}`);
             return new S3Cache(name, params[0], params[1], params[2]);
+        }
 
-        default:
+        default: {
             throw new Error(`Unrecognised cache type '${match[1]}'`);
+        }
     }
 }
 

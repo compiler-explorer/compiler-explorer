@@ -290,7 +290,7 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
     const splat = line.split(/\s+/);
     if (splat[0] === '' && atStart) {
         // An indented line: preserve a two-space indent (max)
-        const intent = line[1] !== ' ' ? ' ' : '  ';
+        const intent = line[1] === ' ' ? '  ' : ' ';
         return intent + splat.slice(1).join(' ');
     }
     return splat.join(' ');
@@ -371,10 +371,10 @@ export function base32Encode(buffer: Buffer): string {
 
 // Splits a : separated list into its own array, or to default if input is undefined
 export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
-    if (input !== undefined) {
-        return input.split(':');
-    } else {
+    if (input === undefined) {
         return defaultArray;
+    } else {
+        return input.split(':');
     }
 }
 

@@ -274,7 +274,7 @@ class DotNetCompiler extends BaseCompiler {
                     ...this.getEmptyExecutionResult(),
                     stdout: err.stdout ? utils.parseOutput(err.stdout) : [],
                     stderr: err.stderr ? utils.parseOutput(err.stderr) : [],
-                    code: err.code !== undefined ? err.code : -1,
+                    code: err.code === undefined ? -1 : err.code,
                 };
             }
         }

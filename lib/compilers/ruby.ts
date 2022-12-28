@@ -62,15 +62,15 @@ export class RubyCompiler extends BaseCompiler {
 
             if (match) {
                 lastLineNo = parseInt(match[1]);
-            } else if (!line) {
-                lastFile = null;
-                lastLineNo = null;
-            } else {
+            } else if (line) {
                 const fileMatch = line.match(fileRe);
                 if (fileMatch) {
                     lastFile = fileMatch[1];
                     lastLineNo = parseInt(fileMatch[2]);
                 }
+            } else {
+                lastFile = null;
+                lastLineNo = null;
             }
 
             const file = lastFile === baseFile ? null : lastFile;
