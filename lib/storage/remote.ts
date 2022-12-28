@@ -24,6 +24,7 @@
 
 import {promisify} from 'util';
 
+import * as express from 'express';
 import request from 'request';
 
 import {logger} from '../logger';
@@ -35,6 +36,10 @@ export class StorageRemote extends StorageBase {
         return 'remote';
     }
 
+    protected readonly baseUrl: string;
+    protected readonly get: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
+    protected readonly post: (uri: string, options?: request.CoreOptions) => Promise<request.Response>;
+
     constructor(httpRootDir, compilerProps) {
         super(httpRootDir, compilerProps);
 
@@ -44,18 +49,23 @@ export class StorageRemote extends StorageBase {
             baseUrl: this.baseUrl,
         });
 
-        this.get = promisify(req.get);
-        this.post = promisify(req.post);
+        // Workaround for ts type shenanigans with defaulting to the last overload
+        this.get = promisify((uri: string, options?: request.CoreOptions, callback?: request.RequestCallback) =>
+            req.get(uri, options, callback),
+        );
+        this.post = promisify((uri: string, options?: request.CoreOptions, callback?: request.RequestCallback) =>
+            req.post(uri, options, callback),
+        );
     }
 
-    async handler(req, res) {
+    override async handler(req: express.Request, res: express.Response) {
         let resp;
         try {
             resp = await this.post('/api/shortener', {
                 json: true,
                 body: req.body,
             });
-        } catch (err) {
+        } catch (err: any) {
             logger.error(err);
             res.status(500);
             res.end(err.message);
@@ -87,4 +97,8 @@ export class StorageRemote extends StorageBase {
     }
 
     async incrementViewCount() {}
+
+    async findUniqueSubhash() {}
+
+    async storeItem() {}
 }
