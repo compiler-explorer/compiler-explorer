@@ -81,11 +81,10 @@ export class CompilerDropinTool extends BaseTool {
 
         const manualCompileFlags = compilationInfo.options.filter(option => !argsToFilterOut.has(option));
         compileFlags = compileFlags.concat(manualCompileFlags);
-        const toolOptions = this.tool.options ? this.tool.options : [];
+        const toolOptions = this.tool.options || [];
         compileFlags = compileFlags.concat(toolOptions);
         compileFlags = compileFlags.concat(libOptions);
-        args ? args : [];
-        compileFlags = compileFlags.concat(args);
+        compileFlags = compileFlags.concat(args || []);
 
         const pathFilteredFlags: (string | false)[] = _.map(compileFlags, option => {
             if (option && option.length > 1) {

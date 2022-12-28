@@ -47,7 +47,7 @@ function get_diagnostic() {
             const relative = check_path(global.ce_base_directory, invoker_frame.fileName);
             if (relative) {
                 try {
-                    const file = fs.readFileSync(invoker_frame.fileName, 'utf-8');
+                    const file = fs.readFileSync(invoker_frame.fileName, 'utf8');
                     const lines = file.split('\n');
                     return {
                         file: relative,

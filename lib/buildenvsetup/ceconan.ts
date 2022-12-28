@@ -196,7 +196,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         _.each(libraryDetails, (details, libId) => {
             if (this.hasBinariesToLink(details)) {
-                const lookupversion = details.lookupversion ? details.lookupversion : details.version;
+                const lookupversion = details.lookupversion || details.version;
                 allLibraryBuilds.push({
                     id: libId,
                     version: details.version,
@@ -209,7 +209,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const buildProperties = await this.getConanBuildProperties(key);
 
         for (const libVerBuilds of allLibraryBuilds) {
-            const lookupversion = libVerBuilds.lookupversion ? libVerBuilds.lookupversion : libVerBuilds.version;
+            const lookupversion = libVerBuilds.lookupversion || libVerBuilds.version;
             const libVer = `${libVerBuilds.id}/${lookupversion}`;
             const possibleBuilds = await libVerBuilds.possibleBuilds;
             if (possibleBuilds) {

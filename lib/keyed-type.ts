@@ -40,12 +40,12 @@ function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string,
         } else if (!key) {
             logger.error(`${typeName} ${name} provides empty key value`);
             haveErrors = true;
-        } else if (keyToTypeMap[key] !== undefined) {
-            logger.error(`${typeName} ${name} key conflicts with ${keyToNameMap[key]}`);
-            haveErrors = true;
-        } else {
+        } else if (keyToTypeMap[key] === undefined) {
             keyToTypeMap[key] = type;
             keyToNameMap[key] = name;
+        } else {
+            logger.error(`${typeName} ${name} key conflicts with ${keyToNameMap[key]}`);
+            haveErrors = true;
         }
     }
 
