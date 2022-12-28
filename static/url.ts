@@ -75,7 +75,7 @@ export function loadState(state: any): any {
     return state;
 }
 
-export function risonify(obj: object): string {
+export function risonify(obj: rison.JSONValue): string {
     return rison.quote(rison.encode_object(obj));
 }
 

@@ -122,8 +122,8 @@ class Encoders {
             let v: string | undefined;
             let k: string;
             let ki: number;
-            const ks: any[] = [];
-            for (i in x) ks[ks.length] = i;
+            const ks: string[] = [];
+            for (const i in x) ks[ks.length] = i;
             ks.sort();
             for (ki = 0; ki < ks.length; ki++) {
                 i = ks[ki];
@@ -191,7 +191,7 @@ export function encode(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
  * rison-encode a javascript object without surrounding parens
  *
  */
-export function encode_object(v: any) {
+export function encode_object(v: JSONValue) {
     if (typeof v != 'object' || v === null || v instanceof Array)
         throw new Error('rison.encode_object expects an object argument');
     const r = unwrap(encode_table[typeof v](v));
@@ -202,7 +202,7 @@ export function encode_object(v: any) {
  * rison-encode a javascript array without surrounding parens
  *
  */
-export function encode_array(v: any) {
+export function encode_array(v: JSONValue) {
     if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
     const r = unwrap(encode_table[typeof v](v));
     return r.substring(2, r.length - 1);
@@ -212,7 +212,7 @@ export function encode_array(v: any) {
  * rison-encode and uri-encode a javascript structure
  *
  */
-export function encode_uri(v: any) {
+export function encode_uri(v: JSONValue) {
     return quote(unwrap(encode_table[typeof v](v)));
 }
 
@@ -257,7 +257,7 @@ export function decode_array(r: string) {
 }
 
 // prettier-ignore
-type JSONValue =
+export type JSONValue =
     | string
     | number
     | boolean
