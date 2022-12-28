@@ -1,6 +1,4 @@
-// Taken from https://github.com/Nanonid/rison at e64af6c096fd30950ec32cfd48526ca6ee21649d (Jun 9, 2017)
-// Uses CommonJS, AMD or browser globals to create a module.
-// Based on: https://github.com/umdjs/umd/blob/master/commonjsStrict.js
+// Based on https://github.com/Nanonid/rison at e64af6c096fd30950ec32cfd48526ca6ee21649d (Jun 9, 2017)
 
 import {assert, unwrap} from './assert';
 
@@ -419,7 +417,6 @@ class Parser {
         this.error('empty expression');
     }
 
-    // return the next non-whitespace character, or undefined
     next(): string | undefined {
         let c: string;
         const s = this.string;
