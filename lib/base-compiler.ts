@@ -1607,22 +1607,7 @@ export class BaseCompiler implements ICompiler {
     async handleExecution(key, executeParameters): Promise<CompilationResult> {
         if (this.compiler.interpreted) return this.handleInterpreting(key, executeParameters);
         const buildResult = await this.getOrBuildExecutable(key);
-        if (buildResult.code === 0) {
-            if (!(await utils.fileExists(buildResult.executableFilename))) {
-                const verboseResult = {
-                    code: -1,
-                    didExecute: false,
-                    buildResult,
-                    stderr: [{text: 'Executable not found'}],
-                    stdout: [],
-                    timedOut: false,
-                };
-
-                verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
-
-                return verboseResult;
-            }
-        } else {
+        if (buildResult.code !== 0) {
             return {
                 code: -1,
                 didExecute: false,
@@ -1631,6 +1616,21 @@ export class BaseCompiler implements ICompiler {
                 stdout: [],
                 timedOut: false,
             };
+        }
+
+        if (!(await utils.fileExists(buildResult.executableFilename))) {
+            const verboseResult = {
+                code: -1,
+                didExecute: false,
+                buildResult,
+                stderr: [{text: 'Executable not found'}],
+                stdout: [],
+                timedOut: false,
+            };
+
+            verboseResult.buildResult.stderr.push({text: 'Compiler did not produce an executable'});
+
+            return verboseResult;
         }
 
         if (!this.compiler.supportsExecute) {
