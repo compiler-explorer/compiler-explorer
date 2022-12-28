@@ -2,9 +2,9 @@
 // Uses CommonJS, AMD or browser globals to create a module.
 // Based on: https://github.com/umdjs/umd/blob/master/commonjsStrict.js
 
-import * as Sentry from '@sentry/browser';
+import {assert, unwrap} from './assert';
 
-import {unwrap} from './assert';
+import {isString} from '../lib/common-utils';
 
 //////////////////////////////////////////////////
 //
@@ -13,32 +13,6 @@ import {unwrap} from './assert';
 //  the parser is based on
 //    http://osteele.com/sources/openlaszlo/json
 //
-
-/**
- *  rules for an uri encoder that is more tolerant than encodeURIComponent
- *
- *  encodeURIComponent passes  ~!*()-_.'
- *
- *  we also allow              ,:@$/
- *
- */
-const uri_ok = {
-    // ok in url paths and in form query args
-    '~': true,
-    '!': true,
-    '*': true,
-    '(': true,
-    ')': true,
-    '-': true,
-    _: true,
-    '.': true,
-    ',': true,
-    ':': true,
-    '@': true,
-    $: true,
-    "'": true,
-    '/': true,
-};
 
 /*
  * we divide the uri-safe glyphs into three sets
@@ -62,13 +36,15 @@ const not_idchar = " '!:(),*@$";
  */
 const not_idstart = '-0123456789';
 
-const _idrx = '[^' + not_idstart + not_idchar + '][^' + not_idchar + ']*';
-
-const id_ok = new RegExp('^' + _idrx + '$');
-
-// regexp to find the end of an id when parsing
-// g flag on the regexp is necessary for iterative regexp.exec()
-const next_id = new RegExp(_idrx, 'g');
+const [id_ok, next_id] = (() => {
+    const _idrx = '[^' + not_idstart + not_idchar + '][^' + not_idchar + ']*';
+    return [
+        new RegExp('^' + _idrx + '$'),
+        // regexp to find the end of an id when parsing
+        // g flag on the regexp is necessary for iterative regexp.exec()
+        new RegExp(_idrx, 'g'),
+    ];
+})();
 
 /**
  * this is like encodeURIComponent() but quotes fewer characters.
@@ -98,15 +74,15 @@ export function quote(x: string) {
 //  hacked by nix for use in uris.
 //
 // url-ok but quoted in strings
-const sq = {
+const string_table = {
     "'": true,
     '!': true,
 };
-const s = {
-    array: function (x) {
+
+class Encoders {
+    static array(x: JSONValue[]) {
         const a = ['!('];
         let b;
-        let f;
         let i;
         const l = x.length;
         let v;
@@ -122,34 +98,32 @@ const s = {
         }
         a[a.length] = ')';
         return a.join('');
-    },
-    boolean: function (x) {
+    }
+    static boolean(x: boolean) {
         if (x) return '!t';
         return '!f';
-    },
-    null: function () {
+    }
+    static null() {
         return '!n';
-    },
-    number: function (x) {
+    }
+    static number(x: number) {
         if (!isFinite(x)) return '!n';
         // strip '+' out of exponent, '-' is ok though
         return String(x).replace(/\+/, '');
-    },
-    object: function (x) {
+    }
+    static object(x: Record<string, JSONValue> | null) {
         if (x) {
+            // because typeof null === 'object'
             if (x instanceof Array) {
-                return s.array(x);
+                return Encoders.array(x);
             }
-            // WILL: will this work on non-Firefox browsers?
-            if (typeof x.__prototype__ === 'object' && typeof x.__prototype__.encode_rison !== 'undefined')
-                return x.encode_rison();
 
             const a = ['('];
-            let b;
-            let i;
-            let v;
-            let k;
-            let ki;
+            let b = false;
+            let i: string;
+            let v: string | undefined;
+            let k: string;
+            let ki: number;
             const ks: any[] = [];
             for (i in x) ks[ks.length] = i;
             ks.sort();
@@ -160,7 +134,7 @@ const s = {
                     if (b) {
                         a[a.length] = ',';
                     }
-                    k = isNaN(parseInt(i)) ? s.string(i) : s.number(i);
+                    k = isNaN(parseInt(i)) ? Encoders.string(i) : Encoders.number(parseInt(i));
                     a.push(k, ':', v);
                     b = true;
                 }
@@ -169,27 +143,39 @@ const s = {
             return a.join('');
         }
         return '!n';
-    },
-    string: function (x) {
+    }
+    static string(x: string) {
         if (x === '') return "''";
 
         if (id_ok.test(x)) return x;
 
         x = x.replace(/(['!])/g, function (a, b) {
-            if (sq[b]) return '!' + b;
+            if (string_table[b]) return '!' + b;
             return b;
         });
         return "'" + x + "'";
-    },
-    undefined: function () {
+    }
+    static undefined() {
         // ignore undefined just like JSON
-    },
+        return undefined;
+    }
+}
+
+const encode_table: Record<string, (x: any) => string | undefined> = {
+    array: Encoders.array,
+    object: Encoders.object,
+    boolean: Encoders.boolean,
+    string: Encoders.string,
+    number: Encoders.number,
+    null: Encoders.null,
+    undefined: Encoders.undefined,
 };
 
-function enc(v: any) {
-    if (v && typeof v.toJSON === 'function') v = v.toJSON();
-    const fn = s[typeof v];
-    if (fn) return fn(v);
+function enc(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
+    if (v && typeof v === 'object' && 'toJSON' in v && typeof v.toJSON === 'function') v = v.toJSON();
+    if (typeof v in encode_table) {
+        return encode_table[typeof v](v);
+    }
 }
 
 /**
@@ -199,7 +185,7 @@ function enc(v: any) {
  *    http://json.org/json.js as of 2006-04-28 from json.org
  *
  */
-export function encode(v: any) {
+export function encode(v: JSONValue | (JSONValue & {toJSON?: () => string})) {
     return enc(v);
 }
 
@@ -210,7 +196,7 @@ export function encode(v: any) {
 export function encode_object(v: any) {
     if (typeof v != 'object' || v === null || v instanceof Array)
         throw new Error('rison.encode_object expects an object argument');
-    const r = s[typeof v](v);
+    const r = unwrap(encode_table[typeof v](v));
     return r.substring(1, r.length - 1);
 }
 
@@ -220,7 +206,7 @@ export function encode_object(v: any) {
  */
 export function encode_array(v: any) {
     if (!(v instanceof Array)) throw new Error('rison.encode_array expects an array argument');
-    const r = s[typeof v](v);
+    const r = unwrap(encode_table[typeof v](v));
     return r.substring(2, r.length - 1);
 }
 
@@ -229,7 +215,7 @@ export function encode_array(v: any) {
  *
  */
 export function encode_uri(v: any) {
-    return quote(s[typeof v](v));
+    return quote(unwrap(encode_table[typeof v](v)));
 }
 
 //
@@ -250,10 +236,7 @@ export function encode_uri(v: any) {
  *     http://osteele.com/sources/openlaszlo/json
  */
 export function decode(r: string) {
-    const errcb = function (e) {
-        throw Error('rison decoder error: ' + e);
-    };
-    const p = new parser(errcb);
+    const p = new Parser();
     return p.parse(r);
 }
 
@@ -275,7 +258,9 @@ export function decode_array(r: string) {
     return decode('!(' + r + ')');
 }
 
-class parser {
+type JSONValue = string | number | boolean | null | undefined | {[x: string]: JSONValue} | Array<JSONValue>;
+
+class Parser {
     /**
      * a string containing acceptable whitespace characters.
      * by default the rison decoder tolerates no whitespace.
@@ -287,47 +272,46 @@ class parser {
         t: true,
         f: false,
         n: null,
-        '(': parser.parse_array,
+        '(': Parser.parse_array,
     };
 
     string: string;
     index: number;
-    message: string | null;
-    readonly table: Record<string, () => void>;
+    readonly table: Record<string, () => JSONValue>;
 
-    constructor(private errorHandler: (err: string, index: number) => void) {
+    constructor() {
         this.string = '';
         this.index = -1;
-        this.message = null;
         this.table = {
             '!': () => {
                 const s = this.string;
                 const c = s.charAt(this.index++);
                 if (!c) return this.error('"!" at end of input');
-                const x = parser.bangs[c];
+                const x = Parser.bangs[c];
                 if (typeof x == 'function') {
                     // eslint-disable-next-line no-useless-call
                     return x.call(null, this);
-                } else if (typeof x == 'undefined') {
+                } else if (typeof x === 'undefined') {
                     return this.error('unknown literal: "!' + c + '"');
                 }
                 return x;
             },
             '(': () => {
-                const o = {};
+                const o: JSONValue = {};
                 let c;
                 let count = 0;
                 while ((c = this.next()) !== ')') {
                     if (count) {
                         if (c !== ',') this.error("missing ','");
                     } else if (c === ',') {
-                        return this.error("extra ','");
+                        this.error("extra ','");
                     } else --this.index;
                     const k = this.readValue();
                     if (typeof k == 'undefined') return undefined;
-                    if (this.next() !== ':') return this.error("missing ':'");
+                    if (this.next() !== ':') this.error("missing ':'");
                     const v = this.readValue();
                     if (typeof v == 'undefined') return undefined;
+                    assert(isString(k));
                     o[k] = v;
                     count++;
                 }
@@ -341,14 +325,14 @@ class parser {
                 let c;
                 while ((c = s.charAt(i++)) !== "'") {
                     //if (i == s.length) return this.error('unmatched "\'"');
-                    if (!c) return this.error('unmatched "\'"');
+                    if (!c) this.error('unmatched "\'"');
                     if (c === '!') {
                         if (start < i - 1) segments.push(s.slice(start, i - 1));
                         c = s.charAt(i++);
                         if ("!'".indexOf(c) >= 0) {
                             segments.push(c);
                         } else {
-                            return this.error('invalid string escape: "!' + c + '"');
+                            this.error('invalid string escape: "!' + c + '"');
                         }
                         start = i;
                     }
@@ -383,7 +367,7 @@ class parser {
                 } while (state);
                 this.index = --i;
                 s = s.slice(start, i);
-                if (s === '-') return this.error('invalid number');
+                if (s === '-') this.error('invalid number');
                 return Number(s);
             },
         };
@@ -391,33 +375,23 @@ class parser {
         for (let i = 0; i <= 9; i++) this.table[String(i)] = this.table['-'];
     }
 
-    // expose this as-is?
-    setOptions(options: {errorHandler?: (err: string, index: number) => void}) {
-        if (options['errorHandler']) this.errorHandler = options.errorHandler;
-    }
-
     /**
      * parse a rison string into a javascript structure.
      */
-    parse(str) {
+    parse(str: string): JSONValue {
         this.string = str;
         this.index = 0;
-        this.message = null;
-        let value = this.readValue();
+        const value = this.readValue();
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!this.message && this.next()) value = this.error("unable to parse string as rison: '" + encode(str) + "'");
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (this.message && this.errorHandler) this.errorHandler(this.message, this.index);
+        if (this.next()) this.error("unable to parse string as rison: '" + encode(str) + "'");
         return value;
     }
 
-    error(message: string) {
-        Sentry.captureMessage('rison parser error: ' + message);
-        this.message = message;
-        return undefined;
+    error(message: string): never {
+        throw new Error('rison parser error: ' + message);
     }
 
-    readValue() {
+    readValue(): JSONValue {
         const c = this.next();
         const fn = c && this.table[c];
 
@@ -441,25 +415,25 @@ class parser {
             return id; // a string
         }
 
-        if (c) return this.error("invalid character: '" + c + "'");
-        return this.error('empty expression');
+        if (c) this.error("invalid character: '" + c + "'");
+        this.error('empty expression');
     }
 
     // return the next non-whitespace character, or undefined
-    next() {
-        let c;
+    next(): string | undefined {
+        let c: string;
         const s = this.string;
         let i = this.index;
         do {
             if (i === s.length) return undefined;
             c = s.charAt(i++);
-        } while (parser.WHITESPACE.indexOf(c) >= 0);
+        } while (Parser.WHITESPACE.indexOf(c) >= 0);
         this.index = i;
         return c;
     }
 
-    static parse_array(parser) {
-        const ar: any[] = [];
+    static parse_array(parser: Parser): JSONValue[] | undefined {
+        const ar: JSONValue[] = [];
         let c;
         while ((c = parser.next()) !== ')') {
             if (!c) return parser.error("unmatched '!('");
@@ -469,7 +443,7 @@ class parser {
                 return parser.error("extra ','");
             } else --parser.index;
             const n = parser.readValue();
-            if (typeof n == 'undefined') return undefined;
+            if (n === undefined) return undefined;
             ar.push(n);
         }
         return ar;
