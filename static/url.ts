@@ -26,8 +26,9 @@ import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
 
 const lzstring = require('lz-string');
-const rison = require('rison');
 const Components = require('./components');
+
+import {rison} from './rison';
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
