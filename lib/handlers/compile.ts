@@ -187,7 +187,9 @@ export class CompileHandler {
             // has changed since the last time.
             try {
                 let modificationTime;
-                if (!isPrediscovered) {
+                if (isPrediscovered) {
+                    modificationTime = compiler.mtime;
+                } else {
                     const res = await fs.stat(compiler.exe);
                     modificationTime = res.mtime;
                     const cached = this.findCompiler(compiler.lang, compiler.id);
@@ -195,8 +197,6 @@ export class CompileHandler {
                         logger.debug(`${compiler.id} is unchanged`);
                         return cached;
                     }
-                } else {
-                    modificationTime = compiler.mtime;
                 }
                 const compilerObj = new compilerClass(compiler, this.compilerEnv);
                 return compilerObj.initialise(modificationTime, this.clientOptions, isPrediscovered);
@@ -371,9 +371,9 @@ export class CompileHandler {
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executionParameters: ExecutionParams = {
-            args: !Array.isArray(execReqParams.args)
-                ? utils.splitArguments(execReqParams.args)
-                : execReqParams.args || '',
+            args: Array.isArray(execReqParams.args)
+                ? execReqParams.args || ''
+                : utils.splitArguments(execReqParams.args),
             stdin: execReqParams.stdin || '',
         };
 
@@ -553,7 +553,9 @@ export class CompileHandler {
                     }
                 },
                 error => {
-                    if (typeof error !== 'string') {
+                    if (typeof error === 'string') {
+                        logger.error('Error during compilation: ', {error});
+                    } else {
                         if (error.stack) {
                             logger.error('Error during compilation: ', error);
                             Sentry.captureException(error);
@@ -570,8 +572,6 @@ export class CompileHandler {
                         }
 
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;
-                    } else {
-                        logger.error('Error during compilation: ', {error});
                     }
                     res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
                 },

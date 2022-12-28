@@ -145,10 +145,10 @@ export class ClientOptionsHandler {
 
         this.supportsBinary = this.compilerProps(languages, 'supportsBinary', true, res => !!res);
         this.supportsExecutePerLanguage = this.compilerProps(languages, 'supportsExecute', true, res => !!res);
-        this.supportsExecute = Object.values(this.supportsExecutePerLanguage).some(value => value);
+        this.supportsExecute = Object.values(this.supportsExecutePerLanguage).some(Boolean);
 
         this.supportsLibraryCodeFilterPerLanguage = this.compilerProps(languages, 'supportsLibraryCodeFilter', false);
-        this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(value => value);
+        this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(Boolean);
 
         const libs = this.parseLibraries(this.compilerProps<string>(languages, 'libs'));
         const tools = this.parseTools(this.compilerProps<string>(languages, 'tools'));

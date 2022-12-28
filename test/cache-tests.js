@@ -210,12 +210,12 @@ function setup() {
                 throwS3Error = null;
             }
             const result = S3FS[params.Key];
-            if (!result) {
+            if (result) {
+                callback(null, {Body: result});
+            } else {
                 const error = new Error('Not found');
                 error.code = 'NoSuchKey';
                 callback(error);
-            } else {
-                callback(null, {Body: result});
             }
         });
         AWS.mock('S3', 'putObject', (params, callback) => {

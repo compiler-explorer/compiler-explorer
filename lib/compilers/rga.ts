@@ -200,7 +200,7 @@ Please supply an ASIC from the following options:`,
         // architecture and appends the shader type (with underscore separators). Here,
         // we rename the generated file to the output file Compiler Explorer expects.
 
-        const files = await readdir(outputDir, {encoding: 'utf-8'});
+        const files = await readdir(outputDir, {encoding: 'utf8'});
         for (const file of files) {
             if (file.startsWith((asicSelection.asic as string) + '_output')) {
                 await rename(path.join(outputDir, file), outputFile);
@@ -209,9 +209,9 @@ Please supply an ASIC from the following options:`,
                 // The register analysis file contains a legend, and register liveness data
                 // for each line of disassembly. Interleave those lines into the final output
                 // as assembly comments.
-                const asm = await readFile(outputFile, 'utf-8');
+                const asm = await readFile(outputFile, 'utf8');
                 const asmLines = asm.split(/\r?\n/);
-                const analysis = await readFile(registerAnalysisFile, 'utf-8');
+                const analysis = await readFile(registerAnalysisFile, 'utf8');
                 const analysisLines = analysis.split(/\r?\n/);
 
                 // The first few lines of the register analysis are the legend. Emit those lines

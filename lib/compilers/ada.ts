@@ -95,7 +95,9 @@ export class AdaCompiler extends BaseCompiler {
             inputFilename,
         );
 
-        if (!filters.binary) {
+        if (filters.binary) {
+            gnatmake_opts.push('-o', outputFilename);
+        } else {
             gnatmake_opts.push(
                 '-S', // Generate ASM
                 '-c', // Compile only
@@ -110,8 +112,6 @@ export class AdaCompiler extends BaseCompiler {
                     gnatmake_opts.push(opt);
                 }
             }
-        } else {
-            gnatmake_opts.push('-o', outputFilename);
         }
 
         // Spread the options coming from outside (user, backend or config options)

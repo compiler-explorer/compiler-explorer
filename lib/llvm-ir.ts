@@ -55,7 +55,7 @@ export class LlvmIrParser {
         // MetaInfo is a file node
         if (debugInfo[scope].filename) {
             const filename = debugInfo[scope].filename;
-            return !stdInLooking.test(filename) ? filename : null;
+            return stdInLooking.test(filename) ? null : filename;
         }
         // MetaInfo has a file reference.
         if (debugInfo[scope].file) {
