@@ -423,6 +423,13 @@ pre.content.wrap * {
     }
 }
 
+.cfg-toolbar {
+    .estimated-export-size {
+        font-size: x-small;
+        font-style: italic;
+    }
+}
+
 .clear-cache {
     position: absolute;
     right: 0;
