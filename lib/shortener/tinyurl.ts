@@ -22,11 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export class BaseShortener {
-    constructor(storageHandler) {
-        this.storageHandler = storageHandler;
+import * as express from 'express';
+import request from 'request';
+
+import {BaseShortener} from './base';
+
+export class TinyUrlShortener extends BaseShortener {
+    override handle(req: express.Request, res: express.Response) {
+        const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
+        const options = {
+            url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
+            method: 'GET',
+        };
+        const callback = (err, resp: request.Response, body) => {
+            if (!err && resp.statusCode === 200) {
+                res.send({url: body});
+            } else {
+                res.status(resp.statusCode).send('Tinyurl error');
+            }
+        };
+        request.post(options, callback);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    handle(req, res) {}
+    static override get key() {
+        return 'tinyurl';
+    }
 }

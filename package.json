@@ -25,6 +25,7 @@
     "@sentry/browser": "^6.16.1",
     "@sentry/node": "^6.16.1",
     "@types/file-saver": "^2.0.5",
+    "@types/request": "^2.48.8",
     "aws-sdk": "^2.1048.0",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
