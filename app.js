@@ -453,6 +453,11 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
+    // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
+    const webServer = express(),
+        router = express.Router();
+    setupSentry(aws.getConfig('sentryDsn'));
+
     startWineInit();
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
@@ -505,9 +510,6 @@ async function main() {
         process.exit(0);
     }
 
-    const webServer = express(),
-        router = express.Router();
-    setupSentry(aws.getConfig('sentryDsn'));
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -841,5 +843,6 @@ function uncaughtHandler(err, origin) {
 // eslint-disable-next-line unicorn/prefer-top-level-await
 main().catch(err => {
     logger.error('Top-level error (shutting down):', err);
-    process.exit(1);
+    // Shut down after a second to hopefully let logs flush.
+    setTimeout(() => process.exit(1), 1000);
 });
