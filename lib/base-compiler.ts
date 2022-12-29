@@ -1447,9 +1447,9 @@ export class BaseCompiler implements ICompiler {
     }
 
     async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
-        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
-
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, true);
+
         const inputFilename = writeSummary.inputFilename;
 
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
@@ -1472,7 +1472,6 @@ export class BaseCompiler implements ICompiler {
         const execOptions = this.getDefaultExecOptions();
         execOptions.ldPath = this.getSharedLibraryPathsAsLdLibraryPaths(key.libraries);
 
-        const downloads = await buildEnvironment;
         const result = await this.buildExecutable(key.compiler.exe, compilerArguments, inputFilename, execOptions);
 
         return {
