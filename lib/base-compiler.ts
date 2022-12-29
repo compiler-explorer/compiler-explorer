@@ -1713,8 +1713,6 @@ export class BaseCompiler implements ICompiler {
     }
 
     async doCompilation(inputFilename, dirPath, key, options, filters, backendOptions, libraries, tools) {
-        const buildEnvironment = this.setupBuildEnvironment(key, dirPath, filters.binary);
-
         const inputFilenameSafe = this.filename(inputFilename);
 
         const outputFilename = this.getOutputFilename(dirPath, this.outputFilebase, key);
@@ -1741,7 +1739,7 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await buildEnvironment;
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary);
         const [
             asmResult,
             astResult,
