@@ -149,33 +149,38 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 }
             });
 
-            extract.on('error', error => {
-                logger.error(`Error in tar handling: ${error}`);
-                reject(error);
-            });
-
-            extract.on('finish', () => {
-                const endTime = process.hrtime.bigint();
-                resolve({
-                    step: `Download of ${libId} ${version}`,
-                    packageUrl: packageUrl,
-                    time: ((endTime - startTime) / BigInt(1000000)).toString(),
+            extract
+                .on('error', error => {
+                    logger.error(`Error in tar handling: ${error}`);
+                    reject(error);
+                })
+                .on('finish', () => {
+                    const endTime = process.hrtime.bigint();
+                    resolve({
+                        step: `Download of ${libId} ${version}`,
+                        packageUrl: packageUrl,
+                        time: ((endTime - startTime) / BigInt(1000000)).toString(),
+                    });
                 });
-            });
 
-            gunzip.on('error', error => {
-                logger.error(`Error in gunzip handling: ${error}`);
-                reject(error);
-            });
-
-            gunzip.pipe(extract);
+            gunzip
+                .on('error', error => {
+                    logger.error(`Error in gunzip handling: ${error}`);
+                    reject(error);
+                })
+                .pipe(extract);
 
             const settings = {
                 method: 'GET',
                 encoding: null,
             };
 
-            request(packageUrl, settings).pipe(gunzip);
+            request(packageUrl, settings)
+                .on('error', error => {
+                    logger.error(`Error in request handling: ${error}`);
+                    reject(error);
+                })
+                .pipe(gunzip);
         });
     }
 
