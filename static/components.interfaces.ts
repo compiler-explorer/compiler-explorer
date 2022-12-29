@@ -60,11 +60,11 @@ export interface ComponentConfig<S> {
     componentState: S;
 }
 
-type StateWithLanguage = {lang: string};
-type StateWithEditor = {source: number};
-type StateWithTree = {tree: number};
-type StateWithId = {id: number};
-type EmptyState = Record<never, never>;
+export type StateWithLanguage = {lang: string};
+export type StateWithEditor = {source: number};
+export type StateWithTree = {tree: number};
+export type StateWithId = {id: number};
+export type EmptyState = Record<never, never>;
 
 export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
 export type PopulatedCompilerState = StateWithEditor & {

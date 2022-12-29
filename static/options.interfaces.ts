@@ -49,6 +49,7 @@ export type Libs = Record<string, LanguageLibs>;
 
 export type LibsPerRemote = Record<string, LanguageLibs>;
 
+// TODO: Is this the same as OptionsType in lib/options-handler.ts?
 export type Options = {
     libs: Libs;
     remoteLibs: LibsPerRemote;
@@ -62,4 +63,7 @@ export type Options = {
     sentryEnvironment?: string;
     compileOptions: Record<LanguageKey, string>;
     tools: Record<LanguageKey, Record<string, Tool>>;
+    slides: any[];
+    cookieDomainRe: string;
+    motdUrl: string;
 };
