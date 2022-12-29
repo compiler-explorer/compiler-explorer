@@ -818,19 +818,23 @@ if (opts.version) {
     process.exit(0);
 }
 
-process.on('uncaughtException', terminationHandler('uncaughtException', 1));
-process.on('SIGINT', terminationHandler('SIGINT', 0));
-process.on('SIGTERM', terminationHandler('SIGTERM', 0));
-process.on('SIGQUIT', terminationHandler('SIGQUIT', 0));
+process.on('uncaughtException', uncaughtHandler);
+process.on('SIGINT', signalHandler('SIGINT'));
+process.on('SIGTERM', signalHandler('SIGTERM'));
+process.on('SIGQUIT', signalHandler('SIGQUIT'));
 
-function terminationHandler(name, code) {
-    return error => {
+function signalHandler(name) {
+    return () => {
         logger.info(`stopping process: ${name}`);
-        if (error && error instanceof Error) {
-            logger.error(error);
-        }
-        process.exit(code);
+        process.exit(0);
     };
+}
+
+function uncaughtHandler(err, origin) {
+    logger.info(`stopping process: Uncaught exception: ${err}\nException origin: ${origin}`);
+    // The app will exit naturally from here, but if we call `process.exit()` we may lose log lines.
+    // see https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411
+    process.exitCode = 1;
 }
 
 // Once we move to modules, we can remove this and use a top level await.
