@@ -280,13 +280,16 @@ function configFromEmbedded(embeddedUrl: string) {
     }
 }
 
-function fixBugsInConfig(config) {
-    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
-        config.activeItemIndex = config.content.length - 1;
+// TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
+function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
+    if (config.activeItemIndex && config.activeItemIndex >= unwrap(config.content).length) {
+        config.activeItemIndex = unwrap(config.content).length - 1;
     }
 
-    for (const item of config.content) {
-        fixBugsInConfig(item);
+    if (config.content) {
+        for (const item of config.content) {
+            fixBugsInConfig(item);
+        }
     }
 }
 
