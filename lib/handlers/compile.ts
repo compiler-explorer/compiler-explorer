@@ -132,7 +132,7 @@ export class CompileHandler {
         // https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
         // We just keep the body as-is though: no encoding using queryString.stringify(), as we don't use a form
         // decoding middleware.
-        this.proxy.on('proxyReq', function (proxyReq, req) {
+        this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
             //  object we get here does.
             const body = (req as any).body;
@@ -144,15 +144,28 @@ export class CompileHandler {
 
             if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
-            }
-
-            if (contentType === 'application/x-www-form-urlencoded') {
+            } else if (contentType === 'application/x-www-form-urlencoded') {
                 bodyData = body;
+            } else {
+                Sentry.captureException(
+                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
+                );
+                proxyReq.write('Unexpected Content-Type');
             }
 
-            if (bodyData) {
-                proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-                proxyReq.write(bodyData);
+            try {
+                if (bodyData) {
+                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.write(bodyData);
+                }
+            } catch (e: any) {
+                Sentry.captureException(e);
+                let json = '<json stringify error>';
+                try {
+                    json = JSON.stringify(bodyData);
+                } catch (e) {}
+                Sentry.captureMessage(`Unknown proxy bodyData: ${bodyData}, JSON.stringify: ${json}`);
+                proxyReq.write('Proxy error');
             }
         });
     }
