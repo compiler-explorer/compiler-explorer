@@ -160,7 +160,7 @@ export class CompileHandler {
                 }
             } catch (e: any) {
                 Sentry.captureException(e);
-                let json;
+                let json = '<json stringify error>';
                 try {
                     json = JSON.stringify(bodyData);
                 } catch (e) {}
