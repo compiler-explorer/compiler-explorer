@@ -195,7 +195,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override createEditor(editorRoot: HTMLElement): editor.IStandaloneCodeEditor {
         const editor = monaco.editor.create(
             editorRoot,
-            // @ts-expect-error: options.readOnly and anything inside window.compilerExplorerOptions is unknown
             monacoConfig.extendConfig(
                 {
                     readOnly:

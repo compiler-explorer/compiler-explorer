@@ -25,6 +25,7 @@
 import $ from 'jquery';
 import {editor} from 'monaco-editor';
 import {SiteSettings} from './settings';
+import GoldenLayout from 'golden-layout';
 
 export type Themes = 'default' | 'dark' | 'darkplus' | 'system';
 
@@ -124,7 +125,7 @@ editor.defineTheme('ce-dark-plus', {
 export class Themer {
     private currentTheme: Theme | null = null;
 
-    constructor(private eventHub: any, initialSettings: SiteSettings) {
+    constructor(private eventHub: GoldenLayout.EventEmitter, initialSettings: SiteSettings) {
         this.onSettingsChange(initialSettings);
 
         this.eventHub.on('settingsChange', this.onSettingsChange, this);

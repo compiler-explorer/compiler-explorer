@@ -63,7 +63,20 @@ export type Options = {
     sentryEnvironment?: string;
     compileOptions: Record<LanguageKey, string>;
     tools: Record<LanguageKey, Record<string, Tool>>;
-    slides: any[];
+    slides?: any[];
     cookieDomainRe: string;
     motdUrl: string;
+    pageloadUrl: string;
+    mobileViewer: boolean;
+    readOnly: boolean;
+    policies: {
+        cookies: {
+            enabled: boolean;
+            key: string;
+        };
+        privacy: {
+            enabled: boolean;
+            key: string;
+        };
+    };
 };

@@ -44,7 +44,7 @@ import {Sharing} from './sharing';
 import * as Components from './components';
 import * as url from './url';
 import {Hub} from './hub';
-import {Settings} from './settings';
+import {Settings, SiteSettings} from './settings';
 import * as local from './local';
 import {Alert} from './widgets/alert';
 import * as themer from './themes';
@@ -60,6 +60,8 @@ import {unwrap} from './assert';
 import {Language, LanguageKey} from '../types/languages.interfaces';
 import {CompilerExplorerOptions} from './global';
 import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces';
+
+import * as utils from '../lib/common-utils';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -87,14 +89,14 @@ const policyDocuments = {
     privacy: require('./generated/privacy.pug').default,
 };
 
-function setupSettings(hub) {
+function setupSettings(hub: Hub) {
     const eventHub = hub.layout.eventHub;
     const defaultSettings = {
         defaultLanguage: hub.defaultLangId,
     };
-    let currentSettings = JSON.parse(local.get('settings', 'null')) || defaultSettings;
+    let currentSettings: SiteSettings = JSON.parse(local.get('settings', 'null')) || defaultSettings;
 
-    function onChange(newSettings) {
+    function onChange(newSettings: SiteSettings) {
         if (currentSettings.theme !== newSettings.theme) {
             analytics.proxy('send', {
                 hitType: 'event',
@@ -117,18 +119,18 @@ function setupSettings(hub) {
 
     new themer.Themer(eventHub, currentSettings);
 
-    eventHub.on('requestSettings', function () {
+    eventHub.on('requestSettings', () => {
         eventHub.emit('settingsChange', currentSettings);
     });
 
     const SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
-    eventHub.on('modifySettings', function (newSettings) {
+    eventHub.on('modifySettings', (newSettings: Partial<SiteSettings>) => {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
     return currentSettings;
 }
 
-function hasCookieConsented(options) {
+function hasCookieConsented(options: CompilerExplorerOptions) {
     return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
@@ -136,19 +138,19 @@ function isMobileViewer() {
     return window.compilerExplorerOptions.mobileViewer;
 }
 
-function calcLocaleChangedDate(policyModal) {
+function calcLocaleChangedDate(policyModal: JQuery) {
     const timestamp = policyModal.find('#changed-date');
-    timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+    timestamp.text(new Date(unwrap(timestamp.attr('datetime'))).toLocaleString());
 }
 
-function setupButtons(options, hub) {
+function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
     const eventHub = hub.createEventHub();
     const alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
-        $('#privacy').on('click', function (event, data) {
+        $('#privacy').on('click', (event, data) => {
             const modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
                 policyDocuments.privacy.text
@@ -165,7 +167,7 @@ function setupButtons(options, hub) {
     }
 
     if (options.policies.cookies.enabled) {
-        const getCookieTitle = function () {
+        const getCookieTitle = () => {
             return (
                 'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
                 (hasCookieConsented(options) ? 'green' : 'red') +
@@ -174,13 +176,13 @@ function setupButtons(options, hub) {
                 '</span></p>'
             );
         };
-        $('#cookies').on('click', function () {
+        $('#cookies').on('click', () => {
             const modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
-                yes: function () {
+                yes: () => {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
                 yesHtml: 'Consent',
-                no: function () {
+                no: () => {
                     simpleCooks.callDontConsent.apply(simpleCooks);
                 },
                 noHtml: 'Do NOT consent',
@@ -189,33 +191,33 @@ function setupButtons(options, hub) {
         });
     }
 
-    $('#ui-reset').on('click', function () {
+    $('#ui-reset').on('click', () => {
         local.remove('gl');
         hasUIBeenReset = true;
         window.history.replaceState(null, '', window.httpRoot);
         window.location.reload();
     });
 
-    $('#ui-duplicate').on('click', function () {
+    $('#ui-duplicate').on('click', () => {
         window.open('/', '_blank');
     });
 
-    $('#changes').on('click', function () {
+    $('#changes').on('click', () => {
         // TODO(jeremy-rifkin): Fix types
         alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text) as any);
     });
 
     $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
-        .done(function (data) {
+        .done(data => {
             $('#ces .ces-icons').html(data);
         })
-        .fail(function (err) {
+        .fail(err => {
             Sentry.captureException(err);
         });
 
-    $('#ces').on('click', function () {
+    $('#ces').on('click', () => {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
-            .done(function (data) {
+            .done(data => {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
                 analytics.proxy('send', {
                     hitType: 'event',
@@ -223,7 +225,7 @@ function setupButtons(options, hub) {
                     eventAction: 'open',
                 });
             })
-            .fail(function (err) {
+            .fail(err => {
                 const result = err.responseText || JSON.stringify(err);
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
@@ -232,8 +234,8 @@ function setupButtons(options, hub) {
             });
     });
 
-    $('#ui-history').on('click', function () {
-        historyWidget.run(function (data) {
+    $('#ui-history').on('click', () => {
+        historyWidget.run(data => {
             local.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
             window.history.replaceState(null, '', window.httpRoot);
@@ -243,7 +245,7 @@ function setupButtons(options, hub) {
         $('#history').modal();
     });
 
-    $('#ui-apply-default-font-scale').on('click', function () {
+    $('#ui-apply-default-font-scale').on('click', () => {
         const defaultFontScale = Settings.getStoredSettings().defaultFontScale;
         if (defaultFontScale !== undefined) {
             eventHub.emit('broadcastFontScale', defaultFontScale);
@@ -251,7 +253,7 @@ function setupButtons(options, hub) {
     });
 }
 
-function configFromEmbedded(embeddedUrl) {
+function configFromEmbedded(embeddedUrl: string) {
     // Old-style link?
     let params;
     try {
@@ -260,12 +262,7 @@ function configFromEmbedded(embeddedUrl) {
         // Ignore this, it's not a problem
     }
     if (params && params.source && params.compiler) {
-        const filters = _.chain((params.filters || '').split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
+        const filters = Object.fromEntries((params.filters || '').split(',').map(o => [o, true]));
         // TODO(jeremy-rifkin): Fix types
         return {
             content: [
@@ -288,9 +285,9 @@ function fixBugsInConfig(config) {
         config.activeItemIndex = config.content.length - 1;
     }
 
-    _.each(config.content, function (item) {
+    for (const item of config.content) {
         fixBugsInConfig(item);
-    });
+    }
 }
 
 type ConfigType = {
@@ -307,7 +304,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
     let config;
     if (!options.embedded) {
         if (options.slides) {
-            const presentation = new Presentation(window.compilerExplorerOptions.slides.length);
+            const presentation = new Presentation(unwrap(window.compilerExplorerOptions.slides).length);
             const currentSlide = presentation.currentSlide;
             if (currentSlide < options.slides.length) {
                 config = options.slides[currentSlide];
@@ -365,7 +362,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                     hasHeaders: false,
                 },
             },
-            configFromEmbedded(window.location.hash.substr(1))
+            configFromEmbedded(window.location.hash.substring(1))
         );
     }
 
@@ -384,7 +381,7 @@ function initializeResetLayoutLink() {
     }
 }
 
-function initPolicies(options) {
+function initPolicies(options: CompilerExplorerOptions) {
     if (options.policies.privacy.enabled) {
         if (jsCookie.get(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
@@ -397,7 +394,7 @@ function initPolicies(options) {
             const pcookiesBellNotification = $('#cookiesBellNotification');
             ppolicyBellNotification.removeClass('d-none');
             pprivacyBellNotification.removeClass('d-none');
-            $('#privacy').on('click', function () {
+            $('#privacy').on('click', () => {
                 // Only hide if the other policy does not also have a bell
                 if (pcookiesBellNotification.hasClass('d-none')) {
                     ppolicyBellNotification.addClass('d-none');
@@ -406,20 +403,20 @@ function initPolicies(options) {
             });
         }
     }
-    simpleCooks.setOnDoConsent(function () {
+    simpleCooks.setOnDoConsent(() => {
         jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
             expires: 365,
             sameSite: 'strict',
         });
         analytics.toggle(true);
     });
-    simpleCooks.setOnDontConsent(function () {
+    simpleCooks.setOnDontConsent(() => {
         analytics.toggle(false);
         jsCookie.set(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
     });
-    simpleCooks.setOnHide(function () {
+    simpleCooks.setOnHide(() => {
         const spolicyBellNotification = $('#policyBellNotification');
         const sprivacyBellNotification = $('#privacyBellNotification');
         const scookiesBellNotification = $('#cookiesBellNotification');
@@ -440,7 +437,7 @@ function initPolicies(options) {
             const ccookiesBellNotification = $('#cookiesBellNotification');
             cpolicyBellNotification.removeClass('d-none');
             ccookiesBellNotification.removeClass('d-none');
-            $('#cookies').on('click', function () {
+            $('#cookies').on('click', () => {
                 if (cprivacyBellNotification.hasClass('d-none')) {
                     cpolicyBellNotification.addClass('d-none');
                 }
@@ -481,7 +478,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
 
     impl(config);
 
-    if (!found) {
+    if (!(found as boolean)) {
         config.maximisedItemId = null;
     }
 }
@@ -502,23 +499,21 @@ function setupLanguageLogos(languages: Record<LanguageKey, Language>) {
 }
 
 function earlyGetDefaultLangSetting() {
-    // returns string | undefined
     return Settings.getStoredSettings().defaultLanguage;
 }
 
-function getDefaultLangId(subLangId, options) {
+function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerExplorerOptions) {
     let defaultLangId = subLangId;
     if (!defaultLangId) {
         const defaultLangSetting = earlyGetDefaultLangSetting();
-        if (defaultLangSetting && options.languages[defaultLangSetting] !== undefined) {
+        if (defaultLangSetting && defaultLangSetting in options.languages) {
             defaultLangId = defaultLangSetting;
-        } else if (options.languages['c++']) {
+        } else if ('c++' in options.languages) {
             defaultLangId = 'c++';
         } else {
-            defaultLangId = _.keys(options.languages)[0];
+            defaultLangId = utils.keys(options.languages as unknown as Record<LanguageKey, Language>)[0];
         }
     }
-    // returns string
     return defaultLangId;
 }
 
@@ -532,9 +527,9 @@ function start() {
     // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
-        const langBySubdomain = _.find(options.languages, function (lang) {
-            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) !== -1;
-        });
+        const langBySubdomain = Object.values(options.languages).find(
+            lang => lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) !== -1
+        );
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
         }
@@ -563,9 +558,9 @@ function start() {
         ],
     };
 
-    $(window).on('hashchange', function () {
+    $(window).on('hashchange', () => {
         // punt on hash events and just reload the page if there's a hash
-        if (window.location.hash.substr(1)) window.location.reload();
+        if (window.location.hash.substring(1)) window.location.reload();
     });
 
     // Which buttons act as a linkable popup
@@ -609,7 +604,7 @@ function start() {
 
     $(window)
         .on('resize', sizeRoot)
-        .on('beforeunload', function () {
+        .on('beforeunload', () => {
             // Only preserve state in localStorage in non-embedded mode.
             const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
@@ -628,12 +623,12 @@ function start() {
 
     const addDropdown = $('#addDropdown');
 
-    function setupAdd(thing, func) {
-        layout.createDragSource(thing, func)._dragListener.on('dragStart', function () {
+    function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
+        layout.createDragSource(thing, func)._dragListener.on('dragStart', () => {
             addDropdown.dropdown('toggle');
         });
 
-        thing.on('click', function () {
+        thing.on('click', () => {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());
             } else {
@@ -642,20 +637,20 @@ function start() {
         });
     }
 
-    setupAdd($('#add-editor'), function () {
+    setupAdd($('#add-editor'), () => {
         return Components.getEditor();
     });
-    setupAdd($('#add-diff'), function () {
+    setupAdd($('#add-diff'), () => {
         return Components.getDiffView();
     });
-    setupAdd($('#add-tree'), function () {
+    setupAdd($('#add-tree'), () => {
         $('#add-tree').prop('disabled', true);
         return Components.getTree();
     });
 
     if (hashPart) {
         const element = $(hashPart);
-        if (element) element.trigger('click');
+        element.trigger('click');
     }
     initPolicies(options);
 
@@ -667,14 +662,14 @@ function start() {
             $('#motd'),
             subLangId ?? '',
             settings.enableCommunityAds,
-            function (data) {
-                const sendMotd = function () {
+            data => {
+                const sendMotd = () => {
                     hub.layout.eventHub.emit('motd', data);
                 };
                 hub.layout.eventHub.on('requestMotd', sendMotd);
                 sendMotd();
             },
-            function () {
+            () => {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
@@ -706,7 +701,7 @@ function start() {
     };
 
     if (options.pageloadUrl) {
-        setTimeout(function () {
+        setTimeout(() => {
             const visibleIcons = $('.ces-icon:visible')
                 .map((_, value) => value.dataset.statsid)
                 .get()
