@@ -111,52 +111,76 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const startTime = process.hrtime.bigint();
             const extract = tar.extract();
             const gunzip = zlib.createGunzip();
 
             extract.on('entry', async (header, stream, next) => {
-                let filepath = '';
-                if (this.extractAllToRoot) {
-                    const filename = path.basename(header.name);
-                    filepath = path.join(downloadPath, filename);
-                } else {
-                    const filename = header.name;
-                    filepath = path.join(downloadPath, filename);
-                    const resolved = path.resolve(path.dirname(filepath));
-                    if (!resolved.startsWith(downloadPath)) {
-                        logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
-                        next();
-                        return;
+                try {
+                    let filepath = '';
+                    if (this.extractAllToRoot) {
+                        const filename = path.basename(header.name);
+                        filepath = path.join(downloadPath, filename);
+                    } else {
+                        const filename = header.name;
+                        filepath = path.join(downloadPath, filename);
+                        const resolved = path.resolve(path.dirname(filepath));
+                        if (!resolved.startsWith(downloadPath)) {
+                            logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                            next();
+                            return;
+                        }
+
+                        await mkdirp(path.dirname(filepath));
                     }
 
-                    await mkdirp(path.dirname(filepath));
+                    const filestream = fs.createWriteStream(filepath);
+                    stream.pipe(filestream);
+                    stream.on('error', error => {
+                        logger.error(`Error in stream handling: ${error}`);
+                        reject(error);
+                    });
+                    stream.on('end', next);
+                    stream.resume();
+                } catch (error) {
+                    logger.error(`Error in entry handling: ${error}`);
+                    reject(error);
                 }
-
-                const filestream = fs.createWriteStream(filepath);
-                stream.pipe(filestream);
-                stream.on('end', next);
-                stream.resume();
             });
 
-            extract.on('finish', () => {
-                const endTime = process.hrtime.bigint();
-                resolve({
-                    step: `Download of ${libId} ${version}`,
-                    packageUrl: packageUrl,
-                    time: ((endTime - startTime) / BigInt(1000000)).toString(),
+            extract
+                .on('error', error => {
+                    logger.error(`Error in tar handling: ${error}`);
+                    reject(error);
+                })
+                .on('finish', () => {
+                    const endTime = process.hrtime.bigint();
+                    resolve({
+                        step: `Download of ${libId} ${version}`,
+                        packageUrl: packageUrl,
+                        time: ((endTime - startTime) / BigInt(1000000)).toString(),
+                    });
                 });
-            });
 
-            gunzip.pipe(extract);
+            gunzip
+                .on('error', error => {
+                    logger.error(`Error in gunzip handling: ${error}`);
+                    reject(error);
+                })
+                .pipe(extract);
 
             const settings = {
                 method: 'GET',
                 encoding: null,
             };
 
-            request(packageUrl, settings).pipe(gunzip);
+            request(packageUrl, settings)
+                .on('error', error => {
+                    logger.error(`Error in request handling: ${error}`);
+                    reject(error);
+                })
+                .pipe(gunzip);
         });
     }
 
