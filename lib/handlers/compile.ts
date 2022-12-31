@@ -134,7 +134,7 @@ export class CompileHandler {
         // decoding middleware.
         this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does.
+            //  object we get here does (introduced by body-parser).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
@@ -142,10 +142,8 @@ export class CompileHandler {
             const contentType = proxyReq.getHeader('Content-Type');
             let bodyData;
 
-            if (contentType === 'application/json') {
+            if (contentType === 'application/json' || contentType === 'application/x-www-form-urlencoded') {
                 bodyData = JSON.stringify(body);
-            } else if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = body;
             } else {
                 Sentry.captureException(
                     new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
