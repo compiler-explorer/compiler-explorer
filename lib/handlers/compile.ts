@@ -164,7 +164,7 @@ export class CompileHandler {
                 try {
                     json = JSON.stringify(bodyData);
                 } catch (e) {}
-                Sentry.captureMessage(`Unknown proxy bodyData: ${bodyData}, JSON.stringify: ${json}`);
+                Sentry.captureMessage(`Unknown proxy bodyData: ${typeof bodyData} ${json}`);
                 proxyReq.write('Proxy error');
             }
         });
