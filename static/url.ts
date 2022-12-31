@@ -26,8 +26,9 @@ import _ from 'underscore';
 import GoldenLayout from 'golden-layout';
 
 const lzstring = require('lz-string');
-const rison = require('rison');
 const Components = require('./components');
+
+import * as rison from './rison';
 
 export function convertOldState(state: any): any {
     const sc = state.compilers[0];
@@ -74,7 +75,7 @@ export function loadState(state: any): any {
     return state;
 }
 
-export function risonify(obj: object): string {
+export function risonify(obj: rison.JSONValue): string {
     return rison.quote(rison.encode_object(obj));
 }
 
