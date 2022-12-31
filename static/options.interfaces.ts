@@ -53,7 +53,7 @@ export type LibsPerRemote = Record<string, LanguageLibs>;
 export type Options = {
     libs: Libs;
     remoteLibs: LibsPerRemote;
-    languages: Record<LanguageKey, Language>;
+    languages: Partial<Record<LanguageKey, Language>>;
     compilers: CompilerInfo[];
     defaultCompiler: Record<LanguageKey, string>;
     defaultLibs: Record<LanguageKey, string | null>;

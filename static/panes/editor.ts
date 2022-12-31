@@ -204,7 +204,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
                     glyphMargin: !options.embedded,
                 },
-                this.settings as SiteSettings
+                this.settings
             )
         );
 

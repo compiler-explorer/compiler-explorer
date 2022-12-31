@@ -67,7 +67,7 @@ const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/)
 
 const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
 
-if (!window.PRODUCTION) {
+if (!window.PRODUCTION && !options.embedded) {
     require('./tests/_all');
 }
 
@@ -262,7 +262,7 @@ function configFromEmbedded(embeddedUrl: string) {
         // Ignore this, it's not a problem
     }
     if (params && params.source && params.compiler) {
-        const filters = Object.fromEntries((params.filters || '').split(',').map(o => [o, true]));
+        const filters = Object.fromEntries(((params.filters as string) || '').split(',').map(o => [o, true]));
         // TODO(jeremy-rifkin): Fix types
         return {
             content: [
@@ -463,7 +463,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     // nothing to do if the maximised item id is not set
     if (config.maximisedItemId !== '__glMaximised') return;
 
-    let found = false;
+    let found = false as boolean;
 
     function impl(component) {
         if (component.id === '__glMaximised') {
@@ -481,12 +481,12 @@ function removeOrphanedMaximisedItemFromConfig(config) {
 
     impl(config);
 
-    if (!(found as boolean)) {
+    if (!found) {
         config.maximisedItemId = null;
     }
 }
 
-function setupLanguageLogos(languages: Record<LanguageKey, Language>) {
+function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
     for (const lang of Object.values(languages)) {
         try {
             if (lang.logoUrl !== null) {
@@ -514,7 +514,7 @@ function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerE
         } else if ('c++' in options.languages) {
             defaultLangId = 'c++';
         } else {
-            defaultLangId = utils.keys(options.languages as unknown as Record<LanguageKey, Language>)[0];
+            defaultLangId = utils.keys(options.languages)[0];
         }
     }
     return defaultLangId;
