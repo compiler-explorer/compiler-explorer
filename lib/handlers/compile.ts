@@ -153,6 +153,8 @@ export class CompileHandler {
 
             try {
                 if (bodyData) {
+                    // body-parser parses form-urlencoded data into json so we set the proxy req to be json
+                    proxyReq.setHeader('Content-Type', 'application/json');
                     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
                     proxyReq.write(bodyData);
                 }
