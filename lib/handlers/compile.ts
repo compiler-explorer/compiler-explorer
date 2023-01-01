@@ -142,8 +142,11 @@ export class CompileHandler {
             const contentType = proxyReq.getHeader('Content-Type');
             let bodyData;
 
-            if (contentType === 'application/json' || contentType === 'application/x-www-form-urlencoded') {
+            if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
+            } else if (contentType === 'application/x-www-form-urlencoded') {
+                // body-parser parses form-urlencoded data into json but we want to re-forward as urlencoded form data
+                bodyData = new URLSearchParams(Object.entries(body)).toString();
             } else {
                 Sentry.captureException(
                     new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
@@ -153,8 +156,6 @@ export class CompileHandler {
 
             try {
                 if (bodyData) {
-                    // body-parser parses form-urlencoded data into json so we set the proxy req to be json
-                    proxyReq.setHeader('Content-Type', 'application/json');
                     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
                     proxyReq.write(bodyData);
                 }
