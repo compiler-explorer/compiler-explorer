@@ -46,6 +46,7 @@ class DotNetCompiler extends BaseCompiler {
     private readonly buildConfig: string;
     private readonly clrBuildDir: string;
     private readonly langVersion: string;
+    private readonly crossgen2Path: string;
 
     private crossgen2VersionString: string;
 
@@ -61,6 +62,8 @@ class DotNetCompiler extends BaseCompiler {
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
+
+        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
         this.asm = new DotNetAsmParser();
         this.crossgen2VersionString = '';
     }
@@ -193,7 +196,6 @@ class DotNetCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
-        const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
         const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
         const programDir = path.dirname(inputFilename);
@@ -224,9 +226,7 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const crossgen2Result = await this.runCrossgen2(
-            compiler,
             execOptions,
-            crossgen2Path,
             this.clrBuildDir,
             programDllPath,
             crossgen2Options,
@@ -283,12 +283,12 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async ensureCrossgen2Version(compiler, crossgen2Path, execOptions) {
+    async ensureCrossgen2Version(execOptions) {
         if (!this.crossgen2VersionString) {
             this.crossgen2VersionString = '// crossgen2 ';
 
             const versionFilePath = `${this.clrBuildDir}/version.txt`;
-            const versionResult = await this.exec(compiler, [crossgen2Path, '--version'], execOptions);
+            const versionResult = await this.exec(this.crossgen2Path, ['--version'], execOptions);
             if (versionResult.code === 0) {
                 this.crossgen2VersionString += versionResult.stdout;
             } else if (fs.existsSync(versionFilePath)) {
@@ -300,11 +300,10 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async runCrossgen2(compiler, execOptions, crossgen2Path, bclPath, dllPath, options, outputPath) {
-        await this.ensureCrossgen2Version(compiler, crossgen2Path, execOptions);
+    async runCrossgen2(execOptions, bclPath, dllPath, options, outputPath) {
+        await this.ensureCrossgen2Version(execOptions);
 
         const crossgen2Options = [
-            crossgen2Path,
             '-r',
             path.join(bclPath, '/'),
             dllPath,
@@ -322,7 +321,7 @@ class DotNetCompiler extends BaseCompiler {
             '--compilebubblegenerics',
         ].concat(options);
 
-        const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
+        const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
