@@ -134,6 +134,7 @@ class DotNetCompiler extends BaseCompiler {
         // Some versions of .NET complain if they can't work out what the user's directory is. We force it to the output
         // directory here.
         execOptions.env.DOTNET_CLI_HOME = programDir;
+        execOptions.env.DOTNET_ROOT = path.join(this.clrBuildDir, '.dotnet');
         // Place nuget packages in the output directory.
         execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
         // Try to be less chatty
