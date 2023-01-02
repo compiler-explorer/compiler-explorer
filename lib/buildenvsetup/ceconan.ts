@@ -181,7 +181,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     logger.error(`Error in request handling: ${error}`);
                     reject(error);
                 })
-                .on('response', async res => {
+                .on('response', res => {
                     if (res.statusCode === 200) {
                         req.pipe(gunzip);
                     } else {
