@@ -40,12 +40,15 @@ import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 import * as utils from '../utils';
 
 class DotNetCompiler extends BaseCompiler {
-    private sdkBaseDir: string;
-    private sdkVersion: string;
-    private targetFramework: string;
-    private buildConfig: string;
-    private clrBuildDir: string;
-    private langVersion: string;
+    private readonly sdkBaseDir: string;
+    private readonly sdkVersion: string;
+    private readonly targetFramework: string;
+    private readonly buildConfig: string;
+    private readonly clrBuildDir: string;
+    private readonly langVersion: string;
+    private readonly crossgen2Path: string;
+
+    private crossgen2VersionString: string;
 
     constructor(compilerInfo, env) {
         super(compilerInfo, env);
@@ -59,7 +62,10 @@ class DotNetCompiler extends BaseCompiler {
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
         this.langVersion = this.compilerProps<string>(`compiler.${this.compiler.id}.langVersion`);
+
+        this.crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2');
         this.asm = new DotNetAsmParser();
+        this.crossgen2VersionString = '';
     }
 
     get compilerOptions() {
@@ -128,6 +134,7 @@ class DotNetCompiler extends BaseCompiler {
         // Some versions of .NET complain if they can't work out what the user's directory is. We force it to the output
         // directory here.
         execOptions.env.DOTNET_CLI_HOME = programDir;
+        execOptions.env.DOTNET_ROOT = path.join(this.clrBuildDir, '.dotnet');
         // Place nuget packages in the output directory.
         execOptions.env.NUGET_PACKAGES = path.join(programDir, '.nuget');
         // Try to be less chatty
@@ -190,7 +197,6 @@ class DotNetCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
-        const crossgen2Path = path.join(this.clrBuildDir, 'crossgen2', 'crossgen2.dll');
         const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
         const programDir = path.dirname(inputFilename);
@@ -221,9 +227,7 @@ class DotNetCompiler extends BaseCompiler {
         }
 
         const crossgen2Result = await this.runCrossgen2(
-            compiler,
             execOptions,
-            crossgen2Path,
             this.clrBuildDir,
             programDllPath,
             crossgen2Options,
@@ -280,9 +284,27 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async runCrossgen2(compiler, execOptions, crossgen2Path, bclPath, dllPath, options, outputPath) {
+    async ensureCrossgen2Version(execOptions) {
+        if (!this.crossgen2VersionString) {
+            this.crossgen2VersionString = '// crossgen2 ';
+
+            const versionFilePath = `${this.clrBuildDir}/version.txt`;
+            const versionResult = await this.exec(this.crossgen2Path, ['--version'], execOptions);
+            if (versionResult.code === 0) {
+                this.crossgen2VersionString += versionResult.stdout;
+            } else if (fs.existsSync(versionFilePath)) {
+                const versionString = await fs.readFile(versionFilePath);
+                this.crossgen2VersionString += versionString;
+            } else {
+                this.crossgen2VersionString += '<unknown version>';
+            }
+        }
+    }
+
+    async runCrossgen2(execOptions, bclPath, dllPath, options, outputPath) {
+        await this.ensureCrossgen2Version(execOptions);
+
         const crossgen2Options = [
-            crossgen2Path,
             '-r',
             path.join(bclPath, '/'),
             dllPath,
@@ -300,12 +322,12 @@ class DotNetCompiler extends BaseCompiler {
             '--compilebubblegenerics',
         ].concat(options);
 
-        const compilerExecResult = await this.exec(compiler, crossgen2Options, execOptions);
+        const compilerExecResult = await this.exec(this.crossgen2Path, crossgen2Options, execOptions);
         const result = this.transformToCompilationResult(compilerExecResult, dllPath);
 
         await fs.writeFile(
             outputPath,
-            result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, ''),
+            `${this.crossgen2VersionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 
         return result;
