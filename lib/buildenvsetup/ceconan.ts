@@ -175,12 +175,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 encoding: null,
             };
 
-            request(packageUrl, settings)
+            // https://stackoverflow.com/questions/49277790/how-to-pipe-npm-request-only-if-http-200-is-received
+            const req = request(packageUrl, settings)
                 .on('error', error => {
                     logger.error(`Error in request handling: ${error}`);
                     reject(error);
                 })
-                .pipe(gunzip);
+                .on('response', res => {
+                    if (res.statusCode === 200) {
+                        req.pipe(gunzip);
+                    } else {
+                        logger.error(`Error requesting package from conan: ${res.statusCode} for ${packageUrl}`);
+                        reject(new Error(`Unable to request library from conan: ${res.statusCode}`));
+                    }
+                });
         });
     }
 
