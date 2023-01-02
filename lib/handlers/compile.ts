@@ -139,14 +139,25 @@ export class CompileHandler {
             if (!body || Object.keys(body).length === 0) {
                 return;
             }
-            const contentType = proxyReq.getHeader('Content-Type');
+            let contentType: string = proxyReq.getHeader('Content-Type') as string;
             let bodyData;
 
             if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
             } else if (contentType === 'application/x-www-form-urlencoded') {
-                // body-parser parses form-urlencoded data into json but we want to re-forward as urlencoded form data
-                bodyData = new URLSearchParams(Object.entries(body)).toString();
+                // Reshape the form body into what a json request looks like
+                contentType = 'application/json';
+                bodyData = JSON.stringify({
+                    lang: body.lang,
+                    compiler: body.compiler,
+                    source: body.source,
+                    options: body.userArguments,
+                    filters: Object.fromEntries(
+                        ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
+                            key => [key, body[key] === 'true'],
+                        ),
+                    ),
+                });
             } else {
                 Sentry.captureException(
                     new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
@@ -157,6 +168,7 @@ export class CompileHandler {
             try {
                 if (bodyData) {
                     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.setHeader('Content-Type', contentType);
                     proxyReq.write(bodyData);
                 }
             } catch (e: any) {
