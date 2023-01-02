@@ -185,7 +185,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     if (res.statusCode === 200) {
                         req.pipe(gunzip);
                     } else {
-                        logger.error(`Error requesting package from conan: ${res.statusCode}`);
+                        logger.error(`Error requesting package from conan: ${res.statusCode} for ${packageUrl}`);
                         reject(new Error(`Unable to request library from conan: ${res.statusCode}`));
                     }
                 });
