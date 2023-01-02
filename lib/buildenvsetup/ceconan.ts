@@ -128,6 +128,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         const resolved = path.resolve(path.dirname(filepath));
                         if (!resolved.startsWith(downloadPath)) {
                             logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                            stream.resume();
                             next();
                             return;
                         }
@@ -136,13 +137,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     }
 
                     const filestream = fs.createWriteStream(filepath);
-                    stream.pipe(filestream);
-                    stream.on('error', error => {
-                        logger.error(`Error in stream handling: ${error}`);
-                        reject(error);
-                    });
-                    stream.on('end', next);
-                    stream.resume();
+                    if (header.size === 0) {
+                        // See https://github.com/mafintosh/tar-stream/issues/145
+                        stream.resume();
+                        next();
+                    } else {
+                        stream
+                            .on('error', error => {
+                                logger.error(`Error in stream handling: ${error}`);
+                                reject(error);
+                            })
+                            .on('end', next)
+                            .pipe(filestream);
+                        stream.resume();
+                    }
                 } catch (error) {
                     logger.error(`Error in entry handling: ${error}`);
                     reject(error);
@@ -254,10 +262,10 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         }),
                     );
                 } else {
-                    logger.info(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
+                    logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
                 }
             } else {
-                logger.info(`Library ${libVer} not available`);
+                logger.warn(`Library ${libVer} not available`);
             }
         }
 
