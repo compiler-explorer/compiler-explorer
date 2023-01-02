@@ -265,7 +265,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     hasBinariesToLink(details) {
-        return details.libpath.length === 0 && (details.staticliblink.length > 0 || details.liblink.length > 0);
+        return (
+            details.libpath.length === 0 &&
+            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
+            details.version !== 'autodetect'
+        );
     }
 
     hasAtLeastOneBinaryToLink(libraryDetails) {
