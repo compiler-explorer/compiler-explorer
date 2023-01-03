@@ -429,6 +429,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    'objc++': {
+        name: 'Objective-C++',
+        monaco: 'objective-c',
+        extensions: ['.mm'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     ocaml: {
         name: 'OCaml',
         monaco: 'ocaml',
