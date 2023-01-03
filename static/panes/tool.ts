@@ -44,8 +44,9 @@ import {ComponentConfig, PopulatedToolInputViewState} from '../components.interf
 import {ToolState} from './tool.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {ToolInfo, Tool as ToolInterface} from '../../types/tool.interfaces';
+import {ToolInfo, Tool as ToolInterface, ToolResult} from '../../types/tool.interfaces';
 import {MessageWithLocation} from '../../types/resultline/resultline.interfaces';
+import {assert, unwrap} from '../assert';
 
 function makeAnsiToHtml(color?: string): AnsiToHtml {
     return new AnsiToHtml({
@@ -459,7 +460,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
             this.toggleUsable(!!foundTool);
 
             // clearly not a ToolInfo, and clearly the result.result wtf?
-            let toolResult: ToolInfo | null = null;
+            let toolResult: ToolResult | undefined = undefined;
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (result && result.tools) {
                 toolResult = _.find(result.tools, tool => {
@@ -515,7 +516,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 } else {
                     this.plainContentRoot.empty();
                     _.each(
-                        (toolResult.stdout || []).concat(toolResult.stderr || []),
+                        toolResult.stdout.concat(toolResult.stderr),
                         obj => {
                             if (obj.text === '') {
                                 this.add('<br/>');
@@ -524,7 +525,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                                     this.urlToHTMLLink(this.normalAnsiToHtml.toHtml(obj.text)),
                                     obj.tag ? obj.tag.line : obj.line,
                                     obj.tag ? obj.tag.column : 0,
-                                    obj.tag ? obj.tag.flow : null
+                                    obj.tag ? obj.tag.flow : undefined
                                 );
                             }
                         },
@@ -540,21 +541,22 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
                 }
                 this.artifactBtn.off('click');
                 if (toolResult.artifact) {
+                    const artifact = unwrap(toolResult.artifact);
                     this.artifactBtn.removeClass('d-none');
-                    this.artifactText.text('Download ' + toolResult.artifact.title);
+                    this.artifactText.text('Download ' + artifact.title);
                     this.artifactBtn.on('click', () => {
                         // The artifact content can be passed either as plain text or as a base64 encoded binary file
-                        if (toolResult.artifact.type === 'application/octet-stream') {
+                        if (artifact.type === 'application/octet-stream') {
                             // Fetch is the most convenient non ES6 way to build a binary blob out of a base64 string
-                            fetch('data:application/octet-stream;base64,' + toolResult.artifact.content)
+                            fetch('data:application/octet-stream;base64,' + artifact.content)
                                 .then(res => res.blob())
-                                .then(blob => saveAs(blob, toolResult.artifact.name));
+                                .then(blob => saveAs(blob, artifact.name));
                         } else {
                             saveAs(
-                                new Blob([toolResult.artifact.content], {
-                                    type: toolResult.artifact.type,
+                                new Blob([artifact.content], {
+                                    type: artifact.type,
                                 }),
-                                toolResult.artifact.name
+                                artifact.name
                             );
                         }
                     });
@@ -573,21 +575,22 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
     add(msg: string, lineNum?: number, column?: number, flow?: MessageWithLocation[]): void {
         const elem = $('<div/>').appendTo(this.plainContentRoot);
         if (lineNum && this.editorId) {
+            const {editorId} = this;
             elem.html(
                 // @ts-expect-error: JQuery types are wrong
                 $('<a></a>')
                     .prop('href', 'javascript:;')
                     .html(msg)
                     .on('click', e => {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, true, column);
-                        if (flow && this.editorId) {
-                            this.eventHub.emit('editorDisplayFlow', this.editorId, flow);
+                        this.eventHub.emit('editorSetDecoration', editorId, lineNum, true, column);
+                        if (flow && editorId) {
+                            this.eventHub.emit('editorDisplayFlow', editorId, flow);
                         }
                         e.preventDefault();
                         return false;
                     })
                     .on('mouseover', () => {
-                        this.eventHub.emit('editorSetDecoration', this.editorId, lineNum, false, column);
+                        this.eventHub.emit('editorSetDecoration', editorId, lineNum, false, column);
                     })
             );
         } else {

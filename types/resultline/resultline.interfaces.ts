@@ -34,4 +34,5 @@ export type ResultLine = {
     text: string;
     tag?: ResultLineTag;
     source?: ResultLineSource;
+    line?: any;
 };

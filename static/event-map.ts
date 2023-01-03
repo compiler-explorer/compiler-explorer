@@ -75,7 +75,7 @@ export type EventMap = {
     editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
-    editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
+    editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean, column?: number) => void;
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
@@ -116,7 +116,7 @@ export type EventMap = {
     languageChange: (editorId: number | boolean, newLangId: string, treeId?: boolean | number) => void;
     modifySettings: (modifiedSettings: Partial<SiteSettings>) => void;
     motd: (data: Motd) => void;
-    newSource: (editorId: number, newSource: string) => void;
+    newSource: (editorId: number, newSource: string | undefined) => void;
     optViewClosed: (compilerId: number) => void;
     optViewOpened: (compilerId: number) => void;
     outputClosed: (compilerId: number) => void;
