@@ -642,11 +642,17 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, any> {
         }
     }
 
-    close(): void {
+    override close(): void {
         this.eventHub.emit('toolClosed', this.compilerId, this.currentState());
         this.eventHub.unsubscribe();
         this.editor.dispose();
     }
 
-    onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
+    override onCompiler(
+        compilerId: number,
+        compiler: unknown,
+        options: string,
+        editorId: number,
+        treeId: number
+    ): void {}
 }
