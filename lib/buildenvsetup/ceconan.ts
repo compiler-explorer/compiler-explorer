@@ -76,7 +76,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             request(url, settings, (err, res, body) => {
-                if (res.statusCode === 404) {
+                if (res && res.statusCode === 404) {
                     reject(`Not found (${url})`);
                 } else if (err) {
                     reject(err);
