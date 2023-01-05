@@ -76,10 +76,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             request(url, settings, (err, res, body) => {
-                if (res && res.statusCode === 404) {
-                    reject(`Not found (${url})`);
-                } else if (err) {
+                if (err) {
+                    logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
                     reject(err);
+                } else if (res && res.statusCode === 404) {
+                    reject(`Not found (${url})`);
                 } else {
                     resolve(body);
                 }
