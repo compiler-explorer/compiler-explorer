@@ -54,7 +54,7 @@ jobs:
   deploy:
     if: github.repository_owner == 'compiler-explorer' && github.event_name == 'push'
     needs: [test, build_dist]
-    runs-on: windows-2019
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v3
