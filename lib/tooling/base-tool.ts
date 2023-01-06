@@ -76,8 +76,7 @@ export class BaseTool implements ITool {
 
         // an empty value (e.g. 'tool.foo.exclude=') yields a single empty
         // string in the array, not an empty array.
-        if (this.tool.exclude.length === 1 && this.tool.exclude[0] === '')
-            return false;
+        if (this.tool.exclude.length === 1 && this.tool.exclude[0] === '') return false;
 
         return this.tool.exclude.find(excl => compilerId.includes(excl)) !== undefined;
     }
