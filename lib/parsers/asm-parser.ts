@@ -120,7 +120,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
         this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
-        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/; // TO REMOVE
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
         this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump
@@ -721,7 +721,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                 const address = parseInt(match.groups.address, 16);
                 const relocname = match.groups.relocname;
                 const relocdata = match.groups.relocdata;
-                const match_value = relocdata.match(this.relocDataSymNameRe); // TO REMOVE
+                // value/addend matched but not used yet.
+                const match_value = relocdata.match(this.relocDataSymNameRe);
                 asm.push({
                     text: `   ${relocname} ${relocdata}`,
                     address: address,
