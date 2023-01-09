@@ -1132,8 +1132,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     getEffectiveFilters(): Record<string, boolean> {
         if (!this.compiler) return {};
         const filters = this.filters.get();
-        if (filters.binaryobject && !this.compiler.supportsBinaryObject) {
-            delete filters.binaryobject;
+        if (filters.binaryObject && !this.compiler.supportsBinaryObject) {
+            delete filters.binaryObject;
         }
 
         if (filters.binary && !this.compiler.supportsBinary) {
@@ -1493,9 +1493,9 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateDecorations();
 
         const codeLenses: monaco.languages.CodeLens[] = [];
-        if (this.getEffectiveFilters().binary
-            || this.getEffectiveFilters().binaryobject
-            || this.getEffectiveFilters().binaryobject
+        const effectiveFilters = this.getEffectiveFilters();
+        if (effectiveFilters.binary
+            || effectiveFilters.binaryObject
             || result.forceBinaryView) {
             this.setBinaryMargin();
             this.assembly.forEach((obj, line) => {
@@ -2252,7 +2252,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     initFilterButtons(): void {
-        this.filterBinaryObjectButton = this.domRoot.find("[data-bind='binaryobject']");
+        this.filterBinaryObjectButton = this.domRoot.find("[data-bind='binaryObject']");
         this.filterBinaryObjectTitle = this.filterBinaryObjectButton.prop('title');
 
         this.filterBinaryButton = this.domRoot.find("[data-bind='binary']");
@@ -2513,16 +2513,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                     (button.prop('disabled') ? ' [LOCKED]' : '')
             );
         };
-        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryobject;
+        const isIntelFilterDisabled = !this.compiler.supportsIntel && !filters.binary && !filters.binaryObject;
         this.filterIntelButton.prop('disabled', isIntelFilterDisabled);
         formatFilterTitle(this.filterIntelButton, this.filterIntelTitle);
 
-        // Disable binaryobject support on compilers that don't work with it or if binary is selected
+        // Disable binaryObject support on compilers that don't work with it or if binary is selected
         this.filterBinaryObjectButton.prop('disabled', !this.compiler.supportsBinaryObject || filters.binary);
         formatFilterTitle(this.filterBinaryObjectButton, this.filterBinaryObjectTitle);
 
-        // Disable binary support on compilers that don't work with it or if binaryobject is selected
-        this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryobject);
+        // Disable binary support on compilers that don't work with it or if binaryObject is selected
+        this.filterBinaryButton.prop('disabled', !this.compiler.supportsBinary || filters.binaryObject);
         formatFilterTitle(this.filterBinaryButton, this.filterBinaryTitle);
 
         this.filterExecuteButton.prop('disabled', !this.compiler.supportsExecute);
@@ -2531,7 +2531,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
         formatFilterTitle(this.filterDemangleButton, this.filterDemangleTitle);
         // Disable any of the options which don't make sense in binary mode.
-        const noBinaryFiltersDisabled = (filters.binaryobject || filters.binary)
+        const noBinaryFiltersDisabled = (filters.binaryObject || filters.binary)
             && !(this.compiler as any).supportsFiltersInBinary;
         this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
 

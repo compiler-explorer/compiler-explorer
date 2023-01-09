@@ -28,7 +28,7 @@
 
 export type CompilerOutputOptions = {
     binary: boolean;
-    binaryobject: boolean;
+    binaryObject: boolean;
     execute: boolean;
     demangle: boolean;
     intel: boolean;

@@ -63,7 +63,7 @@ export class AdaCompiler extends BaseCompiler {
 
         if (key && key.filters && key.filters.binary) {
             return path.join(dirPath, 'example');
-        } else if (key && key.filters && key.filters.binaryobject) {
+        } else if (key && key.filters && key.filters.binaryObject) {
             return path.join(dirPath, 'example.o');
         } else {
             return path.join(dirPath, 'example.s');
@@ -108,7 +108,7 @@ export class AdaCompiler extends BaseCompiler {
             inputFilename,
         );
 
-        if (!filters.execute && !filters.binary && !filters.binaryobject) {
+        if (!filters.execute && !filters.binary && !filters.binaryObject) {
             gnatmake_opts.push(
                 '-S', // Generate ASM
                 '-c', // Compile only
@@ -123,7 +123,7 @@ export class AdaCompiler extends BaseCompiler {
                     gnatmake_opts.push(opt);
                 }
             }
-        } else if (filters.binaryobject) {
+        } else if (filters.binaryObject) {
             gnatmake_opts.push(
                 '-c', // Compile only
             );

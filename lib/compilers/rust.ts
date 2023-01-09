@@ -138,7 +138,7 @@ export class RustCompiler extends BaseCompiler {
             if (this.linker) {
                 options = options.concat(`-Clinker=${this.linker}`);
             }
-        } else if (filters.binaryobject) {
+        } else if (filters.binaryObject) {
             options = options.concat(['--crate-type', 'lib']);
         } else {
             if (!userRequestedEmit) {

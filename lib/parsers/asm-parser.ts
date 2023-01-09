@@ -331,7 +331,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        if (filters.binary || filters.binaryobject) return this.processBinaryAsm(asmResult, filters);
+        if (filters.binary || filters.binaryObject) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
 

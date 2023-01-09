@@ -601,11 +601,11 @@ export class BaseCompiler implements ICompiler {
         userOptions?: string[],
     ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryobject) {
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary && !filters.binaryobject) options = options.concat('-S');
-        else if (filters.binaryobject) options = options.concat('-c');
+        if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
+        else if (filters.binaryObject) options = options.concat('-c');
 
         return options;
     }
@@ -884,7 +884,7 @@ export class BaseCompiler implements ICompiler {
         let libPaths: string[] = [];
         let staticLibLinks: string[] = [];
 
-        if (filters.binary || filters.binaryobject) {
+        if (filters.binary || filters.binaryObject) {
             libLinks = this.getSharedLibraryLinks(libraries) || [];
             libPaths = this.getSharedLibraryPathsAsArguments(libraries);
             staticLibLinks = this.getStaticLibraryLinks(libraries) || [];
@@ -1457,7 +1457,7 @@ export class BaseCompiler implements ICompiler {
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
-        buildFilters.binaryobject = false;
+        buildFilters.binaryObject = false;
         buildFilters.binary = true;
         buildFilters.execute = true;
 
@@ -1742,7 +1742,7 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryobject);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
         const [
             asmResult,
             astResult,
@@ -2158,8 +2158,8 @@ export class BaseCompiler implements ICompiler {
                 filters[key] = false;
             }
 
-            if (filters.binaryobject && !this.compiler.supportsBinaryObject) {
-                delete filters.binaryobject;
+            if (filters.binaryObject && !this.compiler.supportsBinaryObject) {
+                delete filters.binaryObject;
             }
         }
 
@@ -2539,14 +2539,14 @@ but nothing was dumped. Possible causes are:
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
-            (filters.binary || filters.binaryobject) && this.supportsObjdump()
+            (filters.binary || filters.binaryObject) && this.supportsObjdump()
                 ? this.objdump(
                       outputFilename,
                       result,
                       maxSize,
                       filters.intel,
                       filters.demangle,
-                      filters.binaryobject,
+                      filters.binaryObject,
                       false,
                       filters,
                   )
