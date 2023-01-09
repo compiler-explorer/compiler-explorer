@@ -884,7 +884,7 @@ export class BaseCompiler implements ICompiler {
         let libPaths: string[] = [];
         let staticLibLinks: string[] = [];
 
-        if (filters.binary || filters.binaryObject) {
+        if (filters.binary) {
             libLinks = this.getSharedLibraryLinks(libraries) || [];
             libPaths = this.getSharedLibraryPathsAsArguments(libraries);
             staticLibLinks = this.getStaticLibraryLinks(libraries) || [];
