@@ -36,10 +36,10 @@ class Instruction:
 
     def html_description(self):
         if self.description:
-            html = ""
-            for desc_line in self.description:
-                html += f"<p>{escape_quotes(desc_line)}</p>"
-            return html
+            return "".join(
+                f"<p>{escape_quotes(desc_line)}</p>"
+                for desc_line in self.description
+            )
         elif self.long_name:
             return f"<p>{escape_quotes(self.long_name)}</p>"
         elif self.name:
