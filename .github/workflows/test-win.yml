@@ -1,9 +1,9 @@
 name: Compiler Explorer on Windows
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  test:
     runs-on: windows-2019
 
     steps:
