@@ -6,6 +6,14 @@ $RELEASE_FILE_NAME = (git describe --tags) -join [Environment]::NewLine -replace
 $RELEASE_NAME = (git describe --tags) -join [Environment]::NewLine
 $HASH=(git rev-parse HEAD) -join [Environment]::NewLine
 
+Write-Host "RELEASE_FILE_NAME: $RELEASE_FILE_NAME"
+Write-Host "RELEASE_NAME: $RELEASE_NAME"
+Write-Host "HASH: $HASH"
+
+Write-Host "GITHUB_OUTPUT: $env:GITHUB_OUTPUT"
+
+return
+
 # Clear the output
 Remove-Item -Path "out" -Recurse -Force -ErrorAction Ignore
 New-Item -Path . -Name "out/dist" -Force -ItemType "directory"
