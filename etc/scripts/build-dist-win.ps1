@@ -12,6 +12,9 @@ Write-Host "HASH: $HASH"
 
 Write-Host "GITHUB_OUTPUT: $env:GITHUB_OUTPUT"
 
+$BRANCH = $env:GITHUB_REF -replace "refs/heads/"
+Write-Host "BRANCH: $BRANCH"
+
 return
 
 # Clear the output
@@ -50,8 +53,6 @@ Remove-Item -Path "node_modules/monaco-editor" -Force -Recurse -ErrorAction Igno
 Remove-Item -Path "node_modules" -Include "*.ts" -Force -Recurse -ErrorAction Ignore
 
 # Output some magic for GH to set the branch name and release name
-
-$BRANCH = $GITHUB_REF -replace "refs/heads/"
 Add-Content -Path $env:GITHUB_OUTPUT -Value "branch=$BRANCH"
 Add-Content -Path $env:GITHUB_OUTPUT -Value "release_name=$RELEASE_NAME"
 
