@@ -1,8 +1,9 @@
 Set-Location -Path $PSScriptRoot/../..
 $ROOT=Get-Location
 
-$RELEASE_FILE_NAME = $env:GITHUB_RUN_NUMBER
-$RELEASE_NAME = "gh-$env:GITHUB_RUN_NUMBER"
+# Assumption here is that the current commit that's checked out is already tagged
+$RELEASE_FILE_NAME = (git describe --tags) -join [Environment]::NewLine -replace "gh-"
+$RELEASE_NAME = (git describe --tags) -join [Environment]::NewLine
 $HASH=(git rev-parse HEAD) -join [Environment]::NewLine
 
 # Clear the output

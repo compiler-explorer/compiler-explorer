@@ -1,6 +1,9 @@
 name: Compiler Explorer on Windows
 
-on: [push, pull_request]
+on:
+  push:
+    tags:
+      - gh-*
 
 jobs:
   test:
