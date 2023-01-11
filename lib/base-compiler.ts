@@ -2034,7 +2034,14 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam();
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            let fullArgs: string[] = [];
+            const useNinja = this.env.ceProps('useninja');
+            if (useNinja) {
+                fullArgs = ['-GNinja'].concat(partArgs);
+            } else {
+                fullArgs = partArgs;
+            }
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
@@ -2056,9 +2063,9 @@ export class BaseCompiler implements ICompiler {
 
             const makeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
-                'make',
-                this.env.ceProps('make'),
-                [],
+                'build',
+                this.env.ceProps('cmake'),
+                ['--build', '.'],
                 execParams,
             );
 

@@ -126,7 +126,7 @@ export class Cc65Compiler extends BaseCompiler {
 
     override async doBuildstepAndAddToResult(result: CompilationResult, name, command, args, execParams) {
         const stepResult = await super.doBuildstepAndAddToResult(result, name, command, args, execParams);
-        if (name === 'make') {
+        if (name === 'build') {
             const mapFile = path.join(execParams.customCwd, 'map.txt');
             if (await utils.fileExists(mapFile)) {
                 const file_buffer = await fs.readFile(mapFile);
