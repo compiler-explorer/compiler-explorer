@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
@@ -67,7 +67,7 @@ export class MLIRCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename, userOptions?): any[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename, userOptions?): any[] {
         return [];
     }
 }

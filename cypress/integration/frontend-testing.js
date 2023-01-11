@@ -18,7 +18,7 @@ const PANE_DATA_MAP = {
     dump: {name: 'Tree/RTL', selector: 'view-gccdump'},
     tree: {name: 'Tree', selector: 'view-gnatdebugtree'},
     debug: {name: 'Debug', selector: 'view-gnatdebug'},
-    cfg: {name: 'Graph', selector: 'view-cfg'},
+    cfg: {name: 'CFG', selector: 'view-cfg'},
 };
 
 describe('Individual pane testing', () => {

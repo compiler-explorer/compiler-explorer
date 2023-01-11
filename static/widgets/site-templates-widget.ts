@@ -47,7 +47,10 @@ class SiteTemplatesWidget {
     }
     getCurrentTheme() {
         const theme = Settings.getStoredSettings()['theme'];
-        if (theme === 'system') {
+        if (!theme) {
+            // apparently this can happen
+            return 'default';
+        } else if (theme === 'system') {
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
             } else {

@@ -30,12 +30,14 @@ import {
     ParsedAsmResult,
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {logger} from '../logger';
 import * as utils from '../utils';
 
+import {IAsmParser} from './asm-parser.interfaces';
 import {AsmRegex} from './asmregex';
 
-export class AsmParser extends AsmRegex {
+export class AsmParser extends AsmRegex implements IAsmParser {
     labelFindNonMips: RegExp;
     labelFindMips: RegExp;
     mipsLabelDefinition: RegExp;
@@ -83,7 +85,7 @@ export class AsmParser extends AsmRegex {
         // MIPS labels can start with a $ sign, but other assemblers use $ to mean literal.
         this.labelFindMips = /[$.A-Z_a-z][\w$.]*/g;
         this.mipsLabelDefinition = /^\$[\w$.]+:/;
-        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dx]?word|long|quad|value|zero)/;
+        this.dataDefn = /^\s*\.(string|asciz|ascii|[1248]?byte|short|half|[dhx]?word|long|quad|octa|value|zero)/;
         this.fileFind = /^\s*\.(?:cv_)?file\s+(\d+)\s+"([^"]+)"(\s+"([^"]+)")?.*/;
         // Opcode expression here matches LLVM-style opcodes of the form `%blah = opcode`
         this.hasOpcodeRe = /^\s*(%[$.A-Z_a-z][\w$.]*\s*=\s*)?[A-Za-z]/;
@@ -279,7 +281,7 @@ export class AsmParser extends AsmRegex {
             const match = line.match(this.fileFind);
             if (match) {
                 const lineNum = parseInt(match[1]);
-                if (match[4]) {
+                if (match[4] && !line.includes('.cv_file')) {
                     // Clang-style file directive '.file X "dir" "filename"'
                     files[lineNum] = match[2] + '/' + match[4];
                 } else {
@@ -322,7 +324,7 @@ export class AsmParser extends AsmRegex {
         return labelsInLine;
     }
 
-    processAsm(asmResult, filters: ParseFilters): ParsedAsmResult {
+    processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         if (filters.binary) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
@@ -371,7 +373,7 @@ export class AsmParser extends AsmRegex {
                         };
                     } else {
                         source = {
-                            file: !this.stdInLooking.test(file) ? file : null,
+                            file: this.stdInLooking.test(file) ? null : file,
                             line: sourceLine,
                         };
                     }
@@ -404,7 +406,7 @@ export class AsmParser extends AsmRegex {
                             };
                         } else {
                             source = {
-                                file: !this.stdInLooking.test(file) ? file : null,
+                                file: this.stdInLooking.test(file) ? null : file,
                                 line: sourceLine,
                             };
                         }
@@ -422,14 +424,16 @@ export class AsmParser extends AsmRegex {
             if (!match) return;
             // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
             switch (parseInt(match[1])) {
-                case 68:
+                case 68: {
                     source = {file: null, line: parseInt(match[2])};
                     break;
+                }
                 case 132:
-                case 100:
+                case 100: {
                     source = null;
                     prevLabel = '';
                     break;
+                }
             }
         };
 
@@ -446,7 +450,7 @@ export class AsmParser extends AsmRegex {
                     };
                 } else {
                     source = {
-                        file: !this.stdInLooking.test(file) ? file : null,
+                        file: this.stdInLooking.test(file) ? null : file,
                         line: sourceLine,
                     };
                 }
@@ -564,7 +568,7 @@ export class AsmParser extends AsmRegex {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
+                source: this.hasOpcode(line, inNvccCode) ? source || null : null,
                 labels: labelsInLine,
             });
         }

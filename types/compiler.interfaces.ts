@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Minimal Compiler properties until a better one can be sync'ed with the backend
-import {Tool, ToolInfo} from '../lib/tooling/base-tool.interface';
+import {CompilerArguments} from '../lib/compiler-arguments';
 
+import {Language} from './languages.interfaces';
 import {Library} from './libraries/libraries.interfaces';
+import {Tool, ToolInfo} from './tool.interfaces';
 
 export type CompilerInfo = {
     id: string;
@@ -37,6 +38,7 @@ export type CompilerInfo = {
     versionRe?: string;
     explicitVersion?: string;
     compilerType: string;
+    debugPatched: boolean;
     demangler: string;
     demanglerType: string;
     objdumper: string;
@@ -85,3 +87,12 @@ export type CompilerInfo = {
         preamble?: string;
     };
 };
+
+export interface ICompiler {
+    possibleArguments: CompilerArguments;
+    lang: Language;
+    compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
+    cmake(files, key);
+    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    getInfo();
+}

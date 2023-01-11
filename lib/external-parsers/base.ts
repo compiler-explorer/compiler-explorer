@@ -3,7 +3,8 @@ import path from 'path';
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
 import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {logger} from '../logger';
 import {maskRootdir} from '../utils';
 
 import {IExternalParser} from './external-parser.interface';
@@ -22,10 +23,14 @@ export class ExternalParserBase implements IExternalParser {
         this.envInfo = envInfo;
         this.objdumperPath = compilerInfo.objdumper;
         this.parserPath = compilerInfo.externalparser.props('exe', '');
+        if (!fs.existsSync(this.parserPath)) {
+            logger.error(`External parser ${this.parserPath} does not exist`);
+            process.exit(1);
+        }
         this.execFunc = execFunc;
     }
 
-    private getParserArguments(filters: ParseFilters, fromStdin: boolean): string[] {
+    private getParserArguments(filters: ParseFiltersAndOutputOptions, fromStdin: boolean): string[] {
         const parameters = ['-plt'];
 
         if (fromStdin) parameters.push('-stdin');
@@ -40,7 +45,7 @@ export class ExternalParserBase implements IExternalParser {
         return parameters;
     }
 
-    private getObjdumpStarterScriptContent(filters: ParseFilters) {
+    private getObjdumpStarterScriptContent(filters: ParseFiltersAndOutputOptions) {
         const parserArgs = this.getParserArguments(filters, true);
 
         return (
@@ -51,7 +56,10 @@ export class ExternalParserBase implements IExternalParser {
         );
     }
 
-    private async writeStarterScriptObjdump(buildfolder: string, filters: ParseFilters): Promise<string> {
+    private async writeStarterScriptObjdump(
+        buildfolder: string,
+        filters: ParseFiltersAndOutputOptions,
+    ): Promise<string> {
         const scriptFilepath = path.join(buildfolder, starterScriptName);
 
         return new Promise(resolve => {
@@ -70,6 +78,9 @@ export class ExternalParserBase implements IExternalParser {
     }
 
     private parseAsmExecResult(execResult: UnprocessedExecResult): ParsedAsmResult {
+        if (execResult.code !== 0) {
+            throw new Error(`Internal error running asm parser: ${execResult.stdout}\n${execResult.stderr}`);
+        }
         const result = Object.assign({}, execResult, JSON.parse(execResult.stdout));
         delete result.stdout;
         delete result.stderr;
@@ -80,7 +91,7 @@ export class ExternalParserBase implements IExternalParser {
     public async objdumpAndParseAssembly(
         buildfolder: string,
         objdumpArgs: string[],
-        filters: ParseFilters,
+        filters: ParseFiltersAndOutputOptions,
     ): Promise<ParsedAsmResult> {
         objdumpArgs = objdumpArgs.map(v => {
             return maskRootdir(v);
@@ -95,7 +106,7 @@ export class ExternalParserBase implements IExternalParser {
         return this.parseAsmExecResult(execResult);
     }
 
-    public async parseAssembly(filepath: string, filters: ParseFilters): Promise<ParsedAsmResult> {
+    public async parseAssembly(filepath: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult> {
         const execOptions = {
             env: this.envInfo.getEnv(this.compilerInfo.needsMulti),
         };

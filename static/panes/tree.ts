@@ -30,7 +30,7 @@ import {Settings, SiteSettings} from '../settings';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {Hub} from '../hub';
 import {EventHub} from '../event-hub';
-import {Alert} from '../alert';
+import {Alert} from '../widgets/alert';
 import * as Components from '../components';
 import {ga} from '../analytics';
 import TomSelect from 'tom-select';
@@ -573,6 +573,11 @@ export class Tree {
     }
 
     private async openZipFile(htmlfile) {
+        if (!htmlfile.name.toLowerCase().endsWith('.zip')) {
+            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files');
+            return;
+        }
+
         this.multifileService.forEachFile((file: MultifileFile) => {
             this.removeFile(file.fileId);
         });

@@ -73,7 +73,7 @@ def list_files_under_vc() -> Set[str]:
     output = subprocess.check_output(
         ["git", "ls-tree", "-r", "main", "--name-only"]
     ).decode("utf-8")
-    paths = {x for x in output.splitlines()}
+    paths = set(output.splitlines())
     return paths
 
 

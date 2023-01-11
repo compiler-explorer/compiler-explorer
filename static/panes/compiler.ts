@@ -31,15 +31,15 @@ import * as Components from '../components';
 import LruCache from 'lru-cache';
 import {options} from '../options';
 import * as monaco from 'monaco-editor';
-import {Alert} from '../alert';
+import {Alert} from '../widgets/alert';
 import bigInt from 'big-integer';
 import {LibsWidget} from '../widgets/libs-widget';
 import * as codeLensHandler from '../codelens-handler';
 import * as monacoConfig from '../monaco-config';
 import * as TimingWidget from '../widgets/timing-info-widget';
-import {CompilerPicker} from '../compiler-picker';
+import {CompilerPicker} from '../widgets/compiler-picker';
 import {CompilerService} from '../compiler-service';
-import {Settings, SiteSettings} from '../settings';
+import {SiteSettings} from '../settings';
 import * as LibUtils from '../lib-utils';
 import {getAssemblyDocumentation} from '../api/api';
 import {MonacoPane} from './pane';
@@ -48,12 +48,10 @@ import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {CompilerState} from './compiler.interfaces';
-import {ComponentConfig, GccDumpOptions, ToolViewState} from '../components.interfaces';
+import {ComponentConfig, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
-import {CompilerFilters} from '../../types/features/filters.interfaces';
-import {GccSelectedPass} from './gccdump-view.interfaces';
-import {Tool} from '../../lib/tooling/base-tool.interface';
+import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
@@ -65,6 +63,7 @@ import * as utils from '../utils';
 import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
+import {Tool} from '../../types/tool.interfaces';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -128,7 +127,7 @@ type CompileRequestOptions = {
         produceAst: boolean;
         produceGccDump: {
             opened: boolean;
-            pass?: GccSelectedPass;
+            pass?: GccDumpViewSelectedPass;
             treeDump?: boolean;
             rtlDump?: boolean;
             ipaDump?: boolean;
@@ -295,7 +294,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private irViewOpen: boolean;
     private llvmOptPipelineViewOpen: boolean;
     private gccDumpViewOpen: boolean;
-    private gccDumpPassSelected?: GccSelectedPass;
+    private gccDumpPassSelected?: GccDumpViewSelectedPass;
     private treeDumpEnabled?: boolean;
     private rtlDumpEnabled?: boolean;
     private ipaDumpEnabled?: boolean;
@@ -320,7 +319,6 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         super(hub, container, state);
 
         this.id = state.id || hub.nextCompilerId();
-        this.settings = Settings.getStoredSettings();
 
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
@@ -628,7 +626,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const createGccDumpView = () => {
             return Components.getGccDumpViewWith(
-                this.id as unknown as string,
+                this.id,
                 this.getCompilerName(),
                 this.sourceEditorId ?? 0,
                 this.sourceTreeId ?? 0,
@@ -1503,9 +1501,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         },
                         id: address,
                         command: {
-                            id: address,
                             title: obj.opcodes.join(' '),
-                        },
+                        } as any, // This any cast fixes a bug
                     });
                 }
             });
@@ -2154,26 +2151,22 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onGccDumpFiltersChanged(
-        id: number,
-        filters: CompilerFilters & Record<string, boolean | undefined>,
-        reqCompile: boolean
-    ): void {
+    onGccDumpFiltersChanged(id: number, dumpOpts: GccDumpFiltersState, reqCompile: boolean): void {
         if (this.id === id) {
-            this.treeDumpEnabled = filters.treeDump !== false;
-            this.rtlDumpEnabled = filters.rtlDump !== false;
-            this.ipaDumpEnabled = filters.ipaDump !== false;
+            this.treeDumpEnabled = dumpOpts.treeDump;
+            this.rtlDumpEnabled = dumpOpts.rtlDump;
+            this.ipaDumpEnabled = dumpOpts.ipaDump;
             this.dumpFlags = {
-                address: filters.addressOption !== false,
-                slim: filters.slimOption !== false,
-                raw: filters.rawOption !== false,
-                details: filters.detailsOption !== false,
-                stats: filters.statsOption !== false,
-                blocks: filters.blocksOption !== false,
-                vops: filters.vopsOption !== false,
-                lineno: filters.linenoOption !== false,
-                uid: filters.uidOption !== false,
-                all: filters.allOption !== false,
+                address: dumpOpts.addressOption,
+                slim: dumpOpts.slimOption,
+                raw: dumpOpts.rawOption,
+                details: dumpOpts.detailsOption,
+                stats: dumpOpts.statsOption,
+                blocks: dumpOpts.blocksOption,
+                vops: dumpOpts.vopsOption,
+                lineno: dumpOpts.linenoOption,
+                uid: dumpOpts.uidOption,
+                all: dumpOpts.allOption,
             };
 
             if (reqCompile) {
@@ -2182,7 +2175,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
-    onGccDumpPassSelected(id: number, passObject?: GccSelectedPass, reqCompile?: boolean) {
+    onGccDumpPassSelected(id: number, passObject?: GccDumpViewSelectedPass, reqCompile?: boolean) {
         if (this.id === id) {
             this.gccDumpPassSelected = passObject;
 
@@ -2395,7 +2388,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const createToolView: () => ComponentConfig<ToolViewState> = () => {
             let args = '';
             let monacoStdin = false;
-            const langTools = (options.tools as any)[this.currentLangId ?? ''];
+            const langTools = options.tools[this.currentLangId ?? ''];
             if (langTools && langTools[toolId] && langTools[toolId].tool) {
                 if (langTools[toolId].tool.args !== undefined) {
                     args = langTools[toolId].tool.args;

@@ -76,11 +76,8 @@ export function executeDirect(
 
     let okToCache = true;
     let timedOut = false;
-    const cwd = options.customCwd
-        ? options.customCwd
-        : command.startsWith('/mnt') && process.env.wsl
-        ? process.env.winTmp
-        : process.env.tmpDir;
+    const cwd =
+        options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? process.env.winTmp : process.env.tmpDir);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 
@@ -170,7 +167,7 @@ export function executeDirect(
 
 export function getNsJailCfgFilePath(configName: string): string {
     const propKey = `nsjail.config.${configName}`;
-    const configPath = execProps(propKey);
+    const configPath = execProps<string>(propKey);
     if (configPath === undefined) {
         logger.error(`Could not find ${propKey}. Are you missing a definition?`);
         throw new Error(`Missing nsjail execution config property key ${propKey}`);
@@ -180,7 +177,7 @@ export function getNsJailCfgFilePath(configName: string): string {
 
 export function getFirejailProfileFilePath(profileName: string): string {
     const propKey = `firejail.profile.${profileName}`;
-    const profilePath = execProps(propKey);
+    const profilePath = execProps<string>(propKey);
     if (profilePath === undefined) {
         logger.error(`Could not find ${propKey}. Are you missing a definition?`);
         throw new Error(`Missing firejail execution profile property key ${propKey}`);
@@ -259,12 +256,12 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
 function sandboxNsjail(command, args, options) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
-    return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function executeNsjail(command, args, options) {
     const nsOpts = getNsJailOptions('execute', command, args, options);
-    return executeDirect(execProps('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+    return executeDirect(execProps<string>('nsjail'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
 function withFirejailTimeout(args: string[], options?) {
@@ -299,7 +296,7 @@ function sandboxFirejail(command: string, args: string[], options) {
     }
     delete options.env;
 
-    return executeDirect(execProps('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
+    return executeDirect(execProps<string>('firejail'), jailingOptions.concat([`./${execName}`]).concat(args), options);
 }
 
 const sandboxDispatchTable = {
@@ -332,7 +329,7 @@ const wineSandboxName = 'ce-wineserver';
 let wineInitPromise: Promise<void> | null;
 
 export function startWineInit() {
-    const wine = execProps('wine');
+    const wine = execProps<string | undefined>('wine');
     if (!wine) {
         logger.info('WINE not configured');
         return;
@@ -341,7 +338,7 @@ export function startWineInit() {
     const server = execProps('wineServer');
     const executionType = execProps('executionType', 'none');
     // We need to fire up a firejail wine server even in nsjail world (for now).
-    const firejail = executionType === 'firejail' || executionType === 'nsjail' ? execProps('firejail') : null;
+    const firejail = executionType === 'firejail' || executionType === 'nsjail' ? execProps<string>('firejail') : null;
     const env = applyWineEnv({PATH: process.env.PATH});
     const prefix = env.WINEPREFIX;
 
@@ -466,12 +463,12 @@ async function executeWineDirect(command, args, options) {
     options.env = applyWineEnv(options.env);
     args = [command, ...args];
     await wineInitPromise;
-    return await executeDirect(execProps('wine'), args, options);
+    return await executeDirect(execProps<string>('wine'), args, options);
 }
 
 async function executeFirejail(command, args, options) {
     options = _.clone(options) || {};
-    const firejail = execProps('firejail');
+    const firejail = execProps<string>('firejail');
     const baseOptions = withFirejailTimeout(
         ['--quiet', '--deterministic-exit-code', '--deterministic-shutdown'],
         options,

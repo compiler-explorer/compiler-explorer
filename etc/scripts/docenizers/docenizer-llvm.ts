@@ -49,7 +49,9 @@ const $ = cheerio.load(contents);
 const names = getInstructionList($.root(), $);
 const info = names.map((x) => getInstructionInfo(x, $.root(), $));
 
-console.log('export function getAsmOpcode(opcode) {');
+console.log('import {AssemblyInstructionInfo} from \'../base\';');
+console.log('');
+console.log('export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {');
 console.log('    if (!opcode) return;');
 console.log('    switch (opcode.toUpperCase()) {');
 
@@ -57,8 +59,8 @@ for (const instruction of info) {
     console.log(`        case '${instruction.name.toUpperCase()}':`);
     console.log('            return {');
     console.log(`                url: \`${instruction.url}\`,`);
-    console.log(`                html: \`${instruction.html.replace('\n', '')}\`,`);
-    console.log(`                tooltip: \`${instruction.tooltip.replace('\n', '')}\`,`);
+    console.log(`                html: \`${instruction.html.replaceAll('\n', '').replaceAll('`', '\\`')}\`,`);
+    console.log(`                tooltip: \`${instruction.tooltip.replaceAll('\n', '').replaceAll('`', '\\`')}\`,`);
     console.log('            };');
 }
 

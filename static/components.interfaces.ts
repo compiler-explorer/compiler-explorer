@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerFilters} from '../types/features/filters.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces';
+import {CfgState} from './panes/cfg-view.interfaces';
 import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
-
+import {GccDumpViewState} from './panes/gccdump-view.interfaces';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -67,7 +68,7 @@ type EmptyState = Record<never, never>;
 
 export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
 export type PopulatedCompilerState = StateWithEditor & {
-    filters: CompilerFilters;
+    filters: CompilerOutputOptions;
     options: unknown;
     compiler: string;
     libs?: unknown;
@@ -153,33 +154,19 @@ export type PopulatedAstViewState = StateWithId &
     };
 
 export type EmptyGccDumpViewState = EmptyState;
-export type GccDumpOptions =
-    | 'treeDump'
-    | 'rtlDump'
-    | 'ipaDump'
-    | 'addressOption'
-    | 'slimOption'
-    | 'rawOption'
-    | 'detailsOption'
-    | 'statsOption'
-    | 'blocksOption'
-    | 'vopsOption'
-    | 'linenoOption'
-    | 'uidOption'
-    | 'allOption'
-    | 'selectedPass';
-export type PopulatedGccDumpViewState = {
-    _compilerid: string;
-    _compilerName: string;
-    _editorid: number;
-    _treeid: number;
-} & (Record<GccDumpOptions, unknown> | EmptyState);
+export type PopulatedGccDumpViewState = StateWithId &
+    GccDumpViewState & {
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyCfgViewState = EmptyState;
-export type PopulatedCfgViewState = StateWithId & {
-    editorid: number;
-    treeid: number;
-};
+export type PopulatedCfgViewState = StateWithId &
+    CfgState & {
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyConformanceViewState = EmptyState; // TODO: unusued?
 export type PopulatedConformanceViewState = {

@@ -515,6 +515,8 @@ describe('Options handler', () => {
         tools.should.deep.equal({
             fake: {
                 faketool: {
+                    id: 'faketool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,
@@ -534,6 +536,8 @@ describe('Options handler', () => {
                     },
                 },
                 someothertool: {
+                    id: 'someothertool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
                     tool: {
                         args: undefined,
