@@ -27,7 +27,7 @@ import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
 import {CompilerInfo} from '../compiler.interfaces';
 import {BasicExecutionResult} from '../execution/execution.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
-import {ToolResult} from '../tool.interfaces';
+import {Artifact, ToolResult} from '../tool.interfaces';
 
 import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
 
@@ -98,10 +98,7 @@ export type CompilationResult = {
 
     forceBinaryView?: boolean;
 
-    bbcdiskimage?: string;
-    speccytape?: string;
-    miraclesms?: string;
-    jsnesrom?: string;
+    artifacts?: Artifact[];
 
     hints?: string[];
 
