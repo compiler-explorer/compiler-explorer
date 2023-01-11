@@ -98,9 +98,20 @@ export class Cc65Compiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc,
+        dynamicReloc,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const res = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+        const res = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
 
         const dirPath = path.dirname(outputFilename);
         const nesFile = path.join(dirPath, 'example.nes');

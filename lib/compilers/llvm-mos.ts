@@ -62,6 +62,8 @@ export class LLVMMOSCompiler extends ClangCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc,
+        dynamicReloc,
         filters: ParseFiltersAndOutputOptions,
     ) {
         if (!outputFilename.endsWith('.elf') && (await utils.fileExists(outputFilename + '.elf'))) {
@@ -69,7 +71,16 @@ export class LLVMMOSCompiler extends ClangCompiler {
         }
 
         intelAsm = false;
-        const res = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+        const res = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
 
         if (this.compiler.exe.includes('nes')) {
             let nesFile = outputFilename;

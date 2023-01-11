@@ -399,6 +399,8 @@ export class BaseCompiler implements ICompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
@@ -409,7 +411,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm, staticReloc, dynamicReloc);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
@@ -599,10 +601,12 @@ export class BaseCompiler implements ICompiler {
         userOptions?: string[],
     ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary) options = options.concat('-S');
+        if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
+        else if (filters.binaryObject) options = options.concat('-c');
+
         return options;
     }
 
@@ -1280,9 +1284,7 @@ export class BaseCompiler implements ICompiler {
             if (!isInExpandedCode && startOfExpandedCode.test(obj.text)) {
                 isInExpandedCode = true;
                 isInTree = false;
-            }
-
-            if (!isInTree && startOfTree.test(obj.text)) {
+            } else if (!isInTree && startOfTree.test(obj.text)) {
                 isInExpandedCode = false;
                 isInTree = true;
             }
@@ -1455,6 +1457,7 @@ export class BaseCompiler implements ICompiler {
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
+        buildFilters.binaryObject = false;
         buildFilters.binary = true;
         buildFilters.execute = true;
 
@@ -1739,7 +1742,7 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
         const [
             asmResult,
             astResult,
@@ -2154,6 +2157,10 @@ export class BaseCompiler implements ICompiler {
             for (const key in filters) {
                 filters[key] = false;
             }
+
+            if (filters.binaryObject && !this.compiler.supportsBinaryObject) {
+                delete filters.binaryObject;
+            }
         }
 
         if (files && files.length > 0) {
@@ -2532,8 +2539,17 @@ but nothing was dumped. Possible causes are:
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
-            filters.binary && this.supportsObjdump()
-                ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters)
+            (filters.binary || filters.binaryObject) && this.supportsObjdump()
+                ? this.objdump(
+                      outputFilename,
+                      result,
+                      maxSize,
+                      filters.intel,
+                      filters.demangle,
+                      filters.binaryObject,
+                      false,
+                      filters,
+                  )
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';

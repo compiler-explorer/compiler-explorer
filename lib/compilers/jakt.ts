@@ -49,9 +49,21 @@ export class JaktCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc,
+        dynamicReloc,
         filters: ParseFiltersAndOutputOptions,
     ) {
-        const objdumpResult = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+        const objdumpResult = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
+
         objdumpResult.languageId = 'asm';
         return objdumpResult;
     }

@@ -35,6 +35,7 @@ export class ExternalParserBase implements IExternalParser {
 
         if (fromStdin) parameters.push('-stdin');
         if (filters.binary) parameters.push('-binary');
+        if (filters.binaryObject) parameters.push('-binary');
         if (filters.labels) parameters.push('-unused_labels');
         if (filters.directives) parameters.push('-directives');
         if (filters.commentOnly) parameters.push('-comment_only');

@@ -116,6 +116,8 @@ export class z88dkCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc,
+        dynamicReloc,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
