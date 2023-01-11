@@ -1413,7 +1413,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const obj = this.assembly[line - 1];
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (obj) {
-            return obj.address ? obj.address.toString(16) : '';
+            return obj.address != null ? obj.address.toString(16) : '';
         } else {
             return '???';
         }
@@ -1494,9 +1494,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const codeLenses: monaco.languages.CodeLens[] = [];
         const effectiveFilters = this.getEffectiveFilters();
-        if (effectiveFilters.binary
-            || effectiveFilters.binaryObject
-            || result.forceBinaryView) {
+        if (effectiveFilters.binary || effectiveFilters.binaryObject || result.forceBinaryView) {
             this.setBinaryMargin();
             this.assembly.forEach((obj, line) => {
                 if (obj.opcodes) {
@@ -2535,8 +2533,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterDemangleButton.prop('disabled', !this.compiler.supportsDemangle);
         formatFilterTitle(this.filterDemangleButton, this.filterDemangleTitle);
         // Disable any of the options which don't make sense in binary mode.
-        const noBinaryFiltersDisabled = (filters.binaryObject || filters.binary)
-            && !(this.compiler as any).supportsFiltersInBinary;
+        const noBinaryFiltersDisabled =
+            (filters.binaryObject || filters.binary) && !(this.compiler as any).supportsFiltersInBinary;
         this.noBinaryFiltersButtons.prop('disabled', noBinaryFiltersDisabled);
 
         this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);
