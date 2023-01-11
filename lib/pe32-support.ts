@@ -22,14 +22,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {MapFileReader, Segment} from './mapfiles/map-file';
+
 export class PELabelReconstructor {
-    /**
-     *
-     * @param {Array} asmLines
-     * @param {boolean} dontLabelUnmappedAddresses
-     * @param {MapFileReader} mapFileReader
-     */
-    constructor(asmLines, dontLabelUnmappedAddresses, mapFileReader, needsReconstruction = true) {
+    public readonly asmLines: string[];
+    private readonly addressesToLabel: string[];
+    private readonly dontLabelUnmappedAddresses: boolean;
+    private readonly needsReconstruction: boolean;
+    private readonly mapFileReader: MapFileReader;
+    private readonly addressRegex: RegExp;
+    private readonly jumpRegex: RegExp;
+    private readonly callRegex: RegExp;
+    private readonly int3Regex: RegExp;
+
+    constructor(
+        asmLines: string[],
+        dontLabelUnmappedAddresses: boolean,
+        mapFileReader: MapFileReader,
+        needsReconstruction = true,
+    ) {
         this.asmLines = asmLines;
         this.addressesToLabel = [];
         this.dontLabelUnmappedAddresses = dontLabelUnmappedAddresses;
@@ -47,7 +58,7 @@ export class PELabelReconstructor {
      * Start reconstructing labels using the mapfile and remove unneccessary assembly
      *
      */
-    run(/*unitName*/) {
+    run(_unitName?: string) {
         this.mapFileReader.run();
 
         //this.deleteEverythingBut(unitName);
@@ -86,12 +97,10 @@ export class PELabelReconstructor {
 
     /**
      * Remove any assembly or data that isn't part of the given unit
-     *
-     * @param {string} unitName
      */
-    deleteEverythingBut(unitName) {
+    deleteEverythingBut(unitName: string) {
         if (this.needsReconstruction) {
-            let unitAddressSpaces = this.mapFileReader.getReconstructedUnitAddressSpace(unitName);
+            const unitAddressSpaces = this.mapFileReader.getReconstructedUnitAddressSpace(unitName);
 
             for (let idx = 0; idx < this.mapFileReader.reconstructedSegments.length; idx++) {
                 const info = this.mapFileReader.reconstructedSegments[idx];
@@ -146,12 +155,7 @@ export class PELabelReconstructor {
         }
     }
 
-    /**
-     *
-     * @param {number} beginAddress
-     * @param {number} endAddress
-     */
-    deleteLinesBetweenAddresses(beginAddress, endAddress) {
+    deleteLinesBetweenAddresses(beginAddress: number, endAddress?: number) {
         let startIdx = -1;
         let linesRemoved = false;
         let lineIdx = 0;
@@ -185,19 +189,16 @@ export class PELabelReconstructor {
     /**
      * Replaces an address used in a jmp or call instruction by its label.
      *  Does not replace an address if it has an offset.
-     *
-     * @param {int} lineIdx
-     * @param {regex} regex
      */
-    addAddressAsLabelAndReplaceLine(lineIdx, regex) {
+    addAddressAsLabelAndReplaceLine(lineIdx: number, regex: RegExp) {
         const line = this.asmLines[lineIdx];
-        let matches = line.match(regex);
+        const matches = line.match(regex);
         if (matches) {
             const address = matches[3];
             if (!address.includes('+') && !address.includes('-')) {
                 let labelName = 'L' + address;
-                const namedAddr = this.mapFileReader.getSymbolAt(false, parseInt(address, 16));
-                if (namedAddr) {
+                const namedAddr = this.mapFileReader.getSymbolAt(undefined, parseInt(address, 16));
+                if (namedAddr && namedAddr.displayName) {
                     labelName = namedAddr.displayName;
                 }
 
@@ -225,7 +226,7 @@ export class PELabelReconstructor {
      *  if an address doesn't have a mapped name, it is called <Laddress>
      */
     insertLabels() {
-        let currentSegment = false;
+        let currentSegment: Segment | undefined;
         let segmentChanged = false;
 
         let lineIdx = 0;
@@ -237,21 +238,21 @@ export class PELabelReconstructor {
                 const addressStr = matches[1];
                 const address = parseInt(addressStr, 16);
 
-                const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(false, address);
+                const segmentInfo = this.mapFileReader.getSegmentInfoByStartingAddress(undefined, address);
                 if (segmentInfo) {
                     currentSegment = segmentInfo;
                     segmentChanged = true;
                 }
 
-                let namedAddr = false;
-                let labelLine = false;
+                let namedAddr: Segment | undefined;
+                let labelLine: string | undefined;
 
                 const isReferenced = this.addressesToLabel.indexOf(addressStr);
                 if (isReferenced === -1) {
                     // we might have missed the reference to this address,
                     //  but if it's listed as a symbol, we should still label it.
                     // todo: the call might be in <.itext>, should we include that part of the assembly?
-                    namedAddr = this.mapFileReader.getSymbolAt(false, address);
+                    namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
                     if (namedAddr) {
                         labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
 
@@ -261,7 +262,7 @@ export class PELabelReconstructor {
                 } else {
                     labelLine = matches[1] + ' <L' + addressStr + '>:';
 
-                    namedAddr = this.mapFileReader.getSymbolAt(false, address);
+                    namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
                     if (namedAddr) {
                         labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
                     }
@@ -272,11 +273,11 @@ export class PELabelReconstructor {
                     }
                 }
 
-                const lineInfo = this.mapFileReader.getLineInfoByAddress(false, address);
-                if (lineInfo && currentSegment.unitName) {
+                const lineInfo = this.mapFileReader.getLineInfoByAddress(undefined, address);
+                if (lineInfo && currentSegment && currentSegment.unitName) {
                     this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':' + lineInfo.lineNumber);
                     lineIdx++;
-                } else if (segmentChanged) {
+                } else if (segmentChanged && currentSegment) {
                     this.asmLines.splice(lineIdx, 0, '/app/' + currentSegment.unitName + ':0');
                     lineIdx++;
                 }
