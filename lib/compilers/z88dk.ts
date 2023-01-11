@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
@@ -163,16 +164,12 @@ export class z88dkCompiler extends BaseCompiler {
         if (result.code === 0 && filters.binary) {
             const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
             if (await utils.fileExists(tapeFilepath)) {
-                const file_buffer = await fs.readFile(tapeFilepath);
-                const binary_base64 = file_buffer.toString('base64');
-                result.speccytape = binary_base64;
+                await this.addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
             }
 
             const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
             if (await utils.fileExists(smsFilepath)) {
-                const file_buffer = await fs.readFile(smsFilepath);
-                const binary_base64 = file_buffer.toString('base64');
-                result.miraclesms = binary_base64;
+                await this.addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
             }
         }
 

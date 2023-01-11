@@ -24,11 +24,11 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import * as utils from '../utils';
 
 import {ClangCompiler} from './clang';
@@ -89,9 +89,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             }
 
             if (await utils.fileExists(nesFile)) {
-                const file_buffer = await fs.readFile(nesFile);
-                const binary_base64 = file_buffer.toString('base64');
-                result.jsnesrom = binary_base64;
+                await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
             }
         }
 

@@ -29,6 +29,7 @@ import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
@@ -116,9 +117,7 @@ export class Cc65Compiler extends BaseCompiler {
         const dirPath = path.dirname(outputFilename);
         const nesFile = path.join(dirPath, 'example.nes');
         if (await utils.fileExists(nesFile)) {
-            const file_buffer = await fs.readFile(nesFile);
-            const binary_base64 = file_buffer.toString('base64');
-            result.jsnesrom = binary_base64;
+            await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
         }
 
         return res;

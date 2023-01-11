@@ -52,7 +52,7 @@ import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/feat
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
-import {Tool, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
+import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
@@ -1403,6 +1403,21 @@ export class BaseCompiler implements ICompiler {
         } else {
             return [];
         }
+    }
+
+    async addArtifactToResult(result: CompilationResult, filepath: string, customType?: string, customTitle?: string) {
+        const file_buffer = await fs.readFile(filepath);
+
+        const artifact: Artifact = {
+            content: file_buffer.toString('base64'),
+            type: customType || 'application/octet-stream',
+            name: path.basename(filepath),
+            title: customTitle || path.basename(filepath),
+        };
+
+        if (!result.artifacts) result.artifacts = [];
+
+        result.artifacts.push(artifact);
     }
 
     protected async writeMultipleFiles(files, dirPath) {

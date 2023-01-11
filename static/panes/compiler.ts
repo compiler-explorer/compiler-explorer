@@ -63,7 +63,7 @@ import * as utils from '../utils';
 import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
-import {Tool} from '../../types/tool.interfaces';
+import {ArtifactType, Tool} from '../../types/tool.interfaces';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1710,14 +1710,18 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     offerEmulationIfPossible(result: CompilationResult) {
-        if (result.bbcdiskimage) {
-            this.emulateBbcDisk(result.bbcdiskimage);
-        } else if (result.speccytape) {
-            this.emulateSpeccyTape(result.speccytape);
-        } else if (result.miraclesms) {
-            this.emulateMiracleSMS(result.miraclesms);
-        } else if (result.jsnesrom) {
-            this.emulateNESROM(result.jsnesrom);
+        if (result.artifacts) {
+            for (const artifact of result.artifacts) {
+                if (artifact.type === ArtifactType.nesrom) {
+                    this.emulateNESROM(artifact.content);
+                } else if (artifact.type === ArtifactType.bbcdiskimage) {
+                    this.emulateBbcDisk(artifact.content);
+                } else if (artifact.type === ArtifactType.zxtape) {
+                    this.emulateSpeccyTape(artifact.content);
+                } else if (artifact.type === ArtifactType.smsrom) {
+                    this.emulateMiracleSMS(artifact.content);
+                }
+            }
         }
     }
 
