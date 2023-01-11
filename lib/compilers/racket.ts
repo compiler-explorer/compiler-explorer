@@ -97,6 +97,8 @@ export class RacketCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm: any,
         demangle: any,
+        staticReloc,
+        dynamicReloc,
         filters: ParseFiltersAndOutputOptions,
     ): Promise<any> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
