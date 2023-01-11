@@ -54,7 +54,7 @@ describe('Code Segments', function () {
         info = reader.getSegmentInfoByStartingAddress(undefined, reader.getSegmentOffset('0001') + 0x2838);
         info.unitName.should.equal('output.pas');
 
-        info = reader.getSegmentInfoByStartingAddress('0001', 0x1234); // TODO was a string?
+        info = reader.getSegmentInfoByStartingAddress('0001', 0x1234);
         expect(info, 'Address should not be a Start for any segment').to.be.undefined;
 
         info = reader.getSegmentInfoAddressIsIn('0001', 0x2838 + 0x10);
