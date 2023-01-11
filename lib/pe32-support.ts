@@ -248,7 +248,18 @@ export class PELabelReconstructor {
                 let labelLine: string | undefined;
 
                 const isReferenced = this.addressesToLabel.indexOf(addressStr);
-                if (isReferenced !== -1) {
+                if (isReferenced === -1) {
+                    // we might have missed the reference to this address,
+                    //  but if it's listed as a symbol, we should still label it.
+                    // todo: the call might be in <.itext>, should we include that part of the assembly?
+                    namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
+                    if (namedAddr) {
+                        labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
+
+                        this.asmLines.splice(lineIdx, 0, labelLine);
+                        lineIdx++;
+                    }
+                } else {
                     labelLine = matches[1] + ' <L' + addressStr + '>:';
 
                     namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
@@ -257,17 +268,6 @@ export class PELabelReconstructor {
                     }
 
                     if (!this.dontLabelUnmappedAddresses || namedAddr) {
-                        this.asmLines.splice(lineIdx, 0, labelLine);
-                        lineIdx++;
-                    }
-                } else {
-                    // we might have missed the reference to this address,
-                    //  but if it's listed as a symbol, we should still label it.
-                    // todo: the call might be in <.itext>, should we include that part of the assembly?
-                    namedAddr = this.mapFileReader.getSymbolAt(undefined, address);
-                    if (namedAddr) {
-                        labelLine = matches[1] + ' <' + namedAddr.displayName + '>:';
-
                         this.asmLines.splice(lineIdx, 0, labelLine);
                         lineIdx++;
                     }

@@ -27,6 +27,7 @@ import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
 import {CompilerInfo} from '../compiler.interfaces';
 import {BasicExecutionResult} from '../execution/execution.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
+import {ToolResult} from '../tool.interfaces';
 
 import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
 
@@ -53,12 +54,13 @@ export type CompilationResult = {
     gnatDebugOutput?: ResultLine[];
     hasGnatDebugTreeOutput?: boolean;
     gnatDebugTreeOutput?: ResultLine[];
-    tools?: any;
+    tools?: ToolResult[];
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
     languageId?: string;
+    result?: CompilationResult; // cmake inner result
 
     hasPpOutput?: boolean;
     ppOutput?: any;

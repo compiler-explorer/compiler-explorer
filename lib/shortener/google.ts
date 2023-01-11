@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2017, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,26 +24,27 @@
 
 import request from 'request';
 
-import {BaseShortener} from './base';
-
-export class TinyUrlShortener extends BaseShortener {
-    static get key() {
-        return 'tinyurl';
-    }
-
-    handle(req, res) {
-        const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
-        const options = {
-            url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
-            method: 'GET',
-        };
-        const callback = (err, resp, body) => {
-            if (!err && resp.statusCode === 200) {
-                res.send({url: body});
-            } else {
-                res.status(resp.statusCode).send(resp.error);
-            }
-        };
-        request.post(options, callback);
+export class ShortLinkResolver {
+    resolve(url: string) {
+        return new Promise((resolve, reject) => {
+            request({method: 'HEAD', uri: url, followRedirect: false}, (err, res) => {
+                if (err !== null) {
+                    reject(err.message);
+                    return;
+                }
+                if (res.statusCode !== 302) {
+                    reject(`Got response ${res.statusCode}`);
+                    return;
+                }
+                const targetLocation = res.headers['location'];
+                if (!targetLocation) {
+                    reject(`Missing location url in ${targetLocation}`);
+                    return;
+                }
+                resolve({
+                    longUrl: targetLocation,
+                });
+            });
+        });
     }
 }

@@ -30,13 +30,13 @@ import semverParser from 'semver';
 import _ from 'underscore';
 
 import {LanguageKey} from '../types/languages.interfaces';
+import {ToolTypeKey} from '../types/tool.interfaces';
 
 import {logger} from './logger';
 import {CompilerProps} from './properties';
 import {PropertyGetter, PropertyValue} from './properties.interfaces';
 import {Source} from './sources';
 import {BaseTool, getToolTypeByKey} from './tooling';
-import {ToolTypeKey} from './tooling/base-tool.interface';
 import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils';
 
 // TODO: There is surely a better name for this type. Used both here and in the compiler finder.
@@ -145,10 +145,10 @@ export class ClientOptionsHandler {
 
         this.supportsBinary = this.compilerProps(languages, 'supportsBinary', true, res => !!res);
         this.supportsExecutePerLanguage = this.compilerProps(languages, 'supportsExecute', true, res => !!res);
-        this.supportsExecute = Object.values(this.supportsExecutePerLanguage).some(value => value);
+        this.supportsExecute = Object.values(this.supportsExecutePerLanguage).some(Boolean);
 
         this.supportsLibraryCodeFilterPerLanguage = this.compilerProps(languages, 'supportsLibraryCodeFilter', false);
-        this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(value => value);
+        this.supportsLibraryCodeFilter = Object.values(this.supportsLibraryCodeFilterPerLanguage).some(Boolean);
 
         const libs = this.parseLibraries(this.compilerProps<string>(languages, 'libs'));
         const tools = this.parseTools(this.compilerProps<string>(languages, 'tools'));

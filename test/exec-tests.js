@@ -40,7 +40,65 @@ function testExecOutput(x) {
 }
 
 describe('Execution tests', () => {
-    if (process.platform !== 'win32') {
+    if (process.platform === 'win32') {
+        // win32
+        describe('Executes external commands', () => {
+            // note: we use powershell, since echo is a builtin, and false doesn't exist
+            it('supports output', () => {
+                return exec
+                    .execute('powershell', ['-Command', 'echo "hello world"'], {})
+                    .then(testExecOutput)
+                    .should.eventually.deep.equals({
+                        code: 0,
+                        okToCache: true,
+                        stderr: '',
+                        stdout: 'hello world\r\n',
+                        timedOut: false,
+                    });
+            });
+            it('limits output', () => {
+                return exec
+                    .execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {
+                        maxOutput: 10,
+                    })
+                    .then(testExecOutput)
+                    .should.eventually.deep.equals({
+                        code: 0,
+                        okToCache: true,
+                        stderr: '',
+                        stdout: 'A very ver\n[Truncated]',
+                        timedOut: false,
+                    });
+            });
+            it('handles failing commands', () => {
+                return exec
+                    .execute('powershell', ['-Command', 'function Fail { exit 1 }; Fail'], {})
+                    .then(testExecOutput)
+                    .should.eventually.deep.equals({
+                        code: 1,
+                        okToCache: true,
+                        stderr: '',
+                        stdout: '',
+                        timedOut: false,
+                    });
+            });
+            it('handles timouts', () => {
+                return exec
+                    .execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})
+                    .then(testExecOutput)
+                    .should.eventually.deep.equals({
+                        code: 1,
+                        okToCache: false,
+                        stderr: '\nKilled - processing time exceeded',
+                        stdout: '',
+                        timedOut: false,
+                    });
+            });
+            it('handles missing executables', () => {
+                return exec.execute('__not_a_command__', [], {}).should.be.rejectedWith('ENOENT');
+            });
+        });
+    } else {
         // POSIX
         describe('Executes external commands', () => {
             it('supports output', () => {
@@ -99,64 +157,6 @@ describe('Execution tests', () => {
                         stdout: 'this is stdin',
                         timedOut: false,
                     });
-            });
-        });
-    } else {
-        // win32
-        describe('Executes external commands', () => {
-            // note: we use powershell, since echo is a builtin, and false doesn't exist
-            it('supports output', () => {
-                return exec
-                    .execute('powershell', ['-Command', 'echo "hello world"'], {})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 0,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: 'hello world\r\n',
-                        timedOut: false,
-                    });
-            });
-            it('limits output', () => {
-                return exec
-                    .execute('powershell', ['-Command', 'echo "A very very very very very long string"'], {
-                        maxOutput: 10,
-                    })
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 0,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: 'A very ver\n[Truncated]',
-                        timedOut: false,
-                    });
-            });
-            it('handles failing commands', () => {
-                return exec
-                    .execute('powershell', ['-Command', 'function Fail { exit 1 }; Fail'], {})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 1,
-                        okToCache: true,
-                        stderr: '',
-                        stdout: '',
-                        timedOut: false,
-                    });
-            });
-            it('handles timouts', () => {
-                return exec
-                    .execute('powershell', ['-Command', '"sleep 5"'], {timeoutMs: 10})
-                    .then(testExecOutput)
-                    .should.eventually.deep.equals({
-                        code: 1,
-                        okToCache: false,
-                        stderr: '\nKilled - processing time exceeded',
-                        stdout: '',
-                        timedOut: false,
-                    });
-            });
-            it('handles missing executables', () => {
-                return exec.execute('__not_a_command__', [], {}).should.be.rejectedWith('ENOENT');
             });
         });
     }

@@ -76,10 +76,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             request(url, settings, (err, res, body) => {
-                if (res.statusCode === 404) {
-                    reject(`Not found (${url})`);
-                } else if (err) {
+                if (err) {
+                    logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
                     reject(err);
+                } else if (res && res.statusCode === 404) {
+                    reject(`Not found (${url})`);
                 } else {
                     resolve(body);
                 }
@@ -111,52 +112,92 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     async downloadAndExtractPackage(libId, version, downloadPath, packageUrl): Promise<BuildEnvDownloadInfo> {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             const startTime = process.hrtime.bigint();
             const extract = tar.extract();
             const gunzip = zlib.createGunzip();
 
             extract.on('entry', async (header, stream, next) => {
-                let filepath = '';
-                if (this.extractAllToRoot) {
-                    const filename = path.basename(header.name);
-                    filepath = path.join(downloadPath, filename);
-                } else {
-                    const filename = header.name;
-                    filepath = path.join(downloadPath, filename);
-                    const resolved = path.resolve(path.dirname(filepath));
-                    if (!resolved.startsWith(downloadPath)) {
-                        logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
-                        next();
-                        return;
+                try {
+                    let filepath = '';
+                    if (this.extractAllToRoot) {
+                        const filename = path.basename(header.name);
+                        filepath = path.join(downloadPath, filename);
+                    } else {
+                        const filename = header.name;
+                        filepath = path.join(downloadPath, filename);
+                        const resolved = path.resolve(path.dirname(filepath));
+                        if (!resolved.startsWith(downloadPath)) {
+                            logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                            stream.resume();
+                            next();
+                            return;
+                        }
+
+                        await mkdirp(path.dirname(filepath));
                     }
 
-                    await mkdirp(path.dirname(filepath));
+                    const filestream = fs.createWriteStream(filepath);
+                    if (header.size === 0) {
+                        // See https://github.com/mafintosh/tar-stream/issues/145
+                        stream.resume();
+                        next();
+                    } else {
+                        stream
+                            .on('error', error => {
+                                logger.error(`Error in stream handling: ${error}`);
+                                reject(error);
+                            })
+                            .on('end', next)
+                            .pipe(filestream);
+                        stream.resume();
+                    }
+                } catch (error) {
+                    logger.error(`Error in entry handling: ${error}`);
+                    reject(error);
                 }
-
-                const filestream = fs.createWriteStream(filepath);
-                stream.pipe(filestream);
-                stream.on('end', next);
-                stream.resume();
             });
 
-            extract.on('finish', () => {
-                const endTime = process.hrtime.bigint();
-                resolve({
-                    step: `Download of ${libId} ${version}`,
-                    packageUrl: packageUrl,
-                    time: ((endTime - startTime) / BigInt(1000000)).toString(),
+            extract
+                .on('error', error => {
+                    logger.error(`Error in tar handling: ${error}`);
+                    reject(error);
+                })
+                .on('finish', () => {
+                    const endTime = process.hrtime.bigint();
+                    resolve({
+                        step: `Download of ${libId} ${version}`,
+                        packageUrl: packageUrl,
+                        time: ((endTime - startTime) / BigInt(1000000)).toString(),
+                    });
                 });
-            });
 
-            gunzip.pipe(extract);
+            gunzip
+                .on('error', error => {
+                    logger.error(`Error in gunzip handling: ${error}`);
+                    reject(error);
+                })
+                .pipe(extract);
 
             const settings = {
                 method: 'GET',
                 encoding: null,
             };
 
-            request(packageUrl, settings).pipe(gunzip);
+            // https://stackoverflow.com/questions/49277790/how-to-pipe-npm-request-only-if-http-200-is-received
+            const req = request(packageUrl, settings)
+                .on('error', error => {
+                    logger.error(`Error in request handling: ${error}`);
+                    reject(error);
+                })
+                .on('response', res => {
+                    if (res.statusCode === 200) {
+                        req.pipe(gunzip);
+                    } else {
+                        logger.error(`Error requesting package from conan: ${res.statusCode} for ${packageUrl}`);
+                        reject(new Error(`Unable to request library from conan: ${res.statusCode}`));
+                    }
+                });
         });
     }
 
@@ -196,7 +237,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
 
         _.each(libraryDetails, (details, libId) => {
             if (this.hasBinariesToLink(details)) {
-                const lookupversion = details.lookupversion ? details.lookupversion : details.version;
+                const lookupversion = details.lookupversion || details.version;
                 allLibraryBuilds.push({
                     id: libId,
                     version: details.version,
@@ -209,7 +250,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
         const buildProperties = await this.getConanBuildProperties(key);
 
         for (const libVerBuilds of allLibraryBuilds) {
-            const lookupversion = libVerBuilds.lookupversion ? libVerBuilds.lookupversion : libVerBuilds.version;
+            const lookupversion = libVerBuilds.lookupversion || libVerBuilds.version;
             const libVer = `${libVerBuilds.id}/${lookupversion}`;
             const possibleBuilds = await libVerBuilds.possibleBuilds;
             if (possibleBuilds) {
@@ -222,10 +263,10 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         }),
                     );
                 } else {
-                    logger.info(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
+                    logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
                 }
             } else {
-                logger.info(`Library ${libVer} not available`);
+                logger.warn(`Library ${libVer} not available`);
             }
         }
 
@@ -241,7 +282,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     hasBinariesToLink(details) {
-        return details.libpath.length === 0 && (details.staticliblink.length > 0 || details.liblink.length > 0);
+        return (
+            details.libpath.length === 0 &&
+            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
+            details.version !== 'autodetect'
+        );
     }
 
     hasAtLeastOneBinaryToLink(libraryDetails) {

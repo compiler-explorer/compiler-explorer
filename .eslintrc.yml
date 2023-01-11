@@ -9,6 +9,7 @@ plugins:
   - prettier
   - unicorn
   - '@typescript-eslint'
+  - unused-imports
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
@@ -74,6 +75,9 @@ rules:
   no-useless-escape: error
   no-useless-rename: error
   no-useless-return: error
+  no-empty:
+    - error
+    - allowEmptyCatch: true
   quote-props:
     - error
     - as-needed

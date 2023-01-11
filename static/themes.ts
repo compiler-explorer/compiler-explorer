@@ -155,7 +155,7 @@ export class Themer {
     }
 
     private onSettingsChange(newSettings: SiteSettings) {
-        const newTheme = newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
+        const newTheme = newSettings.theme && newSettings.theme in themes ? themes[newSettings.theme] : themes.default;
         if (!newTheme.monaco) newTheme.monaco = 'vs';
         this.setTheme(newTheme);
     }

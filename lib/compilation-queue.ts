@@ -42,9 +42,13 @@ const queueCompleted = new PromClient.Counter({
     help: 'Total number of jobs completed',
 });
 
+type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
+
 export class CompilationQueue {
-    constructor(concurrency, timeout) {
-        this._running = new Set();
+    private readonly _running: Set<number> = new Set();
+    private readonly _queue: Queue;
+
+    constructor(concurrency: number, timeout: number) {
         this._queue = new Queue({
             concurrency,
             timeout,
@@ -56,7 +60,7 @@ export class CompilationQueue {
         return new CompilationQueue(ceProps('maxConcurrentCompiles', 1), ceProps('compilationEnvTimeoutMs'));
     }
 
-    enqueue(job) {
+    enqueue<Result>(job: Job<Result>): PromiseLike<Result> {
         const enqueueAsyncId = executionAsyncId();
         // If we're asked to enqueue a job when we're already in a async queued job context, just run it.
         // This prevents a deadlock.
@@ -76,7 +80,7 @@ export class CompilationQueue {
         });
     }
 
-    status() {
+    status(): {busy: boolean; pending: number; size: number} {
         const pending = this._queue.pending;
         const size = this._queue.size;
         return {

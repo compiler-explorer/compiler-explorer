@@ -101,10 +101,10 @@ export class LLVMOptTransformer extends Transform {
                 if (!this._prevOpts.has(strOpt)) {
                     this._prevOpts.add(strOpt);
 
-                    if (!optTypeMatch) {
-                        logger.warn('missing optimization type');
-                    } else {
+                    if (optTypeMatch) {
                         opt.optType = optTypeMatch[1].replace('!', '');
+                    } else {
+                        logger.warn('missing optimization type');
                     }
                     opt.displayString = DisplayOptInfo(opt);
                     this.push(opt as LLVMOptInfo);

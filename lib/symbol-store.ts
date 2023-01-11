@@ -39,10 +39,10 @@ export class SymbolStore {
     }
 
     add(symbol: string, demangled?: string) {
-        if (demangled !== undefined) {
-            this.uniqueSymbols[symbol] = demangled;
-        } else {
+        if (demangled === undefined) {
             this.uniqueSymbols[symbol] = symbol;
+        } else {
+            this.uniqueSymbols[symbol] = demangled;
         }
 
         this.isSorted = false;

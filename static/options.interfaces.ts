@@ -24,6 +24,7 @@
 
 import {Language, LanguageKey} from '../types/languages.interfaces';
 import {CompilerInfo} from '../types/compiler.interfaces';
+import {Tool} from '../types/tool.interfaces';
 
 export type LibraryVersion = {
     alias: string[];
@@ -60,4 +61,5 @@ export type Options = {
     release?: string;
     sentryEnvironment?: string;
     compileOptions: Record<LanguageKey, string>;
+    tools: Record<LanguageKey, Record<string, Tool>>;
 };

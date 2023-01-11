@@ -52,7 +52,6 @@ import {ComponentConfig, ToolViewState} from '../components.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces';
-import {Tool} from '../../lib/tooling/base-tool.interface';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
@@ -64,6 +63,7 @@ import * as utils from '../utils';
 import * as Sentry from '@sentry/browser';
 import {editor} from 'monaco-editor';
 import IEditorMouseEvent = editor.IEditorMouseEvent;
+import {Tool} from '../../types/tool.interfaces';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1501,9 +1501,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
                         },
                         id: address,
                         command: {
-                            id: address,
                             title: obj.opcodes.join(' '),
-                        },
+                        } as any, // This any cast fixes a bug
                     });
                 }
             });
@@ -2389,7 +2388,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const createToolView: () => ComponentConfig<ToolViewState> = () => {
             let args = '';
             let monacoStdin = false;
-            const langTools = (options.tools as any)[this.currentLangId ?? ''];
+            const langTools = options.tools[this.currentLangId ?? ''];
             if (langTools && langTools[toolId] && langTools[toolId].tool) {
                 if (langTools[toolId].tool.args !== undefined) {
                     args = langTools[toolId].tool.args;

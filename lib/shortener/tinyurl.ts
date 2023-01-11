@@ -1,4 +1,4 @@
-// Copyright (c) 2017, Compiler Explorer Authors
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,29 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as express from 'express';
 import request from 'request';
 
-export class ShortLinkResolver {
-    resolve(url) {
-        return new Promise((resolve, reject) => {
-            request({method: 'HEAD', uri: url, followRedirect: false}, (err, res) => {
-                if (err !== null) {
-                    reject(err.message);
-                    return;
-                }
-                if (res.statusCode !== 302) {
-                    reject(`Got response ${res.statusCode}`);
-                    return;
-                }
-                const targetLocation = res.headers['location'];
-                if (!targetLocation) {
-                    reject(`Missing location url in ${targetLocation}`);
-                    return;
-                }
-                resolve({
-                    longUrl: targetLocation,
-                });
-            });
-        });
+import {BaseShortener} from './base';
+
+export class TinyUrlShortener extends BaseShortener {
+    override handle(req: express.Request, res: express.Response) {
+        const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
+        const options = {
+            url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
+            method: 'GET',
+        };
+        const callback = (err, resp: request.Response, body) => {
+            if (!err && resp.statusCode === 200) {
+                res.send({url: body});
+            } else {
+                res.status(resp.statusCode).send('Tinyurl error');
+            }
+        };
+        request.post(options, callback);
+    }
+
+    static override get key() {
+        return 'tinyurl';
     }
 }

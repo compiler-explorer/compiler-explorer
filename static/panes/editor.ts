@@ -36,7 +36,7 @@ import * as monacoVim from 'monaco-vim';
 import * as monacoConfig from '../monaco-config';
 import * as quickFixesHandler from '../quick-fixes-handler';
 import TomSelect from 'tom-select';
-import {Settings, SiteSettings} from '../settings';
+import {SiteSettings} from '../settings';
 import '../formatter-registry';
 import '../modes/_all';
 import {MonacoPane} from './pane';
@@ -1497,16 +1497,16 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
                 if (obj.tag.fixes && editorModel) {
                     fixes = fixes.concat(
-                        obj.tag.fixes.map((fs, ind) => {
+                        obj.tag.fixes.map((fs, ind): monaco.languages.CodeAction => {
                             return {
                                 title: fs.title,
                                 diagnostics: [diag],
                                 kind: 'quickfix',
                                 edit: {
-                                    edits: fs.edits.map(f => {
+                                    edits: fs.edits.map((f): monaco.languages.IWorkspaceTextEdit => {
                                         return {
                                             resource: editorModel.uri,
-                                            edit: {
+                                            textEdit: {
                                                 range: new monaco.Range(
                                                     f.line ?? 0,
                                                     f.column ?? 0,
@@ -1515,6 +1515,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                                                 ),
                                                 text: f.text,
                                             },
+                                            versionId: undefined,
                                         };
                                     }),
                                 },
@@ -1581,9 +1582,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         let asm: ResultLine[] = [];
 
-        // @ts-expect-error: result has no property 'result'
         if (result.result && result.result.asm) {
-            // @ts-expect-error: result has no property 'result'
             asm = result.result.asm;
         } else if (result.asm) {
             asm = result.asm;

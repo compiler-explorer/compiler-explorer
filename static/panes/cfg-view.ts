@@ -44,6 +44,7 @@ import {
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
+import {assert, unwrap} from '../assert';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -59,6 +60,8 @@ type Coordinate = {
 
 const DZOOM = 0.1;
 const MINZOOM = 0.1;
+
+const EST_COMPRESSION_RATIO = 0.022;
 
 // https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
 function escapeSVG(text: string) {
@@ -76,6 +79,33 @@ function attrs(attributes: Record<string, string | number | null>) {
         .join(' ');
 }
 
+function special_round(x: number) {
+    assert(x >= 0);
+    if (x === 0) {
+        return 0;
+    }
+    const p = Math.pow(10, Math.floor(Math.log10(x)));
+    // prettier-ignore
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
+    return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
+}
+
+function size_to_human(bytes: number) {
+    if (bytes < 1000) {
+        return special_round(bytes) + ' B';
+    } else if (bytes < 1_000_000) {
+        return special_round(bytes / 1_000) + ' KB';
+    } else if (bytes < 1_000_000_000) {
+        return special_round(bytes / 1_000_000) + ' MB';
+    } else {
+        return special_round(bytes / 1_000_000_000) + ' GB';
+    }
+}
+
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
     svg: SVGElement;
@@ -84,6 +114,7 @@ export class Cfg extends Pane<CfgState> {
     graphElement: HTMLElement;
     infoElement: HTMLElement;
     exportPNGButton: JQuery;
+    estimatedPNGSize: Element;
     exportSVGButton: JQuery;
     currentPosition: Coordinate = {x: 0, y: 0};
     dragging = false;
@@ -113,9 +144,7 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
         const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
-        if (!(selector instanceof HTMLSelectElement)) {
-            throw new Error('.function-selector is not an HTMLSelectElement');
-        }
+        assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
         this.functionSelector = new TomSelect(selector, {
             valueField: 'value',
             labelField: 'title',
@@ -125,7 +154,7 @@ export class Cfg extends Pane<CfgState> {
             plugins: ['dropdown_input'],
             sortField: 'title',
             onChange: e => {
-                this.selectFunction(e as any as string);
+                this.selectFunction(e as unknown as string);
             },
         });
         this.state = state;
@@ -152,18 +181,19 @@ export class Cfg extends Pane<CfgState> {
 
     override registerDynamicElements(state: CfgState) {
         this.graphDiv = this.domRoot.find('.graph')[0];
-        this.svg = this.domRoot.find('svg')[0] as SVGElement;
+        this.svg = this.domRoot.find('svg')[0];
         this.blockContainer = this.domRoot.find('.block-container')[0];
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
         this.exportPNGButton = this.domRoot.find('.export-png').first();
+        this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
     }
 
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
-            const div = (e.target as Element).closest('div');
+            const div = (unwrap(e.target) as Element).closest('div');
             if (div && (div.classList.contains('block-container') || div.classList.contains('graph-container'))) {
                 this.dragging = true;
                 this.dragStart = {x: e.clientX, y: e.clientY};
@@ -202,6 +232,7 @@ export class Cfg extends Pane<CfgState> {
             } else {
                 this.state.zoom = MINZOOM;
             }
+            e.preventDefault();
         });
         this.exportPNGButton.on('click', () => {
             this.exportPNG();
@@ -274,17 +305,18 @@ export class Cfg extends Pane<CfgState> {
             const div = document.createElement('div');
             div.classList.add('block');
             div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
-            if (node.id in this.bbMap) {
-                throw Error("Duplicate basic block node id's found while drawing cfg");
-            }
+            // So because this is async there's a race condition here if you rapidly switch functions.
+            // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
+            // to another PR. TODO(jeremy-rifkin)
+            assert(!(node.id in this.bbMap), "Duplicate basic block node id's found while drawing cfg");
             this.bbMap[node.id] = div;
             this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
             const elem = $(this.bbMap[node.id]);
             void this.bbMap[node.id].offsetHeight;
-            (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
-            (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
+            (node as AnnotatedNodeDescriptor).width = unwrap(elem.outerWidth());
+            (node as AnnotatedNodeDescriptor).height = unwrap(elem.outerHeight());
         }
     }
 
@@ -299,9 +331,7 @@ export class Cfg extends Pane<CfgState> {
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
                 // Sanity check
-                if (edge.path.length === 0) {
-                    throw Error('Mal-formed edge: Zero segments');
-                }
+                assert(edge.path.length !== 0, 'Mal-formed edge: Zero segments');
                 const points: [number, number][] = [];
                 // -1 offset is to create an overlap between the block's bottom border and start of the path, avoid any
                 // visual artifacts
@@ -363,6 +393,7 @@ export class Cfg extends Pane<CfgState> {
     async selectFunction(name: string | null) {
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
+        this.estimatedPNGSize.innerHTML = '';
         if (!name || !(name in this.results)) {
             return;
         }
@@ -375,6 +406,9 @@ export class Cfg extends Pane<CfgState> {
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
             fn.nodes.length
         }`;
+        this.estimatedPNGSize.innerHTML = `(~${size_to_human(
+            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO
+        )})`;
     }
 
     zoom(zoom: number) {
@@ -396,9 +430,7 @@ export class Cfg extends Pane<CfgState> {
         doc += '<style>.code{font: 16px Consolas;}</style>';
         // insert the background
         const pane = this.graphContainer.parentElement;
-        if (!pane || !pane.classList.contains('lm_content')) {
-            throw Error('unknown parent');
-        }
+        assert(pane && pane.classList.contains('lm_content'), 'Unknown parent');
         const pane_style = window.getComputedStyle(pane);
         doc += `<rect ${attrs({
             x: '0',
@@ -482,8 +514,8 @@ export class Cfg extends Pane<CfgState> {
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-            this.graphContainer.style.width = `${this.domRoot.width() as number}px`;
-            this.graphContainer.style.height = `${(this.domRoot.height() as number) - topBarHeight}px`;
+            this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
+            this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
         });
     }
 

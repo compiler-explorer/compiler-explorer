@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,11 +22,47 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export class BaseShortener {
-    constructor(storageHandler) {
-        this.storageHandler = storageHandler;
-    }
+import {LanguageKey} from './languages.interfaces';
+import {ResultLine} from './resultline/resultline.interfaces';
 
-    // eslint-disable-next-line no-unused-vars
-    handle(req, res) {}
-}
+export type ToolTypeKey = 'independent' | 'postcompilation';
+
+export type ToolInfo = {
+    id: string;
+    name?: string;
+    type?: ToolTypeKey;
+    exe: string;
+    exclude: string[];
+    includeKey?: string;
+    options: string[];
+    args?: string;
+    languageId?: LanguageKey;
+    stdinHint?: string;
+    monacoStdin?: string;
+    icon?: string;
+    darkIcon?: string;
+    compilerLanguage: LanguageKey;
+};
+
+export type Tool = {
+    readonly tool: ToolInfo;
+    readonly id: string;
+    readonly type: string;
+};
+
+export type Artifact = {
+    content: string;
+    type: string;
+    name: string;
+    title: string;
+};
+
+export type ToolResult = {
+    id: string;
+    name?: string;
+    code: number;
+    languageId?: LanguageKey | 'stderr';
+    stderr: ResultLine[];
+    stdout: ResultLine[];
+    artifact?: Artifact;
+};

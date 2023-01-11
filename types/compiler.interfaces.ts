@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilerArguments} from '../lib/compiler-arguments';
-import {Tool, ToolInfo} from '../lib/tooling/base-tool.interface';
 
 import {Language} from './languages.interfaces';
 import {Library} from './libraries/libraries.interfaces';
+import {Tool, ToolInfo} from './tool.interfaces';
 
 export type CompilerInfo = {
     id: string;
