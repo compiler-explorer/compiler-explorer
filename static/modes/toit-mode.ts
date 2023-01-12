@@ -21,22 +21,20 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+import * as monaco from 'monaco-editor';
 
-'use strict';
-const monaco = require('monaco-editor');
-
-function configuration() {
+function configuration(): monaco.languages.LanguageConfiguration {
     /* Toit Language Configuration: */
 
     return {
         comment: [[/\/\*/, 'comment'], [/\*\//, 'comment', '@pop'], [{lineComment: /\/\//}]],
 
         brackets: [
-            ['{', '}', 'delimiter.curly'],
-            ['[', ']', 'delimiter.square'],
-            ['#[', ']', 'delimiter.square'],
-            ['(', ')', 'delimiter.parenthesis'],
-            ['<', '>', 'delimiter.angle'],
+            ['{', '}'],
+            ['[', ']'],
+            ['#[', ']'],
+            ['(', ')'],
+            ['<', '>'],
         ],
 
         writespace: [[/[ \t\r\n]+/, 'write']],
@@ -55,7 +53,7 @@ function configuration() {
     };
 }
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     /* Toit Language Definition: */
 
     return {

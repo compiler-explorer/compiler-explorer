@@ -21,11 +21,9 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
+import * as monaco from 'monaco-editor';
 
-'use strict';
-const monaco = require('monaco-editor');
-
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         symbols: /[=><!~?&|+\-*/^;.,]+/,
         escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -78,7 +76,7 @@ function definition() {
     };
 }
 
-function configuration() {
+function configuration(): monaco.languages.LanguageConfiguration {
     return {
         indentationRules: {
             decreaseIndentPattern: /^(.*\*\/)?\s*\}.*$/,

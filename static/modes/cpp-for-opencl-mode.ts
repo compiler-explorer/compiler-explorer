@@ -24,13 +24,13 @@
 
 import $ from 'jquery';
 
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const cppp = require('./cppp-mode');
 
 // We need to create a new definition for C++ for OpenCL so we can remove invalid keywords
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     const cppForOpenCL = $.extend(true, {}, cppp); // deep copy
 
     function addKeywords(keywords) {
