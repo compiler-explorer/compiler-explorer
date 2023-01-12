@@ -2577,25 +2577,25 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         // The executorButton does not need to be changed here, because you can create however
         // many executors as you want.
 
-        this.optButton.toggle(this.compiler.supportsOptOutput);
-        this.ppButton.toggle(this.compiler.supportsPpView);
-        this.astButton.toggle(this.compiler.supportsAstView);
-        this.irButton.toggle(this.compiler.supportsIrView);
-        this.llvmOptPipelineButton.toggle(this.compiler.supportsLLVMOptPipelineView);
-        this.deviceButton.toggle(this.compiler.supportsDeviceAsmView);
-        this.rustMirButton.toggle(this.compiler.supportsRustMirView);
-        this.rustMacroExpButton.toggle(this.compiler.supportsRustMacroExpView);
-        this.rustHirButton.toggle(this.compiler.supportsRustHirView);
-        this.haskellCoreButton.toggle(this.compiler.supportsHaskellCoreView);
-        this.haskellStgButton.toggle(this.compiler.supportsHaskellStgView);
-        this.haskellCmmButton.toggle(this.compiler.supportsHaskellCmmView);
-        this.cfgButton.toggle(this.compiler.supportsCfg);
-        this.gccDumpButton.toggle(this.compiler.supportsGccDump);
-        this.gnatDebugTreeButton.toggle(this.compiler.supportsGnatDebugViews);
-        this.gnatDebugButton.toggle(this.compiler.supportsGnatDebugViews);
-        this.executorButton.toggle(this.compiler.supportsExecute);
-        this.filterBinaryButton.toggle(this.compiler.supportsBinary);
-        this.filterBinaryObjectButton.toggle(this.compiler.supportsBinaryObject);
+        this.optButton.toggle(!!this.compiler.supportsOptOutput);
+        this.ppButton.toggle(!!this.compiler.supportsPpView);
+        this.astButton.toggle(!!this.compiler.supportsAstView);
+        this.irButton.toggle(!!this.compiler.supportsIrView);
+        this.llvmOptPipelineButton.toggle(!!this.compiler.supportsLLVMOptPipelineView);
+        this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
+        this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
+        this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
+        this.rustHirButton.toggle(!!this.compiler.supportsRustHirView);
+        this.haskellCoreButton.toggle(!!this.compiler.supportsHaskellCoreView);
+        this.haskellStgButton.toggle(!!this.compiler.supportsHaskellStgView);
+        this.haskellCmmButton.toggle(!!this.compiler.supportsHaskellCmmView);
+        this.cfgButton.toggle(!!this.compiler.supportsCfg);
+        this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
+        this.gnatDebugTreeButton.toggle(!!this.compiler.supportsGnatDebugViews);
+        this.gnatDebugButton.toggle(!!this.compiler.supportsGnatDebugViews);
+        this.executorButton.toggle(!!this.compiler.supportsExecute);
+        this.filterBinaryButton.toggle(!!this.compiler.supportsBinary);
+        this.filterBinaryObjectButton.toggle(!!this.compiler.supportsBinaryObject);
 
         this.compilerLicenseButton.toggle(!!this.hasCompilerLicenseInfo());
 
