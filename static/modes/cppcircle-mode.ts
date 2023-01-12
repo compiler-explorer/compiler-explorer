@@ -24,13 +24,13 @@
 
 import $ from 'jquery';
 
-import * as monaco from 'monaco-editor';
+const monaco = require('monaco-editor');
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const cppp = require('./cppp-mode');
 
 // circle is c++ with a few extra '@'-prefixed keywords.
 
-function definition(): monaco.languages.IMonarchLanguage {
+function definition() {
     const cppcircle = $.extend(true, {}, cppp); // deep copy
 
     function addKeywords(keywords) {

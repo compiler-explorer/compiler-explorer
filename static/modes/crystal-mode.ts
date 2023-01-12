@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as monaco from 'monaco-editor';
+'use strict';
 
-function configuration(): monaco.languages.LanguageConfiguration {
+const monaco = require('monaco-editor');
+
+function configuration() {
     return {
         comments: {
             lineComment: '#',
@@ -66,7 +68,7 @@ function configuration(): monaco.languages.LanguageConfiguration {
     };
 }
 
-function definition(): monaco.languages.IMonarchLanguage {
+function definition() {
     return {
         keywords: [
             'abstract',

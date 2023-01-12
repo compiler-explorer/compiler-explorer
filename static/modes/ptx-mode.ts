@@ -24,10 +24,10 @@
 
 import $ from 'jquery';
 
-import * as monaco from 'monaco-editor';
+const monaco = require('monaco-editor');
 const asm = require('./asm-mode');
 
-function definition(): monaco.languages.IMonarchLanguage {
+function definition() {
     const ptx = $.extend(true, {}, asm); // deep copy
 
     // Redefine registers for ptx:

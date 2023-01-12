@@ -24,11 +24,11 @@
 
 import $ from 'jquery';
 
-import * as monaco from 'monaco-editor';
+const monaco = require('monaco-editor');
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const cppp = require('./cppp-mode');
 
-function definition(): monaco.languages.IMonarchLanguage {
+function definition() {
     const cppfront = $.extend(true, {}, cppp); // deep copy
     cppfront.tokenPostfix = '.herb';
 
