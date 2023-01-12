@@ -25,7 +25,8 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
-const asm = require('./asm-mode');
+
+import * as asm from './asm-mode';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const ptx = $.extend(true, {}, asm); // deep copy

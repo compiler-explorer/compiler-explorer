@@ -25,8 +25,8 @@
 import $ from 'jquery';
 
 import * as monaco from 'monaco-editor';
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
-const cppp = require('./cppp-mode');
+import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
+import * as cppp from './cppp-mode';
 
 function definition(): monaco.languages.IMonarchLanguage {
     const cppx_blue = $.extend(true, {}, cppp); // deep copy
