@@ -76,11 +76,8 @@ export function executeDirect(
 
     let okToCache = true;
     let timedOut = false;
-    const cwd = options.customCwd
-        ? options.customCwd
-        : command.startsWith('/mnt') && process.env.wsl
-        ? process.env.winTmp
-        : process.env.tmpDir;
+    const cwd =
+        options.customCwd || (command.startsWith('/mnt') && process.env.wsl ? process.env.winTmp : process.env.tmpDir);
     logger.debug('Execution', {type: 'executing', command: command, args: args, env: env, cwd: cwd});
     const startTime = process.hrtime.bigint();
 

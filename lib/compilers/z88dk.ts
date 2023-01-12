@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
@@ -83,10 +84,10 @@ export class z88dkCompiler extends BaseCompiler {
     }
 
     protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
-        if (!filters.binary) {
-            return ['-S'];
-        } else {
+        if (filters.binary) {
             return ['-o', outputFilename + '.s', '-create-app'];
+        } else {
+            return ['-S'];
         }
     }
 
@@ -116,20 +117,22 @@ export class z88dkCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc,
+        dynamicReloc,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         // sometimes (with +z80 for example) the .bin file is written and the .s file is empty
-        if (!(await utils.fileExists(outputFilename + '.bin'))) {
-            if (!(await utils.fileExists(outputFilename + '.s'))) {
+        if (await utils.fileExists(outputFilename + '.bin')) {
+            outputFilename += '.bin';
+        } else {
+            if (await utils.fileExists(outputFilename + '.s')) {
+                outputFilename += '.s';
+            } else {
                 result.asm = '<No output file ' + outputFilename + '.s>';
                 return result;
-            } else {
-                outputFilename += '.s';
             }
-        } else {
-            outputFilename += '.bin';
         }
 
         const args = [outputFilename];
@@ -149,28 +152,24 @@ export class z88dkCompiler extends BaseCompiler {
             };
             const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
 
-            if (objResult.code !== 0) {
-                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
-                result.asm = `<No output: objdump returned ${objResult.code}>`;
-            } else {
+            if (objResult.code === 0) {
                 result.objdumpTime = objResult.execTime;
                 result.asm = this.postProcessObjdumpOutput(objResult.stdout);
+            } else {
+                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
+                result.asm = `<No output: objdump returned ${objResult.code}>`;
             }
         }
 
         if (result.code === 0 && filters.binary) {
             const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
             if (await utils.fileExists(tapeFilepath)) {
-                const file_buffer = await fs.readFile(tapeFilepath);
-                const binary_base64 = file_buffer.toString('base64');
-                result.speccytape = binary_base64;
+                await this.addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
             }
 
             const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
             if (await utils.fileExists(smsFilepath)) {
-                const file_buffer = await fs.readFile(smsFilepath);
-                const binary_base64 = file_buffer.toString('base64');
-                result.miraclesms = binary_base64;
+                await this.addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
             }
         }
 

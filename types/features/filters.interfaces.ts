@@ -29,6 +29,7 @@
 // TODO(jeremy-rifkin): Change name to include "filters"?
 export type CompilerOutputOptions = {
     binary: boolean;
+    binaryObject: boolean;
     execute: boolean;
     demangle: boolean;
     intel: boolean;

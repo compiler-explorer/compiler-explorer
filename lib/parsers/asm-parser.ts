@@ -62,6 +62,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     binaryHideFuncRe: RegExp | null;
     maxAsmLines: number;
     asmOpcodeRe: RegExp;
+    relocationRe: RegExp;
+    relocDataSymNameRe: RegExp;
     lineRe: RegExp;
     labelRe: RegExp;
     destRe: RegExp;
@@ -117,6 +119,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
+        this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
         this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump
@@ -295,7 +299,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm, labelDefinitions) {
         for (const obj of asm) {
-            obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            if (obj.labels) {
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            }
         }
     }
 
@@ -325,7 +331,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     }
 
     processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        if (filters.binary) return this.processBinaryAsm(asmResult, filters);
+        if (filters.binary || filters.binaryObject) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
 
@@ -373,7 +379,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                         };
                     } else {
                         source = {
-                            file: !this.stdInLooking.test(file) ? file : null,
+                            file: this.stdInLooking.test(file) ? null : file,
                             line: sourceLine,
                         };
                     }
@@ -406,7 +412,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                             };
                         } else {
                             source = {
-                                file: !this.stdInLooking.test(file) ? file : null,
+                                file: this.stdInLooking.test(file) ? null : file,
                                 line: sourceLine,
                             };
                         }
@@ -424,14 +430,16 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             if (!match) return;
             // cf http://www.math.utah.edu/docs/info/stabs_11.html#SEC48
             switch (parseInt(match[1])) {
-                case 68:
+                case 68: {
                     source = {file: null, line: parseInt(match[2])};
                     break;
+                }
                 case 132:
-                case 100:
+                case 100: {
                     source = null;
                     prevLabel = '';
                     break;
+                }
             }
         };
 
@@ -448,7 +456,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     };
                 } else {
                     source = {
-                        file: !this.stdInLooking.test(file) ? file : null,
+                        file: this.stdInLooking.test(file) ? null : file,
                         line: sourceLine,
                     };
                 }
@@ -566,7 +574,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             asm.push({
                 text: text,
-                source: this.hasOpcode(line, inNvccCode) ? (source ? source : null) : null,
+                source: this.hasOpcode(line, inNvccCode) ? source || null : null,
                 labels: labelsInLine,
             });
         }
@@ -705,6 +713,19 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     text: disassembly,
                     source: source,
                     labels: labelsInLine,
+                });
+            }
+
+            match = line.match(this.relocationRe);
+            if (match) {
+                const address = parseInt(match.groups.address, 16);
+                const relocname = match.groups.relocname;
+                const relocdata = match.groups.relocdata;
+                // value/addend matched but not used yet.
+                const match_value = relocdata.match(this.relocDataSymNameRe);
+                asm.push({
+                    text: `   ${relocname} ${relocdata}`,
+                    address: address,
                 });
             }
         }

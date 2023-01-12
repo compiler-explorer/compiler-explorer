@@ -194,6 +194,7 @@ export class CompilerFinder {
         const ceToolsPath = props('ceToolsPath', './');
 
         const supportsBinary = !!props('supportsBinary', true);
+        const supportsBinaryObject = !!props('supportsBinaryObject', false);
         const interpreted = !!props('interpreted', false);
         const supportsExecute = (interpreted || supportsBinary) && !!props('supportsExecute', true);
         const executionWrapper = props('executionWrapper', '');
@@ -213,7 +214,8 @@ export class CompilerFinder {
         // If name set, display that as the name
         // If not, check if we have a baseName + semver and display that
         // Else display compilerId as its name
-        const displayName = name !== undefined ? name : isSemVer && baseName ? `${baseName} ${semverVer}` : compilerId;
+        const displayName =
+            name === undefined ? (isSemVer && baseName ? `${baseName} ${semverVer}` : compilerId) : name;
 
         const baseOptions = props('baseOptions', '');
         const options = props('options', '');
@@ -256,6 +258,7 @@ export class CompilerFinder {
             adarts: props('adarts', ''),
             supportsDemangle: !!demangler,
             supportsBinary,
+            supportsBinaryObject,
             interpreted,
             supportsExecute,
             executionWrapper,

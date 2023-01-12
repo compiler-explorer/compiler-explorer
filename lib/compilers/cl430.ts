@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Jonathan Reichelt Gjertsen & Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,28 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import request from 'request';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
 
-import {BaseShortener} from './base';
-
-export class TinyUrlShortener extends BaseShortener {
+export class CL430Compiler extends BaseCompiler {
     static get key() {
-        return 'tinyurl';
+        return 'cl430';
     }
 
-    handle(req, res) {
-        const url = `${req.protocol}://${req.get('host')}#${req.body.config}`;
-        const options = {
-            url: 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url),
-            method: 'GET',
-        };
-        const callback = (err, resp, body) => {
-            if (!err && resp.statusCode === 200) {
-                res.send({url: body});
-            } else {
-                res.status(resp.statusCode).send(resp.error);
-            }
-        };
-        request.post(options, callback);
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+        super(compilerInfo, env);
+
+        // We need to have the same name for the C/C++ file as we expect for the output file
+        this.compileFilename = `output${this.lang.extensions[0]}`;
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        return [
+            // -g AKA --symdebug:dwarf generates too much noise for the default parser to deal with
+            '--symdebug:none',
+
+            // Generate an object file called output (no extension) and request to keep the ASM
+            // This will generate a corresponding assembly file called output.s
+            '--keep_asm',
+            '--asm_extension=.s',
+            '--output_file',
+            this.filename(outputFilename.replace('.s', '')),
+        ];
     }
 }

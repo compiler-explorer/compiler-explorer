@@ -54,6 +54,7 @@ export type CompilerInfo = {
     supportsDeviceAsmView: boolean;
     supportsDemangle: boolean;
     supportsBinary: boolean;
+    supportsBinaryObject: boolean;
     supportsIntel: boolean;
     interpreted: boolean;
     // (interpreted || supportsBinary) && supportsExecute

@@ -73,6 +73,11 @@ export class BaseTool implements ITool {
             }
             // Even if the include key is truthy, we fall back to the exclusion list.
         }
+
+        // an empty value (e.g. 'tool.foo.exclude=') yields a single empty
+        // string in the array, not an empty array.
+        if (this.tool.exclude.length === 1 && this.tool.exclude[0] === '') return false;
+
         return this.tool.exclude.find(excl => compilerId.includes(excl)) !== undefined;
     }
 
@@ -150,7 +155,7 @@ export class BaseTool implements ITool {
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
 
-        args = args ? args : [];
+        args = args || [];
         if (this.addOptionsToToolArgs) args = this.tool.options.concat(args);
         if (inputFilepath) args.push(inputFilepath);
 

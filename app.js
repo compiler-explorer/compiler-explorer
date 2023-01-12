@@ -388,7 +388,7 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+        const timeout = (idleTimeout === undefined ? 300 : idleTimeout) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -453,6 +453,11 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
+    // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
+    const webServer = express(),
+        router = express.Router();
+    setupSentry(aws.getConfig('sentryDsn'));
+
     startWineInit();
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
@@ -505,9 +510,6 @@ async function main() {
         process.exit(0);
     }
 
-    const webServer = express(),
-        router = express.Router();
-    setupSentry(aws.getConfig('sentryDsn'));
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -598,7 +600,7 @@ async function main() {
             }
         });
 
-    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf8'));
 
     loadSiteTemplates(configDir);
 
@@ -646,7 +648,7 @@ async function main() {
                     mobileViewer: isMobileViewer(req),
                     config: config,
                     metadata: metadata,
-                    storedStateId: req.params.id ? req.params.id : false,
+                    storedStateId: req.params.id || false,
                 },
                 req.query,
             ),
@@ -818,22 +820,29 @@ if (opts.version) {
     process.exit(0);
 }
 
-process.on('uncaughtException', terminationHandler('uncaughtException', 1));
-process.on('SIGINT', terminationHandler('SIGINT', 0));
-process.on('SIGTERM', terminationHandler('SIGTERM', 0));
-process.on('SIGQUIT', terminationHandler('SIGQUIT', 0));
+process.on('uncaughtException', uncaughtHandler);
+process.on('SIGINT', signalHandler('SIGINT'));
+process.on('SIGTERM', signalHandler('SIGTERM'));
+process.on('SIGQUIT', signalHandler('SIGQUIT'));
 
-function terminationHandler(name, code) {
-    return error => {
+function signalHandler(name) {
+    return () => {
         logger.info(`stopping process: ${name}`);
-        if (error && error instanceof Error) {
-            logger.error(error);
-        }
-        process.exit(code);
+        process.exit(0);
     };
 }
 
+function uncaughtHandler(err, origin) {
+    logger.info(`stopping process: Uncaught exception: ${err}\nException origin: ${origin}`);
+    // The app will exit naturally from here, but if we call `process.exit()` we may lose log lines.
+    // see https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411
+    process.exitCode = 1;
+}
+
+// Once we move to modules, we can remove this and use a top level await.
+// eslint-disable-next-line unicorn/prefer-top-level-await
 main().catch(err => {
     logger.error('Top-level error (shutting down):', err);
-    process.exit(1);
+    // Shut down after a second to hopefully let logs flush.
+    setTimeout(() => process.exit(1), 1000);
 });

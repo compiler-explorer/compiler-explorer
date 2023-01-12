@@ -172,14 +172,14 @@ describe('llvm-ir getSourceColumn', function () {
         expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).to.equal(10);
     });
 
-    it('should return null on non-existend node', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(null);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(null);
+    it('should return undefined on non-existend node', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(undefined);
     });
 
-    it('should return null if no higher scope has a column', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(null);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(null);
+    it('should return undefined if no higher scope has a column', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(undefined);
     });
 });
 

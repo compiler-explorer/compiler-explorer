@@ -22,10 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import profanities from 'profanities';
+import * as express from 'express';
 
 import {logger} from '../logger';
+import {CompilerProps} from '../properties';
 import * as utils from '../utils';
+
+// When it's import profanities from 'profanities'; ts says "Cannot find module 'profanities' or its corresponding type
+// declarations."
+// Updating profanities to v3 requires ESM modules
+// eslint-disable-next-line @typescript-eslint/no-var-requires, unicorn/prefer-module
+const profanities = require('profanities');
 
 const FILE_HASH_VERSION = 'Compiler Explorer Config Hasher 2';
 /* How long a string to check for possible unusable hashes (Profanities or confusing text)
@@ -34,23 +41,17 @@ Note that a Hash might end up being longer than this!
 const USABLE_HASH_CHECK_LENGTH = 9; // Quite generous
 const MAX_TRIES = 4;
 
-export class StorageBase {
-    constructor(httpRootDir, compilerProps) {
-        this.compilerProps = compilerProps;
-        this.httpRootDir = httpRootDir;
-    }
+export abstract class StorageBase {
+    constructor(protected readonly httpRootDir: string, protected readonly compilerProps: CompilerProps) {}
 
     /**
      * Encode a buffer as a URL-safe string.
-     *
-     * @param {Buffer} buffer
-     * @returns {string}
      */
-    static encodeBuffer(buffer) {
+    static encodeBuffer(buffer: Buffer): string {
         return utils.base32Encode(buffer);
     }
 
-    static isCleanText(text) {
+    static isCleanText(text: string) {
         const lowercased = text.toLowerCase();
         return !profanities.some(badWord => lowercased.includes(badWord));
     }
@@ -80,7 +81,7 @@ export class StorageBase {
         return {config, configHash};
     }
 
-    static configFor(req) {
+    static configFor(req: express.Request) {
         if (req.body.config) {
             return req.body.config;
         } else if (req.body.sessions) {
@@ -89,7 +90,7 @@ export class StorageBase {
         return null;
     }
 
-    handler(req, res) {
+    handler(req: express.Request, res: express.Response) {
         // Get the desired config and check for profanities in its hash
         const origConfig = StorageBase.configFor(req);
         if (!origConfig) {
@@ -105,7 +106,9 @@ export class StorageBase {
                     `Unique subhash '${result.uniqueSubHash}' ` +
                         `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`,
                 );
-                if (!result.alreadyPresent) {
+                if (result.alreadyPresent) {
+                    return result;
+                } else {
                     const storedObject = {
                         prefix: result.prefix,
                         uniqueSubHash: result.uniqueSubHash,
@@ -114,8 +117,6 @@ export class StorageBase {
                     };
 
                     return this.storeItem(storedObject, req);
-                } else {
-                    return result;
                 }
             })
             .then(result => {
@@ -128,19 +129,11 @@ export class StorageBase {
             });
     }
 
-    async storeItem(item) {
-        throw new Error(`Trying to store item from base storage: ${item}`);
-    }
+    abstract storeItem(item, req: express.Request): Promise<any>;
 
-    async findUniqueSubhash(hash) {
-        throw new Error(`Trying to find unique subhash from base storage ${hash}`);
-    }
+    abstract findUniqueSubhash(hash: string): Promise<any>;
 
-    async expandId(id) {
-        throw new Error(`Trying to expand from base storage ${id}`);
-    }
+    abstract expandId(id): Promise<any>;
 
-    async incrementViewCount(id) {
-        throw new Error(`Trying to increment view count from base storage ${id}`);
-    }
+    abstract incrementViewCount(id): Promise<any>;
 }
