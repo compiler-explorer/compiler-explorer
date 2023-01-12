@@ -150,11 +150,15 @@ export function definition(): monaco.languages.IMonarchLanguage {
         ],
         brackets: [
             {
-                open: '(', close: ')', token: 'delimiter.parenthesis'
+                open: '(',
+                close: ')',
+                token: 'delimiter.parenthesis',
             },
             {
-                open: '[', close: ']', token: 'delimiter.square'
-            }
+                open: '[',
+                close: ']',
+                token: 'delimiter.square',
+            },
         ],
         symbols: /[=><!~&|+\-*/^]+/,
         delimiters: /[;=.:,`]/,

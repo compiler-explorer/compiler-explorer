@@ -98,14 +98,14 @@ function definition(): monaco.languages.IMonarchLanguage {
         binNumber: /0(b|B)[0-1](_?[0-1])*/,
         exponent: /(e|E)(\+|-)?\d(_?\d)*/,
         brackets: [
-            {open: '{',  close: '}', token: 'delimiter.curly'},
-            {open: '{.', close:  '.}', token: 'delimiter.curly'},
-            {open: '[',  close: ']', token: 'delimiter.square'},
-            {open: '[:', close:  ']', token: 'delimiter.square'},
-            {open: '[.', close:  '.]', token: 'delimiter.square'},
-            {open: '(',  close: ')', token: 'delimiter.parenthesis'},
-            {open: '(.', close:  '.)', token: 'delimiter.parenthesis'},
-            {open: '<',  close: '>', token: 'delimiter.angle'}
+            {open: '{', close: '}', token: 'delimiter.curly'},
+            {open: '{.', close: '.}', token: 'delimiter.curly'},
+            {open: '[', close: ']', token: 'delimiter.square'},
+            {open: '[:', close: ']', token: 'delimiter.square'},
+            {open: '[.', close: '.]', token: 'delimiter.square'},
+            {open: '(', close: ')', token: 'delimiter.parenthesis'},
+            {open: '(.', close: '.)', token: 'delimiter.parenthesis'},
+            {open: '<', close: '>', token: 'delimiter.angle'},
         ],
 
         // The main tokenizer for our languages
