@@ -22,12 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: 'invalid', // for debugging
 

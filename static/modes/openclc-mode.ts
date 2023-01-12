@@ -24,13 +24,13 @@
 
 import $ from 'jquery';
 
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
 const nc = require('./nc-mode');
 
 // We need to create a new definition for OpenCL C so we can add keywords
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     const openclc = $.extend(true, {}, nc); // deep copy
 
     function removeKeyword(keyword) {

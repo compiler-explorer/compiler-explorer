@@ -26,11 +26,9 @@
 // Released under the MIT license
 
 // this is mostly based on 'mylang' example from https://microsoft.github.io/monaco-editor/monarch.html
+import * as monaco from 'monaco-editor';
 
-'use strict';
-const monaco = require('monaco-editor');
-
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         // Set defaultToken to invalid to see what you do not tokenize yet
         // defaultToken: 'invalid',

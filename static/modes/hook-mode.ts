@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: 'invalid',
 
