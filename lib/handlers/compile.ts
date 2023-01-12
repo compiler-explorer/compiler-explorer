@@ -134,18 +134,30 @@ export class CompileHandler {
         // decoding middleware.
         this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does.
+            //  object we get here does (introduced by body-parser).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
             }
-            const contentType = proxyReq.getHeader('Content-Type');
+            let contentType: string = proxyReq.getHeader('Content-Type') as string;
             let bodyData;
 
             if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
             } else if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = body;
+                // Reshape the form body into what a json request looks like
+                contentType = 'application/json';
+                bodyData = JSON.stringify({
+                    lang: body.lang,
+                    compiler: body.compiler,
+                    source: body.source,
+                    options: body.userArguments,
+                    filters: Object.fromEntries(
+                        ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
+                            key => [key, body[key] === 'true'],
+                        ),
+                    ),
+                });
             } else {
                 Sentry.captureException(
                     new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
@@ -156,6 +168,7 @@ export class CompileHandler {
             try {
                 if (bodyData) {
                     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.setHeader('Content-Type', contentType);
                     proxyReq.write(bodyData);
                 }
             } catch (e: any) {
