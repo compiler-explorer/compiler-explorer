@@ -33,17 +33,17 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/^(\| )*local table.*$/, 'comment'],
                 [/^(\| )*\[\s*\d+\].*$/, 'comment'],
                 [/^(\| )*\|-+$/, 'comment'],
-                [/^((?:\| )*)(\d+)/, ['comment', {token: 'number', next: '@opcode'}]],
-                [/^((?:\| )*)(\d+)(\s+)/, ['comment', 'number', {token: '', next: '@opcode'}]],
+                [/^((?:\| )*)(\d+)/, ['comment', 'number'], '@opcode'],
+                [/^((?:\| )*)(\d+)(\s+)/, ['comment', 'number'], '@opcode'],
             ],
 
             opcode: [
                 [/[a-z_]\w*\s*$/, {token: 'keyword', next: '@root'}],
-                [/([a-z_]\w*)(\s+)/, ['keyword', {token: '', next: '@arguments'}]],
+                [/([a-z_]\w*)(\s+)/, 'keyword', '@arguments'],
             ],
 
             arguments: [
-                [/(.*?)(\(\s*\d+\)(?:\[[^\]]+\])?)$/, ['', {token: 'comment', next: '@root'}]],
+                [/(.*?)(\(\s*\d+\)(?:\[[^\]]+\])?)$/, {token: 'comment', next: '@root'}],
                 [/.*$/, {token: '', next: '@root'}],
             ],
         },

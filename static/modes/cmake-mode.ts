@@ -90,20 +90,11 @@ function configuration(): monaco.languages.LanguageConfiguration {
             ['{', '}'],
             ['(', ')'],
         ],
-        __electricCharacterSupport: {
-            brackets: [
-                {tokenType: 'delimiter.curly.ts', open: '{', close: '}', isElectric: true},
-                {tokenType: 'delimiter.square.ts', open: '[', close: ']', isElectric: true},
-                {tokenType: 'delimiter.paren.ts', open: '(', close: ')', isElectric: true},
-            ],
-        },
-        __characterPairSupport: {
-            autoClosingPairs: [
-                {open: '{', close: '}'},
-                {open: '(', close: ')'},
-                {open: '"', close: '"', notIn: ['string']},
-            ],
-        },
+        autoClosingPairs: [
+            {open: '{', close: '}'},
+            {open: '(', close: ')'},
+            {open: '"', close: '"', notIn: ['string']},
+        ],
     };
 }
 

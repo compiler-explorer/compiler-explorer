@@ -27,7 +27,10 @@ function configuration(): monaco.languages.LanguageConfiguration {
     /* Toit Language Configuration: */
 
     return {
-        comment: [[/\/\*/, 'comment'], [/\*\//, 'comment', '@pop'], [{lineComment: /\/\//}]],
+        comments: {
+            blockComment: ['/*', '*/'],
+            lineComment: '//',
+        },
 
         brackets: [
             ['{', '}'],
@@ -35,20 +38,6 @@ function configuration(): monaco.languages.LanguageConfiguration {
             ['#[', ']'],
             ['(', ')'],
             ['<', '>'],
-        ],
-
-        writespace: [[/[ \t\r\n]+/, 'write']],
-
-        string: [
-            [/@escapes/, 'string.escape'],
-            [/"/, 'string', '@pop'],
-        ],
-
-        tripleQuoteString: [[/"""/, 'string', '@pop']],
-        rawString: [[/"/, 'string', '@pop']],
-        character: [
-            [/@charEscapes/, 'string.escape'],
-            [/'/, 'string', '@pop'],
         ],
     };
 }

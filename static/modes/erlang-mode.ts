@@ -86,7 +86,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 [/[;.,]/, 'delimiter'],
             ],
 
-            whitespace: [[/\s/]],
+            whitespace: [[/\s/, 'whitespace']],
 
             comment: [[/%/, 'comment']],
 
@@ -126,8 +126,8 @@ function configuration(): monaco.languages.LanguageConfiguration {
         ],
         folding: {
             markers: {
-                start: '^\\s*\\%\\%region\\b',
-                end: '^\\s*\\%\\%endregion\\b',
+                start: /^\s*%%region\b/,
+                end: /^\s*%%endregion\b/,
             },
         },
     };
