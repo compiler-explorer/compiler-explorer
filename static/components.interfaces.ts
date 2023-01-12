@@ -61,6 +61,7 @@ export interface ComponentConfig<S> {
 }
 
 type StateWithLanguage = {lang: string};
+// TODO(#4490 The War of The Types) We should normalize state types
 type StateWithEditor = {source: string | number};
 type StateWithTree = {tree: number};
 type StateWithId = {id: number};
