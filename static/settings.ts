@@ -43,7 +43,6 @@ export interface SiteSettings {
     colouriseAsm: boolean;
     colourScheme: ColourScheme;
     compileOnChange: boolean;
-    // TODO(supergrecko): make this more precise
     defaultLanguage?: LanguageKey;
     delayAfterChange: number;
     enableCodeLens: boolean;
