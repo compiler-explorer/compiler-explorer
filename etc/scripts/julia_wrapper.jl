@@ -7,38 +7,55 @@
 doc = """Julia wrapper.
 
 Usage:
-  julia_wrapper.jl <input_code> --output=<output_path> [--format=<fmt>] [--debuginfo=<info>] [--optimize] [--verbose]
-  julia_wrapper.jl -h | --help
-  julia_wrapper.jl --version
+  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--debuginfo=<info>] [--optimize] [--verbose]
+  julia_wrapper.jl --help
 
 Options:
   -h --help           Show this screen.
-  --version           Show version.
   --format=<fmt>      Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
-                      lowered
+                      lowered	
                       typed
                       warntype
                       llvm
                       native
-  --debuginfo=<info>  Controls amount of generated metadata (default,none)
-  --optimize          Sets whether llvm output should be optimized or not. [default: true]
-                      Has no effect on "ast" or "native" output.
+  --debuginfo=<info>  Controls amount of generated metadata (One of "default", "none") [default: default]
+  --optimize          Sets whether "llvm" output should be optimized or not.
   --verbose           Prints some process info
 """
 
-using InteractiveUtils, DocOpt
+using InteractiveUtils
 
-# Read options in from command-line
-args = docopt(doc, version=v"1.0.0")
+if length(ARGS) < 2
+	println(doc)
+	exit(1)
+end
 
-input_file = args["<input_code>"]
-output_path = args["--output"]
-optimize = args["--optimize"]
-format = args["--format"]
-verbose = args["--verbose"]
+if length(ARGS) > 3 && ARGS[3] == "--help"
+	println(doc)
+end
+
+input_file = popfirst!(ARGS)
+output_path = popfirst!(ARGS)
+format = "native"
 debuginfo = :default
-if args["--debuginfo"] == "none"
-    debuginfo = :none
+optimize = false
+verbose = false
+
+for x in ARGS
+	if startswith(x, "--format=")
+		global format = x[10:end]
+	end
+	if startswith(x, "--debuginfo=")
+		if x[13:end] == "none"
+			global debuginfo = :none
+		end
+	end
+	if x == "--optimize"
+		global optimize = true
+	end
+	if x == "--verbose"
+		global verbose = true
+	end
 end
 
 # Include user code into module
