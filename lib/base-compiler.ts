@@ -2393,7 +2393,11 @@ export class BaseCompiler implements ICompiler {
             .pipe(new compilerOptInfo.LLVMOptTransformer());
 
         for await (const opt of optStream) {
-            if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {
+            if (
+                opt.DebugLoc &&
+                opt.DebugLoc.File &&
+                (opt.DebugLoc.File === '<stdin>' || opt.DebugLoc.File.includes(this.compileFilename))
+            ) {
                 output.push(opt);
             }
         }
