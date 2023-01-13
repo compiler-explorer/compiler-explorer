@@ -391,7 +391,8 @@ export class Sharing {
 
     private static getEmbeddedHtml(config, root, isReadOnly, extraOptions): string {
         const embedUrl = Sharing.getEmbeddedUrl(config, root, isReadOnly, extraOptions);
-        return `<iframe width='800px' height='200px' src='${embedUrl}'></iframe>`;
+        // The attributes must be double quoted, the full url's rison contains single quotes
+        return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;
     }
 
     private static getEmbeddedUrl(config: any, root: string, readOnly: boolean, extraOptions: object): string {
