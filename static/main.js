@@ -248,7 +248,16 @@ function configFromEmbedded(embeddedUrl) {
     try {
         params = url.unrisonify(embeddedUrl);
     } catch (e) {
-        // Ignore this, it's not a problem
+        document.write(
+            '<div style="padding: 10px; background: #fa564e; color: black;">' +
+                "An error was encountered while decoding the URL for this embed. Make sure the URL hasn't been " +
+                'truncated, otherwise if you believe your URL is valid please let us know on ' +
+                '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
+                'our github' +
+                '</a>.' +
+                '</div>'
+        );
+        throw new Error('Embed url decode error');
     }
     if (params && params.source && params.compiler) {
         var filters = _.chain((params.filters || '').split(','))
@@ -315,13 +324,12 @@ function findConfig(defaultConfig, options) {
                 } catch (e) {
                     // #3518 Alert the user that the url is invalid
                     var alertSystem = new Alert();
-                    alertSystem.notify(
-                        'Unable to load custom configuration from URL,\
-                     the last locally saved configuration will be used if present.',
-                        {
-                            alertClass: 'notification-error',
-                            dismissTime: 5000,
-                        }
+                    alertSystem.alert(
+                        'Decode Error',
+                        'An error was encountered while decoding the URL, the last locally saved configuration will ' +
+                            "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
+                            'otherwise if you believe your URL is valid please let us know on ' +
+                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.'
                     );
                 }
             }
