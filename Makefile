@@ -95,3 +95,10 @@ gpu-dev: prereqs ## Runs the site as a developer; including live reload support 
 .PHONY: debug
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
 	./node_modules/.bin/supervisor -w app.js,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --inspect 9229 --exec $(NODE) $(NODE_ARGS) -- -r esm -r ts-node/register ./app.js --debug $(EXTRA_ARGS)
+
+.PHONY: asm-docs asm-docs-dependencies
+asm-docs: asm-docs-dependencies
+	$(MAKE) -C etc/scripts/docenizers
+
+asm-docs-dependencies:
+	pip3 install beautifulsoup4 pdfminer.six
