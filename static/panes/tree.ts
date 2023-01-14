@@ -126,7 +126,7 @@ export class Tree {
         this.initCallbacks();
         this.onSettingsChange(this.settings);
 
-        assert(this.languageBtn[0] instanceof HTMLInputElement);
+        assert(this.languageBtn[0] instanceof HTMLSelectElement);
         this.selectize = new TomSelect(this.languageBtn[0], {
             sortField: 'name',
             valueField: 'id',
