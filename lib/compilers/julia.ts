@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Elliot Saba
+// Copyright (c) 2018, 2023, Elliot Saba & Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,57 +22,68 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import e from 'express';
+import fs from 'fs';
 import path from 'path';
 
+import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import { logger } from '../logger';
+import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
 
-import * as utils from '../utils';
-
 export class JuliaCompiler extends BaseCompiler {
+    private compilerWrapperPath: string;
+
     static get key() {
         return 'julia';
     }
 
     constructor(info, env) {
         super(info, env);
-        this.compiler.demangler = null;
+        this.compiler.demangler = '';
         this.demanglerClass = null;
         this.compilerWrapperPath =
-            this.compilerProps('compilerWrapper') || utils.resolvePathFromAppRoot('etc', 'scripts', 'julia_wrapper.jl');
+            this.compilerProps('compilerWrapper', '') ||
+            utils.resolvePathFromAppRoot('etc', 'scripts', 'julia_wrapper.jl');
     }
 
     // No demangling for now
-    postProcessAsm(result, filters) {
+    override postProcessAsm(result) {
         return result;
     }
 
-    processAsm(result, filters, options) {
+    override getSharedLibraryPathsAsArguments() {
+        return [];
+    }
+
+    override processAsm(result, filters, options) {
         const lineRe = /^<(\d+) (\d+) ([^ ]+) ([^>]*)>$/;
         const bytecodeLines = result.asm.split('\n');
-        const bytecodeResult = [];
+        const bytecodeResult: ParsedAsmResultLine[] = [];
         // Every method block starts with a introductory line
         //   <[source code line] [output line number] [function name] [method types]>
         // Check for the starting line, add the method block, skip other lines
-        var i = 0;
+        let i = 0;
         while (i < bytecodeLines.length) {
-            var line = bytecodeLines[i];
+            const line = bytecodeLines[i];
             const match = line.match(lineRe);
 
             if (match) {
-                var source = parseInt(match[1]);
-                var linenum = parseInt(match[2]);
+                const source = parseInt(match[1]);
+                let linenum = parseInt(match[2]);
                 linenum = Math.min(linenum, bytecodeLines.length);
-                var funname = match[3];
-                var types = match[4];
-                var j = 0;
+                const funname = match[3];
+                const types = match[4];
+                let j = 0;
                 bytecodeResult.push({text: '<' + funname + ' ' + types + '>', source: {line: source, file: null}});
                 while (j < linenum) {
                     bytecodeResult.push({text: bytecodeLines[i + 1 + j], source: {line: source, file: null}});
                     j++;
                 }
-                bytecodeResult.push({text: '', source: {line: null, file: null}});
+                bytecodeResult.push({text: '', source: {file: null}});
                 i += linenum + 1;
                 continue;
             }
@@ -81,37 +92,50 @@ export class JuliaCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    optionsForFilter(filters, outputFilename) {
-        let opts = [outputFilename];
-        if (filters.optOutput) {
-            opts += ['--optimize'];
-        }
-        return opts;
+    override optionsForFilter(filters, outputFilename) {
+        return [];
     }
 
-    getArgumentParser() {
+    override getArgumentParser() {
         return BaseParser;
     }
 
-    runCompiler(compiler, options, inputFilename, execOptions) {
+    override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
+        super.fixExecuteParametersForInterpreting(executeParameters, outputFilename, key);
+        executeParameters.args.unshift('--');
+    }
+
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
 
+        const dirPath = path.dirname(inputFilename);
+
         if (!execOptions.customCwd) {
-            execOptions.customCwd = path.dirname(inputFilename);
+            execOptions.customCwd = dirPath;
         }
 
         // compiler wrapper, then input should be first argument, not last
-        options.unshift(options.pop());
-        options.unshift(this.compilerWrapperPath);
+        const wrapperOptions = options.filter(opt => opt !== inputFilename);
 
-        return this.exec(compiler, options, execOptions).then(result => {
-            result.inputFilename = inputFilename;
-            const transformedInput = result.filenameTransform(inputFilename);
-            result.stdout = utils.parseOutput(result.stdout, transformedInput);
-            result.stderr = utils.parseOutput(result.stderr, transformedInput);
-            return result;
-        });
+        const juliaOptions = [this.compilerWrapperPath, '--'];
+        if (options.includes('-h') || options.includes('--help')) {
+            juliaOptions.push('--help');
+        } else {
+            wrapperOptions.unshift(inputFilename, this.getOutputFilename(dirPath, this.outputFilebase));
+            juliaOptions.push(...wrapperOptions);
+        }
+
+        const execResult = await this.exec(compiler, juliaOptions, execOptions);
+        return {
+            compilationOptions: juliaOptions,
+            ...this.transformToCompilationResult(execResult, inputFilename),
+        };
     }
 }
