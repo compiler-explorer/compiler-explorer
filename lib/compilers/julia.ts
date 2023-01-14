@@ -29,7 +29,7 @@ import path from 'path';
 import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import { logger } from '../logger';
+import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
