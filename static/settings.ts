@@ -416,7 +416,9 @@ export class Settings {
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
-        $.data(themeSelect, 'last-theme', unwrapString(themeSelect.val()));
+        // In embed mode themeSelect.length can be zero and thus themeSelect.val() isn't a string
+        // TODO(jeremy-rifkin) Is last-theme ever read? Can it just be removed?
+        $.data(themeSelect, 'last-theme', themeSelect.val() ?? '');
         this.onThemeChange();
     }
 

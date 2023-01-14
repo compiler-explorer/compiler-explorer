@@ -143,18 +143,6 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
-        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
-        assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
-        this.functionSelector = new TomSelect(selector, {
-            valueField: 'value',
-            labelField: 'title',
-            searchField: ['title'],
-            placeholder: '🔍 Select a function...',
-            dropdownParent: 'body',
-            plugins: ['dropdown_input'],
-            sortField: 'title',
-            onChange: e => this.selectFunction(e as unknown as string),
-        });
         this.state = state;
         // This is a workaround for a chrome render bug that's existed since at least 2013
         // https://github.com/compiler-explorer/compiler-explorer/issues/4421
@@ -167,6 +155,21 @@ export class Cfg extends Pane<CfgState> {
 
     override getDefaultPaneName() {
         return 'CFG';
+    }
+
+    override registerButtons() {
+        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
+        this.functionSelector = new TomSelect(selector, {
+            valueField: 'value',
+            labelField: 'title',
+            searchField: ['title'],
+            placeholder: '🔍 Select a function...',
+            dropdownParent: 'body',
+            plugins: ['dropdown_input'],
+            sortField: 'title',
+            onChange: e => this.selectFunction(e as unknown as string),
+        });
     }
 
     override registerOpeningAnalyticsEvent(): void {

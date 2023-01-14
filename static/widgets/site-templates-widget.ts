@@ -37,6 +37,10 @@ class SiteTemplatesWidget {
         this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
         const siteTemplatePreview = document.getElementById('site-template-preview');
+        if (siteTemplatePreview === null) {
+            // This can happen in embed mode
+            return;
+        }
         assert(siteTemplatePreview instanceof HTMLImageElement);
         this.img = siteTemplatePreview;
     }
