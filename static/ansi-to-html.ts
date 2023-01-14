@@ -29,6 +29,8 @@
 
 import _ from 'underscore';
 import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces';
+import {assert, unwrap} from './assert';
+import {isString} from '../lib/common-utils';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -120,16 +122,16 @@ function toColorHexString(ref: number[]): string {
 
 function generateOutput(stack: string[], token: string, data: string | number, options: AnsiToHtmlOptions): string {
     if (token === 'text') {
-        // Note: Param 'data' must be a string at this point
-        return pushText(data as string, options);
+        assert(isString(data), "Param 'data' must be a string at this point");
+        return pushText(data, options);
     } else if (token === 'display') {
         return handleDisplay(stack, data, options);
     } else if (token === 'xterm256') {
-        // Note: Param 'data' must be a string at this point
-        return handleXterm256(stack, data as string, options);
+        assert(isString(data), "Param 'data' must be a string at this point");
+        return handleXterm256(stack, data, options);
     } else if (token === 'rgb') {
-        // Note: Param 'data' must be a string at this point
-        return handleRgb(stack, data as string, options);
+        assert(isString(data), "Param 'data' must be a string at this point");
+        return handleRgb(stack, data, options);
     }
     return '';
 }
@@ -162,7 +164,7 @@ function handleXterm256(stack: string[], data: string, options: AnsiToHtmlOption
 }
 
 function handleDisplay(stack: string[], _code: string | number, options: AnsiToHtmlOptions): string {
-    const code: number = parseInt(_code as string, 10);
+    const code: number = isString(_code) ? parseInt(_code, 10) : _code;
     const codeMap: Record<number, () => string> = {
         '-1': () => '<br />',
         // @ts-ignore
@@ -176,8 +178,8 @@ function handleDisplay(stack: string[], _code: string | number, options: AnsiToH
         22: () => closeTag(stack, 'b'),
         23: () => closeTag(stack, 'i'),
         24: () => closeTag(stack, 'u'),
-        39: () => pushForegroundColor(stack, options.fg as string),
-        49: () => pushBackgroundColor(stack, options.bg as string),
+        39: () => pushForegroundColor(stack, unwrap(options.fg)),
+        49: () => pushBackgroundColor(stack, unwrap(options.bg)),
     };
 
     if (code in codeMap) {
@@ -249,7 +251,7 @@ function notCategory(category: string): (e: StickyStackElement) => boolean {
  * @returns the ansi token type
  */
 function categoryForCode(_code: string | number): string {
-    const code: number = parseInt(_code as string, 10);
+    const code: number = isString(_code) ? parseInt(_code, 10) : _code;
 
     if (code === 0) {
         return 'all';

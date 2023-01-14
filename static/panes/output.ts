@@ -275,20 +275,20 @@ export class Output extends Pane<OutputState> {
     add(msg: string, lineNum?: number, column?: number, filename?: string) {
         const elem = $('<div/>').appendTo(this.contentRoot);
         if (lineNum) {
-            elem.html(
-                $('<span class="linked-compiler-output-line"></span>')
-                    .html(msg)
-                    .on('click', e => {
-                        this.emitEditorLinkLine(lineNum, column, filename, true);
-                        // do not bring user to the top of index.html
-                        // http://stackoverflow.com/questions/3252730
-                        e.preventDefault();
-                        return false;
-                    })
-                    .on('mouseover', () => {
-                        this.emitEditorLinkLine(lineNum, column, filename, false);
-                    }) as any // TODO
-            );
+            elem.empty();
+            $('<span class="linked-compiler-output-line"></span>')
+                .html(msg)
+                .on('click', e => {
+                    this.emitEditorLinkLine(lineNum, column, filename, true);
+                    // do not bring user to the top of index.html
+                    // http://stackoverflow.com/questions/3252730
+                    e.preventDefault();
+                    return false;
+                })
+                .on('mouseover', () => {
+                    this.emitEditorLinkLine(lineNum, column, filename, false);
+                })
+                .appendTo(elem);
         } else {
             elem.html(msg);
         }

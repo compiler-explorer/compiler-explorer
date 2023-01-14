@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {isString} from '../lib/common-utils';
 import stacktrace from '../lib/stacktrace';
 
 // This file defines three assert utilities:
@@ -77,4 +78,14 @@ export function unwrap<T>(x: T | undefined | null, message?: string, ...extra_in
         fail('Unwrap failed', message, extra_info);
     }
     return x;
+}
+
+// This mainly a utility for JQuery.val(): string | number | string[] | undefined, in our code we typically want a
+// single string.
+// T is syntax sugar for unwrapping to a string union
+export function unwrapString<T extends string>(x: any, message?: string, ...extra_info: any[]): T {
+    if (!isString(x)) {
+        fail('String unwrap failed', message, extra_info);
+    }
+    return x as T;
 }

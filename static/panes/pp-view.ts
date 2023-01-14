@@ -33,6 +33,7 @@ import {PPViewState} from './pp-view.interfaces';
 import {Container} from 'golden-layout';
 import {MonacoPaneState} from './pane.interfaces';
 import {Hub} from '../hub';
+import {unwrap} from '../assert';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;
@@ -100,10 +101,10 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
     }
 
     override resize() {
-        const topBarHeight = this.topBar.outerHeight(true) as number;
+        const topBarHeight = unwrap(this.topBar.outerHeight(true));
         this.editor.layout({
-            width: this.domRoot.width() as number,
-            height: (this.domRoot.height() as number) - topBarHeight,
+            width: unwrap(this.domRoot.width()),
+            height: unwrap(this.domRoot.height()) - topBarHeight,
         });
     }
 

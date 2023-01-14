@@ -85,7 +85,7 @@ once the site runs on the Amazon environment, the `&clang` group **will not** ha
 ### Configuration keys
 
 | Key Name             | Type       | Description                                                                                                      |
-|----------------------|------------|------------------------------------------------------------------------------------------------------------------|
+| -------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
 | name                 | String     | Human readable name of the compiler                                                                              |
 | exe                  | Path       | Path to the executable                                                                                           |
 | alias                | Identifier | Another identifier for this compiler (mostly deprecated, used for backwards compatibility with very old CE URLs) |
