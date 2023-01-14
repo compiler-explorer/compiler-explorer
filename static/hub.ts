@@ -100,9 +100,9 @@ export class Hub {
     public subdomainLangId: string | undefined;
     public defaultLangId: string;
 
-    public constructor(public readonly layout: GoldenLayout, subLangId: string, defaultLangId: string) {
+    public constructor(public readonly layout: GoldenLayout, subLangId: string | undefined, defaultLangId: string) {
         this.lastOpenedLangId = null;
-        this.subdomainLangId = subLangId || undefined;
+        this.subdomainLangId = subLangId;
         this.defaultLangId = defaultLangId;
         this.compilerService = new CompilerService(this.layout.eventHub);
 

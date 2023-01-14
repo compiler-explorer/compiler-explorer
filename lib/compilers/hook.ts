@@ -24,11 +24,10 @@
 
 import path from 'path';
 
+import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-
-import {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 
 export class HookCompiler extends BaseCompiler {
     static get key(): string {

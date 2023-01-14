@@ -33,6 +33,8 @@ import {EventHub} from './event-hub';
 import {keys} from '../lib/common-utils';
 import {assert, unwrapString} from './assert';
 
+import {LanguageKey} from '../types/languages.interfaces';
+
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
 export interface SiteSettings {
@@ -43,8 +45,7 @@ export interface SiteSettings {
     colouriseAsm: boolean;
     colourScheme: ColourScheme;
     compileOnChange: boolean;
-    // TODO(supergrecko): make this more precise
-    defaultLanguage?: string;
+    defaultLanguage?: LanguageKey;
     delayAfterChange: number;
     enableCodeLens: boolean;
     enableCommunityAds: boolean;
@@ -204,8 +205,8 @@ export class Settings {
         hub: Hub,
         private root: JQuery,
         private settings: SiteSettings,
-        private onChange: (SiteSettings) => void,
-        private subLangId: string | null
+        private onChange: (siteSettings: SiteSettings) => void,
+        private subLangId: string | undefined
     ) {
         this.eventHub = hub.createEventHub();
         this.settings = settings;
@@ -324,7 +325,7 @@ export class Settings {
         const defaultLanguageData = Object.keys(langs).map(lang => {
             return {label: langs[lang].id, desc: langs[lang].name};
         });
-        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang);
+        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang as LanguageKey);
 
         if (this.subLangId) {
             defaultLanguageSelector
