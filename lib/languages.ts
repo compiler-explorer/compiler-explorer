@@ -385,6 +385,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    julia: {
+        name: 'Julia',
+        monaco: 'julia',
+        extensions: ['.jl'],
+        alias: [],
+        logoUrl: 'julia.svg',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     kotlin: {
         name: 'Kotlin',
         monaco: 'kotlin',
