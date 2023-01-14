@@ -196,7 +196,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override createEditor(editorRoot: HTMLElement): editor.IStandaloneCodeEditor {
         const editor = monaco.editor.create(
             editorRoot,
-            // @ts-expect-error: options.readOnly and anything inside window.compilerExplorerOptions is unknown
             monacoConfig.extendConfig(
                 {
                     readOnly:
@@ -868,7 +867,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
     changeLanguage(newLang: string): void {
         if (newLang === 'cmake') {
-            this.selectize.addOption(languages.cmake);
+            this.selectize.addOption(unwrap(languages.cmake));
         }
         this.selectize.setValue(newLang);
     }

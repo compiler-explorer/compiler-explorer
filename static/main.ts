@@ -22,42 +22,52 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-
 // setup analytics before anything else so we can capture any future errors in sentry
-var analytics = require('./analytics').ga;
+import {ga as analytics} from './analytics';
 
-require('whatwg-fetch');
-// eslint-disable-next-line requirejs/no-js-extension
-require('popper.js');
-require('bootstrap');
+import 'whatwg-fetch';
+import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
+import 'bootstrap';
 
-var Sharing = require('./sharing').Sharing;
-var _ = require('underscore');
-var $ = require('jquery');
-var GoldenLayout = require('golden-layout');
-var Components = require('./components');
-var url = require('./url');
-var clipboard = require('clipboard');
-var Hub = require('./hub').Hub;
-var Sentry = require('@sentry/browser');
-var Settings = require('./settings').Settings;
-var local = require('./local');
-var Alert = require('./widgets/alert').Alert;
-var themer = require('./themes');
-var motd = require('./motd');
-var jsCookie = require('js-cookie');
-var SimpleCook = require('./widgets/simplecook').SimpleCook;
-var HistoryWidget = require('./widgets/history-widget').HistoryWidget;
-var History = require('./history');
-var Presentation = require('./presentation').Presentation;
-var setupSiteTemplateWidgetButton = require('./widgets/site-templates-widget').setupSiteTemplateWidgetButton;
+import $ from 'jquery';
+import _ from 'underscore';
 
-var logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+import GoldenLayout from 'golden-layout';
+import JsCookie from 'js-cookie';
+import clipboard from 'clipboard';
+import * as Sentry from '@sentry/browser';
 
-var siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
+// We re-assign this
+let jsCookie = JsCookie;
 
-if (!window.PRODUCTION) {
+import {Sharing} from './sharing';
+import * as Components from './components';
+import * as url from './url';
+import {Hub} from './hub';
+import {Settings, SiteSettings} from './settings';
+import * as local from './local';
+import {Alert} from './widgets/alert';
+import * as themer from './themes';
+import * as motd from './motd';
+import {SimpleCook} from './widgets/simplecook';
+import {HistoryWidget} from './widgets/history-widget';
+import * as History from './history';
+import {Presentation} from './presentation';
+import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget';
+import {options} from './options';
+import {unwrap} from './assert';
+
+import {Language, LanguageKey} from '../types/languages.interfaces';
+import {CompilerExplorerOptions} from './global';
+import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces';
+
+import * as utils from '../lib/common-utils';
+
+const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
+
+const siteTemplateScreenshots = require.context('../views/resources/template_screenshots', false, /\.png$/);
+
+if (!window.PRODUCTION && !options.embedded) {
     require('./tests/_all');
 }
 
@@ -70,23 +80,23 @@ require('./styles/explorer.scss');
 
 // Check to see if the current unload is a UI reset.
 // Forgive me the global usage here
-var hasUIBeenReset = false;
-var simpleCooks = new SimpleCook();
-var historyWidget = new HistoryWidget();
+let hasUIBeenReset = false;
+const simpleCooks = new SimpleCook();
+const historyWidget = new HistoryWidget();
 
-var policyDocuments = {
+const policyDocuments = {
     cookies: require('./generated/cookies.pug').default,
     privacy: require('./generated/privacy.pug').default,
 };
 
-function setupSettings(hub) {
-    var eventHub = hub.layout.eventHub;
-    var defaultSettings = {
+function setupSettings(hub: Hub) {
+    const eventHub = hub.layout.eventHub;
+    const defaultSettings = {
         defaultLanguage: hub.defaultLangId,
     };
-    var currentSettings = JSON.parse(local.get('settings', null)) || defaultSettings;
+    let currentSettings: SiteSettings = JSON.parse(local.get('settings', 'null')) || defaultSettings;
 
-    function onChange(newSettings) {
+    function onChange(newSettings: SiteSettings) {
         if (currentSettings.theme !== newSettings.theme) {
             analytics.proxy('send', {
                 hitType: 'event',
@@ -109,18 +119,18 @@ function setupSettings(hub) {
 
     new themer.Themer(eventHub, currentSettings);
 
-    eventHub.on('requestSettings', function () {
+    eventHub.on('requestSettings', () => {
         eventHub.emit('settingsChange', currentSettings);
     });
 
-    var SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
-    eventHub.on('modifySettings', function (newSettings) {
+    const SettingsObject = new Settings(hub, $('#settings'), currentSettings, onChange, hub.subdomainLangId);
+    eventHub.on('modifySettings', (newSettings: Partial<SiteSettings>) => {
         SettingsObject.setSettings(_.extend(currentSettings, newSettings));
     });
     return currentSettings;
 }
 
-function hasCookieConsented(options) {
+function hasCookieConsented(options: CompilerExplorerOptions) {
     return jsCookie.get(options.policies.cookies.key) === policyDocuments.cookies.hash;
 }
 
@@ -128,20 +138,20 @@ function isMobileViewer() {
     return window.compilerExplorerOptions.mobileViewer;
 }
 
-function calcLocaleChangedDate(policyModal) {
-    var timestamp = policyModal.find('#changed-date');
-    timestamp.text(new Date(timestamp.attr('datetime')).toLocaleString());
+function calcLocaleChangedDate(policyModal: JQuery) {
+    const timestamp = policyModal.find('#changed-date');
+    timestamp.text(new Date(unwrap(timestamp.attr('datetime'))).toLocaleString());
 }
 
-function setupButtons(options, hub) {
-    var eventHub = hub.createEventHub();
-    var alertSystem = new Alert();
+function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
+    const eventHub = hub.createEventHub();
+    const alertSystem = new Alert();
 
     // I'd like for this to be the only function used, but it gets messy to pass the callback function around,
     // so we instead trigger a click here when we want it to open with this effect. Sorry!
     if (options.policies.privacy.enabled) {
-        $('#privacy').on('click', function (event, data) {
-            var modal = alertSystem.alert(
+        $('#privacy').on('click', (event, data) => {
+            const modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
                 policyDocuments.privacy.text
             );
@@ -157,7 +167,7 @@ function setupButtons(options, hub) {
     }
 
     if (options.policies.cookies.enabled) {
-        var getCookieTitle = function () {
+        const getCookieTitle = () => {
             return (
                 'Cookies &amp; related technologies policy<br><p>Current consent status: <span style="color:' +
                 (hasCookieConsented(options) ? 'green' : 'red') +
@@ -166,13 +176,13 @@ function setupButtons(options, hub) {
                 '</span></p>'
             );
         };
-        $('#cookies').on('click', function () {
-            var modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
-                yes: function () {
+        $('#cookies').on('click', () => {
+            const modal = alertSystem.ask(getCookieTitle(), policyDocuments.cookies.text, {
+                yes: () => {
                     simpleCooks.callDoConsent.apply(simpleCooks);
                 },
                 yesHtml: 'Consent',
-                no: function () {
+                no: () => {
                     simpleCooks.callDontConsent.apply(simpleCooks);
                 },
                 noHtml: 'Do NOT consent',
@@ -181,32 +191,33 @@ function setupButtons(options, hub) {
         });
     }
 
-    $('#ui-reset').on('click', function () {
+    $('#ui-reset').on('click', () => {
         local.remove('gl');
         hasUIBeenReset = true;
-        window.history.replaceState(null, null, window.httpRoot);
+        window.history.replaceState(null, '', window.httpRoot);
         window.location.reload();
     });
 
-    $('#ui-duplicate').on('click', function () {
+    $('#ui-duplicate').on('click', () => {
         window.open('/', '_blank');
     });
 
-    $('#changes').on('click', function () {
-        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text));
+    $('#changes').on('click', () => {
+        // TODO(jeremy-rifkin): Fix types
+        alertSystem.alert('Changelog', $(require('./generated/changelog.pug').default.text) as any);
     });
 
     $.get(window.location.origin + window.httpRoot + 'bits/icons.html')
-        .done(function (data) {
+        .done(data => {
             $('#ces .ces-icons').html(data);
         })
-        .fail(function (err) {
+        .fail(err => {
             Sentry.captureException(err);
         });
 
-    $('#ces').on('click', function () {
+    $('#ces').on('click', () => {
         $.get(window.location.origin + window.httpRoot + 'bits/sponsors.html')
-            .done(function (data) {
+            .done(data => {
                 alertSystem.alert('Compiler Explorer Sponsors', data);
                 analytics.proxy('send', {
                     hitType: 'event',
@@ -214,8 +225,8 @@ function setupButtons(options, hub) {
                     eventAction: 'open',
                 });
             })
-            .fail(function (err) {
-                var result = err.responseText || JSON.stringify(err);
+            .fail(err => {
+                const result = err.responseText || JSON.stringify(err);
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
                     '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
@@ -223,47 +234,43 @@ function setupButtons(options, hub) {
             });
     });
 
-    $('#ui-history').on('click', function () {
-        historyWidget.run(function (data) {
+    $('#ui-history').on('click', () => {
+        historyWidget.run(data => {
             local.set('gl', JSON.stringify(data.config));
             hasUIBeenReset = true;
-            window.history.replaceState(null, null, window.httpRoot);
+            window.history.replaceState(null, '', window.httpRoot);
             window.location.reload();
         });
 
         $('#history').modal();
     });
 
-    $('#ui-apply-default-font-scale').on('click', function () {
-        var defaultFontScale = Settings.getStoredSettings().defaultFontScale;
+    $('#ui-apply-default-font-scale').on('click', () => {
+        const defaultFontScale = Settings.getStoredSettings().defaultFontScale;
         if (defaultFontScale !== undefined) {
             eventHub.emit('broadcastFontScale', defaultFontScale);
         }
     });
 }
 
-function configFromEmbedded(embeddedUrl) {
+function configFromEmbedded(embeddedUrl: string) {
     // Old-style link?
-    var params;
+    let params;
     try {
         params = url.unrisonify(embeddedUrl);
     } catch (e) {
         // Ignore this, it's not a problem
     }
     if (params && params.source && params.compiler) {
-        var filters = _.chain((params.filters || '').split(','))
-            .map(function (o) {
-                return [o, true];
-            })
-            .object()
-            .value();
+        const filters = Object.fromEntries(((params.filters as string) || '').split(',').map(o => [o, true]));
+        // TODO(jeremy-rifkin): Fix types
         return {
             content: [
                 {
                     type: 'row',
                     content: [
-                        Components.getEditorWith(1, params.source, filters),
-                        Components.getCompilerWith(1, filters, params.options, params.compiler),
+                        Components.getEditorWith(1, params.source, filters as any),
+                        Components.getCompilerWith(1, filters as any, params.options, params.compiler),
                     ],
                 },
             ],
@@ -273,22 +280,35 @@ function configFromEmbedded(embeddedUrl) {
     }
 }
 
-function fixBugsInConfig(config) {
-    if (config.activeItemIndex && config.activeItemIndex >= config.content.length) {
-        config.activeItemIndex = config.content.length - 1;
+// TODO(jeremy-rifkin): Unsure of the type, just typing enough for `content` at the moment
+function fixBugsInConfig(config: Record<string, any> & {content?: any[]}) {
+    if (config.activeItemIndex && config.activeItemIndex >= unwrap(config.content).length) {
+        config.activeItemIndex = unwrap(config.content).length - 1;
     }
 
-    _.each(config.content, function (item) {
-        fixBugsInConfig(item);
-    });
+    if (config.content) {
+        for (const item of config.content) {
+            fixBugsInConfig(item);
+        }
+    }
 }
 
-function findConfig(defaultConfig, options) {
-    var config;
+type ConfigType = {
+    settings: {
+        showPopoutIcon: boolean;
+    };
+    content: {
+        type: string;
+        content: (ComponentConfig<Partial<StateWithId & StateWithLanguage>> | ComponentConfig<EmptyCompilerState>)[];
+    }[];
+};
+
+function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions) {
+    let config;
     if (!options.embedded) {
         if (options.slides) {
-            var presentation = new Presentation(window.compilerExplorerOptions.slides.length);
-            var currentSlide = presentation.currentSlide;
+            const presentation = new Presentation(unwrap(window.compilerExplorerOptions.slides).length);
+            const currentSlide = presentation.currentSlide;
             if (currentSlide < options.slides.length) {
                 config = options.slides[currentSlide];
             } else {
@@ -314,7 +334,7 @@ function findConfig(defaultConfig, options) {
                     config = url.deserialiseState(window.location.hash.substring(1));
                 } catch (e) {
                     // #3518 Alert the user that the url is invalid
-                    var alertSystem = new Alert();
+                    const alertSystem = new Alert();
                     alertSystem.notify(
                         'Unable to load custom configuration from URL,\
                      the last locally saved configuration will be used if present.',
@@ -331,7 +351,7 @@ function findConfig(defaultConfig, options) {
                 config = _.extend(defaultConfig, config);
             }
             if (!config) {
-                var savedState = local.get('gl', null);
+                const savedState = local.get('gl', null);
                 config = savedState !== null ? JSON.parse(savedState) : defaultConfig;
             }
         }
@@ -345,7 +365,7 @@ function findConfig(defaultConfig, options) {
                     hasHeaders: false,
                 },
             },
-            configFromEmbedded(window.location.hash.substr(1))
+            configFromEmbedded(window.location.hash.substring(1))
         );
     }
 
@@ -356,7 +376,7 @@ function findConfig(defaultConfig, options) {
 }
 
 function initializeResetLayoutLink() {
-    var currentUrl = document.URL;
+    const currentUrl = document.URL;
     if (currentUrl.includes('/z/')) {
         $('#ui-brokenlink').attr('href', currentUrl.replace('/z/', '/resetlayout/')).show();
     } else {
@@ -364,7 +384,7 @@ function initializeResetLayoutLink() {
     }
 }
 
-function initPolicies(options) {
+function initPolicies(options: CompilerExplorerOptions) {
     if (options.policies.privacy.enabled) {
         if (jsCookie.get(options.policies.privacy.key) == null) {
             $('#privacy').trigger('click', {
@@ -372,12 +392,12 @@ function initPolicies(options) {
             });
         } else if (policyDocuments.privacy.hash !== jsCookie.get(options.policies.privacy.key)) {
             // When the user has already accepted the privacy, just show a pretty notification.
-            var ppolicyBellNotification = $('#policyBellNotification');
-            var pprivacyBellNotification = $('#privacyBellNotification');
-            var pcookiesBellNotification = $('#cookiesBellNotification');
+            const ppolicyBellNotification = $('#policyBellNotification');
+            const pprivacyBellNotification = $('#privacyBellNotification');
+            const pcookiesBellNotification = $('#cookiesBellNotification');
             ppolicyBellNotification.removeClass('d-none');
             pprivacyBellNotification.removeClass('d-none');
-            $('#privacy').on('click', function () {
+            $('#privacy').on('click', () => {
                 // Only hide if the other policy does not also have a bell
                 if (pcookiesBellNotification.hasClass('d-none')) {
                     ppolicyBellNotification.addClass('d-none');
@@ -386,23 +406,23 @@ function initPolicies(options) {
             });
         }
     }
-    simpleCooks.setOnDoConsent(function () {
+    simpleCooks.setOnDoConsent(() => {
         jsCookie.set(options.policies.cookies.key, policyDocuments.cookies.hash, {
             expires: 365,
             sameSite: 'strict',
         });
         analytics.toggle(true);
     });
-    simpleCooks.setOnDontConsent(function () {
+    simpleCooks.setOnDontConsent(() => {
         analytics.toggle(false);
         jsCookie.set(options.policies.cookies.key, '', {
             sameSite: 'strict',
         });
     });
-    simpleCooks.setOnHide(function () {
-        var spolicyBellNotification = $('#policyBellNotification');
-        var sprivacyBellNotification = $('#privacyBellNotification');
-        var scookiesBellNotification = $('#cookiesBellNotification');
+    simpleCooks.setOnHide(() => {
+        const spolicyBellNotification = $('#policyBellNotification');
+        const sprivacyBellNotification = $('#privacyBellNotification');
+        const scookiesBellNotification = $('#cookiesBellNotification');
         // Only hide if the other policy does not also have a bell
         if (sprivacyBellNotification.hasClass('d-none')) {
             spolicyBellNotification.addClass('d-none');
@@ -411,16 +431,16 @@ function initPolicies(options) {
         $(window).trigger('resize');
     });
     // '' means no consent. Hash match means consent of old. Null means new user!
-    var storedCookieConsent = jsCookie.get(options.policies.cookies.key);
+    const storedCookieConsent = jsCookie.get(options.policies.cookies.key);
     if (options.policies.cookies.enabled) {
         if (storedCookieConsent !== '' && policyDocuments.cookies.hash !== storedCookieConsent) {
             simpleCooks.show();
-            var cpolicyBellNotification = $('#policyBellNotification');
-            var cprivacyBellNotification = $('#privacyBellNotification');
-            var ccookiesBellNotification = $('#cookiesBellNotification');
+            const cpolicyBellNotification = $('#policyBellNotification');
+            const cprivacyBellNotification = $('#privacyBellNotification');
+            const ccookiesBellNotification = $('#cookiesBellNotification');
             cpolicyBellNotification.removeClass('d-none');
             ccookiesBellNotification.removeClass('d-none');
-            $('#cookies').on('click', function () {
+            $('#cookies').on('click', () => {
                 if (cprivacyBellNotification.hasClass('d-none')) {
                     cpolicyBellNotification.addClass('d-none');
                 }
@@ -443,7 +463,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     // nothing to do if the maximised item id is not set
     if (config.maximisedItemId !== '__glMaximised') return;
 
-    var found = false;
+    let found = false as boolean;
 
     function impl(component) {
         if (component.id === '__glMaximised') {
@@ -452,7 +472,7 @@ function removeOrphanedMaximisedItemFromConfig(config) {
         }
 
         if (component.content) {
-            for (var i = 0; i < component.content.length; i++) {
+            for (let i = 0; i < component.content.length; i++) {
                 impl(component.content[i]);
                 if (found) return;
             }
@@ -466,43 +486,37 @@ function removeOrphanedMaximisedItemFromConfig(config) {
     }
 }
 
-function setupLanguageLogos(languages) {
-    _.each(
-        languages,
-        function (lang) {
-            try {
-                if (lang.logoUrl !== null) {
-                    lang.logoData = logos('./' + lang.logoUrl);
-                    if (lang.logoUrlDark !== null) {
-                        lang.logoDataDark = logos('./' + lang.logoUrlDark);
-                    }
+function setupLanguageLogos(languages: Partial<Record<LanguageKey, Language>>) {
+    for (const lang of Object.values(languages)) {
+        try {
+            if (lang.logoUrl !== null) {
+                lang.logoData = logos('./' + lang.logoUrl);
+                if (lang.logoUrlDark !== null) {
+                    lang.logoDataDark = logos('./' + lang.logoUrlDark);
                 }
-            } catch (ignored) {
-                lang.logoData = '';
             }
-        },
-        this
-    );
+        } catch (ignored) {
+            lang.logoData = '';
+        }
+    }
 }
 
 function earlyGetDefaultLangSetting() {
-    // returns string | undefined
     return Settings.getStoredSettings().defaultLanguage;
 }
 
-function getDefaultLangId(subLangId, options) {
-    var defaultLangId = subLangId;
+function getDefaultLangId(subLangId: LanguageKey | undefined, options: CompilerExplorerOptions) {
+    let defaultLangId = subLangId;
     if (!defaultLangId) {
-        var defaultLangSetting = earlyGetDefaultLangSetting();
-        if (defaultLangSetting && options.languages[defaultLangSetting] !== undefined) {
+        const defaultLangSetting = earlyGetDefaultLangSetting();
+        if (defaultLangSetting && defaultLangSetting in options.languages) {
             defaultLangId = defaultLangSetting;
-        } else if (options.languages['c++']) {
+        } else if ('c++' in options.languages) {
             defaultLangId = 'c++';
         } else {
-            defaultLangId = _.keys(options.languages)[0];
+            defaultLangId = utils.keys(options.languages)[0];
         }
     }
-    // returns string
     return defaultLangId;
 }
 
@@ -511,22 +525,20 @@ function start() {
     initializeResetLayoutLink();
     setupSiteTemplateWidgetButton(siteTemplateScreenshots);
 
-    var options = require('options').options;
-
-    var hostnameParts = window.location.hostname.split('.');
-    var subLangId = undefined;
+    const hostnameParts = window.location.hostname.split('.');
+    let subLangId: LanguageKey | undefined = undefined;
     // Only set the subdomain lang id if it makes sense to do so
     if (hostnameParts.length > 0) {
-        var subdomainPart = hostnameParts[0];
-        var langBySubdomain = _.find(options.languages, function (lang) {
-            return lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) !== -1;
-        });
+        const subdomainPart = hostnameParts[0];
+        const langBySubdomain = Object.values(options.languages).find(
+            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart)
+        );
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
         }
     }
 
-    var defaultLangId = getDefaultLangId(subLangId, options);
+    const defaultLangId = getDefaultLangId(subLangId, options);
 
     setupLanguageLogos(options.languages);
 
@@ -534,12 +546,12 @@ function start() {
     // way that works across multiple domains (e.g. godbolt.org and compiler-explorer.com).
     // We allow this to be configurable so that (for example), gcc.godbolt.org and d.godbolt.org
     // share the same cookie domain for some settings.
-    var cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
+    const cookieDomain = new RegExp(options.cookieDomainRe).exec(window.location.hostname);
     if (cookieDomain && cookieDomain[0]) {
         jsCookie = jsCookie.withAttributes({domain: cookieDomain[0]});
     }
 
-    var defaultConfig = {
+    const defaultConfig = {
         settings: {showPopoutIcon: false},
         content: [
             {
@@ -549,26 +561,26 @@ function start() {
         ],
     };
 
-    $(window).on('hashchange', function () {
+    $(window).on('hashchange', () => {
         // punt on hash events and just reload the page if there's a hash
-        if (window.location.hash.substr(1)) window.location.reload();
+        if (window.location.hash.substring(1)) window.location.reload();
     });
 
     // Which buttons act as a linkable popup
-    var linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
-    var hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
+    const linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
+    let hashPart = linkablePopups.includes(window.location.hash) ? window.location.hash : null;
     if (hashPart) {
         window.location.hash = '';
         // Handle the time we renamed sponsors to ces to work around issues with blockers.
         if (hashPart === '#sponsors') hashPart = '#ces';
     }
 
-    var config = findConfig(defaultConfig, options);
+    const config = findConfig(defaultConfig, options);
 
-    var root = $('#root');
+    const root = $('#root');
 
-    var layout;
-    var hub;
+    let layout;
+    let hub;
     try {
         layout = new GoldenLayout(config, root);
         hub = new Hub(layout, subLangId, defaultLangId);
@@ -588,16 +600,16 @@ function start() {
     }
 
     function sizeRoot() {
-        var height = $(window).height() - (root.position().top || 0) - ($('#simplecook:visible').height() || 0);
+        const height = unwrap($(window).height()) - root.position().top - ($('#simplecook:visible').height() || 0);
         root.height(height);
         layout.updateSize();
     }
 
     $(window)
         .on('resize', sizeRoot)
-        .on('beforeunload', function () {
+        .on('beforeunload', () => {
             // Only preserve state in localStorage in non-embedded mode.
-            var shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
+            const shouldSave = !window.hasUIBeenReset && !hasUIBeenReset;
             if (!options.embedded && !isMobileViewer() && shouldSave) {
                 local.set('gl', JSON.stringify(layout.toConfig()));
             }
@@ -605,21 +617,21 @@ function start() {
 
     new clipboard('.btn.clippy');
 
-    var settings = setupSettings(hub);
+    const settings = setupSettings(hub);
 
     // We assume no consent for embed users
     if (!options.embedded) {
         setupButtons(options, hub);
     }
 
-    var addDropdown = $('#addDropdown');
+    const addDropdown = $('#addDropdown');
 
-    function setupAdd(thing, func) {
-        layout.createDragSource(thing, func)._dragListener.on('dragStart', function () {
+    function setupAdd<C>(thing: JQuery, func: () => ComponentConfig<C>) {
+        layout.createDragSource(thing, func)._dragListener.on('dragStart', () => {
             addDropdown.dropdown('toggle');
         });
 
-        thing.on('click', function () {
+        thing.on('click', () => {
             if (hub.hasTree()) {
                 hub.addInEditorStackIfPossible(func());
             } else {
@@ -628,20 +640,20 @@ function start() {
         });
     }
 
-    setupAdd($('#add-editor'), function () {
+    setupAdd($('#add-editor'), () => {
         return Components.getEditor();
     });
-    setupAdd($('#add-diff'), function () {
+    setupAdd($('#add-diff'), () => {
         return Components.getDiffView();
     });
-    setupAdd($('#add-tree'), function () {
+    setupAdd($('#add-tree'), () => {
         $('#add-tree').prop('disabled', true);
         return Components.getTree();
     });
 
     if (hashPart) {
-        var element = $(hashPart);
-        if (element) element.trigger('click');
+        const element = $(hashPart);
+        element.trigger('click');
     }
     initPolicies(options);
 
@@ -651,16 +663,16 @@ function start() {
         motd.initialise(
             options.motdUrl,
             $('#motd'),
-            subLangId,
+            subLangId ?? '',
             settings.enableCommunityAds,
-            function (data) {
-                var sendMotd = function () {
+            data => {
+                const sendMotd = () => {
                     hub.layout.eventHub.emit('motd', data);
                 };
                 hub.layout.eventHub.on('requestMotd', sendMotd);
                 sendMotd();
             },
-            function () {
+            () => {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
@@ -668,8 +680,8 @@ function start() {
         );
 
         // Don't try to update Version tree link
-        var release = window.compilerExplorerOptions.gitReleaseCommit;
-        var versionLink = 'https://github.com/compiler-explorer/compiler-explorer/';
+        const release = window.compilerExplorerOptions.gitReleaseCommit;
+        let versionLink = 'https://github.com/compiler-explorer/compiler-explorer/';
         if (release) {
             versionLink += 'tree/' + release;
         }
@@ -680,7 +692,7 @@ function start() {
         $('[name="editor-btn-toolbar"]').addClass('d-none');
     }
 
-    window.onSponsorClick = function (sponsorUrl) {
+    window.onSponsorClick = (sponsorUrl: string) => {
         analytics.proxy('send', {
             hitType: 'event',
             eventCategory: 'Sponsors',
@@ -692,11 +704,9 @@ function start() {
     };
 
     if (options.pageloadUrl) {
-        setTimeout(function () {
-            var visibleIcons = $('.ces-icon:visible')
-                .map(function (index, value) {
-                    return value.dataset.statsid;
-                })
+        setTimeout(() => {
+            const visibleIcons = $('.ces-icon:visible')
+                .map((_, value) => value.dataset.statsid)
                 .get()
                 .join(',');
             $.post(options.pageloadUrl + '?icons=' + encodeURIComponent(visibleIcons));

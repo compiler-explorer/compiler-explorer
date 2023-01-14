@@ -54,6 +54,7 @@ export type OptionHandlerArguments = {
     suppressConsoleLog: boolean;
 };
 
+// TODO: Is this the same as Options in static/options.interfaces.ts?
 type OptionsType = {
     googleAnalyticsAccount: string;
     googleAnalyticsEnabled: boolean;
@@ -188,7 +189,7 @@ export class ClientOptionsHandler {
             sentryEnvironment: ceProps('sentryEnvironment') || defArgs.env[0],
             release: defArgs.releaseBuildNumber || defArgs.gitReleaseName,
             gitReleaseCommit: defArgs.gitReleaseName || '',
-            cookieDomainRe: cookieDomainRe,
+            cookieDomainRe,
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),
