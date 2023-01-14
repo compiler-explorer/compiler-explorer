@@ -776,7 +776,7 @@ async function main() {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
-        .use(sFavicon(utils.resolvePathFromAppRoot('static', isDevMode() ? 'favicon-dev.ico' : 'favicon.ico')))
+        .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', isDevMode() ? 'favicon-dev.ico' : 'favicon.ico')))
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');
