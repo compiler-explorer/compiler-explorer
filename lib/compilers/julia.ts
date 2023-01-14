@@ -22,14 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import e from 'express';
-import fs from 'fs';
 import path from 'path';
 
 import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
