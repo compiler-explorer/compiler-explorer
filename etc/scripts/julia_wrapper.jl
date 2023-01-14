@@ -1,9 +1,3 @@
-#!/bin/bash
-
-#=
-    exec julia "${BASH_SOURCE[0]}" "$@"
-=#
-
 doc = """Julia wrapper.
 
 Usage:
