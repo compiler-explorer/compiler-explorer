@@ -67,6 +67,7 @@ const plugins = [
             'rust',
             'swift',
             'java',
+            'julia',
             'kotlin',
             'scala',
             'ruby',
