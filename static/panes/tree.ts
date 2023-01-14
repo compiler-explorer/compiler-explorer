@@ -39,6 +39,7 @@ import {options} from '../options';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
+import {assert, unwrap, unwrapString} from '../assert';
 
 const languages = options.languages;
 
@@ -105,10 +106,10 @@ export class Tree {
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
         const usableLanguages = Object.values(languages).filter(language => {
-            return hub.compilerService.compilersByLang[language.id];
+            return hub.compilerService.getCompilersForLang(language.id);
         });
 
-        if (!state.compilerLanguageId) {
+        if (!(state.compilerLanguageId as any)) {
             state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
         }
 
@@ -125,18 +126,17 @@ export class Tree {
         this.initCallbacks();
         this.onSettingsChange(this.settings);
 
-        this.selectize = new TomSelect(this.languageBtn[0] as HTMLInputElement, {
+        assert(this.languageBtn[0] instanceof HTMLInputElement);
+        this.selectize = new TomSelect(this.languageBtn[0], {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
-            options: usableLanguages as any[],
+            options: usableLanguages,
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: (val: any) => {
-                this.onLanguageChange(val as string);
-            },
+            onChange: (val: any) => this.onLanguageChange(val),
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
@@ -162,11 +162,11 @@ export class Tree {
     }
 
     private getCmakeArgs(): string {
-        return this.cmakeArgsInput.val() as string;
+        return unwrapString(this.cmakeArgsInput.val());
     }
 
     private getCustomOutputFilename(): string {
-        return _.escape(this.customOutputFilenameInput.val() as string);
+        return _.escape(unwrapString(this.customOutputFilenameInput.val()));
     }
 
     public currentState(): TreeState {
@@ -719,10 +719,10 @@ export class Tree {
     private resize() {
         utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
-        const mainbarHeight = this.topBar.outerHeight(true) as number;
-        const argsHeight = this.domRoot.find('.panel-args').outerHeight(true) as number;
-        const outputfileHeight = this.domRoot.find('.panel-outputfile').outerHeight(true) as number;
-        const innerHeight = this.domRoot.innerHeight() as number;
+        const mainbarHeight = unwrap(this.topBar.outerHeight(true));
+        const argsHeight = unwrap(this.domRoot.find('.panel-args').outerHeight(true));
+        const outputfileHeight = unwrap(this.domRoot.find('.panel-outputfile').outerHeight(true));
+        const innerHeight = unwrap(this.domRoot.innerHeight());
 
         this.root.height(innerHeight - mainbarHeight - argsHeight - outputfileHeight);
     }

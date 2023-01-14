@@ -23,11 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Originally based on `./d-mode.js` by the Compiler Explorer Authors
+import * as monaco from 'monaco-editor';
 
-'use strict';
-const monaco = require('monaco-editor');
-
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         defaultToken: '',
 
@@ -273,7 +271,7 @@ function definition() {
     };
 }
 
-function configuration() {
+function configuration(): monaco.languages.LanguageConfiguration {
     return {
         comments: {
             lineComment: '#',

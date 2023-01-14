@@ -29,6 +29,6 @@ export function isString(x: any): x is string {
 // Object.keys is typed as returning :string[] for some reason
 // This util is for cases where the key is a union of a few possible keys and we
 // want the resulting array properly typed.
-export function keys<K extends string | number | symbol>(o: Record<K, any>): K[] {
+export function keys<K extends string | number | symbol>(o: Partial<Record<K, any>>): K[] {
     return Object.keys(o) as K[];
 }

@@ -88,7 +88,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
-        this.maxCompilations = (options.cvCompilerCountMax as number) || 6;
+        this.maxCompilations = options.cvCompilerCountMax;
         this.langId = state.langId || _.keys(options.languages)[0];
         this.source = state.source ?? '';
         this.sourceNeedsExpanding = true;
@@ -222,7 +222,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 // Compiler id which is being used
                 compilerId: '',
                 // Options which are in use
-                options: (options.compileOptions as any)[this.langId],
+                options: options.compileOptions[this.langId],
             };
         }
         const newSelector = this.selectorTemplate.clone();
@@ -287,7 +287,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         const getCompilerConfig = () => {
             return Components.getCompilerWith(
                 this.compilerInfo.editorId ?? 0,
-                undefined as any,
+                undefined,
                 newCompilerEntry.optionsField?.val(),
                 newCompilerEntry.picker?.lastCompilerId ?? '',
                 this.langId,
@@ -518,11 +518,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         let first = true;
         compilers.map(compiler => {
             if (compiler) {
-                const filteredLibraries = LibUtils.getSupportedLibraries(
-                    compiler.libsArr,
-                    langId,
-                    (compiler as any).remote
-                );
+                const filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
 
                 if (first) {
                     libraries = _.extend({}, filteredLibraries);
@@ -540,7 +536,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
                             lib.versions = _.pick(lib.versions, (version, versionkey) => {
                                 return versionsInCommon.includes(versionkey);
-                            }) as Record<string, LibraryVersion>;
+                            }) as Record<string, LibraryVersion>; // TODO(jeremy-rifkin)
                         } else {
                             libraries[libKey] = false;
                         }
@@ -548,12 +544,12 @@ export class Conformance extends Pane<ConformanceViewState> {
 
                     libraries = _.omit(libraries, lib => {
                         return !lib || _.isEmpty(lib.versions);
-                    }) as Record<string, Library>;
+                    }) as Record<string, Library>; // TODO(jeremy-rifkin)
                 }
             }
         });
 
-        return libraries as CompilerLibs;
+        return libraries as CompilerLibs; // TODO(jeremy-rifkin)
     }
 
     getCurrentCompilersIds() {

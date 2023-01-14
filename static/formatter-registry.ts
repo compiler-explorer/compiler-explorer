@@ -28,6 +28,7 @@ import {Alert} from './widgets/alert';
 import {Settings} from './settings';
 import {FormattingRequest} from './api/formatting.interfaces';
 import {getFormattedCode} from './api/api';
+import {unwrap} from './assert';
 
 // Proxy function to emit the error to the alert system
 const onFormatError = (cause: string, source: string) => {
@@ -44,7 +45,7 @@ const doFormatRequest = async (options: FormattingRequest) => {
     const body = await res.json();
     if (res.status === 200 && body.exit === 0) {
         // API sent 200 and we have a valid response
-        return body.answer as string;
+        return unwrap(body.answer);
     }
     // We had an error (either HTTP request error, or API error)
     // Figure out which it is, show it to the user, and reject the promise
