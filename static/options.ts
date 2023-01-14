@@ -22,14 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {unwrap} from './assert';
+
 const configElement = document.getElementById('config');
 if (!configElement) {
     throw new Error('Could not find config element in DOM tree');
 }
 
 // httpRoot & staticRoot are always a string and always set.
-window.httpRoot = configElement.getAttribute('httpRoot') as string;
-window.staticRoot = configElement.getAttribute('staticRoot') as string;
+window.httpRoot = unwrap(configElement.getAttribute('httpRoot'));
+window.staticRoot = unwrap(configElement.getAttribute('staticRoot'));
 
 const extraOptions: object = JSON.parse(decodeURIComponent(configElement.getAttribute('extraOptions') ?? '"%7B%7D"')); // Encoded {}
 for (const key in extraOptions) {

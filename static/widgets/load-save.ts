@@ -29,6 +29,7 @@ import {Alert} from './alert';
 import {ga} from '../analytics';
 import * as local from '../local';
 import {Language} from '../../types/languages.interfaces';
+import {unwrap, unwrapString} from '../assert';
 
 const history = require('../history');
 
@@ -118,8 +119,7 @@ export class LoadSave {
     private async populateBuiltins() {
         const builtins = (await this.fetchBuiltins()).filter(entry => this.currentLanguage?.id === entry.lang);
         return LoadSave.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.examples'),
+            unwrap(this.modal).find('.examples'),
             builtins.map(elem => {
                 return {
                     name: elem.name,
@@ -134,8 +134,7 @@ export class LoadSave {
         const keys = Object.keys(files);
 
         LoadSave.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.local-storage'),
+            unwrap(this.modal).find('.local-storage'),
             keys.map(name => {
                 const data = files[name];
                 return {
@@ -175,10 +174,8 @@ export class LoadSave {
 
     private populateLocalHistory() {
         LoadSave.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.local-history'),
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            history.sources(this.currentLanguage!.id).map(data => {
+            unwrap(this.modal).find('.local-history'),
+            history.sources(unwrap(this.currentLanguage).id).map(data => {
                 const dt = new Date(data.dt).toString();
                 return {
                     name: dt.replace(/\s\(.*\)/, ''),
@@ -224,8 +221,7 @@ export class LoadSave {
         this.setMinimalOptions(editorText, currentLanguage);
         this.populateLocalHistory();
         this.onLoadCallback = onLoad;
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.modal!.find('.local-file').attr('accept', currentLanguage.extensions.join(','));
+        unwrap(this.modal).find('.local-file').attr('accept', currentLanguage.extensions.join(','));
         this.populateBuiltins().then(() => this.modal?.modal());
         ga.proxy('send', {
             hitType: 'event',
@@ -235,7 +231,7 @@ export class LoadSave {
     }
 
     private onSaveToBrowserStorage() {
-        const saveNameValue = this.modal?.find('.save-name').val();
+        const saveNameValue = unwrapString(this.modal?.find('.save-name').val());
         if (!saveNameValue) {
             this.alertSystem.alert('Save name', 'Invalid save name');
             return;

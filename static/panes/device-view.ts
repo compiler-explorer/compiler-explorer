@@ -37,6 +37,7 @@ import {MonacoPaneState} from './pane.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {assert} from '../assert';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<'linkedCode', monaco.editor.IModelDeltaDecoration[]>;
@@ -127,7 +128,8 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     override registerButtons(state: DeviceAsmState): void {
         super.registerButtons(state);
 
-        const changeDeviceEl = this.domRoot[0].querySelector('.change-device') as HTMLInputElement;
+        const changeDeviceEl = this.domRoot[0].querySelector('.change-device');
+        assert(changeDeviceEl instanceof HTMLSelectElement);
         this.selectize = new TomSelect(changeDeviceEl, {
             sortField: 'name',
             valueField: 'name',
@@ -200,7 +202,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         if (!this.selectedDevice && deviceNames.length > 0) {
             this.selectedDevice = deviceNames[0];
             selectize.setValue(this.selectedDevice, true);
-        } else if (this.selectedDevice && deviceNames.indexOf(this.selectedDevice) === -1) {
+        } else if (this.selectedDevice && !deviceNames.includes(this.selectedDevice)) {
             selectize.clear(true);
             this.showDeviceAsmResults([{text: '<Device ' + this.selectedDevice + ' not found>'}]);
         } else {

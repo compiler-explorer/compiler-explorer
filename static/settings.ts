@@ -30,6 +30,8 @@ import {themes, Themes} from './themes';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 import {Hub} from './hub';
 import {EventHub} from './event-hub';
+import {keys} from '../lib/common-utils';
+import {assert, unwrapString} from './assert';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -118,7 +120,7 @@ class NumericSelect extends Select {
         super(elem, name, populate);
     }
     override getUi(): number {
-        return Number(this.val() as string);
+        return Number(this.val());
     }
 }
 
@@ -298,8 +300,7 @@ export class Settings {
         };
 
         // We need theme data to populate the colour schemes; We don't add the selector until later
-        // keys(themes) is Themes[] but TS does not realize without help
-        const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
+        const themesData = keys(themes).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
         const defaultThemeId = themes.system.id;
@@ -345,7 +346,8 @@ export class Settings {
             NumericSelect
         ).elem;
         defaultFontScaleSelector.on('change', e => {
-            this.eventHub.emit('broadcastFontScale', parseInt((e.target as HTMLSelectElement).value));
+            assert(e.target instanceof HTMLSelectElement);
+            this.eventHub.emit('broadcastFontScale', parseInt(e.target.value));
         });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
@@ -401,19 +403,19 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         themeSelect.on('change', () => {
             this.onThemeChange();
-            $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+            $.data(themeSelect, 'last-theme', unwrapString(themeSelect.val()));
         });
 
         const colourSchemeSelect = this.root.find('.colourScheme');
         colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
+            $.data(themeSelect, 'theme-' + currentTheme, unwrapString<ColourScheme>(colourSchemeSelect.val()));
         });
 
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
-        $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+        $.data(themeSelect, 'last-theme', unwrapString(themeSelect.val()));
         this.onThemeChange();
     }
 
@@ -454,14 +456,17 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-        const oldScheme = colourSchemeSelect.val() as string;
-        const newTheme = themeSelect.val() as colour.AppTheme;
+        if (!colourSchemeSelect.val()) {
+            return;
+        }
+        const oldScheme = unwrapString(colourSchemeSelect.val());
+        const newTheme = unwrapString<colour.AppTheme>(themeSelect.val());
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
-        let newScheme = colourSchemeSelect.first().val() as string;
+        let newScheme = unwrapString(colourSchemeSelect.first().val());
         // If we have one old one stored, check if it's still valid and set it if so
         if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;

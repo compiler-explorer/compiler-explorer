@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,47 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {Tool} from '../types/tool.interfaces';
+export function isString(x: any): x is string {
+    return typeof x === 'string' || x instanceof String;
+}
 
-export type LibraryVersion = {
-    alias: string[];
-    hidden: boolean;
-    libId: string;
-    used: boolean;
-    version?: string;
-};
-
-export type Library = {
-    dependencies: string[];
-    description?: string;
-    examples?: string[];
-    name?: string;
-    url?: string;
-    versions: Record<string, LibraryVersion>;
-};
-
-export type LanguageLibs = Record<string, Library>;
-
-export type Libs = Record<string, LanguageLibs>;
-
-export type LibsPerRemote = Record<string, LanguageLibs>;
-
-export type Options = {
-    libs: Libs;
-    remoteLibs: LibsPerRemote;
-    languages: Record<LanguageKey, Language>;
-    compilers: CompilerInfo[];
-    defaultCompiler: Record<LanguageKey, string>;
-    defaultLibs: Record<LanguageKey, string | null>;
-    defaultFontScale: number;
-    sentryDsn?: string;
-    release?: string;
-    sentryEnvironment?: string;
-    compileOptions: Record<LanguageKey, string>;
-    tools: Record<LanguageKey, Record<string, Tool>>;
-    supportsExecute: boolean;
-    supportsLibraryCodeFilter: boolean;
-    cvCompilerCountMax: number;
-};
+// Object.keys is typed as returning :string[] for some reason
+// This util is for cases where the key is a union of a few possible keys and we
+// want the resulting array properly typed.
+export function keys<K extends string | number | symbol>(o: Record<K, any>): K[] {
+    return Object.keys(o) as K[];
+}
