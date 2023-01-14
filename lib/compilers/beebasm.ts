@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
 import * as utils from '../utils';
@@ -76,9 +77,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         if (result.code === 0 && options.includes('-v')) {
             const diskfile = path.join(dirPath, 'disk.ssd');
             if (await utils.fileExists(diskfile)) {
-                const file_buffer = await fs.readFile(diskfile);
-                const binary_base64 = file_buffer.toString('base64');
-                result.bbcdiskimage = binary_base64;
+                await this.addArtifactToResult(result, diskfile, ArtifactType.bbcdiskimage);
 
                 if (!hasBootOption) {
                     if (!result.hints) result.hints = [];

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2022, Jonathan Reichelt Gjertsen & Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,24 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileExists} from '../utils';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {BaseCompiler} from '../base-compiler';
 
-import {BaseTool} from './base-tool';
-
-export class ReadElfTool extends BaseTool {
+export class CL430Compiler extends BaseCompiler {
     static get key() {
-        return 'readelf-tool';
+        return 'cl430';
     }
 
-    async runTool(compilationInfo, inputFilename, args) {
-        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse('readelf requires an executable');
-        }
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+        super(compilerInfo, env);
 
-        if (await fileExists(compilationInfo.executableFilename)) {
-            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
-        } else {
-            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
-        }
+        // We need to have the same name for the C/C++ file as we expect for the output file
+        this.compileFilename = `output${this.lang.extensions[0]}`;
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        return [
+            // -g AKA --symdebug:dwarf generates too much noise for the default parser to deal with
+            '--symdebug:none',
+
+            // Generate an object file called output (no extension) and request to keep the ASM
+            // This will generate a corresponding assembly file called output.s
+            '--keep_asm',
+            '--asm_extension=.s',
+            '--output_file',
+            this.filename(outputFilename.replace('.s', '')),
+        ];
     }
 }

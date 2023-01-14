@@ -127,7 +127,7 @@ export function getCompiler(editorId: number, lang: string): ComponentConfig<Emp
  */
 export function getCompilerWith(
     editorId: number,
-    filters: ParseFiltersAndOutputOptions,
+    filters: ParseFiltersAndOutputOptions | undefined,
     options: unknown,
     compilerId: string,
     langId?: string,
@@ -255,7 +255,7 @@ export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
 }
 
 /** Get an output component with the given configuration. */
-export function getOutput(compiler: string, editor: number, tree: number): ComponentConfig<OutputState> {
+export function getOutput(compiler: number, editor: number, tree: number): ComponentConfig<OutputState> {
     return {
         type: 'component',
         componentName: OUTPUT_COMPONENT_NAME,
@@ -269,7 +269,7 @@ export function getOutput(compiler: string, editor: number, tree: number): Compo
 
 /** Get a tool view component with the given configuration. */
 export function getToolViewWith(
-    compiler: string,
+    compiler: number,
     editor: number,
     toolId: string,
     args: string,
@@ -353,7 +353,7 @@ export function getOptView(): ComponentConfig<EmptyOptViewState> {
 /** Get an opt view with the given configuration. */
 export function getOptViewWith(
     id: number,
-    source: number,
+    source: string,
     optOutput: unknown,
     compilerName: string,
     editorid: number,
@@ -411,7 +411,7 @@ export function getPpView(): ComponentConfig<EmptyPpViewState> {
 /** Get a preprocessor view with the given configuration. */
 export function getPpViewWith(
     id: number,
-    source: number,
+    source: string,
     ppOutput: unknown,
     compilerName: string,
     editorid: number,
@@ -443,7 +443,7 @@ export function getAstView(): ComponentConfig<EmptyAstViewState> {
 /** Get an ast view with the given configuration. */
 export function getAstViewWith(
     id: number,
-    source: number,
+    source: string,
     astOutput: unknown,
     compilerName: string,
     editorid: number,

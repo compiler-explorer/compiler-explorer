@@ -22,13 +22,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-'use strict';
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
 // This definition is based on the official LLVM vim syntax:
 // http://llvm.org/svn/llvm-project/llvm/trunk/utils/vim/syntax/llvm.vim
 // For VIM regex syntax, see: http://vimdoc.sourceforge.net/htmldoc/pattern.html
-export function definition() {
+export function definition(): monaco.languages.IMonarchLanguage {
     return {
         // llvmType
         types: [

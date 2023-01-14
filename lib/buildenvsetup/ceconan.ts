@@ -76,10 +76,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
             };
 
             request(url, settings, (err, res, body) => {
-                if (res.statusCode === 404) {
-                    reject(`Not found (${url})`);
-                } else if (err) {
+                if (err) {
+                    logger.error(`Unexpected error during getAllPossibleBuilds(${libid}, ${version}): `, err);
                     reject(err);
+                } else if (res && res.statusCode === 404) {
+                    reject(`Not found (${url})`);
                 } else {
                     resolve(body);
                 }
@@ -128,6 +129,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         const resolved = path.resolve(path.dirname(filepath));
                         if (!resolved.startsWith(downloadPath)) {
                             logger.error(`Library ${libId}/${version} is using a zip-slip, skipping file`);
+                            stream.resume();
                             next();
                             return;
                         }
@@ -136,13 +138,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     }
 
                     const filestream = fs.createWriteStream(filepath);
-                    stream.pipe(filestream);
-                    stream.on('error', error => {
-                        logger.error(`Error in stream handling: ${error}`);
-                        reject(error);
-                    });
-                    stream.on('end', next);
-                    stream.resume();
+                    if (header.size === 0) {
+                        // See https://github.com/mafintosh/tar-stream/issues/145
+                        stream.resume();
+                        next();
+                    } else {
+                        stream
+                            .on('error', error => {
+                                logger.error(`Error in stream handling: ${error}`);
+                                reject(error);
+                            })
+                            .on('end', next)
+                            .pipe(filestream);
+                        stream.resume();
+                    }
                 } catch (error) {
                     logger.error(`Error in entry handling: ${error}`);
                     reject(error);
@@ -175,12 +184,20 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                 encoding: null,
             };
 
-            request(packageUrl, settings)
+            // https://stackoverflow.com/questions/49277790/how-to-pipe-npm-request-only-if-http-200-is-received
+            const req = request(packageUrl, settings)
                 .on('error', error => {
                     logger.error(`Error in request handling: ${error}`);
                     reject(error);
                 })
-                .pipe(gunzip);
+                .on('response', res => {
+                    if (res.statusCode === 200) {
+                        req.pipe(gunzip);
+                    } else {
+                        logger.error(`Error requesting package from conan: ${res.statusCode} for ${packageUrl}`);
+                        reject(new Error(`Unable to request library from conan: ${res.statusCode}`));
+                    }
+                });
         });
     }
 
@@ -246,10 +263,10 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                         }),
                     );
                 } else {
-                    logger.info(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
+                    logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);
                 }
             } else {
-                logger.info(`Library ${libVer} not available`);
+                logger.warn(`Library ${libVer} not available`);
             }
         }
 
@@ -265,7 +282,11 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
     }
 
     hasBinariesToLink(details) {
-        return details.libpath.length === 0 && (details.staticliblink.length > 0 || details.liblink.length > 0);
+        return (
+            details.libpath.length === 0 &&
+            (details.staticliblink.length > 0 || details.liblink.length > 0) &&
+            details.version !== 'autodetect'
+        );
     }
 
     hasAtLeastOneBinaryToLink(libraryDetails) {

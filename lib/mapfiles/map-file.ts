@@ -33,7 +33,7 @@ type SegmentOffset = {
     segmentLength: number;
 };
 
-type Segment = {
+export type Segment = {
     segment: string;
     addressInt: number;
     address: string;
@@ -103,7 +103,7 @@ export class MapFileReader {
         }
     }
 
-    getLineInfoByAddress(segment: string | boolean, address: number) {
+    getLineInfoByAddress(segment: string | undefined, address: number): LineNumber | undefined {
         for (let idx = 0; idx < this.lineNumbers.length; idx++) {
             const lineInfo = this.lineNumbers[idx];
             if (!segment && lineInfo.addressInt === address) {
@@ -113,7 +113,7 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     getSegmentOffset(segment: string): number {
@@ -157,7 +157,7 @@ export class MapFileReader {
         });
     }
 
-    getSegmentInfoByUnitName(unitName: string) {
+    getSegmentInfoByUnitName(unitName: string): Segment | undefined {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (info.unitName === unitName) {
@@ -165,10 +165,10 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
-    getICodeSegmentInfoByUnitName(unitName: string) {
+    getICodeSegmentInfoByUnitName(unitName: string): Segment | undefined {
         for (let idx = 0; idx < this.isegments.length; idx++) {
             const info = this.isegments[idx];
             if (info.unitName === unitName) {
@@ -176,10 +176,10 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
-    getSegmentIdByUnitName(unitName: string) {
+    getSegmentIdByUnitName(unitName: string): number | undefined {
         const info = this.getSegmentInfoByUnitName(unitName);
         if (info) {
             return info.id;
@@ -191,7 +191,7 @@ export class MapFileReader {
     /**
      * Get Segment info for exact address
      */
-    getSegmentInfoByStartingAddress(segment: string | boolean, address: number) {
+    getSegmentInfoByStartingAddress(segment: string | undefined, address: number): Segment | undefined {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (!segment && info.addressInt === address) {
@@ -201,13 +201,13 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     /**
      * Get Segment info for the segment where the given address is in
      */
-    getSegmentInfoAddressIsIn(segment: string | boolean, address: number) {
+    getSegmentInfoAddressIsIn(segment: string | undefined, address: number): Segment | undefined {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (!segment && address >= info.addressInt && address < info.addressInt + info.segmentLength) {
@@ -221,13 +221,13 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     /**
      * Get Segment info for the segment where the given address is in
      */
-    getSegmentInfoAddressWithoutOffsetIsIn(segment: string, address: number) {
+    getSegmentInfoAddressWithoutOffsetIsIn(segment: string, address: number): Segment | undefined {
         for (let idx = 0; idx < this.segments.length; idx++) {
             const info = this.segments[idx];
             if (
@@ -239,10 +239,10 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
-    getSymbolAt(segment: string, address: number) {
+    getSymbolAt(segment: string | undefined, address: number): Segment | undefined {
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];
             if (!segment && info.addressInt === address) {
@@ -252,11 +252,11 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
-    getSymbolBefore(segment: string, address: number) {
-        let maxNamed: false | Segment = false;
+    getSymbolBefore(segment: string, address: number): Segment | undefined {
+        let maxNamed: Segment | undefined;
 
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];
@@ -274,7 +274,7 @@ export class MapFileReader {
         return maxNamed;
     }
 
-    getSymbolInfoByName(name: string) {
+    getSymbolInfoByName(name: string): Segment | undefined {
         for (let idx = 0; idx < this.namedAddresses.length; idx++) {
             const info = this.namedAddresses[idx];
             if (info.displayName === name) {
@@ -282,7 +282,7 @@ export class MapFileReader {
             }
         }
 
-        return false;
+        return undefined;
     }
 
     addressToObject(segment: string, address: string): LineNumber {

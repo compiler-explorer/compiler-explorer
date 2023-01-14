@@ -52,7 +52,7 @@ import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/feat
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
-import {Tool, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
+import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
@@ -137,8 +137,11 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
 
         if (!this.compiler.disabledFilters) this.compiler.disabledFilters = [];
-        else if (typeof this.compiler.disabledFilters === 'string')
-            this.compiler.disabledFilters = this.compiler.disabledFilters.split(',');
+        else if (typeof (this.compiler.disabledFilters as any) === 'string') {
+            // When first loaded from props it may be a string so we split it here
+            // I'd like a better way to do this that doesn't involve type hacks
+            this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
+        }
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIr = new LlvmIrParser(this.compilerProps);
@@ -399,6 +402,8 @@ export class BaseCompiler implements ICompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
@@ -409,7 +414,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm, staticReloc, dynamicReloc);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
@@ -599,10 +604,12 @@ export class BaseCompiler implements ICompiler {
         userOptions?: string[],
     ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary) options = options.concat('-S');
+        if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
+        else if (filters.binaryObject) options = options.concat('-c');
+
         return options;
     }
 
@@ -1280,9 +1287,7 @@ export class BaseCompiler implements ICompiler {
             if (!isInExpandedCode && startOfExpandedCode.test(obj.text)) {
                 isInExpandedCode = true;
                 isInTree = false;
-            }
-
-            if (!isInTree && startOfTree.test(obj.text)) {
+            } else if (!isInTree && startOfTree.test(obj.text)) {
                 isInExpandedCode = false;
                 isInTree = true;
             }
@@ -1403,6 +1408,21 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
+    async addArtifactToResult(result: CompilationResult, filepath: string, customType?: string, customTitle?: string) {
+        const file_buffer = await fs.readFile(filepath);
+
+        const artifact: Artifact = {
+            content: file_buffer.toString('base64'),
+            type: customType || 'application/octet-stream',
+            name: path.basename(filepath),
+            title: customTitle || path.basename(filepath),
+        };
+
+        if (!result.artifacts) result.artifacts = [];
+
+        result.artifacts.push(artifact);
+    }
+
     protected async writeMultipleFiles(files, dirPath) {
         const filesToWrite: Promise<void>[] = [];
 
@@ -1455,6 +1475,7 @@ export class BaseCompiler implements ICompiler {
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
+        buildFilters.binaryObject = false;
         buildFilters.binary = true;
         buildFilters.execute = true;
 
@@ -1739,7 +1760,7 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
         const [
             asmResult,
             astResult,
@@ -2031,7 +2052,14 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam();
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            let fullArgs: string[] = [];
+            const useNinja = this.env.ceProps('useninja');
+            if (useNinja) {
+                fullArgs = ['-GNinja'].concat(partArgs);
+            } else {
+                fullArgs = partArgs;
+            }
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
@@ -2053,9 +2081,9 @@ export class BaseCompiler implements ICompiler {
 
             const makeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
-                'make',
-                this.env.ceProps('make'),
-                [],
+                'build',
+                this.env.ceProps('cmake'),
+                ['--build', '.'],
                 execParams,
             );
 
@@ -2153,6 +2181,10 @@ export class BaseCompiler implements ICompiler {
         if ((this.compiler.lang === 'c++' || this.compiler.lang === 'c') && options.includes('-E')) {
             for (const key in filters) {
                 filters[key] = false;
+            }
+
+            if (filters.binaryObject && !this.compiler.supportsBinaryObject) {
+                delete filters.binaryObject;
             }
         }
 
@@ -2364,7 +2396,11 @@ export class BaseCompiler implements ICompiler {
             .pipe(new compilerOptInfo.LLVMOptTransformer());
 
         for await (const opt of optStream) {
-            if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {
+            if (
+                opt.DebugLoc &&
+                opt.DebugLoc.File &&
+                (opt.DebugLoc.File === '<stdin>' || opt.DebugLoc.File.includes(this.compileFilename))
+            ) {
                 output.push(opt);
             }
         }
@@ -2532,8 +2568,17 @@ but nothing was dumped. Possible causes are:
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
-            filters.binary && this.supportsObjdump()
-                ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters)
+            (filters.binary || filters.binaryObject) && this.supportsObjdump()
+                ? this.objdump(
+                      outputFilename,
+                      result,
+                      maxSize,
+                      filters.intel,
+                      filters.demangle,
+                      filters.binaryObject,
+                      false,
+                      filters,
+                  )
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';

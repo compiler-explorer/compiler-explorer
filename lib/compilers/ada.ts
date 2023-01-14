@@ -51,10 +51,23 @@ export class AdaCompiler extends BaseCompiler {
         return path.join(dirPath, 'example');
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
         // The basename here must match the value used in the pragma Source_File
         // in the user provided source.
-        return path.join(dirPath, 'example.out');
+
+        // Beware that GNAT is picky on output filename:
+        // - the basename must match the unit name (emits error otherwise)
+        // - can't do "-c -o foo.out", output must end with .o
+        // - "foo.o" may be used by intermediary file, so "-o foo.o" will not
+        //   work if building an executable.
+
+        if (key && key.filters && key.filters.binary) {
+            return path.join(dirPath, 'example');
+        } else if (key && key.filters && key.filters.binaryObject) {
+            return path.join(dirPath, 'example.o');
+        } else {
+            return path.join(dirPath, 'example.s');
+        }
     }
 
     override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
@@ -80,11 +93,11 @@ export class AdaCompiler extends BaseCompiler {
             gnatmake_opts.push(`--RTS=${this.compiler.adarts}`);
         }
 
-        if (backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews)
+        if (!filters.execute && backendOptions.produceGnatDebug && this.compiler.supportsGnatDebugViews)
             // This is using stdout
             gnatmake_opts.push('-gnatGL');
 
-        if (backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews)
+        if (!filters.execute && backendOptions.produceGnatDebugTree && this.compiler.supportsGnatDebugViews)
             // This is also using stdout
             gnatmake_opts.push('-gnatdt');
 
@@ -95,9 +108,7 @@ export class AdaCompiler extends BaseCompiler {
             inputFilename,
         );
 
-        if (filters.binary) {
-            gnatmake_opts.push('-o', outputFilename);
-        } else {
+        if (!filters.execute && !filters.binary && !filters.binaryObject) {
             gnatmake_opts.push(
                 '-S', // Generate ASM
                 '-c', // Compile only
@@ -112,6 +123,24 @@ export class AdaCompiler extends BaseCompiler {
                     gnatmake_opts.push(opt);
                 }
             }
+        } else if (filters.binaryObject) {
+            gnatmake_opts.push(
+                '-c', // Compile only
+            );
+
+            // produce assembly output in outputFilename
+            compiler_opts.push('-o', outputFilename);
+
+            if (this.compiler.intelAsm && filters.intel) {
+                for (const opt of this.compiler.intelAsm.split(' ')) {
+                    gnatmake_opts.push(opt);
+                }
+            }
+            // if (this.compiler.intelAsm && filters.intel) {
+            //     options = options.concat(this.compiler.intelAsm.split(' '));
+            // }
+        } else {
+            gnatmake_opts.push('-o', outputFilename);
         }
 
         // Spread the options coming from outside (user, backend or config options)
@@ -145,36 +174,5 @@ export class AdaCompiler extends BaseCompiler {
         }
 
         return gnatmake_opts.concat('-cargs', compiler_opts, '-largs', linker_opts, '-bargs', binder_opts);
-    }
-
-    override async runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions,
-    ): Promise<CompilationResult> {
-        if (!execOptions) {
-            execOptions = this.getDefaultExecOptions();
-        }
-
-        if (!execOptions.customCwd) {
-            execOptions.customCwd = path.dirname(inputFilename);
-        }
-
-        // create a subdir so that files automatically created by GNAT don't
-        // conflict with anything else in parent dir.
-        const appHome = path.dirname(inputFilename);
-        const temp_dir = path.join(appHome, 'tempsub');
-        await fs.mkdir(temp_dir);
-
-        // Set the working directory to be the temp directory that has been created
-        execOptions.appHome = appHome;
-        execOptions.customCwd = temp_dir;
-
-        const result = await this.exec(compiler, options, execOptions);
-        return {
-            ...this.transformToCompilationResult(result, inputFilename),
-            languageId: this.getCompilerResultLanguageId(),
-        };
     }
 }

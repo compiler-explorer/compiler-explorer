@@ -79,4 +79,7 @@ export type Options = {
             key: string;
         };
     };
+    supportsExecute: boolean;
+    supportsLibraryCodeFilter: boolean;
+    cvCompilerCountMax: number;
 };

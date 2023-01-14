@@ -91,7 +91,7 @@ export class Hub {
     public trees: Tree[] = [];
     public editors: any[] = []; // typeof Editor
 
-    public readonly compilerService: any; // typeof CompilerService
+    public readonly compilerService: CompilerService;
 
     public deferred = true;
     public deferredEmissions: unknown[][] = [];
@@ -340,8 +340,8 @@ export class Hub {
     }
 
     public addAtRoot(elem: GoldenLayout.ContentItem): void {
-        const rootFirstItem = this.layout.root.contentItems[0] as GoldenLayout.ContentItem | undefined;
-        if (rootFirstItem) {
+        if (this.layout.root.contentItems.length > 0) {
+            const rootFirstItem = this.layout.root.contentItems[0];
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {
