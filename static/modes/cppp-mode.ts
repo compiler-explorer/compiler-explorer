@@ -24,12 +24,12 @@
 
 import $ from 'jquery';
 
-const monaco = require('monaco-editor');
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
 // We need to create a new definition for cpp so we can remove invalid keywords
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     const cppp = $.extend(true, {}, cpp.language); // deep copy
 
     function removeKeyword(keyword) {
