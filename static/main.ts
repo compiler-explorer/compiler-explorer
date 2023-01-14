@@ -531,7 +531,7 @@ function start() {
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
         const langBySubdomain = Object.values(options.languages).find(
-            lang => lang.id === subdomainPart || lang.alias.indexOf(subdomainPart) !== -1
+            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart)
         );
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
@@ -568,7 +568,7 @@ function start() {
 
     // Which buttons act as a linkable popup
     const linkablePopups = ['#ces', '#sponsors', '#changes', '#cookies', '#setting', '#privacy'];
-    let hashPart = linkablePopups.indexOf(window.location.hash) > -1 ? window.location.hash : null;
+    let hashPart = linkablePopups.includes(window.location.hash) ? window.location.hash : null;
     if (hashPart) {
         window.location.hash = '';
         // Handle the time we renamed sponsors to ces to work around issues with blockers.
