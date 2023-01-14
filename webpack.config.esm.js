@@ -103,7 +103,7 @@ if (isDev) {
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {
-        main: './static/main.js',
+        main: './static/main.ts',
         noscript: './static/noscript.ts',
     },
     output: {

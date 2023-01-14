@@ -31,12 +31,23 @@ const py_testcases = {
     "'can!'t'": "can't",
 };
 
+const encode_testcases = {
+    "can't": "'can!'t'",
+    '"can\'t"': "'\"can!'t\"'",
+    "'can't'": "'!'can!'t!''",
+};
+
 describe('Rison test cases', () => {
     for (const [r, obj] of Object.entries(py_testcases)) {
         it(`Should decode "${r}"`, () => {
             // hack to get around "TypeError: Cannot read properties of null (reading 'should')"
             ({x: rison.decode(r)}.should.deep.equal({x: obj}));
         });
+        it(`Should encode ${JSON.stringify(obj)}`, () => {
+            rison.encode(obj).should.deep.equal(r);
+        });
+    }
+    for (const [obj, r] of Object.entries(encode_testcases)) {
         it(`Should encode ${JSON.stringify(obj)}`, () => {
             rison.encode(obj).should.deep.equal(r);
         });

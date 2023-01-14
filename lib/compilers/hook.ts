@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -51,5 +52,34 @@ export class HookCompiler extends BaseCompiler {
         const outputFilename = this.getOutputFilename(dirPath);
         options.push(outputFilename);
         return super.runCompiler(compiler, options, inputFilename, execOptions);
+    }
+
+    override processAsm(result) {
+        const commentRegex = /^\s*;(.*)/;
+        const instructionRegex = /^\s{2}(\d+)(.*)/;
+        const lines = result.asm.split('\n');
+        const asm: ParsedAsmResultLine[] = [];
+        let lastLineNo: number | undefined;
+        for (const line of lines) {
+            if (commentRegex.test(line)) {
+                asm.push({text: line, source: {line: undefined, file: null}});
+                lastLineNo = undefined;
+                continue;
+            }
+            const match = line.match(instructionRegex);
+            if (match) {
+                const lineNo = parseInt(match[1]);
+                asm.push({text: line, source: {line: lineNo, file: null}});
+                lastLineNo = lineNo;
+                continue;
+            }
+            if (line) {
+                asm.push({text: line, source: {line: lastLineNo, file: null}});
+                continue;
+            }
+            asm.push({text: line, source: {line: undefined, file: null}});
+            lastLineNo = undefined;
+        }
+        return {asm: asm};
     }
 }
