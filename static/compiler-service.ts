@@ -35,8 +35,9 @@ import {ResultLine} from '../types/resultline/resultline.interfaces';
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
 import {CompilerInfo} from '../types/compiler.interfaces';
-import {CompilationResult} from '../types/compilation/compilation.interfaces';
+import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces';
 import {CompilationStatus} from './compiler-service.interfaces';
+import {IncludeDownloads, SourceAndFiles} from './download-service';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
@@ -310,27 +311,32 @@ export class CompilerService {
         });
     }
 
-    public async expand(source: string) {
+    private getFilenameFromUrl(url: string): string {
+        const jsurl = new URL(url);
+        const urlpath = jsurl.pathname;
+        return urlpath.substring(urlpath.lastIndexOf('/') + 1);
+    }
+
+    public async expandToFiles(source: string): Promise<SourceAndFiles> {
+        const includes = new IncludeDownloads();
+
         const includeFind = /^\s*#\s*include\s*["<](https?:\/\/[^">]+)[">]/;
         const lines = source.split('\n');
-        const promises: Promise<null>[] = [];
         for (const idx in lines) {
-            const lineNumZeroBased = Number(idx);
             const line = lines[idx];
             const match = line.match(includeFind);
             if (match) {
-                promises.push(
-                    new Promise(resolve => {
-                        const req = $.get(match[1], data => {
-                            lines[idx] = `#line 1 "${match[1]}"\n${data}\n\n#line ${lineNumZeroBased + 1} "<stdin>"\n`;
-                            resolve(null);
-                        });
-                        req.fail(() => resolve(null));
-                    })
-                );
+                const download = includes.include(match[1]);
+                lines[idx] = `#include "${download.filename}"`;
             }
         }
-        return Promise.all(promises).then(() => lines.join('\n'));
+
+        const files: FiledataPair[] = await includes.allDownloadsAsFileDataPairs();
+
+        return {
+            source: lines.join('\n'),
+            files: files,
+        };
     }
 
     public static getSelectizerOrder() {

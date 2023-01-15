@@ -163,3 +163,8 @@ export type CustomInputForTool = {
     dirPath: string;
     outputFilename: string;
 };
+
+export type FiledataPair = {
+    filename: string;
+    contents: string;
+};
