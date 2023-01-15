@@ -91,7 +91,7 @@ const plugins = [
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicon')}],
+        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicons')}],
     }),
 ];
 
