@@ -184,9 +184,9 @@ const isDevMode = () => process.env.NODE_ENV !== 'production';
 function getFaviconFilename() {
     if (isDevMode()) {
         return 'favicon-dev.ico';
-    } else if (opts.env.includes('beta')) {
+    } else if (opts.env?.includes('beta')) {
         return 'favicon-beta.ico';
-    } else if (opts.env.includes('staging')) {
+    } else if (opts.env?.includes('staging')) {
         return 'favicon-staging.ico';
     } else {
         return 'favicon.ico';
