@@ -238,7 +238,11 @@ export class FPCCompiler extends BaseCompiler {
                 valueInBrackets = valueInBrackets.substr(1);
             }
 
-            return `  .loc ${currentFileId} ${valueInBrackets} 0`;
+            if (Number.isNaN(Number(valueInBrackets))) {
+                return `  .file ${currentFileId} "${valueInBrackets}"`;
+            } else {
+                return `  .loc ${currentFileId} ${valueInBrackets} 0`;
+            }
         } else if (asm.startsWith('.Le')) {
             return '  .cfi_endproc';
         } else {
@@ -259,14 +263,16 @@ export class FPCCompiler extends BaseCompiler {
                 valueInBrackets = valueInBrackets.substr(1);
             }
 
-            if (!files[valueInBrackets]) {
-                let maxFileId = _.max(files);
-                if (maxFileId === -Infinity) {
-                    maxFileId = 0;
-                }
+            if (Number.isNaN(Number(valueInBrackets))) {
+                if (!files[valueInBrackets]) {
+                    let maxFileId = _.max(files);
+                    if (maxFileId === -Infinity) {
+                        maxFileId = 0;
+                    }
 
-                files[valueInBrackets] = maxFileId + 1;
-                return maxFileId + 1;
+                    files[valueInBrackets] = maxFileId + 1;
+                    return maxFileId + 1;
+                }
             }
         }
 
