@@ -23,15 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import _ from 'underscore';
+import $ from 'jquery';
 import {ga} from '../analytics';
 import {Toggles} from '../widgets/toggles';
 import {FontScale} from '../widgets/fontscale';
 import {options} from '../options';
-import {Alert} from '../alert';
+import {Alert} from '../widgets/alert';
 import {LibsWidget} from '../widgets/libs-widget';
 import {Filter as AnsiToHtml} from '../ansi-to-html';
 import * as TimingWidget from '../widgets/timing-info-widget';
-import {CompilerPicker} from '../compiler-picker';
 import {Settings, SiteSettings} from '../settings';
 import * as utils from '../utils';
 import * as LibUtils from '../lib-utils';
@@ -47,11 +47,12 @@ import {Language} from '../../types/languages.interfaces';
 import {LanguageLibs} from '../options.interfaces';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {PPOptions} from './pp-view.interfaces';
-import {GccSelectedPass} from './gccdump-view.interfaces';
 import {FiledataPair} from '../multifile-service';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces';
+import {CompilerPicker} from '../widgets/compiler-picker';
+import {GccDumpViewSelectedPass} from './gccdump-view.interfaces';
 
 const languages = options.languages;
 
@@ -83,7 +84,7 @@ type CompilationRequestOptions = {
         produceAst?: boolean;
         produceGccDump?: {
             opened: boolean;
-            pass?: GccSelectedPass;
+            pass?: GccDumpViewSelectedPass;
             treeDump?: boolean;
             rtlDump?: boolean;
             ipaDump?: boolean;
@@ -136,7 +137,6 @@ type CompileChildLibraries = {
 };
 
 export class Executor extends Pane<ExecutorState> {
-    private readonly hub: Hub;
     private compilerService: CompilerService;
     private contentRoot: JQuery<HTMLElement>;
     private readonly sourceEditorId: number | null;
@@ -153,13 +153,13 @@ export class Executor extends Pane<ExecutorState> {
     private nextRequest: CompilationRequest | null;
     private nextCMakeRequest: CompilationRequest | null;
     private options: string;
-    private lastResult?: CompilationResult;
+    private lastResult: CompilationResult | null;
     private alertSystem: Alert;
     private readonly normalAnsiToHtml: AnsiToHtml;
     private readonly errorAnsiToHtml: AnsiToHtml;
     private fontScale: FontScale;
-    private compilerPicker: CompilerPicker | JQuery<HTMLElement>;
-    private currentLangId: string | null;
+    private compilerPicker: CompilerPicker;
+    private currentLangId: string;
     private filters: Toggles;
     private toggleWrapButton: Toggles;
     private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -210,7 +210,6 @@ export class Executor extends Pane<ExecutorState> {
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        // @ts-expect-error: options.compileOptions is 'unknown'
         this.options = state.options || options.compileOptions[this.currentLangId];
         this.executionArguments = state.execArgs || '';
         this.executionStdin = state.execStdin || '';
@@ -234,9 +233,8 @@ export class Executor extends Pane<ExecutorState> {
         this.compilerPicker = new CompilerPicker(
             this.domRoot,
             this.hub,
-            // @ts-expect-error: This argument can be null
             this.currentLangId,
-            this.compiler ? this.compiler.id : null,
+            this.compiler ? this.compiler.id : '',
             this.onCompilerChange.bind(this),
             this.compilerIsVisible
         );
@@ -260,7 +258,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     compilerIsVisible(compiler: CompilerInfo): boolean {
-        return compiler.supportsExecute;
+        return !!compiler.supportsExecute;
     }
 
     getEditorIdByFilename(filename: string): number | null {
@@ -280,7 +278,7 @@ export class Executor extends Pane<ExecutorState> {
         const compilerId = state.compiler;
         const result = this.compilerService.processFromLangAndCompiler(langId, compilerId);
         this.compiler = result?.compiler ?? null;
-        this.currentLangId = result?.langId ?? null;
+        this.currentLangId = result?.langId ?? '';
         this.updateLibraries();
     }
 
@@ -584,15 +582,13 @@ export class Executor extends Pane<ExecutorState> {
     getBuildStdoutFromResult(result: CompilationResult): ResultLine[] {
         let arr: ResultLine[] = [];
 
-        if (result.buildResult && result.buildResult.stdout !== undefined) {
+        if (result.buildResult) {
             arr = arr.concat(result.buildResult.stdout);
         }
 
         if (result.buildsteps) {
             result.buildsteps.forEach(step => {
-                if (step.stdout !== undefined) {
-                    arr = arr.concat(step.stdout);
-                }
+                arr = arr.concat(step.stdout);
             });
         }
 
@@ -602,15 +598,13 @@ export class Executor extends Pane<ExecutorState> {
     getBuildStderrFromResult(result: CompilationResult): ResultLine[] {
         let arr: ResultLine[] = [];
 
-        if (result.buildResult && result.buildResult.stderr !== undefined) {
+        if (result.buildResult) {
             arr = arr.concat(result.buildResult.stderr);
         }
 
         if (result.buildsteps) {
             result.buildsteps.forEach(step => {
-                if (step.stderr !== undefined) {
-                    arr = arr.concat(step.stderr);
-                }
+                arr = arr.concat(step.stderr);
             });
         }
 
@@ -745,7 +739,7 @@ export class Executor extends Pane<ExecutorState> {
         this.compileTimeLabel.text(timeLabelText);
 
         this.setCompilationOptionsPopover(
-            result.buildResult && result.buildResult.compilationOptions
+            result.buildResult
                 ? result.buildResult.compilationOptions.join(' ')
                 : ''
         );
@@ -852,7 +846,6 @@ export class Executor extends Pane<ExecutorState> {
         this.execStdinField.val(this.executionStdin);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-        this.compilerPicker = this.domRoot.find('.compiler-picker');
         this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
         this.topBar = this.domRoot.find('.top-bar');
@@ -912,7 +905,6 @@ export class Executor extends Pane<ExecutorState> {
 
     initLibraries(state: PaneState & ExecutorState): void {
         this.libsWidget = new LibsWidget(
-            // @ts-expect-error: This argument can be null
             this.currentLangId,
             this.compiler,
             this.libsButton,
@@ -920,9 +912,7 @@ export class Executor extends Pane<ExecutorState> {
             this.onLibsChanged.bind(this),
             LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
-                // @ts-expect-error: This argument can be null
                 this.currentLangId,
-                // @ts-expect-error: CompilerInfo has no type 'remote'
                 this.compiler?.remote ?? null
             )
         );
@@ -1091,9 +1081,7 @@ export class Executor extends Pane<ExecutorState> {
     updateCompilerInfo(): void {
         this.updateCompilerName();
         if (this.compiler) {
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             if (this.compiler.notification) {
-                // @ts-expect-error: This works
                 this.alertSystem.notify(this.compiler.notification, {
                     group: 'compilerwarning',
                     alertClass: 'notification-info',
@@ -1112,7 +1100,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onCompilerChange(value: string): void {
-        // @ts-expect-error: This argument can be null
         this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
         this.saveState();
@@ -1160,7 +1147,7 @@ export class Executor extends Pane<ExecutorState> {
             execArgs: this.executionArguments,
             execStdin: this.executionStdin,
             libs: this.libsWidget?.get(),
-            lang: this.currentLangId ?? undefined,
+            lang: this.currentLangId,
             compilationPanelShown: !this.panelCompilation.hasClass('d-none'),
             compilerOutShown: !this.compilerOutputSection.hasClass('d-none'),
             argsPanelShown: !this.panelArgs.hasClass('d-none'),
@@ -1208,9 +1195,7 @@ export class Executor extends Pane<ExecutorState> {
     updateCompilerName() {
         this.updateTitle();
         const compilerName = this.getCompilerName();
-        // @ts-expect-error: CompilerInfo has no type 'version'
         const compilerVersion = this.compiler?.version ?? '';
-        // @ts-expect-error: CompilerInfo has no type 'fullVersion'
         const compilerFullVersion = this.compiler?.fullVersion ?? compilerVersion;
         const compilerNotification = this.compiler?.notification ?? '';
         this.shortCompilerName.text(compilerName);
@@ -1219,7 +1204,6 @@ export class Executor extends Pane<ExecutorState> {
                 version: compilerVersion,
                 fullVersion: compilerFullVersion,
             },
-            // @ts-expect-error: Some of these types seem wrong
             compilerNotification
         );
     }
@@ -1318,14 +1302,11 @@ export class Executor extends Pane<ExecutorState> {
             if (this.compiler) {
                 filteredLibraries = LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
-                    // @ts-expect-error: This argument can be null
-                    this.currentLangId,
-                    // @ts-expect-error: CompilerInfo has no type 'remote'
+                    this.currentLangId || '',
                     this.compiler.remote ?? null
                 );
             }
 
-            // @ts-expect-error: This argument can be null
             this.libsWidget.setNewLangId(this.currentLangId, this.compiler?.id ?? '', filteredLibraries);
         }
     }
@@ -1370,8 +1351,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     updateCompilersSelector(info: LangInfo | undefined): void {
-        // @ts-expect-error: update may actually accept null as a second argument
-        this.compilerPicker.update(this.currentLangId, this.compiler?.id ?? null);
+        this.compilerPicker.update(this.currentLangId, this.compiler?.id ?? '');
         this.options = info?.options || '';
         this.optionsField.val(this.options);
         this.executionArguments = info?.execArgs || '';
