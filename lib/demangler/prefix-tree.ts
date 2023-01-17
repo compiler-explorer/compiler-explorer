@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {assert} from '../assert';
+
 // A prefix tree, really a trie, but I find the name annoyingly pompous, and
 // as it's pronounced the same way as "tree", super confusing.
 // Essentially we have a N-way tree, for N possible ASCII characters. Each
@@ -32,18 +34,23 @@
 // * It's linear in the length of a match to find the longest prefix, or a match.
 // It's the "find longest prefix" performance characteristic that we want for the
 // demangler.
+
+type Node = Node[] & {result?: string};
+
 export class PrefixTree {
-    constructor(mappings) {
-        this.root = [];
+    root: Node = [];
+
+    constructor(mappings: [string, string][]) {
         if (mappings) {
             for (const [from, to] of mappings) this.add(from, to);
         }
     }
 
-    add(from, to) {
+    add(from: string, to: string) {
         let node = this.root;
         for (let i = 0; i < from.length; ++i) {
             const character = from.codePointAt(i);
+            assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             if (!node[character]) node[character] = [];
             node = node[character];
         }
@@ -53,11 +60,12 @@ export class PrefixTree {
     // Finds the longest possible match by walking along the N-way tree until we
     // mismatch or reach the end of the input string. Along the way, we note the
     // most recent match (if any), which will be our return value.
-    findLongestMatch(needle) {
+    findLongestMatch(needle: string) {
         let node = this.root;
-        let match = [null, null];
+        let match: [string, string] | [null, null] = [null, null];
         for (let i = 0; i < needle.length; ++i) {
             const character = needle.codePointAt(i);
+            assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             node = node[character];
             if (!node) break;
             if (node.result) match = [needle.substr(0, i + 1), node.result];
@@ -65,10 +73,11 @@ export class PrefixTree {
         return match;
     }
 
-    findExact(needle) {
+    findExact(needle: string) {
         let node = this.root;
         for (let i = 0; i < needle.length; ++i) {
             const character = needle.codePointAt(i);
+            assert(character !== undefined, 'Undefined code point encountered in PrefixTree');
             node = node[character];
             if (!node) break;
         }
@@ -77,7 +86,7 @@ export class PrefixTree {
     }
 
     // Replace all matches (longest match first) in a line.
-    replaceAll(line) {
+    replaceAll(line: string) {
         let result = '';
         let index = 0;
         // Loop over each possible replacement point in the line.

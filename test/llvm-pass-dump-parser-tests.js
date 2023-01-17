@@ -13,8 +13,8 @@ describe('llvm-pass-dump-parser filter', function () {
     let llvmPassDumpParser;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        let compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const compilerProps = fakeProps.get.bind(fakeProps, 'c++');
         llvmPassDumpParser = new LlvmPassDumpParser(compilerProps);
     });
     // prettier-ignore
