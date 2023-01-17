@@ -192,7 +192,10 @@ export class Cfg extends Pane<CfgState> {
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
+        this.setupFictitiousGraphContainer();
+    }
 
+    setupFictitiousGraphContainer() {
         // create a fake .graph-container .graph .block-container where we can compute block dimensions
         // golden layout sets panes to display:none when they aren't the active tab
         // create the .graph-container
