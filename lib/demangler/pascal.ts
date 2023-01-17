@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {SymbolStore} from '../symbol-store';
 
 import {BaseDemangler} from './base';
@@ -30,6 +32,10 @@ export class PascalDemangler extends BaseDemangler {
     static get key() {
         return 'pascal';
     }
+
+    symbolStore: SymbolStore;
+    fixedsymbols: Record<string, string>;
+    ignoredsymbols: string[];
 
     constructor(demanglerExe, compiler) {
         super(demanglerExe, compiler);
@@ -76,8 +82,8 @@ export class PascalDemangler extends BaseDemangler {
         ];
     }
 
-    shouldIgnoreSymbol(text) {
-        for (let k in this.ignoredsymbols) {
+    shouldIgnoreSymbol(text: string) {
+        for (const k in this.ignoredsymbols) {
             if (text.startsWith(this.ignoredsymbols[k])) {
                 return true;
             }
@@ -215,8 +221,8 @@ export class PascalDemangler extends BaseDemangler {
         }
     }
 
-    async process(result, execOptions) {
-        let options = execOptions || {};
+    override async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
+        const options = execOptions || {};
         this.result = result;
 
         if (!this.symbolstore) {

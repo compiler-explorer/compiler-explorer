@@ -22,17 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {unwrap} from '../assert';
 import * as utils from '../utils';
 
 import {Win32Demangler} from './win32';
 
 export class LLVMWin32Demangler extends Win32Demangler {
-    static get key() {
+    static override get key() {
         // this should be used for llvm-undname
         return 'win32-llvm';
     }
 
-    async execDemangler() {
+    override async execDemangler() {
         const translations = {};
         const flags = ['--no-access-specifier', '--no-calling-convention'];
 
@@ -56,11 +58,11 @@ export class LLVMWin32Demangler extends Win32Demangler {
             }
         };
 
-        this.win32RawSymbols.sort();
+        unwrap(this.win32RawSymbols).sort();
 
-        let lastSymbol = null;
-        let symbolArray = [];
-        for (const symb of this.win32RawSymbols) {
+        let lastSymbol: string | null = null;
+        const symbolArray: string[] = [];
+        for (const symb of unwrap(this.win32RawSymbols)) {
             if (symb === lastSymbol) {
                 continue;
             }
@@ -71,6 +73,6 @@ export class LLVMWin32Demangler extends Win32Demangler {
         const stdin = symbolArray.join('\n') + '\n';
         await demangleFromStdin(stdin);
 
-        return translations;
+        return translations as unknown as UnprocessedExecResult;
     }
 }

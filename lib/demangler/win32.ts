@@ -22,15 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {unwrap} from '../assert';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {CppDemangler} from './cpp';
 
 export class Win32Demangler extends CppDemangler {
-    static get key() {
+    static override get key() {
         return 'win32';
     }
+
+    flags: string;
+    allDecoratedLabels: RegExp;
+    allDecoratedLabelsWithQuotes: RegExp;
+    hasQuotesAroundDecoratedLabels: null | boolean;
+    win32RawSymbols?: string[];
 
     constructor(demanglerExe, compiler) {
         super(demanglerExe, compiler);
@@ -50,7 +59,7 @@ export class Win32Demangler extends CppDemangler {
         this.hasQuotesAroundDecoratedLabels = null;
     }
 
-    collectLabels() {
+    override collectLabels() {
         this.win32RawSymbols = [];
         for (const asmLine of this.result.asm) {
             const labels = asmLine.text.match(this.allDecoratedLabels);
@@ -66,13 +75,13 @@ export class Win32Demangler extends CppDemangler {
         }
     }
 
-    processOutput(translations) {
+    override processOutput(translations: UnprocessedExecResult) {
         for (const asmLine of this.result.asm) {
             const labels = this.hasQuotesAroundDecoratedLabels
                 ? asmLine.text.match(this.allDecoratedLabelsWithQuotes)
                 : asmLine.text.match(this.allDecoratedLabels);
             if (labels) {
-                let [, beforeComment, afterComment] = asmLine.text.match(/(.*)(;.*)?/);
+                let [, beforeComment, afterComment] = unwrap(asmLine.text.match(/(.*)(;.*)?/));
                 for (const label of labels) {
                     const replacement = translations[label];
                     if (replacement) {
@@ -88,8 +97,8 @@ export class Win32Demangler extends CppDemangler {
         return this.result;
     }
 
-    async execDemangler() {
-        const translations = {};
+    override async execDemangler() {
+        const translations: Record<string, string> = {};
 
         const demangleSingleSet = async names => {
             const args = [this.flags, ...names];
@@ -118,13 +127,13 @@ export class Win32Demangler extends CppDemangler {
         // give some space for `undname` as well as the flag
         // should probably be done more correctly
         const maxCommandLineLength = 8000;
-        const commandLineArray = [];
-        this.win32RawSymbols.sort();
+        const commandLineArray: string[][] = [];
+        unwrap(this.win32RawSymbols).sort();
 
-        let lastSymbol = null;
+        let lastSymbol: null | string = null;
         let currentLength = 0;
-        let currentArray = [];
-        for (const symb of this.win32RawSymbols) {
+        let currentArray: string[] = [];
+        for (const symb of unwrap(this.win32RawSymbols)) {
             if (symb === lastSymbol) {
                 continue;
             }
@@ -144,10 +153,10 @@ export class Win32Demangler extends CppDemangler {
         }
 
         await Promise.all(commandLineArray.map(demangleSingleSet));
-        return translations;
+        return translations as unknown as UnprocessedExecResult;
     }
 
-    async process(result) {
+    override async process(result: ParsedAsmResult) {
         if (!this.demanglerExe) {
             logger.error("Attempted to demangle, but there's no demangler set");
             return result;
