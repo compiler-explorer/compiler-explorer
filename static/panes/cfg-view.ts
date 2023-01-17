@@ -195,15 +195,21 @@ export class Cfg extends Pane<CfgState> {
 
         // create a fake .graph-container .graph .block-container where we can compute block dimensions
         // golden layout sets panes to display:none when they aren't the active tab
+        // create the .graph-container
         const fictitiousGraphContainer = document.createElement('div');
         fictitiousGraphContainer.setAttribute('class', 'graph-container');
         fictitiousGraphContainer.setAttribute('style', 'position: absolute; bottom: 0; right: 0; width: 0; height: 0;');
+        // create the .graph
         const fictitiousGraph = document.createElement('div');
         fictitiousGraph.setAttribute('class', 'graph');
+        // create the .block-container
         const fictitousBlockContainer = document.createElement('div');
         fictitousBlockContainer.setAttribute('class', 'block-container');
+        // .graph-container -> .graph
         fictitiousGraphContainer.appendChild(fictitiousGraph);
+        // .graph -> .block-container
         fictitiousGraph.appendChild(fictitousBlockContainer);
+        // finally append to the body
         document.body.appendChild(fictitiousGraphContainer);
         this.fictitiousGraphContainer = fictitiousGraphContainer;
         this.fictitiousBlockContainer = fictitousBlockContainer;
