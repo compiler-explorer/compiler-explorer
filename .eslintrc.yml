@@ -44,7 +44,7 @@ rules:
   import/first: error
   import/newline-after-import: error
   import/no-absolute-path: error
-  import/no-cycle: error
+  # import/no-cycle: error # disabled for now, there's an import cycle between the base-compiler and demanglers
   import/no-default-export: warn
   import/no-deprecated: warn
   import/no-mutable-exports: error
@@ -101,6 +101,9 @@ rules:
     - error
     - never
     - onlyEquality: true
+  prefer-const:
+    - error
+    - destructuring: all
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn

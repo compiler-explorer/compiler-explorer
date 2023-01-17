@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {SymbolStore} from '../symbol-store';
 
 import {BaseDemangler} from './base';
@@ -30,6 +32,10 @@ export class PascalDemangler extends BaseDemangler {
     static get key() {
         return 'pascal';
     }
+
+    symbolStore: SymbolStore;
+    fixedsymbols: Record<string, string>;
+    ignoredsymbols: string[];
 
     constructor(demanglerExe, compiler) {
         super(demanglerExe, compiler);
@@ -41,7 +47,7 @@ export class PascalDemangler extends BaseDemangler {
         this.initBasicSymbols();
     }
 
-    initBasicSymbols() {
+    protected initBasicSymbols() {
         this.fixedsymbols.OUTPUT_$$_init = 'unit_initialization';
         this.fixedsymbols.OUTPUT_$$_finalize = 'unit_finalization';
         this.fixedsymbols.OUTPUT_$$_init_implicit = 'unit_initialization_implicit';
@@ -76,8 +82,8 @@ export class PascalDemangler extends BaseDemangler {
         ];
     }
 
-    shouldIgnoreSymbol(text) {
-        for (let k in this.ignoredsymbols) {
+    protected shouldIgnoreSymbol(text: string) {
+        for (const k in this.ignoredsymbols) {
             if (text.startsWith(this.ignoredsymbols[k])) {
                 return true;
             }
@@ -86,7 +92,7 @@ export class PascalDemangler extends BaseDemangler {
         return false;
     }
 
-    composeReadableMethodSignature(unitname, classname, methodname, params) {
+    protected composeReadableMethodSignature(unitname, classname, methodname, params) {
         let signature = '';
 
         if (classname !== '') signature = classname.toLowerCase() + '.';
@@ -97,7 +103,7 @@ export class PascalDemangler extends BaseDemangler {
         return signature;
     }
 
-    demangle(text) {
+    protected demangle(text) {
         if (!text.endsWith(':')) return false;
         if (this.shouldIgnoreSymbol(text)) return false;
 
@@ -194,11 +200,11 @@ export class PascalDemangler extends BaseDemangler {
         return unmangled;
     }
 
-    addDemangleToCache(text) {
+    protected addDemangleToCache(text) {
         this.demangle(text);
     }
 
-    demangleIfNeeded(text) {
+    protected demangleIfNeeded(text) {
         if (text.includes('$')) {
             if (this.shouldIgnoreSymbol(text)) {
                 return text;
@@ -215,8 +221,8 @@ export class PascalDemangler extends BaseDemangler {
         }
     }
 
-    async process(result, execOptions) {
-        let options = execOptions || {};
+    public override async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
+        const options = execOptions || {};
         this.result = result;
 
         if (!this.symbolstore) {
