@@ -98,7 +98,7 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    protected demanglerClass: any;
+    protected demanglerClass: any; // TODO: Will be able to do better once #4607 lands
     protected objdumperClass: any;
     public outputFilebase: string;
     protected mtime: Date | null = null;
