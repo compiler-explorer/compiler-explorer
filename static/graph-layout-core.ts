@@ -655,16 +655,12 @@ export class GraphLayoutCore {
         // Throw everything away and do it all again, but smarter
         for (const edgeColumn of this.edgeColumns) {
             for (const intervalTree of edgeColumn.intervals) {
-                // Note: Incorrect types in the interval tree library
-                // After https://github.com/alexbol99/flatten-interval-tree/pull/42 this can be intervalTree.clear()
-                (intervalTree.root as Node<EdgeSegment> | null) = null;
+                intervalTree.clear();
             }
         }
         for (const edgeRow of this.edgeRows) {
             for (const intervalTree of edgeRow.intervals) {
-                // Note: Incorrect types in the interval tree library
-                // After https://github.com/alexbol99/flatten-interval-tree/pull/42 this can be intervalTree.clear()
-                (intervalTree.root as Node<EdgeSegment> | null) = null;
+                intervalTree.clear();
             }
         }
         // Edge kind is the primary heuristic for subrow/column assignment
