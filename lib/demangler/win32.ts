@@ -24,7 +24,7 @@
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {unwrap} from '../assert';
+import {unwrap, assert} from '../assert';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
@@ -59,7 +59,7 @@ export class Win32Demangler extends CppDemangler {
         this.hasQuotesAroundDecoratedLabels = null;
     }
 
-    override collectLabels() {
+    protected override collectLabels() {
         this.win32RawSymbols = [];
         for (const asmLine of this.result.asm) {
             const labels = asmLine.text.match(this.allDecoratedLabels);
@@ -75,7 +75,11 @@ export class Win32Demangler extends CppDemangler {
         }
     }
 
-    override processOutput(translations: UnprocessedExecResult) {
+    protected override processOutput(translations: UnprocessedExecResult): ParsedAsmResult {
+        assert(false, "Win32Demangler.processOutput shouldn't be called");
+    }
+
+    protected processTranslations(translations: Record<string, string>) {
         for (const asmLine of this.result.asm) {
             const labels = this.hasQuotesAroundDecoratedLabels
                 ? asmLine.text.match(this.allDecoratedLabelsWithQuotes)
@@ -97,7 +101,11 @@ export class Win32Demangler extends CppDemangler {
         return this.result;
     }
 
-    override async execDemangler() {
+    protected override async execDemangler(): Promise<UnprocessedExecResult> {
+        assert(false, "Win32Demangler.processOutput shouldn't be called");
+    }
+
+    protected async createTranslations() {
         const translations: Record<string, string> = {};
 
         const demangleSingleSet = async names => {
@@ -153,10 +161,10 @@ export class Win32Demangler extends CppDemangler {
         }
 
         await Promise.all(commandLineArray.map(demangleSingleSet));
-        return translations as unknown as UnprocessedExecResult;
+        return translations;
     }
 
-    override async process(result: ParsedAsmResult) {
+    public override async process(result: ParsedAsmResult) {
         if (!this.demanglerExe) {
             logger.error("Attempted to demangle, but there's no demangler set");
             return result;
@@ -165,6 +173,6 @@ export class Win32Demangler extends CppDemangler {
         this.result = result;
 
         this.collectLabels();
-        return this.processOutput(await this.execDemangler());
+        return this.processTranslations(await this.createTranslations());
     }
 }

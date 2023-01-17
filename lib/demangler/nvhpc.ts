@@ -37,7 +37,7 @@ export class NVHPCDemangler extends BaseDemangler {
         this.llvmDemangler = new LLVMIRDemangler(demanglerExe, compiler);
     }
 
-    override collectLabels() {
+    protected override collectLabels() {
         this.llvmDemangler.collect(this.result as any);
         this.symbolstore = this.llvmDemangler.symbolstore;
     }

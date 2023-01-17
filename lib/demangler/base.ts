@@ -81,7 +81,7 @@ export class BaseDemangler extends AsmRegex {
 
     // Iterates over the labels, demangle the label names and updates the start and
     // end position of the label.
-    demangleLabels(labels, tree: PrefixTree) {
+    protected demangleLabels(labels, tree: PrefixTree) {
         if (!Array.isArray(labels) || labels.length === 0) return;
 
         for (const [index, label] of labels.entries()) {
@@ -99,7 +99,7 @@ export class BaseDemangler extends AsmRegex {
         }
     }
 
-    demangleLabelDefinitions(labelDefinitions, translations: [string, string][]) {
+    protected demangleLabelDefinitions(labelDefinitions, translations: [string, string][]) {
         if (!labelDefinitions) return;
 
         for (const [oldValue, newValue] of translations) {
@@ -111,7 +111,7 @@ export class BaseDemangler extends AsmRegex {
         }
     }
 
-    collectLabels() {
+    protected collectLabels() {
         const symbolMatchers = [
             this.jumpDef,
             this.callPtrDef4,
@@ -144,7 +144,7 @@ export class BaseDemangler extends AsmRegex {
         this.othersymbols.exclude(unwrap(this.symbolstore));
     }
 
-    getInput() {
+    protected getInput() {
         this.input = [];
         this.input = this.input.concat(unwrap(this.symbolstore).listSymbols());
         this.input = this.input.concat(this.othersymbols.listSymbols());
@@ -152,11 +152,11 @@ export class BaseDemangler extends AsmRegex {
         return this.input.join('\n');
     }
 
-    getMetadata(symbol: string): {ident: RegExp; description: string}[] {
+    protected getMetadata(symbol: string): {ident: RegExp; description: string}[] {
         return [];
     }
 
-    addTranslation(symbol: string, translation: string) {
+    protected addTranslation(symbol: string, translation: string) {
         if (this.includeMetadata) {
             translation += this.getMetadata(symbol)
                 .map(meta => ` [${meta.description}]`)
@@ -170,7 +170,7 @@ export class BaseDemangler extends AsmRegex {
         }
     }
 
-    processOutput(output: UnprocessedExecResult) {
+    protected processOutput(output: UnprocessedExecResult) {
         if (output.stdout.length === 0 && output.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, output);
             return this.result;
@@ -200,13 +200,13 @@ export class BaseDemangler extends AsmRegex {
         return this.result;
     }
 
-    execDemangler(options: ExecutionOptions) {
+    protected execDemangler(options: ExecutionOptions) {
         options.maxOutput = -1;
 
         return this.compiler.exec(this.demanglerExe, this.demanglerArguments, options);
     }
 
-    async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
+    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
         const options = execOptions || {};
         this.result = result;
 

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {unwrap} from '../assert';
+import {unwrap, assert} from '../assert';
 import * as utils from '../utils';
 
 import {Win32Demangler} from './win32';
@@ -34,8 +34,8 @@ export class LLVMWin32Demangler extends Win32Demangler {
         return 'win32-llvm';
     }
 
-    override async execDemangler() {
-        const translations = {};
+    override async createTranslations() {
+        const translations: Record<string, string> = {};
         const flags = ['--no-access-specifier', '--no-calling-convention'];
 
         const demangleFromStdin = async stdin => {
@@ -73,6 +73,6 @@ export class LLVMWin32Demangler extends Win32Demangler {
         const stdin = symbolArray.join('\n') + '\n';
         await demangleFromStdin(stdin);
 
-        return translations as unknown as UnprocessedExecResult;
+        return translations;
     }
 }
