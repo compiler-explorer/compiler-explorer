@@ -85,13 +85,17 @@ export class JavaCompiler extends BaseCompiler {
                         customCwd: dirPath,
                     });
                     const oneResult: ParsedAsmResult = {
-                        asm: objResult.stdout,
+                        asm: [{
+                            text: objResult.stdout
+                        }],
                     };
 
                     if (objResult.code === 0) {
                         oneResult.objdumpTime = objResult.execTime;
                     } else {
-                        oneResult.asm = '<No output: javap returned ' + objResult.code + '>';
+                        oneResult.asm = [{
+                            text: `<No output: javap returned ${objResult.code}>`
+                        }];
                     }
                     return oneResult;
                 }),

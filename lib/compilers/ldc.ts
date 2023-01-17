@@ -107,7 +107,8 @@ export class LDCCompiler extends BaseCompiler {
         try {
             return await fs.readFile(astFilename, 'utf8');
         } catch (e) {
-            if (e instanceof Error && e.code === 'ENOENT') {
+            // TODO(jeremy-rifkin) why does e have .code here
+            if (e instanceof Error && (e as any).code === 'ENOENT') {
                 logger.warn(`LDC AST file ${astFilename} requested but it does not exist`);
                 return '';
             }
