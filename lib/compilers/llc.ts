@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {ClangParser} from './argument-parsers';
@@ -31,7 +33,7 @@ export class LLCCompiler extends BaseCompiler {
         return 'llc';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsLLVMOptPipelineView = true;
@@ -44,7 +46,7 @@ export class LLCCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = ['-o', this.filename(outputFilename)];
         if (filters.intel && !filters.binary) options = options.concat('-x86-asm-syntax=intel');
         if (filters.binary) options = options.concat('-filetype=obj');

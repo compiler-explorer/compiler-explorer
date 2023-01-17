@@ -23,17 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class PascalUtils {
-    isProgram(source) {
+    isProgram(source: string) {
         const re = /\s?program\s+([\w.-]*);/i;
         return !!re.test(source);
     }
 
-    isUnit(source) {
+    isUnit(source: string) {
         const re = /\s?unit\s+([\w.-]*);/i;
         return !!re.test(source);
     }
 
-    getUnitname(source) {
+    getUnitname(source: string) {
         const re = /\s?unit\s+([\w.-]*);/i;
         const match = source.match(re);
         if (match) {

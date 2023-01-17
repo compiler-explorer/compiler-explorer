@@ -37,7 +37,7 @@ export type ParsedAsmResult = {
     parsingTime?: string;
     filteredCount?: number;
     externalParserUsed?: boolean;
-    objdumpTime?: number;
+    objdumpTime?: number | string;
     execTime?: string;
     languageId?: string;
 };

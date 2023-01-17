@@ -28,13 +28,14 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class CIRCTCompiler extends BaseCompiler {
     static get key() {
         return 'circt';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         if (!compilerInfo.disabledFilters) {
             compilerInfo.disabledFilters = [
                 'binary',
@@ -51,11 +52,11 @@ export class CIRCTCompiler extends BaseCompiler {
         super(compilerInfo, env);
     }
 
-    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+    override getOutputFilename(dirPath: string): string {
         return path.join(dirPath, 'example.out.mlir');
     }
 
-    override optionsForBackend(backendOptions, outputFilename): string[] {
+    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         return ['-o', outputFilename];
     }
 
@@ -63,7 +64,7 @@ export class CIRCTCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename, userOptions?): any[] {
+    override optionsForFilter(): any[] {
         return [];
     }
 }

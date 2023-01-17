@@ -29,6 +29,9 @@ import fs from 'fs-extra';
 import {BaseCompiler} from '../base-compiler';
 import {propsFor} from '../properties';
 import * as utils from '../utils';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class CleanCompiler extends BaseCompiler {
     static get key() {
@@ -37,13 +40,13 @@ export class CleanCompiler extends BaseCompiler {
 
     executionType: string;
 
-    constructor(compiler, env) {
+    constructor(compiler: CompilerInfo & Record<string, any>, env) {
         super(compiler, env);
         const execProps = propsFor('execution');
         this.executionType = execProps('executionType', 'none');
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         if (filters.binary) {
             return [];
         } else {
@@ -51,11 +54,11 @@ export class CleanCompiler extends BaseCompiler {
         }
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string) {
         return path.join(dirPath, 'Clean System Files/example.s');
     }
 
-    override getExecutableFilename(dirPath) {
+    override getExecutableFilename(dirPath: string) {
         return path.join(dirPath, 'a.out');
     }
 
@@ -63,7 +66,7 @@ export class CleanCompiler extends BaseCompiler {
         return [];
     }
 
-    preprocessOutput(output) {
+    preprocessOutput(output: string) {
         const errorRegex = /^error \[.*,(\d*),(.*)]:\s?(.*)/i;
         const errorLineRegex = /^error \[.*,(\d*)]:\s?(.*)/i;
         const parseerrorRegex = /^parse error \[.*,(\d*);(\d*),(.*)]:\s?(.*)/i;
@@ -99,7 +102,12 @@ export class CleanCompiler extends BaseCompiler {
             .join('\n');
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         const tmpDir = path.dirname(inputFilename);
         const moduleName = path.basename(inputFilename, '.icl');
         const compilerPath = path.dirname(compiler);

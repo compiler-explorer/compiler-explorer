@@ -27,13 +27,18 @@ import path from 'path';
 import {BaseCompiler} from '../base-compiler';
 
 import {MrustcParser} from './argument-parsers';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class MrustcCompiler extends BaseCompiler {
     static get key() {
         return 'mrustc';
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         // mrustc always dumps the C code for <baseout> target in the <baseout>.c file.
         // In our case, the actual file in -o is not even created because we are
         // faking the last step (C compilation).
@@ -54,7 +59,12 @@ export class MrustcCompiler extends BaseCompiler {
         ];
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         // mrustc will always invoke a C compiler on its C output to create a final exec/object.
         // There's no easy way to disable this last step, so simply faking it with 'true' works.
         execOptions.env.CC = 'true';
@@ -62,7 +72,7 @@ export class MrustcCompiler extends BaseCompiler {
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string) {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.c`);
     }
 

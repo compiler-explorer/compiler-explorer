@@ -27,13 +27,21 @@ import path from 'path';
 import * as utils from '../utils';
 
 import {AssemblyCompiler} from './assembly';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class NasmCompiler extends AssemblyCompiler {
     static override get key() {
         return 'nasm';
     }
 
-    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
         let options = super.prepareArguments(
             userOptions,
             filters,

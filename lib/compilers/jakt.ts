@@ -27,13 +27,14 @@ import path from 'path';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {
         return 'jakt';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
 
         this.outputFilebase = 'example';
@@ -49,8 +50,8 @@ export class JaktCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc,
-        dynamicReloc,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const objdumpResult = await super.objdump(
@@ -72,13 +73,13 @@ export class JaktCompiler extends BaseCompiler {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         const parsed_path = path.parse(defaultOutputFilename);
 
         return path.join(parsed_path.dir, this.outputFilebase);
     }
 
-    override getExecutableFilename(dirPath, outputFilebase, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, outputFilebase);
     }
 

@@ -25,13 +25,17 @@
 import path from 'path';
 
 import {FortranCompiler} from './fortran';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {
         return 'flang';
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         let options = ['-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));

@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { CompilerInfo } from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 // Plain compiler, which just runs the tool and returns whatever the output was
@@ -30,7 +31,7 @@ export class AnalysisTool extends BaseCompiler {
         return 'analysis-tool';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         // Default is to disable all "cosmetic" filters
         if (!info.disabledFilters) info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
         super(info, env);

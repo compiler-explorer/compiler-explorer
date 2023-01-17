@@ -28,13 +28,14 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {BaseCompiler} from '../base-compiler';
 
 import {ToitParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class ToitCompiler extends BaseCompiler {
     static get key() {
         return 'toit';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }

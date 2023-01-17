@@ -27,13 +27,14 @@ import path from 'path';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 import {Win32Compiler} from './win32';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class ClangCLCompiler extends Win32Compiler {
     static override get key() {
         return 'clang-cl';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
 
         this.compiler.supportsIrView = true;
@@ -64,7 +65,7 @@ export class ClangCLCompiler extends Win32Compiler {
         return this.filename(path.dirname(inputFilename) + '/output.s.obj');
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const options = super.optionsForFilter(filters, outputFilename);
 
         // Force the debugging info flag or we can't source locations.

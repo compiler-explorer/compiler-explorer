@@ -30,6 +30,9 @@ import {BaseCompiler} from '../base-compiler';
 import {CrystalAsmParser} from '../parsers/asm-parser-crystal';
 
 import {CrystalParser} from './argument-parsers';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { unwrap } from '../assert';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class CrystalCompiler extends BaseCompiler {
     static get key() {
@@ -38,7 +41,7 @@ export class CrystalCompiler extends BaseCompiler {
 
     ccPath: string;
 
-    constructor(compiler, env) {
+    constructor(compiler: CompilerInfo & Record<string, any>, env) {
         super(compiler, env);
         this.asm = new CrystalAsmParser();
         this.compiler.supportsIrView = true;
@@ -58,11 +61,15 @@ export class CrystalCompiler extends BaseCompiler {
         return execOptions;
     }
 
-    override optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
         const output = this.filename(this.getExecutableFilename(path.dirname(outputFilename), this.outputFilebase));
         let options = ['build', '-o', output];
 
-        const userRequestedEmit = _.any(userOptions, opt => opt.includes('--emit'));
+        const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));
         if (!filters.binary) {
             if (!userRequestedEmit) {
                 options = options.concat('--emit', 'asm');
@@ -72,15 +79,15 @@ export class CrystalCompiler extends BaseCompiler {
         return options;
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string) {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.s`);
     }
 
-    override getExecutableFilename(dirPath, outputFilebase) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, outputFilebase);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), this.outputFilebase);
     }
 

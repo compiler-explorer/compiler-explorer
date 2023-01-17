@@ -33,25 +33,27 @@ import {VcAsmParser} from '../parsers/asm-parser-vc';
 
 import {Win32VcCompiler} from './win32-vc';
 import { unwrap } from '../assert';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class WslVcCompiler extends Win32VcCompiler {
     static override get key() {
         return 'wsl-vc';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.asm = new VcAsmParser();
     }
 
-    override filename(fn) {
+    override filename(fn: string) {
         // AP: Need to translate compiler paths from what the Node.js process sees
         // on a Unix mounted volume (/mnt/c/tmp) to what CL sees on Windows (c:/tmp)
         // We know process.env.tmpDir is of format /mnt/X/dir where X is drive letter.
         const driveLetter = unwrap(process.env.winTmp).substring(5, 6);
         const directoryPath = unwrap(process.env.winTmp).substring(7);
         const windowsStyle = driveLetter.concat(':/', directoryPath);
-        return fn.replace(process.env.winTmp, windowsStyle);
+        return fn.replace(unwrap(process.env.winTmp), windowsStyle);
     }
 
     // AP: Create CE temp directory in winTmp directory instead of the tmpDir directory.
@@ -65,7 +67,7 @@ export class WslVcCompiler extends Win32VcCompiler {
         });
     }
 
-    override exec(compiler, args, options_) {
+    override exec(compiler: string, args: string[], options_: ExecutionOptions) {
         let options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
@@ -80,7 +82,12 @@ export class WslVcCompiler extends Win32VcCompiler {
         return super.exec(compiler, args, options);
     }
 
-    override runCompiler(compiler, options, inputFilename, execOptions) {
+    override runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

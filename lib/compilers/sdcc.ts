@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 import {GCCCompiler} from './gcc';
 
 export class SdccCompiler extends GCCCompiler {
@@ -29,7 +30,10 @@ export class SdccCompiler extends GCCCompiler {
         return 'sdcc';
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         let options = ['-o', this.filename(outputFilename)];
         if (!filters.binary) options = options.concat('-S');
         return options;

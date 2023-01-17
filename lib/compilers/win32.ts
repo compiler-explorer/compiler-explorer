@@ -32,6 +32,9 @@ import {MapFileReaderVS} from '../mapfiles/map-file-vs';
 import {AsmParser} from '../parsers/asm-parser';
 import {PELabelReconstructor} from '../pe32-support';
 import * as utils from '../utils';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -40,7 +43,7 @@ export class Win32Compiler extends BaseCompiler {
 
     binaryAsmParser: AsmParser;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);
@@ -55,11 +58,11 @@ export class Win32Compiler extends BaseCompiler {
         });
     }
 
-    override getExecutableFilename(dirPath, outputFilebase) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
@@ -71,17 +74,14 @@ export class Win32Compiler extends BaseCompiler {
 
     override getSharedLibraryLinks(libraries) {
         return _.flatten(
-            _.map(libraries, selectedLib => {
+            libraries.filter(selectedLib => {
+                const foundVersion = this.findLibVersion(selectedLib);
+                return !!foundVersion;
+            }).map(selectedLib => {
                 const foundVersion = this.findLibVersion(selectedLib);
                 if (!foundVersion) return false;
 
-                return _.map(foundVersion.liblink, lib => {
-                    if (lib) {
-                        return '"' + lib + '.lib"';
-                    } else {
-                        return false;
-                    }
-                });
+                return foundVersion.liblink.filter(lib => lib).map(lib => `"${lib}.lib"`);
             }),
         );
     }
@@ -92,7 +92,14 @@ export class Win32Compiler extends BaseCompiler {
         });
     }
 
-    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
 
@@ -106,10 +113,10 @@ export class Win32Compiler extends BaseCompiler {
 
         const libIncludes = this.getIncludeArguments(libraries);
         const libOptions = this.getLibraryOptions(libraries);
-        let libLinks = [];
-        let libPaths = [];
-        let preLink = [];
-        let staticlibLinks = [];
+        let libLinks: any[] = [];
+        let libPaths: string[] = [];
+        let preLink: string[] = [];
+        let staticlibLinks: string[] = [];
 
         if (filters.binary) {
             preLink = ['/link'];
@@ -131,12 +138,16 @@ export class Win32Compiler extends BaseCompiler {
         );
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            filters.preProcessBinaryAsmLines = asmLines => {
+            (filters as any).preProcessBinaryAsmLines = asmLines => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 
@@ -171,7 +182,7 @@ export class Win32Compiler extends BaseCompiler {
         }
     }
 
-    override exec(compiler, args, options_) {
+    override exec(compiler: string, args: string[], options_: ExecutionOptions) {
         let options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 

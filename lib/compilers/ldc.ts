@@ -31,19 +31,22 @@ import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 
 import {LDCParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class LDCCompiler extends BaseCompiler {
     static get key() {
         return 'ldc';
     }
 
-    constructor(info, env) {
+    asanSymbolizerPath: string;
+
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['-output-ll'];
 
-        this.asanSymbolizerPath = this.compilerProps('llvmSymbolizer');
+        this.asanSymbolizerPath = this.compilerProps<string>('llvmSymbolizer');
     }
 
     override runExecutable(executable, executeParameters, homeDir) {

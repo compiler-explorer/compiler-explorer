@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 import {KotlinParser} from './argument-parsers';
 import {JavaCompiler} from './java';
 
@@ -32,7 +34,7 @@ export class KotlinCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }
@@ -50,7 +52,7 @@ export class KotlinCompiler extends JavaCompiler {
         return 'ExampleKt';
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         // filter options without extra arguments
         userOptions = (userOptions || []).filter(
             option => option !== '-script' && option !== '-progressive' && !option.startsWith('-Xjavac'),
@@ -71,7 +73,7 @@ export class KotlinCompiler extends JavaCompiler {
         return super.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         // Forcibly enable javap
         filters.binary = true;
 

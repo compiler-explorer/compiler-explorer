@@ -45,7 +45,7 @@ export class SolidityCompiler extends BaseCompiler {
         return ClangParser;
     }
 
-    override optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter() {
         return [
             // We use --combined-json instead of `--asm-json` to have compacted json
             '--combined-json',
@@ -61,7 +61,7 @@ export class SolidityCompiler extends BaseCompiler {
         return false;
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string) {
         return path.join(dirPath, 'contracts/combined.json');
     }
 
@@ -88,7 +88,7 @@ export class SolidityCompiler extends BaseCompiler {
 
         const asm = JSON.parse(result.asm);
         return {
-            asm: Object.entries(asm.contracts)
+            asm: (Object.entries(asm.contracts) as [string, any][])
                 .sort(([_name1, data1], [_name2, data2]) => data1.asm['.code'][0].begin - data2.asm['.code'][0].begin)
                 .map(([name, data]) => {
                     // name is in the format of file:contract
@@ -264,7 +264,7 @@ export class SolidityCompiler extends BaseCompiler {
                         {text: ''},
                         // .data section is deployed bytecode - everything else
                         {text: '.data'},
-                        Object.entries(data.asm['.data']).map(([id, {'.code': code}]) => [
+                        (Object.entries(data.asm['.data']) as [string, any][]).map(([id, {'.code': code}]) => [
                             {text: `\t${id}:`},
                             processOpcodes(code, '\t', generatedSourcesRuntime),
                         ]),

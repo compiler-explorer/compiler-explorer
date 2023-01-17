@@ -27,20 +27,22 @@ import path from 'path';
 import {BaseCompiler} from '../base-compiler';
 
 import {ClangParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class HaskellCompiler extends BaseCompiler {
     static get key() {
         return 'haskell';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsHaskellCoreView = true;
         this.compiler.supportsHaskellStgView = true;
         this.compiler.supportsHaskellCmmView = true;
     }
 
-    override optionsForBackend(backendOptions, outputFilename) {
+    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string) {
         const opts = super.optionsForBackend(backendOptions, outputFilename);
 
         const anydump =
@@ -63,7 +65,10 @@ export class HaskellCompiler extends BaseCompiler {
         return opts;
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         const options = ['-g', '-o', this.filename(outputFilename)];
         if (!filters.binary) options.unshift('-S');
         return options;

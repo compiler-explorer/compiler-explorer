@@ -25,7 +25,7 @@
 import {ClangCompiler} from './clang';
 
 export class EllccCompiler extends ClangCompiler {
-    static get key() {
+    static override get key() {
         return 'ellcc';
     }
 

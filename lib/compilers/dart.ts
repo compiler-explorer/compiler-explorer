@@ -29,9 +29,11 @@ import {DartAsmParser} from '../parsers/asm-parser-dart';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class DartCompiler extends BaseCompiler {
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.asm = new DartAsmParser();
     }
@@ -40,7 +42,14 @@ export class DartCompiler extends BaseCompiler {
         return 'dart';
     }
 
-    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 
         if (this.compiler.options) {
@@ -54,7 +63,11 @@ export class DartCompiler extends BaseCompiler {
         return options.concat(libIncludes, libOptions, userOptions, [this.filename(inputFilename)]);
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[]
+    ) {
         // Dart includes way too much of the standard library (even for simple programs)
         // to show all of it without truncation
         filters.libraryCode = true;

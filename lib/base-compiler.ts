@@ -98,7 +98,7 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    protected demanglerClass: any; // TODO: Will be able to do better once #4607 lands
+    protected demanglerClass: any; // TODO(jeremy-rifkin): Will be able to do better once #4607 lands
     protected objdumperClass: any;
     public outputFilebase: string;
     protected mtime: Date | null = null;
@@ -287,7 +287,7 @@ export class BaseCompiler implements ICompiler {
         });
     }
 
-    optOutputRequested(options) {
+    optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
     }
 
@@ -388,7 +388,7 @@ export class BaseCompiler implements ICompiler {
         return !!this.objdumperClass;
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename) {
+    getObjdumpOutputFilename(defaultOutputFilename: string): string {
         return defaultOutputFilename;
     }
 
@@ -520,7 +520,7 @@ export class BaseCompiler implements ICompiler {
         return outputFilename.replace(path.extname(outputFilename), '.dump');
     }
 
-    getGccDumpOptions(gccDumpOptions, outputFilename) {
+    getGccDumpOptions(gccDumpOptions, outputFilename: string) {
         const addOpts = ['-fdump-passes'];
 
         // Build dump options to append to the end of the -fdump command-line flag.
@@ -1235,7 +1235,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -1254,7 +1254,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    getExecutableFilename(dirPath, outputFilebase, key?) {
+    getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
@@ -1423,7 +1423,7 @@ export class BaseCompiler implements ICompiler {
         result.artifacts.push(artifact);
     }
 
-    protected async writeMultipleFiles(files, dirPath) {
+    protected async writeMultipleFiles(files: any[], dirPath: string) {
         const filesToWrite: Promise<void>[] = [];
 
         for (const file of files) {
@@ -1436,7 +1436,7 @@ export class BaseCompiler implements ICompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(dirPath, source, files, filters: ParseFiltersAndOutputOptions) {
+    protected async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -1466,7 +1466,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
+    async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
         const downloads = await this.setupBuildEnvironment(key, dirPath, true);
 

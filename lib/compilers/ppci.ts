@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
@@ -33,7 +34,7 @@ export class PPCICompiler extends BaseCompiler {
         return 'ppci';
     }
 
-    override filterUserOptions(args) {
+    override filterUserOptions(args: string[]) {
         return args.filter(item => {
             if (typeof item !== 'string') return true;
 
@@ -41,7 +42,7 @@ export class PPCICompiler extends BaseCompiler {
         });
     }
 
-    override exec(compiler, args, options) {
+    override exec(compiler: string, args: string[], options: ExecutionOptions) {
         if (compiler.endsWith('.py')) {
             const python = this.env.ceProps('python3');
             options = options || {};

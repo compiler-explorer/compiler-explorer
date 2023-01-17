@@ -29,6 +29,9 @@ import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
 import {ClangParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { unwrap } from '../assert';
 
 // Each arch has a list of jump instructions in
 // Go source src/cmd/asm/internal/arch.
@@ -55,7 +58,7 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
         const goroot = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goroot`);
         const goarch = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goarch`);
@@ -219,21 +222,25 @@ export class GolangCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
         // If we're dealing with an older version...
         if (this.compiler.id === '6g141') {
             return ['tool', '6g', '-g', '-o', outputFilename, '-S'];
         }
 
         if (filters.binary) {
-            return ['build', '-o', outputFilename, '-gcflags=' + userOptions.join(' ')];
+            return ['build', '-o', outputFilename, '-gcflags=' + unwrap(userOptions).join(' ')];
         } else {
             // Add userOptions to -gcflags to preserve previous behavior.
-            return ['build', '-o', outputFilename, '-gcflags=-S ' + userOptions.join(' ')];
+            return ['build', '-o', outputFilename, '-gcflags=-S ' + unwrap(userOptions).join(' ')];
         }
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         if (this.compiler.id === '6g141') {
             return userOptions;
         }

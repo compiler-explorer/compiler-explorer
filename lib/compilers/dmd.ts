@@ -27,13 +27,15 @@ import path from 'path';
 import {BaseCompiler} from '../base-compiler';
 
 import {ClangParser} from './argument-parsers';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class DMDCompiler extends BaseCompiler {
     static get key() {
         return 'dmd';
     }
 
-    constructor(compiler, env) {
+    constructor(compiler: CompilerInfo & Record<string, any>, env) {
         super(compiler, env);
         this.compiler.supportsIntel = true;
     }
@@ -42,7 +44,7 @@ export class DMDCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-g', '-of' + this.filename(outputFilename)];
     }
 
@@ -55,7 +57,7 @@ export class DMDCompiler extends BaseCompiler {
         );
     }
 
-    override getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, `${outputFilebase}.s`);
     }
 
@@ -69,7 +71,7 @@ export class DMDCompiler extends BaseCompiler {
         return ClangParser;
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         return userOptions.filter(option => option !== '-run' && option !== '-man' && !option.startsWith('-Xf'));
     }
 }

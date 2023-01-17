@@ -26,13 +26,15 @@ import temp from 'temp';
 
 import {BaseCompiler} from '../base-compiler';
 import {AsmEWAVRParser} from '../parsers/asm-parser-ewavr';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class EWARMCompiler extends BaseCompiler {
     static get key() {
         return 'ewarm';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.asm = new AsmEWAVRParser(this.compilerProps);
     }
@@ -46,7 +48,10 @@ export class EWARMCompiler extends BaseCompiler {
         });
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         if (filters.binary) {
             return [];
         }

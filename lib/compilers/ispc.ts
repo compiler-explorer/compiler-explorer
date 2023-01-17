@@ -29,23 +29,28 @@ import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
 
 import {ISPCParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {
         return 'ispc';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];
     }
 
-    override couldSupportASTDump(version) {
+    override couldSupportASTDump(version: string) {
         return Semver.gte(asSafeVer(this.compiler.semver), '1.18.0', true);
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         let options = ['--target=avx2-i32x8', '--emit-asm', '-g', '-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
@@ -53,7 +58,7 @@ export class ISPCCompiler extends BaseCompiler {
         return options;
     }
 
-    override async generateIR(inputFilename, options, filters) {
+    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         const newOptions = [...options, ...this.compiler.irArg, '-o', this.getIrOutputFilename(inputFilename)];
         return super.generateIR(inputFilename, newOptions, filters);
     }

@@ -22,6 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { CompilationResult, ExecutionOptions } from '../../types/compilation/compilation.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {TypeScriptNativeParser} from './argument-parsers';
@@ -34,7 +37,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     tscJit: string;
     tscSharedLib: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
 
         this.compiler.supportsIntel = false;
@@ -48,7 +51,10 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         return [this.filename(outputFilename)];
     }
 
@@ -62,7 +68,12 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return await super.handleInterpreting(key, executeParameters);
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ): Promise<CompilationResult> {
         // These options make Clang produce an IR
         const newOptions = ['--emit=mlir-llvm', inputFilename];
 
@@ -77,13 +88,15 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             execOptions,
         );
         if (output.code !== 0) {
-            return [{text: 'Failed to run compiler to get MLIR code'}];
+            return {code: output.code, timedOut: false, stdout: [], stderr: [{
+                text: 'Failed to run compiler to get MLIR code'
+            }]};
         }
 
-        return {code: 0};
+        return {code: 0, timedOut: false, stdout: [], stderr: []};
     }
 
-    override async generateIR(inputFilename, options, filters) {
+    override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
         const newOptions = ['--emit=llvm', inputFilename];
 

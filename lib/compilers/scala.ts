@@ -28,6 +28,8 @@ import {asSafeVer} from '../utils';
 
 import {ScalaParser} from './argument-parsers';
 import {JavaCompiler} from './java';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class ScalaCompiler extends JavaCompiler {
     static override get key() {
@@ -36,7 +38,7 @@ export class ScalaCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }
@@ -50,7 +52,7 @@ export class ScalaCompiler extends JavaCompiler {
         return execOptions;
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         // filter options without extra arguments
         userOptions = userOptions.filter(option => option !== '-Xscript');
 
@@ -64,7 +66,7 @@ export class ScalaCompiler extends JavaCompiler {
         return super.filterUserOptionsWithArg(userOptions, oneArgForbiddenList);
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         // Forcibly enable javap
         filters.binary = true;
 

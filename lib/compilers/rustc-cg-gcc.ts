@@ -25,13 +25,15 @@
 import path from 'path';
 
 import {RustCompiler} from './rust';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class RustcCgGCCCompiler extends RustCompiler {
     static override get key() {
         return 'rustc-cg-gcc';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsIrView = false;
 
@@ -47,11 +49,15 @@ export class RustcCgGCCCompiler extends RustCompiler {
         this.compiler.removeEmptyGccDump = false;
     }
 
-    override getGccDumpOptions(gccDumpOptions, removeEmptyPasses) {
-        return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, removeEmptyPasses).join(' ')];
+    override getGccDumpOptions(gccDumpOptions, outputFilename: string) {
+        return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')];
     }
 
-    override optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
         // these options are direcly taken from rustc_codegen_gcc doc.
         // See https://github.com/antoyo/rustc_codegen_gcc
         let toolroot = path.resolve(path.dirname(this.compiler.exe), '..');

@@ -28,6 +28,7 @@ import {CompilationResult, ExecutionOptions} from '../../types/compilation/compi
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class RacketCompiler extends BaseCompiler {
     private raco: string;
@@ -36,7 +37,7 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         // Disable output filters, as they currently don't do anything
         if (!info.disabledFilters) {
             info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];

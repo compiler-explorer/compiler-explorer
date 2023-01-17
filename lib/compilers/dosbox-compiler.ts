@@ -30,12 +30,14 @@ import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import {TurboCAsmParser} from '../parsers/asm-parser-turboc';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
 
         this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);
@@ -149,7 +151,12 @@ export class DosboxCompiler extends BaseCompiler {
         return result;
     }
 
-    public override async runCompiler(compiler, options, inputFilename, execOptions) {
+    public override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         return super.runCompiler(
             compiler,
             options.map(option => {

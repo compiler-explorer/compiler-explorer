@@ -31,7 +31,10 @@ import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {JavaParser} from './argument-parsers';
-import { ParsedAsmResult } from '../../types/asmresult/asmresult.interfaces';
+import { ParsedAsmResult, ParsedAsmResultLine } from '../../types/asmresult/asmresult.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { unwrap } from '../assert';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class JavaCompiler extends BaseCompiler {
     static get key() {
@@ -41,7 +44,7 @@ export class JavaCompiler extends BaseCompiler {
     javaRuntime: string;
     mainRegex: RegExp;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         // Default is to disable all "cosmetic" filters
         if (!compilerInfo.disabledFilters) {
             compilerInfo.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
@@ -55,7 +58,7 @@ export class JavaCompiler extends BaseCompiler {
         return [];
     }
 
-    override async objdump(outputFilename, result, maxSize) {
+    override async objdump(outputFilename, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
         const files = await fs.readdir(dirPath);
         logger.verbose('Class files: ', files);
@@ -94,7 +97,7 @@ export class JavaCompiler extends BaseCompiler {
                 }),
         );
 
-        const merged = {asm: []};
+        const merged = {asm: [] as ParsedAsmResultLine[][]};
         for (const result of results) {
             const asmBackup = merged.asm;
             Object.assign(merged, result);
@@ -106,7 +109,7 @@ export class JavaCompiler extends BaseCompiler {
         return result;
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         // Forcibly enable javap
         filters.binary = true;
 
@@ -128,9 +131,11 @@ export class JavaCompiler extends BaseCompiler {
                 ...executeParameters.args,
             ];
             const result = await this.runExecutable(this.javaRuntime, executeParameters, compileResult.dirPath);
-            result.didExecute = true;
-            result.buildResult = compileResult;
-            return result;
+            return {
+                ...result,
+                didExecute: true,
+                buildResult: compileResult
+            };
         } else {
             return {
                 stdout: compileResult.stdout,
@@ -138,11 +143,12 @@ export class JavaCompiler extends BaseCompiler {
                 code: compileResult.code,
                 didExecute: false,
                 buildResult: compileResult,
+                timedOut: false
             };
         }
     }
 
-    async getMainClassName(dirPath) {
+    async getMainClassName(dirPath: string) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const files = await fs.readdir(dirPath);
         const results = await Promise.all(
@@ -168,7 +174,7 @@ export class JavaCompiler extends BaseCompiler {
         const candidates = results.filter(file => file !== null);
         if (candidates.length > 0) {
             // In case of multiple candidates, we'll just take the first one.
-            const fileName = candidates[0];
+            const fileName = unwrap(candidates[0]);
             return fileName.substring(0, fileName.lastIndexOf('.'));
         }
         // We were unable to find a main method, let's error out assuming "Main"
@@ -179,12 +185,12 @@ export class JavaCompiler extends BaseCompiler {
         return JavaParser;
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string) {
         return path.join(dirPath, `${path.basename(this.compileFilename, this.lang.extensions[0])}.class`);
     }
 
-    filterUserOptionsWithArg(userOptions, oneArgForbiddenList) {
-        const filteredOptions = [];
+    filterUserOptionsWithArg(userOptions: string[], oneArgForbiddenList: Set<string>) {
+        const filteredOptions: string[] = [];
         let toSkip = 0;
 
         for (const userOption of userOptions) {
@@ -203,7 +209,7 @@ export class JavaCompiler extends BaseCompiler {
         return filteredOptions;
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         const oneArgForbiddenList = new Set([
             // -d directory
             // Sets the destination directory for class files.
@@ -231,7 +237,7 @@ export class JavaCompiler extends BaseCompiler {
         // Sort class file outputs according to first source line they reference
         parseds.sort((o1, o2) => o1.firstSourceLine - o2.firstSourceLine);
 
-        const segments = [];
+        const segments: ParsedAsmResultLine[] = [];
         for (const [classNumber, parsed] of parseds.entries()) {
             if (classNumber > 0) {
                 // Separate classes with two line breaks
@@ -265,8 +271,8 @@ export class JavaCompiler extends BaseCompiler {
     }
 
     parseAsmForClass(javapOut) {
-        const textsBeforeMethod = [];
-        const methods = [];
+        const textsBeforeMethod: string[] = [];
+        const methods: {instructions: any[], startLine?: number}[] = [];
         // javap output puts `    Code:` after every signature. (Line will not be shown to user)
         // We use this to find the individual methods.
         // Before the first `Code:` occurrence, there is the method signature as well as the name of the class.
@@ -279,7 +285,7 @@ export class JavaCompiler extends BaseCompiler {
         for (const codeAndLineNumberTable of codeAndLineNumberTables) {
             const method = {
                 instructions: [],
-            };
+            } as typeof methods[0];
             methods.push(method);
 
             for (const codeLineCandidate of utils.splitLines(codeAndLineNumberTable)) {
@@ -369,7 +375,7 @@ export class JavaCompiler extends BaseCompiler {
         }
         return {
             // Used for sorting
-            firstSourceLine: methods.reduce((p, m) => (p === -1 ? m.startLine : Math.min(p, m.startLine)), -1),
+            firstSourceLine: methods.reduce((p, m) => (p === -1 ? unwrap(m.startLine) : Math.min(p, unwrap(m.startLine))), -1),
             methods: methods,
             textsBeforeMethod,
         };

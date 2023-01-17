@@ -25,17 +25,23 @@
 import _ from 'underscore';
 
 import {BaseCompiler} from '../base-compiler';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { unwrap } from '../assert';
 
 export class TinyCCompiler extends BaseCompiler {
     static get key() {
         return 'tinyc';
     }
 
-    override optionsForFilter(filters, outputFilename, userOptions) {
-        if (_.some(userOptions, opt => opt === '--help' || opt === '-h' || opt === '-hh')) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
+        if (_.some(unwrap(userOptions), opt => opt === '--help' || opt === '-h' || opt === '-hh')) {
             return [];
         } else {
-            if (!_.some(userOptions, opt => opt === '-E')) {
+            if (!_.some(unwrap(userOptions), opt => opt === '-E')) {
                 filters.binary = true;
             }
             return ['-g', '-o', this.filename(outputFilename)];

@@ -30,19 +30,22 @@ import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
 import { ResultLine } from '../../types/resultline/resultline.interfaces';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class PtxAssembler extends BaseCompiler {
     static get key() {
         return 'ptxas';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compileFilename = 'example.ptxas';
         this.asm = new SassAsmParser();
     }
 
-    parsePtxOutput(lines, inputFilename, pathPrefix) {
+    parsePtxOutput(lines: string, inputFilename: string, pathPrefix: string) {
         const re = /^ptxas\s*<source>, line (\d+);(.*)/;
         const result: ResultLine[] = [];
         utils.eachLine(lines, function (line) {
@@ -81,12 +84,17 @@ export class PtxAssembler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions) {
         filters.binary = true;
         return [];
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -98,20 +106,22 @@ export class PtxAssembler extends BaseCompiler {
         return {
             ...result,
             inputFilename,
-            stdout: this.parsePtxOutput(result.stdout, './' + this.compileFilename),
-            stderr: this.parsePtxOutput(result.stderr, './' + this.compileFilename),
+            stdout: this.parsePtxOutput(result.stdout, './' + this.compileFilename, "no idea what to put here"),
+            stderr: this.parsePtxOutput(result.stderr, './' + this.compileFilename, "no idea what to put here"),
         };
     }
 
-    override getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, `${outputFilebase}.cubin`);
     }
 
-    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters) {
+    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override async objdump(outputFilename, result, maxSize) {
+    override async objdump(outputFilename,
+        result: any,
+        maxSize: number,) {
         const dirPath = path.dirname(outputFilename);
         let args = ['-c', '-g', '-hex', outputFilename];
         const objResult = await this.exec(this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});

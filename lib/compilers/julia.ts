@@ -30,6 +30,8 @@ import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class JuliaCompiler extends BaseCompiler {
     private compilerWrapperPath: string;
@@ -38,7 +40,7 @@ export class JuliaCompiler extends BaseCompiler {
         return 'julia';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -89,7 +91,7 @@ export class JuliaCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string,) {
         return [];
     }
 

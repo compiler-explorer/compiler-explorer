@@ -38,6 +38,7 @@ import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 import * as utils from '../utils';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -50,7 +51,7 @@ class DotNetCompiler extends BaseCompiler {
 
     private crossgen2VersionString: string;
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
 
         this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
@@ -284,7 +285,7 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async ensureCrossgen2Version(execOptions) {
+    async ensureCrossgen2Version(execOptions: ExecutionOptions) {
         if (!this.crossgen2VersionString) {
             this.crossgen2VersionString = '// crossgen2 ';
 
@@ -301,7 +302,7 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async runCrossgen2(execOptions, bclPath, dllPath, options, outputPath) {
+    async runCrossgen2(execOptions: ExecutionOptions, bclPath: string, dllPath: string, options: string[], outputPath: string) {
         await this.ensureCrossgen2Version(execOptions);
 
         const crossgen2Options = [

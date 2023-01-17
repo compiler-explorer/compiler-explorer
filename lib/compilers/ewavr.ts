@@ -26,13 +26,15 @@ import temp from 'temp';
 
 import {BaseCompiler} from '../base-compiler';
 import {AsmEWAVRParser} from '../parsers/asm-parser-ewavr';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class EWAVRCompiler extends BaseCompiler {
     static get key() {
         return 'ewavr';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         info.supportsDemangle = false;
         info.supportsLibraryCodeFilter = false;
         super(info, env);
@@ -48,7 +50,10 @@ export class EWAVRCompiler extends BaseCompiler {
         });
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         if (filters.binary) {
             return [];
         }

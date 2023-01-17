@@ -30,23 +30,31 @@ import {VcAsmParser} from '../parsers/asm-parser-vc';
 import {PELabelReconstructor} from '../pe32-support';
 
 import {VCParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class WineVcCompiler extends BaseCompiler {
     static get key() {
         return 'wine-vc';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         info.supportsFiltersInBinary = true;
         super(info, env);
         this.asm = new VcAsmParser();
     }
 
-    override filename(fn) {
+    override filename(fn: string) {
         return 'Z:' + fn;
     }
 
-    override runCompiler(compiler, options, inputFilename, execOptions) {
+    override runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -63,11 +71,11 @@ export class WineVcCompiler extends BaseCompiler {
         return VCParser;
     }
 
-    override getExecutableFilename(dirPath, outputFilebase) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return this.getOutputFilename(dirPath, outputFilebase) + '.exe';
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         return this.getExecutableFilename(path.dirname(defaultOutputFilename), 'output');
     }
 
@@ -75,12 +83,15 @@ export class WineVcCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
 
-            filters.preProcessBinaryAsmLines = asmLines => {
+            (filters as any).preProcessBinaryAsmLines = asmLines => {
                 const reconstructor = new PELabelReconstructor(asmLines, false, mapFileReader);
                 reconstructor.run('output.s.obj');
 

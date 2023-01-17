@@ -34,13 +34,14 @@ import {AsmRaw} from '../parsers/asm-raw';
 import {fileExists} from '../utils';
 
 import {BaseParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class AssemblyCompiler extends BaseCompiler {
     static get key() {
         return 'assembly';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.asm = new AsmRaw();
     }
@@ -53,12 +54,16 @@ export class AssemblyCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
         filters.binary = true;
         return [];
     }
 
-    getGeneratedOutputFilename(fn) {
+    getGeneratedOutputFilename(fn: string) {
         const outputFolder = path.dirname(fn);
         const files = fs.readdirSync(outputFolder);
 
@@ -72,7 +77,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return outputFilename;
     }
 
-    override getOutputFilename(dirPath) {
+    override getOutputFilename(dirPath: string) {
         return this.getGeneratedOutputFilename(path.join(dirPath, 'example.asm'));
     }
 
@@ -126,11 +131,11 @@ export class AssemblyCompiler extends BaseCompiler {
         return this.doBuildstepAndAddToResult(fullResult, 'ld', this.env.ceProps('ld'), options, execOptions);
     }
 
-    override getExecutableFilename(dirPath) {
+    override getExecutableFilename(dirPath: string) {
         return path.join(dirPath, 'ce-asm-executable');
     }
 
-    override async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
+    override async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
         const buildEnvironment = this.setupBuildEnvironment(key, dirPath, true);
 
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
@@ -178,11 +183,11 @@ export class AssemblyCompiler extends BaseCompiler {
         return fullResult;
     }
 
-    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters) {
+    override checkOutputFileAndDoPostProcess(asmResult, outputFilename, filters: ParseFiltersAndOutputOptions) {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string): string {
         return this.getGeneratedOutputFilename(defaultOutputFilename);
     }
 

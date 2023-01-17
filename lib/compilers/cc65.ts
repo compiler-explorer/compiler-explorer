@@ -33,13 +33,14 @@ import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
         return 'cc65';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
         super(compilerInfo, env);
 
         this.asm = new CC65AsmParser(this.compilerProps);
@@ -60,7 +61,10 @@ export class Cc65Compiler extends BaseCompiler {
         ) as string[];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         if (filters.binary) {
             return ['-g', '-o', this.filename(outputFilename)];
         } else {
@@ -99,8 +103,8 @@ export class Cc65Compiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc,
-        dynamicReloc,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const res = await super.objdump(

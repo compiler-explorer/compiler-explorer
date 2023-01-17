@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 import {AnalysisTool} from './analysis-tool';
 import {ClangParser} from './argument-parsers';
 
@@ -35,12 +36,12 @@ export class LLVMmcaTool extends AnalysisTool {
         return false;
     }
 
-    getOutputFilenameArgs(filename) {
+    getOutputFilenameArgs(filename: string) {
         // TODO: Some tools might require an argument of the form -arg=filename
         return ['-o', filename];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = this.getOutputFilenameArgs(outputFilename);
         // Some tools might require more than one arg, so split(' ')
         if (filters.intel) options = options.concat(this.compiler.intelAsm.split(' '));

@@ -32,6 +32,9 @@ import {SassAsmParser} from '../parsers/asm-parser-sass';
 import {asSafeVer} from '../utils';
 
 import {ClangParser} from './argument-parsers';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import { CompilationInfo } from '../../types/compilation/compilation.interfaces';
 
 export class NvccCompiler extends BaseCompiler {
     static get key() {
@@ -40,7 +43,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;
@@ -51,14 +54,11 @@ export class NvccCompiler extends BaseCompiler {
     // * lots of whitespace from nvcc
     // * would be nice to try and filter unused `.func`s from e.g. clang output
 
-    /**
-     *
-     * @param {import('../../types/features/filters.interfaces').ParseFiltersAndOutputOptions} filters
-     * @param {string} outputFilename
-     * @param {string[]?} userOptions
-     * @returns {string[]}
-     */
-    override optionsForFilter(filters, outputFilename, userOptions) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ) {
         const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo'];
         if (!filters.execute) {
             opts.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));
@@ -73,7 +73,7 @@ export class NvccCompiler extends BaseCompiler {
         return ClangParser;
     }
 
-    override optOutputRequested(options) {
+    override optOutputRequested(options: string[]) {
         return (
             super.optOutputRequested(options) ||
             options.includes('--optimization-info') ||
@@ -81,13 +81,7 @@ export class NvccCompiler extends BaseCompiler {
         );
     }
 
-    /**
-     *
-     * @param {string} outputFilename
-     * @param {*} result
-     * @param {number} maxOutput
-     */
-    async nvdisasm(outputFilename, result, maxOutput) {
+    async nvdisasm(outputFilename: string, result: any, maxOutput: number) {
         const {nvdisasm, semver} = this.compiler;
 
         const args = Semver.lt(asSafeVer(semver), '11.0.0', true)
@@ -105,18 +99,12 @@ export class NvccCompiler extends BaseCompiler {
         return result;
     }
 
-    /**
-     *
-     * @param {*} result
-     * @param {string} outputFilename
-     * @param {import('../../types/features/filters.interfaces').ParseFiltersAndOutputOptions} filters
-     */
-    override async postProcess(result, outputFilename, filters) {
+    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : Promise.resolve('');
         const asmPromise = (
             filters.binary
-                ? this.objdump(outputFilename, {}, maxSize, filters.intel, filters.demangle, filters)
+                ? this.objdump(outputFilename, {}, maxSize, filters.intel, filters.demangle, false, false, filters)
                 : fs.readFile(outputFilename, {encoding: 'utf8'})
         ).then(asm => {
             result.asm = typeof asm === 'string' ? asm : asm.asm;
@@ -125,14 +113,7 @@ export class NvccCompiler extends BaseCompiler {
         return Promise.all([asmPromise, optPromise]);
     }
 
-    /**
-     *
-     * @param {*} result
-     * @param {*} filters
-     * @param {import('../../types/compilation/compilation.interfaces').CompilationInfo} compilationInfo
-     * @returns
-     */
-    override async extractDeviceCode(result, filters, compilationInfo) {
+    override async extractDeviceCode(result, filters, compilationInfo: CompilationInfo) {
         const {dirPath} = result;
         const {demangle} = filters;
         const devices = {...result.devices};

@@ -31,6 +31,8 @@ import {BaseCompiler} from '../base-compiler';
 
 import {NimParser} from './argument-parsers';
 import { unwrap } from '../assert';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 const NimCommands = ['compile', 'compileToC', 'c', 'compileToCpp', 'cpp', 'cc', 'compileToOC', 'objc', 'js', 'check'];
 
@@ -39,7 +41,7 @@ export class NimCompiler extends BaseCompiler {
         return 'nim';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }
@@ -48,7 +50,10 @@ export class NimCompiler extends BaseCompiler {
         return outputFilename + '.cache';
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+    ) {
         return [
             '--debugger:native', // debugging info
             '-o:' + outputFilename, //output file, only for js mode
@@ -57,7 +62,7 @@ export class NimCompiler extends BaseCompiler {
         ];
     }
 
-    override filterUserOptions(userOptions) {
+    override filterUserOptions(userOptions: string[]) {
         //If none of the allowed commands is present in userOptions add 'compile' command
         if (_.intersection(userOptions, NimCommands).length === 0) {
             userOptions.unshift('compile');
@@ -66,7 +71,7 @@ export class NimCompiler extends BaseCompiler {
         return userOptions.filter(option => !['--run', '-r'].includes(option));
     }
 
-    expectedExtensionFromCommand(command) {
+    expectedExtensionFromCommand(command: string) {
         const isC = ['compile', 'compileToC', 'c'],
             isCpp = ['compileToCpp', 'cpp', 'cc'],
             isObjC = ['compileToOC', 'objc'];
@@ -77,7 +82,7 @@ export class NimCompiler extends BaseCompiler {
         else return null;
     }
 
-    getCacheFile(options, inputFilename, cacheDir) {
+    getCacheFile(options: string[], inputFilename: string, cacheDir: string) {
         const commandsInOptions = _.intersection(options, NimCommands);
         if (commandsInOptions.length === 0) return null;
         const command = commandsInOptions[0];
@@ -88,7 +93,7 @@ export class NimCompiler extends BaseCompiler {
         return path.join(cacheDir, resultName);
     }
 
-    override async postProcess(result, outputFilename, filters) {
+    override async postProcess(result, outputFilename: string, filters: ParseFiltersAndOutputOptions) {
         const options = result.compilationOptions;
         const cacheDir = this.cacheDir(outputFilename);
         try {
@@ -116,7 +121,16 @@ export class NimCompiler extends BaseCompiler {
         return true;
     }
 
-    override orderArguments(options, inputFilename, libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks) {
+    override orderArguments(
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
+    ) {
         return options.concat(
             libIncludes,
             libOptions,

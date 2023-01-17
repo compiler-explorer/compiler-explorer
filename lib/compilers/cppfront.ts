@@ -27,13 +27,14 @@ import path from 'path';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserCpp} from '../parsers/asm-parser-cpp';
+import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class CppFrontCompiler extends BaseCompiler {
     static get key() {
         return 'cppfront';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo & Record<string, any>, env) {
         super(info, env);
 
         this.asm = new AsmParserCpp();
