@@ -38,7 +38,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         return 'llvm-ir';
     }
 
-    override collectLabels() {
+    protected override collectLabels() {
         for (const line of this.result.asm) {
             const text = line.text;
             if (!text) continue;
@@ -51,7 +51,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
     }
 
-    collect(result: {asm: ResultLine[]}) {
+    public collect(result: {asm: ResultLine[]}) {
         this.result = result;
         if (!this.symbolstore) {
             this.symbolstore = new SymbolStore();
@@ -59,7 +59,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         }
     }
 
-    processPassOutput(passOutput: LLVMOptPipelineResults, demanglerOutput) {
+    protected processPassOutput(passOutput: LLVMOptPipelineResults, demanglerOutput) {
         if (demanglerOutput.stdout.length === 0 && demanglerOutput.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, demanglerOutput);
             return passOutput;
@@ -95,7 +95,7 @@ export class LLVMIRDemangler extends BaseDemangler {
         return passOutput;
     }
 
-    async demangleLLVMPasses(passOutput: LLVMOptPipelineResults) {
+    public async demangleLLVMPasses(passOutput: LLVMOptPipelineResults) {
         const options = {
             input: this.getInput(),
         };

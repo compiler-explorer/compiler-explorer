@@ -22,6 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {unwrap} from '../assert';
+import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmRegex} from '../parsers/asmregex';
 import {SymbolStore} from '../symbol-store';
@@ -30,42 +35,53 @@ import * as utils from '../utils';
 import {PrefixTree} from './prefix-tree';
 
 export class BaseDemangler extends AsmRegex {
-    constructor(demanglerExe, compiler) {
+    demanglerExe: string;
+    demanglerArguments: string[];
+    symbolstore: SymbolStore | null;
+    othersymbols: SymbolStore;
+    result: ParsedAsmResult;
+    input: string[];
+    includeMetadata: boolean;
+    compiler: BaseCompiler;
+
+    readonly jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*)/i;
+    readonly callDef = /callq?\s+([$._a-z][\w$.@]*)/i;
+    readonly callPtrDef1 = /callq?.*ptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)]/i;
+    readonly callPtrDef2 = /callq?\s+([$*._a-z][\w$.@]*)/i;
+    readonly callPtrDef3 = /callq?.*\[qword ptr\s([$._a-z][\w$.@]*).*]/i;
+    readonly callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)\+?\d?]/i;
+
+    // symbols in a mov or lea command starting with an underscore
+    readonly movUnderscoreDef = /mov.*\s(_[\w$.@]*)/i;
+    readonly leaUnderscoreDef = /lea.*\s(_[\w$.@]*)/i;
+    readonly quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
+
+    // E.g., ".entry _Z6squarePii("
+    // E.g., ".func  (.param .b32 func_retval0) bar("
+    readonly ptxFuncDef = /\.(entry|func)\s+(?:\([^)]*\)\s*)?([$.A-Z_a-z][\w$.]*)\(/;
+    // E.g., ".const .attribute(.managed) .align 4 .v4 .u32 myvar"
+    // E.g., ".global .texref mytex"
+    readonly ptxVarDef =
+        /^\.(global|const)\s+(?:\.(tex|sampler|surf)ref\s+)?(?:\.attribute\([^)]*\)\s+)?(?:\.align\s+\d+\s+)?(?:\.v\d+\s+)?(?:\.[a-z]\d+\s+)?([$.A-Z_a-z][\w$.]*)/;
+
+    constructor(demanglerExe: string, compiler: BaseCompiler) {
         super();
 
         this.demanglerExe = demanglerExe;
         this.demanglerArguments = [];
         this.symbolstore = null;
         this.othersymbols = new SymbolStore();
-        this.result = {};
+        this.result = {
+            asm: [],
+        };
         this.input = [];
         this.includeMetadata = true;
         this.compiler = compiler;
-
-        this.jumpDef = /(j\w+|b|bl|blx)\s+([$_a-z][\w$@]*)/i;
-        this.callDef = /callq?\s+([$._a-z][\w$.@]*)/i;
-        this.callPtrDef1 = /callq?.*ptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)]/i;
-        this.callPtrDef2 = /callq?\s+([$*._a-z][\w$.@]*)/i;
-        this.callPtrDef3 = /callq?.*\[qword ptr\s([$._a-z][\w$.@]*).*]/i;
-        this.callPtrDef4 = /callq?.*qword\sptr\s\[[a-z]*\s\+\s([$._a-z][\w$.@]*)\+?\d?]/i;
-
-        // symbols in a mov or lea command starting with an underscore
-        this.movUnderscoreDef = /mov.*\s(_[\w$.@]*)/i;
-        this.leaUnderscoreDef = /lea.*\s(_[\w$.@]*)/i;
-        this.quadUnderscoreDef = /\.quad\s*(_[\w$.@]*)/i;
-
-        // E.g., ".entry _Z6squarePii("
-        // E.g., ".func  (.param .b32 func_retval0) bar("
-        this.ptxFuncDef = /\.(entry|func)\s+(?:\([^)]*\)\s*)?([$.A-Z_a-z][\w$.]*)\(/;
-        // E.g., ".const .attribute(.managed) .align 4 .v4 .u32 myvar"
-        // E.g., ".global .texref mytex"
-        this.ptxVarDef =
-            /^\.(global|const)\s+(?:\.(tex|sampler|surf)ref\s+)?(?:\.attribute\([^)]*\)\s+)?(?:\.align\s+\d+\s+)?(?:\.v\d+\s+)?(?:\.[a-z]\d+\s+)?([$.A-Z_a-z][\w$.]*)/;
     }
 
     // Iterates over the labels, demangle the label names and updates the start and
     // end position of the label.
-    demangleLabels(labels, tree) {
+    protected demangleLabels(labels, tree: PrefixTree) {
         if (!Array.isArray(labels) || labels.length === 0) return;
 
         for (const [index, label] of labels.entries()) {
@@ -83,7 +99,7 @@ export class BaseDemangler extends AsmRegex {
         }
     }
 
-    demangleLabelDefinitions(labelDefinitions, translations) {
+    protected demangleLabelDefinitions(labelDefinitions, translations: [string, string][]) {
         if (!labelDefinitions) return;
 
         for (const [oldValue, newValue] of translations) {
@@ -95,7 +111,7 @@ export class BaseDemangler extends AsmRegex {
         }
     }
 
-    collectLabels() {
+    protected collectLabels() {
         const symbolMatchers = [
             this.jumpDef,
             this.callPtrDef4,
@@ -114,7 +130,7 @@ export class BaseDemangler extends AsmRegex {
             if (!line) continue;
 
             const labelMatch = line.match(this.labelDef);
-            if (labelMatch) this.symbolstore.add(labelMatch[labelMatch.length - 1]);
+            if (labelMatch) unwrap(this.symbolstore).add(labelMatch[labelMatch.length - 1]);
 
             for (const reToMatch of symbolMatchers) {
                 const matches = line.match(reToMatch);
@@ -125,36 +141,36 @@ export class BaseDemangler extends AsmRegex {
             }
         }
 
-        this.othersymbols.exclude(this.symbolstore);
+        this.othersymbols.exclude(unwrap(this.symbolstore));
     }
 
-    getInput() {
+    protected getInput() {
         this.input = [];
-        this.input = this.input.concat(this.symbolstore.listSymbols());
+        this.input = this.input.concat(unwrap(this.symbolstore).listSymbols());
         this.input = this.input.concat(this.othersymbols.listSymbols());
 
         return this.input.join('\n');
     }
 
-    getMetadata() {
+    protected getMetadata(symbol: string): {ident: RegExp; description: string}[] {
         return [];
     }
 
-    addTranslation(symbol, translation) {
+    protected addTranslation(symbol: string, translation: string) {
         if (this.includeMetadata) {
             translation += this.getMetadata(symbol)
-                .map(meta => ' [' + meta.description + ']')
+                .map(meta => ` [${meta.description}]`)
                 .join(',');
         }
 
-        if (this.symbolstore.contains(symbol)) {
-            this.symbolstore.add(symbol, translation);
+        if (unwrap(this.symbolstore).contains(symbol)) {
+            unwrap(this.symbolstore).add(symbol, translation);
         } else {
             this.othersymbols.add(symbol, translation);
         }
     }
 
-    processOutput(output) {
+    protected processOutput(output: UnprocessedExecResult) {
         if (output.stdout.length === 0 && output.stderr.length > 0) {
             logger.error(`Error executing demangler ${this.demanglerExe}`, output);
             return this.result;
@@ -167,9 +183,10 @@ export class BaseDemangler extends AsmRegex {
         }
         for (let i = 0; i < lines.length; ++i) this.addTranslation(this.input[i], lines[i]);
 
-        const translations = [...this.symbolstore.listTranslations(), ...this.othersymbols.listTranslations()].filter(
-            elem => elem[0] !== elem[1],
-        );
+        const translations = [
+            ...unwrap(this.symbolstore).listTranslations(),
+            ...this.othersymbols.listTranslations(),
+        ].filter(elem => elem[0] !== elem[1]);
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);
 
@@ -183,13 +200,13 @@ export class BaseDemangler extends AsmRegex {
         return this.result;
     }
 
-    execDemangler(options) {
+    protected execDemangler(options: ExecutionOptions) {
         options.maxOutput = -1;
 
         return this.compiler.exec(this.demanglerExe, this.demanglerArguments, options);
     }
 
-    async process(result, execOptions) {
+    public async process(result: ParsedAsmResult, execOptions?: ExecutionOptions) {
         const options = execOptions || {};
         this.result = result;
 
