@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {unwrap, assert} from '../assert';
+import {unwrap} from '../assert';
 import * as utils from '../utils';
 
 import {Win32Demangler} from './win32';

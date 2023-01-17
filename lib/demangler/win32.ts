@@ -24,7 +24,7 @@
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {unwrap, assert} from '../assert';
+import {assert, unwrap} from '../assert';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
