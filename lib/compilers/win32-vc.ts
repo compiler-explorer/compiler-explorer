@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerInfo } from '../../types/compiler.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {VcAsmParser} from '../parsers/asm-parser-vc';
 
 import {VCParser} from './argument-parsers';

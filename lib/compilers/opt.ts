@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {ClangParser} from './argument-parsers';
@@ -41,7 +41,7 @@ export class OptCompiler extends BaseCompiler {
         this.compiler.llvmOptNoDiscardValueNamesArg = [];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string,) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-o', this.filename(outputFilename), '-S'];
     }
 

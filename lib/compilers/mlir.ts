@@ -24,11 +24,11 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class MLIRCompiler extends BaseCompiler {
     static get key() {

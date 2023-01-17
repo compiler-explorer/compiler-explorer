@@ -25,9 +25,9 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {

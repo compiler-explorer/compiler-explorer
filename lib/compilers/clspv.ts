@@ -26,13 +26,13 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class CLSPVCompiler extends BaseCompiler {
     disassemblerPath: any;
@@ -68,7 +68,7 @@ export class CLSPVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         const sourceDir = path.dirname(inputFilename);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);

@@ -24,15 +24,15 @@
 
 import path from 'path';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs';
 import {VcAsmParser} from '../parsers/asm-parser-vc';
 import {PELabelReconstructor} from '../pe32-support';
 
 import {VCParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class WineVcCompiler extends BaseCompiler {
     static get key() {
@@ -49,12 +49,7 @@ export class WineVcCompiler extends BaseCompiler {
         return 'Z:' + fn;
     }
 
-    override runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions,
-    ) {
+    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -83,10 +78,7 @@ export class WineVcCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);

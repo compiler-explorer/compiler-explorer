@@ -28,13 +28,13 @@ import path from 'path';
 import _ from 'underscore';
 
 import {BuildResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmRaw} from '../parsers/asm-raw';
 import {fileExists} from '../utils';
 
 import {BaseParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class AssemblyCompiler extends BaseCompiler {
     static get key() {
@@ -54,11 +54,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         filters.binary = true;
         return [];
     }

@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {resolvePathFromAppRoot} from '../utils';
 
@@ -75,10 +75,7 @@ export class PythonCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return ['-I', this.disasmScriptPath, '--outputfile', outputFilename, '--inputfile'];
     }
 

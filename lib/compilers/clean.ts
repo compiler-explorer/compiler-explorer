@@ -26,12 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {propsFor} from '../properties';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class CleanCompiler extends BaseCompiler {
     static get key() {

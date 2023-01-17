@@ -24,9 +24,10 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+
 import {RustCompiler} from './rust';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class RustcCgGCCCompiler extends RustCompiler {
     static override get key() {
@@ -53,14 +54,10 @@ export class RustcCgGCCCompiler extends RustCompiler {
         return ['-C', 'llvm-args=' + super.getGccDumpOptions(gccDumpOptions, outputFilename).join(' ')];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // these options are direcly taken from rustc_codegen_gcc doc.
         // See https://github.com/antoyo/rustc_codegen_gcc
-        let toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
+        const toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
 
         let options = [
             '-C',
@@ -73,7 +70,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
 
         // rust.js makes the asumption that LLVM is used. This may go away when cranelift is available.
         // Until this is the case and the super() class is refactored, simply ditch -Cllvm arg.
-        let super_options = super
+        const super_options = super
             .optionsForFilter(filters, outputFilename, userOptions)
             .filter(arg => !/-Cllvm.*/.test(arg));
         options = options.concat(super_options);

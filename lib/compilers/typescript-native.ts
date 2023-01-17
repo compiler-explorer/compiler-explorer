@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilationResult, ExecutionOptions } from '../../types/compilation/compilation.interfaces';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {TypeScriptNativeParser} from './argument-parsers';
@@ -51,10 +51,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [this.filename(outputFilename)];
     }
 
@@ -88,9 +85,16 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             execOptions,
         );
         if (output.code !== 0) {
-            return {code: output.code, timedOut: false, stdout: [], stderr: [{
-                text: 'Failed to run compiler to get MLIR code'
-            }]};
+            return {
+                code: output.code,
+                timedOut: false,
+                stdout: [],
+                stderr: [
+                    {
+                        text: 'Failed to run compiler to get MLIR code',
+                    },
+                ],
+            };
         }
 
         return {code: 0, timedOut: false, stdout: [], stderr: []};

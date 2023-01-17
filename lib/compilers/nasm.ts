@@ -24,10 +24,10 @@
 
 import path from 'path';
 
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import * as utils from '../utils';
 
 import {AssemblyCompiler} from './assembly';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class NasmCompiler extends AssemblyCompiler {
     static override get key() {

@@ -26,15 +26,15 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {JavaParser} from './argument-parsers';
-import { ParsedAsmResult, ParsedAsmResultLine } from '../../types/asmresult/asmresult.interfaces';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { unwrap } from '../assert';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class JavaCompiler extends BaseCompiler {
     static get key() {
@@ -85,17 +85,21 @@ export class JavaCompiler extends BaseCompiler {
                         customCwd: dirPath,
                     });
                     const oneResult: ParsedAsmResult = {
-                        asm: [{
-                            text: objResult.stdout
-                        }],
+                        asm: [
+                            {
+                                text: objResult.stdout,
+                            },
+                        ],
                     };
 
                     if (objResult.code === 0) {
                         oneResult.objdumpTime = objResult.execTime;
                     } else {
-                        oneResult.asm = [{
-                            text: `<No output: javap returned ${objResult.code}>`
-                        }];
+                        oneResult.asm = [
+                            {
+                                text: `<No output: javap returned ${objResult.code}>`,
+                            },
+                        ];
                     }
                     return oneResult;
                 }),
@@ -138,7 +142,7 @@ export class JavaCompiler extends BaseCompiler {
             return {
                 ...result,
                 didExecute: true,
-                buildResult: compileResult
+                buildResult: compileResult,
             };
         } else {
             return {
@@ -147,7 +151,7 @@ export class JavaCompiler extends BaseCompiler {
                 code: compileResult.code,
                 didExecute: false,
                 buildResult: compileResult,
-                timedOut: false
+                timedOut: false,
             };
         }
     }
@@ -276,7 +280,7 @@ export class JavaCompiler extends BaseCompiler {
 
     parseAsmForClass(javapOut) {
         const textsBeforeMethod: string[] = [];
-        const methods: {instructions: any[], startLine?: number}[] = [];
+        const methods: {instructions: any[]; startLine?: number}[] = [];
         // javap output puts `    Code:` after every signature. (Line will not be shown to user)
         // We use this to find the individual methods.
         // Before the first `Code:` occurrence, there is the method signature as well as the name of the class.
@@ -320,7 +324,7 @@ export class JavaCompiler extends BaseCompiler {
                 }
             }
 
-            let lineRegex = /line\s*(\d+):\s*(\d+)/g;
+            const lineRegex = /line\s*(\d+):\s*(\d+)/g;
             let m;
             let currentInstr = 0;
             let currentSourceLine = -1;
@@ -379,7 +383,10 @@ export class JavaCompiler extends BaseCompiler {
         }
         return {
             // Used for sorting
-            firstSourceLine: methods.reduce((p, m) => (p === -1 ? unwrap(m.startLine) : Math.min(p, unwrap(m.startLine))), -1),
+            firstSourceLine: methods.reduce(
+                (p, m) => (p === -1 ? unwrap(m.startLine) : Math.min(p, unwrap(m.startLine))),
+                -1,
+            ),
             methods: methods,
             textsBeforeMethod,
         };

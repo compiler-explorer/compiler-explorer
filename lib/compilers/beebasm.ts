@@ -26,12 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class BeebAsmCompiler extends BaseCompiler {
     static get key() {

@@ -27,15 +27,15 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
 import {PascalParser} from './argument-parsers';
 import {PascalUtils} from './pascal-utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { unwrap } from '../assert';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class FPCCompiler extends BaseCompiler {
     static get key() {
@@ -106,9 +106,16 @@ export class FPCCompiler extends BaseCompiler {
         return path.join(dirPath, 'prog');
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, staticReloc: boolean,
+    override async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,) {
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
         if (await utils.fileExists(execBinary)) {
@@ -184,7 +191,7 @@ export class FPCCompiler extends BaseCompiler {
             execOptions = this.getDefaultExecOptions();
         }
 
-        let alreadyHasDPR = path.basename(inputFilename) === this.dprFilename;
+        const alreadyHasDPR = path.basename(inputFilename) === this.dprFilename;
         const dirPath = path.dirname(inputFilename);
 
         const projectFile = path.join(dirPath, this.dprFilename);
@@ -268,11 +275,11 @@ export class FPCCompiler extends BaseCompiler {
 
     preProcessLines(asmLines: string[]) {
         let i = 0;
-        let files: Record<string, number> = {};
+        const files: Record<string, number> = {};
         let currentFileId = 1;
 
         while (i < asmLines.length) {
-            let newFileId = this.tryGetFilenumber(asmLines[i], files);
+            const newFileId = this.tryGetFilenumber(asmLines[i], files);
             if (newFileId) currentFileId = newFileId;
 
             const extraHint = this.getExtraAsmHint(asmLines[i], currentFileId);

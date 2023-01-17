@@ -26,13 +26,13 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
@@ -99,10 +99,7 @@ export class SPIRVCompiler extends BaseCompiler {
         );
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const sourceDir = path.dirname(outputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
         return ['-cc1', '-debug-info-kind=limited', '-dwarf-version=5', '-debugger-tuning=gdb', '-o', bitcodeFilename];
@@ -164,7 +161,12 @@ export class SPIRVCompiler extends BaseCompiler {
         return result;
     }
 
-    async runCompilerForASTOrIR(compiler: string, options: any[], inputFilename: string, execOptions: ExecutionOptions) {
+    async runCompilerForASTOrIR(
+        compiler: string,
+        options: any[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

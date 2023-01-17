@@ -24,13 +24,13 @@
 
 import Semver from 'semver';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {DartAsmParser} from '../parsers/asm-parser-dart';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class DartCompiler extends BaseCompiler {
     constructor(info: CompilerInfo & Record<string, any>, env) {
@@ -63,11 +63,7 @@ export class DartCompiler extends BaseCompiler {
         return options.concat(libIncludes, libOptions, userOptions, [this.filename(inputFilename)]);
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[]
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // Dart includes way too much of the standard library (even for simple programs)
         // to show all of it without truncation
         filters.libraryCode = true;

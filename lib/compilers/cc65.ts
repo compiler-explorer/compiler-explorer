@@ -28,12 +28,12 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
@@ -61,10 +61,7 @@ export class Cc65Compiler extends BaseCompiler {
         ) as string[];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.binary) {
             return ['-g', '-o', this.filename(outputFilename)];
         } else {

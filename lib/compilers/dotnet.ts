@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -38,7 +39,6 @@ import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -302,7 +302,13 @@ class DotNetCompiler extends BaseCompiler {
         }
     }
 
-    async runCrossgen2(execOptions: ExecutionOptions, bclPath: string, dllPath: string, options: string[], outputPath: string) {
+    async runCrossgen2(
+        execOptions: ExecutionOptions,
+        bclPath: string,
+        dllPath: string,
+        options: string[],
+        outputPath: string,
+    ) {
         await this.ensureCrossgen2Version(execOptions);
 
         const crossgen2Options = [

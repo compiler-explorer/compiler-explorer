@@ -24,14 +24,14 @@
 
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
 import {ClangParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { unwrap } from '../assert';
 
 // Each arch has a list of jump instructions in
 // Go source src/cmd/asm/internal/arch.
@@ -222,11 +222,7 @@ export class GolangCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // If we're dealing with an older version...
         if (this.compiler.id === '6g141') {
             return ['tool', '6g', '-g', '-o', outputFilename, '-S'];

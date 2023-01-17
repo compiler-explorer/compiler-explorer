@@ -24,26 +24,23 @@
 
 import path from 'path';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {MrustcParser} from './argument-parsers';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class MrustcCompiler extends BaseCompiler {
     static get key() {
         return 'mrustc';
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         // mrustc always dumps the C code for <baseout> target in the <baseout>.c file.
         // In our case, the actual file in -o is not even created because we are
         // faking the last step (C compilation).
         // Craft the 'outname' to have the intermediate .c file writen in outputFilename.
-        let outname = path.join(
+        const outname = path.join(
             path.dirname(this.filename(outputFilename)),
             path.basename(this.filename(outputFilename), '.c'),
         );

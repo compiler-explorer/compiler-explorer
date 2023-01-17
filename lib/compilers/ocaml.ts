@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {PascalParser} from './argument-parsers';
@@ -46,7 +46,7 @@ export class OCamlCompiler extends BaseCompiler {
         return [];
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFileName: string,) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFileName: string) {
         const options = ['-g'];
         if (filters.binary) {
             options.unshift('-o', outputFileName);

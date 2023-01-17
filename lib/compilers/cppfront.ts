@@ -24,10 +24,10 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmParserCpp} from '../parsers/asm-parser-cpp';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class CppFrontCompiler extends BaseCompiler {
     static get key() {

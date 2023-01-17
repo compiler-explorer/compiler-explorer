@@ -28,12 +28,12 @@ import path from 'path';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -94,12 +94,7 @@ export class ClangCompiler extends BaseCompiler {
         return this.forceDwarf4UnlessOverridden(options);
     }
 
-    override runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions,
-    ) {
+    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

@@ -171,7 +171,7 @@ export class SolidityCompiler extends BaseCompiler {
                     // and reverting if a multiplication results in
                     // integer overflow, etc.
                     const processGeneratedSources = generatedSourcesData => {
-                        let generatedSources = {};
+                        const generatedSources = {};
                         for (const generatedSource of generatedSourcesData) {
                             generatedSources[generatedSource.id] = generatedSource.ast.statements.map(statement => {
                                 const [begin, length] = statement.src.split(':').map(x => parseInt(x));
@@ -202,7 +202,7 @@ export class SolidityCompiler extends BaseCompiler {
                         // first iterate the opcodes to find all the tags,
                         // and assign human-readable names to as many of
                         // them as we can
-                        let tagNames = {};
+                        const tagNames = {};
                         const processPossibleTagOpcode = (opcode, funcList) => {
                             if (opcode.name === 'tag') {
                                 const func = funcList.find(func => {

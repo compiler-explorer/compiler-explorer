@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
@@ -52,7 +52,7 @@ export class PPCICompiler extends BaseCompiler {
                 const pythonPath = matches[1];
                 const ppciName = `ppci.${matches[3].replace('/', '.')}`;
                 options.env = {PYTHONPATH: pythonPath};
-                let python_args = ['-m', ppciName].concat(args);
+                const python_args = ['-m', ppciName].concat(args);
                 return exec.execute(python, python_args, options);
             }
             assert(false, `Invalid ppci path ${compiler}`);

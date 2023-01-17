@@ -26,15 +26,15 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
 import {parseRustOutput} from '../utils';
 
 import {RustParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { unwrap } from '../assert';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -131,11 +131,7 @@ export class RustCompiler extends BaseCompiler {
         return opts;
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         let options = ['-C', 'debuginfo=1', '-o', this.filename(outputFilename)];
 
         const userRequestedEmit = _.any(unwrap(userOptions), opt => opt.includes('--emit'));

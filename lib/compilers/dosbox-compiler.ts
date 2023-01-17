@@ -26,12 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import {TurboCAsmParser} from '../parsers/asm-parser-turboc';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;

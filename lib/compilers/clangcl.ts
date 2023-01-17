@@ -24,10 +24,10 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 import {Win32Compiler} from './win32';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class ClangCLCompiler extends Win32Compiler {
     static override get key() {

@@ -27,14 +27,14 @@ import path from 'path';
 import temp from 'temp';
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs';
 import {AsmParser} from '../parsers/asm-parser';
 import {PELabelReconstructor} from '../pe32-support';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -74,15 +74,17 @@ export class Win32Compiler extends BaseCompiler {
 
     override getSharedLibraryLinks(libraries) {
         return _.flatten(
-            libraries.filter(selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                return !!foundVersion;
-            }).map(selectedLib => {
-                const foundVersion = this.findLibVersion(selectedLib);
-                if (!foundVersion) return false;
+            libraries
+                .filter(selectedLib => {
+                    const foundVersion = this.findLibVersion(selectedLib);
+                    return !!foundVersion;
+                })
+                .map(selectedLib => {
+                    const foundVersion = this.findLibVersion(selectedLib);
+                    if (!foundVersion) return false;
 
-                return foundVersion.liblink.filter(lib => lib).map(lib => `"${lib}.lib"`);
-            }),
+                    return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
+                }),
         );
     }
 
@@ -138,11 +140,7 @@ export class Win32Compiler extends BaseCompiler {
         );
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         if (filters.binary) {
             const mapFilename = outputFilename + '.map';
             const mapFileReader = new MapFileReaderVS(mapFilename);
@@ -183,7 +181,7 @@ export class Win32Compiler extends BaseCompiler {
     }
 
     override exec(compiler: string, args: string[], options_: ExecutionOptions) {
-        let options = Object.assign({}, options_);
+        const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
         if (this.compiler.includePath) {

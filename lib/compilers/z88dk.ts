@@ -27,13 +27,13 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
 import * as utils from '../utils';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {

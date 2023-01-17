@@ -24,11 +24,11 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {ClangParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class HaskellCompiler extends BaseCompiler {
     static get key() {
@@ -65,10 +65,7 @@ export class HaskellCompiler extends BaseCompiler {
         return opts;
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         const options = ['-g', '-o', this.filename(outputFilename)];
         if (!filters.binary) options.unshift('-S');
         return options;

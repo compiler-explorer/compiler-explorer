@@ -27,14 +27,14 @@ import Path from 'path';
 
 import Semver from 'semver';
 
+import {CompilationInfo} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
 import {asSafeVer} from '../utils';
 
 import {ClangParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { CompilationInfo } from '../../types/compilation/compilation.interfaces';
 
 export class NvccCompiler extends BaseCompiler {
     static get key() {
@@ -54,11 +54,7 @@ export class NvccCompiler extends BaseCompiler {
     // * lots of whitespace from nvcc
     // * would be nice to try and filter unused `.func`s from e.g. clang output
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         const opts = ['-o', this.filename(outputFilename), '-g', '-lineinfo'];
         if (!filters.execute) {
             opts.push('-c', '-keep', '-keep-dir', Path.dirname(outputFilename));

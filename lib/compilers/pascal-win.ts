@@ -26,16 +26,16 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {MapFileReaderDelphi} from '../mapfiles/map-file-delphi';
 import {PELabelReconstructor} from '../pe32-support';
 import * as utils from '../utils';
 
 import {PascalUtils} from './pascal-utils';
-import { unwrap } from '../assert';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class PascalWinCompiler extends BaseCompiler {
     static get key() {
@@ -157,7 +157,7 @@ export class PascalWinCompiler extends BaseCompiler {
             execOptions = this.getDefaultExecOptions();
         }
 
-        let alreadyHasDPR = path.basename(inputFilename) === this.dprFilename;
+        const alreadyHasDPR = path.basename(inputFilename) === this.dprFilename;
 
         const tempPath = path.dirname(inputFilename);
         const projectFile = path.join(tempPath, this.dprFilename);

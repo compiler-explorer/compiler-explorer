@@ -24,10 +24,10 @@
 
 import temp from 'temp';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmEWAVRParser} from '../parsers/asm-parser-ewavr';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class EWARMCompiler extends BaseCompiler {
     static get key() {
@@ -48,10 +48,7 @@ export class EWARMCompiler extends BaseCompiler {
         });
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.binary) {
             return [];
         }

@@ -26,13 +26,13 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {CrystalAsmParser} from '../parsers/asm-parser-crystal';
 
 import {CrystalParser} from './argument-parsers';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { unwrap } from '../assert';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class CrystalCompiler extends BaseCompiler {
     static get key() {
@@ -61,11 +61,7 @@ export class CrystalCompiler extends BaseCompiler {
         return execOptions;
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-        userOptions?: string[],
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         const output = this.filename(this.getExecutableFilename(path.dirname(outputFilename), this.outputFilebase));
         let options = ['build', '-o', output];
 

@@ -1436,7 +1436,12 @@ export class BaseCompiler implements ICompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(dirPath: string, source: string, files: any[], filters: ParseFiltersAndOutputOptions) {
+    protected async writeAllFiles(
+        dirPath: string,
+        source: string,
+        files: any[],
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);

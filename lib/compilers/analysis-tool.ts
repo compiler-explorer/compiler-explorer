@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { CompilerInfo } from '../../types/compiler.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 // Plain compiler, which just runs the tool and returns whatever the output was
@@ -49,7 +49,7 @@ export class AnalysisTool extends BaseCompiler {
             execute: false,
             demangle: false,
             libraryCode: false,
-            trim: false
+            trim: false,
         };
     }
 }

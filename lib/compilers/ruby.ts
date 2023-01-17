@@ -24,12 +24,12 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {resolvePathFromAppRoot} from '../utils';
 
 import {BaseParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class RubyCompiler extends BaseCompiler {
     disasmScriptPath: any;
@@ -83,10 +83,7 @@ export class RubyCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             this.disasmScriptPath,
             '--outputfile',

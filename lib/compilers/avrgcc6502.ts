@@ -24,10 +24,10 @@
 
 import path from 'path';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class AvrGcc6502Compiler extends BaseCompiler {
     private readonly avrgccpath: string;
@@ -62,10 +62,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         }
     }
 
-    protected override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string
-    ): string[] {
+    protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [`-I${this.avrlibstdcpppath}`];
     }
 

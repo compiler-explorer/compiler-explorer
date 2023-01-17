@@ -27,12 +27,12 @@ import path from 'path';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import * as utils from '../utils';
 
 import {ClangCompiler} from './clang';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class LLVMMOSCompiler extends ClangCompiler {
     static override get key() {

@@ -25,10 +25,10 @@
 import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
-import { CompilerInfo } from '../../types/compiler.interfaces';
 
 export class RacketCompiler extends BaseCompiler {
     private raco: string;

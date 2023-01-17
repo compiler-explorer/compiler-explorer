@@ -26,12 +26,12 @@ import path from 'path';
 
 import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class JuliaCompiler extends BaseCompiler {
     private compilerWrapperPath: string;
@@ -91,7 +91,7 @@ export class JuliaCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string,) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [];
     }
 

@@ -24,12 +24,12 @@
 
 import Semver from 'semver';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {asSafeVer} from '../utils';
 
 import {ScalaParser} from './argument-parsers';
 import {JavaCompiler} from './java';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 export class ScalaCompiler extends JavaCompiler {
     static override get key() {

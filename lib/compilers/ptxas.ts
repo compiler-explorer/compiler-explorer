@@ -24,15 +24,15 @@
 
 import path from 'path';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
 import * as utils from '../utils';
 
 import {BaseParser} from './argument-parsers';
-import { ResultLine } from '../../types/resultline/resultline.interfaces';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class PtxAssembler extends BaseCompiler {
     static get key() {
@@ -106,8 +106,8 @@ export class PtxAssembler extends BaseCompiler {
         return {
             ...result,
             inputFilename,
-            stdout: this.parsePtxOutput(result.stdout, './' + this.compileFilename, "no idea what to put here"),
-            stderr: this.parsePtxOutput(result.stderr, './' + this.compileFilename, "no idea what to put here"),
+            stdout: this.parsePtxOutput(result.stdout, './' + this.compileFilename, 'no idea what to put here'),
+            stderr: this.parsePtxOutput(result.stderr, './' + this.compileFilename, 'no idea what to put here'),
         };
     }
 
@@ -119,11 +119,9 @@ export class PtxAssembler extends BaseCompiler {
         return this.postProcess(asmResult, outputFilename, filters);
     }
 
-    override async objdump(outputFilename,
-        result: any,
-        maxSize: number,) {
+    override async objdump(outputFilename, result: any, maxSize: number) {
         const dirPath = path.dirname(outputFilename);
-        let args = ['-c', '-g', '-hex', outputFilename];
+        const args = ['-c', '-g', '-hex', outputFilename];
         const objResult = await this.exec(this.compiler.objdumper, args, {maxOutput: maxSize, customCwd: dirPath});
         result.asm = objResult.stdout;
         if (objResult.code === 0) {

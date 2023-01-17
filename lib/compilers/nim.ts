@@ -27,12 +27,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 import {NimParser} from './argument-parsers';
-import { unwrap } from '../assert';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ParseFiltersAndOutputOptions } from '../../types/features/filters.interfaces';
 
 const NimCommands = ['compile', 'compileToC', 'c', 'compileToCpp', 'cpp', 'cc', 'compileToOC', 'objc', 'js', 'check'];
 
@@ -50,10 +50,7 @@ export class NimCompiler extends BaseCompiler {
         return outputFilename + '.cache';
     }
 
-    override optionsForFilter(
-        filters: ParseFiltersAndOutputOptions,
-        outputFilename: string,
-    ) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             '--debugger:native', // debugging info
             '-o:' + outputFilename, //output file, only for js mode

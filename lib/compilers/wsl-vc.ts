@@ -29,12 +29,12 @@ import path from 'path';
 
 import temp from 'temp';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {unwrap} from '../assert';
 import {VcAsmParser} from '../parsers/asm-parser-vc';
 
 import {Win32VcCompiler} from './win32-vc';
-import { unwrap } from '../assert';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { ExecutionOptions } from '../../types/compilation/compilation.interfaces';
 
 export class WslVcCompiler extends Win32VcCompiler {
     static override get key() {
@@ -68,7 +68,7 @@ export class WslVcCompiler extends Win32VcCompiler {
     }
 
     override exec(compiler: string, args: string[], options_: ExecutionOptions) {
-        let options = Object.assign({}, options_);
+        const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
         let old_env = options.env['WSLENV'];
@@ -82,12 +82,7 @@ export class WslVcCompiler extends Win32VcCompiler {
         return super.exec(compiler, args, options);
     }
 
-    override runCompiler(
-        compiler: string,
-        options: string[],
-        inputFilename: string,
-        execOptions: ExecutionOptions,
-    ) {
+    override runCompiler(compiler: string, options: string[], inputFilename: string, execOptions: ExecutionOptions) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
