@@ -107,4 +107,4 @@ const main = async () => {
     console.log('}');
 };
 
-main().then(() =>{}).catch(e => console.exception("Caught error", e));
+main().then(() =>{}).catch(e => console.error("Caught error", e));
