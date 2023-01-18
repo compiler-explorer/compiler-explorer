@@ -22,24 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {PropertyGetter} from './properties.interfaces';
+
+import {CompilationResult} from '../types/compilation/compilation.interfaces';
+import {ResultLine} from '../types/resultline/resultline.interfaces';
+
+// Almost every line of AST includes a span of related source lines:
+// In different forms like <line:a:b, line:c:d>
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace LocTypes {
+    export const NONE = 'none'; // No location specified
+    export const POINT = 'point'; // A single location: beginning of a token
+    export const SPAN = 'span'; // Two locations: first token to last token (beginning)
+}
+
+type Point = {
+    line: number | null;
+    col: number | null;
+};
+
 export class LlvmAstParser {
-    constructor(compilerProps) {
+    maxAstLines: number;
+
+    constructor(compilerProps: PropertyGetter) {
         this.maxAstLines = 500;
         if (compilerProps) {
             this.maxAstLines = compilerProps('maxLinesOfAst', this.maxAstLines);
         }
-
-        // Almost every line of AST includes a span of related source lines:
-        // In different forms like <line:a:b, line:c:d>
-        this.locTypes = {
-            NONE: 'none', // No location specified
-            POINT: 'point', // A single location: beginning of a token
-            SPAN: 'span', // Two locations: first token to last token (beginning)
-        };
     }
 
     // Accepts "line:a:b" and "col:b"
-    parsePoint(ptLine, lastLineNo) {
+    parsePoint(ptLine: string, lastLineNo: number | null): Point {
         const lineRegex = /line:(\d+):/;
         const colRegex = /(?:col|\d):(\d+)(?::|$)/;
         const lineMatch = ptLine.match(lineRegex);
@@ -53,7 +66,13 @@ export class LlvmAstParser {
     // X can be "col:a" or "line:a:b"
     // lastLineNo - the line number of the previous node,
     // reused when only a column specified.
-    parseSpan(line, lastLineNo) {
+    parseSpan(
+        line: string,
+        lastLineNo: number | null,
+    ):
+        | {type: typeof LocTypes.SPAN; begin: Point; end: Point}
+        | {type: typeof LocTypes.POINT; loc: Point}
+        | {type: typeof LocTypes.NONE} {
         const spanRegex = /<((?:line|col)[\d ,:ceilno]+)>/;
         const m = line.match(spanRegex);
         if (m) {
@@ -62,43 +81,44 @@ export class LlvmAstParser {
             if (beginEnd.length === 2) {
                 const begin = this.parsePoint(beginEnd[0], lastLineNo);
                 const end = this.parsePoint(beginEnd[1], begin.line);
-                return {type: this.locTypes.SPAN, begin, end};
+                return {type: LocTypes.SPAN, begin, end};
             } else {
-                return {type: this.locTypes.POINT, loc: this.parsePoint(span, lastLineNo)};
+                return {type: LocTypes.POINT, loc: this.parsePoint(span, lastLineNo)};
             }
         }
-        return {type: this.locTypes.NONE};
+        return {type: LocTypes.NONE};
     }
 
     // Link the AST lines with spans of source locations (lines+columns)
-    parseAndSetSourceLines(astDump) {
-        let lfrom = {line: null, loc: null},
-            lto = {line: null, loc: null};
+    parseAndSetSourceLines(astDump: ResultLine[]) {
+        let lfrom: any = {line: null, loc: null},
+            lto: any = {line: null, loc: null};
         for (const line of astDump) {
             const span = this.parseSpan(line.text, lfrom.line);
             switch (span.type) {
-                case this.locTypes.NONE: {
+                case LocTypes.NONE: {
                     break;
                 }
-                case this.locTypes.POINT: {
+                case LocTypes.POINT: {
                     lfrom = span.loc;
                     lto = span.loc;
                     break;
                 }
-                case this.locTypes.SPAN: {
+                case LocTypes.SPAN: {
                     lfrom = span.begin;
                     lto = span.end;
                     break;
                 }
             }
-            if (span.type !== this.locTypes.NONE) {
-                line.source = {from: lfrom, to: lto};
+            if (span.type !== LocTypes.NONE) {
+                // TODO: ResultLineSource doesn't have to/from
+                (line.source as any) = {from: lfrom, to: lto};
             }
         }
     }
 
-    processAst(output) {
-        output = output.stdout;
+    processAst(result: CompilationResult) {
+        const output = result.stdout;
 
         // Top level decls start with |- or `-
         const topLevelRegex = /^([`|])-/;
