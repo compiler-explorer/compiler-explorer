@@ -44,6 +44,7 @@ import {
     LLVMOptPipelineOutput,
     LLVMOptPipelineResults,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
+import {unwrap} from '../assert';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -84,7 +85,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         if (state.sidebarWidth === 0) {
             _.defer(() => {
                 state.sidebarWidth = parseInt(
-                    (document.defaultView as Window).getComputedStyle(this.passesColumn.get()[0]).width,
+                    unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
                     10
                 );
                 state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
@@ -164,9 +165,10 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     initResizeDrag(e: MouseEvent) {
         // taken from SO
         this.resizeStartX = e.clientX;
-        // (this.passesColumn.width() as number)
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.resizeStartWidth = parseInt(document.defaultView!.getComputedStyle(this.passesColumn.get()[0]).width, 10);
+        this.resizeStartWidth = parseInt(
+            unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
+            10
+        );
         this.resizeDragMoveBind = this.resizeDragMove.bind(this);
         this.resizeDragEndBind = this.resizeDragEnd.bind(this);
         document.documentElement.addEventListener('mousemove', this.resizeDragMoveBind, false);
@@ -309,7 +311,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             const target = e.target;
             this.passesList.find('.active').removeClass('active');
             $(target).addClass('active');
-            this.displayPass(parseInt(target.getAttribute('data-i') as string));
+            this.displayPass(parseInt(unwrap(target.getAttribute('data-i'))));
         });
         // try to select a pass
         if (this.state.selectedIndex >= passes.length) {
@@ -345,7 +347,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     }
 
     onClickCallback(e: JQuery.ClickEvent) {
-        this.isPassListSelected = (this.passesList.get(0) as HTMLElement).contains(e.target);
+        this.isPassListSelected = unwrap(this.passesList.get(0)).contains(e.target);
     }
 
     onKeydownCallback(e: JQuery.KeyDownEvent) {
@@ -361,7 +363,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(parseInt(prev.getAttribute('data-i') as string));
+                    this.displayPass(parseInt(unwrap(prev.getAttribute('data-i'))));
                 }
             }
             if (e.key === 'ArrowDown') {
@@ -375,7 +377,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                         scrollMode: 'if-needed',
                         block: 'nearest',
                     });
-                    this.displayPass(parseInt(next.getAttribute('data-i') as string));
+                    this.displayPass(parseInt(unwrap(next.getAttribute('data-i'))));
                 }
             }
         }
@@ -395,16 +397,16 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-            const otherWidth = (this.passesColumn.width() as number) + (this.passesColumnResizer.width() as number);
-            const domWidth = this.domRoot.width() as number;
+            const otherWidth = unwrap(this.passesColumn.width()) + unwrap(this.passesColumnResizer.width());
+            const domWidth = unwrap(this.domRoot.width());
             if (otherWidth > domWidth) {
                 this.passesColumn.get()[0].style.width = domWidth + 'px';
             }
             this.editor.layout({
                 width: domWidth - otherWidth,
-                height: (this.domRoot.height() as number) - topBarHeight,
+                height: unwrap(this.domRoot.height()) - topBarHeight,
             });
-            (this.body.get(0) as HTMLElement).style.height = (this.domRoot.height() as number) - topBarHeight + 'px';
+            unwrap(this.body.get(0)).style.height = unwrap(this.domRoot.height()) - topBarHeight + 'px';
         });
     }
 

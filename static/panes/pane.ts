@@ -35,6 +35,7 @@ import * as utils from '../utils';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
+import {unwrap} from '../assert';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -296,8 +297,8 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.editor.layout({
-                width: this.domRoot.width() as number,
-                height: (this.domRoot.height() as number) - topBarHeight,
+                width: unwrap(this.domRoot.width()),
+                height: unwrap(this.domRoot.height()) - topBarHeight,
             });
         });
     }

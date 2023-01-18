@@ -23,8 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 import {BaseParser} from './argument-parsers';
@@ -65,41 +68,31 @@ export class CarbonCompiler extends BaseCompiler {
         );
     }
 
-    override async afterCompilation(
-        result,
-        doExecute,
-        key,
-        executeParameters,
-        tools,
-        backendOptions,
-        filters,
-        options,
-        optOutput,
-        customBuildPath,
-    ) {
-        result = await super.afterCompilation(
-            result,
-            doExecute,
-            key,
-            executeParameters,
-            tools,
-            backendOptions,
-            filters,
-            options,
-            optOutput,
-            customBuildPath,
-        );
+    lastLine(lines?: ResultLine[]): string {
+        if (!lines || lines.length === 0) return '';
+        return unwrap(lines.at(-1)).text;
+    }
+
+    override postCompilationPreCacheHook(result: CompilationResult): CompilationResult {
         if (result.code === 0) {
             // Hook to parse out the "result: 123" line at the end of the interpreted execution run.
             const re = /^result: (\d+)$/;
-            const match = re.exec(result.asm.at(-1).text);
+            const match = re.exec(this.lastLine(result.asm));
             const code = match ? parseInt(match[1]) : -1;
             result.execResult = {
                 stdout: result.stdout,
                 stderr: [],
                 code: code,
                 didExecute: true,
-                buildResult: {code: 0},
+                buildResult: {
+                    code: 0,
+                    timedOut: false,
+                    stdout: [],
+                    stderr: [],
+                    downloads: [],
+                    executableFilename: '',
+                    compilationOptions: [],
+                },
             };
             result.stdout = [];
         }

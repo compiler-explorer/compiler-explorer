@@ -132,27 +132,53 @@ export class CompileHandler {
         // https://github.com/nodejitsu/node-http-proxy/blob/master/examples/middleware/bodyDecoder-middleware.js
         // We just keep the body as-is though: no encoding using queryString.stringify(), as we don't use a form
         // decoding middleware.
-        this.proxy.on('proxyReq', function (proxyReq, req) {
+        this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does.
+            //  object we get here does (introduced by body-parser).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
             }
-            const contentType = proxyReq.getHeader('Content-Type');
+            let contentType: string = proxyReq.getHeader('Content-Type') as string;
             let bodyData;
 
             if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
+            } else if (contentType === 'application/x-www-form-urlencoded') {
+                // Reshape the form body into what a json request looks like
+                contentType = 'application/json';
+                bodyData = JSON.stringify({
+                    lang: body.lang,
+                    compiler: body.compiler,
+                    source: body.source,
+                    options: body.userArguments,
+                    filters: Object.fromEntries(
+                        ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
+                            key => [key, body[key] === 'true'],
+                        ),
+                    ),
+                });
+            } else {
+                Sentry.captureException(
+                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
+                );
+                proxyReq.write('Unexpected Content-Type');
             }
 
-            if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = body;
-            }
-
-            if (bodyData) {
-                proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-                proxyReq.write(bodyData);
+            try {
+                if (bodyData) {
+                    proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.setHeader('Content-Type', contentType);
+                    proxyReq.write(bodyData);
+                }
+            } catch (e: any) {
+                Sentry.captureException(e);
+                let json = '<json stringify error>';
+                try {
+                    json = JSON.stringify(bodyData);
+                } catch (e) {}
+                Sentry.captureMessage(`Unknown proxy bodyData: ${typeof bodyData} ${json}`);
+                proxyReq.write('Proxy error');
             }
         });
     }
@@ -187,7 +213,9 @@ export class CompileHandler {
             // has changed since the last time.
             try {
                 let modificationTime;
-                if (!isPrediscovered) {
+                if (isPrediscovered) {
+                    modificationTime = compiler.mtime;
+                } else {
                     const res = await fs.stat(compiler.exe);
                     modificationTime = res.mtime;
                     const cached = this.findCompiler(compiler.lang, compiler.id);
@@ -195,8 +223,6 @@ export class CompileHandler {
                         logger.debug(`${compiler.id} is unchanged`);
                         return cached;
                     }
-                } else {
-                    modificationTime = compiler.mtime;
                 }
                 const compilerObj = new compilerClass(compiler, this.compilerEnv);
                 return compilerObj.initialise(modificationTime, this.clientOptions, isPrediscovered);
@@ -371,9 +397,9 @@ export class CompileHandler {
             backendOptions.skipPopArgs = query.skipPopArgs === 'true';
         }
         const executionParameters: ExecutionParams = {
-            args: !Array.isArray(execReqParams.args)
-                ? utils.splitArguments(execReqParams.args)
-                : execReqParams.args || '',
+            args: Array.isArray(execReqParams.args)
+                ? execReqParams.args || ''
+                : utils.splitArguments(execReqParams.args),
             stdin: execReqParams.stdin || '',
         };
 
@@ -553,7 +579,9 @@ export class CompileHandler {
                     }
                 },
                 error => {
-                    if (typeof error !== 'string') {
+                    if (typeof error === 'string') {
+                        logger.error('Error during compilation: ', {error});
+                    } else {
                         if (error.stack) {
                             logger.error('Error during compilation: ', error);
                             Sentry.captureException(error);
@@ -570,8 +598,6 @@ export class CompileHandler {
                         }
 
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;
-                    } else {
-                        logger.error('Error during compilation: ', {error});
                     }
                     res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
                 },

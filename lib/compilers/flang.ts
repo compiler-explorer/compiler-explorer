@@ -36,10 +36,10 @@ export class FlangCompiler extends FortranCompiler {
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary) {
-            options = options.concat('-S');
-        } else {
+        if (filters.binary) {
             options = options.concat('-g');
+        } else {
+            options = options.concat('-S');
         }
         return options;
     }

@@ -185,4 +185,8 @@ export class AssemblyCompiler extends BaseCompiler {
     override getObjdumpOutputFilename(defaultOutputFilename) {
         return this.getGeneratedOutputFilename(defaultOutputFilename);
     }
+
+    override isCfgCompiler(/* compilerVersion */) {
+        return true;
+    }
 }

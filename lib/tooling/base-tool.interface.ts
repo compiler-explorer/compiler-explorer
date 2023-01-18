@@ -22,58 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LanguageKey} from '../../types/languages.interfaces';
 import {Library} from '../../types/libraries/libraries.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-
-export type ToolTypeKey = 'independent' | 'postcompilation';
-
-export type ToolInfo = {
-    id: string;
-    name?: string;
-    type?: ToolTypeKey;
-    exe: string;
-    exclude: string[];
-    includeKey?: string;
-    options: string[];
-    args?: string;
-    languageId?: LanguageKey;
-    stdinHint?: string;
-    monacoStdin?: string;
-    icon?: string;
-    darkIcon?: string;
-    compilerLanguage: LanguageKey;
-};
+import {Tool, ToolResult} from '../../types/tool.interfaces';
 
 export type ToolEnv = {
     ceProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
     compilerProps: (key: string, defaultValue?: any) => string | boolean | number | undefined;
 };
 
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
-    id: string;
-    name?: string;
-    code: number;
-    languageId?: LanguageKey | 'stderr';
-    stderr: ResultLine[];
-    stdout: ResultLine[];
-    artifact?: Artifact;
-};
-
-export interface Tool {
-    readonly tool: ToolInfo;
-
-    getId(): string;
-
-    getType(): string;
-
+export interface ITool extends Tool {
     runTool(
         compilationInfo: Record<any, any>,
         inputFilepath?: string,

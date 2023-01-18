@@ -36,7 +36,7 @@ describe('Language definitions tests', () => {
     it('Has examples & are initialized', () => {
         for (const languageKey of Object.keys(languages)) {
             const lang = languages[languageKey];
-            const example = fs.readFileSync(path.join('examples', lang.id, 'default' + lang.extensions[0]), 'utf-8');
+            const example = fs.readFileSync(path.join('examples', lang.id, 'default' + lang.extensions[0]), 'utf8');
             should.equal(example, lang.example);
         }
     });

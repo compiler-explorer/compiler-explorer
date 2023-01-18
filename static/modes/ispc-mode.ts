@@ -24,10 +24,10 @@
 
 import $ from 'jquery';
 
-const monaco = require('monaco-editor');
-const cpp = require('monaco-editor/esm/vs/basic-languages/cpp/cpp');
+import * as monaco from 'monaco-editor';
+import * as cpp from 'monaco-editor/esm/vs/basic-languages/cpp/cpp';
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     const ispc = $.extend(true, {}, cpp.language); // deep copy
 
     ispc.tokenPostfix = '.ispc';

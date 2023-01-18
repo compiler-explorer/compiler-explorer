@@ -249,7 +249,7 @@ def process_folder(folder: str):
 
 
 def problems_found(file_result):
-    return any([len(file_result[r]) > 0 for r in file_result if r != "filename"])
+    return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
 
 
 def print_issue(name, result):

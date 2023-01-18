@@ -38,7 +38,7 @@ describe('llvm-ir parseMetaNode', function () {
     let compilerProps;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
@@ -105,7 +105,7 @@ describe('llvm-ir getSourceLineNumber', function () {
     let compilerProps;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
@@ -146,7 +146,7 @@ describe('llvm-ir getSourceColumn', function () {
     let compilerProps;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
@@ -172,14 +172,14 @@ describe('llvm-ir getSourceColumn', function () {
         expect(llvmIrParser.getSourceColumn(debugInfo, '!12')).to.equal(10);
     });
 
-    it('should return null on non-existend node', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(null);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(null);
+    it('should return undefined on non-existend node', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!16')).to.equal(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!30')).to.equal(undefined);
     });
 
-    it('should return null if no higher scope has a column', function () {
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(null);
-        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(null);
+    it('should return undefined if no higher scope has a column', function () {
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!14')).to.equal(undefined);
+        expect(llvmIrParser.getSourceColumn(debugInfo, '!15')).to.equal(undefined);
     });
 });
 
@@ -188,7 +188,7 @@ describe('llvm-ir getFileName', function () {
     let compilerProps;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
@@ -227,7 +227,7 @@ describe('llvm-ir isLineLlvmDirective', function () {
     let compilerProps;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);

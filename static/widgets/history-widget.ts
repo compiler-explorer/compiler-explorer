@@ -30,6 +30,7 @@ import {editor} from 'monaco-editor';
 
 import IStandaloneDiffEditor = editor.IStandaloneDiffEditor;
 import ITextModel = editor.ITextModel;
+import {unwrap} from '../assert';
 
 export class HistoryDiffState {
     public model: ITextModel;
@@ -110,8 +111,7 @@ export class HistoryWidget {
     private populateFromLocalStorage() {
         this.currentList = sortedList();
         this.populate(
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            this.modal!.find('.historiccode'),
+            unwrap(this.modal).find('.historiccode'),
             this.currentList.map((data): Entry => {
                 const dt = new Date(data.dt).toString();
                 const languages = HistoryWidget.getLanguagesFromHistoryEntry(data).join(', ');
@@ -128,8 +128,7 @@ export class HistoryWidget {
     }
 
     private hideRadiosAndSetDiff() {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const root = this.modal!.find('.historiccode');
+        const root = unwrap(this.modal).find('.historiccode');
         const items = root.find('li:not(.template)');
 
         let foundbase = false;
@@ -151,16 +150,14 @@ export class HistoryWidget {
 
                 const itemRight = this.currentList.find(item => item.dt === dt);
                 if (itemRight) {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    this.rhs!.update(itemRight);
+                    unwrap(this.rhs).update(itemRight);
                 }
             } else if (base.prop('checked')) {
                 foundbase = true;
 
                 const itemLeft = this.currentList.find(item => item.dt === dt);
                 if (itemLeft) {
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    this.lhs!.update(itemLeft);
+                    unwrap(this.lhs).update(itemLeft);
                 }
             }
 
@@ -217,11 +214,10 @@ export class HistoryWidget {
     }
 
     private resizeLayout() {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const tabcontent = this.modal!.find('div.tab-content');
+        const tabcontent = unwrap(this.modal).find('div.tab-content');
         this.diffEditor?.layout({
-            width: tabcontent.width() as number,
-            height: (tabcontent.height() as number) - 20,
+            width: unwrap(tabcontent.width()),
+            height: unwrap(tabcontent.height()) - 20,
         });
     }
 
@@ -235,10 +231,8 @@ export class HistoryWidget {
         this.onLoadCallback = onLoad;
 
         // It can't tell that we initialize modal on initializeIfNeeded, so it sticks to the possibility of it being null
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.modal!.on('shown.bs.modal', () => this.resizeLayout());
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        this.modal!.modal();
+        unwrap(this.modal).on('shown.bs.modal', () => this.resizeLayout());
+        unwrap(this.modal).modal();
 
         ga.proxy('send', {
             hitType: 'event',

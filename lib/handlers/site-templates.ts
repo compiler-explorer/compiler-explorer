@@ -51,7 +51,7 @@ function partition<T>(array: T[], filter: (value: T) => boolean): [T[], T[]] {
 export function loadSiteTemplates(configDir: string) {
     const [meta, templates] = partition(
         fs
-            .readFileSync(configDir + '/site-templates.conf', 'utf-8')
+            .readFileSync(configDir + '/site-templates.conf', 'utf8')
             .split('\n')
             .filter(l => l !== '')
             .map(splitProperty)

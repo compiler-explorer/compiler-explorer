@@ -107,7 +107,7 @@ IGNORED_DUPLICATES = [
 ]
 # Where to extract the asmdoc archive.
 ASMDOC_DIR = "asm-docs"
-ARCHIVE_URL = "http://www.felixcloutier.com/x86/x86.tbz2"
+ARCHIVE_URL = "https://www.felixcloutier.com/x86/x86.tbz2"
 ARCHIVE_NAME = "x86.tbz2"
 
 
@@ -123,7 +123,7 @@ class Instruction(object):
 
 
 def get_url_for_instruction(instr):
-    return f"http://www.felixcloutier.com/x86/{urllib.parse.quote(instr.name)}.html"
+    return f"https://www.felixcloutier.com/x86/{urllib.parse.quote(instr.name)}.html"
 
 
 def download_asm_doc_archive(downloadfolder):
@@ -222,7 +222,7 @@ def parse(filename, f):
         for link in para.find_all('a'):
             # this urljoin will only ensure relative urls are prefixed
             # if a url is already absolute it does nothing
-            link['href'] = urllib.parse.urljoin('http://www.felixcloutier.com/x86/', link['href'])
+            link['href'] = urllib.parse.urljoin('https://www.felixcloutier.com/x86/', link['href'])
             link['target'] = '_blank'
             link['rel'] = 'noreferrer noopener'
 

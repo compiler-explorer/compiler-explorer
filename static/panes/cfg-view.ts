@@ -26,6 +26,7 @@ import {Pane} from './pane';
 import * as monaco from 'monaco-editor';
 import $ from 'jquery';
 import _ from 'underscore';
+import * as fileSaver from 'file-saver';
 
 import {CfgState} from './cfg-view.interfaces';
 import {Hub} from '../hub';
@@ -43,6 +44,7 @@ import {
 import {GraphLayoutCore} from '../graph-layout-core';
 import * as MonacoConfig from '../monaco-config';
 import TomSelect from 'tom-select';
+import {assert, unwrap} from '../assert';
 
 const ColorTable = {
     red: '#FE5D5D',
@@ -59,6 +61,51 @@ type Coordinate = {
 const DZOOM = 0.1;
 const MINZOOM = 0.1;
 
+const EST_COMPRESSION_RATIO = 0.022;
+
+// https://stackoverflow.com/questions/6234773/can-i-escape-html-special-chars-in-javascript
+function escapeSVG(text: string) {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function attrs(attributes: Record<string, string | number | null>) {
+    return Object.entries(attributes)
+        .map(([k, v]) => `${k}="${v}"`)
+        .join(' ');
+}
+
+function special_round(x: number) {
+    assert(x >= 0);
+    if (x === 0) {
+        return 0;
+    }
+    const p = Math.pow(10, Math.floor(Math.log10(x)));
+    // prettier-ignore
+    const candidates = [
+        Math.round(x / p) * p - p / 2,
+        Math.round(x / p) * p,
+        Math.round(x / p) * p + p / 2,
+    ];
+    return Math.trunc(candidates.sort((a, b) => Math.abs(x - a) - Math.abs(x - b))[0]);
+}
+
+function size_to_human(bytes: number) {
+    if (bytes < 1000) {
+        return special_round(bytes) + ' B';
+    } else if (bytes < 1_000_000) {
+        return special_round(bytes / 1_000) + ' KB';
+    } else if (bytes < 1_000_000_000) {
+        return special_round(bytes / 1_000_000) + ' MB';
+    } else {
+        return special_round(bytes / 1_000_000_000) + ' GB';
+    }
+}
+
 export class Cfg extends Pane<CfgState> {
     graphDiv: HTMLElement;
     svg: SVGElement;
@@ -66,6 +113,9 @@ export class Cfg extends Pane<CfgState> {
     graphContainer: HTMLElement;
     graphElement: HTMLElement;
     infoElement: HTMLElement;
+    exportPNGButton: JQuery;
+    estimatedPNGSize: Element;
+    exportSVGButton: JQuery;
     currentPosition: Coordinate = {x: 0, y: 0};
     dragging = false;
     dragStart: Coordinate = {x: 0, y: 0};
@@ -76,6 +126,7 @@ export class Cfg extends Pane<CfgState> {
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
+    readonly extraTransforms: string;
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -92,23 +143,10 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
-        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
-        if (!(selector instanceof HTMLSelectElement)) {
-            throw new Error('.function-selector is not an HTMLSelectElement');
-        }
-        this.functionSelector = new TomSelect(selector, {
-            valueField: 'value',
-            labelField: 'title',
-            searchField: ['title'],
-            placeholder: '🔍 Select a function...',
-            dropdownParent: 'body',
-            plugins: ['dropdown_input'],
-            sortField: 'title',
-            onChange: e => {
-                this.selectFunction(e as any as string);
-            },
-        });
         this.state = state;
+        // This is a workaround for a chrome render bug that's existed since at least 2013
+        // https://github.com/compiler-explorer/compiler-explorer/issues/4421
+        this.extraTransforms = !navigator.userAgent.includes('AppleWebKit') ? '' : ' translateZ(0)';
     }
 
     override getInitialHTML() {
@@ -117,6 +155,21 @@ export class Cfg extends Pane<CfgState> {
 
     override getDefaultPaneName() {
         return 'CFG';
+    }
+
+    override registerButtons() {
+        const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
+        assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
+        this.functionSelector = new TomSelect(selector, {
+            valueField: 'value',
+            labelField: 'title',
+            searchField: ['title'],
+            placeholder: '🔍 Select a function...',
+            dropdownParent: 'body',
+            plugins: ['dropdown_input'],
+            sortField: 'title',
+            onChange: e => this.selectFunction(e as unknown as string),
+        });
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -129,16 +182,19 @@ export class Cfg extends Pane<CfgState> {
 
     override registerDynamicElements(state: CfgState) {
         this.graphDiv = this.domRoot.find('.graph')[0];
-        this.svg = this.domRoot.find('svg')[0] as SVGElement;
+        this.svg = this.domRoot.find('svg')[0];
         this.blockContainer = this.domRoot.find('.block-container')[0];
         this.graphContainer = this.domRoot.find('.graph-container')[0];
         this.graphElement = this.domRoot.find('.graph')[0];
         this.infoElement = this.domRoot.find('.cfg-info')[0];
+        this.exportPNGButton = this.domRoot.find('.export-png').first();
+        this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
+        this.exportSVGButton = this.domRoot.find('.export-svg').first();
     }
 
     override registerCallbacks() {
         this.graphContainer.addEventListener('mousedown', e => {
-            const div = (e.target as Element).closest('div');
+            const div = (unwrap(e.target) as Element).closest('div');
             if (div && (div.classList.contains('block-container') || div.classList.contains('graph-container'))) {
                 this.dragging = true;
                 this.dragStart = {x: e.clientX, y: e.clientY};
@@ -165,7 +221,7 @@ export class Cfg extends Pane<CfgState> {
             const prevZoom = this.state.zoom;
             this.state.zoom += delta;
             if (this.state.zoom >= MINZOOM) {
-                this.graphElement.style.transform = `scale(${this.state.zoom})`;
+                this.zoom(this.state.zoom);
                 const mouseX = e.clientX - this.graphElement.getBoundingClientRect().x;
                 const mouseY = e.clientY - this.graphElement.getBoundingClientRect().y;
                 // Amount that the zoom will offset is mouseX / width before zoom * delta * unzoomed width
@@ -177,7 +233,22 @@ export class Cfg extends Pane<CfgState> {
             } else {
                 this.state.zoom = MINZOOM;
             }
+            e.preventDefault();
         });
+        this.exportPNGButton.on('click', () => {
+            this.exportPNG();
+        });
+        this.exportSVGButton.on('click', () => {
+            this.exportSVG();
+        });
+    }
+
+    async exportPNG() {
+        fileSaver.saveAs(await this.createPNG(), 'cfg.png');
+    }
+
+    exportSVG() {
+        fileSaver.saveAs(new Blob([this.createSVG()], {type: 'text/plain;charset=utf-8'}), 'cfg.svg');
     }
 
     override onCompiler(compilerId: number, compiler: any, options: unknown, editorId: number, treeId: number): void {
@@ -244,17 +315,18 @@ export class Cfg extends Pane<CfgState> {
                     MonacoConfig.extendConfig({})
                 )
             ).replace(/;;%%%fold%%%/gi, '<div class="fold"></div>');
-            if (node.id in this.bbMap) {
-                throw Error("Duplicate basic block node id's found while drawing cfg");
-            }
+            // So because this is async there's a race condition here if you rapidly switch functions.
+            // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
+            // to another PR. TODO(jeremy-rifkin)
+            assert(!(node.id in this.bbMap), "Duplicate basic block node id's found while drawing cfg");
             this.bbMap[node.id] = div;
             this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
             const elem = $(this.bbMap[node.id]);
             void this.bbMap[node.id].offsetHeight;
-            (node as AnnotatedNodeDescriptor).width = elem.outerWidth() as number;
-            (node as AnnotatedNodeDescriptor).height = elem.outerHeight() as number;
+            (node as AnnotatedNodeDescriptor).width = unwrap(elem.outerWidth());
+            (node as AnnotatedNodeDescriptor).height = unwrap(elem.outerHeight());
         }
     }
 
@@ -269,9 +341,7 @@ export class Cfg extends Pane<CfgState> {
         for (const block of this.layout.blocks) {
             for (const edge of block.edges) {
                 // Sanity check
-                if (edge.path.length === 0) {
-                    throw Error('Mal-formed edge: Zero segments');
-                }
+                assert(edge.path.length !== 0, 'Mal-formed edge: Zero segments');
                 const points: [number, number][] = [];
                 // -1 offset is to create an overlap between the block's bottom border and start of the path, avoid any
                 // visual artifacts
@@ -333,6 +403,7 @@ export class Cfg extends Pane<CfgState> {
     async selectFunction(name: string | null) {
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
+        this.estimatedPNGSize.innerHTML = '';
         if (!name || !(name in this.results)) {
             return;
         }
@@ -345,13 +416,116 @@ export class Cfg extends Pane<CfgState> {
         this.infoElement.innerHTML = `Layout time: ${Math.round(this.layout.layoutTime)}ms<br/>Basic blocks: ${
             fn.nodes.length
         }`;
+        this.estimatedPNGSize.innerHTML = `(~${size_to_human(
+            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO
+        )})`;
+    }
+
+    zoom(zoom: number) {
+        this.graphElement.style.transform = `scale(${zoom})${this.extraTransforms}`;
+    }
+
+    createSVG() {
+        this.zoom(1);
+        let doc = '';
+        doc += '<?xml version="1.0"?>';
+        doc += '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">';
+        doc += `<svg ${attrs({
+            xmlns: 'http://www.w3.org/2000/svg',
+            version: '1.1',
+            width: this.svg.style.width,
+            height: this.svg.style.height,
+            viewBox: this.svg.getAttribute('viewBox'),
+        })}>`;
+        doc += '<style>.code{font: 16px Consolas;}</style>';
+        // insert the background
+        const pane = this.graphContainer.parentElement;
+        assert(pane && pane.classList.contains('lm_content'), 'Unknown parent');
+        const pane_style = window.getComputedStyle(pane);
+        doc += `<rect ${attrs({
+            x: '0',
+            y: '0',
+            width: this.svg.style.width,
+            height: this.svg.style.height,
+            fill: pane_style.backgroundColor,
+        })} />`;
+        // just grab the edges/arrows directly
+        doc += this.svg.innerHTML;
+        // the blocks we'll have to copy over
+        for (const block of this.layout.blocks) {
+            const block_elem = this.bbMap[block.data.id];
+            const block_style = window.getComputedStyle(block_elem);
+            const block_bounding_box = block_elem.getBoundingClientRect();
+            doc += `<rect ${attrs({
+                x: block.coordinates.x,
+                y: block.coordinates.y,
+                width: block.data.width,
+                height: block.data.height,
+                fill: block_style.background,
+                stroke: block_style.borderColor,
+                'stroke-width': block_style.borderWidth,
+            })} />`;
+            for (const [_, span] of block_elem.querySelectorAll('span[class]').entries()) {
+                const text = new DOMParser().parseFromString(span.innerHTML, 'text/html').documentElement.textContent;
+                if (!text || text.trim() === '') {
+                    continue;
+                }
+                const span_style = window.getComputedStyle(span);
+                const span_box = span.getBoundingClientRect();
+                const top = span_box.top - block_bounding_box.top;
+                const left = span_box.left - block_bounding_box.left;
+                doc += `<text ${attrs({
+                    x: block.coordinates.x + left,
+                    y: block.coordinates.y + top + span_box.height / 2 + parseInt(block_style.paddingTop),
+                    class: 'code',
+                    fill: span_style.color,
+                })}>${escapeSVG(text)}</text>`;
+            }
+        }
+        doc += '</svg>';
+        this.zoom(this.state.zoom);
+        return doc;
+    }
+
+    async createPNG() {
+        const svg_blob = new Blob([this.createSVG()], {type: 'image/svg+xml;charset=utf-8'});
+        const svg_url = URL.createObjectURL(svg_blob);
+        const image = new Image();
+        const width = this.layout.getWidth();
+        const height = this.layout.getHeight();
+        image.width = width;
+        image.height = height;
+        const canvas = await new Promise<HTMLCanvasElement>((resolve, reject) => {
+            image.onerror = reject;
+            image.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    throw new Error('Null ctx');
+                }
+                ctx.drawImage(image, 0, 0, width, height);
+                resolve(canvas);
+            };
+            image.src = svg_url;
+        });
+        return await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob(blob => {
+                if (blob) {
+                    resolve(blob);
+                } else {
+                    reject(blob);
+                }
+            }, 'image/png');
+        });
     }
 
     override resize() {
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
-            this.graphContainer.style.width = `${this.domRoot.width() as number}px`;
-            this.graphContainer.style.height = `${(this.domRoot.height() as number) - topBarHeight}px`;
+            this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
+            this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
         });
     }
 

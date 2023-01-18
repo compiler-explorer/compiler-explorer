@@ -46,7 +46,7 @@ export class BuildEnvSetupBase {
 
         this.compilerOptionsArr = utils.splitArguments(this.compiler.options);
         this.compilerArch = this.getCompilerArch();
-        this.compilerTypeOrGCC = compilerInfo.compilerType ? compilerInfo.compilerType : 'gcc';
+        this.compilerTypeOrGCC = compilerInfo.compilerType || 'gcc';
         if (this.compilerTypeOrGCC === 'clang-intel') this.compilerTypeOrGCC = 'gcc';
         this.compilerSupportsX86 = !this.compilerArch;
     }
