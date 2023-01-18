@@ -127,6 +127,8 @@ export class Cfg extends Pane<CfgState> {
     layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
     readonly extraTransforms: string;
+    fictitiousGraphContainer: HTMLDivElement;
+    fictitiousBlockContainer: HTMLDivElement;
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -190,6 +192,30 @@ export class Cfg extends Pane<CfgState> {
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
+        this.setupFictitiousGraphContainer();
+    }
+
+    setupFictitiousGraphContainer() {
+        // create a fake .graph-container .graph .block-container where we can compute block dimensions
+        // golden layout sets panes to display:none when they aren't the active tab
+        // create the .graph-container
+        const fictitiousGraphContainer = document.createElement('div');
+        fictitiousGraphContainer.setAttribute('class', 'graph-container');
+        fictitiousGraphContainer.setAttribute('style', 'position: absolute; bottom: 0; right: 0; width: 0; height: 0;');
+        // create the .graph
+        const fictitiousGraph = document.createElement('div');
+        fictitiousGraph.setAttribute('class', 'graph');
+        // create the .block-container
+        const fictitousBlockContainer = document.createElement('div');
+        fictitousBlockContainer.setAttribute('class', 'block-container');
+        // .graph-container -> .graph
+        fictitiousGraphContainer.appendChild(fictitiousGraph);
+        // .graph -> .block-container
+        fictitiousGraph.appendChild(fictitousBlockContainer);
+        // finally append to the body
+        document.body.appendChild(fictitiousGraphContainer);
+        this.fictitiousGraphContainer = fictitiousGraphContainer;
+        this.fictitiousBlockContainer = fictitousBlockContainer;
     }
 
     override registerCallbacks() {
@@ -314,11 +340,16 @@ export class Cfg extends Pane<CfgState> {
             this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
-            const elem = $(this.bbMap[node.id]);
-            void this.bbMap[node.id].offsetHeight;
+            const fictitiousBlock = this.fictitiousBlockContainer.appendChild(
+                this.bbMap[node.id].cloneNode(true)
+            ) as HTMLDivElement;
+            const elem = $(fictitiousBlock);
+            void fictitiousBlock.offsetHeight; // try to trigger a layout recompute
             (node as AnnotatedNodeDescriptor).width = unwrap(elem.outerWidth());
             (node as AnnotatedNodeDescriptor).height = unwrap(elem.outerHeight());
         }
+        // remove all children
+        this.fictitiousBlockContainer.replaceChildren();
     }
 
     drawEdges() {
@@ -523,5 +554,6 @@ export class Cfg extends Pane<CfgState> {
     override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('cfgViewClosed', this.compilerInfo.compilerId);
+        this.fictitiousGraphContainer.remove();
     }
 }
