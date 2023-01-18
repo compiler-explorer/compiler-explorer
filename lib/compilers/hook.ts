@@ -47,6 +47,8 @@ export class HookCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
+        const compilerPath = path.dirname(compiler);
+        execOptions.env.HOOK_HOME = path.join(compilerPath, '..');
         const dirPath = path.dirname(inputFilename);
         const outputFilename = this.getOutputFilename(dirPath);
         options.push(outputFilename);
