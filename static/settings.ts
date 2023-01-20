@@ -34,6 +34,7 @@ import {keys} from '../lib/common-utils';
 import {assert, unwrapString} from './assert';
 
 import {LanguageKey} from '../types/languages.interfaces';
+import {isString} from 'underscore';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -447,7 +448,7 @@ export class Settings {
         );
     }
 
-    private selectorHasOption(selector: JQuery, option: string): boolean {
+    private selectorHasOption(selector: JQuery, option: string | undefined): boolean {
         return selector.children(`[value=${option}]`).length > 0;
     }
 
@@ -459,11 +460,15 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-        if (!colourSchemeSelect.val()) {
-            return;
-        }
-        const oldScheme = unwrapString(colourSchemeSelect.val());
+        const oldScheme = colourSchemeSelect.val();
         const newTheme = unwrapString<colour.AppTheme>(themeSelect.val());
+
+        // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
+        assert(
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            isString(oldScheme) || oldScheme === undefined || oldScheme == null,
+            'Unexpected value received from colourSchemeSelect.val()'
+        );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
@@ -473,7 +478,7 @@ export class Settings {
         // If we have one old one stored, check if it's still valid and set it if so
         if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;
-        } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
+        } else if (isString(oldScheme) && this.selectorHasOption(colourSchemeSelect, oldScheme)) {
             newScheme = oldScheme;
         }
 
