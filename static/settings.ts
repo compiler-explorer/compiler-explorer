@@ -30,11 +30,10 @@ import {themes, Themes} from './themes';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 import {Hub} from './hub';
 import {EventHub} from './event-hub';
-import {keys} from '../lib/common-utils';
+import {keys, isString} from '../lib/common-utils';
 import {assert, unwrapString} from './assert';
 
 import {LanguageKey} from '../types/languages.interfaces';
-import {isString} from 'underscore';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -448,7 +447,7 @@ export class Settings {
         );
     }
 
-    private selectorHasOption(selector: JQuery, option: string | undefined): boolean {
+    private selectorHasOption(selector: JQuery, option: string): boolean {
         return selector.children(`[value=${option}]`).length > 0;
     }
 
