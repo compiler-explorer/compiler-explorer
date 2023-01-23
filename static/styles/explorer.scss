@@ -420,18 +420,19 @@ pre.content.wrap * {
                 line-height: 100%;
                 .fold {
                     display: inline-block;
-                    &:after {
-                        color: grey;
-                        margin: .1em .1em 0 .2em;
-                        content: "\22EF";
-                        display: inline;
-                        line-height: 1em;
-                        cursor: pointer;
-                    }
+                    color: grey;
+                    margin: 0.1em 0.1em 0 0.2em;
+                    line-height: 1em;
+                    cursor: pointer;
                 }
             }
         }
     }
+}
+
+.cfg-fold-popover {
+    font-family: Consolas, 'Liberation Mono', Courier, monospace;
+    max-width: calc(min(95vw, 1000px));
 }
 
 .cfg-toolbar {
