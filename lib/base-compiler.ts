@@ -2234,7 +2234,11 @@ export class BaseCompiler implements ICompiler {
                 result.retreivedFromCache = true;
                 if (doExecute) {
                     result.execResult = await this.env.enqueue(async () => {
-                        return this.handleExecution(key, executeParameters);
+                        // TODO(jeremy-rifkin) temporary metrics collection
+                        const start = performance.now();
+                        const res = this.handleExecution(key, executeParameters);
+                        logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
+                        return res;
                     });
 
                     if (result.execResult && result.execResult.buildResult) {
@@ -2246,48 +2250,54 @@ export class BaseCompiler implements ICompiler {
         }
 
         return this.env.enqueue(async () => {
-            source = this.preProcess(source, filters);
+            // TODO(jeremy-rifkin) temporary metrics collection
+            const start = performance.now();
+            const res = await (async () => {
+                source = this.preProcess(source, filters);
 
-            if (backendOptions.executorRequest) {
-                const execResult = await this.handleExecution(key, executeParameters);
-                if (execResult && execResult.buildResult) {
-                    this.doTempfolderCleanup(execResult.buildResult);
+                if (backendOptions.executorRequest) {
+                    const execResult = await this.handleExecution(key, executeParameters);
+                    if (execResult && execResult.buildResult) {
+                        this.doTempfolderCleanup(execResult.buildResult);
+                    }
+                    return execResult;
                 }
-                return execResult;
-            }
 
-            const dirPath = await this.newTempDir();
+                const dirPath = await this.newTempDir();
 
-            let writeSummary;
-            try {
-                writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
-            } catch (e) {
-                return this.handleUserError(e, dirPath);
-            }
-            const inputFilename = writeSummary.inputFilename;
+                let writeSummary;
+                try {
+                    writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
+                } catch (e) {
+                    return this.handleUserError(e, dirPath);
+                }
+                const inputFilename = writeSummary.inputFilename;
 
-            const [result, optOutput] = await this.doCompilation(
-                inputFilename,
-                dirPath,
-                key,
-                options,
-                filters,
-                backendOptions,
-                libraries,
-                tools,
-            );
+                const [result, optOutput] = await this.doCompilation(
+                    inputFilename,
+                    dirPath,
+                    key,
+                    options,
+                    filters,
+                    backendOptions,
+                    libraries,
+                    tools,
+                );
 
-            return await this.afterCompilation(
-                result,
-                doExecute,
-                key,
-                executeParameters,
-                tools,
-                backendOptions,
-                filters,
-                options,
-                optOutput,
-            );
+                return await this.afterCompilation(
+                    result,
+                    doExecute,
+                    key,
+                    executeParameters,
+                    tools,
+                    backendOptions,
+                    filters,
+                    options,
+                    optOutput,
+                );
+            })();
+            logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
+            return res;
         });
     }
 
