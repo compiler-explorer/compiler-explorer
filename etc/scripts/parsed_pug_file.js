@@ -9,7 +9,7 @@ import path from 'path';
 // just update the hash here.
 const expectedHashes = {
     cookies: '4bc6a34572c2eb78',
-    privacy: '014c73c485dd3625',
+    privacy: 'dcc79570ddaf4bd8',
 };
 
 function _execGit(command) {
