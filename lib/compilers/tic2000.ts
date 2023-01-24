@@ -52,68 +52,19 @@ export class TIC2000 extends BaseCompiler {
         return path.join(dirPath, `${outputFilebase}.asm`);
     }
 
-    override exec(compiler, args, options_) {
-        const options = Object.assign({}, options_);
-        options.env = Object.assign({}, options.env);
-
-        if (this.compiler.includePath) {
-            options.env['INCLUDE'] = this.compiler.includePath;
-        }
-        if (this.compiler.libPath) {
-            options.env['LIB'] = this.compiler.libPath;
-        }
-        for (const [env, to] of this.compiler.envVars) {
-            options.env[env] = to;
-        }
-
-        options.env['TMP'] = process.env.TMP;
-
-        return super.exec(compiler, args, options);
-    }
-
-    getExtraAsmHint(asm) {
-        asm = asm.trim();
-        if (asm.startsWith('.dwpsn')) {
-            const tokens = asm.split(',');
-            const file = tokens[0].split('"')[1];
-            const line = tokens[1].split(' ')[1];
-            const column = tokens[2].split(' ')[1];
-
-            const retval: string[] = [];
-
-            retval.push('  .file 1 "' + file + '"');
-
-            if (!isNaN(line)) {
-                if (isNaN(column)) {
-                    retval.push('  .loc 1 ' + line + ' 0');
-                } else {
-                    retval.push('  .loc 1 ' + line + ' ' + column);
-                }
-            }
-            return retval;
-        } else {
-            return false;
-        }
-    }
-
     preProcessLines(asmLines) {
         let i = 0;
 
         while (i < asmLines.length) {
-            const extraHint = this.getExtraAsmHint(asmLines[i]);
-            if (extraHint) {
-                if (Array.isArray(extraHint)) {
-                    for (const z of extraHint) {
-                        i++;
-                        asmLines.splice(i, 0, z);
-                    }
-                } else {
-                    i++;
-                    asmLines.splice(i, 0, extraHint);
-                }
-            }
-
+            // Regex for determining the file line and column of the following source lines
+            const match = asmLines[i].match(/^\s*\.dwpsn\s+file\s+"(.*)",line\s+(\d+),column\s+(\d+)/);
             i++;
+            if (match) {
+                // Add two lines stating the file and location to allow parsing the source location by the standard
+                // parser
+                asmLines.splice(i, 0, '  .file 1 "' + match[1] + '"', '  .loc 1 ' + match[2] + ' ' + match[3]);
+                i += 2;
+            }
         }
 
         return asmLines;
