@@ -126,6 +126,7 @@ export class Cfg extends Pane<CfgState> {
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
+    tooltipOpen = false;
     readonly extraTransforms: string;
     fictitiousGraphContainer: HTMLDivElement;
     fictitiousBlockContainer: HTMLDivElement;
@@ -267,6 +268,15 @@ export class Cfg extends Pane<CfgState> {
         this.exportSVGButton.on('click', () => {
             this.exportSVG();
         });
+        // Dismiss tooltips if you click elsewhere - trigger: focus isn't working for some reason
+        $('body').on('click', e => {
+            if (this.tooltipOpen) {
+                if (!e.target.classList.contains('fold') && $(e.target).parents('.popover.in').length === 0) {
+                    this.tooltipOpen = false;
+                    $('.fold').popover('hide');
+                }
+            }
+        });
     }
 
     async exportPNG() {
@@ -331,7 +341,61 @@ export class Cfg extends Pane<CfgState> {
         for (const node of fn.nodes) {
             const div = document.createElement('div');
             div.classList.add('block');
-            div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
+            const folded_lines: number[] = [];
+            const raw_lines = node.label.split('\n');
+            const highlighted_asm_untrimmed = await monaco.editor.colorize(
+                raw_lines.join('\n'),
+                'asm',
+                MonacoConfig.extendConfig({})
+            );
+            const highlighted_asm = await monaco.editor.colorize(
+                raw_lines
+                    .map((line, i) => {
+                        if (line.length <= 100) {
+                            return line;
+                        } else {
+                            folded_lines.push(i);
+                            return line.slice(0, 100);
+                        }
+                    })
+                    .join('\n'),
+                'asm',
+                MonacoConfig.extendConfig({})
+            );
+            const untrimmed_lines = highlighted_asm_untrimmed.split('<br/>');
+            const lines = highlighted_asm.split('<br/>');
+            // highlighted asm has a blank line at the end
+            assert(raw_lines.length === untrimmed_lines.length - 1);
+            assert(raw_lines.length === lines.length - 1);
+            for (const i of folded_lines) {
+                lines[i] += `<span class="fold" data-extra="${
+                    untrimmed_lines[i]
+                        .replace(/"/g, '&quot;') // escape double quotes for the attribute
+                        .replace(/\s{2,}/g, '&nbsp;') // clean up occurrences of multiple whitespace
+                        .replace(/>(\s|&nbsp;)<\/span>/, '></span>') // Hacky solution to remove whitespace at the start
+                }" aria-describedby="wtf">&#8943;</span>`;
+            }
+            div.innerHTML = lines.join('<br/>');
+            for (const fold of div.getElementsByClassName('fold')) {
+                $(fold)
+                    .popover({
+                        content: unwrap(fold.getAttribute('data-extra')),
+                        html: true,
+                        placement: 'top',
+                        template:
+                            '<div class="popover cfg-fold-popover" role="tooltip">' +
+                            '<div class="arrow"></div>' +
+                            '<h3 class="popover-header"></h3>' +
+                            '<div class="popover-body"></div>' +
+                            '</div>',
+                    })
+                    .on('show.bs.popover', () => {
+                        this.tooltipOpen = true;
+                    })
+                    .on('hide.bs.popover', () => {
+                        this.tooltipOpen = false;
+                    });
+            }
             // So because this is async there's a race condition here if you rapidly switch functions.
             // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
             // to another PR. TODO(jeremy-rifkin)
@@ -423,6 +487,7 @@ export class Cfg extends Pane<CfgState> {
     // display the cfg for the specified function if it exists
     // this function does not change or use this.state.selectedFunction
     async selectFunction(name: string | null) {
+        $('.fold').popover('dispose');
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
         this.estimatedPNGSize.innerHTML = '';
@@ -548,6 +613,7 @@ export class Cfg extends Pane<CfgState> {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
+            $('.fold').popover('hide');
         });
     }
 

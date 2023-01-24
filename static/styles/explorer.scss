@@ -418,9 +418,21 @@ pre.content.wrap * {
                 font-family: Consolas, 'Liberation Mono', Courier, monospace;
                 white-space: nowrap;
                 line-height: 100%;
+                .fold {
+                    display: inline-block;
+                    color: grey;
+                    margin: 0.1em 0.1em 0 0.2em;
+                    line-height: 1em;
+                    cursor: pointer;
+                }
             }
         }
     }
+}
+
+.cfg-fold-popover {
+    font-family: Consolas, 'Liberation Mono', Courier, monospace;
+    max-width: calc(min(95vw, 1000px));
 }
 
 .cfg-toolbar {
