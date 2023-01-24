@@ -2236,7 +2236,7 @@ export class BaseCompiler implements ICompiler {
                     result.execResult = await this.env.enqueue(async () => {
                         // TODO(jeremy-rifkin) temporary metrics collection
                         const start = performance.now();
-                        const res = this.handleExecution(key, executeParameters);
+                        const res = await this.handleExecution(key, executeParameters);
                         logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
                         return res;
                     });
