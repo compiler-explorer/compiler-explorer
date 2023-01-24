@@ -15,7 +15,7 @@
 /lib/storage/data
 
 # IDE project files
-/.idea
+/.idea/shelf
 /nbproject
 *.vscode
 *.code-workspace

@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ export class TIC2000 extends BaseCompiler {
         this.asm = new TiC2000AsmParser(this.compilerProps);
     }
 
-    optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters, outputFilename) {
         const options = ['-g', '-c', '-n', '--output_file=' + outputFilename];
 
         filters.preProcessLines = _.bind(this.preProcessLines, this);
@@ -48,11 +48,11 @@ export class TIC2000 extends BaseCompiler {
         return options;
     }
 
-    getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath, outputFilebase) {
         return path.join(dirPath, `${outputFilebase}.asm`);
     }
 
-    exec(compiler, args, options_) {
+    override exec(compiler, args, options_) {
         const options = Object.assign({}, options_);
         options.env = Object.assign({}, options.env);
 
@@ -79,7 +79,7 @@ export class TIC2000 extends BaseCompiler {
             const line = tokens[1].split(' ')[1];
             const column = tokens[2].split(' ')[1];
 
-            var retval = [];
+            const retval: string[] = [];
 
             retval.push('  .file 1 "' + file + '"');
 
@@ -103,7 +103,7 @@ export class TIC2000 extends BaseCompiler {
             const extraHint = this.getExtraAsmHint(asmLines[i]);
             if (extraHint) {
                 if (Array.isArray(extraHint)) {
-                    for (var z of extraHint) {
+                    for (const z of extraHint) {
                         i++;
                         asmLines.splice(i, 0, z);
                     }
