@@ -23,11 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as Sentry from '@sentry/node';
-import fs from 'fs-extra';
 import express from 'express';
+import fs from 'fs-extra';
 
-import {logger} from '../logger';
 import {CompilationQueue} from '../compilation-queue';
+import {logger} from '../logger';
 
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
