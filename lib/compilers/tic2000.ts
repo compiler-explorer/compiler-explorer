@@ -57,12 +57,12 @@ export class TIC2000 extends BaseCompiler {
 
         while (i < asmLines.length) {
             // Regex for determining the file line and column of the following source lines
-            const match = asmLines[i].match(/^\s*\.dwpsn\s+file\s+"(.*)",line\s+(\d+),column\s+(\d+)/);
+            const match = asmLines[i].match(/^\s*\.dwpsn\s+file\s+(".*"),line\s+(\d+),column\s+(\d+)/);
             i++;
             if (match) {
                 // Add two lines stating the file and location to allow parsing the source location by the standard
                 // parser
-                asmLines.splice(i, 0, '  .file 1 "' + match[1] + '"', '  .loc 1 ' + match[2] + ' ' + match[3]);
+                asmLines.splice(i, 0, '  .file 1 ' + match[1], '  .loc 1 ' + match[2] + ' ' + match[3]);
                 i += 2;
             }
         }
