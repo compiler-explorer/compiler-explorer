@@ -24,18 +24,19 @@
 
 import * as Sentry from '@sentry/node';
 import fs from 'fs-extra';
+import express from 'express';
 
 import {logger} from '../logger';
+import {CompilationQueue} from '../compilation-queue';
 
 export class HealthCheckHandler {
-    constructor(compilationQueue, filePath) {
-        this.compilationQueue = compilationQueue;
-        this.filePath = filePath;
+    public readonly handle: (req: any, res: any) => Promise<void>;
 
+    constructor(private readonly compilationQueue: CompilationQueue, private readonly filePath: any) {
         this.handle = this._handle.bind(this);
     }
 
-    async _handle(req, res) {
+    async _handle(req: express.Request, res: express.Response) {
         /* wait on an empty job to pass through the compilation queue
          * to ensure the health check will timeout if it is deadlocked
          *
