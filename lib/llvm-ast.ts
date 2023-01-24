@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PropertyGetter} from './properties.interfaces';
-
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
+
+import {PropertyGetter} from './properties.interfaces';
 
 type Point = {
     line: number | null;
