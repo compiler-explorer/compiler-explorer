@@ -32,7 +32,11 @@ describe('Hook compiler', () => {
         HookCompiler.key.should.equal('hook');
     });
 
-    const info = {remote: true, lang: 'hook'};
+    const info = {
+        exe: '/opt/hook/bin/hook',
+        remote: true,
+        lang: 'hook',
+    };
     const languages = {hook: {id: 'hook'}};
     const hook = new HookCompiler(info, makeCompilationEnvironment({languages}));
 
@@ -43,6 +47,11 @@ describe('Hook compiler', () => {
     it('should return correct output filename', () => {
         const dirPath = '/tmp';
         hook.getOutputFilename(dirPath).should.equal('/tmp/example.out');
+    });
+
+    it('should return correct default exec options', () => {
+        const execOptions = hook.getDefaultExecOptions();
+        execOptions.env.HOOK_HOME.should.equal('/opt/hook');
     });
 
     it('should process and return correct bytecode result', () => {
