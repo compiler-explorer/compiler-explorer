@@ -137,7 +137,6 @@ type CompileChildLibraries = {
 };
 
 export class Executor extends Pane<ExecutorState> {
-    private compilerService: CompilerService;
     private contentRoot: JQuery<HTMLElement>;
     private readonly sourceEditorId: number | null;
     private sourceTreeId: number | null;
@@ -160,7 +159,6 @@ export class Executor extends Pane<ExecutorState> {
     private fontScale: FontScale;
     private compilerPicker: CompilerPicker;
     private currentLangId: string;
-    private filters: Toggles;
     private toggleWrapButton: Toggles;
     private compileClearCache: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private outputContentRoot: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -195,24 +193,17 @@ export class Executor extends Pane<ExecutorState> {
 
     constructor(hub: Hub, container: Container, state: PaneState & ExecutorState) {
         super(hub, container, state);
-        this.hub = hub;
-        this.compilerService = hub.compilerService;
-        this.contentRoot = this.domRoot.find('.content');
-        this.sourceTreeId = state.tree ?? null;
         if (this.sourceTreeId) {
             this.sourceEditorId = null;
         } else {
             this.sourceEditorId = state.source || 1;
         }
-        this.id = state.id || hub.nextExecutorId();
-        this.settings = Settings.getStoredSettings();
-        this.initLangAndCompiler(state);
+        this.id = state.id || this.hub.nextExecutorId();
+
+        this.contentRoot = this.domRoot.find('.content');
         this.infoByLang = {};
         this.deferCompiles = hub.deferred;
         this.needsCompile = false;
-        this.options = state.options || options.compileOptions[this.currentLangId];
-        this.executionArguments = state.execArgs || '';
-        this.executionStdin = state.execStdin || '';
         this.source = '';
         this.lastResult = {code: -1, timedOut: false, stdout: [], stderr: []};
         this.lastTimeTaken = 0;
@@ -239,8 +230,6 @@ export class Executor extends Pane<ExecutorState> {
             this.compilerIsVisible
         );
 
-        this.paneRenaming = new PaneRenaming(this, state);
-
         this.initLibraries(state);
         this.initCallbacks();
         // Handle initial settings
@@ -251,6 +240,16 @@ export class Executor extends Pane<ExecutorState> {
         if (this.sourceTreeId) {
             this.compile();
         }
+    }
+
+    override initializeStateDependentProperties(state: PaneState & ExecutorState) {
+        this.sourceTreeId = state.tree ?? null;
+        this.settings = Settings.getStoredSettings();
+        this.initLangAndCompiler(state);
+        this.options = state.options || options.compileOptions[this.currentLangId];
+        this.executionArguments = state.execArgs || '';
+        this.executionStdin = state.execStdin || '';
+        this.paneRenaming = new PaneRenaming(this, state);
     }
 
     override getInitialHTML(): string {
@@ -276,7 +275,7 @@ export class Executor extends Pane<ExecutorState> {
     initLangAndCompiler(state: PaneState & ExecutorState): void {
         const langId = state.lang ?? null;
         const compilerId = state.compiler;
-        const result = this.compilerService.processFromLangAndCompiler(langId, compilerId);
+        const result = this.hub.compilerService.processFromLangAndCompiler(langId, compilerId);
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? '';
         this.updateLibraries();
@@ -364,7 +363,7 @@ export class Executor extends Pane<ExecutorState> {
             });
             return;
         }
-        this.compilerService.expand(this.source).then(expanded => {
+        this.hub.compilerService.expand(this.source).then(expanded => {
             const request: CompilationRequest = {
                 source: expanded || '',
                 compiler: this.compiler ? this.compiler.id : '',
@@ -399,7 +398,7 @@ export class Executor extends Pane<ExecutorState> {
 
         const fetches: Promise<void>[] = [];
         fetches.push(
-            this.compilerService.expand(request.source).then(contents => {
+            this.hub.compilerService.expand(request.source).then(contents => {
                 request.source = contents;
             })
         );
@@ -407,7 +406,7 @@ export class Executor extends Pane<ExecutorState> {
         for (let i = 0; i < request.files.length; i++) {
             const file = request.files[i];
             fetches.push(
-                this.compilerService.expand(file.contents).then(contents => {
+                this.hub.compilerService.expand(file.contents).then(contents => {
                     file.contents = contents;
                 })
             );
@@ -449,7 +448,7 @@ export class Executor extends Pane<ExecutorState> {
         this.pendingCMakeRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        this.compilerService
+        this.hub.compilerService
             .submitCMake(request)
             .then((x: any) => {
                 onCompilerResponse(request, x.result, x.localCacheHit);
@@ -480,7 +479,7 @@ export class Executor extends Pane<ExecutorState> {
         this.pendingRequestSentAt = Date.now();
         // After a short delay, give the user some indication that we're working on their
         // compilation.
-        this.compilerService
+        this.hub.compilerService
             .submit(request)
             .then((x: any) => {
                 onCompilerResponse(request, x.result, x.localCacheHit);
@@ -738,11 +737,7 @@ export class Executor extends Pane<ExecutorState> {
         }
         this.compileTimeLabel.text(timeLabelText);
 
-        this.setCompilationOptionsPopover(
-            result.buildResult
-                ? result.buildResult.compilationOptions.join(' ')
-                : ''
-        );
+        this.setCompilationOptionsPopover(result.buildResult ? result.buildResult.compilationOptions.join(' ') : '');
 
         if (this.currentLangId)
             this.eventHub.emit('executeResult', this.id, this.compiler, result, languages[this.currentLangId]);
@@ -800,9 +795,6 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     initButtons(state: PaneState & ExecutorState): void {
-        this.filters = new Toggles(this.domRoot.find('.filters'), state.filters);
-        // @ts-expect-error: 'state' is not assignable to 'Record<string, boolean>'
-        this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state);
         this.compileClearCache = this.domRoot.find('.clear-cache');
         this.outputContentRoot = this.domRoot.find('pre.content');
         this.executionStatusSection = this.outputContentRoot.find('.execution-status');
@@ -991,7 +983,7 @@ export class Executor extends Pane<ExecutorState> {
         this.execStdinField.on('change', execStdinChange).on('keyup', execStdinChange);
 
         this.compileClearCache.on('click', () => {
-            this.compilerService.cache.reset();
+            this.hub.compilerService.cache.reset();
             this.compile(true);
         });
 
@@ -1100,7 +1092,7 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     onCompilerChange(value: string): void {
-        this.compiler = this.compilerService.findCompiler(this.currentLangId, value);
+        this.compiler = this.hub.compilerService.findCompiler(this.currentLangId, value);
         this.updateLibraries();
         this.saveState();
         this.compile();
@@ -1331,8 +1323,11 @@ export class Executor extends Pane<ExecutorState> {
     }
 
     getCurrentLangCompilers(): CompilerInfo[] {
-        // @ts-expect-error: This argument can be null
-        const allCompilers: Record<string, CompilerInfo> = this.compilerService.getCompilersForLang(this.currentLangId);
+        const allCompilers: Record<string, CompilerInfo> | undefined = this.hub.compilerService.getCompilersForLang(
+            this.currentLangId
+        );
+        if (!allCompilers) return [];
+
         const hasAtLeastOneExecuteSupported = Object.values(allCompilers).some(compiler => {
             return compiler.supportsExecute !== false;
         });
