@@ -70,12 +70,7 @@ export abstract class Pane<S> {
 
         this.hideable = this.domRoot.find('.hideable');
 
-        this.compilerInfo = {
-            compilerId: state.id,
-            compilerName: state.compilerName,
-            editorId: state.editorid,
-            treeId: state.treeid,
-        };
+        this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
@@ -90,6 +85,15 @@ export abstract class Pane<S> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerOpeningAnalyticsEvent();
+    }
+
+    protected initializeCompilerInfo(state: Record<string, any>) {
+        this.compilerInfo = {
+            compilerId: state.id,
+            compilerName: state.compilerName,
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
     }
 
     /**
