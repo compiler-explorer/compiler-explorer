@@ -125,6 +125,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
 
         if (!state.id && state._compilerid) this.compilerInfo.compilerId = state._compilerid;
         if (!state.editorid && state._editorid) this.compilerInfo.editorId = state._editorid;
+        if (!state.compilerName && state._compilerName) this.compilerInfo.compilerName = state._compilerName;
+        if (!state.treeid && state._treeid) state.treeId = state._treeid;
     }
 
     override getInitialHTML(): string {
