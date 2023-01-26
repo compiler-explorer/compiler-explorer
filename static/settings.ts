@@ -459,8 +459,8 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-        const oldScheme = colourSchemeSelect.val();
-        const newTheme = unwrapString<colour.AppTheme>(themeSelect.val());
+        const oldScheme = colourSchemeSelect.val() as colour.AppTheme | undefined;
+        const newTheme = themeSelect.val() as colour.AppTheme | undefined;
 
         // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
         assert(
@@ -468,12 +468,17 @@ export class Settings {
             isString(oldScheme) || oldScheme === undefined || oldScheme == null,
             'Unexpected value received from colourSchemeSelect.val()'
         );
+        assert(
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            isString(newTheme) || newTheme === undefined || newTheme == null,
+            'Unexpected value received from colourSchemeSelect.val()'
+        );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
-        let newScheme = unwrapString(colourSchemeSelect.first().val());
+        let newScheme = colourSchemeSelect.first().val() as colour.AppTheme | undefined;
         // If we have one old one stored, check if it's still valid and set it if so
         if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;
@@ -481,7 +486,9 @@ export class Settings {
             newScheme = oldScheme;
         }
 
-        colourSchemeSelect.val(newScheme);
+        if (newScheme) {
+            colourSchemeSelect.val(newScheme);
+        }
 
         colourSchemeSelect.trigger('change');
     }
