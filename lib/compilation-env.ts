@@ -27,12 +27,31 @@ import child_process from 'child_process';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {CacheableValue} from '../types/cache.interfaces';
+
 import {BaseCache} from './cache/base';
+import {Cache} from './cache/base.interfaces';
 import {createCacheFromConfig} from './cache/from-config';
+import {CompilationQueue, Job} from './compilation-queue';
 import {FormattingHandler} from './handlers/formatting';
 import {logger} from './logger';
+import {CompilerProps} from './properties';
+import {PropertyGetter} from './properties.interfaces';
 
 export class CompilationEnvironment {
+    ceProps: PropertyGetter;
+    compilationQueue: CompilationQueue;
+    compilerProps: CompilerProps;
+    okOptions: RegExp;
+    badOptions: RegExp;
+    cache: Cache;
+    executableCache: Cache;
+    compilerCache: Cache;
+    reportCacheEvery: number;
+    multiarch: string | null;
+    baseEnv: Record<string, string | undefined>;
+    formatHandler: FormattingHandler;
+
     constructor(compilerProps, compilationQueue, doCache) {
         this.ceProps = compilerProps.ceProps;
         this.compilationQueue = compilationQueue;
@@ -79,7 +98,7 @@ export class CompilationEnvironment {
         this.formatHandler = new FormattingHandler(this.ceProps);
     }
 
-    getEnv(needsMulti) {
+    getEnv(needsMulti: boolean) {
         const env = {...this.baseEnv};
         if (needsMulti && this.multiarch) {
             env.LIBRARY_PATH = '/usr/lib/' + this.multiarch;
@@ -89,7 +108,7 @@ export class CompilationEnvironment {
         return env;
     }
 
-    async cacheGet(object) {
+    async cacheGet(object: CacheableValue) {
         const result = await this.cache.get(BaseCache.hash(object));
         if (this.cache.gets % this.reportCacheEvery === 0) {
             this.cache.report();
@@ -98,12 +117,12 @@ export class CompilationEnvironment {
         return JSON.parse(result.data);
     }
 
-    async cachePut(object, result, creator) {
+    async cachePut(object: CacheableValue, result: object, creator: string | undefined) {
         const key = BaseCache.hash(object);
         return this.cache.put(key, JSON.stringify(result), creator);
     }
 
-    async compilerCacheGet(object) {
+    async compilerCacheGet(object: CacheableValue) {
         const key = BaseCache.hash(object);
         const result = await this.compilerCache.get(key);
         if (this.ceProps('logCompilerCacheAccesses', false)) {
@@ -113,12 +132,12 @@ export class CompilationEnvironment {
         return JSON.parse(result.data);
     }
 
-    async compilerCachePut(object, result, creator) {
+    async compilerCachePut(object: CacheableValue, result: object, creator: string | undefined) {
         const key = BaseCache.hash(object);
         return this.compilerCache.put(key, JSON.stringify(result), creator);
     }
 
-    async executableGet(object, destinationFolder) {
+    async executableGet(object: CacheableValue, destinationFolder: string) {
         const key = BaseCache.hash(object) + '_exec';
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
@@ -127,16 +146,16 @@ export class CompilationEnvironment {
         return filepath;
     }
 
-    executablePut(object, filepath) {
+    executablePut(object: CacheableValue, filepath: string) {
         const key = BaseCache.hash(object) + '_exec';
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue(job) {
+    enqueue<T>(job: Job<T>) {
         return this.compilationQueue.enqueue(job);
     }
 
-    findBadOptions(options) {
-        return _.filter(options, option => !this.okOptions.test(option) || option.match(this.badOptions));
+    findBadOptions(options: string[]) {
+        return _.filter(options, option => !this.okOptions.test(option) || this.badOptions.test(option));
     }
 }

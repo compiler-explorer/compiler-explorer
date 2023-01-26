@@ -123,7 +123,7 @@ export class CompileHandler {
 
     constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
         this.compilerEnv = compilationEnvironment;
-        this.textBanner = this.compilerEnv.ceProps('textBanner');
+        this.textBanner = this.compilerEnv.ceProps<string>('textBanner');
         this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
         initialise(this.compilerEnv);

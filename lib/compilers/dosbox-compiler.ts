@@ -108,12 +108,12 @@ export class DosboxCompiler extends BaseCompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key);
+        let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
             result = await this.env.enqueue(async () => this.exec(compiler, args, options));
             if (result.okToCache) {
                 this.env
-                    .compilerCachePut(key, result)
+                    .compilerCachePut(key as any, result, undefined)
                     .then(() => {
                         // Do nothing, but we don't await here.
                     })
