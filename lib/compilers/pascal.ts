@@ -63,7 +63,8 @@ export class FPCCompiler extends BaseCompiler {
     }
 
     override processAsm(result, filters) {
-        this.demangler = new this.demanglerClass(null, this);
+        // TODO: Pascal doesn't have a demangler exe, it's the only compiler that's weird like this
+        this.demangler = new (unwrap(this.demanglerClass))(null as any, this);
         return this.asm.process(result.asm, filters);
     }
 

@@ -60,7 +60,7 @@ import * as cfg from './cfg';
 import {CompilationEnvironment} from './compilation-env';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
-import {getDemanglerTypeByKey} from './demangler';
+import {BaseDemangler, getDemanglerTypeByKey} from './demangler';
 import {LLVMIRDemangler} from './demangler/llvm';
 import * as exec from './exec';
 import {getExternalParserByKey} from './external-parsers';
@@ -99,7 +99,7 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    protected demanglerClass: any; // TODO(jeremy-rifkin): Will be able to do better once #4607 lands
+    protected demanglerClass: typeof BaseDemangler | null = null; // TODO(jeremy-rifkin): Will be able to do better once #4607 lands
     protected objdumperClass: any;
     public outputFilebase: string;
     protected mtime: Date | null = null;
