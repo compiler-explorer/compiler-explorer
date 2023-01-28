@@ -72,19 +72,15 @@ export class Win32Compiler extends BaseCompiler {
         return this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path);
     }
 
-    override getSharedLibraryLinks(libraries) {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return _.flatten(
             libraries
-                .filter(selectedLib => {
-                    const foundVersion = this.findLibVersion(selectedLib);
-                    return !!foundVersion;
-                })
-                .map(selectedLib => {
-                    const foundVersion = this.findLibVersion(selectedLib);
-                    if (!foundVersion) return false;
-
+                .map(selectedLib => [selectedLib, this.findLibVersion(selectedLib)])
+                .filter(([selectedLib, foundVersion]) => !!foundVersion)
+                .map(([selectedLib, foundVersion]) => {
                     return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
-                }),
+                })
+                .map(([selectedLib, foundVersion]) => selectedLib),
         );
     }
 

@@ -89,7 +89,7 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryLinks(libraries): string[] {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
     }
 

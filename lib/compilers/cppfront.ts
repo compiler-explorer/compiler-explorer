@@ -53,7 +53,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return [];
     }
 
-    override getSharedLibraryLinks(libraries): string[] {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
     }
 

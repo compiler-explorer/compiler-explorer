@@ -743,7 +743,7 @@ export class BaseCompiler implements ICompiler {
         }) as string[];
     }
 
-    getSharedLibraryLinks(libraries): string[] {
+    getSharedLibraryLinks(libraries: any[]): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return _.flatten(
