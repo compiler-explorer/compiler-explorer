@@ -81,6 +81,18 @@ import {getToolchainPath} from './toolchain-utils';
 import {ITool} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
+const compilationTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_compilation_duration_seconds',
+    help: 'Time taken to compile code',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
+const executionTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_execution_duration_seconds',
+    help: 'Time taken to execute code',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
 export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
@@ -2235,10 +2247,9 @@ export class BaseCompiler implements ICompiler {
                 result.retreivedFromCache = true;
                 if (doExecute) {
                     result.execResult = await this.env.enqueue(async () => {
-                        // TODO(jeremy-rifkin) temporary metrics collection
                         const start = performance.now();
                         const res = await this.handleExecution(key, executeParameters);
-                        logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
+                        executionTimeHistogram.observe((performance.now() - start) / 1000);
                         return res;
                     });
 
@@ -2251,7 +2262,6 @@ export class BaseCompiler implements ICompiler {
         }
 
         return this.env.enqueue(async () => {
-            // TODO(jeremy-rifkin) temporary metrics collection
             const start = performance.now();
             const res = await (async () => {
                 source = this.preProcess(source, filters);
@@ -2297,7 +2307,7 @@ export class BaseCompiler implements ICompiler {
                     optOutput,
                 );
             })();
-            logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
+            compilationTimeHistogram.observe((performance.now() - start) / 1000);
             return res;
         });
     }
