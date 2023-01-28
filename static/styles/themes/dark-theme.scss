@@ -492,6 +492,11 @@ textarea.form-control {
     border-color: #474747 !important;
 }
 
+.popover .arrow::after, .popover .arrow::before {
+    border-left-color: #151515 !important;
+    border-right-color: #151515 !important;
+}
+
 .popover {
     border-color: #464545 !important;
 }

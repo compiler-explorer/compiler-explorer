@@ -162,6 +162,9 @@ rules:
   unicorn/prefer-switch: off
   unicorn/no-static-only-class: off
   unicorn/no-process-exit: off
+  unicorn/no-useless-undefined:
+    - error
+    - checkArguments: false
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
   '@typescript-eslint/no-explicit-any': off

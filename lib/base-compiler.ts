@@ -57,6 +57,7 @@ import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
 import * as cfg from './cfg';
+import {CompilationEnvironment} from './compilation-env';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
 import {getDemanglerTypeByKey} from './demangler';
@@ -84,7 +85,7 @@ export class BaseCompiler implements ICompiler {
     protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
-    protected env: any;
+    protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: any;
     protected delayCleanupTemp: any;
@@ -113,7 +114,7 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
         // Information about our compiler
         this.compiler = compilerInfo;
         this.lang = languages[compilerInfo.lang];
@@ -123,7 +124,7 @@ export class BaseCompiler implements ICompiler {
         this.compileFilename = `example${this.lang.extensions[0]}`;
         this.env = env;
         // Partial application of compilerProps with the proper language id applied to it
-        this.compilerProps = _.partial(this.env.compilerProps, this.lang.id);
+        this.compilerProps = _.partial(this.env.compilerProps as any, this.lang.id);
         this.compiler.supportsIntel = !!this.compiler.intelAsm;
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
@@ -316,12 +317,12 @@ export class BaseCompiler implements ICompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key);
+        let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
             result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
                 this.env
-                    .compilerCachePut(key, result)
+                    .compilerCachePut(key as any, result, undefined)
                     .then(() => {
                         // Do nothing, but we don't await here.
                     })
@@ -2239,7 +2240,11 @@ export class BaseCompiler implements ICompiler {
                 result.retreivedFromCache = true;
                 if (doExecute) {
                     result.execResult = await this.env.enqueue(async () => {
-                        return this.handleExecution(key, executeParameters);
+                        // TODO(jeremy-rifkin) temporary metrics collection
+                        const start = performance.now();
+                        const res = await this.handleExecution(key, executeParameters);
+                        logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
+                        return res;
                     });
 
                     if (result.execResult && result.execResult.buildResult) {
@@ -2251,48 +2256,54 @@ export class BaseCompiler implements ICompiler {
         }
 
         return this.env.enqueue(async () => {
-            source = this.preProcess(source, filters);
+            // TODO(jeremy-rifkin) temporary metrics collection
+            const start = performance.now();
+            const res = await (async () => {
+                source = this.preProcess(source, filters);
 
-            if (backendOptions.executorRequest) {
-                const execResult = await this.handleExecution(key, executeParameters);
-                if (execResult && execResult.buildResult) {
-                    this.doTempfolderCleanup(execResult.buildResult);
+                if (backendOptions.executorRequest) {
+                    const execResult = await this.handleExecution(key, executeParameters);
+                    if (execResult && execResult.buildResult) {
+                        this.doTempfolderCleanup(execResult.buildResult);
+                    }
+                    return execResult;
                 }
-                return execResult;
-            }
 
-            const dirPath = await this.newTempDir();
+                const dirPath = await this.newTempDir();
 
-            let writeSummary;
-            try {
-                writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
-            } catch (e) {
-                return this.handleUserError(e, dirPath);
-            }
-            const inputFilename = writeSummary.inputFilename;
+                let writeSummary;
+                try {
+                    writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
+                } catch (e) {
+                    return this.handleUserError(e, dirPath);
+                }
+                const inputFilename = writeSummary.inputFilename;
 
-            const [result, optOutput] = await this.doCompilation(
-                inputFilename,
-                dirPath,
-                key,
-                options,
-                filters,
-                backendOptions,
-                libraries,
-                tools,
-            );
+                const [result, optOutput] = await this.doCompilation(
+                    inputFilename,
+                    dirPath,
+                    key,
+                    options,
+                    filters,
+                    backendOptions,
+                    libraries,
+                    tools,
+                );
 
-            return await this.afterCompilation(
-                result,
-                doExecute,
-                key,
-                executeParameters,
-                tools,
-                backendOptions,
-                filters,
-                options,
-                optOutput,
-            );
+                return await this.afterCompilation(
+                    result,
+                    doExecute,
+                    key,
+                    executeParameters,
+                    tools,
+                    backendOptions,
+                    filters,
+                    options,
+                    optOutput,
+                );
+            })();
+            logger.info(`(compilation wall clock time: ${Math.round(performance.now() - start)} ms)`);
+            return res;
         });
     }
 
@@ -2365,7 +2376,7 @@ export class BaseCompiler implements ICompiler {
         result = this.postCompilationPreCacheHook(result);
 
         if (result.okToCache) {
-            await this.env.cachePut(key, result);
+            await this.env.cachePut(key, result, undefined);
         }
 
         if (doExecute) {
@@ -2619,7 +2630,7 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
-    checkOptions(options) {
+    checkOptions(options: string[]) {
         const error = this.env.findBadOptions(options);
         if (error.length > 0) return `Bad options: ${error.join(', ')}`;
         return null;

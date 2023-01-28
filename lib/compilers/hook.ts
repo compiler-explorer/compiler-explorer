@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -48,38 +47,44 @@ export class HookCompiler extends BaseCompiler {
         inputFilename: string,
         execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
+        const compilerPath = path.dirname(compiler);
+        execOptions.env.HOOK_HOME = path.join(compilerPath, '..');
         const dirPath = path.dirname(inputFilename);
         const outputFilename = this.getOutputFilename(dirPath);
         options.push(outputFilename);
         return super.runCompiler(compiler, options, inputFilename, execOptions);
     }
 
-    override processAsm(result) {
+    override processAsm(result, filters, options) {
+        // Ignoring `trim` filter because it is not supported by Hook.
+        filters.trim = false;
+        const _result = super.processAsm(result, filters, options);
         const commentRegex = /^\s*;(.*)/;
         const instructionRegex = /^\s{2}(\d+)(.*)/;
-        const lines = result.asm.split('\n');
-        const asm: ParsedAsmResultLine[] = [];
+        const asm = _result.asm;
         let lastLineNo: number | undefined;
-        for (const line of lines) {
-            if (commentRegex.test(line)) {
-                asm.push({text: line, source: {line: undefined, file: null}});
+        for (const item of asm) {
+            const text = item.text;
+            if (commentRegex.test(text)) {
+                item.source = {line: undefined, file: null};
                 lastLineNo = undefined;
                 continue;
             }
-            const match = line.match(instructionRegex);
+            const match = text.match(instructionRegex);
             if (match) {
                 const lineNo = parseInt(match[1]);
-                asm.push({text: line, source: {line: lineNo, file: null}});
+                item.source = {line: lineNo, file: null};
                 lastLineNo = lineNo;
                 continue;
             }
-            if (line) {
-                asm.push({text: line, source: {line: lastLineNo, file: null}});
+            if (text) {
+                item.source = {line: lastLineNo, file: null};
                 continue;
             }
-            asm.push({text: line, source: {line: undefined, file: null}});
+            item.source = {line: undefined, file: null};
             lastLineNo = undefined;
         }
-        return {asm: asm};
+        _result.asm = asm;
+        return _result;
     }
 }

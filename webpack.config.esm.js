@@ -78,6 +78,7 @@ const plugins = [
             'typescript',
             'solidity',
             'scheme',
+            'objective-c',
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),

@@ -24,40 +24,48 @@
 
 import AWS from 'aws-sdk';
 
+import {unwrap} from './assert';
 import {logger} from './logger';
+import {PropertyGetter} from './properties.interfaces';
 
 export class InstanceFetcher {
-    constructor(properties) {
-        const region = properties('region');
+    ec2: AWS.EC2;
+    tagKey: string;
+    tagValue: string;
+
+    constructor(properties: PropertyGetter) {
+        const region = properties<string>('region');
         logger.info(`New instance fetcher for region ${region}`);
         this.ec2 = new AWS.EC2({region: region});
-        this.tagKey = properties('tagKey');
-        this.tagValue = properties('tagValue');
+        this.tagKey = properties<string>('tagKey');
+        this.tagValue = properties<string>('tagValue');
     }
 
     async getInstances() {
         const result = await this.ec2.describeInstances().promise();
-        return result.Reservations.flatMap(r => r.Instances).filter(reservation => {
-            if (reservation.State.Name !== 'running') return false;
-            return reservation.Tags.some(t => t.Key === this.tagKey && t.Value === this.tagValue);
-        });
+        return unwrap(result.Reservations)
+            .flatMap(r => r.Instances)
+            .filter(reservation => {
+                if (unwrap(unwrap(reservation).State).Name !== 'running') return false;
+                return unwrap(unwrap(reservation).Tags).some(t => t.Key === this.tagKey && t.Value === this.tagValue);
+            }) as AWS.EC2.Instance[];
     }
 }
 
 let awsConfigInit = false;
-let awsConfig = {};
-let awsProps = null;
+let awsConfig: Record<string, string | undefined> = {};
+let awsProps: PropertyGetter | null = null;
 
-async function loadAwsConfig(properties) {
-    const region = properties('region');
+async function loadAwsConfig(properties: PropertyGetter) {
+    const region = properties<string>('region');
     if (!region) return {};
     const ssm = new AWS.SSM({region: region});
     const path = '/compiler-explorer/';
     try {
         const response = await ssm.getParameters({Names: [path + 'sentryDsn']}).promise();
-        const map = {};
-        for (const param of response.Parameters) {
-            map[param.Name.substr(path.length)] = param.Value;
+        const map: Record<string, string | undefined> = {};
+        for (const param of unwrap(response.Parameters)) {
+            map[unwrap(param.Name).substr(path.length)] = param.Value;
         }
         logger.info('AWS info:', map);
         return map;
@@ -67,13 +75,13 @@ async function loadAwsConfig(properties) {
     }
 }
 
-export async function initConfig(properties) {
+export async function initConfig(properties: PropertyGetter) {
     awsConfigInit = true;
     awsProps = properties;
     awsConfig = await loadAwsConfig(properties);
 }
 
-export function getConfig(name) {
+export function getConfig(name): string | undefined {
     if (!awsConfigInit) throw new Error("Reading AWS config before it's loaded");
-    return awsConfig[name] || awsProps(name);
+    return awsConfig[name] || unwrap(awsProps)<string>(name);
 }
