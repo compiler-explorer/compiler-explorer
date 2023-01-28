@@ -34,6 +34,7 @@ import _ from 'underscore';
 import which from 'which';
 
 import {ICompiler} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
@@ -46,7 +47,6 @@ import {
     CompileRequestTextBody,
     ExecutionRequestParams,
 } from './compile.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 temp.track();
 

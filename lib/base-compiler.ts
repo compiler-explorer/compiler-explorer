@@ -99,7 +99,8 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    protected demanglerClass: typeof BaseDemangler | null = null; // TODO(jeremy-rifkin): Will be able to do better once #4607 lands
+    // TODO(jeremy-rifkin): Will be able to do better once #4607 lands
+    protected demanglerClass: typeof BaseDemangler | null = null;
     protected objdumperClass: any;
     public outputFilebase: string;
     protected mtime: Date | null = null;
