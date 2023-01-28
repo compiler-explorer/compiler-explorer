@@ -34,7 +34,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
         return 'rustc-cg-gcc';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = false;
 

@@ -35,7 +35,7 @@ export class HaskellCompiler extends BaseCompiler {
         return 'haskell';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsHaskellCoreView = true;
         this.compiler.supportsHaskellStgView = true;

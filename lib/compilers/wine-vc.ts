@@ -39,7 +39,7 @@ export class WineVcCompiler extends BaseCompiler {
         return 'wine-vc';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         info.supportsFiltersInBinary = true;
         super(info, env);
         this.asm = new VcAsmParser();

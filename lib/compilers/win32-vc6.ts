@@ -33,7 +33,7 @@ export class Win32Vc6Compiler extends Win32Compiler {
         return 'win32-vc6';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.asm = new Vc6AsmParser(this.compilerProps);
     }

@@ -40,7 +40,7 @@ export class Cc65Compiler extends BaseCompiler {
         return 'cc65';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new CC65AsmParser(this.compilerProps);

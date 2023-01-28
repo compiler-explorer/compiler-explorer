@@ -34,7 +34,7 @@ export class ClangCLCompiler extends Win32Compiler {
         return 'clang-cl';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.compiler.supportsIrView = true;

@@ -35,7 +35,7 @@ export class AdaCompiler extends BaseCompiler {
         return 'ada';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsGccDump = true;
         this.compiler.removeEmptyGccDump = true;

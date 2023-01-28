@@ -40,7 +40,7 @@ export class CleanCompiler extends BaseCompiler {
 
     executionType: string;
 
-    constructor(compiler: CompilerInfo & Record<string, any>, env) {
+    constructor(compiler: CompilerInfo, env) {
         super(compiler, env);
         const execProps = propsFor('execution');
         this.executionType = execProps('executionType', 'none');

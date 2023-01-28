@@ -33,7 +33,7 @@ import * as utils from '../utils';
 import {BaseParser} from './argument-parsers';
 
 export class DartCompiler extends BaseCompiler {
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.asm = new DartAsmParser();
     }

@@ -38,7 +38,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         return 'avrgcc6502';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.avrgccpath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrgccpath`);

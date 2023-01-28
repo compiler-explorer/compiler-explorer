@@ -37,7 +37,7 @@ export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);

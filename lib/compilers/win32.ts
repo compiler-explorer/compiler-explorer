@@ -43,7 +43,7 @@ export class Win32Compiler extends BaseCompiler {
 
     binaryAsmParser: AsmParser;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);

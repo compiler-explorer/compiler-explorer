@@ -39,7 +39,7 @@ export class PtxAssembler extends BaseCompiler {
         return 'ptxas';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compileFilename = 'example.ptxas';
         this.asm = new SassAsmParser();

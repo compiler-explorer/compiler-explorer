@@ -48,7 +48,7 @@ export class FPCCompiler extends BaseCompiler {
     pasUtils: PascalUtils;
     demangler: any | null = null;
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.compileFilename = 'output.pas';

@@ -38,7 +38,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'ruby';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.disasmScriptPath =
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'disasm.rb');

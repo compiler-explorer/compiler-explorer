@@ -35,7 +35,7 @@ export class MLIRCompiler extends BaseCompiler {
         return 'mlir';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         if (!compilerInfo.disabledFilters) {
             compilerInfo.disabledFilters = [
                 'binary',

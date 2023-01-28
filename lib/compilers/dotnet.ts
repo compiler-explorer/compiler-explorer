@@ -51,7 +51,7 @@ class DotNetCompiler extends BaseCompiler {
 
     private crossgen2VersionString: string;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');

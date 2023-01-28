@@ -38,7 +38,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         return 'beebasm';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new AsmParserBeebAsm(this.compilerProps);

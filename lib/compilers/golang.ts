@@ -58,7 +58,7 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         const goroot = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goroot`);
         const goarch = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goarch`);

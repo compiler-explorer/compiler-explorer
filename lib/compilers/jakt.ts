@@ -34,7 +34,7 @@ export class JaktCompiler extends BaseCompiler {
         return 'jakt';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.outputFilebase = 'example';

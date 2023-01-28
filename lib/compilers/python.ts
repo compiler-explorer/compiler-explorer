@@ -37,7 +37,7 @@ export class PythonCompiler extends BaseCompiler {
         return 'python';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;

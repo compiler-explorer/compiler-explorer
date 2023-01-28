@@ -41,7 +41,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return 'assembly';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.asm = new AsmRaw();
     }

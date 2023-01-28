@@ -82,7 +82,7 @@ import {ITool} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
 export class BaseCompiler implements ICompiler {
-    protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
+    protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: CompilationEnvironment;
@@ -115,7 +115,7 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         // Information about our compiler
         this.compiler = compilerInfo;
         this.lang = languages[compilerInfo.lang];
@@ -2231,7 +2231,9 @@ export class BaseCompiler implements ICompiler {
 
         if (!bypassCache) {
             const cacheRetreiveTimeStart = process.hrtime.bigint();
-            const result = await this.env.cacheGet(key);
+            // TODO: Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
+            // CacheableValue
+            const result = await this.env.cacheGet(key as any);
             if (result) {
                 const cacheRetreiveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = (

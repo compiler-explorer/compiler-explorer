@@ -33,7 +33,7 @@ export class OCamlCompiler extends BaseCompiler {
         return 'ocaml';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         // override output base because ocaml's -S -o has different semantics.
         // namely, it outputs a full binary exe to the supposed asm dump.

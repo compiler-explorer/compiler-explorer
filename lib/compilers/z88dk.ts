@@ -40,7 +40,7 @@ export class z88dkCompiler extends BaseCompiler {
         return 'z88dk';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);

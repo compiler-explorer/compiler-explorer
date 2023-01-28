@@ -43,7 +43,7 @@ export class RustCompiler extends BaseCompiler {
         return 'rust';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;

@@ -35,7 +35,7 @@ export class ToitCompiler extends BaseCompiler {
         return 'toit';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }

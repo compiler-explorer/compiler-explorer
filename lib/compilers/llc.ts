@@ -33,7 +33,7 @@ export class LLCCompiler extends BaseCompiler {
         return 'llc';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsLLVMOptPipelineView = true;

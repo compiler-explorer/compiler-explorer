@@ -37,7 +37,7 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         // Disable output filters, as they currently don't do anything
         if (!info.disabledFilters) {
             info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];

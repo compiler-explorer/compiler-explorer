@@ -35,7 +35,7 @@ export class DMDCompiler extends BaseCompiler {
         return 'dmd';
     }
 
-    constructor(compiler: CompilerInfo & Record<string, any>, env) {
+    constructor(compiler: CompilerInfo, env) {
         super(compiler, env);
         this.compiler.supportsIntel = true;
     }

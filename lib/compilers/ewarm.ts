@@ -34,7 +34,7 @@ export class EWARMCompiler extends BaseCompiler {
         return 'ewarm';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.asm = new AsmEWAVRParser(this.compilerProps);
     }

@@ -31,7 +31,7 @@ export class AnalysisTool extends BaseCompiler {
         return 'analysis-tool';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         // Default is to disable all "cosmetic" filters
         if (!info.disabledFilters) info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
         super(info, env);

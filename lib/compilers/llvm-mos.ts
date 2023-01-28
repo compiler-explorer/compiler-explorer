@@ -39,7 +39,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         return 'llvmmos';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));

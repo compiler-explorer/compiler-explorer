@@ -41,7 +41,7 @@ export class CrystalCompiler extends BaseCompiler {
 
     ccPath: string;
 
-    constructor(compiler: CompilerInfo & Record<string, any>, env) {
+    constructor(compiler: CompilerInfo, env) {
         super(compiler, env);
         this.asm = new CrystalAsmParser();
         this.compiler.supportsIrView = true;

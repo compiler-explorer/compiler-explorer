@@ -46,7 +46,7 @@ export class PascalWinCompiler extends BaseCompiler {
     dprFilename: string;
     pasUtils: PascalUtils;
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         info.supportsFiltersInBinary = true;
 

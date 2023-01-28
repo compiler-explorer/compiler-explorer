@@ -44,7 +44,7 @@ export class JavaCompiler extends BaseCompiler {
     javaRuntime: string;
     mainRegex: RegExp;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         // Default is to disable all "cosmetic" filters
         if (!compilerInfo.disabledFilters) {
             compilerInfo.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];

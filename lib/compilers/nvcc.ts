@@ -30,6 +30,7 @@ import Semver from 'semver';
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
 import {asSafeVer} from '../utils';
@@ -43,7 +44,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;
@@ -84,13 +85,16 @@ export class NvccCompiler extends BaseCompiler {
             ? [outputFilename, '-c', '-g']
             : [outputFilename, '-c', '-g', '-hex'];
 
-        const {code, execTime, stdout} = await this.exec(nvdisasm, args, {maxOutput, customCwd: result.dirPath});
+        const {code, execTime, stdout} = await this.exec(unwrap(nvdisasm), args, {
+            maxOutput,
+            customCwd: result.dirPath,
+        });
 
         if (code === 0) {
             result.objdumpTime = execTime;
             result.asm = this.postProcessObjdumpOutput(stdout);
         } else {
-            result.asm = `<No output: ${Path.basename(nvdisasm)} returned ${code}>`;
+            result.asm = `<No output: ${Path.basename(unwrap(nvdisasm))} returned ${code}>`;
         }
         return result;
     }

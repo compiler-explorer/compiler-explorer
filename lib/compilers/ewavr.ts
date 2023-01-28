@@ -34,7 +34,7 @@ export class EWAVRCompiler extends BaseCompiler {
         return 'ewavr';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         info.supportsDemangle = false;
         info.supportsLibraryCodeFilter = false;
         super(info, env);

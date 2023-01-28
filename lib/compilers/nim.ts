@@ -41,7 +41,7 @@ export class NimCompiler extends BaseCompiler {
         return 'nim';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }

@@ -41,7 +41,7 @@ export class CLSPVCompiler extends BaseCompiler {
         return 'clspv';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new SPIRVAsmParser(this.compilerProps);

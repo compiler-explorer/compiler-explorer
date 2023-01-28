@@ -34,7 +34,7 @@ export class CppFrontCompiler extends BaseCompiler {
         return 'cppfront';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.asm = new AsmParserCpp();

@@ -40,7 +40,7 @@ export class JuliaCompiler extends BaseCompiler {
         return 'julia';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;

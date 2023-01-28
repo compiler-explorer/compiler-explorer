@@ -42,7 +42,7 @@ export class SPIRVCompiler extends BaseCompiler {
         return 'spirv';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new SPIRVAsmParser(this.compilerProps);

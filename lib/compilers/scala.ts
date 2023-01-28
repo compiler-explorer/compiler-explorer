@@ -38,7 +38,7 @@ export class ScalaCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }

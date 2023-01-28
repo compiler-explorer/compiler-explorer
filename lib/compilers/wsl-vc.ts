@@ -41,7 +41,7 @@ export class WslVcCompiler extends Win32VcCompiler {
         return 'wsl-vc';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.asm = new VcAsmParser();
     }

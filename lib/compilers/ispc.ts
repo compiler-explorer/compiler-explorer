@@ -37,7 +37,7 @@ export class ISPCCompiler extends BaseCompiler {
         return 'ispc';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];

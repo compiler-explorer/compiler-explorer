@@ -37,7 +37,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     tscJit: string;
     tscSharedLib: string;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.compiler.supportsIntel = false;

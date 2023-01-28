@@ -46,7 +46,7 @@ export class ClangCompiler extends BaseCompiler {
         return 'clang';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsDeviceAsmView = true;
 
@@ -184,7 +184,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         return 'clang-cuda';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.asm = new SassAsmParser();
@@ -219,7 +219,7 @@ export class ClangHipCompiler extends ClangCompiler {
         return 'clang-hip';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.asm = new AmdgpuAsmParser();
@@ -235,7 +235,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         return 'clang-intel';
     }
 
-    constructor(info: CompilerInfo & Record<string, any>, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         if (!this.offloadBundlerPath) {
