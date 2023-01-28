@@ -62,7 +62,7 @@ export class PascalWinCompiler extends BaseCompiler {
 
     override exec(command: string, args: string[], options: ExecutionOptions) {
         if (process.platform === 'linux' || process.platform === 'darwin') {
-            const wine = this.env.gccProps('wine');
+            const wine = this.env.ceProps<string>('wine');
 
             args = args.slice(0);
             if (command.toLowerCase().endsWith('.exe')) {

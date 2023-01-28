@@ -45,7 +45,7 @@ export class PPCICompiler extends BaseCompiler {
 
     override exec(compiler: string, args: string[], options: ExecutionOptions) {
         if (compiler.endsWith('.py')) {
-            const python = this.env.ceProps('python3');
+            const python = this.env.ceProps<string>('python3');
             options = options || {};
 
             const matches = compiler.match(/^(.*)(\/ppci\/)(.*).py/);
