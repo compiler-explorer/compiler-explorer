@@ -41,14 +41,19 @@ export class HookCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out');
     }
 
+    override getDefaultExecOptions(): ExecutionOptions {
+        const execOptions = super.getDefaultExecOptions();
+        const compilerPath = path.dirname(this.compiler.exe);
+        execOptions.env.HOOK_HOME = path.join(compilerPath, '..');
+        return execOptions;
+    }
+
     override async runCompiler(
         compiler: string,
         options: string[],
         inputFilename: string,
         execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
-        const compilerPath = path.dirname(compiler);
-        execOptions.env.HOOK_HOME = path.join(compilerPath, '..');
         const dirPath = path.dirname(inputFilename);
         const outputFilename = this.getOutputFilename(dirPath);
         options.push(outputFilename);
