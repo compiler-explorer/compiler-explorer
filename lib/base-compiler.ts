@@ -2746,7 +2746,7 @@ but nothing was dumped. Possible causes are:
         return this.compiler;
     }
 
-    getDefaultFilters() {
+    getDefaultFilters(): ParseFiltersAndOutputOptions {
         return {
             binary: false,
             execute: false,
@@ -2758,6 +2758,7 @@ but nothing was dumped. Possible causes are:
             optOutput: false,
             libraryCode: false,
             trim: false,
+            binaryObject: false,
         };
     }
 }

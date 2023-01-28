@@ -50,6 +50,7 @@ export class AnalysisTool extends BaseCompiler {
             demangle: false,
             libraryCode: false,
             trim: false,
+            binaryObject: false,
         };
     }
 }
