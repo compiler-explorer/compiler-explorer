@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -39,7 +40,7 @@ export class Cc65Compiler extends BaseCompiler {
         return 'cc65';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new CC65AsmParser(this.compilerProps);
@@ -60,7 +61,7 @@ export class Cc65Compiler extends BaseCompiler {
         ) as string[];
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         if (filters.binary) {
             return ['-g', '-o', this.filename(outputFilename)];
         } else {
@@ -99,8 +100,8 @@ export class Cc65Compiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc,
-        dynamicReloc,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const res = await super.objdump(

@@ -37,7 +37,7 @@ export class CarbonCompiler extends BaseCompiler {
         return 'carbon';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;

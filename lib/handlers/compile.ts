@@ -34,6 +34,7 @@ import _ from 'underscore';
 import which from 'which';
 
 import {ICompiler} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
@@ -86,7 +87,7 @@ type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
-    filters: Record<string, boolean>;
+    filters: ParseFiltersAndOutputOptions;
     bypassCache: boolean;
     tools: any;
     executionParameters: ExecutionParams;
@@ -335,7 +336,7 @@ export class CompileHandler {
         let source: string,
             options: string,
             backendOptions: Record<string, any> = {},
-            filters: Record<string, boolean>,
+            filters: ParseFiltersAndOutputOptions,
             bypassCache = false,
             tools;
         const execReqParams: ExecutionRequestParams = {};
@@ -378,10 +379,9 @@ export class CompileHandler {
             filters = compiler.getDefaultFilters();
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
-                filters = _.object(_.map(query.filters.split(','), filter => [filter, true])) as Record<
-                    string,
-                    boolean
-                >;
+                filters = _.object(
+                    _.map(query.filters.split(','), filter => [filter, true]),
+                ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
             _.each((query.addFilters || '').split(','), filter => {

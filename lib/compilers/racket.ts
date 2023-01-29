@@ -25,6 +25,7 @@
 import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
@@ -36,7 +37,7 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         // Disable output filters, as they currently don't do anything
         if (!info.disabledFilters) {
             info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];

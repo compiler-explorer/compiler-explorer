@@ -31,7 +31,7 @@ export class CL430Compiler extends BaseCompiler {
         return 'cl430';
     }
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
         // We need to have the same name for the C/C++ file as we expect for the output file

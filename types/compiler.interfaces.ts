@@ -108,6 +108,15 @@ export type CompilerInfo = {
     };
     remote: any;
     disabledFilters: string[];
+    optArg: string;
+    externalparser: any;
+    removeEmptyGccDump: boolean;
+    irArg: string[];
+    llvmOptArg: string[];
+    llvmOptModuleScopeArg: string[];
+    llvmOptNoDiscardValueNamesArg: string[];
+    cachedPossibleArguments?: any;
+    nvdisasm?: string;
 };
 
 export interface ICompiler {

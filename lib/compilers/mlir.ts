@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -34,7 +35,7 @@ export class MLIRCompiler extends BaseCompiler {
         return 'mlir';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         if (!compilerInfo.disabledFilters) {
             compilerInfo.disabledFilters = [
                 'binary',
@@ -59,7 +60,7 @@ export class MLIRCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out.mlir');
     }
 
-    override optionsForBackend(backendOptions, outputFilename): string[] {
+    override optionsForBackend(backendOptions: Record<string, any>, outputFilename: string): string[] {
         return ['-o', outputFilename];
     }
 
@@ -67,7 +68,11 @@ export class MLIRCompiler extends BaseCompiler {
         return BaseParser;
     }
 
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename, userOptions?): any[] {
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): any[] {
         return [];
     }
 }
