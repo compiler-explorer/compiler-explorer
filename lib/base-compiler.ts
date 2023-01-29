@@ -60,7 +60,7 @@ import * as cfg from './cfg';
 import {CompilationEnvironment} from './compilation-env';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
-import {getDemanglerTypeByKey} from './demangler';
+import {BaseDemangler, getDemanglerTypeByKey} from './demangler';
 import {LLVMIRDemangler} from './demangler/llvm';
 import * as exec from './exec';
 import {getExternalParserByKey} from './external-parsers';
@@ -94,7 +94,7 @@ const executionTimeHistogram = new PromClient.Histogram({
 });
 
 export class BaseCompiler implements ICompiler {
-    protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
+    protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
     protected env: CompilationEnvironment;
@@ -111,7 +111,7 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    protected demanglerClass: any;
+    protected demanglerClass: typeof BaseDemangler | null = null;
     protected objdumperClass: any;
     public outputFilebase: string;
     protected mtime: Date | null = null;
@@ -126,7 +126,7 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         // Information about our compiler
         this.compiler = compilerInfo;
         this.lang = languages[compilerInfo.lang];
@@ -300,7 +300,7 @@ export class BaseCompiler implements ICompiler {
         });
     }
 
-    optOutputRequested(options) {
+    optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
     }
 
@@ -401,7 +401,7 @@ export class BaseCompiler implements ICompiler {
         return !!this.objdumperClass;
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename) {
+    getObjdumpOutputFilename(defaultOutputFilename: string): string {
         return defaultOutputFilename;
     }
 
@@ -533,7 +533,7 @@ export class BaseCompiler implements ICompiler {
         return outputFilename.replace(path.extname(outputFilename), '.dump');
     }
 
-    getGccDumpOptions(gccDumpOptions, outputFilename) {
+    getGccDumpOptions(gccDumpOptions, outputFilename: string) {
         const addOpts = ['-fdump-passes'];
 
         // Build dump options to append to the end of the -fdump command-line flag.
@@ -756,7 +756,7 @@ export class BaseCompiler implements ICompiler {
         }) as string[];
     }
 
-    getSharedLibraryLinks(libraries): string[] {
+    getSharedLibraryLinks(libraries: any[]): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return _.flatten(
@@ -1248,7 +1248,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -1267,7 +1267,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    getExecutableFilename(dirPath, outputFilebase, key?) {
+    getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
@@ -1436,7 +1436,7 @@ export class BaseCompiler implements ICompiler {
         result.artifacts.push(artifact);
     }
 
-    protected async writeMultipleFiles(files, dirPath) {
+    protected async writeMultipleFiles(files: any[], dirPath: string) {
         const filesToWrite: Promise<void>[] = [];
 
         for (const file of files) {
@@ -1449,7 +1449,12 @@ export class BaseCompiler implements ICompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(dirPath, source, files, filters: ParseFiltersAndOutputOptions) {
+    protected async writeAllFiles(
+        dirPath: string,
+        source: string,
+        files: any[],
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -1479,7 +1484,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
+    async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
         const downloads = await this.setupBuildEnvironment(key, dirPath, true);
 
@@ -2237,7 +2242,10 @@ export class BaseCompiler implements ICompiler {
 
         if (!bypassCache) {
             const cacheRetreiveTimeStart = process.hrtime.bigint();
-            const result = await this.env.cacheGet(key);
+            // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
+            // problem) Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
+            // CacheableValue.
+            const result = await this.env.cacheGet(key as any);
             if (result) {
                 const cacheRetreiveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = (
@@ -2762,7 +2770,7 @@ but nothing was dumped. Possible causes are:
         return this.compiler;
     }
 
-    getDefaultFilters() {
+    getDefaultFilters(): ParseFiltersAndOutputOptions {
         return {
             binary: false,
             execute: false,
@@ -2774,6 +2782,7 @@ but nothing was dumped. Possible causes are:
             optOutput: false,
             libraryCode: false,
             trim: false,
+            binaryObject: false,
         };
     }
 }

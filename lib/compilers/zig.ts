@@ -27,6 +27,7 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -39,7 +40,7 @@ export class ZigCompiler extends BaseCompiler {
         return 'zig';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;

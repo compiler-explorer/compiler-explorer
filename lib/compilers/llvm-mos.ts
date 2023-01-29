@@ -27,6 +27,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import * as utils from '../utils';
@@ -38,7 +39,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         return 'llvmmos';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
@@ -62,8 +63,8 @@ export class LLVMMOSCompiler extends ClangCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc,
-        dynamicReloc,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         if (!outputFilename.endsWith('.elf') && (await utils.fileExists(outputFilename + '.elf'))) {

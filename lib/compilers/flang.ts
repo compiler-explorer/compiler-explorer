@@ -24,6 +24,8 @@
 
 import path from 'path';
 
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+
 import {FortranCompiler} from './fortran';
 
 export class FlangCompiler extends FortranCompiler {
@@ -31,7 +33,7 @@ export class FlangCompiler extends FortranCompiler {
         return 'flang';
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         let options = ['-o', this.filename(outputFilename)];
         if (this.compiler.intelAsm && filters.intel && !filters.binary) {
             options = options.concat(this.compiler.intelAsm.split(' '));
