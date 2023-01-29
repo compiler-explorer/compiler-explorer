@@ -80,7 +80,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     stdInLooking: RegExp;
     endBlock: RegExp;
     blockComments: RegExp;
-    constructor(compilerProps) {
+    constructor(compilerProps?) {
         super();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
