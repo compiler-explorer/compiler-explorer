@@ -22,33 +22,40 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
 import _ from 'underscore';
 
+import {Source} from '../sources';
+
+// TODO(supergrecko): Maybe provide a more elegant way to do this instead of accessing keys?
+const ALLOWED_ACTIONS = new Set(['list', 'load']);
+
 export class SourceHandler {
-    constructor(fileSources, addStaticHeaders) {
-        this.allowedActions = new Set(['list', 'load', 'save']);
-        this.sourceToHandler = _.indexBy(fileSources, 'urlpart');
-        this.addStaticHeaders = addStaticHeaders;
+    public constructor(private fileSources: Source[], private addStaticHeaders: (res: express.Response) => void) {}
+
+    private getSourceForHandler(handler: string): Source | null {
+        const records = _.indexBy(this.fileSources, 'urlpart');
+        return records[handler] || null;
     }
 
-    handlerForAction(handler, action) {
-        return this.allowedActions.has(action) ? handler[action] : null;
+    private getActionForSource(source: Source, action: string): ((...args: unknown[]) => Promise<unknown>) | null {
+        return ALLOWED_ACTIONS.has(action) ? source[action] : null;
     }
 
-    handle(req, res, next) {
-        const bits = req.url.split('/');
-        const handler = this.sourceToHandler[bits[1]];
-        if (!handler) {
+    public handle(req: express.Request, res: express.Response, next: express.NextFunction): void {
+        // Split URLs with the scheme /source/browser/list into the source and the action to perform
+        const [_, handler, action, ...rest] = req.url.split('/');
+        const source = this.getSourceForHandler(handler);
+        if (source === null) {
             next();
             return;
         }
-        const handlerAction = this.handlerForAction(handler, bits[2]);
-        if (!handlerAction) {
+        const callback = this.getActionForSource(source, action);
+        if (callback === null) {
             next();
             return;
         }
-        handlerAction
-            .apply(handlerAction, bits.slice(3))
+        callback(rest)
             .then(response => {
                 this.addStaticHeaders(res);
                 res.send(response);

@@ -28,7 +28,6 @@ import type {Source, SourceEntry} from './index';
 export const browser: Source = {
     name: 'Browser',
     urlpart: 'browser',
-    save: undefined,
     list(): Promise<Omit<SourceEntry, 'path'>[]> {
         return Promise.resolve([]);
     },
