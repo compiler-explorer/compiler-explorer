@@ -30,7 +30,7 @@ import {themes, Themes} from './themes';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 import {Hub} from './hub';
 import {EventHub} from './event-hub';
-import {keys} from '../lib/common-utils';
+import {keys, isString} from '../lib/common-utils';
 import {assert, unwrapString} from './assert';
 
 import {LanguageKey} from '../types/languages.interfaces';
@@ -459,25 +459,36 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-        if (!colourSchemeSelect.val()) {
-            return;
-        }
-        const oldScheme = unwrapString(colourSchemeSelect.val());
-        const newTheme = unwrapString<colour.AppTheme>(themeSelect.val());
+        const oldScheme = colourSchemeSelect.val() as colour.AppTheme | undefined;
+        const newTheme = themeSelect.val() as colour.AppTheme | undefined;
+
+        // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
+        assert(
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            isString(oldScheme) || oldScheme === undefined || oldScheme == null,
+            'Unexpected value received from colourSchemeSelect.val()'
+        );
+        assert(
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            isString(newTheme) || newTheme === undefined || newTheme == null,
+            'Unexpected value received from colourSchemeSelect.val()'
+        );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
-        let newScheme = unwrapString(colourSchemeSelect.first().val());
+        let newScheme = colourSchemeSelect.first().val() as colour.AppTheme | undefined;
         // If we have one old one stored, check if it's still valid and set it if so
         if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;
-        } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
+        } else if (isString(oldScheme) && this.selectorHasOption(colourSchemeSelect, oldScheme)) {
             newScheme = oldScheme;
         }
 
-        colourSchemeSelect.val(newScheme);
+        if (newScheme) {
+            colourSchemeSelect.val(newScheme);
+        }
 
         colourSchemeSelect.trigger('change');
     }

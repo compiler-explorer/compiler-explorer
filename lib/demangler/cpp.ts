@@ -38,7 +38,7 @@ export class CppDemangler extends BaseDemangler {
         return 'cpp';
     }
 
-    getMetadata(symbol) {
+    protected override getMetadata(symbol: string) {
         return LabelMetadata.filter(metadata => metadata.ident.test(symbol));
     }
 }

@@ -32,7 +32,11 @@ describe('Hook compiler', () => {
         HookCompiler.key.should.equal('hook');
     });
 
-    const info = {remote: true, lang: 'hook'};
+    const info = {
+        exe: '/opt/hook/bin/hook',
+        remote: true,
+        lang: 'hook',
+    };
     const languages = {hook: {id: 'hook'}};
     const hook = new HookCompiler(info, makeCompilationEnvironment({languages}));
 
@@ -43,6 +47,11 @@ describe('Hook compiler', () => {
     it('should return correct output filename', () => {
         const dirPath = '/tmp';
         hook.getOutputFilename(dirPath).should.equal('/tmp/example.out');
+    });
+
+    it('should return correct default exec options', () => {
+        const execOptions = hook.getDefaultExecOptions();
+        execOptions.env.HOOK_HOME.should.equal('/opt/hook');
     });
 
     it('should process and return correct bytecode result', () => {
@@ -59,6 +68,7 @@ describe('Hook compiler', () => {
         const expected = {
             asm: [
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: undefined,
@@ -66,6 +76,7 @@ describe('Hook compiler', () => {
                     text: '; main in /app/example.hk at 0x56554a556550',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: undefined,
@@ -73,6 +84,7 @@ describe('Hook compiler', () => {
                     text: '; 0 parameter(s), 0 non-local(s), 0 constant(s), 0 function(s)',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: 1,
@@ -80,6 +92,7 @@ describe('Hook compiler', () => {
                     text: '  1         0 Int                       2',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: 1,
@@ -87,6 +100,7 @@ describe('Hook compiler', () => {
                     text: '            3 Int                       2',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: 1,
@@ -94,6 +108,7 @@ describe('Hook compiler', () => {
                     text: '            6 Multiply',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: 2,
@@ -101,6 +116,7 @@ describe('Hook compiler', () => {
                     text: '  2         7 Load                      2',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: 2,
@@ -108,6 +124,7 @@ describe('Hook compiler', () => {
                     text: '            9 Return',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: 2,
@@ -115,22 +132,20 @@ describe('Hook compiler', () => {
                     text: '           10 ReturnNil',
                 },
                 {
+                    labels: [],
                     source: {
                         file: null,
                         line: undefined,
                     },
                     text: '; 6 instruction(s)',
                 },
-                {
-                    source: {
-                        file: null,
-                        line: undefined,
-                    },
-                    text: '',
-                },
             ],
+            filteredCount: 0,
+            labelDefinitions: {},
         };
-        const result = hook.processAsm({asm: asm});
+        const filters = {trim: false};
+        const result = hook.processAsm({asm: asm}, filters, null);
+        delete result.parsingTime;
         result.should.deep.equal(expected);
     });
 });
