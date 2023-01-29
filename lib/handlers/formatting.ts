@@ -22,77 +22,86 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
 import _ from 'underscore';
 
 import * as exec from '../exec';
-import {getFormatterTypeByKey} from '../formatters';
+import {BaseFormatter, getFormatterTypeByKey} from '../formatters';
 import {logger} from '../logger';
+import {PropertyGetter} from '../properties.interfaces';
 
 export class FormattingHandler {
-    constructor(ceProps) {
-        this.formatters = {};
-        this.ceProps = ceProps;
+    private formatters: Record<string, BaseFormatter> = {};
+
+    public constructor(private ceProps: PropertyGetter) {
         const formatters = _.compact(ceProps('formatters', '').split(':'));
-        _.each(formatters, this.getFormatterInfo.bind(this));
+        for (const formatter of formatters) {
+            this.getFormatterInfo(formatter);
+        }
     }
 
-    async getFormatterInfo(formatter) {
-        const exe = this.ceProps(`formatter.${formatter}.exe`);
-        const type = this.ceProps(`formatter.${formatter}.type`);
+    private async getFormatterInfo(formatterName: string): Promise<void> {
+        const exe = this.ceProps<string>(`formatter.${formatterName}.exe`);
+        const type = this.ceProps<string>(`formatter.${formatterName}.type`);
         if (!exe) {
-            return logger.warn(`Formatter ${formatter} does not have a valid executable. Skipping...`);
+            logger.warn(`Formatter ${formatterName} does not have a valid executable. Skipping...`);
+            return;
         }
         if (!type) {
-            return logger.warn(`Formatter ${formatter} does not have a formatter class. Skipping...`);
+            logger.warn(`Formatter ${formatterName} does not have a formatter class. Skipping...`);
+            return;
         }
-        const versionArg = this.ceProps(`formatter.${formatter}.version`, '--version');
-        const versionRe = this.ceProps(`formatter.${formatter}.versionRe`, '.*');
-        const hasExplicitVersion = this.ceProps(`formatter.${formatter}.explicitVersion`, '') !== '';
+        const versionArgument = this.ceProps<string>(`formatter.${formatterName}.version`, '--version');
+        const versionRegExp = this.ceProps<string>(`formatter.${formatterName}.versionRe`, '.*');
+        const hasExplicitVersion = this.ceProps(`formatter.${formatterName}.explicitVersion`, '') !== '';
         try {
-            const result = await exec.execute(exe, [versionArg], {});
-            const match = result.stdout.match(versionRe);
+            const result = await exec.execute(exe, [versionArgument], {});
+            const match = result.stdout.match(versionRegExp);
             const formatterClass = getFormatterTypeByKey(type);
-            const styleList = this.ceProps(`formatter.${formatter}.styles`);
+            const styleList = this.ceProps<string>(`formatter.${formatterName}.styles`);
             const styles = styleList === '' ? [] : styleList.split(':');
             // If there is an explicit version, grab it. Otherwise try to filter the output
             const version = hasExplicitVersion
-                ? this.ceProps(`formatter.${formatter}.explicitVersion`)
+                ? this.ceProps<string>(`formatter.${formatterName}.explicitVersion`)
                 : match
                 ? match[0]
                 : result.stdout;
-            this.formatters[formatter] = new formatterClass({
-                name: this.ceProps(`formatter.${formatter}.name`, exe),
+            this.formatters[formatterName] = new formatterClass({
+                name: this.ceProps(`formatter.${formatterName}.name`, exe),
                 exe,
                 version,
                 styles,
                 type,
             });
-        } catch (err) {
+        } catch (err: unknown) {
             logger.warn(`Error while fetching tool info for ${exe}:`, {err});
         }
     }
 
-    async handle(req, res) {
+    public async handle(req: express.Request, res: express.Response): Promise<void> {
         const name = req.params.tool;
         const formatter = this.formatters[name];
         // Ensure the formatter exists
         if (!formatter) {
-            return res.status(422).send({
+            res.status(422).send({
                 exit: 2,
                 answer: `Unknown format tool '${name}'`,
             });
+            return;
         }
         // Ensure there is source code to format
         if (!req.body || !req.body.source) {
-            return res.send({exit: 0, answer: ''});
+            res.send({exit: 0, answer: ''});
+            return;
         }
         // Ensure the wanted style is valid for the formatter
         const style = req.body.base;
         if (!formatter.isValidStyle(style)) {
-            return res.status(422).send({
+            res.status(422).send({
                 exit: 3,
                 answer: `Style '${style}' is not supported`,
             });
+            return;
         }
         try {
             // Perform the actual formatting
@@ -105,16 +114,18 @@ export class FormattingHandler {
                 exit: result.code,
                 answer: result.stdout || result.stderr || '',
             });
-        } catch (err) {
+        } catch (err: unknown) {
             res.status(500).send({
                 exit: 1,
                 thrown: true,
-                answer: err.message || 'Internal server error',
+                answer:
+                    (err && Object.hasOwn(err, 'message') && (err as Record<'message', 'string'>).message) ||
+                    'Internal server error',
             });
         }
     }
 
-    async internalFormat(formatterName, style, source) {
+    async internalFormat(formatterName: string, style: string, source: string): Promise<[string, string]> {
         const formatter = this.formatters[formatterName];
         // Ensure the formatter exists
         if (!formatter) {
