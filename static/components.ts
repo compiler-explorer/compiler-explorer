@@ -167,6 +167,8 @@ export function getExecutor(editorId: number, lang: string): ComponentConfig<Emp
         componentState: {
             source: editorId,
             lang,
+            compilationPanelShown: true,
+            compilerOutShown: true,
         },
     };
 }
@@ -190,6 +192,8 @@ export function getExecutorWith(
             libs: libraries,
             options: compilerArgs,
             lang,
+            compilationPanelShown: true,
+            compilerOutShown: true,
         },
     };
 }
@@ -202,6 +206,8 @@ export function getExecutorForTree(treeId: number, lang: string): ComponentConfi
         componentState: {
             tree: treeId,
             lang,
+            compilationPanelShown: true,
+            compilerOutShown: true,
         },
     };
 }

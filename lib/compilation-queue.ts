@@ -42,7 +42,7 @@ const queueCompleted = new PromClient.Counter({
     help: 'Total number of jobs completed',
 });
 
-type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
+export type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
 
 export class CompilationQueue {
     private readonly _running: Set<number> = new Set();

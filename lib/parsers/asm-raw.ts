@@ -22,16 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {AsmResultLink, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+
 import {AsmRegex} from './asmregex';
 
 export class AsmRaw extends AsmRegex {
-    processBinaryAsm(asm, filters) {
-        let result = [];
+    processBinaryAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        const result: ParsedAsmResultLine[] = [];
         const asmLines = asm.split('\n');
         const asmOpcodeRe = /^\s*([\da-f]+):\s*(([\da-f]{2} ?)+)\s*(.*)/;
         const labelRe = /^([\da-f]+)\s+<([^>]+)>:$/;
         const destRe = /.*\s([\da-f]+)\s+<([^>]+)>$/;
-        let source = null;
+        const source = null;
 
         if (asmLines.length === 1 && asmLines[0][0] === '<') {
             return {asm: [{text: asmLines[0], source: null}]};
@@ -55,7 +58,7 @@ export class AsmRaw extends AsmRegex {
                 const address = parseInt(match[1], 16);
                 const opcodes = match[2].split(' ').filter(Boolean);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match[4], filters);
-                let links = null;
+                let links: AsmResultLink[] | undefined;
                 const destMatch = line.match(destRe);
                 if (destMatch) {
                     links = [

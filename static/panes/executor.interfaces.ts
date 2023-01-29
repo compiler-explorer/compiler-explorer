@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,20 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseDemangler} from './base';
+import {WidgetState} from '../widgets/libs-widget.interfaces';
 
-const LabelMetadata = [
-    {ident: new RegExp('C1E[a-zA-Z0-9_$]*$'), description: 'complete object constructor'},
-    {ident: new RegExp('C2E[a-zA-Z0-9_$]*$'), description: 'base object constructor'},
-    {ident: new RegExp('C3E[a-zA-Z0-9_$]*$'), description: 'complete object allocating constructor'},
-    {ident: new RegExp('D0Ev$'), description: 'deleting destructor'},
-    {ident: new RegExp('D1Ev$'), description: 'complete object destructor'},
-    {ident: new RegExp('D2Ev$'), description: 'base object destructor'},
-];
-
-export class CppDemangler extends BaseDemangler {
-    static get key() {
-        return 'cpp';
-    }
-
-    getMetadata(symbol) {
-        return LabelMetadata.filter(metadata => metadata.ident.test(symbol));
-    }
-}
+export type ExecutorState = WidgetState & {
+    tree?: number;
+    source?: number;
+    execArgs?: string;
+    execStdin?: string;
+    options?: string;
+    filters?: Record<string, boolean>;
+    compilationPanelShown?: boolean;
+    argsPanelShown?: boolean;
+    stdinPanelShown?: boolean;
+    compilerOutShown?: boolean;
+    wrap?: boolean;
+    lang?: string;
+    compiler: string;
+};
