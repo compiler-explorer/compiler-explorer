@@ -99,7 +99,6 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    // TODO(jeremy-rifkin): Will be able to do better once #4607 lands
     protected demanglerClass: typeof BaseDemangler | null = null;
     protected objdumperClass: any;
     public outputFilebase: string;
@@ -2231,8 +2230,9 @@ export class BaseCompiler implements ICompiler {
 
         if (!bypassCache) {
             const cacheRetreiveTimeStart = process.hrtime.bigint();
-            // TODO: Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
-            // CacheableValue
+            // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
+            // problem) Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
+            // CacheableValue.
             const result = await this.env.cacheGet(key as any);
             if (result) {
                 const cacheRetreiveTimeEnd = process.hrtime.bigint();
