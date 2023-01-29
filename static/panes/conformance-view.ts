@@ -42,7 +42,7 @@ import {Library, LibraryVersion} from '../options.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {Lib} from '../widgets/libs-widget.interfaces';
-import { SourceAndFiles } from '../download-service';
+import {SourceAndFiles} from '../download-service';
 
 type ConformanceStatus = {
     allowCompile: boolean;

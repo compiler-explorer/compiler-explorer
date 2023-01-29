@@ -1306,13 +1306,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     compileFromEditorSource(options: CompileRequestOptions, bypassCache: boolean) {
-        this.compilerService.expandToFiles(this.source).then((expanded: SourceAndFiles) => {
+        this.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
             const request: CompileRequest = {
-                source: expanded.source || '',
+                source: sourceAndFiles.source || '',
                 compiler: this.compiler ? this.compiler.id : '',
                 options: options,
                 lang: this.currentLangId,
-                files: expanded.files,
+                files: sourceAndFiles.files,
                 bypassCache: false,
             };
             if (bypassCache) request.bypassCache = true;
