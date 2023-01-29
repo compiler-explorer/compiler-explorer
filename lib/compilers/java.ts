@@ -293,7 +293,7 @@ export class JavaCompiler extends BaseCompiler {
         for (const codeAndLineNumberTable of codeAndLineNumberTables) {
             const method = {
                 instructions: [],
-            } as typeof methods[0];
+            } as (typeof methods)[0];
             methods.push(method);
 
             for (const codeLineCandidate of utils.splitLines(codeAndLineNumberTable)) {
