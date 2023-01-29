@@ -22,7 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// TODO(supergrecko): Re-enable these once TS test infrastructure is up
 import {Filter} from '../static/ansi-to-html';
 
 describe('ansi-to-html', () => {
