@@ -24,6 +24,8 @@
 
 import path from 'path';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {resolvePathFromAppRoot} from '../utils';
 
@@ -36,7 +38,7 @@ export class RubyCompiler extends BaseCompiler {
         return 'ruby';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.disasmScriptPath =
             this.compilerProps('disasmScript') || resolvePathFromAppRoot('etc', 'scripts', 'disasms', 'disasm.rb');
@@ -81,7 +83,7 @@ export class RubyCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [
             this.disasmScriptPath,
             '--outputfile',

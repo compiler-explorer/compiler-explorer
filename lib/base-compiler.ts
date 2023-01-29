@@ -52,14 +52,15 @@ import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/feat
 import {Language} from '../types/languages.interfaces';
 import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
 import {ResultLine} from '../types/resultline/resultline.interfaces';
-import {Tool, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
+import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
-import * as cfg from './cfg';
+import * as cfg from './cfg/cfg';
+import {CompilationEnvironment} from './compilation-env';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
-import {getDemanglerTypeByKey} from './demangler';
+import {BaseDemangler, getDemanglerTypeByKey} from './demangler';
 import {LLVMIRDemangler} from './demangler/llvm';
 import * as exec from './exec';
 import {getExternalParserByKey} from './external-parsers';
@@ -80,11 +81,23 @@ import {getToolchainPath} from './toolchain-utils';
 import {ITool} from './tooling/base-tool.interface';
 import * as utils from './utils';
 
+const compilationTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_compilation_duration_seconds',
+    help: 'Time taken to compile code',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
+const executionTimeHistogram = new PromClient.Histogram({
+    name: 'ce_base_compiler_execution_duration_seconds',
+    help: 'Time taken to execute code',
+    buckets: [0.1, 0.5, 1, 5, 10, 20, 30],
+});
+
 export class BaseCompiler implements ICompiler {
-    protected compiler: CompilerInfo & Record<string, any>; // TODO: Some missing types still present in Compiler type
+    protected compiler: CompilerInfo; // TODO: Some missing types still present in Compiler type
     public lang: Language;
     protected compileFilename: string;
-    protected env: any;
+    protected env: CompilationEnvironment;
     protected compilerProps: PropertyGetter;
     protected alwaysResetLdPath: any;
     protected delayCleanupTemp: any;
@@ -98,7 +111,7 @@ export class BaseCompiler implements ICompiler {
     protected toolchainPath: any;
     public possibleArguments: CompilerArguments;
     protected possibleTools: ITool[];
-    protected demanglerClass: any;
+    protected demanglerClass: typeof BaseDemangler | null = null;
     protected objdumperClass: any;
     public outputFilebase: string;
     protected mtime: Date | null = null;
@@ -113,7 +126,7 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env) {
+    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
         // Information about our compiler
         this.compiler = compilerInfo;
         this.lang = languages[compilerInfo.lang];
@@ -123,7 +136,7 @@ export class BaseCompiler implements ICompiler {
         this.compileFilename = `example${this.lang.extensions[0]}`;
         this.env = env;
         // Partial application of compilerProps with the proper language id applied to it
-        this.compilerProps = _.partial(this.env.compilerProps, this.lang.id);
+        this.compilerProps = _.partial(this.env.compilerProps as any, this.lang.id);
         this.compiler.supportsIntel = !!this.compiler.intelAsm;
 
         this.alwaysResetLdPath = this.env.ceProps('alwaysResetLdPath');
@@ -137,8 +150,11 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
 
         if (!this.compiler.disabledFilters) this.compiler.disabledFilters = [];
-        else if (typeof this.compiler.disabledFilters === 'string')
-            this.compiler.disabledFilters = this.compiler.disabledFilters.split(',');
+        else if (typeof (this.compiler.disabledFilters as any) === 'string') {
+            // When first loaded from props it may be a string so we split it here
+            // I'd like a better way to do this that doesn't involve type hacks
+            this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
+        }
 
         this.asm = new AsmParser(this.compilerProps);
         this.llvmIr = new LlvmIrParser(this.compilerProps);
@@ -284,7 +300,7 @@ export class BaseCompiler implements ICompiler {
         });
     }
 
-    optOutputRequested(options) {
+    optOutputRequested(options: string[]) {
         return options.includes('-fsave-optimization-record');
     }
 
@@ -313,12 +329,12 @@ export class BaseCompiler implements ICompiler {
         }
 
         const key = this.getCompilerCacheKey(compiler, args, options);
-        let result = await this.env.compilerCacheGet(key);
+        let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
             result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
             if (result.okToCache) {
                 this.env
-                    .compilerCachePut(key, result)
+                    .compilerCachePut(key as any, result, undefined)
                     .then(() => {
                         // Do nothing, but we don't await here.
                     })
@@ -385,7 +401,7 @@ export class BaseCompiler implements ICompiler {
         return !!this.objdumperClass;
     }
 
-    getObjdumpOutputFilename(defaultOutputFilename) {
+    getObjdumpOutputFilename(defaultOutputFilename: string): string {
         return defaultOutputFilename;
     }
 
@@ -399,6 +415,8 @@ export class BaseCompiler implements ICompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
@@ -409,7 +427,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         const objdumper = new this.objdumperClass();
-        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm);
+        const args = objdumper.getDefaultArgs(outputFilename, demangle, intelAsm, staticReloc, dynamicReloc);
 
         if (this.externalparser) {
             const objResult = await this.externalparser.objdumpAndParseAssembly(result.dirPath, args, filters);
@@ -515,7 +533,7 @@ export class BaseCompiler implements ICompiler {
         return outputFilename.replace(path.extname(outputFilename), '.dump');
     }
 
-    getGccDumpOptions(gccDumpOptions, outputFilename) {
+    getGccDumpOptions(gccDumpOptions, outputFilename: string) {
         const addOpts = ['-fdump-passes'];
 
         // Build dump options to append to the end of the -fdump command-line flag.
@@ -599,10 +617,12 @@ export class BaseCompiler implements ICompiler {
         userOptions?: string[],
     ): string[] {
         let options = ['-g', '-o', this.filename(outputFilename)];
-        if (this.compiler.intelAsm && filters.intel && !filters.binary) {
+        if (this.compiler.intelAsm && filters.intel && !filters.binary && !filters.binaryObject) {
             options = options.concat(this.compiler.intelAsm.split(' '));
         }
-        if (!filters.binary) options = options.concat('-S');
+        if (!filters.binary && !filters.binaryObject) options = options.concat('-S');
+        else if (filters.binaryObject) options = options.concat('-c');
+
         return options;
     }
 
@@ -736,7 +756,7 @@ export class BaseCompiler implements ICompiler {
         }) as string[];
     }
 
-    getSharedLibraryLinks(libraries): string[] {
+    getSharedLibraryLinks(libraries: any[]): string[] {
         const linkFlag = this.compiler.linkFlag || '-l';
 
         return _.flatten(
@@ -1228,7 +1248,7 @@ export class BaseCompiler implements ICompiler {
         return [{text: 'Internal error; unable to open output path'}];
     }
 
-    getIrOutputFilename(inputFilename: string, filters: ParseFiltersAndOutputOptions): string {
+    getIrOutputFilename(inputFilename: string, filters?: ParseFiltersAndOutputOptions): string {
         return inputFilename.replace(path.extname(inputFilename), '.ll');
     }
 
@@ -1247,7 +1267,7 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    getExecutableFilename(dirPath, outputFilebase, key?) {
+    getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
         return this.getOutputFilename(dirPath, outputFilebase, key);
     }
 
@@ -1280,9 +1300,7 @@ export class BaseCompiler implements ICompiler {
             if (!isInExpandedCode && startOfExpandedCode.test(obj.text)) {
                 isInExpandedCode = true;
                 isInTree = false;
-            }
-
-            if (!isInTree && startOfTree.test(obj.text)) {
+            } else if (!isInTree && startOfTree.test(obj.text)) {
                 isInExpandedCode = false;
                 isInTree = true;
             }
@@ -1403,7 +1421,22 @@ export class BaseCompiler implements ICompiler {
         }
     }
 
-    protected async writeMultipleFiles(files, dirPath) {
+    async addArtifactToResult(result: CompilationResult, filepath: string, customType?: string, customTitle?: string) {
+        const file_buffer = await fs.readFile(filepath);
+
+        const artifact: Artifact = {
+            content: file_buffer.toString('base64'),
+            type: customType || 'application/octet-stream',
+            name: path.basename(filepath),
+            title: customTitle || path.basename(filepath),
+        };
+
+        if (!result.artifacts) result.artifacts = [];
+
+        result.artifacts.push(artifact);
+    }
+
+    protected async writeMultipleFiles(files: any[], dirPath: string) {
         const filesToWrite: Promise<void>[] = [];
 
         for (const file of files) {
@@ -1416,7 +1449,12 @@ export class BaseCompiler implements ICompiler {
         return Promise.all(filesToWrite);
     }
 
-    protected async writeAllFiles(dirPath, source, files, filters: ParseFiltersAndOutputOptions) {
+    protected async writeAllFiles(
+        dirPath: string,
+        source: string,
+        files: any[],
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         if (!source) throw new Error(`File ${this.compileFilename} has no content or file is missing`);
 
         const inputFilename = path.join(dirPath, this.compileFilename);
@@ -1446,7 +1484,7 @@ export class BaseCompiler implements ICompiler {
         };
     }
 
-    async buildExecutableInFolder(key, dirPath): Promise<BuildResult> {
+    async buildExecutableInFolder(key, dirPath: string): Promise<BuildResult> {
         const writeSummary = await this.writeAllFiles(dirPath, key.source, key.files, key.filters);
         const downloads = await this.setupBuildEnvironment(key, dirPath, true);
 
@@ -1455,6 +1493,7 @@ export class BaseCompiler implements ICompiler {
         const outputFilename = this.getExecutableFilename(dirPath, this.outputFilebase, key);
 
         const buildFilters: ParseFiltersAndOutputOptions = Object.assign({}, key.filters);
+        buildFilters.binaryObject = false;
         buildFilters.binary = true;
         buildFilters.execute = true;
 
@@ -1572,6 +1611,10 @@ export class BaseCompiler implements ICompiler {
         return this.execBinary(executable, maxExecOutputSize, executeParameters, homeDir);
     }
 
+    protected fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
+        executeParameters.args.unshift(outputFilename);
+    }
+
     async handleInterpreting(key, executeParameters): Promise<CompilationResult> {
         const source = key.source;
         const dirPath = await this.newTempDir();
@@ -1585,7 +1628,7 @@ export class BaseCompiler implements ICompiler {
             await this.writeMultipleFiles(key.files, dirPath);
         }
 
-        executeParameters.args.unshift(outputFilename);
+        this.fixExecuteParametersForInterpreting(executeParameters, outputFilename, key);
 
         const result = await this.runExecutable(this.compiler.exe, executeParameters, dirPath);
         return {
@@ -1739,7 +1782,7 @@ export class BaseCompiler implements ICompiler {
         const makeGccDump =
             backendOptions.produceGccDump && backendOptions.produceGccDump.opened && this.compiler.supportsGccDump;
 
-        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary);
+        const downloads = await this.setupBuildEnvironment(key, dirPath, filters.binary || filters.binaryObject);
         const [
             asmResult,
             astResult,
@@ -1798,7 +1841,7 @@ export class BaseCompiler implements ICompiler {
             : '';
 
         asmResult.dirPath = dirPath;
-        asmResult.compilationOptions = options;
+        if (!asmResult.compilationOptions) asmResult.compilationOptions = options;
         asmResult.downloads = downloads;
         // Here before the check to ensure dump reports even on failure cases
         if (this.compiler.supportsGccDump && gccDumpResult) {
@@ -2031,7 +2074,14 @@ export class BaseCompiler implements ICompiler {
             const toolchainparam = this.getCMakeExtToolchainParam();
 
             const cmakeArgs = utils.splitArguments(key.backendOptions.cmakeArgs);
-            const fullArgs = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            const partArgs: string[] = [toolchainparam, ...this.getExtraCMakeArgs(key), ...cmakeArgs, '..'];
+            let fullArgs: string[] = [];
+            const useNinja = this.env.ceProps('useninja');
+            if (useNinja) {
+                fullArgs = ['-GNinja'].concat(partArgs);
+            } else {
+                fullArgs = partArgs;
+            }
 
             const cmakeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
@@ -2053,9 +2103,9 @@ export class BaseCompiler implements ICompiler {
 
             const makeStepResult = await this.doBuildstepAndAddToResult(
                 fullResult,
-                'make',
-                this.env.ceProps('make'),
-                [],
+                'build',
+                this.env.ceProps('cmake'),
+                ['--build', '.'],
                 execParams,
             );
 
@@ -2154,6 +2204,10 @@ export class BaseCompiler implements ICompiler {
             for (const key in filters) {
                 filters[key] = false;
             }
+
+            if (filters.binaryObject && !this.compiler.supportsBinaryObject) {
+                delete filters.binaryObject;
+            }
         }
 
         if (files && files.length > 0) {
@@ -2188,7 +2242,10 @@ export class BaseCompiler implements ICompiler {
 
         if (!bypassCache) {
             const cacheRetreiveTimeStart = process.hrtime.bigint();
-            const result = await this.env.cacheGet(key);
+            // TODO: We should be able to eliminate this any cast. `key` should be cacheable (if it's not that's a big
+            // problem) Because key coantains a CompilerInfo which contains a function member it can't be assigned to a
+            // CacheableValue.
+            const result = await this.env.cacheGet(key as any);
             if (result) {
                 const cacheRetreiveTimeEnd = process.hrtime.bigint();
                 result.retreivedFromCacheTime = (
@@ -2198,7 +2255,10 @@ export class BaseCompiler implements ICompiler {
                 result.retreivedFromCache = true;
                 if (doExecute) {
                     result.execResult = await this.env.enqueue(async () => {
-                        return this.handleExecution(key, executeParameters);
+                        const start = performance.now();
+                        const res = await this.handleExecution(key, executeParameters);
+                        executionTimeHistogram.observe((performance.now() - start) / 1000);
+                        return res;
                     });
 
                     if (result.execResult && result.execResult.buildResult) {
@@ -2210,48 +2270,53 @@ export class BaseCompiler implements ICompiler {
         }
 
         return this.env.enqueue(async () => {
-            source = this.preProcess(source, filters);
+            const start = performance.now();
+            const res = await (async () => {
+                source = this.preProcess(source, filters);
 
-            if (backendOptions.executorRequest) {
-                const execResult = await this.handleExecution(key, executeParameters);
-                if (execResult && execResult.buildResult) {
-                    this.doTempfolderCleanup(execResult.buildResult);
+                if (backendOptions.executorRequest) {
+                    const execResult = await this.handleExecution(key, executeParameters);
+                    if (execResult && execResult.buildResult) {
+                        this.doTempfolderCleanup(execResult.buildResult);
+                    }
+                    return execResult;
                 }
-                return execResult;
-            }
 
-            const dirPath = await this.newTempDir();
+                const dirPath = await this.newTempDir();
 
-            let writeSummary;
-            try {
-                writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
-            } catch (e) {
-                return this.handleUserError(e, dirPath);
-            }
-            const inputFilename = writeSummary.inputFilename;
+                let writeSummary;
+                try {
+                    writeSummary = await this.writeAllFiles(dirPath, source, files, filters);
+                } catch (e) {
+                    return this.handleUserError(e, dirPath);
+                }
+                const inputFilename = writeSummary.inputFilename;
 
-            const [result, optOutput] = await this.doCompilation(
-                inputFilename,
-                dirPath,
-                key,
-                options,
-                filters,
-                backendOptions,
-                libraries,
-                tools,
-            );
+                const [result, optOutput] = await this.doCompilation(
+                    inputFilename,
+                    dirPath,
+                    key,
+                    options,
+                    filters,
+                    backendOptions,
+                    libraries,
+                    tools,
+                );
 
-            return await this.afterCompilation(
-                result,
-                doExecute,
-                key,
-                executeParameters,
-                tools,
-                backendOptions,
-                filters,
-                options,
-                optOutput,
-            );
+                return await this.afterCompilation(
+                    result,
+                    doExecute,
+                    key,
+                    executeParameters,
+                    tools,
+                    backendOptions,
+                    filters,
+                    options,
+                    optOutput,
+                );
+            })();
+            compilationTimeHistogram.observe((performance.now() - start) / 1000);
+            return res;
         });
     }
 
@@ -2314,7 +2379,7 @@ export class BaseCompiler implements ICompiler {
                     // for now do not generate a cfg for llvm ir
                     result.cfg = {};
                 } else {
-                    result.cfg = cfg.generateStructure(this.compiler.compilerType, this.compiler.version, result.asm);
+                    result.cfg = cfg.generateStructure(this.compiler, result.asm);
                 }
             }
         }
@@ -2324,7 +2389,7 @@ export class BaseCompiler implements ICompiler {
         result = this.postCompilationPreCacheHook(result);
 
         if (result.okToCache) {
-            await this.env.cachePut(key, result);
+            await this.env.cachePut(key, result, undefined);
         }
 
         if (doExecute) {
@@ -2364,7 +2429,11 @@ export class BaseCompiler implements ICompiler {
             .pipe(new compilerOptInfo.LLVMOptTransformer());
 
         for await (const opt of optStream) {
-            if (opt.DebugLoc && opt.DebugLoc.File && opt.DebugLoc.File.includes(this.compileFilename)) {
+            if (
+                opt.DebugLoc &&
+                opt.DebugLoc.File &&
+                (opt.DebugLoc.File === '<stdin>' || opt.DebugLoc.File.includes(this.compileFilename))
+            ) {
                 output.push(opt);
             }
         }
@@ -2532,8 +2601,17 @@ but nothing was dumped. Possible causes are:
         const maxSize = this.env.ceProps('max-asm-size', 64 * 1024 * 1024);
         const optPromise = result.hasOptOutput ? this.processOptOutput(result.optPath) : '';
         const asmPromise =
-            filters.binary && this.supportsObjdump()
-                ? this.objdump(outputFilename, result, maxSize, filters.intel, filters.demangle, filters)
+            (filters.binary || filters.binaryObject) && this.supportsObjdump()
+                ? this.objdump(
+                      outputFilename,
+                      result,
+                      maxSize,
+                      filters.intel,
+                      filters.demangle,
+                      filters.binaryObject,
+                      false,
+                      filters,
+                  )
                 : (async () => {
                       if (result.asmSize === undefined) {
                           result.asm = '<No output file>';
@@ -2565,7 +2643,7 @@ but nothing was dumped. Possible causes are:
         return result;
     }
 
-    checkOptions(options) {
+    checkOptions(options: string[]) {
         const error = this.env.findBadOptions(options);
         if (error.length > 0) return `Bad options: ${error.join(', ')}`;
         return null;
@@ -2692,7 +2770,7 @@ but nothing was dumped. Possible causes are:
         return this.compiler;
     }
 
-    getDefaultFilters() {
+    getDefaultFilters(): ParseFiltersAndOutputOptions {
         return {
             binary: false,
             execute: false,
@@ -2704,6 +2782,7 @@ but nothing was dumped. Possible causes are:
             optOutput: false,
             libraryCode: false,
             trim: false,
+            binaryObject: false,
         };
     }
 }

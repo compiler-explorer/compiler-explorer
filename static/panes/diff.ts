@@ -156,7 +156,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                     {id: DiffType.ExecStdErr, name: 'Execution stderr'},
                     {id: DiffType.GNAT_ExpandedCode, name: 'GNAT Expanded Code'},
                     {id: DiffType.GNAT_Tree, name: 'GNAT Tree Code'},
-                ] as any[],
+                ],
                 items: [],
                 render: <any>{
                     option: (item, escape) => {

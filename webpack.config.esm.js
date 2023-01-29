@@ -67,6 +67,7 @@ const plugins = [
             'rust',
             'swift',
             'java',
+            'julia',
             'kotlin',
             'scala',
             'ruby',
@@ -77,6 +78,7 @@ const plugins = [
             'typescript',
             'solidity',
             'scheme',
+            'objective-c',
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
@@ -91,7 +93,7 @@ const plugins = [
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
+        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicons')}],
     }),
 ];
 
@@ -103,7 +105,7 @@ if (isDev) {
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {
-        main: './static/main.js',
+        main: './static/main.ts',
         noscript: './static/noscript.ts',
     },
     output: {

@@ -396,7 +396,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
@@ -414,7 +414,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -435,7 +435,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -504,7 +504,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {

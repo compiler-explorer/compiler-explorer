@@ -40,6 +40,7 @@ import * as monacoConfig from '../monaco-config';
 import {GccDumpFiltersState, GccDumpViewState, GccDumpViewSelectedPass} from './gccdump-view.interfaces';
 
 import {ga} from '../analytics';
+import {assert} from '../assert';
 
 export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, GccDumpViewState> {
     selectize: TomSelect;
@@ -119,6 +120,15 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         this.eventHub.emit('gccDumpUIInit', this.compilerInfo.compilerId);
     }
 
+    override initializeCompilerInfo(state: Record<string, any>) {
+        super.initializeCompilerInfo(state);
+
+        if (!state.id && state._compilerid) this.compilerInfo.compilerId = state._compilerid;
+        if (!state.editorid && state._editorid) this.compilerInfo.editorId = state._editorid;
+        if (!state.compilerName && state._compilerName) this.compilerInfo.compilerName = state._compilerName;
+        if (!state.treeid && state._treeid) state.treeId = state._treeid;
+    }
+
     override getInitialHTML(): string {
         return $('#gccdump').html();
     }
@@ -150,7 +160,8 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
         if (!(gccdump_picker instanceof HTMLSelectElement)) {
             throw new Error('.gccdump-pass-picker is not an HTMLSelectElement');
         }
-        this.selectize = new TomSelect(gccdump_picker as HTMLSelectElement, {
+        assert(gccdump_picker instanceof HTMLSelectElement);
+        this.selectize = new TomSelect(gccdump_picker, {
             sortField: undefined, // do not sort
             valueField: 'name',
             labelField: 'name',
@@ -255,7 +266,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
     }
 
     onPassSelect(passId: string) {
-        const selectedPass = this.selectize.options[passId] as unknown as any;
+        const selectedPass = this.selectize.options[passId] as unknown as GccDumpViewSelectedPass;
 
         if (this.inhibitPassSelect !== true) {
             this.eventHub.emit('gccDumpPassSelected', this.compilerInfo.compilerId, selectedPass, true);

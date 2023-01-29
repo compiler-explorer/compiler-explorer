@@ -54,6 +54,7 @@ export type OptionHandlerArguments = {
     suppressConsoleLog: boolean;
 };
 
+// TODO: Is this the same as Options in static/options.interfaces.ts?
 type OptionsType = {
     googleAnalyticsAccount: string;
     googleAnalyticsEnabled: boolean;
@@ -72,6 +73,7 @@ type OptionsType = {
     defaultCompiler: Record<LanguageKey, string>;
     compileOptions: Record<LanguageKey, string>;
     supportsBinary: Record<LanguageKey, boolean>;
+    supportsBinaryObject: Record<LanguageKey, boolean>;
     supportsExecute: boolean;
     supportsLibraryCodeFilter: boolean;
     languages: Record<string, any>;
@@ -111,6 +113,7 @@ export class ClientOptionsHandler {
     compilerProps: CompilerProps['get'];
     ceProps: PropertyGetter;
     supportsBinary: Record<LanguageKey, boolean>;
+    supportsBinaryObject: Record<LanguageKey, boolean>;
     supportsExecutePerLanguage: Record<LanguageKey, boolean>;
     supportsExecute: boolean;
     supportsLibraryCodeFilterPerLanguage: Record<LanguageKey, boolean>;
@@ -144,6 +147,7 @@ export class ClientOptionsHandler {
         const languages = compilerProps.languages;
 
         this.supportsBinary = this.compilerProps(languages, 'supportsBinary', true, res => !!res);
+        this.supportsBinaryObject = this.compilerProps(languages, 'supportsBinaryObject', true, res => !!res);
         this.supportsExecutePerLanguage = this.compilerProps(languages, 'supportsExecute', true, res => !!res);
         this.supportsExecute = Object.values(this.supportsExecutePerLanguage).some(Boolean);
 
@@ -176,6 +180,7 @@ export class ClientOptionsHandler {
             defaultCompiler: this.compilerProps(languages, 'defaultCompiler', ''),
             compileOptions: this.compilerProps(languages, 'defaultOptions', ''),
             supportsBinary: this.supportsBinary,
+            supportsBinaryObject: this.supportsBinaryObject,
             supportsExecute: this.supportsExecute,
             supportsLibraryCodeFilter: this.supportsLibraryCodeFilter,
             languages: languages,
@@ -184,7 +189,7 @@ export class ClientOptionsHandler {
             sentryEnvironment: ceProps('sentryEnvironment') || defArgs.env[0],
             release: defArgs.releaseBuildNumber || defArgs.gitReleaseName,
             gitReleaseCommit: defArgs.gitReleaseName || '',
-            cookieDomainRe: cookieDomainRe,
+            cookieDomainRe,
             localStoragePrefix: ceProps('localStoragePrefix'),
             cvCompilerCountMax: ceProps('cvCompilerCountMax', 6),
             defaultFontScale: ceProps('defaultFontScale', 14),

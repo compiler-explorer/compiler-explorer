@@ -23,10 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {makeKeyedTypeGetter} from '../keyed-type';
+import {Keyable} from '../keyed-type.interfaces';
 
 import * as all from './_all';
+import {BaseFormatter} from './base';
+import {FormatterInfo} from './base.interfaces';
 
 export {BaseFormatter} from './base';
 export * from './_all';
 
-export const getFormatterTypeByKey = makeKeyedTypeGetter('formatter', all);
+type FormatterClass = {
+    new (opts: FormatterInfo): BaseFormatter;
+} & Keyable;
+
+export const getFormatterTypeByKey = makeKeyedTypeGetter<FormatterClass>('formatter', all);

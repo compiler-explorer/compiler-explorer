@@ -335,7 +335,7 @@ class Parser {
                     if (c === '!') {
                         if (start < i - 1) segments.push(s.slice(start, i - 1));
                         c = s.charAt(i++);
-                        if ("!'".indexOf(c) >= 0) {
+                        if ("!'".includes(c)) {
                             segments.push(c);
                         } else {
                             this.error('invalid string escape: "!' + c + '"');
@@ -364,7 +364,7 @@ class Parser {
                     const c = s.charAt(i++);
                     if (!c) break;
                     if ('0' <= c && c <= '9') continue;
-                    if (permittedSigns.indexOf(c) >= 0) {
+                    if (permittedSigns.includes(c)) {
                         permittedSigns = '';
                         continue;
                     }
@@ -432,7 +432,7 @@ class Parser {
         do {
             if (i === s.length) return undefined;
             c = s.charAt(i++);
-        } while (Parser.WHITESPACE.indexOf(c) >= 0);
+        } while (Parser.WHITESPACE.includes(c));
         this.index = i;
         return c;
     }

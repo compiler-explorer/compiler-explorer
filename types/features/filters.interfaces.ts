@@ -26,8 +26,10 @@
 // applied to the compiler output. They correspond to the "Compiler output
 // options" and "Compiler output filters" drop down menu in a compiler pane.
 
+// TODO(jeremy-rifkin): Change name to include "filters"?
 export type CompilerOutputOptions = {
     binary: boolean;
+    binaryObject: boolean;
     execute: boolean;
     demangle: boolean;
     intel: boolean;

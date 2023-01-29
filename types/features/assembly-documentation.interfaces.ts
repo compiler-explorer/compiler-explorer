@@ -24,9 +24,19 @@
 
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
 
+export type AssemblyDocumentationInstructionSet =
+    | 'amd64'
+    | 'arm32'
+    | 'avr'
+    | 'evm'
+    | 'java'
+    | 'llvm'
+    | 'mos6502'
+    | 'python';
+
 export interface AssemblyDocumentationRequest {
     /** Specifies which instruction set to look for */
-    instructionSet: 'amd64' | 'arm32' | 'java';
+    instructionSet: AssemblyDocumentationInstructionSet;
     /** Instruction set opcode to look for */
     opcode: string;
 }

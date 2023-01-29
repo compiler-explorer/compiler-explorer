@@ -25,7 +25,7 @@
 import {IFrontendTesting} from './tests/frontend-testing.interfaces';
 import {Options} from './options.interfaces';
 
-type CompilerExplorerOptions = Record<string, unknown> & Options;
+export type CompilerExplorerOptions = Record<string, unknown> & Options;
 
 declare global {
     export interface Window {
@@ -36,6 +36,8 @@ declare global {
         ga: any;
         GoogleAnalyticsObject: any;
         hasUIBeenReset: boolean;
+        PRODUCTION: boolean;
+        onSponsorClick: (sponsorUrl: string) => void;
     }
 }
 

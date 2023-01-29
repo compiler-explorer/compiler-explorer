@@ -22,13 +22,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as cfg from '../lib/cfg';
+import * as cfg from '../lib/cfg/cfg';
 
 import {fs, path, resolvePathFromTestRoot} from './utils';
 
 async function DoCfgTest(cfgArg, filename) {
     const contents = await fs.readJson(filename, 'utf8');
-    const structure = cfg.generateStructure('', cfgArg, contents.asm);
+    const structure = cfg.generateStructure(
+        {
+            compilerType: '',
+            version: cfgArg,
+        },
+        contents.asm,
+    );
     structure.should.deep.equal(contents.cfg);
 }
 

@@ -27,7 +27,9 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
@@ -38,7 +40,7 @@ export class z88dkCompiler extends BaseCompiler {
         return 'z88dk';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);
@@ -62,14 +64,14 @@ export class z88dkCompiler extends BaseCompiler {
     }
 
     public override orderArguments(
-        options,
-        inputFilename,
-        libIncludes,
-        libOptions,
-        libPaths,
-        libLinks,
-        userOptions,
-        staticLibLinks,
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
     ) {
         return userOptions.concat(
             options,
@@ -98,7 +100,7 @@ export class z88dkCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         return defaultOutputFilename;
     }
 
@@ -116,6 +118,8 @@ export class z88dkCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
@@ -161,16 +165,12 @@ export class z88dkCompiler extends BaseCompiler {
         if (result.code === 0 && filters.binary) {
             const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
             if (await utils.fileExists(tapeFilepath)) {
-                const file_buffer = await fs.readFile(tapeFilepath);
-                const binary_base64 = file_buffer.toString('base64');
-                result.speccytape = binary_base64;
+                await this.addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
             }
 
             const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
             if (await utils.fileExists(smsFilepath)) {
-                const file_buffer = await fs.readFile(smsFilepath);
-                const binary_base64 = file_buffer.toString('base64');
-                result.miraclesms = binary_base64;
+                await this.addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
             }
         }
 

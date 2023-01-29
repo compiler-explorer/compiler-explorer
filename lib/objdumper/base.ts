@@ -25,9 +25,17 @@
 export abstract class BaseObjdumper {
     constructor(protected readonly intelAsmOptions: string[], protected readonly widthOptions: string[]) {}
 
-    getDefaultArgs(outputFilename: string, demangle?: boolean, intelAsm?: boolean) {
+    getDefaultArgs(
+        outputFilename: string,
+        demangle?: boolean,
+        intelAsm?: boolean,
+        staticReloc?: boolean,
+        dynamicReloc?: boolean,
+    ) {
         const args = ['-d', outputFilename, '-l', ...this.widthOptions];
 
+        if (staticReloc) args.push('-r');
+        if (dynamicReloc) args.push('-R');
         if (demangle) args.push('-C');
         if (intelAsm) args.push(...this.intelAsmOptions);
 

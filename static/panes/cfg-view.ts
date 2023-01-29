@@ -126,7 +126,10 @@ export class Cfg extends Pane<CfgState> {
     state: CfgState & PaneState;
     layout: GraphLayoutCore;
     bbMap: Record<string, HTMLDivElement> = {};
+    tooltipOpen = false;
     readonly extraTransforms: string;
+    fictitiousGraphContainer: HTMLDivElement;
+    fictitiousBlockContainer: HTMLDivElement;
 
     constructor(hub: Hub, container: Container, state: CfgState & PaneState) {
         if ((state as any).selectedFn) {
@@ -143,6 +146,21 @@ export class Cfg extends Pane<CfgState> {
         this.eventHub.emit('cfgViewOpened', this.compilerInfo.compilerId);
         this.eventHub.emit('requestFilters', this.compilerInfo.compilerId);
         this.eventHub.emit('requestCompiler', this.compilerInfo.compilerId);
+        this.state = state;
+        // This is a workaround for a chrome render bug that's existed since at least 2013
+        // https://github.com/compiler-explorer/compiler-explorer/issues/4421
+        this.extraTransforms = !navigator.userAgent.includes('AppleWebKit') ? '' : ' translateZ(0)';
+    }
+
+    override getInitialHTML() {
+        return $('#cfg').html();
+    }
+
+    override getDefaultPaneName() {
+        return 'CFG';
+    }
+
+    override registerButtons() {
         const selector = this.domRoot.get()[0].getElementsByClassName('function-selector')[0];
         assert(selector instanceof HTMLSelectElement, '.function-selector is not an HTMLSelectElement');
         this.functionSelector = new TomSelect(selector, {
@@ -153,22 +171,8 @@ export class Cfg extends Pane<CfgState> {
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
             sortField: 'title',
-            onChange: e => {
-                this.selectFunction(e as unknown as string);
-            },
+            onChange: e => this.selectFunction(e as unknown as string),
         });
-        this.state = state;
-        // This is a workaround for a chrome render bug that's existed since at least 2013
-        // https://github.com/compiler-explorer/compiler-explorer/issues/4421
-        this.extraTransforms = navigator.userAgent.indexOf('AppleWebKit') === -1 ? '' : ' translateZ(0)';
-    }
-
-    override getInitialHTML() {
-        return $('#cfg').html();
-    }
-
-    override getDefaultPaneName() {
-        return 'CFG';
     }
 
     override registerOpeningAnalyticsEvent(): void {
@@ -189,6 +193,30 @@ export class Cfg extends Pane<CfgState> {
         this.exportPNGButton = this.domRoot.find('.export-png').first();
         this.estimatedPNGSize = unwrap(this.exportPNGButton[0].querySelector('.estimated-export-size'));
         this.exportSVGButton = this.domRoot.find('.export-svg').first();
+        this.setupFictitiousGraphContainer();
+    }
+
+    setupFictitiousGraphContainer() {
+        // create a fake .graph-container .graph .block-container where we can compute block dimensions
+        // golden layout sets panes to display:none when they aren't the active tab
+        // create the .graph-container
+        const fictitiousGraphContainer = document.createElement('div');
+        fictitiousGraphContainer.setAttribute('class', 'graph-container');
+        fictitiousGraphContainer.setAttribute('style', 'position: absolute; bottom: 0; right: 0; width: 0; height: 0;');
+        // create the .graph
+        const fictitiousGraph = document.createElement('div');
+        fictitiousGraph.setAttribute('class', 'graph');
+        // create the .block-container
+        const fictitousBlockContainer = document.createElement('div');
+        fictitousBlockContainer.setAttribute('class', 'block-container');
+        // .graph-container -> .graph
+        fictitiousGraphContainer.appendChild(fictitiousGraph);
+        // .graph -> .block-container
+        fictitiousGraph.appendChild(fictitousBlockContainer);
+        // finally append to the body
+        document.body.appendChild(fictitiousGraphContainer);
+        this.fictitiousGraphContainer = fictitiousGraphContainer;
+        this.fictitiousBlockContainer = fictitousBlockContainer;
     }
 
     override registerCallbacks() {
@@ -239,6 +267,15 @@ export class Cfg extends Pane<CfgState> {
         });
         this.exportSVGButton.on('click', () => {
             this.exportSVG();
+        });
+        // Dismiss tooltips if you click elsewhere - trigger: focus isn't working for some reason
+        $('body').on('click', e => {
+            if (this.tooltipOpen) {
+                if (!e.target.classList.contains('fold') && $(e.target).parents('.popover.in').length === 0) {
+                    this.tooltipOpen = false;
+                    $('.fold').popover('hide');
+                }
+            }
         });
     }
 
@@ -304,7 +341,61 @@ export class Cfg extends Pane<CfgState> {
         for (const node of fn.nodes) {
             const div = document.createElement('div');
             div.classList.add('block');
-            div.innerHTML = await monaco.editor.colorize(node.label, 'asm', MonacoConfig.extendConfig({}));
+            const folded_lines: number[] = [];
+            const raw_lines = node.label.split('\n');
+            const highlighted_asm_untrimmed = await monaco.editor.colorize(
+                raw_lines.join('\n'),
+                'asm',
+                MonacoConfig.extendConfig({})
+            );
+            const highlighted_asm = await monaco.editor.colorize(
+                raw_lines
+                    .map((line, i) => {
+                        if (line.length <= 100) {
+                            return line;
+                        } else {
+                            folded_lines.push(i);
+                            return line.slice(0, 100);
+                        }
+                    })
+                    .join('\n'),
+                'asm',
+                MonacoConfig.extendConfig({})
+            );
+            const untrimmed_lines = highlighted_asm_untrimmed.split('<br/>');
+            const lines = highlighted_asm.split('<br/>');
+            // highlighted asm has a blank line at the end
+            assert(raw_lines.length === untrimmed_lines.length - 1);
+            assert(raw_lines.length === lines.length - 1);
+            for (const i of folded_lines) {
+                lines[i] += `<span class="fold" data-extra="${
+                    untrimmed_lines[i]
+                        .replace(/"/g, '&quot;') // escape double quotes for the attribute
+                        .replace(/\s{2,}/g, '&nbsp;') // clean up occurrences of multiple whitespace
+                        .replace(/>(\s|&nbsp;)<\/span>/, '></span>') // Hacky solution to remove whitespace at the start
+                }" aria-describedby="wtf">&#8943;</span>`;
+            }
+            div.innerHTML = lines.join('<br/>');
+            for (const fold of div.getElementsByClassName('fold')) {
+                $(fold)
+                    .popover({
+                        content: unwrap(fold.getAttribute('data-extra')),
+                        html: true,
+                        placement: 'top',
+                        template:
+                            '<div class="popover cfg-fold-popover" role="tooltip">' +
+                            '<div class="arrow"></div>' +
+                            '<h3 class="popover-header"></h3>' +
+                            '<div class="popover-body"></div>' +
+                            '</div>',
+                    })
+                    .on('show.bs.popover', () => {
+                        this.tooltipOpen = true;
+                    })
+                    .on('hide.bs.popover', () => {
+                        this.tooltipOpen = false;
+                    });
+            }
             // So because this is async there's a race condition here if you rapidly switch functions.
             // This can be triggered by loading an example program. Because the fix going to be tricky I'll defer
             // to another PR. TODO(jeremy-rifkin)
@@ -313,11 +404,16 @@ export class Cfg extends Pane<CfgState> {
             this.blockContainer.appendChild(div);
         }
         for (const node of fn.nodes) {
-            const elem = $(this.bbMap[node.id]);
-            void this.bbMap[node.id].offsetHeight;
+            const fictitiousBlock = this.fictitiousBlockContainer.appendChild(
+                this.bbMap[node.id].cloneNode(true)
+            ) as HTMLDivElement;
+            const elem = $(fictitiousBlock);
+            void fictitiousBlock.offsetHeight; // try to trigger a layout recompute
             (node as AnnotatedNodeDescriptor).width = unwrap(elem.outerWidth());
             (node as AnnotatedNodeDescriptor).height = unwrap(elem.outerHeight());
         }
+        // remove all children
+        this.fictitiousBlockContainer.replaceChildren();
     }
 
     drawEdges() {
@@ -391,6 +487,7 @@ export class Cfg extends Pane<CfgState> {
     // display the cfg for the specified function if it exists
     // this function does not change or use this.state.selectedFunction
     async selectFunction(name: string | null) {
+        $('.fold').popover('dispose');
         this.blockContainer.innerHTML = '';
         this.svg.innerHTML = '';
         this.estimatedPNGSize.innerHTML = '';
@@ -516,11 +613,13 @@ export class Cfg extends Pane<CfgState> {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.graphContainer.style.width = `${unwrap(this.domRoot.width())}px`;
             this.graphContainer.style.height = `${unwrap(this.domRoot.height()) - topBarHeight}px`;
+            $('.fold').popover('hide');
         });
     }
 
     override close(): void {
         this.eventHub.unsubscribe();
         this.eventHub.emit('cfgViewClosed', this.compilerInfo.compilerId);
+        this.fictitiousGraphContainer.remove();
     }
 }

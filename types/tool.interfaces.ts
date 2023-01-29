@@ -50,6 +50,14 @@ export type Tool = {
     readonly type: string;
 };
 
+export enum ArtifactType {
+    download = 'application/octet-stream',
+    nesrom = 'nesrom',
+    bbcdiskimage = 'bbcdiskimage',
+    zxtape = 'zxtape',
+    smsrom = 'smsrom',
+}
+
 export type Artifact = {
     content: string;
     type: string;

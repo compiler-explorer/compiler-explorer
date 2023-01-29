@@ -54,9 +54,10 @@ import {Decoration, Motd} from '../motd.interfaces';
 import type {escape_html} from 'tom-select/dist/types/utils';
 import ICursorSelectionChangedEvent = editor.ICursorSelectionChangedEvent;
 import {Compiler} from './compiler';
+import {assert, unwrap} from '../assert';
 
 const loadSave = new loadSaveLib.LoadSave();
-const languages = options.languages as Record<string, Language | undefined>;
+const languages = options.languages;
 
 type ResultLineWithSourcePane = ResultLine & {
     sourcePane: string;
@@ -77,7 +78,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private prevDecorations: string[];
     private extraDecorations?: Decoration[];
     private fadeTimeoutId: NodeJS.Timeout | null;
-    private editorSourceByLang: Record<LanguageKey, string | undefined>;
+    private editorSourceByLang: Partial<Record<LanguageKey, string | undefined>>;
     private alertSystem: Alert;
     private filename: string | false;
     private awaitingInitialResults: boolean;
@@ -91,7 +92,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     private waitingForLanguage: boolean;
     private currentCursorPosition: JQuery<HTMLElement>;
     private mouseMoveThrottledFunction?: ((e: monaco.editor.IEditorMouseEvent) => void) & _.Cancelable;
-    private cursorSelectionThrottledFunction?: (e: monaco.editor.ICursorSelectionChangedEvent) => void & _.Cancelable;
+    private cursorSelectionThrottledFunction?: (e: monaco.editor.ICursorSelectionChangedEvent) => void;
     private vimMode: any;
     private vimFlag: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private loadSaveButton: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
@@ -168,7 +169,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
 
         this.fadeTimeoutId = null;
 
-        this.editorSourceByLang = {} as Record<LanguageKey, string | undefined>;
+        this.editorSourceByLang = {};
 
         this.awaitingInitialResults = false;
 
@@ -195,7 +196,6 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     override createEditor(editorRoot: HTMLElement): editor.IStandaloneCodeEditor {
         const editor = monaco.editor.create(
             editorRoot,
-            // @ts-expect-error: options.readOnly and anything inside window.compilerExplorerOptions is unknown
             monacoConfig.extendConfig(
                 {
                     readOnly:
@@ -205,7 +205,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
                     glyphMargin: !options.embedded,
                 },
-                this.settings as SiteSettings
+                this.settings
             )
         );
 
@@ -227,7 +227,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                 decoration.filter &&
                 this.currentLanguage?.name &&
-                decoration.filter.indexOf(this.currentLanguage.name.toLowerCase()) < 0
+                !decoration.filter.includes(this.currentLanguage.name.toLowerCase())
             )
                 return;
             const match = this.editor.getModel()?.findNextMatch(
@@ -379,12 +379,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             });
         }
 
-        this.cursorSelectionThrottledFunction = _.throttle(
-            this.onDidChangeCursorSelection.bind(this) as (
-                e: editor.ICursorSelectionChangedEvent
-            ) => void & _.Cancelable,
-            500
-        );
+        this.cursorSelectionThrottledFunction = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
         this.editor.onDidChangeCursorSelection(e => {
             if (this.cursorSelectionThrottledFunction) this.cursorSelectionThrottledFunction(e);
         });
@@ -548,23 +543,25 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
 
         const usableLanguages = Object.values(languages).filter(language => {
-            return this.hub.compilerService.compilersByLang[language?.id ?? ''];
+            return this.hub.compilerService.getCompilersForLang(language.id);
         });
 
         this.languageInfoButton = this.domRoot.find('.language-info');
         this.languageInfoButton.popover({});
         this.languageBtn = this.domRoot.find('.change-language');
-        this.selectize = new TomSelect(this.languageBtn as any, {
+        const changeLanguageButton = this.languageBtn[0];
+        assert(changeLanguageButton instanceof HTMLSelectElement);
+        this.selectize = new TomSelect(changeLanguageButton, {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
             searchField: ['name'],
             placeholder: '🔍 Select a language...',
-            options: _.map(usableLanguages, _.identity) as any[],
+            options: [...usableLanguages],
             items: this.currentLanguage?.id ? [this.currentLanguage.id] : [],
             dropdownParent: 'body',
             plugins: ['dropdown_input'],
-            onChange: _.bind(this.onLanguageChange, this),
+            onChange: this.onLanguageChange.bind(this) as (x: any) => void,
             closeAfterSelect: true,
             render: {
                 option: this.renderSelectizeOption.bind(this),
@@ -779,7 +776,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     cleanupSemVer(semver: string): string | null {
         if (semver) {
             const semverStr = semver.toString();
-            if (semverStr !== '' && semverStr.indexOf('(') === -1) {
+            if (semverStr !== '' && !semverStr.includes('(')) {
                 const vercomps = semverStr.split('.');
                 return vercomps[0] + '.' + (vercomps[1] ? vercomps[1] : '0');
             }
@@ -807,18 +804,17 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             compilers.forEach(compiler => {
                 let knownCompiler = false;
 
-                const compilerExtInfo = this.hub.compilerService.findCompiler(
-                    this.currentLanguage?.id ?? '',
-                    compiler.compiler
+                const compilerExtInfo = unwrap(
+                    this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler)
                 );
                 const semver = this.cleanupSemVer(compilerExtInfo.semver);
                 let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
                 if (semver && groupOrName) {
                     groupOrName = groupOrName.toLowerCase();
-                    if (groupOrName.indexOf('gcc') !== -1) {
+                    if (groupOrName.includes('gcc')) {
                         quickBenchState.compiler = 'gcc-' + semver;
                         knownCompiler = true;
-                    } else if (groupOrName.indexOf('clang') !== -1) {
+                    } else if (groupOrName.includes('clang')) {
                         quickBenchState.compiler = 'clang-' + semver;
                         knownCompiler = true;
                     }
@@ -870,8 +866,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     }
 
     changeLanguage(newLang: string): void {
-        if (newLang === 'cmake' && languages.cmake) {
-            this.selectize.addOption(languages.cmake);
+        if (newLang === 'cmake') {
+            this.selectize.addOption(unwrap(languages.cmake));
         }
         this.selectize.setValue(newLang);
     }
@@ -1045,7 +1041,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         const cpprefLangs = ['ar', 'cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pl', 'pt', 'ru', 'tr', 'zh'];
         // If navigator.languages is supported, we could be a bit more clever and look for a match there too
         let langTag = 'en';
-        if (cpprefLangs.indexOf(preferredLanguage) !== -1) {
+        if (cpprefLangs.includes(preferredLanguage)) {
             langTag = preferredLanguage;
         }
         const url = 'https://' + langTag + '.cppreference.com/mwiki/index.php?search=' + encodeURIComponent(word.word);
@@ -1823,7 +1819,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         });
     }
 
-    onLanguageChange(newLangId: string, firstTime: boolean): void {
+    onLanguageChange(newLangId: string, firstTime?: boolean): void {
         if (newLangId in languages) {
             if (firstTime || newLangId !== this.currentLanguage?.id) {
                 const oldLangId = this.currentLanguage?.id;

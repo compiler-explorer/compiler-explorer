@@ -91,7 +91,7 @@ export class Hub {
     public trees: Tree[] = [];
     public editors: any[] = []; // typeof Editor
 
-    public readonly compilerService: any; // typeof CompilerService
+    public readonly compilerService: CompilerService;
 
     public deferred = true;
     public deferredEmissions: unknown[][] = [];
@@ -100,9 +100,9 @@ export class Hub {
     public subdomainLangId: string | undefined;
     public defaultLangId: string;
 
-    public constructor(public readonly layout: GoldenLayout, subLangId: string, defaultLangId: string) {
+    public constructor(public readonly layout: GoldenLayout, subLangId: string | undefined, defaultLangId: string) {
         this.lastOpenedLangId = null;
-        this.subdomainLangId = subLangId || undefined;
+        this.subdomainLangId = subLangId;
         this.defaultLangId = defaultLangId;
         this.compilerService = new CompilerService(this.layout.eventHub);
 
@@ -340,8 +340,8 @@ export class Hub {
     }
 
     public addAtRoot(elem: GoldenLayout.ContentItem): void {
-        const rootFirstItem = this.layout.root.contentItems[0] as GoldenLayout.ContentItem | undefined;
-        if (rootFirstItem) {
+        if (this.layout.root.contentItems.length > 0) {
+            const rootFirstItem = this.layout.root.contentItems[0];
             if (rootFirstItem.isRow || rootFirstItem.isColumn) {
                 rootFirstItem.addChild(elem);
             } else {

@@ -53,11 +53,14 @@ export type LanguageKey =
     | 'ispc'
     | 'jakt'
     | 'java'
+    | 'julia'
     | 'kotlin'
     | 'llvm'
     | 'mlir'
     | 'nim'
     | 'ocaml'
+    | 'objc'
+    | 'objc++'
     | 'openclc'
     | 'pascal'
     | 'pony'
@@ -92,6 +95,10 @@ export interface Language {
     logoUrl: string | null;
     /** Path in /views/resources/logos to the logo of the language for dark mode use */
     logoUrlDark: string | null;
+    /** Data from webpack */
+    logoData?: any;
+    /** Data from webpack */
+    logoDataDark?: any;
     /** Example code to show in the language's editor */
     example: string;
     previewFilter: RegExp | null;
