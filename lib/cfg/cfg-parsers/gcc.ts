@@ -24,9 +24,9 @@
 
 import _ from 'underscore';
 
-import {BaseCFGParser} from './base';
-
 import {ResultLine} from '../../../types/resultline/resultline.interfaces';
+
+import {BaseCFGParser} from './base';
 
 export class GccCFGParser extends BaseCFGParser {
     static override get key() {

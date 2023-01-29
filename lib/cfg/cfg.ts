@@ -24,15 +24,16 @@
 
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {logger} from '../logger';
-import {BaseCFGParser} from './cfg-parsers/base';
-import {BaseInstructionSetInfo, InstructionType} from './instruction-sets/base';
+import {BaseCompiler} from '../base-compiler';
 import {makeDefaultedKeyedTypeGetter} from '../keyed-type';
+import {logger} from '../logger';
+
+import {BaseCFGParser} from './cfg-parsers/base';
 import {ClangCFGParser} from './cfg-parsers/clang';
 import {GccCFGParser} from './cfg-parsers/gcc';
-import {BaseCompiler} from '../base-compiler';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {BaseInstructionSetInfo, InstructionType} from './instruction-sets/base';
 
 // TODO(jeremy-rifkin):
 // I've done some work to split out the compiler / instruction set logic
