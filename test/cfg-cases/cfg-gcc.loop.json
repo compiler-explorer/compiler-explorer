@@ -857,135 +857,91 @@
       "nodes": [
         {
           "id": "main:",
-          "label": "main:\n  lea edx, [0+rdi*8]\n  test edx, edx\n  je .L10",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "main:\n  lea edx, [0+rdi*8]\n  test edx, edx\n  je .L10"
         },
         {
           "id": "main:@4",
-          "label": "main:@4\n  add edx, edi\n  je .L14",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "main:@4\n  add edx, edi\n  je .L14"
         },
         {
           "id": "main:@6",
-          "label": "main:@6\n  imul edx, edi, 223\n  mov eax, 1\n  cmp edx, eax\n  je .L15",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "main:@6\n  imul edx, edi, 223\n  mov eax, 1\n  cmp edx, eax\n  je .L15"
         },
         {
           "id": "main:@10",
-          "label": "main:@10\n  lea edx, [rdi+rax]\n  cmp edi, edx\n  jl .L16",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "main:@10\n  lea edx, [rdi+rax]\n  cmp edi, edx\n  jl .L16"
         },
         {
           "id": "main:@13",
-          "label": "main:@13\n  imul edi, edx\n  imul eax, edi\n  ret",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "main:@13\n  imul edi, edx\n  imul eax, edi\n  ret"
         },
         {
           "id": ".L14:",
-          "label": ".L14:\n  imul edx, edi\n  imul eax, edx, 78\n  ret",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L14:\n  imul edx, edi\n  imul eax, edx, 78\n  ret"
         },
         {
           "id": ".L15:",
-          "label": ".L15:\n  test edi, edi\n  jle .L1",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L15:\n  test edi, edi\n  jle .L1"
         },
         {
           "id": ".L15:@23",
-          "label": ".L15:@23\n  lea edx, [rdi-1]\n  mov esi, edx\n  shr esi\n  add esi, 1\n  cmp edx, 11\n  jbe .L11",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L15:@23\n  lea edx, [rdi-1]\n  mov esi, edx\n  shr esi\n  add esi, 1\n  cmp edx, 11\n  jbe .L11"
         },
         {
           "id": ".L15:@29",
-          "label": ".L15:@29\n  mov DWORD PTR [rsp-12], edi\n  pxor xmm3, xmm3\n  movd xmm7, DWORD PTR [rsp-12]\n  mov ecx, esi\n  xor edx, edx\n  movdqa xmm2, XMMWORD PTR .LC0[rip]\n  shr ecx, 2\n  pshufd xmm4, xmm7, 0\n  movdqa xmm6, XMMWORD PTR .LC1[rip]\n  movdqa xmm5, xmm4\n  psrlq xmm5, 32",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L15:@29\n  mov DWORD PTR [rsp-12], edi\n  pxor xmm3, xmm3\n  movd xmm7, DWORD PTR [rsp-12]\n  mov ecx, esi\n  xor edx, edx\n  movdqa xmm2, XMMWORD PTR .LC0[rip]\n  shr ecx, 2\n  pshufd xmm4, xmm7, 0\n  movdqa xmm6, XMMWORD PTR .LC1[rip]\n  movdqa xmm5, xmm4\n  psrlq xmm5, 32"
         },
         {
           "id": ".L6:",
-          "label": ".L6:\n  movdqa xmm0, xmm2\n  add edx, 1\n  movdqa xmm1, xmm2\n  cmp ecx, edx\n  paddd xmm2, xmm6\n  pmuludq xmm0, xmm4\n  pshufd xmm0, xmm0, 8\n  psrlq xmm1, 32\n  pmuludq xmm1, xmm5\n  pshufd xmm1, xmm1, 8\n  punpckldq xmm0, xmm1\n  paddd xmm3, xmm0\n  ja .L6",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L6:\n  movdqa xmm0, xmm2\n  add edx, 1\n  movdqa xmm1, xmm2\n  cmp ecx, edx\n  paddd xmm2, xmm6\n  pmuludq xmm0, xmm4\n  pshufd xmm0, xmm0, 8\n  psrlq xmm1, 32\n  pmuludq xmm1, xmm5\n  pshufd xmm1, xmm1, 8\n  punpckldq xmm0, xmm1\n  paddd xmm3, xmm0\n  ja .L6"
         },
         {
           "id": ".L6:@54",
-          "label": ".L6:@54\n  movdqa xmm0, xmm3\n  mov r8d, esi\n  and r8d, -4\n  psrldq xmm0, 8\n  paddd xmm3, xmm0\n  movdqa xmm0, xmm3\n  psrldq xmm0, 4\n  paddd xmm3, xmm0\n  movd edx, xmm3\n  add eax, edx\n  lea edx, [r8+r8]\n  cmp esi, r8d\n  lea ecx, [rdx+1]\n  je .L17",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L6:@54\n  movdqa xmm0, xmm3\n  mov r8d, esi\n  and r8d, -4\n  psrldq xmm0, 8\n  paddd xmm3, xmm0\n  movdqa xmm0, xmm3\n  psrldq xmm0, 4\n  paddd xmm3, xmm0\n  movd edx, xmm3\n  add eax, edx\n  lea edx, [r8+r8]\n  cmp esi, r8d\n  lea ecx, [rdx+1]\n  je .L17"
         },
         {
           "id": ".L5:",
-          "label": ".L5:\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+3]\n  cmp edi, ecx\n  jl .L1",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L5:\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+3]\n  cmp edi, ecx\n  jl .L1"
         },
         {
           "id": ".L5:@74",
-          "label": ".L5:@74\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+5]\n  cmp edi, ecx\n  jl .L1",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L5:@74\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+5]\n  cmp edi, ecx\n  jl .L1"
         },
         {
           "id": ".L5:@79",
-          "label": ".L5:@79\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+7]\n  cmp edi, ecx\n  jl .L1",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L5:@79\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+7]\n  cmp edi, ecx\n  jl .L1"
         },
         {
           "id": ".L5:@84",
-          "label": ".L5:@84\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+9]\n  cmp edi, ecx\n  jl .L1",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L5:@84\n  imul ecx, edi\n  add eax, ecx\n  lea ecx, [rdx+9]\n  cmp edi, ecx\n  jl .L1"
         },
         {
           "id": ".L5:@89",
-          "label": ".L5:@89\n  imul ecx, edi\n  add edx, 11\n  add eax, ecx\n  cmp edi, edx\n  jl .L1",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L5:@89\n  imul ecx, edi\n  add edx, 11\n  add eax, ecx\n  cmp edi, edx\n  jl .L1"
         },
         {
           "id": ".L5:@94",
-          "label": ".L5:@94\n  imul edx, edi\n  add eax, edx\n  ret",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L5:@94\n  imul edx, edi\n  add eax, edx\n  ret"
         },
         {
           "id": ".L10:",
-          "label": ".L10:\n  mov eax, 78",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L10:\n  mov eax, 78"
         },
         {
           "id": ".L1:",
-          "label": ".L1:\n  rep ret",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L1:\n  rep ret"
         },
         {
           "id": ".L16:",
-          "label": ".L16:\n  mov rax, QWORD PTR [rsi]\n  movsx eax, BYTE PTR [rax]\n  ret",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L16:\n  mov rax, QWORD PTR [rsi]\n  movsx eax, BYTE PTR [rax]\n  ret"
         },
         {
           "id": ".L17:",
-          "label": ".L17:\n  ret",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L17:\n  ret"
         },
         {
           "id": ".L11:",
-          "label": ".L11:\n  mov ecx, 1\n  xor edx, edx\n  jmp .L5",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": ".L11:\n  mov ecx, 1\n  xor edx, edx\n  jmp .L5"
         }
       ],
       "edges": [
@@ -1169,9 +1125,7 @@
       "nodes": [
         {
           "id": "_GLOBAL__sub_I_main:",
-          "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init()\n  add rsp, 8\n  jmp __cxa_atexit",
-          "color": "#99ccff",
-          "shape": "box"
+          "label": "_GLOBAL__sub_I_main:\n  sub rsp, 8\n  mov edi, OFFSET FLAT:std::__ioinit\n  call std::ios_base::Init::Init()\n  mov edx, OFFSET FLAT:__dso_handle\n  mov esi, OFFSET FLAT:std::__ioinit\n  mov edi, OFFSET FLAT:std::ios_base::Init::~Init()\n  add rsp, 8\n  jmp __cxa_atexit"
         }
       ],
       "edges": [

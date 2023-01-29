@@ -56,7 +56,7 @@ import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
-import * as cfg from './cfg';
+import * as cfg from './cfg/cfg';
 import {CompilationEnvironment} from './compilation-env';
 import {CompilerArguments} from './compiler-arguments';
 import {ClangParser, GCCParser} from './compilers/argument-parsers';
@@ -2379,7 +2379,7 @@ export class BaseCompiler implements ICompiler {
                     // for now do not generate a cfg for llvm ir
                     result.cfg = {};
                 } else {
-                    result.cfg = cfg.generateStructure(this.compiler.compilerType, this.compiler.version, result.asm);
+                    result.cfg = cfg.generateStructure(this.compiler, result.asm);
                 }
             }
         }
