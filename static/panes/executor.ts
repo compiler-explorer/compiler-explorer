@@ -800,6 +800,7 @@ export class Executor extends Pane<ExecutorState> {
         this.executionStatusSection = this.outputContentRoot.find('.execution-status');
         this.compilerOutputSection = this.outputContentRoot.find('.compiler-output');
         this.executionOutputSection = this.outputContentRoot.find('.execution-output');
+        this.toggleWrapButton = new Toggles(this.domRoot.find('.options'), state as unknown as Record<string, boolean>);
 
         this.optionsField = this.domRoot.find('.compilation-options');
         this.execArgsField = this.domRoot.find('.execution-arguments');
