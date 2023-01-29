@@ -25,6 +25,7 @@
 import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -41,11 +42,16 @@ export class HookCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out');
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
-        const execOptions = super.getDefaultExecOptions();
+    override async execBinary(
+        executable,
+        maxSize,
+        executeParameters: ExecutableExecutionOptions,
+        homeDir,
+    ): Promise<BasicExecutionResult> {
         const compilerPath = path.dirname(this.compiler.exe);
-        execOptions.env.HOOK_HOME = path.join(compilerPath, '..');
-        return execOptions;
+        executeParameters.env = {HOOK_HOME: path.join(compilerPath, '..'), ...executeParameters.env};
+
+        return super.execBinary(executable, maxSize, executeParameters, homeDir);
     }
 
     override async runCompiler(
