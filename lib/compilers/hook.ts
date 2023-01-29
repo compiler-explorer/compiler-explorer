@@ -25,10 +25,20 @@
 import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import {CompilationEnvironment} from '../compilation-env';
 
 export class HookCompiler extends BaseCompiler {
+    private readonly hook_home: string;
+
+    constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
+        super(compilerInfo, env);
+        this.hook_home = path.resolve(path.join(path.dirname(this.compiler.exe), '..'));
+    }
+
     static get key(): string {
         return 'hook';
     }
@@ -41,11 +51,13 @@ export class HookCompiler extends BaseCompiler {
         return path.join(dirPath, 'example.out');
     }
 
-    override getDefaultExecOptions(): ExecutionOptions {
-        const execOptions = super.getDefaultExecOptions();
-        const compilerPath = path.dirname(this.compiler.exe);
-        execOptions.env.HOOK_HOME = path.join(compilerPath, '..');
-        return execOptions;
+    addHookHome(env: any) {
+        return {HOOK_HOME: this.hook_home, ...env};
+    }
+
+    override async handleInterpreting(key, executeParameters: ExecutableExecutionOptions): Promise<CompilationResult> {
+        executeParameters.env = this.addHookHome(executeParameters.env);
+        return super.handleInterpreting(key, executeParameters);
     }
 
     override async runCompiler(
