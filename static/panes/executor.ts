@@ -363,13 +363,13 @@ export class Executor extends Pane<ExecutorState> {
             });
             return;
         }
-        this.hub.compilerService.expandToFiles(this.source).then(expanded => {
+        this.hub.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
             const request: CompilationRequest = {
-                source: expanded.source || '',
+                source: sourceAndFiles.source || '',
                 compiler: this.compiler ? this.compiler.id : '',
                 options: options,
                 lang: this.currentLangId,
-                files: expanded.files,
+                files: sourceAndFiles.files,
             };
             if (bypassCache) request.bypassCache = true;
             if (!this.compiler) {
