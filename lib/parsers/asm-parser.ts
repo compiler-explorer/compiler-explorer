@@ -31,7 +31,9 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {logger} from '../logger';
+import {assert} from '../assert';
+import {isString} from '../common-utils';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {IAsmParser} from './asm-parser.interfaces';
@@ -80,7 +82,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     stdInLooking: RegExp;
     endBlock: RegExp;
     blockComments: RegExp;
-    constructor(compilerProps) {
+
+    constructor(compilerProps?: PropertyGetter) {
         super();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
@@ -112,6 +115,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         if (compilerProps) {
             const binaryHideFuncReValue = compilerProps('binaryHideFuncRe');
             if (binaryHideFuncReValue) {
+                assert(isString(binaryHideFuncReValue));
                 this.binaryHideFuncRe = new RegExp(binaryHideFuncReValue);
             }
 
