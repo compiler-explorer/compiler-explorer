@@ -43,7 +43,13 @@ export class HealthCheckHandler {
          * we perform the remainder of the health check outside of the
          * job to minimize the duration that we hold an execution slot
          */
-        await this.compilationQueue.enqueue(async () => {});
+        // We've seen some requests take 130/140 seconds
+        // If anything is waiting for more than 180 seconds or running for more than 180 seconds we're going to fail
+        // the health check.
+        if (this.compilationQueue.longestOutstanding() > 180 * 1000) {
+            res.status(500).end();
+            return;
+        }
 
         if (!this.filePath) {
             res.send('Everything is awesome');

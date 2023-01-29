@@ -27,6 +27,8 @@ import {executionAsyncId} from 'async_hooks';
 import {default as Queue} from 'p-queue';
 import PromClient from 'prom-client';
 
+import {assert} from './assert';
+
 // globals as essentially the compilation queue is a singleton, and if we make them members of the queue, tests fail as
 // when we create a second queue, the previous counters are still registered.
 const queueEnqueued = new PromClient.Counter({
@@ -46,6 +48,8 @@ export type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
 
 export class CompilationQueue {
     private readonly _running: Set<number> = new Set();
+    // Track both when we queue jobs and start running them
+    private readonly _outstanding: Record<number, number> = {};
     private readonly _queue: Queue;
 
     constructor(concurrency: number, timeout: number) {
@@ -60,22 +64,36 @@ export class CompilationQueue {
         return new CompilationQueue(ceProps('maxConcurrentCompiles', 1), ceProps('compilationEnvTimeoutMs'));
     }
 
+    markOutstanding(id: number) {
+        assert(!(id in this._outstanding));
+        this._outstanding[id] = Date.now();
+    }
+
+    resolveOutstanding(id: number) {
+        assert(id in this._outstanding);
+        delete this._outstanding[id];
+    }
+
     enqueue<Result>(job: Job<Result>): PromiseLike<Result> {
         const enqueueAsyncId = executionAsyncId();
         // If we're asked to enqueue a job when we're already in a async queued job context, just run it.
         // This prevents a deadlock.
         if (this._running.has(enqueueAsyncId)) return job();
         queueEnqueued.inc();
+        this.markOutstanding(enqueueAsyncId);
         return this._queue.add(() => {
             queueDequeued.inc();
+            this.resolveOutstanding(enqueueAsyncId);
             const jobAsyncId = executionAsyncId();
             if (this._running.has(jobAsyncId)) throw new Error('somehow we entered the context twice');
             try {
                 this._running.add(jobAsyncId);
+                this.markOutstanding(jobAsyncId);
                 return job();
             } finally {
                 this._running.delete(jobAsyncId);
                 queueCompleted.inc();
+                this.resolveOutstanding(jobAsyncId);
             }
         });
     }
@@ -88,5 +106,16 @@ export class CompilationQueue {
             pending,
             size,
         };
+    }
+
+    // Find the longest amount of time anything currently running or waiting to run is running/waiting
+    longestOutstanding() {
+        const timestamps = Object.values(this._outstanding);
+        if (timestamps.length === 0) {
+            return 0;
+        } else {
+            const now = Date.now();
+            return Math.max(...timestamps.map(timestamp => now - timestamp));
+        }
     }
 }
