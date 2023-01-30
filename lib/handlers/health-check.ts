@@ -32,18 +32,39 @@ import {logger} from '../logger';
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;
 
+    private lastJobPass = Date.now();
+
     constructor(private readonly compilationQueue: CompilationQueue, private readonly filePath: any) {
         this.handle = this._handle.bind(this);
+
+        /* Every minute, try to pass something through the compilation
+         * queue to ensure nothing gets deadlocked. Queue it at the
+         * front but it may have to wait a couple minutes if it gets
+         * stuck behind a super long compilation.
+         *
+         */
+        setInterval(() => {
+            this.compilationQueue.enqueue(
+                async () => {
+                    this.lastJobPass = Date.now();
+                },
+                {jumpTheQueue: true},
+            );
+        }, 60 * 1000);
     }
 
     async _handle(req: express.Request, res: express.Response) {
-        /* wait on an empty job to pass through the compilation queue
-         * to ensure the health check will timeout if it is deadlocked
-         *
-         * we perform the remainder of the health check outside of the
-         * job to minimize the duration that we hold an execution slot
-         */
-        await this.compilationQueue.enqueue(async () => {});
+        const timeSinceLast = Date.now() - this.lastJobPass;
+        // We've seen requests take as long as 130/140s
+        // Threshold is 140s + 60s interval + another 40s grace period
+        if (timeSinceLast > 240 * 1000) {
+            logger.error(
+                `*** HEALTH CHECK FAILURE: Our checks haven't passed through the queue in ${Math.round(
+                    timeSinceLast,
+                )} seconds`,
+            );
+            res.status(500).end();
+        }
 
         if (!this.filePath) {
             res.send('Everything is awesome');

@@ -24,7 +24,8 @@
 
 import {executionAsyncId} from 'async_hooks';
 
-import {default as Queue} from 'p-queue';
+import {DefaultAddOptions, default as Queue} from 'p-queue';
+import {RunFunction} from 'p-queue/dist/queue';
 import PromClient from 'prom-client';
 
 // globals as essentially the compilation queue is a singleton, and if we make them members of the queue, tests fail as
@@ -44,6 +45,30 @@ const queueCompleted = new PromClient.Counter({
 
 export type Job<TaskResultType> = () => PromiseLike<TaskResultType>;
 
+class UnderlyingQueue {
+    queue: RunFunction[] = [];
+
+    enqueue(fn: RunFunction, options?: Partial<DefaultAddOptions & {jumpTheQueue: boolean}>) {
+        if (options && options.jumpTheQueue) {
+            this.queue.unshift(fn);
+        } else {
+            this.queue.push(fn);
+        }
+    }
+
+    dequeue() {
+        return this.queue.shift();
+    }
+
+    get size() {
+        return this.queue.length;
+    }
+
+    filter(options) {
+        return this.queue;
+    }
+}
+
 export class CompilationQueue {
     private readonly _running: Set<number> = new Set();
     private readonly _queue: Queue;
@@ -53,6 +78,7 @@ export class CompilationQueue {
             concurrency,
             timeout,
             throwOnTimeout: true,
+            queueClass: UnderlyingQueue,
         });
     }
 
@@ -60,7 +86,7 @@ export class CompilationQueue {
         return new CompilationQueue(ceProps('maxConcurrentCompiles', 1), ceProps('compilationEnvTimeoutMs'));
     }
 
-    enqueue<Result>(job: Job<Result>): PromiseLike<Result> {
+    enqueue<Result>(job: Job<Result>, options?: Partial<{jumpTheQueue: boolean}>): PromiseLike<Result> {
         const enqueueAsyncId = executionAsyncId();
         // If we're asked to enqueue a job when we're already in a async queued job context, just run it.
         // This prevents a deadlock.
@@ -77,7 +103,7 @@ export class CompilationQueue {
                 this._running.delete(jobAsyncId);
                 queueCompleted.inc();
             }
-        });
+        }, options);
     }
 
     status(): {busy: boolean; pending: number; size: number} {
