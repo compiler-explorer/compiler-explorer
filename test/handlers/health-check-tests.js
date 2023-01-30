@@ -33,10 +33,17 @@ describe('Health checks', () => {
     let app;
     let compilationQueue;
 
+    let handler;
+
     beforeEach(() => {
         compilationQueue = new CompilationQueue(1);
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue).handle);
+        handler = new HealthCheckHandler(compilationQueue);
+        app.use('/hc', handler.handle);
+    });
+
+    afterEach(() => {
+        handler.internal_clear_interval();
     });
 
     it('should respond with OK', async () => {
@@ -49,12 +56,17 @@ describe('Health checks', () => {
 describe('Health checks on disk', () => {
     let app;
 
+    let handler;
+    let handler2;
+
     before(() => {
         const compilationQueue = new CompilationQueue(1);
 
         app = express();
-        app.use('/hc', new HealthCheckHandler(compilationQueue, '/fake/.nonexist').handle);
-        app.use('/hc2', new HealthCheckHandler(compilationQueue, '/fake/.health').handle);
+        handler = new HealthCheckHandler(compilationQueue, '/fake/.nonexist');
+        app.use('/hc', handler.handle);
+        handler2 = new HealthCheckHandler(compilationQueue, '/fake/.health');
+        app.use('/hc2', handler2.handle);
 
         mockfs({
             '/fake': {
@@ -65,6 +77,8 @@ describe('Health checks on disk', () => {
 
     after(() => {
         mockfs.restore();
+        handler.internal_clear_interval();
+        handler2.internal_clear_interval();
     });
 
     it('should respond with 500 when file not found', async () => {

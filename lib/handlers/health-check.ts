@@ -34,6 +34,8 @@ export class HealthCheckHandler {
 
     private lastJobPass = Date.now();
 
+    private interval: NodeJS.Timer;
+
     constructor(private readonly compilationQueue: CompilationQueue, private readonly filePath: any) {
         this.handle = this._handle.bind(this);
 
@@ -43,7 +45,7 @@ export class HealthCheckHandler {
          * stuck behind a super long compilation.
          *
          */
-        setInterval(() => {
+        this.interval = setInterval(() => {
             this.compilationQueue.enqueue(
                 async () => {
                     this.lastJobPass = Date.now();
@@ -81,5 +83,10 @@ export class HealthCheckHandler {
             Sentry.captureException(e);
             res.status(500).end();
         }
+    }
+
+    // util for test cases / not making mocha hang
+    internal_clear_interval() {
+        clearInterval(this.interval);
     }
 }
