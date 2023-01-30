@@ -52,7 +52,7 @@ export class IncludeDownloads {
         );
     }
 
-    private getFilenameFromUrl(url) {
+    private getFilenameFromUrl(url: string): string {
         const jsurl = new URL(url);
         const urlpath = jsurl.pathname;
         return jsurl.host + urlpath;
