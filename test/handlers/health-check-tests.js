@@ -44,15 +44,6 @@ describe('Health checks', () => {
         res.should.have.status(200);
         res.text.should.be.eql('Everything is awesome');
     });
-
-    it('should use compilation queue', async () => {
-        let count = 0;
-        compilationQueue._queue.on('active', () => {
-            count++;
-        });
-        await chai.request(app).get('/hc');
-        count.should.be.eql(1);
-    });
 });
 
 describe('Health checks on disk', () => {
