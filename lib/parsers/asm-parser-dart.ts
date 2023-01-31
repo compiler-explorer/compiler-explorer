@@ -22,6 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {
+    AsmResultLabel,
+    AsmResultSource,
+    ParsedAsmResult,
+    ParsedAsmResultLine,
+} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {assert} from '../assert';
 import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
@@ -34,20 +42,20 @@ export class DartAsmParser extends AsmParser {
         this.lineRe = /^(file:)?(\/[^:]+):(?<line>\d+).*/;
     }
 
-    processBinaryAsm(asmResult, filters) {
+    override processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
-        const asm = [];
+        const asm: ParsedAsmResultLine[] = [];
         const labelDefinitions = {};
         const dontMaskFilenames = filters.dontMaskFilenames;
 
         let asmLines = asmResult.split('\n');
         const startingLineCount = asmLines.length;
-        let source = null;
-        let func = null;
+        let source: AsmResultSource | null = null;
+        let func: string | null = null;
         let mayRemovePreviousLabel = filters.libraryCode;
 
         function maybeRemovePreviousLabel() {
-            if (mayRemovePreviousLabel) {
+            if (mayRemovePreviousLabel && func) {
                 const previousLabelStart = labelDefinitions[func];
                 if (previousLabelStart) {
                     asm.splice(previousLabelStart - 1);
@@ -67,7 +75,7 @@ export class DartAsmParser extends AsmParser {
         }
 
         for (const line of asmLines) {
-            const labelsInLine = [];
+            const labelsInLine: AsmResultLabel[] = [];
 
             if (asm.length >= this.maxAsmLines && !mayRemovePreviousLabel) {
                 if (asm.length === this.maxAsmLines) {
@@ -81,6 +89,7 @@ export class DartAsmParser extends AsmParser {
             }
             let match = line.match(this.lineRe);
             if (match) {
+                assert(match.groups);
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
@@ -124,6 +133,7 @@ export class DartAsmParser extends AsmParser {
 
             match = line.match(this.asmOpcodeRe);
             if (match) {
+                assert(match.groups);
                 const address = parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);

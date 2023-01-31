@@ -1,0 +1,1757 @@
+{
+  "asm": [
+    {
+      "source": null,
+      "text": "///////////////////////////////////////////////////////////////////////////////"
+    },
+    {
+      "source": null,
+      "text": "//"
+    },
+    {
+      "source": null,
+      "text": "// IAR ANSI C/C++ Compiler V8.32.3.193/W32 for ARM        09/Oct/2020  12:40:07"
+    },
+    {
+      "source": null,
+      "text": "// Copyright 1999-2019 IAR Systems AB."
+    },
+    {
+      "source": null,
+      "text": "//"
+    },
+    {
+      "source": null,
+      "text": "//    Cpu mode     ="
+    },
+    {
+      "source": null,
+      "text": "//    Endian       =  little"
+    },
+    {
+      "source": null,
+      "text": "//    Source file  ="
+    },
+    {
+      "source": null,
+      "text": "//        C:\\Users\\NA_BUI~1\\AppData\\Local\\Temp\\compiler-explorer-compiler202099-14988-evjfs2.ood3c\\example.cpp"
+    },
+    {
+      "source": null,
+      "text": "//    Command line ="
+    },
+    {
+      "source": null,
+      "text": "//        -lB"
+    },
+    {
+      "source": null,
+      "text": "//        C:\\Users\\NA_BUI~1\\AppData\\Local\\Temp\\compiler-explorer-compiler202099-14988-evjfs2.ood3c\\output.s"
+    },
+    {
+      "source": null,
+      "text": "//        -o"
+    },
+    {
+      "source": null,
+      "text": "//        C:\\Users\\NA_BUI~1\\AppData\\Local\\Temp\\compiler-explorer-compiler202099-14988-evjfs2.ood3c\\output.s.obj"
+    },
+    {
+      "source": null,
+      "text": "//        --enable_restrict -IC:\\arm\\inc -IC:\\arm\\inc\\c -IC:\\arm\\inc\\cpp"
+    },
+    {
+      "source": null,
+      "text": "//        --dlib_config C:\\arm\\inc\\c\\DLib_Config_Full.h --c++ -e"
+    },
+    {
+      "source": null,
+      "text": "//        --no_exceptions --no_rtti --no_static_destruction --cpu Cortex-M4"
+    },
+    {
+      "source": null,
+      "text": "//        --fpu VFPv4_sp --endian little --cpu_mode thumb"
+    },
+    {
+      "source": null,
+      "text": "//        C:\\Users\\NA_BUI~1\\AppData\\Local\\Temp\\compiler-explorer-compiler202099-14988-evjfs2.ood3c\\example.cpp"
+    },
+    {
+      "source": null,
+      "text": "//    Locale       =  C"
+    },
+    {
+      "source": null,
+      "text": "//    List file    ="
+    },
+    {
+      "source": null,
+      "text": "//        C:\\Users\\NA_BUI~1\\AppData\\Local\\Temp\\compiler-explorer-compiler202099-14988-evjfs2.ood3c\\output.s"
+    },
+    {
+      "source": null,
+      "text": "//"
+    },
+    {
+      "source": null,
+      "text": "///////////////////////////////////////////////////////////////////////////////"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "        #define SHT_PROGBITS 0x1"
+    },
+    {
+      "source": null,
+      "text": "        #define SHT_INIT_ARRAY 0xe"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// C:\\Users\\NA_BUI~1\\AppData\\Local\\Temp\\compiler-explorer-compiler202099-14988-evjfs2.ood3c\\example.cpp"
+    },
+    {
+      "source": null,
+      "text": "//    1 #include <array>"
+    },
+    {
+      "source": null,
+      "text": "//    2"
+    },
+    {
+      "source": null,
+      "text": "//    3 namespace NA {"
+    },
+    {
+      "source": null,
+      "text": "//    4"
+    },
+    {
+      "source": null,
+      "text": "//    5     template<class Derived, typename DataType>"
+    },
+    {
+      "source": null,
+      "text": "//    6     class Iterator {"
+    },
+    {
+      "source": null,
+      "text": "//    7     public:"
+    },
+    {
+      "source": null,
+      "text": "//    8         Iterator() = default;"
+    },
+    {
+      "source": null,
+      "text": "//    9"
+    },
+    {
+      "source": null,
+      "text": "//   10         class iterator {"
+    },
+    {
+      "source": null,
+      "text": "//   11         public:"
+    },
+    {
+      "source": null,
+      "text": "//   12             iterator(DataType* ptr = nullptr) : ptr(ptr) {}"
+    },
+    {
+      "source": null,
+      "text": "//   13             inline iterator operator++() {"
+    },
+    {
+      "source": null,
+      "text": "//   14                 ++ptr;"
+    },
+    {
+      "source": null,
+      "text": "//   15                 return *this;"
+    },
+    {
+      "source": null,
+      "text": "//   16             }"
+    },
+    {
+      "source": null,
+      "text": "//   17             inline bool operator!=(const iterator& other) const { return ptr != other.ptr; }"
+    },
+    {
+      "source": null,
+      "text": "//   18             inline DataType& operator*() { return *ptr; }"
+    },
+    {
+      "source": null,
+      "text": "//   19"
+    },
+    {
+      "source": null,
+      "text": "//   20         private:"
+    },
+    {
+      "source": null,
+      "text": "//   21             DataType* ptr;"
+    },
+    {
+      "source": null,
+      "text": "//   22         };"
+    },
+    {
+      "source": null,
+      "text": "//   23"
+    },
+    {
+      "source": null,
+      "text": "//   24         class const_iterator {"
+    },
+    {
+      "source": null,
+      "text": "//   25         public:"
+    },
+    {
+      "source": null,
+      "text": "//   26             const_iterator(const DataType* ptr = nullptr) : ptr(ptr) {}"
+    },
+    {
+      "source": null,
+      "text": "//   27             inline const_iterator operator++() {"
+    },
+    {
+      "source": null,
+      "text": "//   28                 ++ptr;"
+    },
+    {
+      "source": null,
+      "text": "//   29                 return *this;"
+    },
+    {
+      "source": null,
+      "text": "//   30             }"
+    },
+    {
+      "source": null,
+      "text": "//   31             inline bool operator!=(const iterator& other) const { return ptr != other.ptr; }"
+    },
+    {
+      "source": null,
+      "text": "//   32             inline const DataType& operator*() const { return *ptr; }"
+    },
+    {
+      "source": null,
+      "text": "//   33"
+    },
+    {
+      "source": null,
+      "text": "//   34         private:"
+    },
+    {
+      "source": null,
+      "text": "//   35             const DataType* ptr;"
+    },
+    {
+      "source": null,
+      "text": "//   36         };"
+    },
+    {
+      "source": null,
+      "text": "//   37"
+    },
+    {
+      "source": null,
+      "text": "//   38         inline iterator begin() { return iterator((DataType*)((Derived*)this)->IteratorBegin()); }"
+    },
+    {
+      "source": null,
+      "text": "//   39         inline iterator end() { return iterator((DataType*)((Derived*)this)->IteratorEnd()); }"
+    },
+    {
+      "source": null,
+      "text": "//   40         inline const_iterator begin() const { return const_iterator((const DataType*)((Derived*)this)->IteratorBegin()); }"
+    },
+    {
+      "source": null,
+      "text": "//   41         inline const_iterator end() const { return const_iterator((const DataType*)((Derived*)this)->IteratorEnd()); }"
+    },
+    {
+      "source": null,
+      "text": "//   42     };"
+    },
+    {
+      "source": null,
+      "text": "//   43"
+    },
+    {
+      "source": null,
+      "text": "//   44 } // namespace NA"
+    },
+    {
+      "source": null,
+      "text": "//   45"
+    },
+    {
+      "source": null,
+      "text": "//   46"
+    },
+    {
+      "source": null,
+      "text": "//   47 namespace NA {"
+    },
+    {
+      "source": null,
+      "text": "//   48     template<typename T, unsigned int MAX_SIZE>"
+    },
+    {
+      "source": null,
+      "text": "//   49     class FixedStack : public Iterator<FixedStack<T, MAX_SIZE>, T> {"
+    },
+    {
+      "source": null,
+      "text": "//   50         friend class Iterator<FixedStack<T, MAX_SIZE>, T>;"
+    },
+    {
+      "source": null,
+      "text": "//   51         inline constexpr auto IteratorBegin() { return m_Stack.data(); }"
+    },
+    {
+      "source": null,
+      "text": "//   52         inline constexpr auto IteratorEnd() { return m_Stack.data() + m_Pos + 1; }"
+    },
+    {
+      "source": null,
+      "text": "//   53"
+    },
+    {
+      "source": null,
+      "text": "//   54     public:"
+    },
+    {
+      "source": null,
+      "text": "//   55         FixedStack() : m_Pos(-1) {}"
+    },
+    {
+      "source": null,
+      "text": "//   56"
+    },
+    {
+      "source": null,
+      "text": "//   57         inline bool Push(T elem) {"
+    },
+    {
+      "source": null,
+      "text": "//   58             if ((m_Pos + 1) < MAX_SIZE) {"
+    },
+    {
+      "source": null,
+      "text": "//   59                 m_Pos++;"
+    },
+    {
+      "source": null,
+      "text": "//   60                 m_Stack[m_Pos] = elem;"
+    },
+    {
+      "source": null,
+      "text": "//   61                 return true;"
+    },
+    {
+      "source": null,
+      "text": "//   62             }"
+    },
+    {
+      "source": null,
+      "text": "//   63"
+    },
+    {
+      "source": null,
+      "text": "//   64             return false;"
+    },
+    {
+      "source": null,
+      "text": "//   65         }"
+    },
+    {
+      "source": null,
+      "text": "//   66"
+    },
+    {
+      "source": null,
+      "text": "//   67         inline bool Pop(T replaceLast) {"
+    },
+    {
+      "source": null,
+      "text": "//   68             if (m_Pos != -1) {"
+    },
+    {
+      "source": null,
+      "text": "//   69                 m_Stack[m_Pos--] = replaceLast;"
+    },
+    {
+      "source": null,
+      "text": "//   70                 return true;"
+    },
+    {
+      "source": null,
+      "text": "//   71             }"
+    },
+    {
+      "source": null,
+      "text": "//   72"
+    },
+    {
+      "source": null,
+      "text": "//   73             return false;"
+    },
+    {
+      "source": null,
+      "text": "//   74         }"
+    },
+    {
+      "source": null,
+      "text": "//   75"
+    },
+    {
+      "source": null,
+      "text": "//   76         inline bool Pop() {"
+    },
+    {
+      "source": null,
+      "text": "//   77             if (m_Pos != -1) {"
+    },
+    {
+      "source": null,
+      "text": "//   78                 m_Pos--;"
+    },
+    {
+      "source": null,
+      "text": "//   79                 return true;"
+    },
+    {
+      "source": null,
+      "text": "//   80             }"
+    },
+    {
+      "source": null,
+      "text": "//   81"
+    },
+    {
+      "source": null,
+      "text": "//   82             return false;"
+    },
+    {
+      "source": null,
+      "text": "//   83         }"
+    },
+    {
+      "source": null,
+      "text": "//   84"
+    },
+    {
+      "source": null,
+      "text": "//   85         inline void Clear(T fill) {"
+    },
+    {
+      "source": null,
+      "text": "//   86             m_Pos = -1;"
+    },
+    {
+      "source": null,
+      "text": "//   87             m_Stack.fill(fill);"
+    },
+    {
+      "source": null,
+      "text": "//   88         }"
+    },
+    {
+      "source": null,
+      "text": "//   89"
+    },
+    {
+      "source": null,
+      "text": "//   90         inline void Clear() { m_Pos = -1; }"
+    },
+    {
+      "source": null,
+      "text": "//   91"
+    },
+    {
+      "source": null,
+      "text": "//   92         inline int FreeSpace() { return (MAX_SIZE - (m_Pos + 1)); }"
+    },
+    {
+      "source": null,
+      "text": "//   93"
+    },
+    {
+      "source": null,
+      "text": "//   94         inline T* DataPtr() const { return m_Stack.data(); }"
+    },
+    {
+      "source": null,
+      "text": "//   95"
+    },
+    {
+      "source": null,
+      "text": "//   96         inline int Size() const { return m_Pos + 1; }"
+    },
+    {
+      "source": null,
+      "text": "//   97"
+    },
+    {
+      "source": null,
+      "text": "//   98         inline bool Full() { return Size() == MAX_SIZE; }"
+    },
+    {
+      "source": null,
+      "text": "//   99"
+    },
+    {
+      "source": null,
+      "text": "//  100         inline T& Top(int back = 0) {"
+    },
+    {
+      "source": null,
+      "text": "//  101              return m_Stack[m_Pos + back];"
+    },
+    {
+      "source": null,
+      "text": "//  102         }"
+    },
+    {
+      "source": null,
+      "text": "//  103"
+    },
+    {
+      "source": null,
+      "text": "//  104         inline bool Empty() const { return m_Pos == -1; }"
+    },
+    {
+      "source": null,
+      "text": "//  105"
+    },
+    {
+      "source": null,
+      "text": "//  106         inline T& operator[](int index) { return m_Stack[index]; }"
+    },
+    {
+      "source": null,
+      "text": "//  107         inline const T& operator[](int index) const { return m_Stack[index]; }"
+    },
+    {
+      "source": null,
+      "text": "//  108"
+    },
+    {
+      "source": null,
+      "text": "//  109     private:"
+    },
+    {
+      "source": null,
+      "text": "//  110         int m_Pos;"
+    },
+    {
+      "source": null,
+      "text": "//  111         std::array<T, MAX_SIZE> m_Stack;"
+    },
+    {
+      "source": null,
+      "text": "//  112     };"
+    },
+    {
+      "source": null,
+      "text": "//  113"
+    },
+    {
+      "source": null,
+      "text": "//  114 } // namespace NA"
+    },
+    {
+      "source": null,
+      "text": "//  115"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// static __intrinsic __interwork __softfp void __sti__routine()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "__sti__routine:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 114
+      },
+      "text": "        PUSH     {R7,LR}"
+    },
+    {
+      "source": null,
+      "text": "//  116 NA::FixedStack<int, 16> desa;"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR.N    R0,??DataTable1_1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EEC1Ev"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R0,PC}          ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "desa:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        DS8 68"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "main:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        PUSH     {R2-R4,LR}"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR.N    R4,??DataTable1_1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,#+1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,R4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EE4PushEi"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,#+2"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,R4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EE4PushEi"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,#+3"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,R4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EE4PushEi"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,R4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EE4PushEi"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,R4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE5beginEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R0,[SP, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,R4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE3endEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R0,[SP, #+4]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        B.N      ??main_0"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "??main_1:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOV      R0,SP"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratordeEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADR.N    R0,??DataTable1  ;; \"%d\\n\""
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       printf"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOV      R0,SP"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorppEv"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "??main_0:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADD      R1,SP,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOV      R0,SP"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZNK2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorneERKS4_"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        CMP      R0,#+0"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BNE.N    ??main_1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R0,R1,R4,PC}    ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "??DataTable1:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        DC8      \"%d\\n\""
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "??DataTable1_1:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        DC32     desa"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp int & std::array<int, 16U>::operator[](size_t)"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZNSt5arrayIiLj16EEixEj:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADD      R0,R0,R1, LSL #+2"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp int *std::array<int, 16U>::data()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZNSt5arrayIiLj16EE4dataEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __code __interwork __softfp NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator::iterator(int *)"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorC1EPi:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator::operator++()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorppEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R1,R1,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R0,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp bool NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator::operator!=(NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator const &) const"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZNK2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorneERKS4_:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R0,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R1, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        CMP      R0,R1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BEQ.N    `??operator!=_0`"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,#+1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        B.N      `??operator!=_1`"
+    },
+    {
+      "source": null,
+      "text": "`??operator!=_0`:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,#+0"
+    },
+    {
+      "source": null,
+      "text": "`??operator!=_1`:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        UXTB     R0,R0            ;; ZeroExt  R0,R0,#+24,#+24"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp int &NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator::operator*()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratordeEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R0,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator NA::Iterator<NA::FixedStack<int, 16U>, int>::begin()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE5beginEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        PUSH     {R7,LR}"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EE13IteratorBeginEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,R0"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOV      R0,SP"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorC1EPi"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R0,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R1,PC}          ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp NA::Iterator<NA::FixedStack<int, 16U>, int>::iterator NA::Iterator<NA::FixedStack<int, 16U>, int>::end()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE3endEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        PUSH     {R7,LR}"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA10FixedStackIiLj16EE11IteratorEndEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,R0"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOV      R0,SP"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZN2NA8IteratorINS_10FixedStackIiLj16EEEiE8iteratorC1EPi"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R0,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R1,PC}          ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp int *NA::FixedStack<int, 16U>::IteratorBegin()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA10FixedStackIiLj16EE13IteratorBeginEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        PUSH     {R7,LR}"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R0,R0,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZNSt5arrayIiLj16EE4dataEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R1,PC}          ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp int *NA::FixedStack<int, 16U>::IteratorEnd()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA10FixedStackIiLj16EE11IteratorEndEv:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        PUSH     {R4,LR}"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R4,R0"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R0,R4,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZNSt5arrayIiLj16EE4dataEv"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R4, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADD      R0,R0,R1, LSL #+2"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R0,R0,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R4,PC}          ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __code __interwork __softfp NA::FixedStack<int, 16U>::FixedStack()"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA10FixedStackIiLj16EEC1Ev:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R1,#-1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BX       LR               ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "// __interwork __softfp bool NA::FixedStack<int, 16U>::Push(int)"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "_ZN2NA10FixedStackIiLj16EE4PushEi:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        PUSH     {R4,LR}"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R4,R1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R1,R1,#+1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        CMP      R1,#+16"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BCS.N    ??Push_0"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R1,R1,#+1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        LDR      R1,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        ADDS     R0,R0,#+4"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        BL       _ZNSt5arrayIiLj16EEixEj"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        STR      R4,[R0, #+0]"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,#+1"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        B.N      ??Push_1"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "??Push_0:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        MOVS     R0,#+0"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "??Push_1:"
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        POP      {R4,PC}          ;; return"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        DC32    RELOC_ARM_TARGET1 __sti__routine"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        DC32 0"
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": {
+        "file": null,
+        "line": 116
+      },
+      "text": "        DC8 \"%d\\012\""
+    },
+    {
+      "source": null,
+      "text": ""
+    },
+    {
+      "source": null,
+      "text": "//  117"
+    },
+    {
+      "source": null,
+      "text": "//  118 void main() {"
+    },
+    {
+      "source": null,
+      "text": "//  119"
+    },
+    {
+      "source": null,
+      "text": "//  120"
+    },
+    {
+      "source": null,
+      "text": "//  121     desa.Push(1);"
+    },
+    {
+      "source": null,
+      "text": "//  122     desa.Push(2);"
+    },
+    {
+      "source": null,
+      "text": "//  123     desa.Push(3);"
+    },
+    {
+      "source": null,
+      "text": "//  124     desa.Push(4);"
+    },
+    {
+      "source": null,
+      "text": "//  125"
+    },
+    {
+      "source": null,
+      "text": "//  126     for(auto d : desa) {"
+    },
+    {
+      "source": null,
+      "text": "//  127         printf(\"%d\\n\", d);"
+    },
+    {
+      "source": null,
+      "text": "//  128     }"
+    },
+    {
+      "source": null,
+      "text": "//  129 }"
+    },
+    {
+      "source": null,
+      "text": "//"
+    },
+    {
+      "source": null,
+      "text": "//  68 bytes in section .bss"
+    },
+    {
+      "source": null,
+      "text": "//   4 bytes in section .init_array"
+    },
+    {
+      "source": null,
+      "text": "//   4 bytes in section .rodata"
+    },
+    {
+      "source": null,
+      "text": "// 260 bytes in section .text"
+    },
+    {
+      "source": null,
+      "text": "//"
+    },
+    {
+      "source": null,
+      "text": "// 110 bytes of CODE  memory (+ 154 bytes shared)"
+    },
+    {
+      "source": null,
+      "text": "//   4 bytes of CONST memory"
+    },
+    {
+      "source": null,
+      "text": "//  68 bytes of DATA  memory"
+    },
+    {
+      "source": null,
+      "text": "//"
+    },
+    {
+      "source": null,
+      "text": "//Errors: none"
+    },
+    {
+      "source": null,
+      "text": "//Warnings: none"
+    }
+  ]
+}
