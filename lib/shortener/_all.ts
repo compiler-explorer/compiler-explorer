@@ -24,3 +24,4 @@
 
 export {DefaultShortener} from './default.js';
 export {TinyUrlShortener} from './tinyurl.js';
+export {FwdShortener} from './fwd.js';
