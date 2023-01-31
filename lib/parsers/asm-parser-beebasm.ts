@@ -1,20 +1,24 @@
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {assert} from '../assert';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
 
 export class AsmParserBeebAsm extends AsmParser {
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
         this.labelDef = /^(\.\w+)/i;
         this.asmOpcodeRe = /^\s*(?<address>[\dA-F]+)\s*(?<opcodes>([\dA-F]{2} ?)+)\s*(?<disasm>.*)/;
     }
 
-    processAsm(asm, filters) {
+    override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
 
-        const asmLines = [];
-        const labelDefinitions = {};
+        const asmLines: ParsedAsmResultLine[] = [];
+        const labelDefinitions: Record<string, number> = {};
 
         let startingLineCount = 0;
 
@@ -32,6 +36,7 @@ export class AsmParserBeebAsm extends AsmParser {
 
             const addressAndInstructionMatch = line.match(this.asmOpcodeRe);
             if (addressAndInstructionMatch) {
+                assert(addressAndInstructionMatch.groups);
                 const opcodes = (addressAndInstructionMatch.groups.opcodes || '').split(' ').filter(x => !!x);
                 const address = parseInt(addressAndInstructionMatch.groups.address, 16);
                 asmLines.push({
