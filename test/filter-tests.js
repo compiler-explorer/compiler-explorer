@@ -27,8 +27,8 @@ import path from 'path';
 import approvals from 'approvals';
 
 import {AsmParser} from '../lib/parsers/asm-parser';
-import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65';
+import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
 
