@@ -11,6 +11,7 @@
     /* Code generation */
     "outDir": "./out/dist",
     "typeRoots": ["./typings", "./node_modules/@types"],
+    "types": ["mocha", "chai", "chai-http"],
     /* Other options */
     "allowJs": true
   }
