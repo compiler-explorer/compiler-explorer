@@ -49,34 +49,23 @@ type ResultObject = {
 };
 
 export class AsmEWAVRParser extends AsmParser {
-    private readonly filenameComment: RegExp;
-    private readonly lineNumberComment: RegExp;
-    private readonly segmentBegin: RegExp;
-    private readonly segmentControl: RegExp;
-    private readonly definesLocal: RegExp;
-    private readonly miscDirective: RegExp;
-    private readonly dataStatement: RegExp;
-    private readonly requireStatement: RegExp;
-    private readonly beginFunctionMaybe: RegExp;
+    private readonly filenameComment = /^\/\/\s[A-Za-z]?:?\S(([^/\\]*[/\\])+)([^/\\]+)$/;
+    private readonly lineNumberComment = /^\/\/\s*(\d+)\s(?!bytes).*/;
+
+    // categories of directives. remove if filters.directives set
+    private readonly segmentBegin = /^\s*(ASEG|ASEGN|COMMON|RSEG|STACK|SECTION)\s*(.[\w():]*)/;
+    private readonly segmentControl = /^\s*(ALIGN|EVEN|ODD|ORG|SECTION_GROUP|SECTION_TYPE|DATA)/;
+    private readonly definesLocal = /^\s*((ASSIGN|DEFINE|LOCAL|ALIAS|EQU|VAR)|(([A-Z_a-z]\w*)=.+))$/;
+    private readonly miscDirective = /^\s*(NAME|MODULE|PROGRAM|LIBRARY|ERROR|END|CASEOFF|CASEON|CFI|COL|RADIX|THUMB)/;
+    private readonly dataStatement = /^\s*(DB|DC16|DC24|DC32|DC8|DD|DP|DS|DS16|DS24|DS32|DW)/;
+    private readonly requireStatement = /^\s*REQUIRE\s+`?\?*<?([A-Z_a-z][\w ]*)>?`?/;
 
     constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
         this.commentOnly = /^\s*(((#|@|\$|\/\/).*)|(\/\*.*\*\/))$/;
-        this.filenameComment = /^\/\/\s[A-Za-z]?:?\S(([^/\\]*[/\\])+)([^/\\]+)$/;
-        this.lineNumberComment = /^\/\/\s*(\d+)\s(?!bytes).*/;
-
-        // categories of directives. remove if filters.directives set
-        this.segmentBegin = /^\s*(ASEG|ASEGN|COMMON|RSEG|STACK|SECTION)\s*(.[\w():]*)/;
-        this.segmentControl = /^\s*(ALIGN|EVEN|ODD|ORG|SECTION_GROUP|SECTION_TYPE|DATA)/;
         this.definesGlobal = /^\s*(EXTERN|EXTRN|IMPORT|EXPORT|PUBWEAK|PUBLIC)\s+(.+)$/;
-        this.definesLocal = /^\s*((ASSIGN|DEFINE|LOCAL|ALIAS|EQU|VAR)|(([A-Z_a-z]\w*)=.+))$/;
-        this.miscDirective = /^\s*(NAME|MODULE|PROGRAM|LIBRARY|ERROR|END|CASEOFF|CASEON|CFI|COL|RADIX|THUMB)/;
-
         // NOTE: Compiler generated labels can have spaces in them, but are quoted and in <>
         this.labelDef = /^`?\?*<?([A-Z_a-z][\w :]*)>?`?:$/;
-        this.dataStatement = /^\s*(DB|DC16|DC24|DC32|DC8|DD|DP|DS|DS16|DS24|DS32|DW)/;
-        this.requireStatement = /^\s*REQUIRE\s+`?\?*<?([A-Z_a-z][\w ]*)>?`?/;
-        this.beginFunctionMaybe = /^\s*RSEG\s*CODE:CODE:(.+)$/;
     }
 
     override hasOpcode(line: string): boolean {
@@ -157,15 +146,15 @@ export class AsmEWAVRParser extends AsmParser {
 
         const checkBeginLabel = line => {
             const matches = line.match(this.labelDef);
-            if (matches) {
+            if (matches && currentLine) {
                 currentLabel = {
                     lines: [],
-                    initialLine: currentLine || 0,
+                    initialLine: currentLine,
                     name: matches[1],
                     file: currentFile,
                     require: [],
                 };
-                definedLabels[matches[1]] = currentLine || 0;
+                definedLabels[matches[1]] = currentLine;
                 resultObject.labels.push(currentLabel);
             }
             return currentLabel;
