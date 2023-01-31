@@ -63,7 +63,7 @@ class PropsCheckTests(unittest.TestCase):
         })
 
     def test_duplicate_lines(self):
-        self.run_test("duplicate_lines", "duplicate_lines", {"duplicated.prop=true"})
+        self.run_test("duplicate_lines", "duplicate_lines", {"duplicated.prop"})
 
     def test_duplicated_compiler(self):
         self.run_test("bad_duplicated_compiler", "duplicated_compiler_references", {"duplicatedname"})

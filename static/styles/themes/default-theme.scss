@@ -185,25 +185,35 @@ a.navbar-brand img.logo.normal {
     color: black;
 }
 
-.analysis,
-.mixed {
-    background: #fdfd96;
-}
+.opt-decoration {
+    &.analysis,
+    &.mixed {
+        background: #fdfd96;
+    }
 
-.passed {
-    background: #77dd77;
-}
+    &.passed {
+        background: #77dd77;
+    }
 
-.missed {
-    background: #ff6961;
+    &.missed {
+        background: #ff6961;
+    }
 }
 
 .conformance-wrapper {
     background-color: #f5f5f5;
 }
 
-.graph-placeholder {
-    background-color: #ffffff;
+.graph-container {
+    background: rgb(245, 245, 245);
+    .cfg-info {
+        color: rgb(56, 56, 56);
+    }
+    .graph .block-container .block {
+        background: white;
+        border: 1px solid rgb(55, 55, 55);
+        color: rgb(0, 0, 0);
+    }
 }
 
 .text-count {
@@ -354,6 +364,10 @@ div.argmenuitem span.argdescription {
 
 .ts-dropdown .optgroup-header {
     background-color: #f6f6f6;
+}
+
+.ts-dropdown .selected {
+    background-color: #dae0e5;
 }
 
 .currentCursorPosition {

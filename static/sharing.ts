@@ -27,13 +27,15 @@ import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 import ClipboardJS from 'clipboard';
+import {set as localStorageSet} from './local';
+import {ga} from './analytics';
+import * as url from './url';
+import {options} from './options';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
+import {Settings, SiteSettings} from './settings';
 
-const ga = require('./analytics').ga;
-const options = require('./options').options;
-const url = require('./url');
 const cloneDeep = require('lodash.clonedeep');
 
 enum LinkType {
@@ -81,6 +83,8 @@ export class Sharing {
     private shareFull: JQuery;
     private shareEmbed: JQuery;
 
+    private settings: SiteSettings;
+
     private clippyButton: ClipboardJS | null;
 
     constructor(layout: any) {
@@ -91,6 +95,8 @@ export class Sharing {
         this.shareShort = $('#shareShort');
         this.shareFull = $('#shareFull');
         this.shareEmbed = $('#shareEmbed');
+
+        this.settings = Settings.getStoredSettings();
 
         this.clippyButton = null;
 
@@ -110,6 +116,23 @@ export class Sharing {
         $('#sharelinkdialog')
             .on('show.bs.modal', this.onOpenModalPane.bind(this))
             .on('hidden.bs.modal', this.onCloseModalPane.bind(this));
+
+        this.layout.eventHub.on('settingsChange', (newSettings: SiteSettings) => {
+            this.settings = newSettings;
+        });
+
+        $(window).on('blur', async () => {
+            localStorageSet('gl', JSON.stringify(this.layout.toConfig()));
+            if (this.settings.keepMultipleTabs) {
+                try {
+                    const link = await this.getLinkOfType(LinkType.Full);
+                    window.history.replaceState(null, '', link);
+                } catch (e) {
+                    // This is probably caused by a link that is too long
+                    Sentry.captureException(e);
+                }
+            }
+        });
     }
 
     private onStateChanged(): void {
@@ -245,6 +268,24 @@ export class Sharing {
         }
     }
 
+    private getLinkOfType(type: LinkType): Promise<string> {
+        const config = this.layout.toConfig();
+        return new Promise<string>((resolve, reject) => {
+            Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
+                if (error || !newUrl) {
+                    this.displayTooltip(this.share, 'Oops, something went wrong');
+                    Sentry.captureException(error);
+                    reject();
+                } else {
+                    if (updateState) {
+                        Sharing.storeCurrentConfig(config, extra);
+                    }
+                    resolve(newUrl);
+                }
+            });
+        });
+    }
+
     private copyLinkTypeToClipboard(type: LinkType): void {
         const config = this.layout.toConfig();
         Sharing.getLinks(config, type, (error: any, newUrl: string, extra: string, updateState: boolean) => {
@@ -350,6 +391,7 @@ export class Sharing {
 
     private static getEmbeddedHtml(config, root, isReadOnly, extraOptions): string {
         const embedUrl = Sharing.getEmbeddedUrl(config, root, isReadOnly, extraOptions);
+        // The attributes must be double quoted, the full url's rison contains single quotes
         return `<iframe width="800px" height="200px" src="${embedUrl}"></iframe>`;
     }
 

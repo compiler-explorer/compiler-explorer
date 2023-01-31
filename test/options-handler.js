@@ -172,6 +172,7 @@ describe('Options handler', () => {
                     options: [],
                     versions: {
                         noPaths: {
+                            $order: 2,
                             path: [],
                             version: 'no paths',
                             liblink: [],
@@ -184,6 +185,7 @@ describe('Options handler', () => {
                             hidden: false,
                         },
                         onePath: {
+                            $order: 0,
                             path: ['/dev/null'],
                             version: 'one path',
                             staticliblink: [],
@@ -195,6 +197,7 @@ describe('Options handler', () => {
                             hidden: false,
                         },
                         twoPaths: {
+                            $order: 1,
                             path: ['/dev/null', '/dev/urandom'],
                             staticliblink: [],
                             dependencies: [],
@@ -218,6 +221,7 @@ describe('Options handler', () => {
                     options: [],
                     versions: {
                         std: {
+                            $order: 0,
                             libpath: [],
                             path: [],
                             version: 'std',
@@ -241,6 +245,7 @@ describe('Options handler', () => {
                     options: [],
                     versions: {
                         trunk: {
+                            $order: 0,
                             libpath: [],
                             path: [],
                             version: 'trunk',
@@ -391,7 +396,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'fs', version: 'std'}]);
         staticlinks.should.deep.equal(['fsextra', 'c++fs', 'rt', 'pthread']);
     });
     it('library sort special case 2', () => {
@@ -409,7 +414,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'yalib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -430,7 +435,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([
+        const staticlinks = compiler.getSortedStaticLibraries([
             {id: 'fourthlib', version: 'trunk'},
             {id: 'fs', version: 'std'},
             {id: 'someotherlib', version: 'trunk'},
@@ -499,7 +504,7 @@ describe('Options handler', () => {
             },
         });
 
-        let staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
+        const staticlinks = compiler.getSortedStaticLibraries([{id: 'someotherlib', version: 'master'}]);
         staticlinks.should.deep.equal(['someotherlib', 'c++fs']);
     });
     it('should be able to parse basic tools', () => {
@@ -510,8 +515,9 @@ describe('Options handler', () => {
         tools.should.deep.equal({
             fake: {
                 faketool: {
+                    id: 'faketool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
-                    parseOutput: parseOutput,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',
@@ -530,8 +536,9 @@ describe('Options handler', () => {
                     },
                 },
                 someothertool: {
+                    id: 'someothertool',
+                    type: 'independent',
                     addOptionsToToolArgs: true,
-                    parseOutput: parseOutput,
                     tool: {
                         args: undefined,
                         compilerLanguage: 'fake',

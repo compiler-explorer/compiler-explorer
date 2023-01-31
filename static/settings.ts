@@ -30,6 +30,10 @@ import {themes, Themes} from './themes';
 import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
 import {Hub} from './hub';
 import {EventHub} from './event-hub';
+import {keys, isString} from '../lib/common-utils';
+import {assert, unwrapString} from './assert';
+
+import {LanguageKey} from '../types/languages.interfaces';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -41,8 +45,7 @@ export interface SiteSettings {
     colouriseAsm: boolean;
     colourScheme: ColourScheme;
     compileOnChange: boolean;
-    // TODO(supergrecko): make this more precise
-    defaultLanguage?: string;
+    defaultLanguage?: LanguageKey;
     delayAfterChange: number;
     enableCodeLens: boolean;
     enableCommunityAds: boolean;
@@ -57,12 +60,14 @@ export interface SiteSettings {
     formatOnCompile: boolean;
     hoverShowAsmDoc: boolean;
     hoverShowSource: boolean;
+    indefiniteLineHighlight: boolean;
+    keepMultipleTabs: boolean;
     keepSourcesOnLangChange: boolean;
     newEditorLastLang: boolean;
     showMinimap: boolean;
     showQuickSuggestions: boolean;
     tabWidth: number;
-    theme: Themes;
+    theme: Themes | undefined;
     useCustomContextMenu: boolean;
     useSpaces: boolean;
     useVim: boolean;
@@ -116,7 +121,7 @@ class NumericSelect extends Select {
         super(elem, name, populate);
     }
     override getUi(): number {
-        return Number(this.val() as string);
+        return Number(this.val());
     }
 }
 
@@ -200,8 +205,8 @@ export class Settings {
         hub: Hub,
         private root: JQuery,
         private settings: SiteSettings,
-        private onChange: (SiteSettings) => void,
-        private subLangId: string | null
+        private onChange: (siteSettings: SiteSettings) => void,
+        private subLangId: string | undefined
     ) {
         this.eventHub = hub.createEventHub();
         this.settings = settings;
@@ -265,6 +270,8 @@ export class Settings {
             ['.formatOnCompile', 'formatOnCompile', false],
             ['.hoverShowAsmDoc', 'hoverShowAsmDoc', true],
             ['.hoverShowSource', 'hoverShowSource', true],
+            ['.indefiniteLineHighlight', 'indefiniteLineHighlight', false],
+            ['.keepMultipleTabs', 'keepMultipleTabs', false],
             ['.keepSourcesOnLangChange', 'keepSourcesOnLangChange', false],
             ['.newEditorLastLang', 'newEditorLastLang', true],
             ['.showMinimap', 'showMinimap', true],
@@ -294,14 +301,10 @@ export class Settings {
         };
 
         // We need theme data to populate the colour schemes; We don't add the selector until later
-        // keys(themes) is Themes[] but TS does not realize without help
-        const themesData = (Object.keys(themes) as Themes[]).map((theme: Themes) => {
+        const themesData = keys(themes).map((theme: Themes) => {
             return {label: themes[theme].id, desc: themes[theme].name};
         });
-        let defaultThemeId = themes.default.id;
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            defaultThemeId = themes.dark.id;
-        }
+        const defaultThemeId = themes.system.id;
 
         const colourSchemesData = colour.schemes
             .filter(scheme => this.isSchemeUsable(scheme, defaultThemeId))
@@ -322,7 +325,7 @@ export class Settings {
         const defaultLanguageData = Object.keys(langs).map(lang => {
             return {label: langs[lang].id, desc: langs[lang].name};
         });
-        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang);
+        addSelector('.defaultLanguage', 'defaultLanguage', defaultLanguageData, defLang as LanguageKey);
 
         if (this.subLangId) {
             defaultLanguageSelector
@@ -344,7 +347,8 @@ export class Settings {
             NumericSelect
         ).elem;
         defaultFontScaleSelector.on('change', e => {
-            this.eventHub.emit('broadcastFontScale', parseInt((e.target as HTMLSelectElement).value));
+            assert(e.target instanceof HTMLSelectElement);
+            this.eventHub.emit('broadcastFontScale', parseInt(e.target.value));
         });
 
         const formats: FormatBase[] = ['Google', 'LLVM', 'Mozilla', 'Chromium', 'WebKit', 'Microsoft', 'GNU'];
@@ -400,22 +404,33 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         themeSelect.on('change', () => {
             this.onThemeChange();
-            $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+            $.data(themeSelect, 'last-theme', unwrapString(themeSelect.val()));
         });
 
         const colourSchemeSelect = this.root.find('.colourScheme');
         colourSchemeSelect.on('change', e => {
             const currentTheme = this.settings.theme;
-            $.data(themeSelect, 'theme-' + currentTheme, colourSchemeSelect.val() as ColourScheme);
+            $.data(themeSelect, 'theme-' + currentTheme, unwrapString<ColourScheme>(colourSchemeSelect.val()));
         });
 
         const enableAllSchemesCheckbox = this.root.find('.alwaysEnableAllSchemes');
         enableAllSchemesCheckbox.on('change', this.onThemeChange.bind(this));
 
-        $.data(themeSelect, 'last-theme', themeSelect.val() as string);
+        // In embed mode themeSelect.length can be zero and thus themeSelect.val() isn't a string
+        // TODO(jeremy-rifkin) Is last-theme ever read? Can it just be removed?
+        $.data(themeSelect, 'last-theme', themeSelect.val() ?? '');
+        this.onThemeChange();
     }
 
-    private fillThemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+    private fillColourSchemeSelector(colourSchemeSelect: JQuery, newTheme?: AppTheme) {
+        colourSchemeSelect.empty();
+        if (newTheme === 'system') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                newTheme = themes.dark.id;
+            } else {
+                newTheme = themes.default.id;
+            }
+        }
         for (const scheme of colour.schemes) {
             if (this.isSchemeUsable(scheme, newTheme)) {
                 colourSchemeSelect.append($(`<option value="${scheme.name}">${scheme.desc}</option>`));
@@ -444,23 +459,36 @@ export class Settings {
         const themeSelect = this.root.find('.theme');
         const colourSchemeSelect = this.root.find('.colourScheme');
 
-        const oldScheme = colourSchemeSelect.val() as string;
-        const newTheme = themeSelect.val() as colour.AppTheme;
+        const oldScheme = colourSchemeSelect.val() as colour.AppTheme | undefined;
+        const newTheme = themeSelect.val() as colour.AppTheme | undefined;
 
-        colourSchemeSelect.empty();
-        this.fillThemeSelector(colourSchemeSelect, newTheme);
+        // Small check to make sure we aren't getting something completely unexpected, like a string[] or number
+        assert(
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            isString(oldScheme) || oldScheme === undefined || oldScheme == null,
+            'Unexpected value received from colourSchemeSelect.val()'
+        );
+        assert(
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            isString(newTheme) || newTheme === undefined || newTheme == null,
+            'Unexpected value received from colourSchemeSelect.val()'
+        );
+
+        this.fillColourSchemeSelector(colourSchemeSelect, newTheme);
         const newThemeStoredScheme = $.data(themeSelect, 'theme-' + newTheme) as colour.AppTheme | undefined;
 
         // If nothing else, set the new scheme to the first of the available ones
-        let newScheme = colourSchemeSelect.first().val() as string;
+        let newScheme = colourSchemeSelect.first().val() as colour.AppTheme | undefined;
         // If we have one old one stored, check if it's still valid and set it if so
         if (newThemeStoredScheme && this.selectorHasOption(colourSchemeSelect, newThemeStoredScheme)) {
             newScheme = newThemeStoredScheme;
-        } else if (this.selectorHasOption(colourSchemeSelect, oldScheme)) {
+        } else if (isString(oldScheme) && this.selectorHasOption(colourSchemeSelect, oldScheme)) {
             newScheme = oldScheme;
         }
 
-        colourSchemeSelect.val(newScheme);
+        if (newScheme) {
+            colourSchemeSelect.val(newScheme);
+        }
 
         colourSchemeSelect.trigger('change');
     }

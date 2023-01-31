@@ -27,7 +27,7 @@ import path from 'path';
 import {readdir, readFile, rename, writeFile} from 'fs-extra';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
@@ -50,11 +50,11 @@ export class RGACompiler extends BaseCompiler {
         super(info, env);
 
         this.compiler.supportsIntel = false;
-        this.dxcPath = this.compilerProps(`compiler.${this.compiler.id}.dxcPath`);
+        this.dxcPath = this.compilerProps<string>(`compiler.${this.compiler.id}.dxcPath`);
         logger.debug(`RGA compiler ${this.compiler.id} configured to use DXC at ${this.dxcPath}`);
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any, userOptions?: any): any[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any, userOptions?: any): any[] {
         return [outputFilename];
     }
 
@@ -200,7 +200,7 @@ Please supply an ASIC from the following options:`,
         // architecture and appends the shader type (with underscore separators). Here,
         // we rename the generated file to the output file Compiler Explorer expects.
 
-        const files = await readdir(outputDir, {encoding: 'utf-8'});
+        const files = await readdir(outputDir, {encoding: 'utf8'});
         for (const file of files) {
             if (file.startsWith((asicSelection.asic as string) + '_output')) {
                 await rename(path.join(outputDir, file), outputFile);
@@ -209,9 +209,9 @@ Please supply an ASIC from the following options:`,
                 // The register analysis file contains a legend, and register liveness data
                 // for each line of disassembly. Interleave those lines into the final output
                 // as assembly comments.
-                const asm = await readFile(outputFile, 'utf-8');
+                const asm = await readFile(outputFile, 'utf8');
                 const asmLines = asm.split(/\r?\n/);
-                const analysis = await readFile(registerAnalysisFile, 'utf-8');
+                const analysis = await readFile(registerAnalysisFile, 'utf8');
                 const analysisLines = analysis.split(/\r?\n/);
 
                 // The first few lines of the register analysis are the legend. Emit those lines

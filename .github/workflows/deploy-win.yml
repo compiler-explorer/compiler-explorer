@@ -1,0 +1,63 @@
+name: CE Windows Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildnumber:
+        description: 'Build number'
+        default: ''
+        required: true
+
+jobs:
+  build_dist:
+    runs-on: windows-2019
+    outputs:
+      release_name: ${{ steps.build_dist.outputs.release_name }}
+      branch: ${{ steps.build_dist.outputs.branch }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.inputs.buildnumber }}
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+      - name: Build distribution
+        id: build_dist
+        run: powershell -File etc/scripts/build-dist-win.ps1
+      - uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: out/dist-bin
+
+  deploy:
+    needs: [build_dist]
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+      - name: Download the built distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: out/dist-bin
+      - name: Deploy
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks
+        env:
+          AWS_S3_BUCKET: compiler-explorer
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          SOURCE_DIR: out/dist-bin
+          DEST_DIR: dist/gh/${{ needs.build_dist.outputs.branch }}

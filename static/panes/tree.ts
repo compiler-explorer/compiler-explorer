@@ -30,7 +30,7 @@ import {Settings, SiteSettings} from '../settings';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {Hub} from '../hub';
 import {EventHub} from '../event-hub';
-import {Alert} from '../alert';
+import {Alert} from '../widgets/alert';
 import * as Components from '../components';
 import {ga} from '../analytics';
 import TomSelect from 'tom-select';
@@ -39,6 +39,7 @@ import {options} from '../options';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
+import {assert, unwrap, unwrapString} from '../assert';
 
 const languages = options.languages;
 
@@ -105,10 +106,10 @@ export class Tree {
         this.customOutputFilenameInput = this.domRoot.find('.cmake-customOutputFilename');
 
         const usableLanguages = Object.values(languages).filter(language => {
-            return hub.compilerService.compilersByLang[language.id];
+            return hub.compilerService.getCompilersForLang(language.id);
         });
 
-        if (!state.compilerLanguageId) {
+        if (!(state.compilerLanguageId as any)) {
             state.compilerLanguageId = this.settings.defaultLanguage ?? 'c++';
         }
 
@@ -125,7 +126,8 @@ export class Tree {
         this.initCallbacks();
         this.onSettingsChange(this.settings);
 
-        this.selectize = new TomSelect(this.languageBtn[0] as HTMLInputElement, {
+        assert(this.languageBtn[0] instanceof HTMLSelectElement);
+        this.selectize = new TomSelect(this.languageBtn[0], {
             sortField: 'name',
             valueField: 'id',
             labelField: 'name',
@@ -134,9 +136,7 @@ export class Tree {
             items: [this.multifileService.getLanguageId()],
             dropdownParent: 'body',
             plugins: ['input_autogrow'],
-            onChange: (val: any) => {
-                this.onLanguageChange(val as string);
-            },
+            onChange: (val: any) => this.onLanguageChange(val),
         });
 
         this.onLanguageChange(this.multifileService.getLanguageId());
@@ -162,11 +162,11 @@ export class Tree {
     }
 
     private getCmakeArgs(): string {
-        return this.cmakeArgsInput.val() as string;
+        return unwrapString(this.cmakeArgsInput.val());
     }
 
     private getCustomOutputFilename(): string {
-        return _.escape(this.customOutputFilenameInput.val() as string);
+        return _.escape(unwrapString(this.customOutputFilenameInput.val()));
     }
 
     public currentState(): TreeState {
@@ -291,8 +291,8 @@ export class Tree {
         if (file) {
             file.isOpen = false;
             const editor = this.hub.getEditorById(editorId);
-            file.langId = editor.currentLanguage.id;
-            file.content = editor.getSource();
+            file.langId = editor?.currentLanguage?.id ?? '';
+            file.content = editor?.getSource() ?? '';
             file.editorId = -1;
         }
 
@@ -301,6 +301,20 @@ export class Tree {
 
     private removeFile(fileId: number) {
         const file = this.multifileService.removeFileByFileId(fileId);
+        if (file) {
+            if (file.isOpen) {
+                const editor = this.hub.getEditorById(file.editorId);
+                if (editor) {
+                    editor.container.close();
+                }
+            }
+        }
+
+        this.refresh();
+    }
+
+    private removeFileByFilename(filename: string) {
+        const file = this.multifileService.removeFileByFilename(filename);
         if (file) {
             if (file.isOpen) {
                 const editor = this.hub.getEditorById(file.editorId);
@@ -380,7 +394,7 @@ export class Tree {
         (file.isIncluded ? this.namedItems : this.unnamedItems).append(item);
     }
 
-    private refresh() {
+    refresh() {
         this.updateState();
 
         this.namedItems.html('');
@@ -399,7 +413,7 @@ export class Tree {
                 this.hub.addInEditorStackIfPossible(dragConfig);
             } else {
                 const editor = this.hub.getEditorById(file.editorId);
-                this.hub.activateTabForContainer(editor.container);
+                this.hub.activateTabForContainer(editor?.container);
             }
 
             this.sendChangesToAllEditors();
@@ -488,18 +502,10 @@ export class Tree {
         loadProjectFromFile.on('change', async e => {
             const files = e.target.files;
             if (files && files.length > 0) {
-                this.multifileService.forEachFile((file: MultifileFile) => {
-                    this.removeFile(file.fileId);
-                });
-
-                await this.multifileService.loadProjectFromFile(files[0], (file: MultifileFile) => {
-                    this.refresh();
-                    if (file.filename === 'CMakeLists.txt') {
-                        // todo: find a way to toggle on CMake checkbox...
-                        this.editFile(file.fileId);
-                    }
-                });
+                await this.openZipFile(files[0]);
             }
+
+            loadProjectFromFile.val('');
         });
 
         this.bindClickToOpenPane(addCompilerButton, this.getConfigForNewCompiler);
@@ -518,6 +524,114 @@ export class Tree {
             this.domRoot.find('.options'),
             state as unknown as Record<string, boolean>
         );
+
+        let drophereHideTimeout;
+        this.root.on('dragover', ev => {
+            ev.preventDefault();
+
+            if (drophereHideTimeout) clearTimeout(drophereHideTimeout);
+
+            const drophere = this.root.find('.drophere');
+            drophere.show();
+        });
+
+        this.root.on('dragleave', () => {
+            const drophere = this.root.find('.drophere');
+            drophereHideTimeout = setTimeout(() => {
+                drophere.hide();
+            }, 1000);
+        });
+
+        this.root.on('drop', async (ev: any) => {
+            ev.preventDefault();
+
+            const drophere = this.root.find('.drophere');
+            drophere.hide();
+
+            const dataTransfer = ev.originalEvent.dataTransfer;
+            if (dataTransfer.items) {
+                [...dataTransfer.items].forEach(async (item, i) => {
+                    if (item.kind === 'file') {
+                        const file = item.getAsFile();
+                        if (file.name.endsWith('.zip')) {
+                            this.openZipFile(file);
+                        } else {
+                            await this.addSingleFile(file);
+                        }
+                    }
+                });
+            } else {
+                [...dataTransfer.files].forEach(async (file, i) => {
+                    if (file.name.endsWith('.zip')) {
+                        this.openZipFile(file);
+                    } else {
+                        await this.addSingleFile(file);
+                    }
+                });
+            }
+        });
+    }
+
+    private async openZipFile(htmlfile) {
+        if (!htmlfile.name.toLowerCase().endsWith('.zip')) {
+            this.alertSystem.alert('Load project file', 'Projects can only be loaded from .zip files');
+            return;
+        }
+
+        this.multifileService.forEachFile((file: MultifileFile) => {
+            this.removeFile(file.fileId);
+        });
+
+        await this.multifileService.loadProjectFromFile(htmlfile, (file: MultifileFile) => {
+            this.refresh();
+            if (file.filename === 'CMakeLists.txt') {
+                // todo: find a way to toggle on CMake checkbox...
+                this.editFile(file.fileId);
+            }
+        });
+    }
+
+    private async askForOverwriteAndDo(filename): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (this.multifileService.fileExists(filename)) {
+                this.alertSystem.ask('Overwrite file', `${_.escape(filename)} already exists, overwrite this file?`, {
+                    yes: () => {
+                        this.removeFileByFilename(filename);
+                        resolve();
+                    },
+                    no: () => {
+                        reject();
+                    },
+                    onClose: () => {
+                        reject();
+                    },
+                    yesClass: 'btn-danger',
+                    yesHtml: 'Yes',
+                    noClass: 'btn-primary',
+                    noHtml: 'No',
+                });
+            } else {
+                resolve();
+            }
+        });
+    }
+
+    private async addSingleFile(htmlfile): Promise<void> {
+        try {
+            await this.askForOverwriteAndDo(htmlfile.name);
+
+            return new Promise(resolve => {
+                const fr = new FileReader();
+                fr.onload = () => {
+                    this.multifileService.addNewTextFile(htmlfile.name, fr.result?.toString() || '');
+                    this.refresh();
+                    resolve();
+                };
+                fr.readAsText(htmlfile);
+            });
+        } catch {
+            // expected when user says no
+        }
     }
 
     private numberUsedLines() {
@@ -605,10 +719,10 @@ export class Tree {
     private resize() {
         utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
 
-        const mainbarHeight = this.topBar.outerHeight(true) as number;
-        const argsHeight = this.domRoot.find('.panel-args').outerHeight(true) as number;
-        const outputfileHeight = this.domRoot.find('.panel-outputfile').outerHeight(true) as number;
-        const innerHeight = this.domRoot.innerHeight() as number;
+        const mainbarHeight = unwrap(this.topBar.outerHeight(true));
+        const argsHeight = unwrap(this.domRoot.find('.panel-args').outerHeight(true));
+        const outputfileHeight = unwrap(this.domRoot.find('.panel-outputfile').outerHeight(true));
+        const innerHeight = unwrap(this.domRoot.innerHeight());
 
         this.root.height(innerHeight - mainbarHeight - argsHeight - outputfileHeight);
     }

@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {fileURLToPath} from 'url';
 
@@ -36,15 +38,25 @@ import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 const isDev = process.env.NODE_ENV !== 'production';
-console.log(`webpack config for ${isDev ? 'development' : 'production'}.`);
+
+function log(message) {
+    // eslint-disable-next-line no-console
+    console.log('webpack: ' + message);
+}
+
+log(`compiling for ${isDev ? 'development' : 'production'}.`);
+// Memory limits us in most cases, so restrict parallelism to keep us in a sane amount of RAM
+const parallelism = Math.floor(os.totalmem() / (4 * 1024 * 1024 * 1024)) + 1;
+log(`Limiting parallelism to ${parallelism}`);
 
 const distPath = path.resolve(__dirname, 'out', 'dist');
 const staticPath = path.resolve(__dirname, 'out', 'webpack', 'static');
+const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v11.';
+const webjackJsHack = '.v17.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -55,6 +67,7 @@ const plugins = [
             'rust',
             'swift',
             'java',
+            'julia',
             'kotlin',
             'scala',
             'ruby',
@@ -64,6 +77,8 @@ const plugins = [
             'dart',
             'typescript',
             'solidity',
+            'scheme',
+            'objective-c',
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
@@ -78,7 +93,7 @@ const plugins = [
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
+        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicons')}],
     }),
 ];
 
@@ -90,7 +105,7 @@ if (isDev) {
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {
-        main: './static/main.js',
+        main: './static/main.ts',
         noscript: './static/noscript.ts',
     },
     output: {
@@ -139,6 +154,7 @@ export default {
             }),
         ],
     },
+    parallelism: parallelism,
     module: {
         rules: [
             {
@@ -160,8 +176,11 @@ export default {
                 parser: {dataUrlCondition: {maxSize: 8192}},
             },
             {
-                test: /.pug$/,
+                test: /\.pug$/,
                 loader: './etc/scripts/parsed_pug_file.js',
+                options: {
+                    useGit: hasGit,
+                },
             },
             {
                 test: /\.ts$/,

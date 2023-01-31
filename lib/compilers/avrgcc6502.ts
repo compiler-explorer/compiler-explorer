@@ -24,6 +24,9 @@
 
 import path from 'path';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 export class AvrGcc6502Compiler extends BaseCompiler {
@@ -35,16 +38,16 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         return 'avrgcc6502';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
-        this.avrgccpath = this.compilerProps(`compiler.${this.compiler.id}.avrgccpath`);
-        this.xapath = this.compilerProps(`compiler.${this.compiler.id}.xapath`);
-        this.avrlibstdcpppath = this.compilerProps(`compiler.${this.compiler.id}.avrlibstdcpppath`);
+        this.avrgccpath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrgccpath`);
+        this.xapath = this.compilerProps<string>(`compiler.${this.compiler.id}.xapath`);
+        this.avrlibstdcpppath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrlibstdcpppath`);
         this.outputFilebase = 'example';
     }
 
-    public override getOutputFilename(dirPath, outputFilebase, key) {
+    public override getOutputFilename(dirPath: string, outputFilebase: string, key?: any) {
         let filename;
         if (key && key.backendOptions && key.backendOptions.customOutputFilename) {
             filename = key.backendOptions.customOutputFilename;
@@ -59,11 +62,16 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         }
     }
 
-    protected override optionsForFilter(filters: object, outputFilename: string): string[] {
+    protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
         return [`-I${this.avrlibstdcpppath}`];
     }
 
-    public override async runCompiler(compiler, options, inputFilename, execOptions) {
+    public override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }

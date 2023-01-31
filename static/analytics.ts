@@ -93,5 +93,4 @@ class GAProxy {
     }
 }
 
-const ga = new GAProxy();
-export {ga};
+export const ga = new GAProxy();

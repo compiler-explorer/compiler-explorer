@@ -28,6 +28,7 @@ import approvals from 'approvals';
 
 import {AsmParser} from '../lib/parsers/asm-parser';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr';
+import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
 
@@ -36,10 +37,11 @@ import {fs, resolvePathFromTestRoot} from './utils';
 approvals.mocha();
 
 function processAsm(filename, filters) {
-    const file = fs.readFileSync(filename, 'utf-8');
+    const file = fs.readFileSync(filename, 'utf8');
     let parser;
     if (file.includes('Microsoft')) parser = new VcAsmParser();
     else if (filename.includes('sass-')) parser = new SassAsmParser();
+    else if (filename.includes('cc65-')) parser = new CC65AsmParser();
     else if (filename.includes('ewarm-')) parser = new AsmEWAVRParser();
     else {
         parser = new AsmParser();

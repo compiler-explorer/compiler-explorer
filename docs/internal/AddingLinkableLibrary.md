@@ -36,7 +36,7 @@ unifex:
 3. Test building
 
 - Make sure you have a compiler installed, for example via `bin/ce_install install 'gcc 10.1.0'`
-- `bin/ce_install --enable nightly --buildfor g101 --dry build 'unifex'`
+- `bin/ce_install --dry-run --keep-staging --enable nightly build --buildfor g101 'unifex'`
 - check one of the buildfolders that are created and see if there are .so's or .a's and otherwise check the
   cecmakelog.txt and cemakelog_X.txt
 - Iterate over this to make it work

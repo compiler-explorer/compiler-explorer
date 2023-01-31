@@ -20,8 +20,9 @@ mixin optionButton(bind, isActive, text, title)
         span.fas.fa-filter
         span.hideable Filters
       .dropdown-menu
-        +optionButton("filter-inconsequential-passes", false, "Filter Inconsequential Passes", "Filter passes which do not make changes")
-        +optionButton("filter-debug-info", true, "Filter Debug Info", "Filter debug info intrinsics")
+        +optionButton("filter-inconsequential-passes", false, "Hide Inconsequential Passes", "Filter passes which do not make changes")
+        +optionButton("filter-debug-info", true, "Hide Debug Info", "Filter debug info intrinsics")
+        +optionButton("filter-instruction-metadata", true, "Hide Instruction Metadata", "Filter all IR metadata")
         //- +optionButton("library-functions", true, "Filter Library Functions", "Filter library functions")
     .btn-group.btn-group-sm
       .input-group.input-group-sm.mb-auto

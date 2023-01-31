@@ -9,6 +9,7 @@ plugins:
   - prettier
   - unicorn
   - '@typescript-eslint'
+  - unused-imports
 extends:
   - ./.eslint-license-header.yml
   - eslint:recommended
@@ -43,7 +44,7 @@ rules:
   import/first: error
   import/newline-after-import: error
   import/no-absolute-path: error
-  import/no-cycle: error
+  # import/no-cycle: error # disabled for now, there's an import cycle between the base-compiler and demanglers
   import/no-default-export: warn
   import/no-deprecated: warn
   import/no-mutable-exports: error
@@ -64,15 +65,19 @@ rules:
   max-statements:
     - error
     - 100 # TODO reduce...was 50
+  no-console: error
   no-control-regex: 0
   no-duplicate-imports: error
   no-useless-call: error
   no-useless-computed-key: error
   no-useless-concat: error
-  no-useless-constructor: error
+  '@typescript-eslint/no-useless-constructor': error
   no-useless-escape: error
   no-useless-rename: error
   no-useless-return: error
+  no-empty:
+    - error
+    - allowEmptyCatch: true
   quote-props:
     - error
     - as-needed
@@ -96,6 +101,9 @@ rules:
     - error
     - never
     - onlyEquality: true
+  prefer-const:
+    - error
+    - destructuring: all
   jsdoc/check-alignment: warn
   jsdoc/check-param-names: warn
   jsdoc/check-syntax: warn
@@ -154,6 +162,9 @@ rules:
   unicorn/prefer-switch: off
   unicorn/no-static-only-class: off
   unicorn/no-process-exit: off
+  unicorn/no-useless-undefined:
+    - error
+    - checkArguments: false
   '@typescript-eslint/no-empty-function': off
   '@typescript-eslint/no-unused-vars': off
   '@typescript-eslint/no-explicit-any': off

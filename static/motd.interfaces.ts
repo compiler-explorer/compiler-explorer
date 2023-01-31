@@ -24,7 +24,7 @@
 
 import {editor} from 'monaco-editor/';
 
-type Decoration = {
+export type Decoration = {
     decoration: editor.IModelDecorationOptions;
     filter: string[];
     name: string;

@@ -363,6 +363,7 @@ describe('Compiler tests', () => {
                     bypassCache: false,
                     executionParameters: {
                         args: [],
+                        stdin: '',
                     },
                     filters: {
                         a: true,

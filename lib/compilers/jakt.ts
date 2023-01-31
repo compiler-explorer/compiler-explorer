@@ -25,34 +25,61 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
 
 export class JaktCompiler extends BaseCompiler {
     static get key() {
         return 'jakt';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
-        // TODO: The jakt compiler emits a file by the same name as the input,
-        // so this won't work if we have another input file that isn't called example.jakt
         this.outputFilebase = 'example';
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename: any) {
+    override getCompilerResultLanguageId() {
+        return 'cppp';
+    }
+
+    override async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
+        const objdumpResult = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
+
+        objdumpResult.languageId = 'asm';
+        return objdumpResult;
+    }
+
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: any) {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         const parsed_path = path.parse(defaultOutputFilename);
 
-        return path.join(parsed_path.dir, parsed_path.name);
+        return path.join(parsed_path.dir, this.outputFilebase);
     }
 
-    override getExecutableFilename(dirPath, outputFilebase, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, outputFilebase);
     }
 
@@ -62,22 +89,11 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryLinks(libraries): string[] {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
     }
 
     override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
-        return path.join(dirPath, `${outputFilebase}.cpp`);
-    }
-
-    override async exec(filepath: string, args: string[], execOptions: ExecutionOptions) {
-        return exec.execute(filepath, args, execOptions).then(result => {
-            if (result.code !== 0) {
-                // We still want to display the transpiled C++, even if it can't execute.
-                // So fake a successful execute here.
-                result.code = 0;
-            }
-            return result;
-        });
+        return path.join(dirPath, 'Root Module.cpp');
     }
 }

@@ -24,7 +24,8 @@
 
 import _ from 'underscore';
 
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
 import {ToitParser} from './argument-parsers';
@@ -34,7 +35,7 @@ export class ToitCompiler extends BaseCompiler {
         return 'toit';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }
@@ -43,7 +44,7 @@ export class ToitCompiler extends BaseCompiler {
         return outputFilename + '.cache';
     }
 
-    override optionsForFilter(filters: ParseFilters, outputFilename, userOptions?): string[] {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename, userOptions?): string[] {
         if (!filters.binary) return ['execute', outputFilename];
         return [outputFilename];
     }

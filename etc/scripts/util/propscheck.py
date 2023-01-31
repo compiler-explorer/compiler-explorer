@@ -27,7 +27,7 @@ from os import listdir
 from os.path import isfile, join
 import re
 
-PROP_RE = re.compile(r'[^#]*=.*')
+PROP_RE = re.compile(r'([^#]*)=(.*)#*')
 COMPILERS_LIST_RE = re.compile(r'compilers=(.*)')
 ALIAS_LIST_RE = re.compile(r'alias=(.*)')
 GROUP_NAME_RE = re.compile(r'group\.(.*?)\.')
@@ -146,10 +146,11 @@ def process_file(file: str):
             if not match_prop:
                 continue
 
-            if line in seen_lines:
-                duplicate_lines.add(line)
+            prop_key = match_prop.group(1)
+            if prop_key in seen_lines:
+                duplicate_lines.add(Line(line.number, prop_key))
             else:
-                seen_lines.add(line)
+                seen_lines.add(prop_key)
 
             match_compilers_list = COMPILERS_LIST_RE.search(line.text)
             if match_compilers_list:
@@ -201,8 +202,16 @@ def process_file(file: str):
             match_and_update(line, TOOLS_LIST_RE, listed_tools)
             match_and_update(line, LIBS_LIST_RE, listed_libs_ids)
 
-    bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
-    bad_compilers_ids = listed_compilers.symmetric_difference(seen_compilers_id)
+    if len(seen_compilers_exe) > 0:
+        bad_compilers_exe = listed_compilers.symmetric_difference(seen_compilers_exe)
+    else:
+        bad_compilers_exe = set()
+
+    if len(seen_compilers_id) > 0:
+        bad_compilers_ids = listed_compilers.symmetric_difference(seen_compilers_id)
+    else:
+        bad_compilers_ids = set()
+
     bad_groups = listed_groups.symmetric_difference(seen_groups)
     bad_formatters_exe = listed_formatters.symmetric_difference(seen_formatters_exe)
     bad_formatters_id = listed_formatters.symmetric_difference(seen_formatters_id)
@@ -240,7 +249,7 @@ def process_folder(folder: str):
 
 
 def problems_found(file_result):
-    return any([len(file_result[r]) > 0 for r in file_result if r != "filename"])
+    return any(len(file_result[r]) > 0 for r in file_result if r != "filename")
 
 
 def print_issue(name, result):

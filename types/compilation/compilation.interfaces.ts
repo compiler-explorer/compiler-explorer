@@ -23,35 +23,50 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
+import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
+import {CompilerInfo} from '../compiler.interfaces';
+import {BasicExecutionResult} from '../execution/execution.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
+import {Artifact, ToolResult} from '../tool.interfaces';
+
+import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
 
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
-    buildResult?: unknown;
+    buildResult?: BuildResult;
+    buildsteps?: BuildStep[];
     inputFilename?: string;
     asm?: ResultLine[];
+    devices?: Record<string, CompilationResult>;
     stdout: ResultLine[];
     stderr: ResultLine[];
     didExecute?: boolean;
     execResult?: {
         stdout?: ResultLine[];
         stderr?: ResultLine[];
+        code: number;
+        didExecute: boolean;
+        buildResult?: BuildResult;
+        execTime?: number;
     };
     hasGnatDebugOutput?: boolean;
     gnatDebugOutput?: ResultLine[];
     hasGnatDebugTreeOutput?: boolean;
     gnatDebugTreeOutput?: ResultLine[];
-    tools?: any;
+    tools?: ToolResult[];
     dirPath?: string;
     compilationOptions?: string[];
     downloads?: BuildEnvDownloadInfo[];
     gccDumpOutput?: any;
+    languageId?: string;
+    result?: CompilationResult; // cmake inner result
 
     hasPpOutput?: boolean;
     ppOutput?: any;
 
     hasOptOutput?: boolean;
+    optOutput?: any;
     optPath?: string;
 
     hasAstOutput?: boolean;
@@ -61,7 +76,7 @@ export type CompilationResult = {
     irOutput?: any;
 
     hasLLVMOptPipelineOutput?: boolean;
-    llvmOptPipelineOutput?: any;
+    llvmOptPipelineOutput?: LLVMOptPipelineOutput | string;
 
     hasRustMirOutput?: boolean;
     rustMirOutput?: any;
@@ -82,8 +97,18 @@ export type CompilationResult = {
     haskellCmmOutput?: any;
 
     forceBinaryView?: boolean;
-    bbcdiskimage?: string;
+
+    artifacts?: Artifact[];
+
     hints?: string[];
+
+    retreivedFromCache?: boolean;
+    retreivedFromCacheTime?: number;
+    packageDownloadAndUnzipTime?: number;
+    execTime?: number | string;
+    processExecutionResultTime?: number;
+    objdumpTime?: number;
+    parsingTime?: number;
 };
 
 export type ExecutionOptions = {
@@ -95,29 +120,46 @@ export type ExecutionOptions = {
     ldPath?: string[];
     appHome?: string;
     customCwd?: string;
+    // Stdin
     input?: any;
     killChild?: () => void;
 };
 
-export type BuildResult = {
+export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
     executableFilename: string;
-    compilationOptions: any[];
-};
-
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
-    id: string;
-    name: string;
-    code: number;
-    languageId: string;
-    stderr: ResultLine[];
+    compilationOptions: string[];
     stdout: ResultLine[];
-    artifact?: Artifact;
+    stderr: ResultLine[];
+    code: number;
+};
+
+export type BuildStep = BasicExecutionResult & {
+    compilationOptions: string[];
+    step: string;
+};
+
+export type CompilationInfo = {
+    mtime: Date | null;
+    compiler: CompilerInfo & Record<string, unknown>;
+    args: string[];
+    options: ExecutionOptions;
+    outputFilename: string;
+    executableFilename: string;
+    asmParser: IAsmParser;
+    inputFilename?: string;
+    dirPath?: string;
+};
+
+export type CompilationCacheKey = {
+    mtime: any;
+    compiler: any;
+    args: string[];
+    options: ExecutionOptions;
+};
+
+export type CustomInputForTool = {
+    inputFilename: string;
+    dirPath: string;
+    outputFilename: string;
 };

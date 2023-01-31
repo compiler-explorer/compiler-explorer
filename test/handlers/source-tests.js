@@ -35,7 +35,6 @@ describe('Sources', () => {
                 urlpart: 'moose',
                 list: () => Promise.resolve({moose: 'pig'}),
                 load: name => Promise.resolve({file: `File called ${name}`}),
-                save: null,
             },
         ],
         res => res.setHeader('Yibble', 'boing'),

@@ -34,7 +34,7 @@ import {MonacoPaneState} from './pane.interfaces';
 import {DiffState, DiffType} from './diff.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {Compiler} from '../../types/compiler.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 
 class DiffStateObject {
     // can be undefined if there are no compilers / executors
@@ -109,7 +109,7 @@ type CompilerEntry = {
     options: unknown;
     editorId: number;
     treeId: number;
-    compiler: Compiler;
+    compiler: CompilerInfo;
 };
 
 type SelectizeType = {
@@ -158,7 +158,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                     {id: DiffType.GNAT_Tree, name: 'GNAT Tree Code'},
                 ],
                 items: [],
-                render: {
+                render: <any>{
                     option: (item, escape) => {
                         return `<div>${escape(item.name)}</div>`;
                     },
@@ -195,7 +195,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
                 searchField: ['name'],
                 options: [],
                 items: [],
-                render: {
+                render: <any>{
                     option: function (item, escape) {
                         const origin = item.editorId !== false ? 'Editor #' + item.editorId : 'Tree #' + item.treeId;
                         return (
@@ -260,7 +260,8 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override createEditor(editorRoot: HTMLElement) {
         return monaco.editor.createDiffEditor(editorRoot, {
-            fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
+            fontFamily: this.settings.editorsFFont,
+            fontLigatures: this.settings.editorsFLigatures,
             scrollBeyondLastLine: true,
             readOnly: true,
         });
@@ -272,7 +273,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateState();
     }
 
-    onCompileResult(id: number | string, compiler: Compiler, result: CompilationResult) {
+    override onCompileResult(id: number | string, compiler: CompilerInfo, result: CompilationResult) {
         // both sides must be updated, don't be tempted to rewrite this as
         // var changes = lhs.update() || rhs.update();
         const lhsChanged = this.lhs.update(id, compiler, result);
@@ -282,7 +283,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         }
     }
 
-    onExecuteResult(id: number, compiler: Compiler, result: CompilationResult) {
+    onExecuteResult(id: number, compiler: CompilerInfo, result: CompilationResult) {
         const compileResult: any = Object.assign({}, result.buildResult);
         compileResult.execResult = {
             code: result.code,
@@ -314,7 +315,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
 
     override onCompiler(
         id: number | string,
-        compiler: Compiler | undefined,
+        compiler: CompilerInfo | undefined,
         options: unknown,
         editorId: number,
         treeId: number
@@ -322,9 +323,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         if (!compiler) return;
         options = options || '';
         let name = compiler.name + ' ' + options;
-        // TODO: selectize doesn't play nicely with CSS tricks for truncation; this is the best I can do
-        // There's a plugin at: http://www.benbybenjacobs.com/blog/2014/04/09/no-wrap-plugin-for-selectize-dot-js
-        // but it doesn't look easy to integrate.
+        // TODO: tomselect doesn't play nicely with CSS tricks for truncation; this is the best I can do
         const maxLength = 30;
         if (name.length > maxLength - 3) name = name.substr(0, maxLength - 3) + '...';
         this.compilers[id] = {
@@ -348,7 +347,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.updateCompilers();
     }
 
-    onExecutor(id: number, compiler: Compiler, options: unknown, editorId: number, treeId: number) {
+    onExecutor(id: number, compiler: CompilerInfo, options: unknown, editorId: number, treeId: number) {
         this.onCompiler(id + '_exec', compiler, options, editorId, treeId);
     }
 

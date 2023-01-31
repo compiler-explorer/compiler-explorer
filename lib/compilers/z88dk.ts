@@ -24,8 +24,12 @@
 
 import path from 'path';
 
+import fs from 'fs-extra';
+
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
@@ -36,7 +40,7 @@ export class z88dkCompiler extends BaseCompiler {
         return 'z88dk';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);
@@ -60,14 +64,14 @@ export class z88dkCompiler extends BaseCompiler {
     }
 
     public override orderArguments(
-        options,
-        inputFilename,
-        libIncludes,
-        libOptions,
-        libPaths,
-        libLinks,
-        userOptions,
-        staticLibLinks,
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
     ) {
         return userOptions.concat(
             options,
@@ -80,11 +84,11 @@ export class z88dkCompiler extends BaseCompiler {
         );
     }
 
-    protected override optionsForFilter(filters: ParseFilters, outputFilename: string): string[] {
-        if (!filters.binary) {
-            return ['-S'];
-        } else {
+    protected override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string): string[] {
+        if (filters.binary) {
             return ['-o', outputFilename + '.s', '-create-app'];
+        } else {
+            return ['-S'];
         }
     }
 
@@ -96,23 +100,40 @@ export class z88dkCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         return defaultOutputFilename;
     }
 
-    override async objdump(outputFilename, result: any, maxSize: number, intelAsm, demangle, filters: ParseFilters) {
+    getTapefilename() {
+        return `${this.outputFilebase}.tap`;
+    }
+
+    getSmsfilename() {
+        return `${this.outputFilebase}.sms`;
+    }
+
+    override async objdump(
+        outputFilename,
+        result: any,
+        maxSize: number,
+        intelAsm,
+        demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
+        filters: ParseFiltersAndOutputOptions,
+    ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 
         // sometimes (with +z80 for example) the .bin file is written and the .s file is empty
-        if (!(await utils.fileExists(outputFilename + '.bin'))) {
-            if (!(await utils.fileExists(outputFilename + '.s'))) {
+        if (await utils.fileExists(outputFilename + '.bin')) {
+            outputFilename += '.bin';
+        } else {
+            if (await utils.fileExists(outputFilename + '.s')) {
+                outputFilename += '.s';
+            } else {
                 result.asm = '<No output file ' + outputFilename + '.s>';
                 return result;
-            } else {
-                outputFilename += '.s';
             }
-        } else {
-            outputFilename += '.bin';
         }
 
         const args = [outputFilename];
@@ -132,12 +153,24 @@ export class z88dkCompiler extends BaseCompiler {
             };
             const objResult = await this.exec(this.compiler.objdumper, args, execOptions);
 
-            if (objResult.code !== 0) {
-                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
-                result.asm = `<No output: objdump returned ${objResult.code}>`;
-            } else {
+            if (objResult.code === 0) {
                 result.objdumpTime = objResult.execTime;
                 result.asm = this.postProcessObjdumpOutput(objResult.stdout);
+            } else {
+                logger.error(`Error executing objdump ${this.compiler.objdumper}`, objResult);
+                result.asm = `<No output: objdump returned ${objResult.code}>`;
+            }
+        }
+
+        if (result.code === 0 && filters.binary) {
+            const tapeFilepath = path.join(result.dirPath, this.getTapefilename());
+            if (await utils.fileExists(tapeFilepath)) {
+                await this.addArtifactToResult(result, tapeFilepath, ArtifactType.zxtape);
+            }
+
+            const smsFilepath = path.join(result.dirPath, this.getSmsfilename());
+            if (await utils.fileExists(smsFilepath)) {
+                await this.addArtifactToResult(result, smsFilepath, ArtifactType.smsrom);
             }
         }
 

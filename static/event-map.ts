@@ -23,13 +23,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {Language} from '../types/languages.interfaces';
-import {CompilerFilters} from '../types/features/filters.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces';
 import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
 import {SiteSettings} from './settings';
 import {Theme} from './themes';
 import {PPOptions} from './panes/pp-view.interfaces';
-import {GccSelectedPass} from './panes/gccdump-view.interfaces';
+import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces';
 import {Motd} from './motd.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
+import {CompilationResult} from '../types/compilation/compilation.interfaces';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -42,15 +44,26 @@ export type EventMap = {
     colours: (editorId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForCompiler: (compilerId: number, colours: Record<number, number>, scheme: string) => void;
     coloursForEditor: (editorId: number, colours: Record<number, number>, scheme: string) => void;
-    compiler: (compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number) => void;
+    compiler: (
+        compilerId: number,
+        compiler: CompilerInfo | null,
+        options: string,
+        editorId: number,
+        treeId: number
+    ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
-    compileResult: (compilerId: number, compiler: unknown, result: unknown, language: Language) => void;
+    compileResult: (
+        compilerId: number,
+        compiler: CompilerInfo,
+        result: CompilationResult,
+        language: Language | undefined
+    ) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
     compilerOpen: (compilerId: number, editorId: number, treeId: number | boolean) => void;
     // Right now nothing emits this event, but it might be useful at some point so we keep it
     compilerSetDecorations: (compilerId: number, lineNums: number[], revealLine: boolean, column?: number) => void;
-    compiling: (compilerId: number, compiler: unknown) => void;
+    compiling: (compilerId: number, compiler: CompilerInfo) => void;
     conformanceViewClose: (editorId: number) => void;
     conformanceViewOpen: (editorId: number) => void;
     copyShortLinkToClip: () => void;
@@ -73,14 +86,14 @@ export type EventMap = {
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
-    filtersChange: (compilerId: number, filters: CompilerFilters) => void;
+    filtersChange: (compilerId: number, filters: Partial<CompilerOutputOptions>) => void;
     findCompilers: () => void;
     findEditors: () => void;
     findExecutors: () => void;
     flagsViewClosed: (compilerId: number, options: string) => void;
     flagsViewOpened: (compilerId: number) => void;
-    gccDumpFiltersChanged: (compilerId: number, filters: CompilerFilters, recompile: boolean) => void;
-    gccDumpPassSelected: (compilerId: number, pass: GccSelectedPass, recompile: boolean) => void;
+    gccDumpFiltersChanged: (compilerId: number, state: GccDumpFiltersState, recompile: boolean) => void;
+    gccDumpPassSelected: (compilerId: number, pass: GccDumpViewSelectedPass, recompile: boolean) => void;
     gccDumpUIInit: (compilerId: number) => void;
     gccDumpViewClosed: (compilerId: number) => void;
     gccDumpViewOpened: (compilerId: number) => void;
@@ -114,7 +127,8 @@ export type EventMap = {
         colBegin: number,
         colEnd: number,
         reveal: boolean,
-        sender: string
+        sender: string,
+        editorId?: number
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;
@@ -137,13 +151,13 @@ export type EventMap = {
     // TODO: There are no emitters for this event
     selectLine: (editorId: number, lineNumber: number) => void;
     settingsChange: (newSettings: SiteSettings) => void;
-    setToolInput: (compilerId: number, toolId: number, string: string) => void;
+    setToolInput: (compilerId: number, toolId: string, string: string) => void;
     shown: () => void;
     themeChange: (newTheme: Theme | null) => void;
     toolClosed: (compilerId: number, toolState: unknown) => void;
-    toolInputChange: (compilerId: number, toolId: number, input: string) => void;
-    toolInputViewClosed: (compilerId: number, toolId: number, input: string) => void;
-    toolInputViewCloseRequest: (compilerId: number, toolId: number) => void;
+    toolInputChange: (compilerId: number, toolId: string, input: string) => void;
+    toolInputViewClosed: (compilerId: number, toolId: string, input: string) => void;
+    toolInputViewCloseRequest: (compilerId: number, toolId: string) => void;
     toolOpened: (compilerId: number, toolState: unknown) => void;
     toolSettingsChange: (compilerId: number) => void;
     treeClose: (treeId: number) => void;

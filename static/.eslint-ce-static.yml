@@ -36,6 +36,7 @@ rules:
   max-statements:
     - error
     - 50
+  no-console: error
   no-control-regex: 0
   no-useless-call: error
   no-useless-computed-key: error
@@ -43,6 +44,9 @@ rules:
   no-useless-escape: error
   no-useless-rename: error
   no-useless-return: error
+  no-empty:
+    - error
+    - allowEmptyCatch: true
   quote-props:
     - error
     - as-needed

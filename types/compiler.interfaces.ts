@@ -22,12 +22,108 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Minimal Compiler properties until a better one can be sync'ed with the backend
-export type Compiler = {
+import {CompilerArguments} from '../lib/compiler-arguments';
+
+import {Language} from './languages.interfaces';
+import {Library} from './libraries/libraries.interfaces';
+import {Tool, ToolInfo} from './tool.interfaces';
+
+export type CompilerInfo = {
+    id: string;
+    exe: string;
+    name: string;
+    version: string;
+    fullVersion: string;
+    baseName: string;
     alias: string[];
+    options: string;
+    versionFlag?: string;
+    versionRe?: string;
+    explicitVersion?: string;
+    compilerType: string;
+    debugPatched: boolean;
+    demangler: string;
+    demanglerType: string;
+    objdumper: string;
+    objdumperType: string;
+    intelAsm: string;
+    supportsAsmDocs: boolean;
+    instructionSet: string;
+    needsMulti: boolean;
+    adarts: string;
+    supportsDeviceAsmView?: boolean;
+    supportsDemangle?: boolean;
+    supportsBinary?: boolean;
+    supportsBinaryObject?: boolean;
+    supportsIntel?: boolean;
+    interpreted?: boolean;
+    // (interpreted || supportsBinary) && supportsExecute
+    supportsExecute?: boolean;
+    supportsGccDump?: boolean;
+    supportsFiltersInBinary?: boolean;
+    supportsOptOutput?: boolean;
+    supportsPpView?: boolean;
+    supportsAstView?: boolean;
+    supportsIrView?: boolean;
+    supportsLLVMOptPipelineView?: boolean;
+    supportsRustMirView?: boolean;
+    supportsRustMacroExpView?: boolean;
+    supportsRustHirView?: boolean;
+    supportsHaskellCoreView?: boolean;
+    supportsHaskellStgView?: boolean;
+    supportsHaskellCmmView?: boolean;
+    supportsCfg?: boolean;
+    supportsGnatDebugViews?: boolean;
+    supportsLibraryCodeFilter?: boolean;
+    executionWrapper: string;
+    postProcess: string[];
+    lang: string;
     group: string;
     groupName: string;
-    id: string;
-    lang: string;
-    name: string;
+    $groups: string[];
+    includeFlag: string;
+    includePath: string;
+    linkFlag: string;
+    rpathFlag: string;
+    libpathFlag: string;
+    libPath: string[];
+    ldPath: string[];
+    // [env, setting][]
+    envVars: [string, string][];
+    notification: string;
+    isSemVer: boolean;
+    semver: string;
+    libsArr: Library['id'][];
+    tools: Record<ToolInfo['id'], Tool>;
+    unwiseOptions: string[];
+    hidden: boolean;
+    buildenvsetup: {
+        id: string;
+        props: (name: string, def: string) => string;
+    };
+    license?: {
+        link?: string;
+        name?: string;
+        preamble?: string;
+    };
+    remote: any;
+    disabledFilters: string[];
+    optArg: string;
+    externalparser: any;
+    removeEmptyGccDump: boolean;
+    irArg: string[];
+    llvmOptArg: string[];
+    llvmOptModuleScopeArg: string[];
+    llvmOptNoDiscardValueNamesArg: string[];
+    cachedPossibleArguments?: any;
+    nvdisasm?: string;
 };
+
+export interface ICompiler {
+    possibleArguments: CompilerArguments;
+    lang: Language;
+    compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
+    cmake(files, key);
+    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    getInfo();
+}

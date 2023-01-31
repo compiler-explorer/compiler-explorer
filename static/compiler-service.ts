@@ -34,21 +34,17 @@ import {ResultLine} from '../types/resultline/resultline.interfaces';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {Compiler} from '../types/compiler.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 import {CompilationResult} from '../types/compilation/compilation.interfaces';
-
-type CompilationStatus = {
-    code: 0 | 1 | 2 | 3 | 4;
-    compilerOut: number;
-};
+import {CompilationStatus} from './compiler-service.interfaces';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
-    private cache: LRU;
-    private readonly compilersByLang: Record<string, Record<string, Compiler>>;
+    cache: LRU;
+    private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
@@ -74,7 +70,7 @@ export class CompilerService {
     public processFromLangAndCompiler(
         langId: string | null,
         compilerId: string
-    ): {langId: string | null; compiler: Compiler | null} | null {
+    ): {langId: string | null; compiler: CompilerInfo | null} | null {
         try {
             if (langId) {
                 if (!compilerId) {
@@ -83,7 +79,7 @@ export class CompilerService {
 
                 const foundCompiler = this.findCompiler(langId, compilerId);
                 if (!foundCompiler) {
-                    const compilers = Object.values(this.getCompilersForLang(langId));
+                    const compilers = Object.values(this.getCompilersForLang(langId) ?? {});
                     if (compilers.length > 0) {
                         return {
                             compiler: compilers[0],
@@ -137,7 +133,7 @@ export class CompilerService {
 
     public getGroupsInUse(langId: string): {value: string; label: string}[] {
         return _.chain(this.getCompilersForLang(langId))
-            .map((compiler: Compiler) => compiler)
+            .map((compiler: CompilerInfo) => compiler)
             .uniq(false, compiler => compiler.group)
             .map(compiler => {
                 return {value: compiler.group, label: compiler.groupName || compiler.group};
@@ -148,11 +144,11 @@ export class CompilerService {
             .value();
     }
 
-    private getCompilersForLang(langId: string): Record<string, Compiler> {
-        return langId in this.compilersByLang ? this.compilersByLang[langId] : {};
+    getCompilersForLang(langId: string): Record<string, CompilerInfo> | undefined {
+        return langId in this.compilersByLang ? this.compilersByLang[langId] : undefined;
     }
 
-    private findCompilerInList(compilers: Record<string, Compiler>, compilerId: string) {
+    private findCompilerInList(compilers: Record<string, CompilerInfo>, compilerId: string) {
         if (compilerId in compilers) {
             return compilers[compilerId];
         }
@@ -164,9 +160,9 @@ export class CompilerService {
         return null;
     }
 
-    private findCompiler(langId: string, compilerId: string) {
+    findCompiler(langId: string, compilerId: string): CompilerInfo | null {
         if (!compilerId) return null;
-        const compilers = this.getCompilersForLang(langId);
+        const compilers = this.getCompilersForLang(langId) ?? {};
         return this.findCompilerInList(compilers, compilerId);
     }
 

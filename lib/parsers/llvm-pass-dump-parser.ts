@@ -29,28 +29,15 @@ import {
     LLVMOptPipelineResults,
     Pass,
 } from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ParseFilters} from '../../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
+import {assert} from '../assert';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
 // Maybe at a later date we'll want to allow user-controllable filters
 // It'd be helpful to better display annotations about branch weights
 // and parse debug info too at some point.
-
-// TODO(jeremy-rifkin): Doe we already have an assert utility
-function assert(condition: boolean, message?: string, ...args: any[]): asserts condition {
-    if (!condition) {
-        const stack = new Error('Assertion Error').stack;
-        throw (
-            (message
-                ? `Assertion error in llvm-print-after-all-parser: ${message}`
-                : `Assertion error in llvm-print-after-all-parser`) +
-            (args.length > 0 ? `\n${JSON.stringify(args)}\n` : '') +
-            `\n${stack}`
-        );
-    }
-}
 
 // Just a sanity check
 function passesMatch(before: string, after: string) {
@@ -84,6 +71,7 @@ export class LlvmPassDumpParser {
     lineFilters: RegExp[];
     debugInfoFilters: RegExp[];
     debugInfoLineFilters: RegExp[];
+    metadataLineFilters: RegExp[];
     irDumpHeader: RegExp;
     machineCodeDumpHeader: RegExp;
     functionDefine: RegExp;
@@ -118,7 +106,13 @@ export class LlvmPassDumpParser {
             /^(![.A-Z_a-z-]+) = (?:distinct )?!{.*}/, // meta
         ];
         this.debugInfoLineFilters = [
-            /,? ![\dA-Za-z]+((?=( {)?$))/, // debug annotation
+            /,? !dbg !\d+/, // instruction/function debug metadata
+            /,? debug-location !\d+/, // Direct source locations like 'example.cpp:8:1' not filtered
+        ];
+
+        // Conditionally enabled by `filterIRMetadata`
+        this.metadataLineFilters = [
+            /,?(?: ![\d.A-Za-z]+){2}/, // any instruction metadata
         ];
 
         // Ir dump headers look like "*** IR Dump After XYZ ***"
@@ -168,9 +162,7 @@ export class LlvmPassDumpParser {
                 };
                 lastWasBlank = true; // skip leading newlines after the header
             } else {
-                if (pass === null) {
-                    throw 'Internal error during breakdownOutput (1)';
-                }
+                assert(pass);
                 if (line.text.trim() === '') {
                     if (!lastWasBlank) {
                         pass.lines.push(line);
@@ -209,9 +201,7 @@ export class LlvmPassDumpParser {
             // function define line
             if (irFnMatch || machineFnMatch) {
                 // if the last function has not been closed...
-                if (func !== null) {
-                    throw 'Internal error during breakdownPass (1)';
-                }
+                assert(func === null);
                 func = {
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     name: (irFnMatch || machineFnMatch)![1],
@@ -229,19 +219,13 @@ export class LlvmPassDumpParser {
                 // close function
                 if (this.functionEnd.test(line.text.trim())) {
                     // if not currently in a function
-                    if (func === null) {
-                        throw 'Internal error during breakdownPass (2)';
-                    }
+                    assert(func);
                     const {name, lines} = func;
                     lines.push(line); // include the }
                     // loop dumps can't be terminated with }
-                    if (name === '<loop>') {
-                        throw 'Internal error during breakdownPass (3)';
-                    }
+                    assert(name !== '<loop>');
                     // somehow dumped twice?
-                    if (name in pass.functions) {
-                        throw 'Internal error during breakdownPass (4)';
-                    }
+                    assert(!(name in pass.functions));
                     pass.functions[name] = lines;
                     func = null;
                 } else {
@@ -262,17 +246,10 @@ export class LlvmPassDumpParser {
         }
         // unterminated function, either a loop dump or an error
         if (func !== null) {
-            if (func.name === '<loop>') {
-                // loop dumps must be alone
-                if (Object.entries(pass.functions).length > 0) {
-                    //console.dir(dump, { depth: 5, maxArrayLength: 100000 });
-                    //console.log(pass.functions);
-                    throw 'Internal error during breakdownPass (5)';
-                }
-                pass.functions[func.name] = func.lines;
-            } else {
-                throw 'Internal error during breakdownPass (6)';
-            }
+            assert(func.name === '<loop>');
+            // loop dumps must be alone
+            assert(Object.entries(pass.functions).length === 0);
+            pass.functions[func.name] = func.lines;
         }
         return pass;
     }
@@ -453,39 +430,53 @@ export class LlvmPassDumpParser {
         }
     }
 
-    process(ir: ResultLine[], _: ParseFilters, llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
-        // Additional filters conditionally enabled by `filterDebugInfo`
+    applyIrFilters(ir: ResultLine[], llvmOptPipelineOptions: LLVMOptPipelineBackendOptions) {
+        // Additional filters conditionally enabled by `filterDebugInfo`/`filterIRMetadata`
         let filters = this.filters;
         let lineFilters = this.lineFilters;
         if (llvmOptPipelineOptions.filterDebugInfo) {
             filters = filters.concat(this.debugInfoFilters);
             lineFilters = lineFilters.concat(this.debugInfoLineFilters);
         }
+        if (llvmOptPipelineOptions.filterIRMetadata) {
+            lineFilters = lineFilters.concat(this.metadataLineFilters);
+        }
 
-        // Filter a lot of junk before processing
-        const preprocessed_lines = ir
-            .slice(
-                ir.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
-            )
-            .filter(line => filters.every(re => line.text.match(re) === null)) // apply filters
-            .map(_line => {
-                let line = _line.text;
-                // eslint-disable-next-line no-constant-condition
-                while (true) {
-                    let newLine = line;
-                    for (const re of lineFilters) {
-                        newLine = newLine.replace(re, '');
+        return (
+            ir
+                // whole-line filters
+                .filter(line => filters.every(re => line.text.match(re) === null))
+                // intra-line filters
+                .map(_line => {
+                    let line = _line.text;
+                    // eslint-disable-next-line no-constant-condition
+                    while (true) {
+                        let newLine = line;
+                        for (const re of lineFilters) {
+                            newLine = newLine.replace(re, '');
+                        }
+                        if (newLine === line) {
+                            break;
+                        } else {
+                            line = newLine;
+                        }
                     }
-                    if (newLine === line) {
-                        break;
-                    } else {
-                        line = newLine;
-                    }
-                }
-                _line.text = line;
-                return _line;
-            });
+                    _line.text = line;
+                    return _line;
+                })
+        );
+    }
 
+    process(
+        output: ResultLine[],
+        _: ParseFiltersAndOutputOptions,
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
+    ) {
+        // Crop out any junk before the pass dumps (e.g. warnings)
+        const ir = output.slice(
+            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
+        );
+        const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);
     }
 }

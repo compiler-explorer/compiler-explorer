@@ -22,7 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerFilters} from '../types/features/filters.interfaces';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+
 import {
     EmptyCompilerState,
     ComponentConfig,
@@ -50,7 +52,6 @@ import {
     PopulatedAstViewState,
     EmptyGccDumpViewState,
     PopulatedGccDumpViewState,
-    GccDumpOptions,
     EmptyCfgViewState,
     PopulatedCfgViewState,
     PopulatedConformanceViewState,
@@ -126,7 +127,7 @@ export function getCompiler(editorId: number, lang: string): ComponentConfig<Emp
  */
 export function getCompilerWith(
     editorId: number,
-    filters: CompilerFilters,
+    filters: ParseFiltersAndOutputOptions | undefined,
     options: unknown,
     compilerId: string,
     langId?: string,
@@ -222,7 +223,11 @@ export function getEditor(id?: number, langId?: string): ComponentConfig<EmptyEd
 }
 
 /** Get an editor component with the given configuration. */
-export function getEditorWith(id: number, source: string, options): ComponentConfig<PopulatedEditorState> {
+export function getEditorWith(
+    id: number,
+    source: string,
+    options: ParseFiltersAndOutputOptions
+): ComponentConfig<PopulatedEditorState> {
     return {
         type: 'component',
         componentName: EDITOR_COMPONENT_NAME,
@@ -250,7 +255,7 @@ export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
 }
 
 /** Get an output component with the given configuration. */
-export function getOutput(compiler: string, editor: number, tree: number): ComponentConfig<OutputState> {
+export function getOutput(compiler: number, editor: number, tree: number): ComponentConfig<OutputState> {
     return {
         type: 'component',
         componentName: OUTPUT_COMPONENT_NAME,
@@ -264,7 +269,7 @@ export function getOutput(compiler: string, editor: number, tree: number): Compo
 
 /** Get a tool view component with the given configuration. */
 export function getToolViewWith(
-    compiler: string,
+    compiler: number,
     editor: number,
     toolId: string,
     args: string,
@@ -348,7 +353,7 @@ export function getOptView(): ComponentConfig<EmptyOptViewState> {
 /** Get an opt view with the given configuration. */
 export function getOptViewWith(
     id: number,
-    source: number,
+    source: string,
     optOutput: unknown,
     compilerName: string,
     editorid: number,
@@ -406,7 +411,7 @@ export function getPpView(): ComponentConfig<EmptyPpViewState> {
 /** Get a preprocessor view with the given configuration. */
 export function getPpViewWith(
     id: number,
-    source: number,
+    source: string,
     ppOutput: unknown,
     compilerName: string,
     editorid: number,
@@ -438,7 +443,7 @@ export function getAstView(): ComponentConfig<EmptyAstViewState> {
 /** Get an ast view with the given configuration. */
 export function getAstViewWith(
     id: number,
-    source: number,
+    source: string,
     astOutput: unknown,
     compilerName: string,
     editorid: number,
@@ -469,41 +474,25 @@ export function getGccDumpView(): ComponentConfig<EmptyGccDumpViewState> {
 
 /** Get a gcc dump view with the given configuration. */
 export function getGccDumpViewWith(
-    id: string,
+    id: number,
     compilerName: string,
     editorid: number,
     treeid: number,
-    gccDumpOutput?: Record<GccDumpOptions, unknown>
+    gccDumpOutput: GccDumpViewState
 ): ComponentConfig<PopulatedGccDumpViewState> {
-    // TODO: remove any
-    const ret: any = {
-        _compilerid: id,
-        _compilerName: compilerName,
-        _editorid: editorid,
-        _treeid: treeid,
-    };
-
-    if (gccDumpOutput) {
-        ret.treeDump = gccDumpOutput.treeDump;
-        ret.rtlDump = gccDumpOutput.rtlDump;
-        ret.ipaDump = gccDumpOutput.ipaDump;
-        ret.addressOption = gccDumpOutput.addressOption;
-        ret.slimOption = gccDumpOutput.slimOption;
-        ret.rawOption = gccDumpOutput.rawOption;
-        ret.detailsOption = gccDumpOutput.detailsOption;
-        ret.statsOption = gccDumpOutput.statsOption;
-        ret.blocksOption = gccDumpOutput.blocksOption;
-        ret.vopsOption = gccDumpOutput.vopsOption;
-        ret.linenoOption = gccDumpOutput.linenoOption;
-        ret.uidOption = gccDumpOutput.uidOption;
-        ret.allOption = gccDumpOutput.allOption;
-        ret.selectedPass = gccDumpOutput.selectedPass;
-    }
-
     return {
         type: 'component',
         componentName: GCC_DUMP_VIEW_COMPONENT_NAME,
-        componentState: ret,
+        componentState: {
+            // PopulatedGccDumpViewState
+            id,
+            compilerName,
+            editorid,
+            treeid,
+
+            // & GccDumpFiltersState
+            ...gccDumpOutput,
+        },
     };
 }
 
@@ -522,6 +511,8 @@ export function getCfgViewWith(id: number, editorid: number, treeid: number): Co
         type: 'component',
         componentName: CFG_VIEW_COMPONENT_NAME,
         componentState: {
+            selectedFunction: null,
+            zoom: 1,
             id,
             editorid,
             treeid,
@@ -879,7 +870,7 @@ export function getDeviceView(): ComponentConfig<EmptyDeviceViewState> {
 export function getDeviceViewWith(
     id: number,
     source: string,
-    deviceOutput: unknown,
+    devices: unknown,
     compilerName: string,
     editorid: number,
     treeid: number
@@ -890,7 +881,7 @@ export function getDeviceViewWith(
         componentState: {
             id: id,
             source: source,
-            deviceOutput: deviceOutput,
+            devices: devices,
             compilerName: compilerName,
             editorid: editorid,
             treeid: treeid,

@@ -111,6 +111,7 @@ export function parseOutput(lines: string, inputFilename?: string, pathPrefix?: 
                     column: parseInt(match[3] || '0'),
                     text: message,
                     severity: parseSeverity(message),
+                    file: inputFilename ? path.basename(inputFilename) : undefined,
                 };
             } else {
                 match = filteredline.match(SOURCE_WITH_FILENAME);
@@ -289,7 +290,7 @@ export function squashHorizontalWhitespace(line: string, atStart = true): string
     const splat = line.split(/\s+/);
     if (splat[0] === '' && atStart) {
         // An indented line: preserve a two-space indent (max)
-        const intent = line[1] !== ' ' ? ' ' : '  ';
+        const intent = line[1] === ' ' ? '  ' : ' ';
         return intent + splat.slice(1).join(' ');
     }
     return splat.join(' ');
@@ -368,6 +369,15 @@ export function base32Encode(buffer: Buffer): string {
     return output;
 }
 
+// Splits a : separated list into its own array, or to default if input is undefined
+export function splitIntoArray(input?: string, defaultArray: string[] = []): string[] {
+    if (input === undefined) {
+        return defaultArray;
+    } else {
+        return input.split(':');
+    }
+}
+
 export function splitArguments(options = ''): string[] {
     // escape hashes first, otherwise they're interpreted as comments
     const escapedOptions = options.replaceAll(/#/g, '\\#');
@@ -414,8 +424,8 @@ export function countOccurrences<T>(collection: Iterable<T>, item: T): number {
     return result;
 }
 
-export function asSafeVer(semver: string | number | null) {
-    if (semver !== null) {
+export function asSafeVer(semver: string | number | null | undefined) {
+    if (semver != null) {
         if (typeof semver === 'number') {
             semver = `${semver}`;
         }

@@ -26,6 +26,9 @@ import path from 'path';
 
 import _ from 'underscore';
 
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
@@ -38,73 +41,37 @@ export class CLSPVCompiler extends BaseCompiler {
         return 'clspv';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
-        this.asm = new SPIRVAsmParser();
+        this.asm = new SPIRVAsmParser(this.compilerProps);
 
         this.disassemblerPath = this.compilerProps('disassemblerPath');
     }
 
-    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
-        let options = this.optionsForFilter(filters, outputFilename);
-        backendOptions = backendOptions || {};
-
-        if (this.compiler.options) {
-            const compilerOptions = _.filter(
-                utils.splitArguments(this.compiler.options),
-                option => option !== '-fno-crash-diagnostics',
-            );
-
-            options = options.concat(compilerOptions);
-        }
-
-        if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
-        }
-
-        const libIncludes = this.getIncludeArguments(libraries);
-        const libOptions = this.getLibraryOptions(libraries);
-        let libLinks: any = [];
-        let libPaths: any = [];
-        let staticLibLinks: any = [];
-
-        if (filters.binary) {
-            libLinks = this.getSharedLibraryLinks(libraries);
-            libPaths = this.getSharedLibraryPathsAsArguments(libraries);
-            staticLibLinks = this.getStaticLibraryLinks(libraries);
-        }
-
-        userOptions = this.filterUserOptions(userOptions) || [];
-        return options.concat(
-            libIncludes,
-            libOptions,
-            libPaths,
-            libLinks,
-            userOptions,
-            [this.filename(inputFilename)],
-            staticLibLinks,
-        );
-    }
-
-    override optionsForFilter(filters, outputFilename) {
-        const sourceDir = path.dirname(outputFilename);
-        const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
-        return ['-o', spvBinFilename];
-    }
-
-    getPrimaryOutputFilename(dirPath, outputFilebase) {
+    getPrimaryOutputFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, `${outputFilebase}.spv`);
     }
 
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
+        const sourceDir = path.dirname(outputFilename);
+        const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
+        return ['-o', spvBinFilename, '-g'];
+    }
+
     // TODO: Check this to see if it needs key
-    override getOutputFilename(dirPath, outputFilebase) {
+    override getOutputFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, `${outputFilebase}.spvasm`);
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         const sourceDir = path.dirname(inputFilename);
-        const spvBinFilename = path.join(sourceDir, this.outputFilebase + '.spv');
+        const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);
 
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -118,7 +85,7 @@ export class CLSPVCompiler extends BaseCompiler {
             return result;
         }
 
-        const spvasmFilename = path.join(sourceDir, this.outputFilebase + '.spvasm');
+        const spvasmFilename = this.getOutputFilename(sourceDir, this.outputFilebase);
         const disassemblerFlags = [spvBinFilename, '-o', spvasmFilename];
 
         const spvasmOutput = await this.exec(this.disassemblerPath, disassemblerFlags, execOptions);
@@ -128,6 +95,7 @@ export class CLSPVCompiler extends BaseCompiler {
 
         result.stdout = result.stdout.concat(utils.parseOutput(spvasmOutput.stdout));
         result.stderr = result.stderr.concat(utils.parseOutput(spvasmOutput.stderr));
+        result.languageId = 'spirv';
         return result;
     }
 }

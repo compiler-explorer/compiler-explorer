@@ -22,6 +22,8 @@ import {Transform, TransformCallback} from 'stream';
 import * as R from 'ramda';
 import * as YAML from 'yamljs';
 
+import {logger} from './logger';
+
 type Path = string;
 type OptType = 'Missed' | 'Passed' | 'Analysis';
 
@@ -99,10 +101,10 @@ export class LLVMOptTransformer extends Transform {
                 if (!this._prevOpts.has(strOpt)) {
                     this._prevOpts.add(strOpt);
 
-                    if (!optTypeMatch) {
-                        console.warn('missing optimization type');
-                    } else {
+                    if (optTypeMatch) {
                         opt.optType = optTypeMatch[1].replace('!', '');
+                    } else {
+                        logger.warn('missing optimization type');
                     }
                     opt.displayString = DisplayOptInfo(opt);
                     this.push(opt as LLVMOptInfo);

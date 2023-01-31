@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const cheerio = require('cheerio');
-const {promises: fs} = require('fs');
+import fs from 'fs/promises';
+import * as cheerio from 'cheerio';
 
 const JVMS_SPECIFICATION = './vendor/jvms.html';
 const VARIADIC_MAPPINGS = {
@@ -43,7 +43,7 @@ const extract = (node, $) => {
     const description = descriptionSection.find('p.norm-dynamic').first();
     // rewrite links to oracle.com
     $(description).find('* > a[href*="jvms-"]').toArray().forEach((el) => {
-        $(el).attr('href', `https://docs.oracle.com/javase/specs/jvms/se16/html/${$(el).attr('href')}`);
+        $(el).attr('href', `https://docs.oracle.com/javase/specs/jvms/se18/html/${$(el).attr('href')}`);
     });
 
     const [stackBefore, stackAfter] = operandStackSection.find('p.norm')
@@ -89,13 +89,15 @@ const main = async () => {
         .slice(1) // Drop 1 because the first is the "mne monic"
         .map(it => extract($(it), $))
         .flat();
-    console.log('export function getAsmOpcode(opcode) {');
+    console.log('import {AssemblyInstructionInfo} from \'../base\';');
+    console.log('');
+    console.log('export function getAsmOpcode(opcode: string | undefined): AssemblyInstructionInfo | undefined {');
     console.log('    if (!opcode) return;');
     console.log('    switch (opcode.toUpperCase()) {');
     for (const instruction of instructions) {
         console.log(`        case '${instruction.name.toUpperCase()}':`);
         console.log('            return {');
-        console.log(`                url: \`https://docs.oracle.com/javase/specs/jvms/se16/html/jvms-6.html#${instruction.anchor}\`,`);
+        console.log(`                url: \`https://docs.oracle.com/javase/specs/jvms/se18/html/jvms-6.html#${instruction.anchor}\`,`);
         const body = `<p>Instruction ${instruction.name}: ${instruction.tooltip}</p><p>Format: ${instruction.format.join(' ')}</p>${instruction.stack[0] && `<p>Operand Stack: ${instruction.stack[0]} ${instruction.stack[1]}</p>`}<p>${instruction.description}</p>`;
         console.log(`                html: \`${body.replace(/\s\s+/g, ' ')}\`,`);
         console.log(`                tooltip: \`${instruction.tooltip.replace(/\s\s+/g, ' ')}\`,`);
@@ -105,4 +107,4 @@ const main = async () => {
     console.log('}');
 };
 
-main().then(() =>{}).catch(e => console.exception("Caught error", e));
+main().then(() =>{}).catch(e => console.error("Caught error", e));

@@ -10,6 +10,7 @@ export type UnprocessedExecResult = {
     stderr: string;
     execTime: string;
     timedOut: boolean;
+    languageId?: string;
 };
 
 export type TypicalExecutionFunc = (
@@ -25,6 +26,7 @@ export type BasicExecutionResult = {
     stdout: ResultLine[];
     stderr: ResultLine[];
     execTime: string;
+    processExecutionResultTime?: number;
     timedOut: boolean;
 };
 

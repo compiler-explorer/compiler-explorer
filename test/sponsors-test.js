@@ -22,9 +22,59 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {loadSponsorsFromString} from '../lib/sponsors';
+import fs from 'fs';
+
+import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors';
+
+import {resolvePathFromTestRoot, should} from './utils';
 
 describe('Sponsors', () => {
+    it('should expand names to objects', () => {
+        parse('moo').name.should.eq('moo');
+    });
+    it('should handle just names', () => {
+        parse({name: 'moo'}).name.should.eq('moo');
+    });
+    it('should default empty params', () => {
+        const obj = parse('moo');
+        should.equal(obj.description, undefined);
+        should.equal(obj.url, undefined);
+        obj.onclick.should.eq('');
+        should.equal(obj.img, undefined);
+        should.equal(obj.icon, undefined);
+        should.equal(obj.icon_dark, undefined);
+        obj.topIconShowEvery.should.eq(0);
+        obj.sideBySide.should.be.false;
+        should.equal(obj.statsId, undefined);
+    });
+    it('should make descriptions always one-sized arrays', () => {
+        parse({name: 'moo', description: 'desc'}).description.should.deep.eq(['desc']);
+    });
+    it('should pass through descriptions', () => {
+        parse({name: 'moo', description: ['desc1', 'desc2']}).description.should.deep.eq(['desc1', 'desc2']);
+    });
+    it('should pass through icons', () => {
+        parse({name: 'bob', icon: 'icon'}).icon.should.eq('icon');
+    });
+    it('should pick icons over images', () => {
+        parse({name: 'bob', img: 'img', icon: 'icon'}).icon.should.eq('icon');
+    });
+    it('should pick icons if not img', () => {
+        parse({name: 'bob', img: 'img'}).icon.should.eq('img');
+    });
+    it('should pick dark icons if specified', () => {
+        parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark.should.eq('icon_dark');
+    });
+    it('should handle topIcons', () => {
+        parse({name: 'bob', topIconShowEvery: 2}).topIconShowEvery.should.eq(2);
+    });
+    it('should handle clicks', () => {
+        parse({
+            name: 'bob',
+            url: 'https://some.host/click',
+        }).onclick.should.eq('window.onSponsorClick("https://some.host/click");');
+    });
+
     it('should load a simple example', () => {
         const sample = loadSponsorsFromString(`
 ---
@@ -44,22 +94,10 @@ levels:
       - Yay
 `);
         sample.should.not.be.null;
-        sample.levels.length.should.eq(2);
-        sample.levels[0].name.should.eq('Patreon Legends');
-        sample.levels[1].name.should.eq('Patreons');
-    });
-
-    it('should expand names to objects', () => {
-        const folks = loadSponsorsFromString(`
----
-levels:
-  - name: a
-    description: d
-    sponsors:
-    - Just a string
-    - name: An object
-        `).levels[0].sponsors;
-        folks.should.deep.equalInAnyOrder([{name: 'An object'}, {name: 'Just a string'}]);
+        const levels = sample.getLevels();
+        levels.length.should.eq(2);
+        levels[0].name.should.eq('Patreon Legends');
+        levels[1].name.should.eq('Patreons');
     });
 
     it('should sort sponsors by name', () => {
@@ -73,8 +111,8 @@ levels:
     - C
     - A
     - B
-        `).levels[0].sponsors;
-        peeps.should.deep.equals([{name: 'A'}, {name: 'B'}, {name: 'C'}, {name: 'D'}]);
+        `).getLevels()[0].sponsors;
+        peeps.map(sponsor => sponsor.name).should.deep.equals(['A', 'B', 'C', 'D']);
     });
     it('should sort sponsors by priority then name', () => {
         const peeps = loadSponsorsFromString(`
@@ -89,48 +127,19 @@ levels:
       priority: 50
     - name: B
       priority: 50
-        `).levels[0].sponsors;
-        peeps.should.deep.equals([
-            {name: 'D', priority: 100},
-            {name: 'B', priority: 50},
-            {name: 'C', priority: 50},
-        ]);
-    });
-    it('should pick icon over img', () => {
-        const things = loadSponsorsFromString(`
----
-levels:
-  - name: a
-    description: d
-    sponsors:
-    - name: one
-      img: image
-    - name: two
-      img: not_an_icon
-      icon: icon
-        `).levels[0].sponsors;
-        things.should.deep.equalInAnyOrder([
-            {name: 'one', icon: 'image', img: 'image'},
-            {name: 'two', icon: 'icon', img: 'not_an_icon'},
-        ]);
+        `).getLevels()[0].sponsors;
+        peeps
+            .map(sponsor => {
+                return {name: sponsor.name, priority: sponsor.priority};
+            })
+            .should.deep.equals([
+                {name: 'D', priority: 100},
+                {name: 'B', priority: 50},
+                {name: 'C', priority: 50},
+            ]);
     });
 
-    it('should pick up dark icon if set', () => {
-        const things = loadSponsorsFromString(`
----
-levels:
-  - name: a
-    description: d
-    sponsors:
-    - name: batman
-      img: not_an_icon
-      icon: icon
-      icon_dark: dark
-        `).levels[0].sponsors;
-        things.should.deep.equalInAnyOrder([{name: 'batman', icon: 'icon', icon_dark: 'dark', img: 'not_an_icon'}]);
-    });
-
-    it('should pick out the top level icons', () => {
+    it('should pick out all the top level icons', () => {
         const icons = loadSponsorsFromString(`
 ---
 levels:
@@ -139,7 +148,7 @@ levels:
     sponsors:
     - name: one
       img: pick_me
-      topIcon: true
+      topIconShowEvery: 1
     - name: two
       img: not_me
   - name: another level
@@ -147,16 +156,96 @@ levels:
     sponsors:
     - name: three
       img: not_me_either
-      topIcon: false
+      topIconShowEvery: 0
     - name: four
       img: pick_me_also
-      topIcon: true
+      topIconShowEvery: 2
     - name: five
-      topIcon: true
-        `).icons;
-        icons.should.deep.equalInAnyOrder([
-            {name: 'one', icon: 'pick_me', img: 'pick_me', topIcon: true},
-            {name: 'four', icon: 'pick_me_also', img: 'pick_me_also', topIcon: true},
+      topIconShowEvery: 3
+        `).getAllTopIcons();
+        icons.map(s => s.name).should.deep.equals(['one', 'four']);
+    });
+
+    it('should pick icons appropriately when all required every 3', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 3, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 3, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
+        const icons = [sponsor1, sponsor2, sponsor3];
+        makeIconSets(icons, 10).should.deep.eq([icons]);
+        makeIconSets(icons, 3).should.deep.eq([icons]);
+        makeIconSets(icons, 2).should.deep.eq([
+            [sponsor1, sponsor2],
+            [sponsor1, sponsor3],
+            [sponsor2, sponsor3],
         ]);
+        makeIconSets(icons, 1).should.deep.eq([[sponsor1], [sponsor2], [sponsor3]]);
+    });
+    it('should pick icons appropriately when not required on different schedules', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 2, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
+        const icons = [sponsor1, sponsor2, sponsor3];
+        makeIconSets(icons, 10).should.deep.eq([icons]);
+        makeIconSets(icons, 3).should.deep.eq([icons]);
+        makeIconSets(icons, 2).should.deep.eq([
+            [sponsor1, sponsor2],
+            [sponsor1, sponsor3],
+        ]);
+        (() => makeIconSets(icons, 1)).should.throw();
+    });
+    it('should pick icons appropriately with a lot of sponsors on representative schedules', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 3, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 3, icon: '3'});
+        const sponsor4 = parse({name: 'Sponsor4', topIconShowEvery: 3, icon: '3'});
+        const sponsor5 = parse({name: 'Sponsor5', topIconShowEvery: 3, icon: '3'});
+        const icons = [sponsor1, sponsor2, sponsor3, sponsor4, sponsor5];
+        makeIconSets(icons, 10).should.deep.eq([icons]);
+        makeIconSets(icons, 3).should.deep.eq([
+            [sponsor1, sponsor2, sponsor3],
+            [sponsor1, sponsor4, sponsor5],
+        ]);
+        (() => makeIconSets(icons, 1)).should.throw();
+    });
+    it('should handle alternating', () => {
+        const sponsor1 = parse({name: 'Sponsor1', topIconShowEvery: 1, icon: '1'});
+        const sponsor2 = parse({name: 'Sponsor2', topIconShowEvery: 1, icon: '2'});
+        const sponsor3 = parse({name: 'Sponsor3', topIconShowEvery: 2, icon: '3'});
+        const sponsor4 = parse({name: 'Sponsor4', topIconShowEvery: 2, icon: '4'});
+        const icons = [sponsor1, sponsor2, sponsor3, sponsor4];
+        makeIconSets(icons, 4).should.deep.eq([icons]);
+        makeIconSets(icons, 3).should.deep.eq([
+            [sponsor1, sponsor2, sponsor3],
+            [sponsor1, sponsor2, sponsor4],
+        ]);
+        (() => makeIconSets(icons, 2)).should.throw();
+    });
+});
+
+describe('Our specific sponsor file', () => {
+    const stringConfig = fs.readFileSync(resolvePathFromTestRoot('../etc/config/sponsors.yaml')).toString();
+    it('should parse the current config', () => {
+        loadSponsorsFromString(stringConfig);
+    });
+    it('should pick appropriate sponsor icons', () => {
+        const numLoads = 100;
+        const expectedNumIcons = 3;
+
+        const sponsors = loadSponsorsFromString(stringConfig);
+        const picks = [];
+        for (let load = 0; load < numLoads; ++load) {
+            picks.push(sponsors.pickTopIcons());
+        }
+        const countBySponsor = new Map();
+        for (const pick of picks) {
+            for (const sponsor of pick) {
+                countBySponsor.set(sponsor, (countBySponsor.get(sponsor) || 0) + 1);
+            }
+            pick.length.should.eq(expectedNumIcons);
+        }
+        for (const topIcon of sponsors.getAllTopIcons()) {
+            const appearsEvery = countBySponsor.get(topIcon) / numLoads;
+            appearsEvery.should.lte(topIcon.topIconShowEvery);
+        }
     });
 });

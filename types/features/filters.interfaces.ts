@@ -22,19 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type CompilerFilters = {
+// These options are used both for the output options and our filtering passes
+// applied to the compiler output. They correspond to the "Compiler output
+// options" and "Compiler output filters" drop down menu in a compiler pane.
+
+// TODO(jeremy-rifkin): Change name to include "filters"?
+export type CompilerOutputOptions = {
     binary: boolean;
+    binaryObject: boolean;
     execute: boolean;
     demangle: boolean;
     intel: boolean;
+};
+
+export type preProcessLinesFunc = (lines: string[]) => string[];
+export type ParseFiltersAndOutputOptions = {
     labels: boolean;
     libraryCode: boolean;
     directives: boolean;
     commentOnly: boolean;
     trim: boolean;
-};
-
-export type ParseFilters = CompilerFilters & {
     dontMaskFilenames?: boolean;
     optOutput: boolean;
-};
+    preProcessLines?: preProcessLinesFunc;
+} & CompilerOutputOptions;

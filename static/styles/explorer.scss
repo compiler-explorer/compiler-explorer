@@ -1,5 +1,4 @@
 @import '~@fortawesome/fontawesome-free/css/all.min.css';
-@import '~vis-network/styles/vis-network.css';
 
 /*
  * https://github.com/Microsoft/monaco-editor/issues/417
@@ -384,13 +383,63 @@ pre.content.wrap * {
     height: 100%;
 }
 
-.cfg-toolbar table {
-    width: 100%;
-}
-
-.graph-placeholder {
+.graph-container {
+    position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    .cfg-info {
+        position: absolute;
+        bottom: 5px;
+        left: 5px;
+        font-size: x-small;
+        font-style: italic;
+        z-index: 1;
+    }
+    .graph {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform-origin: top left;
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .block-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            .block {
+                position: absolute;
+                padding: 5px;
+                display: inline-block;
+                // TODO(jeremy-rifkin) settings.editorsFont
+                font-family: Consolas, 'Liberation Mono', Courier, monospace;
+                white-space: nowrap;
+                line-height: 100%;
+                .fold {
+                    display: inline-block;
+                    color: grey;
+                    margin: 0.1em 0.1em 0 0.2em;
+                    line-height: 1em;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
+}
+
+.cfg-fold-popover {
+    font-family: Consolas, 'Liberation Mono', Courier, monospace;
+    max-width: calc(min(95vw, 1000px));
+}
+
+.cfg-toolbar {
+    .estimated-export-size {
+        font-size: x-small;
+        font-style: italic;
+    }
 }
 
 .clear-cache {
@@ -624,6 +673,10 @@ div.populararguments div.dropdown-menu {
     overflow: auto; /* move scrollbar into sponsor part - keep quickaccess buttons on screen */
 }
 
+#ces-banner-text {
+    margin-right: 0.1em;
+}
+
 @media (max-width: 1000px) {
     .ces-content-root {
         font-size: 60%;
@@ -714,7 +767,7 @@ div.populararguments div.dropdown-menu {
 }
 
 .ces-icon {
-    margin-left: 0.3em;
+    padding: 0 0.2em 0 0.2em;
     height: 1.5em;
 }
 
@@ -835,6 +888,15 @@ html[data-theme='dark'] {
     text-transform: uppercase;
 }
 
+.ts-wrapper.single .ts-control {
+    /* This is a workaround for a bug where the arrow overlaps the text in the tomselect item. This issue only effects
+     * staging (and presumably prod), it does not occur locally. Tomselect already styles this as `padding-right: 2rem;`
+     * but for some reason on staging/prod it's `--ts-pr-caret: 2rem;`. Changing it to `padding-right: 2rem;` in dev
+     * tools doesn't work, the property is greyed out as though something else is taking precedent but it's not.
+     */
+    padding-right: 2rem !important;
+}
+
 .copy-link-btn {
     padding-top: 0;
 }
@@ -862,6 +924,13 @@ html[data-theme='dark'] {
     float: right;
     padding: 4px 10px 4px 0;
 }
+.tree .drophere {
+    margin: 5px;
+    border: dashed rgba(127, 127, 127, 0.2);
+    border-radius: 16px;
+    height: 150px;
+}
+
 .mainbar .cmake-project {
     margin-top: 2px;
 }

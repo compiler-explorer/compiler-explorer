@@ -18,7 +18,7 @@ block content
       a(href="mailto:matt@godbolt.org") email Matt
       | &nbsp;for corporate sponsorship.
     .mt-6
-      each level, index in sponsors.levels
+      each level, index in sponsors.getLevels()
         .ces-item-block(class=level.class id="ces_hop_" + index)
           h2.ces-item-name= level.name
           div.ces-item-description= level.description
@@ -31,7 +31,7 @@ block content
                       .ces-item-title
                         img.ces-logo-large(src=sponsor.img alt=sponsor.name)
                       .ces-item-description
-                        != sponsor.description
+                        != sponsor.description[Math.floor(Math.random() * sponsor.description.length)]
                   else
                     .ces-item-title
                       if sponsor.img
@@ -39,4 +39,4 @@ block content
                       = sponsor.name
                     if sponsor.description
                       .ces-item-description
-                        = sponsor.description
+                        = sponsor.description[Math.floor(Math.random() * sponsor.description.length)]

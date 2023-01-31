@@ -65,6 +65,7 @@ To specify a compilation request as a JSON document, post it as the appropriate 
         },
         "filters": {
              "binary": false,
+             "binaryObject": false,
              "commentOnly": true,
              "demangle": true,
              "directives": true,
@@ -121,8 +122,8 @@ probably not useful for most REST users.
 
 To force a cache bypass, set `bypassCache` in the root of the request to `true`.
 
-Filters include `binary`, `labels`, `intel`, `directives` and `demangle`, which correspond to the UI buttons on the HTML
-version.
+Filters include `binary`, `binaryObject`, `labels`, `intel`, `directives` and `demangle`, which correspond to the UI
+buttons on the HTML version.
 
 With the tools array you can ask CE to execute certain tools available for the current compiler, and also supply
 arguments for this tool.
@@ -130,6 +131,16 @@ arguments for this tool.
 Libraries can be marked to have their directories available when including their header files. The can be listed by
 supplying the library ids and versions in an array. The id's to supply can be found with the
 `/api/libraries/<language-id>`
+
+Note that using external header files of the type:
+
+```
+#include <https://some-url.to/a-file.h>
+```
+
+is not supported for this endpoint for security reasons.
+
+The feature for the site is handled client-side, as the compilation nodes have no internet access.
 
 ### `GET /api/formats` - return available code formatters
 
@@ -305,6 +316,10 @@ etcetera, otherwise <sourceid> can be set to 1.
 This call is to open the website with a given state (without having to store the state first with /api/shortener)
 Instead of sending the ClientState JSON in the post body, it will have to be encoded with base64 and attached directly
 onto the URL.
+
+To avoid problems in reading base64 by the API, some characters must be kept in unicode. Therefore, before calling the
+API, it is necessary to replace these characters with their respective unicodes. A suggestion is to use the Regex
+expression `/[\u007F-\uFFFF]/g` that allows mapping these characters.
 
 # Implementations
 

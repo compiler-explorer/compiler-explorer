@@ -52,7 +52,7 @@ describe('Live site checks', () => {
             const langLibs = libs.split(':');
 
             const filePath = `etc/config/${lang}.amazon.properties`;
-            const fileContents = fs.readFileSync(filePath, 'utf-8');
+            const fileContents = fs.readFileSync(filePath, 'utf8');
 
             const matches = fileContents.match(/^libs\..*?\.name/gm);
             let found = [];

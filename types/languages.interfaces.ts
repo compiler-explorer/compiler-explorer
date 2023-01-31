@@ -37,6 +37,7 @@ export type LanguageKey =
     | 'cppx'
     | 'cppx_blue'
     | 'cppx_gold'
+    | 'cpp2_cppfront'
     | 'crystal'
     | 'csharp'
     | 'cuda'
@@ -48,18 +49,23 @@ export type LanguageKey =
     | 'go'
     | 'haskell'
     | 'hlsl'
+    | 'hook'
     | 'ispc'
     | 'jakt'
     | 'java'
+    | 'julia'
     | 'kotlin'
     | 'llvm'
     | 'mlir'
     | 'nim'
     | 'ocaml'
+    | 'objc'
+    | 'objc++'
     | 'openclc'
     | 'pascal'
     | 'pony'
     | 'python'
+    | 'racket'
     | 'ruby'
     | 'rust'
     | 'scala'
@@ -89,7 +95,15 @@ export interface Language {
     logoUrl: string | null;
     /** Path in /views/resources/logos to the logo of the language for dark mode use */
     logoUrlDark: string | null;
+    /** Data from webpack */
+    logoData?: any;
+    /** Data from webpack */
+    logoDataDark?: any;
     /** Example code to show in the language's editor */
     example: string;
     previewFilter: RegExp | null;
+    /** The override for the output (default is "asm") */
+    monacoDisassembly: string | null;
+    /** Brief description of the language */
+    tooltip?: string;
 }

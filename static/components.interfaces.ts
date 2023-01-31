@@ -22,9 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerFilters} from '../types/features/filters.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces';
+import {CfgState} from './panes/cfg-view.interfaces';
 import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
-
+import {GccDumpViewState} from './panes/gccdump-view.interfaces';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';
@@ -59,15 +60,16 @@ export interface ComponentConfig<S> {
     componentState: S;
 }
 
-type StateWithLanguage = {lang: string};
-type StateWithEditor = {source: number};
-type StateWithTree = {tree: number};
-type StateWithId = {id: number};
-type EmptyState = Record<never, never>;
+export type StateWithLanguage = {lang: string};
+// TODO(#4490 The War of The Types) We should normalize state types
+export type StateWithEditor = {source: string | number};
+export type StateWithTree = {tree: number};
+export type StateWithId = {id: number};
+export type EmptyState = Record<never, never>;
 
 export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
 export type PopulatedCompilerState = StateWithEditor & {
-    filters: CompilerFilters;
+    filters: CompilerOutputOptions | undefined;
     options: unknown;
     compiler: string;
     libs?: unknown;
@@ -94,12 +96,12 @@ export type PopulatedEditorState = StateWithId & {
 export type EmptyTreeState = Partial<StateWithId>;
 
 export type OutputState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerID
     editor: number; // EditorId
 };
 
 export type ToolViewState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerId
     editor: number; // EditorId
     toolId: string;
     args: unknown;
@@ -153,33 +155,19 @@ export type PopulatedAstViewState = StateWithId &
     };
 
 export type EmptyGccDumpViewState = EmptyState;
-export type GccDumpOptions =
-    | 'treeDump'
-    | 'rtlDump'
-    | 'ipaDump'
-    | 'addressOption'
-    | 'slimOption'
-    | 'rawOption'
-    | 'detailsOption'
-    | 'statsOption'
-    | 'blocksOption'
-    | 'vopsOption'
-    | 'linenoOption'
-    | 'uidOption'
-    | 'allOption'
-    | 'selectedPass';
-export type PopulatedGccDumpViewState = {
-    _compilerid: string;
-    _compilerName: string;
-    _editorid: number;
-    _treeid: number;
-} & (Record<GccDumpOptions, unknown> | EmptyState);
+export type PopulatedGccDumpViewState = StateWithId &
+    GccDumpViewState & {
+        compilerName: string;
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyCfgViewState = EmptyState;
-export type PopulatedCfgViewState = StateWithId & {
-    editorid: number;
-    treeid: number;
-};
+export type PopulatedCfgViewState = StateWithId &
+    CfgState & {
+        editorid: number;
+        treeid: number;
+    };
 
 export type EmptyConformanceViewState = EmptyState; // TODO: unusued?
 export type PopulatedConformanceViewState = {
@@ -281,7 +269,7 @@ export type PopulatedRustHirViewState = StateWithId & {
 export type EmptyDeviceViewState = EmptyState;
 export type PopulatedDeviceViewState = StateWithId & {
     source: string;
-    deviceOutput: unknown;
+    devices: unknown;
     compilerName: string;
     editorid: number;
     treeid: number;

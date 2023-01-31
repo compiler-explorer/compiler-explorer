@@ -1,0 +1,17 @@
+#include <iostream>
+#include <string>
+
+name: () -> std::string = {
+    s: std::string = "world";
+    decorate(s);
+    return s;
+}
+
+decorate: (inout s: std::string) = {
+    s = "[" + s + "]";
+}
+
+auto main() -> int {
+    // name();
+    std::cout << "Hello " << name() << "\n";
+}

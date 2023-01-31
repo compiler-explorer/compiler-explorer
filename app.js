@@ -57,7 +57,7 @@ import {RouteAPI} from './lib/handlers/route-api';
 import {loadSiteTemplates} from './lib/handlers/site-templates';
 import {SourceHandler} from './lib/handlers/source';
 import {languages as allLanguages} from './lib/languages';
-import {logger, logToLoki, logToPapertrail, suppressConsoleLog} from './lib/logger';
+import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger';
 import {setupMetricsServer} from './lib/metrics-server';
 import {ClientOptionsHandler} from './lib/options-handler';
 import * as props from './lib/properties';
@@ -66,6 +66,9 @@ import {sources} from './lib/sources';
 import {loadSponsorsFromString} from './lib/sponsors';
 import {getStorageTypeByKey} from './lib/storage';
 import * as utils from './lib/utils';
+
+// Used by assert.ts
+global.ce_base_directory = __dirname; // eslint-disable-line unicorn/prefer-module
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
@@ -178,6 +181,18 @@ if (defArgs.suppressConsoleLog) {
 
 const isDevMode = () => process.env.NODE_ENV !== 'production';
 
+function getFaviconFilename() {
+    if (isDevMode()) {
+        return 'favicon-dev.ico';
+    } else if (opts.env && opts.env.includes('beta')) {
+        return 'favicon-beta.ico';
+    } else if (opts.env && opts.env.includes('staging')) {
+        return 'favicon-staging.ico';
+    } else {
+        return 'favicon.ico';
+    }
+}
+
 const propHierarchy = [
     'defaults',
     defArgs.env,
@@ -197,6 +212,7 @@ props.initialize(configDir, propHierarchy);
 // Instantiate a function to access records concerning "compiler-explorer"
 // in hidden object props.properties
 const ceProps = props.propsFor('compiler-explorer');
+defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
 
 let languages = allLanguages;
 if (defArgs.wantedLanguages) {
@@ -384,7 +400,7 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (typeof idleTimeout !== 'undefined' ? idleTimeout : 300) * 1000;
+        const timeout = (idleTimeout === undefined ? 300 : idleTimeout) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -449,6 +465,11 @@ const awsProps = props.propsFor('aws');
 // eslint-disable-next-line max-statements
 async function main() {
     await aws.initConfig(awsProps);
+    // Initialise express and then sentry. Sentry as early as possible to catch errors during startup.
+    const webServer = express(),
+        router = express.Router();
+    setupSentry(aws.getConfig('sentryDsn'));
+
     startWineInit();
 
     const clientOptionsHandler = new ClientOptionsHandler(sources, compilerProps, defArgs);
@@ -501,9 +522,6 @@ async function main() {
         process.exit(0);
     }
 
-    const webServer = express(),
-        router = express.Router();
-    setupSentry(aws.getConfig('sentryDsn'));
     const healthCheckFilePath = ceProps('healthCheckFilePath', false);
 
     const handlerConfig = {
@@ -528,9 +546,6 @@ async function main() {
         }
         logger.info(`Compiler scan count: ${_.size(compilers)}`);
         logger.debug('Compilers:', compilers);
-        if (compilers.length === 0) {
-            logger.error('#### No compilers found: no compilation will be done!');
-        }
         prevCompilers = compilers;
         await clientOptionsHandler.setCompilers(compilers);
         routeApi.apiHandler.setCompilers(compilers);
@@ -597,7 +612,7 @@ async function main() {
             }
         });
 
-    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf-8'));
+    const sponsorConfig = loadSponsorsFromString(fs.readFileSync(configDir + '/sponsors.yaml', 'utf8'));
 
     loadSiteTemplates(configDir);
 
@@ -645,7 +660,7 @@ async function main() {
                     mobileViewer: isMobileViewer(req),
                     config: config,
                     metadata: metadata,
-                    storedStateId: req.params.id ? req.params.id : false,
+                    storedStateId: req.params.id || false,
                 },
                 req.query,
             ),
@@ -712,21 +727,21 @@ async function main() {
     router
         .use(
             morgan(morganFormat, {
-                stream: logger.stream,
+                stream: makeLogStream('info'),
                 // Skip for non errors (2xx, 3xx)
                 skip: (req, res) => res.statusCode >= 400,
             }),
         )
         .use(
             morgan(morganFormat, {
-                stream: logger.warnStream,
+                stream: makeLogStream('warn'),
                 // Skip for non user errors (4xx)
                 skip: (req, res) => res.statusCode < 400 || res.statusCode >= 500,
             }),
         )
         .use(
             morgan(morganFormat, {
-                stream: logger.errStream,
+                stream: makeLogStream('error'),
                 // Skip for non server errors (5xx)
                 skip: (req, res) => res.statusCode < 500,
             }),
@@ -773,7 +788,7 @@ async function main() {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
-        .use(sFavicon(utils.resolvePathFromAppRoot('static', 'favicon.ico')))
+        .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename())))
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');
@@ -817,22 +832,29 @@ if (opts.version) {
     process.exit(0);
 }
 
-process.on('uncaughtException', terminationHandler('uncaughtException', 1));
-process.on('SIGINT', terminationHandler('SIGINT', 0));
-process.on('SIGTERM', terminationHandler('SIGTERM', 0));
-process.on('SIGQUIT', terminationHandler('SIGQUIT', 0));
+process.on('uncaughtException', uncaughtHandler);
+process.on('SIGINT', signalHandler('SIGINT'));
+process.on('SIGTERM', signalHandler('SIGTERM'));
+process.on('SIGQUIT', signalHandler('SIGQUIT'));
 
-function terminationHandler(name, code) {
-    return error => {
+function signalHandler(name) {
+    return () => {
         logger.info(`stopping process: ${name}`);
-        if (error && error instanceof Error) {
-            logger.error(error);
-        }
-        process.exit(code);
+        process.exit(0);
     };
 }
 
+function uncaughtHandler(err, origin) {
+    logger.info(`stopping process: Uncaught exception: ${err}\nException origin: ${origin}`);
+    // The app will exit naturally from here, but if we call `process.exit()` we may lose log lines.
+    // see https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411
+    process.exitCode = 1;
+}
+
+// Once we move to modules, we can remove this and use a top level await.
+// eslint-disable-next-line unicorn/prefer-top-level-await
 main().catch(err => {
     logger.error('Top-level error (shutting down):', err);
-    process.exit(1);
+    // Shut down after a second to hopefully let logs flush.
+    setTimeout(() => process.exit(1), 1000);
 });
