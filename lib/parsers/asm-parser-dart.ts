@@ -29,8 +29,8 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
 import {assert} from '../assert';
+import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
 import {AsmRegex} from './asmregex';
