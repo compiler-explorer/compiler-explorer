@@ -105,12 +105,11 @@ export class JavaCompiler extends BaseCompiler {
                 }),
         );
 
-        const merged = {asm: [] as ParsedAsmResultLine[][]};
+        const merged: ParsedAsmResult = {asm: []};
         for (const result of results) {
             const asmBackup = merged.asm;
             Object.assign(merged, result);
-            merged.asm = asmBackup;
-            merged.asm.push(result.asm);
+            merged.asm = [...asmBackup, ...result.asm];
         }
 
         result.asm = merged.asm;
@@ -241,7 +240,7 @@ export class JavaCompiler extends BaseCompiler {
         }
 
         // result.asm is an array of javap stdouts
-        const parseds = result.asm.map(asm => this.parseAsmForClass(asm));
+        const parseds = result.asm.map(asm => this.parseAsmForClass(asm.text));
         // Sort class file outputs according to first source line they reference
         parseds.sort((o1, o2) => o1.firstSourceLine - o2.firstSourceLine);
 

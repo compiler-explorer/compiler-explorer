@@ -113,7 +113,9 @@ describe('javap parsing', () => {
     function testJava(baseFolder, ...classNames) {
         const compiler = new JavaCompiler(info, env);
 
-        const asm = classNames.map(className => fs.readFileSync(`${baseFolder}/${className}.asm`).toString());
+        const asm = classNames.map(className => {
+            return {text: fs.readFileSync(`${baseFolder}/${className}.asm`).toString()};
+        });
 
         const output = utils.splitLines(fs.readFileSync(`${baseFolder}/output.asm`).toString());
         const expectedSegments = output.map(line => {
