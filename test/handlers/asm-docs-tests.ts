@@ -29,7 +29,7 @@ import {withAssemblyDocumentationProviders} from '../../lib/handlers/assembly-do
 import {chai} from '../utils';
 
 /** Test matrix of architecture to [opcode, tooptip, html, url] */
-export const TEST_MATRIX = {
+export const TEST_MATRIX: Record<PropertyKey, [string, string, string, string][]> = {
     6502: [
         [
             'lda',
@@ -82,7 +82,7 @@ export const TEST_MATRIX = {
 };
 
 describe('Assembly Documentation API', () => {
-    let app;
+    let app: express.Express;
 
     before(() => {
         app = express();

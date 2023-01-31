@@ -26,12 +26,14 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 import chai from 'chai';
+import fs from 'fs-extra';
 
 import {CompilationEnvironment} from '../lib/compilation-env';
 import {CompilationQueue} from '../lib/compilation-queue';
 import {CompilerProps, fakeProps} from '../lib/properties';
 
-export function makeCompilationEnvironment(options) {
+// TODO: Find proper type for options
+export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout);
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
@@ -44,10 +46,9 @@ export const should = chai.should();
  */
 export const TEST_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
 
-export function resolvePathFromTestRoot(...args) {
+export function resolvePathFromTestRoot(...args: string[]): string {
     return path.resolve(TEST_ROOT, ...args);
 }
 
-export {default as fs} from 'fs-extra';
-export {default as chai} from 'chai';
-export {default as path} from 'path';
+// eslint-disable-next-line -- do not rewrite exports
+export { chai, path, fs }
