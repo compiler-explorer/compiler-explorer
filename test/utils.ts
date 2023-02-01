@@ -51,4 +51,4 @@ export function resolvePathFromTestRoot(...args: string[]): string {
 }
 
 // eslint-disable-next-line -- do not rewrite exports
-export { chai, path, fs }
+export {chai, path, fs};
