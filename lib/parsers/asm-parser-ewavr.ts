@@ -22,34 +22,53 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {assert} from '../assert';
 import {logger} from '../logger';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
 import {AsmRegex} from './asmregex';
 
+// this file uses null throughout for "not there" not undefined.
+type Source = {file: string | null; line: number};
+type Line = {text: string; source: Source | null};
+type Label = {
+    lines: Line[];
+    name: string | null;
+    initialLine: number;
+    file: string | null;
+    require: string[];
+};
+type ResultObject = {
+    prefix: Line[];
+    labels: Label[];
+    postfix: Line[];
+};
+
 export class AsmEWAVRParser extends AsmParser {
-    constructor(compilerProps) {
+    private readonly filenameComment = /^\/\/\s[A-Za-z]?:?\S(([^/\\]*[/\\])+)([^/\\]+)$/;
+    private readonly lineNumberComment = /^\/\/\s*(\d+)\s(?!bytes).*/;
+
+    // categories of directives. remove if filters.directives set
+    private readonly segmentBegin = /^\s*(ASEG|ASEGN|COMMON|RSEG|STACK|SECTION)\s*(.[\w():]*)/;
+    private readonly segmentControl = /^\s*(ALIGN|EVEN|ODD|ORG|SECTION_GROUP|SECTION_TYPE|DATA)/;
+    private readonly definesLocal = /^\s*((ASSIGN|DEFINE|LOCAL|ALIAS|EQU|VAR)|(([A-Z_a-z]\w*)=.+))$/;
+    private readonly miscDirective = /^\s*(NAME|MODULE|PROGRAM|LIBRARY|ERROR|END|CASEOFF|CASEON|CFI|COL|RADIX|THUMB)/;
+    private readonly dataStatement = /^\s*(DB|DC16|DC24|DC32|DC8|DD|DP|DS|DS16|DS24|DS32|DW)/;
+    private readonly requireStatement = /^\s*REQUIRE\s+`?\?*<?([A-Z_a-z][\w ]*)>?`?/;
+
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
         this.commentOnly = /^\s*(((#|@|\$|\/\/).*)|(\/\*.*\*\/))$/;
-        this.filenameComment = /^\/\/\s[A-Za-z]?:?\S(([^/\\]*[/\\])+)([^/\\]+)$/;
-        this.lineNumberComment = /^\/\/\s*(\d+)\s(?!bytes).*/;
-
-        // categories of directives. remove if filters.directives set
-        this.segmentBegin = /^\s*(ASEG|ASEGN|COMMON|RSEG|STACK|SECTION)\s*(.[\w():]*)/;
-        this.segmentControl = /^\s*(ALIGN|EVEN|ODD|ORG|SECTION_GROUP|SECTION_TYPE|DATA)/;
         this.definesGlobal = /^\s*(EXTERN|EXTRN|IMPORT|EXPORT|PUBWEAK|PUBLIC)\s+(.+)$/;
-        this.definesLocal = /^\s*((ASSIGN|DEFINE|LOCAL|ALIAS|EQU|VAR)|(([A-Z_a-z]\w*)=.+))$/;
-        this.miscDirective = /^\s*(NAME|MODULE|PROGRAM|LIBRARY|ERROR|END|CASEOFF|CASEON|CFI|COL|RADIX|THUMB)/;
-
         // NOTE: Compiler generated labels can have spaces in them, but are quoted and in <>
         this.labelDef = /^`?\?*<?([A-Z_a-z][\w :]*)>?`?:$/;
-        this.dataStatement = /^\s*(DB|DC16|DC24|DC32|DC8|DD|DP|DS|DS16|DS24|DS32|DW)/;
-        this.requireStatement = /^\s*REQUIRE\s+`?\?*<?([A-Z_a-z][\w ]*)>?`?/;
-        this.beginFunctionMaybe = /^\s*RSEG\s*CODE:CODE:(.+)$/;
     }
 
-    hasOpcode(line) {
+    override hasOpcode(line: string): boolean {
         // check for empty lines
         if (line.length === 0) return false;
         // check for a local label definition
@@ -67,14 +86,14 @@ export class AsmEWAVRParser extends AsmParser {
         // check for requre statement
         if (this.requireStatement.test(line)) return false;
 
-        return !!this.hasOpcodeRe.test(line);
+        return this.hasOpcodeRe.test(line);
     }
 
-    labelFindFor() {
+    override labelFindFor() {
         return this.labelDef;
     }
 
-    processAsm(asm, filters) {
+    override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         // NOTE: EWAVR assembly seems to be closest to visual studio
         const getFilenameFromComment = line => {
             const matches = line.match(this.filenameComment);
@@ -98,27 +117,19 @@ export class AsmEWAVRParser extends AsmParser {
 
         const stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
 
-        // type source = {file: string option; line: int}
-        // type line = {line: string; source: source option}
-        // type label =
-        //   { lines: line array
-        //   ; name: string | undefined
-        //   ; initialLine: int
-        //   ; file: string option
-        //   ; require: string array }
-        const resultObject = {
-            prefix: [], // line array
-            labels: [], // label array
-            postfix: [], // line array
+        const resultObject: ResultObject = {
+            prefix: [],
+            labels: [],
+            postfix: [],
         };
 
-        let currentLabel = null; // func option
-        let currentFile;
-        let currentLine;
+        let currentLabel: Label | null = null;
+        let currentFile: string | undefined | null;
+        let currentLine: number | undefined;
 
         let seenEnd = false;
 
-        const definedLabels = {};
+        const definedLabels: Record<string, number> = {};
 
         const createSourceFor = (line, currentFile, currentLine) => {
             const hasopc = this.hasOpcode(line);
@@ -135,16 +146,18 @@ export class AsmEWAVRParser extends AsmParser {
 
         const checkBeginLabel = line => {
             const matches = line.match(this.labelDef);
-            if (matches) {
+            if (matches && currentLine) {
                 currentLabel = {
                     lines: [],
                     initialLine: currentLine,
                     name: matches[1],
-                    file: currentFile,
+                    file: currentFile || null,
+                    require: [],
                 };
                 definedLabels[matches[1]] = currentLine;
                 resultObject.labels.push(currentLabel);
             }
+            return currentLabel;
         };
 
         const checkRequiresStatement = line => {
@@ -190,7 +203,7 @@ export class AsmEWAVRParser extends AsmParser {
                     if (currentFile === undefined) {
                         logger.error('Somehow, we have a line number comment without a file comment: %s', line);
                     }
-                    if (currentLabel != null && currentLabel.initialLine === undefined) {
+                    if (currentLabel !== null && currentLabel.initialLine === undefined) {
                         currentLabel.initialLine = tmp;
                     }
                     currentLine = tmp;
@@ -203,11 +216,11 @@ export class AsmEWAVRParser extends AsmParser {
                     currentFile = tmp;
                 }
                 if (currentLabel != null && currentLabel.file === undefined) {
-                    currentLabel.file = currentFile;
+                    currentLabel.file = currentFile || null;
                 }
             }
 
-            checkBeginLabel(line);
+            currentLabel = checkBeginLabel(line);
             checkRequiresStatement(line);
 
             if (filters.commentOnly && this.commentOnly.test(line)) {
@@ -242,7 +255,11 @@ export class AsmEWAVRParser extends AsmParser {
         return this.resultObjectIntoArray(resultObject, filters, definedLabels);
     }
 
-    resultObjectIntoArray(obj, filters, ddefLabels) {
+    resultObjectIntoArray(
+        obj: ResultObject,
+        filters: ParseFiltersAndOutputOptions,
+        ddefLabels: Record<string, number>,
+    ): ParsedAsmResult {
         // NOTES on EWAVR function and labels:
         // - template functions are not mangled with type info.
         //   Instead they simply have a `_#` appended to the end, with #
@@ -257,7 +274,7 @@ export class AsmEWAVRParser extends AsmParser {
         const compilerGeneratedLabel = /^(initializer for |segment init: )([\w :]*)$/i;
         const segInitLabel = /^segment init: ([\w :]*)$/i;
 
-        const result = [];
+        const result: ParsedAsmResultLine[] = [];
         let lastLineWasWhitespace = true;
         const pushLine = line => {
             if (line.text.trim() === '') {
@@ -277,6 +294,7 @@ export class AsmEWAVRParser extends AsmParser {
 
         for (const label of obj.labels) {
             if (!filters.libraryCode || label.file === null) {
+                assert(label.name);
                 const match = label.name.match(compilerGeneratedLabel);
                 const segInitMatch = label.name.match(segInitLabel);
                 pushLine({text: '', source: null});
