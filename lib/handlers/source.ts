@@ -55,7 +55,7 @@ export class SourceHandler {
             next();
             return;
         }
-        callback(rest)
+        callback(...rest)
             .then(response => {
                 this.addStaticHeaders(res);
                 res.send(response);
