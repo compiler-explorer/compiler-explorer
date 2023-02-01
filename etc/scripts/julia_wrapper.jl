@@ -58,7 +58,6 @@ for x in ARGS
     end
 end
 
-@show positional_ARGS
 input_file = popfirst!(positional_ARGS)
 output_path = popfirst!(positional_ARGS)
 
