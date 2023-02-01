@@ -87,7 +87,7 @@ open(output_path, "w") do io
             ir, retval = InteractiveUtils.code_typed(me_fun, me_types; optimize, debuginfo)[1]
             Base.IRShow.show_ir(io_buf, ir)
         elseif format == "lowered"
-            cl = Base.code_lowered(me_fun, me_types,; debuginfo)
+            cl = Base.code_lowered(me_fun, me_types; debuginfo)
             print(io_buf, cl)
         elseif format == "llvm"
             InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo)
