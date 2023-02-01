@@ -39,7 +39,7 @@ type Label = {
     lines: Line[];
     name: string | null;
     initialLine: number;
-    file: string | undefined;
+    file: string | null;
     require: string[];
 };
 type ResultObject = {
@@ -124,7 +124,7 @@ export class AsmEWAVRParser extends AsmParser {
         };
 
         let currentLabel: Label | null = null;
-        let currentFile: string | undefined;
+        let currentFile: string | undefined | null;
         let currentLine: number | undefined;
 
         let seenEnd = false;
@@ -151,7 +151,7 @@ export class AsmEWAVRParser extends AsmParser {
                     lines: [],
                     initialLine: currentLine,
                     name: matches[1],
-                    file: currentFile,
+                    file: currentFile || null,
                     require: [],
                 };
                 definedLabels[matches[1]] = currentLine;
@@ -209,14 +209,14 @@ export class AsmEWAVRParser extends AsmParser {
                     currentLine = tmp;
                 }
             } else {
-                // if the file is the "main file", give it the file `undefined`
+                // if the file is the "main file", give it the file `null`
                 if (stdInLooking.test(tmp)) {
-                    currentFile = undefined;
+                    currentFile = null;
                 } else {
                     currentFile = tmp;
                 }
                 if (currentLabel != null && currentLabel.file === undefined) {
-                    currentLabel.file = currentFile;
+                    currentLabel.file = currentFile || null;
                 }
             }
 
