@@ -31,7 +31,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
-import {BaseParser} from './argument-parsers';
+import {JuliaParser} from './argument-parsers';
 
 export class JuliaCompiler extends BaseCompiler {
     private compilerWrapperPath: string;
@@ -96,7 +96,7 @@ export class JuliaCompiler extends BaseCompiler {
     }
 
     override getArgumentParser() {
-        return BaseParser;
+        return JuliaParser;
     }
 
     override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
