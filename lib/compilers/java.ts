@@ -382,10 +382,13 @@ export class JavaCompiler extends BaseCompiler {
         }
         return {
             // Used for sorting
-            firstSourceLine: methods.reduce(
-                (p, m) => (p === -1 ? unwrap(m.startLine) : Math.min(p, unwrap(m.startLine))),
-                -1,
-            ),
+            firstSourceLine: methods.reduce((prev, method) => {
+                if (method.startLine) {
+                    return prev === -1 ? method.startLine : Math.min(prev, method.startLine);
+                } else {
+                    return prev;
+                }
+            }, -1),
             methods: methods,
             textsBeforeMethod,
         };
