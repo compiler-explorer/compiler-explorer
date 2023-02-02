@@ -22,32 +22,33 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {filter} from 'underscore';
-
+import {AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
 
 export class TurboCAsmParser extends AsmParser {
-    constructor(compilerProps) {
+    private readonly asmBinaryParser: AsmParser;
+    private readonly filestart = /^\s+\?debug\s+S\s"(.+)"/;
+    private readonly linestart = /^;\s+\?debug\s+L\s(\d+)/;
+    private readonly procbegin = /^(\w+)\sproc\s*near/;
+    private readonly procend = /^(\w+)\sendp/;
+
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
         this.asmBinaryParser = new AsmParser(compilerProps);
-
-        this.filestart = /^\s+\?debug\s+S\s"(.+)"/;
-        this.linestart = /^;\s+\?debug\s+L\s(\d+)/;
-
-        this.procbegin = /^(\w+)\sproc\s*near/;
-        this.procend = /^(\w+)\sendp/;
     }
 
-    processAsm(asm, filters) {
-        if (filter.binary) return this.asmBinaryParser.processBinaryAsm(asm, filters);
+    override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        if (filters.binary) return this.asmBinaryParser.processBinaryAsm(asm, filters);
 
         let currentfile = '';
-        let currentline = 0;
+        let currentline: string | undefined;
         let currentproc = '';
 
-        const asmLines = [];
+        const asmLines: ParsedAsmResultLine[] = [];
         let isDirective = true;
         asm = asm.replace(/\u001A$/, '');
 
@@ -61,7 +62,7 @@ export class TurboCAsmParser extends AsmParser {
             const endprocmatch = line.match(this.procend);
             if (endprocmatch) {
                 currentproc = '';
-                currentline = 0;
+                currentline = undefined;
                 isDirective = false;
             }
 
@@ -77,7 +78,7 @@ export class TurboCAsmParser extends AsmParser {
                 isDirective = true;
             }
 
-            let source = null;
+            let source: AsmResultSource | null = null;
             if (currentfile && currentline) {
                 if (filters.dontMaskFilenames) {
                     source = {
