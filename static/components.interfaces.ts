@@ -77,15 +77,25 @@ export type PopulatedCompilerState = StateWithEditor & {
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
 
-export type EmptyExecutorState = StateWithLanguage & StateWithEditor;
+export type EmptyExecutorState = StateWithLanguage &
+    StateWithEditor & {
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
+    };
 export type PopulatedExecutorState = StateWithLanguage &
     StateWithEditor &
     StateWithTree & {
         compiler: string;
         libs: unknown;
         options: unknown;
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
     };
-export type ExecutorForTreeState = StateWithLanguage & StateWithTree;
+export type ExecutorForTreeState = StateWithLanguage &
+    StateWithTree & {
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
+    };
 
 export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
 export type PopulatedEditorState = StateWithId & {
