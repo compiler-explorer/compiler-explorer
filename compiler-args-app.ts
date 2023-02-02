@@ -31,13 +31,17 @@ import _ from 'underscore';
 import {CompilerArguments} from './lib/compiler-arguments';
 import * as Parsers from './lib/compilers/argument-parsers';
 import {executeDirect} from './lib/exec';
+import {logger} from './lib/logger';
 import {padRight} from './lib/utils';
 
 const opts = nopt({
     parser: [String],
     exe: [String],
     padding: [Number],
+    debug: [Boolean],
 });
+
+if (opts.debug) logger.level = 'debug';
 
 const compilerParsers = {
     gcc: Parsers.GCCParser,
