@@ -22,8 +22,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import $ from 'jquery';
-
 import {FiledataPair} from '../types/compilation/compilation.interfaces';
 
 export type SourceAndFiles = {
@@ -35,21 +33,25 @@ export type FileToDownload = {
     url: string;
     filename: string;
     contents?: string;
+    downloadFailed?: boolean;
 };
 
 export class IncludeDownloads {
     private toDownload: FileToDownload[] = [];
     private downloadPromises: Promise<FileToDownload>[] = [];
 
+    private async doDownload(download): Promise<FileToDownload> {
+        const response = await fetch(download.url);
+        if (response.status >= 400) {
+            download.downloadFailed = true;
+        } else {
+            download.contents = await response.text();
+        }
+        return download;
+    }
+
     private async startDownload(download) {
-        this.downloadPromises.push(
-            new Promise(resolve => {
-                $.get(download.url, data => {
-                    download.contents = data;
-                    resolve(download);
-                });
-            })
-        );
+        this.downloadPromises.push(this.doDownload(download));
     }
 
     private getFilenameFromUrl(url: string): string {
@@ -58,16 +60,24 @@ export class IncludeDownloads {
         return jsurl.host + urlpath;
     }
 
-    include(url) {
+    include(url: string): FileToDownload {
         let found = this.toDownload.find(prev => prev.url === url);
         if (!found) {
-            const filename = this.getFilenameFromUrl(url);
-            found = {
-                url: url,
-                filename: filename,
-            };
-            this.toDownload.push(found);
-            this.startDownload(found);
+            try {
+                const filename = this.getFilenameFromUrl(url);
+                found = {
+                    url: url,
+                    filename: filename,
+                };
+                this.toDownload.push(found);
+                this.startDownload(found);
+            } catch (err: any) {
+                return {
+                    url: 'Unknown url',
+                    filename: err.message,
+                    downloadFailed: true,
+                };
+            }
         }
         return found;
     }
@@ -79,11 +89,13 @@ export class IncludeDownloads {
     async allDownloadsAsFileDataPairs(): Promise<FiledataPair[]> {
         const downloads = await Promise.all(this.downloadPromises);
 
-        return downloads.map(file => {
-            return {
-                filename: file.filename,
-                contents: file.contents || '',
-            };
-        });
+        return downloads
+            .filter(file => !file.downloadFailed)
+            .map(file => {
+                return {
+                    filename: file.filename,
+                    contents: file.contents || '',
+                };
+            });
     }
 }
