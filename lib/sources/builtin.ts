@@ -69,5 +69,4 @@ export const builtin: Source = {
             file: e.file,
         }));
     },
-    save: null,
 };

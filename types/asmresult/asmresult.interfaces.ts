@@ -37,7 +37,8 @@ export type ParsedAsmResult = {
     parsingTime?: string;
     filteredCount?: number;
     externalParserUsed?: boolean;
-    objdumpTime?: number;
+    // TODO(#4655) A few compilers seem to assign strings here. It might be ok but we should look into it more.
+    objdumpTime?: number | string;
     execTime?: string;
     languageId?: string;
 };

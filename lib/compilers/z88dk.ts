@@ -27,6 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -39,7 +40,7 @@ export class z88dkCompiler extends BaseCompiler {
         return 'z88dk';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);
@@ -63,14 +64,14 @@ export class z88dkCompiler extends BaseCompiler {
     }
 
     public override orderArguments(
-        options,
-        inputFilename,
-        libIncludes,
-        libOptions,
-        libPaths,
-        libLinks,
-        userOptions,
-        staticLibLinks,
+        options: string[],
+        inputFilename: string,
+        libIncludes: string[],
+        libOptions: string[],
+        libPaths: string[],
+        libLinks: string[],
+        userOptions: string[],
+        staticLibLinks: string[],
     ) {
         return userOptions.concat(
             options,
@@ -99,7 +100,7 @@ export class z88dkCompiler extends BaseCompiler {
         return opts;
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         return defaultOutputFilename;
     }
 
@@ -117,8 +118,8 @@ export class z88dkCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc,
-        dynamicReloc,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);

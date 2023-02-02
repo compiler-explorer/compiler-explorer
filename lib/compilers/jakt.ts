@@ -25,6 +25,7 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -33,7 +34,7 @@ export class JaktCompiler extends BaseCompiler {
         return 'jakt';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
 
         this.outputFilebase = 'example';
@@ -49,8 +50,8 @@ export class JaktCompiler extends BaseCompiler {
         maxSize: number,
         intelAsm,
         demangle,
-        staticReloc,
-        dynamicReloc,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         const objdumpResult = await super.objdump(
@@ -72,13 +73,13 @@ export class JaktCompiler extends BaseCompiler {
         return ['--binary-dir', path.dirname(outputFilename)];
     }
 
-    override getObjdumpOutputFilename(defaultOutputFilename) {
+    override getObjdumpOutputFilename(defaultOutputFilename: string) {
         const parsed_path = path.parse(defaultOutputFilename);
 
         return path.join(parsed_path.dir, this.outputFilebase);
     }
 
-    override getExecutableFilename(dirPath, outputFilebase, key?) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string) {
         return path.join(dirPath, outputFilebase);
     }
 
@@ -88,7 +89,7 @@ export class JaktCompiler extends BaseCompiler {
     }
 
     // We have no dynamic linking in Jakt
-    override getSharedLibraryLinks(libraries): string[] {
+    override getSharedLibraryLinks(libraries: any[]): string[] {
         return [];
     }
 

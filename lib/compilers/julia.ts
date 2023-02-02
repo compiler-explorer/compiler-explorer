@@ -26,6 +26,8 @@ import path from 'path';
 
 import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
@@ -38,7 +40,7 @@ export class JuliaCompiler extends BaseCompiler {
         return 'julia';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -89,7 +91,7 @@ export class JuliaCompiler extends BaseCompiler {
         return {asm: bytecodeResult};
     }
 
-    override optionsForFilter(filters, outputFilename) {
+    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
         return [];
     }
 

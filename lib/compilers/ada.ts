@@ -25,9 +25,8 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
-
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
@@ -36,7 +35,7 @@ export class AdaCompiler extends BaseCompiler {
         return 'ada';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env) {
         super(info, env);
         this.compiler.supportsGccDump = true;
         this.compiler.removeEmptyGccDump = true;
@@ -45,7 +44,7 @@ export class AdaCompiler extends BaseCompiler {
         this.compiler.supportsGnatDebugViews = true;
     }
 
-    override getExecutableFilename(dirPath) {
+    override getExecutableFilename(dirPath: string, outputFilebase: string, key?) {
         // The name here must match the value used in the pragma Source_File
         // in the user provided source.
         return path.join(dirPath, 'example');
@@ -70,7 +69,14 @@ export class AdaCompiler extends BaseCompiler {
         }
     }
 
-    override prepareArguments(userOptions, filters, backendOptions, inputFilename, outputFilename, libraries) {
+    override prepareArguments(
+        userOptions: string[],
+        filters: ParseFiltersAndOutputOptions,
+        backendOptions: Record<string, any>,
+        inputFilename: string,
+        outputFilename: string,
+        libraries,
+    ) {
         backendOptions = backendOptions || {};
 
         // super call is needed as it handles the GCC Dump files.

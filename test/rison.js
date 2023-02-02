@@ -41,7 +41,7 @@ describe('Rison test cases', () => {
     for (const [r, obj] of Object.entries(py_testcases)) {
         it(`Should decode "${r}"`, () => {
             // hack to get around "TypeError: Cannot read properties of null (reading 'should')"
-            ({x: rison.decode(r)}.should.deep.equal({x: obj}));
+            ({x: rison.decode(r)}).should.deep.equal({x: obj});
         });
         it(`Should encode ${JSON.stringify(obj)}`, () => {
             rison.encode(obj).should.deep.equal(r);
