@@ -22,41 +22,57 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {DMDCompiler} from '../lib/compilers/dmd';
-import {LDCCompiler} from '../lib/compilers/ldc';
+import {GolangCompiler} from '../lib/compilers/golang';
+import * as utils from '../lib/utils';
 
-import {makeCompilationEnvironment} from './utils';
+import {fs, makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
-    d: {id: 'd'},
+    go: {id: 'go'},
 };
 
-describe('D', () => {
-    let ce;
-    const info = {
-        exe: null,
-        remote: true,
-        lang: languages.d.id,
+let ce;
+const info = {
+    exe: "/dev/null",
+    remote: true,
+    lang: languages.go.id,
+};
+
+function testGoAsm(basefilename) {
+    const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
+
+    const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
+
+    const result = {
+        stderr: asmLines.map(line => {
+            return {
+                text: line,
+            };
+        }),
     };
 
+    return compiler.postProcess(result).then(([output]) => {
+        const expectedOutput = utils.splitLines(fs.readFileSync(basefilename + '.output.asm').toString());
+
+        utils.splitLines(output.asm).should.deep.equal(expectedOutput);
+
+        return output.should.deep.equal({
+            asm: expectedOutput.join('\n'),
+            stdout: [],
+            stderr: [],
+        });
+    });
+}
+
+describe('GO asm tests', () => {
     before(() => {
         ce = makeCompilationEnvironment({languages});
     });
 
-    it('LDC should not allow -run parameter', () => {
-        const compiler = new LDCCompiler(info, ce);
-        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
+    it('Handles unknown line number correctly', () => {
+        return testGoAsm('test/golang/bug-901');
     });
-    it('DMD should not allow -run parameter', () => {
-        const compiler = new DMDCompiler(info, ce);
-        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
-    });
-
-    it('LDC supports AST output since version 1.4.0', () => {
-        const compiler = new LDCCompiler(info, ce);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.3.0)').should.equal(false);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.4.0)').should.equal(true);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)').should.equal(true);
-        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.10.0)').should.equal(true);
+    it('Rewrites PC jumps to labels', () => {
+        return testGoAsm('test/golang/labels');
     });
 });

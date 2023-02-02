@@ -173,7 +173,7 @@ describe('Execution tests', () => {
                 '1',
                 '2',
                 '3',
-            ]);
+            ], {});
             args.should.deep.equals([
                 '--config',
                 exec.getNsJailCfgFilePath('sandbox'),
@@ -192,7 +192,7 @@ describe('Execution tests', () => {
             options.should.deep.equals({some: 1, thing: 2});
         });
         it('should not pass through unknown configs', () => {
-            expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'])).to.throw();
+            expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {})).to.throw();
         });
         it('should remap paths when using customCwd', () => {
             const {args, options, filenameTransform} = exec.getNsJailOptions(

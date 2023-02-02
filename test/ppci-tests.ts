@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2018, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,38 +22,44 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as fs from 'fs';
+import {PPCICompiler} from '../lib/compilers/ppci';
 
-import {BaseCompiler} from '../lib/base-compiler';
-import * as properties from '../lib/properties';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
-import * as filterTests from './pp-output-cases/filter-tests';
-
-//const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
-const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
-    return {
-        id: id,
-        exe: '/dev/null',
-        name: id,
-        lang: lang,
-        group: group,
-        isSemVer: isSemver,
-        semver: semver,
-        libsArr: [],
-    };
+const languages = {
+    c: {id: 'c'},
 };
 
-describe('Preprocessor Output Handling', () => {
-    it('correctly filters lines', () => {
-        const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
-            ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
-        };
-        const compiler = new BaseCompiler(compilerInfo, env);
-        for (const testCase of filterTests.cases) {
-            const output = compiler.filterPP(testCase.input)[1];
-            output.trim().should.eql(testCase.output.trim());
-        }
+describe('PPCI', function () {
+    let ce;
+    const info = {
+        exe: "/dev/null",
+        remote: true,
+        lang: languages.c.id,
+    };
+
+    before(() => {
+        ce = makeCompilationEnvironment({languages});
+    });
+
+    it('Should be ok with most arguments', () => {
+        const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);
+        compiler
+            .filterUserOptions(['hello', '-help', '--something'])
+            .should.deep.equal(['hello', '-help', '--something']);
+    });
+
+    it('Should be ok with path argument', () => {
+        const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);
+        compiler
+            .filterUserOptions(['hello', '--stuff', '/proc/cpuinfo'])
+            .should.deep.equal(['hello', '--stuff', '/proc/cpuinfo']);
+    });
+
+    it('Should be Not ok with report arguments', () => {
+        const compiler = new PPCICompiler(makeFakeCompilerInfo(info), ce);
+        compiler
+            .filterUserOptions(['hello', '--report', '--text-report', '--html-report'])
+            .should.deep.equal(['hello']);
     });
 });

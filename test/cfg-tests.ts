@@ -24,15 +24,15 @@
 
 import * as cfg from '../lib/cfg/cfg';
 
-import {fs, path, resolvePathFromTestRoot} from './utils';
+import {fs, makeFakeCompilerInfo, path, resolvePathFromTestRoot} from './utils';
 
 async function DoCfgTest(cfgArg, filename) {
     const contents = await fs.readJson(filename, 'utf8');
     const structure = cfg.generateStructure(
-        {
+        makeFakeCompilerInfo({
             compilerType: '',
             version: cfgArg,
-        },
+        }),
         contents.asm,
     );
     structure.should.deep.equal(contents.cfg);

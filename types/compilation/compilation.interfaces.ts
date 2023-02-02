@@ -123,7 +123,7 @@ export type ExecutionOptions = {
     // Stdin
     input?: any;
     killChild?: () => void;
-};
+} & Record<string, any>;
 
 export type BuildResult = CompilationResult & {
     downloads: BuildEnvDownloadInfo[];
