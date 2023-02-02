@@ -189,8 +189,11 @@ describe('Execution tests', () => {
             expect(filenameTransform).to.be.undefined;
         });
         it('should pass through options', () => {
-            const options = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {some: 1, thing: 2}).options;
-            options.should.deep.equals({some: 1, thing: 2});
+            const options = exec.getNsJailOptions('sandbox', '/path/to/compiler', [], {
+                timeoutMs: 42,
+                maxOutput: -1,
+            }).options;
+            options.should.deep.equals({timeoutMs: 42, maxOutput: -1});
         });
         it('should not pass through unknown configs', () => {
             expect(() => exec.getNsJailOptions('custom-config', '/path/to/compiler', ['1', '2', '3'], {})).to.throw();
