@@ -41,11 +41,16 @@ export class IncludeDownloads {
     private downloadPromises: Promise<FileToDownload>[] = [];
 
     private async doDownload(download): Promise<FileToDownload> {
-        const response = await fetch(download.url);
-        if (response.status >= 400) {
+        try {
+            const response = await fetch(download.url);
+            if (response.status >= 400) {
+                download.downloadFailed = true;
+            } else {
+                download.contents = await response.text();
+            }
+        } catch {
+            // exceptions happens on for example dns errors
             download.downloadFailed = true;
-        } else {
-            download.contents = await response.text();
         }
         return download;
     }
