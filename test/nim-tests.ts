@@ -24,10 +24,10 @@
 
 import path from 'path';
 
+import {unwrap} from '../lib/assert';
 import {NimCompiler} from '../lib/compilers/nim';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo, should} from './utils';
-import { unwrap } from '../lib/assert';
 
 const languages = {
     nim: {id: 'nim'},
@@ -36,7 +36,7 @@ const languages = {
 describe('Nim', () => {
     let ce;
     const info = {
-        exe: "/dev/null",
+        exe: '/dev/null',
         remote: true,
         lang: languages.nim.id,
     };

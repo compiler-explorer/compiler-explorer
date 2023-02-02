@@ -25,11 +25,11 @@
 import * as fs from 'fs';
 
 import {BaseCompiler} from '../lib/base-compiler';
+import {CompilationEnvironment} from '../lib/compilation-env';
 import * as properties from '../lib/properties';
+import {CompilerInfo} from '../types/compiler.interfaces';
 
 import * as filterTests from './pp-output-cases/filter-tests';
-import { CompilerInfo } from '../types/compiler.interfaces';
-import { CompilationEnvironment } from '../lib/compilation-env';
 
 //const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
 const makeFakeCompilerInfo = (id, lang, group, semver, isSemver): Partial<CompilerInfo> => {

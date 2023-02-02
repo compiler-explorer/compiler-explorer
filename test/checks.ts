@@ -24,11 +24,11 @@
 
 import _ from 'underscore';
 
+import {unwrap} from '../lib/assert';
 import {languages} from '../lib/languages';
 import * as properties from '../lib/properties';
 
 import {fs} from './utils';
-import { unwrap } from '../lib/assert';
 
 describe('Live site checks', () => {
     let ceProps;

@@ -169,11 +169,12 @@ describe('Execution tests', () => {
             props.reset();
         });
         it('should handle simple cases', () => {
-            const {args, options, filenameTransform} = exec.getNsJailOptions('sandbox', '/path/to/compiler', [
-                '1',
-                '2',
-                '3',
-            ], {});
+            const {args, options, filenameTransform} = exec.getNsJailOptions(
+                'sandbox',
+                '/path/to/compiler',
+                ['1', '2', '3'],
+                {},
+            );
             args.should.deep.equals([
                 '--config',
                 exec.getNsJailCfgFilePath('sandbox'),

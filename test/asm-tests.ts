@@ -25,7 +25,8 @@
 import {AsmParser} from '../lib/parsers/asm-parser';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc';
 import {AsmRegex} from '../lib/parsers/asmregex';
-import { makeFakeParseFiltersAndOutputOptions } from './utils';
+
+import {makeFakeParseFiltersAndOutputOptions} from './utils';
 
 describe('ASM CL parser', () => {
     it('should work for error documents', () => {
@@ -49,18 +50,33 @@ describe('ASM regex base class', () => {
         AsmRegex.filterAsmLine(line, makeFakeParseFiltersAndOutputOptions({})).should.equal(line);
     });
     it('should use up internal whitespace when asked', () => {
-        AsmRegex.filterAsmLine('     this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal('  this is a line');
-        AsmRegex.filterAsmLine('this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal('this is a line');
-    });
-    it('should keep whitespace in strings', () => {
-        AsmRegex.filterAsmLine('equs     "this    string"', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal('equs "this    string"');
-        AsmRegex.filterAsmLine('     equs     "this    string"', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal('  equs "this    string"');
-        AsmRegex.filterAsmLine('equs     "this    \\"  string  \\""', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal(
-            'equs "this    \\"  string  \\""',
+        AsmRegex.filterAsmLine(
+            '     this    is    a line',
+            makeFakeParseFiltersAndOutputOptions({trim: true}),
+        ).should.equal('  this is a line');
+        AsmRegex.filterAsmLine('this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal(
+            'this is a line',
         );
     });
+    it('should keep whitespace in strings', () => {
+        AsmRegex.filterAsmLine(
+            'equs     "this    string"',
+            makeFakeParseFiltersAndOutputOptions({trim: true}),
+        ).should.equal('equs "this    string"');
+        AsmRegex.filterAsmLine(
+            '     equs     "this    string"',
+            makeFakeParseFiltersAndOutputOptions({trim: true}),
+        ).should.equal('  equs "this    string"');
+        AsmRegex.filterAsmLine(
+            'equs     "this    \\"  string  \\""',
+            makeFakeParseFiltersAndOutputOptions({trim: true}),
+        ).should.equal('equs "this    \\"  string  \\""');
+    });
     it('should not get upset by mismatched strings', () => {
-        AsmRegex.filterAsmLine('a   "string    \'yeah', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal('a "string \'yeah');
+        AsmRegex.filterAsmLine(
+            'a   "string    \'yeah',
+            makeFakeParseFiltersAndOutputOptions({trim: true}),
+        ).should.equal('a "string \'yeah');
     });
 });
 

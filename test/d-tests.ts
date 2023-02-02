@@ -34,7 +34,7 @@ const languages = {
 describe('D', () => {
     let ce;
     const info = {
-        exe: "/dev/null",
+        exe: '/dev/null',
         remote: true,
         lang: languages.d.id,
     };

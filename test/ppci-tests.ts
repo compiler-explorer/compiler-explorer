@@ -33,7 +33,7 @@ const languages = {
 describe('PPCI', function () {
     let ce;
     const info = {
-        exe: "/dev/null",
+        exe: '/dev/null',
         remote: true,
         lang: languages.c.id,
     };
