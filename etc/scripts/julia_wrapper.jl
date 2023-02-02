@@ -13,7 +13,7 @@ Options:
                       llvm
                       native
   --debuginfo=<info>  Controls amount of generated metadata (One of "default", "none") [default: default]
-  --optimize          Sets whether "llvm" output should be optimized or not.
+  --optimize          Sets whether "llvm" or "typed" output should be optimized or not.
   --verbose           Prints some process info
 """
 
@@ -84,17 +84,17 @@ open(output_path, "w") do io
     for (me_fun, me_types, me) in m_methods
         io_buf = IOBuffer() # string buffer
         if format == "typed"
-            ir, retval = InteractiveUtils.code_typed(me_fun, me_types, debuginfo=debuginfo)[1]
+            ir, retval = InteractiveUtils.code_typed(me_fun, me_types; optimize, debuginfo)[1]
             Base.IRShow.show_ir(io_buf, ir)
         elseif format == "lowered"
-            cl = Base.code_lowered(me_fun, me_types, debuginfo=debuginfo)
+            cl = Base.code_lowered(me_fun, me_types; debuginfo)
             print(io_buf, cl)
         elseif format == "llvm"
-            InteractiveUtils.code_llvm(io_buf, me_fun, me_types, optimize=optimize, debuginfo=debuginfo)
+            InteractiveUtils.code_llvm(io_buf, me_fun, me_types; optimize, debuginfo)
         elseif format == "native"
-            InteractiveUtils.code_native(io_buf, me_fun, me_types, debuginfo=debuginfo)
+            InteractiveUtils.code_native(io_buf, me_fun, me_types; debuginfo)
         elseif format == "warntype"
-            InteractiveUtils.code_warntype(io_buf, me_fun, me_types, debuginfo=debuginfo)
+            InteractiveUtils.code_warntype(io_buf, me_fun, me_types; debuginfo)
         end
         code = String(take!(io_buf))
         line_num = count("\n",code)
