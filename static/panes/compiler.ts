@@ -49,7 +49,6 @@ import {Hub} from '../hub';
 import {Container} from 'golden-layout';
 import {CompilerState} from './compiler.interfaces';
 import {ComponentConfig, ToolViewState} from '../components.interfaces';
-import {FiledataPair} from '../multifile-service';
 import {LanguageLibs} from '../options.interfaces';
 import {GccDumpFiltersState, GccDumpViewSelectedPass} from './gccdump-view.interfaces';
 import {AssemblyInstructionInfo} from '../../lib/asm-docs/base';
@@ -57,7 +56,7 @@ import {PPOptions} from './pp-view.interfaces';
 import {CompilationStatus} from '../compiler-service.interfaces';
 import {WidgetState} from '../widgets/libs-widget.interfaces';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilationResult, FiledataPair} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import * as utils from '../utils';
 import * as Sentry from '@sentry/browser';
@@ -67,6 +66,7 @@ import {Tool, ArtifactType} from '../../types/tool.interfaces';
 import {assert, unwrap, unwrapString} from '../assert';
 import {CompilerOutputOptions} from '../../types/features/filters.interfaces';
 import {AssemblyDocumentationInstructionSet} from '../../types/features/assembly-documentation.interfaces';
+import {SourceAndFiles} from '../download-service';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
@@ -1266,19 +1266,23 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
         const fetches: Promise<void>[] = [];
         fetches.push(
-            this.compilerService.expand(request.source).then(contents => {
-                request.source = contents;
+            this.compilerService.expandToFiles(request.source).then((sourceAndFiles: SourceAndFiles) => {
+                request.source = sourceAndFiles.source;
+                request.files.push(...sourceAndFiles.files);
             })
         );
 
+        const moreFiles: FiledataPair[] = [];
         for (let i = 0; i < request.files.length; i++) {
             const file = request.files[i];
             fetches.push(
-                this.compilerService.expand(file.contents).then(contents => {
-                    file.contents = contents;
+                this.compilerService.expandToFiles(file.contents).then((sourceAndFiles: SourceAndFiles) => {
+                    file.contents = sourceAndFiles.source;
+                    moreFiles.push(...sourceAndFiles.files);
                 })
             );
         }
+        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
@@ -1302,13 +1306,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     }
 
     compileFromEditorSource(options: CompileRequestOptions, bypassCache: boolean) {
-        this.compilerService.expand(this.source).then(expanded => {
+        this.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
             const request: CompileRequest = {
-                source: expanded || '',
+                source: sourceAndFiles.source || '',
                 compiler: this.compiler ? this.compiler.id : '',
                 options: options,
                 lang: this.currentLangId,
-                files: [],
+                files: sourceAndFiles.files,
                 bypassCache: false,
             };
             if (bypassCache) request.bypassCache = true;

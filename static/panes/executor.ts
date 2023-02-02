@@ -47,12 +47,12 @@ import {Language} from '../../types/languages.interfaces';
 import {LanguageLibs} from '../options.interfaces';
 import {LLVMOptPipelineBackendOptions} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
 import {PPOptions} from './pp-view.interfaces';
-import {FiledataPair} from '../multifile-service';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {FiledataPair, CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {CompilationStatus as CompilerServiceCompilationStatus} from '../compiler-service.interfaces';
 import {CompilerPicker} from '../widgets/compiler-picker';
 import {GccDumpViewSelectedPass} from './gccdump-view.interfaces';
+import {SourceAndFiles} from '../download-service';
 
 const languages = options.languages;
 
@@ -363,13 +363,13 @@ export class Executor extends Pane<ExecutorState> {
             });
             return;
         }
-        this.hub.compilerService.expand(this.source).then(expanded => {
+        this.hub.compilerService.expandToFiles(this.source).then((sourceAndFiles: SourceAndFiles) => {
             const request: CompilationRequest = {
-                source: expanded || '',
+                source: sourceAndFiles.source || '',
                 compiler: this.compiler ? this.compiler.id : '',
                 options: options,
                 lang: this.currentLangId,
-                files: [],
+                files: sourceAndFiles.files,
             };
             if (bypassCache) request.bypassCache = true;
             if (!this.compiler) {
@@ -398,19 +398,23 @@ export class Executor extends Pane<ExecutorState> {
 
         const fetches: Promise<void>[] = [];
         fetches.push(
-            this.hub.compilerService.expand(request.source).then(contents => {
-                request.source = contents;
+            this.hub.compilerService.expandToFiles(request.source).then((sourceAndFiles: SourceAndFiles) => {
+                request.source = sourceAndFiles.source;
+                request.files.push(...sourceAndFiles.files);
             })
         );
 
+        const moreFiles: FiledataPair[] = [];
         for (let i = 0; i < request.files.length; i++) {
             const file = request.files[i];
             fetches.push(
-                this.hub.compilerService.expand(file.contents).then(contents => {
-                    file.contents = contents;
+                this.hub.compilerService.expandToFiles(file.contents).then((sourceAndFiles: SourceAndFiles) => {
+                    file.contents = sourceAndFiles.source;
+                    moreFiles.push(...sourceAndFiles.files);
                 })
             );
         }
+        request.files.push(...moreFiles);
 
         Promise.all(fetches).then(() => {
             const treeState = tree.currentState();
