@@ -82,6 +82,10 @@ class CompilerArgsApp {
                 return executeDirect(command, args, {}, fn => fn);
             },
         };
+
+        if (this.parserName === 'juliawrapper') {
+            this.compiler.compilerWrapperPath = 'etc/scripts/julia_wrapper.jl';
+        }
     }
 
     async doTheParsing() {
