@@ -49,6 +49,7 @@
     "http-proxy": "^1.18.1",
     "husky": "^8.0.1",
     "husky-init": "^8.0.0",
+    "i": "^0.3.7",
     "jquery": "^3.6.0",
     "js-cookie": "^3.0.1",
     "jszip": "^3.7.1",
@@ -166,11 +167,11 @@
   },
   "scripts": {
     "ci-lint": "eslint --format github .",
-    "ci-test": "nyc npm run test",
+    "ci-test": "nyc npm run test ",
     "lint": "eslint . --fix",
     "lint-check": "eslint .",
-    "lint-files": "eslint",
-    "test": "mocha -b",
+    "lint-files": "eslint --fix",
+    "test": "mocha -b --timeout 20000",
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
@@ -186,7 +187,8 @@
     "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
-    "webpack": "webpack --node-env=production"
+    "webpack": "webpack --node-env=production",
+    "mytest": "mocha test\\asm-tests.js --timeout 5000000"
   },
   "license": "BSD-2-Clause"
 }

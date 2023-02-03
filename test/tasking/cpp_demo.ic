@@ -1,0 +1,69 @@
+/* Translated by:
+ *   TASKING SmartCode v10.1r1 - TriCore C++ compiler Build 21121068 SN-09003536
+ */
+void *memcpy(); void *memset();
+#line 1 ".\\cpp_demo.cpp"
+#line 129 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\limits"
+enum _ZSt17float_round_style {
+
+_ZSt19round_indeterminate = (-1),
+_ZSt17round_toward_zero,
+_ZSt16round_to_nearest,
+_ZSt21round_toward_infinity,
+_ZSt25round_toward_neg_infinity};
+
+
+enum _ZSt18float_denorm_style {
+
+_ZSt20denorm_indeterminate = (-1),
+_ZSt13denorm_absent,
+_ZSt14denorm_present};
+#line 589 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\atomic"
+enum _ZSt12memory_order {
+
+_ZSt20memory_order_relaxed, _ZSt20memory_order_consume, _ZSt20memory_order_acquire,
+_ZSt20memory_order_release, _ZSt20memory_order_acq_rel, _ZSt20memory_order_seq_cst};
+#line 744 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\string"
+enum _ZNSsUt_E { _ZNSs9__min_capE = 11};
+#line 283 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\__mutex_base"
+enum _ZSt9cv_status {
+
+_ZNSt9cv_status10no_timeoutE,
+_ZNSt9cv_status7timeoutE};
+#line 884 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\__locale"
+enum _ZNSt12codecvt_base6resultE { _ZNSt12codecvt_base2okE, _ZNSt12codecvt_base7partialE, _ZNSt12codecvt_base5errorE, _ZNSt12codecvt_base6noconvE};
+#line 270 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\ios"
+enum _ZNSt8ios_base7seekdirE { _ZNSt8ios_base3begE, _ZNSt8ios_base3curE, _ZNSt8ios_base3endE};
+#line 308
+enum _ZNSt8ios_base5eventE { _ZNSt8ios_base11erase_eventE, _ZNSt8ios_base11imbue_eventE, _ZNSt8ios_base13copyfmt_eventE};
+#line 1768 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include.cxx\\locale"
+enum _ZNSt9time_base9dateorderE { _ZNSt9time_base8no_orderE, _ZNSt9time_base3dmyE, _ZNSt9time_base3mdyE, _ZNSt9time_base3ymdE, _ZNSt9time_base3ydmE};
+#line 141 "C:\\Users\\QXZ3F7O\\Desktop\\Smartcode_v10.1r1\\ctc\\include\\stdio.h"
+extern int printf(const char *restrict, ...);
+#line 3 ".\\cpp_demo.cpp"
+extern void _Z11printfhellov(void);
+
+
+
+
+extern int main(void); extern void _main(void);
+#line 3
+void _Z11printfhellov(void)
+{
+printf(((const char *)"helloworld!!")); 
+}
+
+int main(void)
+{
+auto int __61813_9_j;
+#line 9
+_main();
+__61813_9_j = 0; {
+auto int __61814_13_i; __61814_13_i = 0; for (; (__61814_13_i < 10); __61814_13_i++) {
+__61813_9_j += 100;
+} }
+
+_Z11printfhellov();
+
+return __61813_9_j * 4;
+}

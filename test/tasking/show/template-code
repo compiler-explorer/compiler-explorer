@@ -1,0 +1,20 @@
+template <typename T>
+inline T const& Max (T const& a, T const& b) 
+{ 
+    if(!a)
+    return a*33 +b*99; 
+} 
+int main ()
+{
+ 
+    int i = 39;
+    int j = 20;
+    int k = Max(i, j); 
+ 
+    double f1 = 13.5; 
+    double f2 = 20.7; 
+    double f = Max(f1, f2);
+  
+ 
+    return k+f;
+}
