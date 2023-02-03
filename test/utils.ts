@@ -31,12 +31,24 @@ import fs from 'fs-extra';
 import {CompilationEnvironment} from '../lib/compilation-env';
 import {CompilationQueue} from '../lib/compilation-queue';
 import {CompilerProps, fakeProps} from '../lib/properties';
+import {CompilerInfo} from '../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {
     const compilerProps = new CompilerProps(options.languages, fakeProps(options.props || {}));
     const compilationQueue = options.queue || new CompilationQueue(options.concurrency || 1, options.timeout);
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
+}
+
+export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
+    return props as CompilerInfo;
+}
+
+export function makeFakeParseFiltersAndOutputOptions(
+    options: Partial<ParseFiltersAndOutputOptions>,
+): ParseFiltersAndOutputOptions {
+    return options as ParseFiltersAndOutputOptions;
 }
 
 export const should = chai.should();

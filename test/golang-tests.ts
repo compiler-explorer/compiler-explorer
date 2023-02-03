@@ -25,7 +25,7 @@
 import {GolangCompiler} from '../lib/compilers/golang';
 import * as utils from '../lib/utils';
 
-import {fs, makeCompilationEnvironment} from './utils';
+import {fs, makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
     go: {id: 'go'},
@@ -33,13 +33,13 @@ const languages = {
 
 let ce;
 const info = {
-    exe: null,
+    exe: '/dev/null',
     remote: true,
     lang: languages.go.id,
 };
 
 function testGoAsm(basefilename) {
-    const compiler = new GolangCompiler(info, ce);
+    const compiler = new GolangCompiler(makeFakeCompilerInfo(info), ce);
 
     const asmLines = utils.splitLines(fs.readFileSync(basefilename + '.asm').toString());
 

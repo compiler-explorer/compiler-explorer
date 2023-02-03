@@ -24,11 +24,13 @@
 
 import {BaseFormatter} from '../lib/formatters/base';
 
+class Formatter extends BaseFormatter {}
+
 describe('Basic formatter functionality', () => {
     it('should be one-true-style if the styles are empty', () => {
-        const fmt = new BaseFormatter({
+        const fmt = new Formatter({
             name: 'foo-format',
-            exe: null,
+            exe: '/dev/null',
             styles: [],
             type: 'foofmt',
             version: 'foobar-format 1.0.0',
@@ -38,9 +40,9 @@ describe('Basic formatter functionality', () => {
     });
 
     it('should return an array of args for formatters with styles', () => {
-        const fmt = new BaseFormatter({
+        const fmt = new Formatter({
             name: 'foo-format',
-            exe: null,
+            exe: '/dev/null',
             styles: ['foostyle'],
             type: 'foofmt',
             version: 'foobar-format 1.0.0',

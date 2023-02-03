@@ -40,11 +40,12 @@ describe('Compilation environment', () => {
     });
 
     it('Should cache by default', () => {
-        const ce = new CompilationEnvironment(compilerProps);
+        // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
+        const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
         return ce
             .cacheGet('foo')
             .should.eventually.equal(null)
-            .then(() => ce.cachePut('foo', {res: 'bar'}))
+            .then(() => ce.cachePut('foo', {res: 'bar'}, undefined))
             .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}))
             .then(() => ce.cacheGet('baz').should.eventually.equal(null));
     });
@@ -53,19 +54,21 @@ describe('Compilation environment', () => {
         return ce
             .cacheGet('foo')
             .should.eventually.equal(null)
-            .then(() => ce.cachePut('foo', {res: 'bar'}))
+            .then(() => ce.cachePut('foo', {res: 'bar'}, undefined))
             .then(() => ce.cacheGet('foo').should.eventually.eql({res: 'bar'}));
     });
     it("Shouldn't cache when asked", () => {
+        // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
         const ce = new CompilationEnvironment(compilerProps, undefined, false);
         return ce
             .cacheGet('foo')
             .should.eventually.equal(null)
-            .then(() => ce.cachePut('foo', {res: 'bar'}))
+            .then(() => ce.cachePut('foo', {res: 'bar'}, undefined))
             .then(() => ce.cacheGet('foo').should.eventually.equal(null));
     });
     it('Should filter bad options', () => {
-        const ce = new CompilationEnvironment(compilerProps);
+        // TODO: Work will need to be done here when CompilationEnvironment's constructor is typed better
+        const ce = new CompilationEnvironment(compilerProps, undefined, undefined);
         ce.findBadOptions(['-O3', '-flto']).should.be.empty;
         ce.findBadOptions(['-O3', '-plugin']).should.eql(['-plugin']);
     });

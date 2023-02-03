@@ -22,44 +22,41 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PPCICompiler} from '../lib/compilers/ppci';
+import {DMDCompiler} from '../lib/compilers/dmd';
+import {LDCCompiler} from '../lib/compilers/ldc';
 
-import {makeCompilationEnvironment} from './utils';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
-    c: {id: 'c'},
+    d: {id: 'd'},
 };
 
-describe('PPCI', function () {
+describe('D', () => {
     let ce;
     const info = {
-        exe: null,
+        exe: '/dev/null',
         remote: true,
-        lang: languages.c.id,
+        lang: languages.d.id,
     };
 
     before(() => {
         ce = makeCompilationEnvironment({languages});
     });
 
-    it('Should be ok with most arguments', () => {
-        const compiler = new PPCICompiler(info, ce);
-        compiler
-            .filterUserOptions(['hello', '-help', '--something'])
-            .should.deep.equal(['hello', '-help', '--something']);
+    it('LDC should not allow -run parameter', () => {
+        const compiler = new LDCCompiler(makeFakeCompilerInfo(info), ce);
+        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
+    });
+    it('DMD should not allow -run parameter', () => {
+        const compiler = new DMDCompiler(makeFakeCompilerInfo(info), ce);
+        compiler.filterUserOptions(['hello', '-run', '--something']).should.deep.equal(['hello', '--something']);
     });
 
-    it('Should be ok with path argument', () => {
-        const compiler = new PPCICompiler(info, ce);
-        compiler
-            .filterUserOptions(['hello', '--stuff', '/proc/cpuinfo'])
-            .should.deep.equal(['hello', '--stuff', '/proc/cpuinfo']);
-    });
-
-    it('Should be Not ok with report arguments', () => {
-        const compiler = new PPCICompiler(info, ce);
-        compiler
-            .filterUserOptions(['hello', '--report', '--text-report', '--html-report'])
-            .should.deep.equal(['hello']);
+    it('LDC supports AST output since version 1.4.0', () => {
+        const compiler = new LDCCompiler(makeFakeCompilerInfo(info), ce);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.3.0)').should.equal(false);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.4.0)').should.equal(true);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.8.0git-d54d25b-dirty)').should.equal(true);
+        compiler.couldSupportASTDump('LDC - the LLVM D compiler (1.10.0)').should.equal(true);
     });
 });

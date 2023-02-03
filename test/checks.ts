@@ -24,6 +24,7 @@
 
 import _ from 'underscore';
 
+import {unwrap} from '../lib/assert';
 import {languages} from '../lib/languages';
 import * as properties from '../lib/properties';
 
@@ -55,9 +56,9 @@ describe('Live site checks', () => {
             const fileContents = fs.readFileSync(filePath, 'utf8');
 
             const matches = fileContents.match(/^libs\..*?\.name/gm);
-            let found = [];
+            let found: string[] = [];
             if (matches) {
-                found = _.map(matches, line => line.match(/libs\.(.*?)\.name/)[1]);
+                found = matches.map(line => unwrap(line.match(/libs\.(.*?)\.name/))[1]);
             }
             const difference = _.difference(found, langLibs);
             if (difference.length > 0) {

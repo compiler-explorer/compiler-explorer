@@ -90,7 +90,7 @@ describe('SymbolStore', function () {
         store2.addMany(['test123']);
 
         store1.exclude(store2);
-        var translations = store1.listTranslations();
+        const translations = store1.listTranslations();
         translations.length.should.equal(1);
         translations[0][0].should.equal('test123456');
     });
@@ -103,7 +103,7 @@ describe('SymbolStore', function () {
         store2.addMany(['est123']);
 
         store1.softExclude(store2);
-        var translations = store1.listTranslations();
+        const translations = store1.listTranslations();
         translations.length.should.equal(1);
         translations[0][0].should.equal('test123456');
     });

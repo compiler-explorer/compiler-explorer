@@ -1,3 +1,4 @@
+import {unwrap} from '../lib/assert';
 import * as rison from '../static/rison';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
@@ -44,12 +45,12 @@ describe('Rison test cases', () => {
             ({x: rison.decode(r)}).should.deep.equal({x: obj});
         });
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            rison.encode(obj).should.deep.equal(r);
+            unwrap(rison.encode(obj)).should.deep.equal(r);
         });
     }
     for (const [obj, r] of Object.entries(encode_testcases)) {
         it(`Should encode ${JSON.stringify(obj)}`, () => {
-            rison.encode(obj).should.deep.equal(r);
+            unwrap(rison.encode(obj)).should.deep.equal(r);
         });
     }
 });

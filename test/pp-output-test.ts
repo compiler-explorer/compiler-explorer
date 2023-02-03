@@ -25,12 +25,14 @@
 import * as fs from 'fs';
 
 import {BaseCompiler} from '../lib/base-compiler';
+import {CompilationEnvironment} from '../lib/compilation-env';
 import * as properties from '../lib/properties';
+import {CompilerInfo} from '../types/compiler.interfaces';
 
 import * as filterTests from './pp-output-cases/filter-tests';
 
 //const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
-const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
+const makeFakeCompilerInfo = (id, lang, group, semver, isSemver): Partial<CompilerInfo> => {
     return {
         id: id,
         exe: '/dev/null',
@@ -46,11 +48,11 @@ const makeFakeCompilerInfo = (id, lang, group, semver, isSemver) => {
 describe('Preprocessor Output Handling', () => {
     it('correctly filters lines', () => {
         const compilerInfo = makeFakeCompilerInfo('g82', 'c++', 'cpp', '8.2', true);
-        const env = {
+        const env: Partial<CompilationEnvironment> = {
             ceProps: properties.fakeProps({}),
-            compilerProps: () => {},
+            compilerProps: (() => {}) as unknown as any,
         };
-        const compiler = new BaseCompiler(compilerInfo, env);
+        const compiler = new BaseCompiler(compilerInfo as CompilerInfo, env as CompilationEnvironment);
         for (const testCase of filterTests.cases) {
             const output = compiler.filterPP(testCase.input)[1];
             output.trim().should.eql(testCase.output.trim());
