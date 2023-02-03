@@ -57,6 +57,7 @@ export type LanguageKey =
     | 'kotlin'
     | 'llvm'
     | 'mlir'
+    | 'modula2'
     | 'nim'
     | 'ocaml'
     | 'objc'

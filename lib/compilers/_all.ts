@@ -71,6 +71,7 @@ export {LLCCompiler} from './llc';
 export {LLVMmcaTool} from './llvm-mca';
 export {LLVMMOSCompiler} from './llvm-mos';
 export {MLIRCompiler} from './mlir';
+export {GM2Compiler} from './gm2';
 export {MrustcCompiler} from './mrustc';
 export {NasmCompiler} from './nasm';
 export {NimCompiler} from './nim';
