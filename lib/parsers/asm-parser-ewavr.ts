@@ -32,6 +32,9 @@ import * as utils from '../utils';
 import {AsmParser} from './asm-parser';
 import {AsmRegex} from './asmregex';
 
+// TODO(#4689): try and deduplicate a lot of the hairy "almost the same but different"
+//  logic between this and asm-parser-vc.ts
+
 // this file uses null throughout for "not there" not undefined.
 type Source = {file: string | null; line: number};
 type Line = {text: string; source: Source | null};

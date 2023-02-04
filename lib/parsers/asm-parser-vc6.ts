@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {logger} from '../logger';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
@@ -30,7 +31,7 @@ import {VcAsmParser} from './asm-parser-vc';
 import {AsmRegex} from './asmregex';
 
 export class Vc6AsmParser extends VcAsmParser {
-    constructor(compilerProps) {
+    constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
         this.miscDirective =
             /^\s*(include|INCLUDELIB|TITLE|\.|else$|endif$|if @Version|FLAT|ASSUME|THUMB|ARM64|TTL|END$)/;
