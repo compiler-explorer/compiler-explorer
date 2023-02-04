@@ -29,20 +29,35 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {logger} from './logger';
+import {PropertyGetter} from './properties.interfaces';
 import {S3Bucket} from './s3-handler';
 import {fileExists, resolvePathFromAppRoot} from './utils';
 
+type Specifically = {
+    arg: string;
+    timesused: number;
+};
+type Argument = {
+    description: string;
+    timesused: number;
+    specifically?: Specifically[];
+};
+
+type PossibleArguments = Record<string, Argument>;
+
 export class CompilerArguments {
-    constructor(compilerId) {
+    private readonly compilerId: string;
+    private possibleArguments: PossibleArguments = {};
+    private readonly maxPopularArguments = 5;
+    private readonly storeSpecificArguments = false;
+    private loadedFromFile = false;
+
+    constructor(compilerId: string) {
         this.compilerId = compilerId;
-        this.possibleArguments = {};
-        this.maxPopularArguments = 5;
-        this.storeSpecificArguments = false;
-        this.loadedFromFile = false;
     }
 
-    async loadFromFile(awsProps) {
-        let localfolder = awsProps('localfolderArgStats');
+    async loadFromFile(awsProps: PropertyGetter) {
+        let localfolder = awsProps('localfolderArgStats', '');
         if (localfolder) {
             if (localfolder.startsWith('./')) {
                 localfolder = resolvePathFromAppRoot(localfolder);
@@ -66,14 +81,14 @@ export class CompilerArguments {
         return false;
     }
 
-    async loadFromStorage(awsProps) {
+    async loadFromStorage(awsProps: PropertyGetter) {
         if (await this.loadFromFile(awsProps)) return;
 
-        const region = awsProps('region');
-        const bucket = awsProps('storageBucketArgStats');
-        const prefix = awsProps('storagePrefixArgStats');
+        const region = awsProps('region', '');
+        const bucket = awsProps('storageBucketArgStats', '');
+        const prefix = awsProps('storagePrefixArgStats', '');
 
-        if (region && bucket && this.compilerId) {
+        if (region && bucket && prefix && this.compilerId) {
             AWS.config.update({region: region});
 
             const s3 = new S3Bucket(bucket, region);
@@ -92,12 +107,13 @@ export class CompilerArguments {
 
     getOptimizationArguments(excludeUsedArguments) {
         excludeUsedArguments = excludeUsedArguments || [];
-        const possibleArguments = {};
+        const possibleArguments: PossibleArguments = {};
         for (const [argKey, obj] of Object.entries(this.possibleArguments)) {
             if (!excludeUsedArguments.some(used => this.match(argKey, used))) {
                 if (obj.description.includes('optimize') || obj.description.includes('optimization')) {
                     possibleArguments[argKey] = {
                         description: obj.description,
+                        timesused: 0,
                     };
                 }
             }
@@ -105,9 +121,9 @@ export class CompilerArguments {
         return possibleArguments;
     }
 
-    getPopularArguments(excludeUsedArguments) {
+    getPopularArguments(excludeUsedArguments?: string[]) {
         excludeUsedArguments = excludeUsedArguments || [];
-        const possibleArguments = {};
+        const possibleArguments: PossibleArguments = {};
         for (const [argKey, obj] of Object.entries(this.possibleArguments)) {
             if (!excludeUsedArguments.some(used => this.match(argKey, used))) {
                 possibleArguments[argKey] = obj;
@@ -131,22 +147,21 @@ export class CompilerArguments {
                 } else if (b[1].description.includes('std')) {
                     return 1;
                 }
-            } else {
-                return b[1].timesused - a[1].timesused;
             }
+            return b[1].timesused - a[1].timesused;
         });
         arr = _.first(arr, this.maxPopularArguments);
         return _.object(arr);
     }
 
-    populateOptions(options) {
+    populateOptions(options: PossibleArguments) {
         this.possibleArguments = {
             ...this.possibleArguments,
             ...options,
         };
     }
 
-    match(documentedOption, givenOption) {
+    match(documentedOption: string, givenOption: string): string | boolean {
         if (
             documentedOption.includes('<number>') ||
             documentedOption.includes('<n>') ||
@@ -190,26 +205,27 @@ export class CompilerArguments {
         return false;
     }
 
-    addOptionToStatistics(option, timesUsed) {
+    addOptionToStatistics(option: string, timesUsed: number | undefined) {
         if (!timesUsed) timesUsed = 1;
 
-        const possibleKeys = _.compact(_.keys(this.possibleArguments).map(val => this.match(val, option)));
+        const possibleKeys = _.compact(_.keys(this.possibleArguments).map(val => this.match(val, option))) as string[];
 
         for (const key of possibleKeys) {
-            if (this.possibleArguments[key]) {
+            const possibleArgument = this.possibleArguments[key];
+            if (possibleArgument) {
                 if (possibleKeys.length === 1 || option === key) {
-                    this.possibleArguments[key].timesused += timesUsed;
+                    possibleArgument.timesused += timesUsed;
                 } else {
                     // non-exact match should be less valuable
-                    this.possibleArguments[key].timesused += timesUsed - 1;
+                    possibleArgument.timesused += timesUsed - 1;
                 }
 
                 if (this.storeSpecificArguments && key !== option) {
-                    if (!this.possibleArguments[key].specifically) {
-                        this.possibleArguments[key].specifically = [];
+                    if (!possibleArgument.specifically) {
+                        possibleArgument.specifically = [];
                     }
 
-                    this.possibleArguments[key].specifically.push({
+                    possibleArgument.specifically.push({
                         arg: option,
                         timesused: timesUsed,
                     });
