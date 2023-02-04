@@ -1,16 +1,21 @@
+import {AsmResultLabel, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {assert} from '../assert';
+import {PropertyGetter} from '../properties.interfaces';
+
 import {AsmParser} from './asm-parser';
 import {AsmRegex} from './asmregex';
 
 export class AsmParserZ88dk extends AsmParser {
-    constructor(compilerProps) {
+    constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
 
         this.asmOpcodeRe = /^\s*(?<disasm>.*)\s*;\[(?<address>[\da-f]+)]\s*(?<opcodes>([\da-f]{2} ?)+)/;
     }
 
-    processBinaryAsm(asmResult, filters) {
+    override processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
-        const asm = [];
+        const asm: ParsedAsmResultLine[] = [];
         const labelDefinitions = {};
 
         let asmLines = asmResult.split('\n');
@@ -29,7 +34,7 @@ export class AsmParserZ88dk extends AsmParser {
         }
 
         for (const line of asmLines) {
-            const labelsInLine = [];
+            const labelsInLine: AsmResultLabel[] = [];
 
             if (asm.length >= this.maxAsmLines) {
                 if (asm.length === this.maxAsmLines) {
@@ -44,6 +49,7 @@ export class AsmParserZ88dk extends AsmParser {
 
             const match = line.match(this.asmOpcodeRe);
             if (match) {
+                assert(match.groups);
                 const address = parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm.trimEnd(), filters);
