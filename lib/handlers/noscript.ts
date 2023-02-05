@@ -23,19 +23,36 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import bodyParser from 'body-parser';
+import express from 'express';
 import _ from 'underscore';
 
+import {assert} from '../assert';
 import {ClientState} from '../clientstate';
 import {ClientStateNormalizer} from '../clientstate-normalizer';
+import {isString} from '../common-utils';
 import {logger} from '../logger';
+import {ClientOptionsHandler} from '../options-handler';
+import {StorageBase} from '../storage';
 
-function isMobileViewer(req) {
+import {CompileHandler} from './compile';
+
+function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
 }
 
 export class NoScriptHandler {
-    constructor(router, config) {
-        this.router = router;
+    readonly staticHeaders: (res: express.Response) => void;
+    readonly contentPolicyHeader: (res: express.Response) => void;
+    readonly clientOptionsHandler: ClientOptionsHandler;
+    readonly renderConfig: (a: any, b: any) => any;
+    readonly storageHandler: StorageBase;
+    readonly defaultLanguage: any;
+    readonly compileHandler: CompileHandler;
+
+    formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
+
+    /* the type for config makes the most sense to define in app.js or api.js */
+    constructor(private readonly router: express.Router, config: any) {
         this.staticHeaders = config.staticHeaders;
         this.contentPolicyHeader = config.contentPolicyHeader;
         this.clientOptionsHandler = config.clientOptionsHandler;
@@ -46,7 +63,7 @@ export class NoScriptHandler {
         this.compileHandler = config.compileHandler;
     }
 
-    InitializeRoutes(options) {
+    InitializeRoutes(options: {limit: string}) {
         this.formDataParser = bodyParser.urlencoded({
             type: 'application/x-www-form-urlencoded',
             limit: options.limit,
@@ -57,9 +74,9 @@ export class NoScriptHandler {
             .get('/noscript', (req, res) => {
                 this.staticHeaders(res);
                 this.contentPolicyHeader(res);
-                this.renderNoScriptLayout(false, req, res);
+                this.renderNoScriptLayout(undefined, req, res);
             })
-            .get('/noscript/z/:id', _.bind(this.storedStateHandlerNoScript, this))
+            .get('/noscript/z/:id', this.storedStateHandlerNoScript.bind(this))
             .get('/noscript/sponsors', (req, res) => {
                 this.staticHeaders(res);
                 this.contentPolicyHeader(res);
@@ -77,19 +94,19 @@ export class NoScriptHandler {
             .get('/noscript/:language', (req, res) => {
                 this.staticHeaders(res);
                 this.contentPolicyHeader(res);
-                this.renderNoScriptLayout(false, req, res);
+                this.renderNoScriptLayout(undefined, req, res);
             })
             .post('/api/noscript/compile', this.formDataParser, this.compileHandler.handle.bind(this.compileHandler));
     }
 
-    storedStateHandlerNoScript(req, res, next) {
+    storedStateHandlerNoScript(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
         this.storageHandler
             .expandId(id)
             .then(result => {
                 const config = JSON.parse(result.config);
 
-                let clientstate = false;
+                let clientstate: ClientState;
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);
@@ -114,7 +131,7 @@ export class NoScriptHandler {
             });
     }
 
-    createDefaultState(wantedLanguage) {
+    createDefaultState(wantedLanguage: string) {
         const options = this.clientOptionsHandler.get();
 
         const state = new ClientState();
@@ -136,7 +153,7 @@ export class NoScriptHandler {
         return state;
     }
 
-    renderNoScriptLayout(state, req, res) {
+    renderNoScriptLayout(state: ClientState | undefined, req: express.Request, res: express.Response) {
         this.staticHeaders(res);
         this.contentPolicyHeader(res);
 
@@ -145,7 +162,11 @@ export class NoScriptHandler {
             wantedLanguage = req.params.language;
         } else {
             if (this.defaultLanguage) wantedLanguage = this.defaultLanguage;
-            if (req.query.language) wantedLanguage = req.query.language;
+            if (req.query.language) {
+                const lang = req.query.language;
+                assert(isString(lang));
+                wantedLanguage = lang;
+            }
         }
 
         if (!state) {
