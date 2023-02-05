@@ -26,20 +26,23 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ToolInfo} from '../../types/tool.interfaces';
+
 import {BaseTool} from './base-tool';
+import {ToolEnv} from './base-tool.interface';
 
 export class ClangQueryTool extends BaseTool {
     static get key() {
         return 'clang-query-tool';
     }
 
-    constructor(toolInfo, env) {
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
     }
 
-    async runTool(compilationInfo, inputFilepath, args, stdin) {
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath: string, args: string[], stdin: string) {
         const sourcefile = inputFilepath;
         const compilerExe = compilationInfo.compiler.exe;
         const options = compilationInfo.options;
