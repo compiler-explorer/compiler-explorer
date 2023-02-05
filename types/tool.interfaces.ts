@@ -73,4 +73,6 @@ export type ToolResult = {
     stderr: ResultLine[];
     stdout: ResultLine[];
     artifact?: Artifact;
+    sourcechanged?: boolean;
+    newsource?: string;
 };
