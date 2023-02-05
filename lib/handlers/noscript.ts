@@ -26,6 +26,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
+import {assert} from '../assert';
 import {ClientState} from '../clientstate';
 import {ClientStateNormalizer} from '../clientstate-normalizer';
 import {isString} from '../common-utils';
