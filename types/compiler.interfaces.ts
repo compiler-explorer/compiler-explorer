@@ -22,8 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerArguments} from '../lib/compiler-arguments';
-
+import {ICompilerArguments} from './compiler-arguments.interfaces';
 import {Language} from './languages.interfaces';
 import {Library} from './libraries/libraries.interfaces';
 import {Tool, ToolInfo} from './tool.interfaces';
@@ -120,7 +119,7 @@ export type CompilerInfo = {
 };
 
 export interface ICompiler {
-    possibleArguments: CompilerArguments;
+    possibleArguments: ICompilerArguments;
     lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);

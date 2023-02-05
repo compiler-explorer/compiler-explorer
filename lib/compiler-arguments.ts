@@ -28,24 +28,14 @@ import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
+import {ICompilerArguments, PossibleArguments} from '../types/compiler-arguments.interfaces';
+
 import {logger} from './logger';
 import {PropertyGetter} from './properties.interfaces';
 import {S3Bucket} from './s3-handler';
 import {fileExists, resolvePathFromAppRoot} from './utils';
 
-type Specifically = {
-    arg: string;
-    timesused: number;
-};
-type Argument = {
-    description: string;
-    timesused: number;
-    specifically?: Specifically[];
-};
-
-type PossibleArguments = Record<string, Argument>;
-
-export class CompilerArguments {
+export class CompilerArguments implements ICompilerArguments {
     private readonly compilerId: string;
     private possibleArguments: PossibleArguments = {};
     private readonly maxPopularArguments = 5;
@@ -56,7 +46,7 @@ export class CompilerArguments {
         this.compilerId = compilerId;
     }
 
-    async loadFromFile(awsProps: PropertyGetter) {
+    async loadFromFile(awsProps: PropertyGetter): Promise<boolean> {
         let localfolder = awsProps('localfolderArgStats', '');
         if (localfolder) {
             if (localfolder.startsWith('./')) {
@@ -105,7 +95,7 @@ export class CompilerArguments {
         }
     }
 
-    getOptimizationArguments(excludeUsedArguments) {
+    getOptimizationArguments(excludeUsedArguments?: string[]): PossibleArguments {
         excludeUsedArguments = excludeUsedArguments || [];
         const possibleArguments: PossibleArguments = {};
         for (const [argKey, obj] of Object.entries(this.possibleArguments)) {
@@ -121,7 +111,7 @@ export class CompilerArguments {
         return possibleArguments;
     }
 
-    getPopularArguments(excludeUsedArguments?: string[]) {
+    getPopularArguments(excludeUsedArguments?: string[]): PossibleArguments {
         excludeUsedArguments = excludeUsedArguments || [];
         const possibleArguments: PossibleArguments = {};
         for (const [argKey, obj] of Object.entries(this.possibleArguments)) {
