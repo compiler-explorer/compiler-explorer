@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
-
 import bodyParser from 'body-parser';
+import express from 'express';
 import _ from 'underscore';
 
 import {ClientState} from '../clientstate';
 import {ClientStateNormalizer} from '../clientstate-normalizer';
+import {isString} from '../common-utils';
 import {logger} from '../logger';
 import {ClientOptionsHandler} from '../options-handler';
 import {StorageBase} from '../storage';
+
 import {CompileHandler} from './compile';
-import {isString} from '../common-utils';
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
