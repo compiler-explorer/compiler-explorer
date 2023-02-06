@@ -41,8 +41,6 @@ export interface Source {
     urlpart: string;
     list(): Promise<Omit<SourceEntry, 'path'>[]>;
     load(language: string, filename: string): Promise<{file: string}>;
-    /** Appears to be unused? */
-    save: unknown;
 }
 
 export const sources = [browser, builtin];

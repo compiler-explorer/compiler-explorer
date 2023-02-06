@@ -9,5 +9,5 @@
     "strictPropertyInitialization": false,
     "lib": ["dom", "es5", "dom.iterable"]
   },
-  "exclude": ["out", "test", "etc", "examples", "app.js", "lib", "examples"]
+  "exclude": ["out", "test", "etc", "examples", "app.js", "compiler-args-app.ts", "lib", "examples"]
 }

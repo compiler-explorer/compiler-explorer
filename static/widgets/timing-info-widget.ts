@@ -91,7 +91,7 @@ function initializeChartDataFromResult(compileResult: CompilationResult, totalTi
             pushTimingInfo(data, 'Execution', compileResult.execResult.execTime);
         }
     } else {
-        addBuildResultToTimings(data, compileResult);
+        addBuildResultToTimings(data, compileResult.buildResult || compileResult);
 
         if (!compileResult.packageDownloadAndUnzipTime) {
             if (compileResult.objdumpTime) {

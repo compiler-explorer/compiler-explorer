@@ -27,6 +27,7 @@ import path from 'path-browserify';
 import JSZip from 'jszip';
 import {Hub} from './hub';
 import {unwrap} from './assert';
+import {FiledataPair} from '../types/compilation/compilation.interfaces';
 const languages = require('./options').options.languages;
 
 export interface MultifileFile {
@@ -38,11 +39,6 @@ export interface MultifileFile {
     content: string;
     editorId: number;
     langId: string;
-}
-
-export interface FiledataPair {
-    filename: string;
-    contents: string;
 }
 
 export interface MultifileServiceState {

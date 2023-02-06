@@ -35,6 +35,5 @@ export {PvsStudioTool} from './pvs-studio-tool';
 export {ReadElfTool} from './readelf-tool';
 export {RustFmtTool} from './rustfmt-tool';
 export {StringsTool} from './strings-tool';
-export {BBCDiskifyTool} from './bbcdiskify-tool';
 export {x86to6502Tool} from './x86to6502-tool';
 export {TestingTool} from './testing-tool';

@@ -26,7 +26,7 @@ import request from 'request';
 
 export class ShortLinkResolver {
     resolve(url: string) {
-        return new Promise((resolve, reject) => {
+        return new Promise<{longUrl: string}>((resolve, reject) => {
             request({method: 'HEAD', uri: url, followRedirect: false}, (err, res) => {
                 if (err !== null) {
                     reject(err.message);

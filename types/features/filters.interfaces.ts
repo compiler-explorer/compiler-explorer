@@ -45,4 +45,5 @@ export type ParseFiltersAndOutputOptions = {
     dontMaskFilenames?: boolean;
     optOutput: boolean;
     preProcessLines?: preProcessLinesFunc;
+    preProcessBinaryAsmLines?: preProcessLinesFunc;
 } & CompilerOutputOptions;

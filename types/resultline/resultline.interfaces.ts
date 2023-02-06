@@ -34,5 +34,5 @@ export type ResultLine = {
     text: string;
     tag?: ResultLineTag;
     source?: ResultLineSource;
-    line?: any;
+    line?: number; // todo: this should not exist
 };

@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.base.json",
-  "files": ["app.js"],
+  "files": ["app.js", "compiler-args-app.ts"],
   "include": ["**/*.js", "**/*.ts"],
   "exclude": ["out", "test", "etc", "examples", "static", "**/*.d.ts"],
   "compilerOptions": {
@@ -11,6 +11,7 @@
     /* Code generation */
     "outDir": "./out/dist",
     "typeRoots": ["./typings", "./node_modules/@types"],
+    "types": ["mocha", "chai", "chai-http"],
     /* Other options */
     "allowJs": true
   }
