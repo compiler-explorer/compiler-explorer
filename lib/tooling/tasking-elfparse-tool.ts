@@ -211,7 +211,8 @@ export class elf_Parse {
             //debug_line-section
             this.begin = this._elf_group[i].sh_offset + 16;
             const line_number = this._filecontent.readUInt32LE(this.begin);
-            this._elf_section[line_number].sh_end = this._elf_section[line_number].sh_offset + this._elf_section[line_number].sh_size - 1;
+            this._elf_section[line_number].sh_end =
+                this._elf_section[line_number].sh_offset + this._elf_section[line_number].sh_size - 1;
             this.parse_debugLine(line_number, text_string);
         }
     }
@@ -306,7 +307,6 @@ export class elf_Parse {
                 this.parse_debugLine(line_number, text_string);
                 return;
             }
-
             const opcode = this._filecontent.readUInt8(this.begin++);
             let addressIncrease = 0;
             let lineIncrease = 0;
@@ -377,9 +377,8 @@ export class elf_Parse {
                         continue;
                     }
                     case ExtendedOpCode.DW_LNE_set_address: {
-                        const newAddress = this._filecontent.readUInt32LE(this.begin);
+                        address = this._filecontent.readUInt32LE(this.begin);
                         this.begin += 4;
-                        address = newAddress;
                         break;
                     }
                     case ExtendedOpCode.DW_LNE_set_discriminator: {
@@ -392,7 +391,7 @@ export class elf_Parse {
                 address = address + addressIncrease;
                 lineNumber = lineNumber + lineIncrease;
             }
-            if(lineIncrease !== 0){
+            if (lineIncrease !== 0) {
                 this.set_map(filename, address, text_string, lineNumber);
             }
         }

@@ -214,12 +214,9 @@ describe('Elf parse tooling', () => {
 
     //make sure line number
     it('line number', () => {
-        //read file
-        console.log(parser._elf_debugLineMap);
-        console.log(parser._elf_debugLineSet);
         //map
-        const map1 = parser._elf_debugLineMap.get(".text.cpp_demo._Z11printfhellov");
-        const map2 = parser._elf_debugLineMap.get(".text.cpp_demo.main");
+        const map1 = parser._elf_debugLineMap.get('.text.cpp_demo._Z11printfhellov');
+        const map2 = parser._elf_debugLineMap.get('.text.cpp_demo.main');
 
         map1.get('00000000').should.equal(5);
         map1.get('0000000c').should.equal(6);
@@ -236,7 +233,6 @@ describe('Elf parse tooling', () => {
         parser._elf_debugLineSet.has('.text.cpp_demo._Z11printfhellov').should.equal(true);
         parser._elf_debugLineSet.has('.text.cpp_demo.main').should.equal(true);
     });
-
 });
 
 describe('Elf All Opcode', () => {
@@ -345,7 +341,6 @@ describe('Asm Parser tooling-tasking', () => {
         address_00.text.should.equal('  call _main');
         address_04.text.should.equal('  mov d8,#0x0');
     });
-
 });
 
 describe('Function buttons', () => {
@@ -365,7 +360,7 @@ describe('Function buttons', () => {
         directives: false,
         libraryCode: false,
         trim: false,
-    }; 
+    };
 
     it('Link file recursion', () => {
         parser.begin.should.equal(1272149);
@@ -501,7 +496,7 @@ describe('Function buttons', () => {
         filters.libraryCode = true;
         filters.binary = true;
         const output = elfparser.process(asm, filters);
-        output.asm[2].text.should.equal("8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000");
+        output.asm[2].text.should.equal('8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000');
     });
 
     it('button filters.binary && directives', () => {
@@ -569,7 +564,7 @@ describe('Function buttons', () => {
         filters.binary = true;
         filters.directives = true;
         const output = elfparser.process(asm, filters);
-        output.asm[0].text.should.equal("  ld.w        d8,0x80000004");
+        output.asm[0].text.should.equal('  ld.w        d8,0x80000004');
     });
 
     it('button filters.binary && directives && Whitespace', () => {
@@ -638,8 +633,6 @@ describe('Function buttons', () => {
         filters.directives = true;
         filters.trim = true;
         const output = elfparser.process(asm, filters);
-        output.asm[0].text.should.equal("  ld.w d8,0x80000004");
+        output.asm[0].text.should.equal('  ld.w d8,0x80000004');
     });
-
-
 });

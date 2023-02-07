@@ -50,7 +50,6 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
 
         const elfParseTool = new elf_Parse(this._elffilepath);
         elfParseTool.start();
-        console.log(elfParseTool._elf_debugLineMap);
 
         for (let line of asmLines) {
             if (line.trim() === '') {
@@ -165,13 +164,12 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
         let cnt = 0;
         for (const line of elfParseTool._elf_section) {
             if (line.sh_strname === '.debug_line') {
-                elfParseTool._elf_section[cnt].sh_end = elfParseTool._elf_section[cnt].sh_offset + elfParseTool._elf_section[cnt].sh_size - 1;
+                elfParseTool._elf_section[cnt].sh_end =
+                    elfParseTool._elf_section[cnt].sh_offset + elfParseTool._elf_section[cnt].sh_size - 1;
                 elfParseTool.parse_debugLine(cnt, '');
             }
             cnt++;
         }
-
-        console.log(elfParseTool._elf_debugLineMap);
 
         let map = elfParseTool._elf_debugLineMap.get(elfParseTool._elf_examplepathcpp);
 
@@ -215,7 +213,7 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
                 if (filters.directives) {
                     line = '  ' + matchaddr[4].trim();
                 }
-            }else{
+            } else {
                 completeTag1 = false;
                 completeTag2 = false;
             }
@@ -224,7 +222,7 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
 
             const labelsInLine = match ? [] : this.getUsedLabelsInLine(text);
 
-            if ((address >= minaddress && address <= maxaddress)) {
+            if (address >= minaddress && address <= maxaddress) {
                 if (map) {
                     completeTag2 = true;
                     const _linenumber: number | undefined = map.get(address);
@@ -250,7 +248,7 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
                         labels: labelsInLine,
                     });
                 }
-                if(completeTag1 && completeTag2){
+                if (completeTag1 && completeTag2) {
                     asm.push({
                         text: text,
                         source: source,

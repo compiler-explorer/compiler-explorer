@@ -1,6 +1,5 @@
-import {fileURLToPath} from 'url';
 import path from 'path';
-
+import {fileURLToPath} from 'url';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
@@ -76,8 +75,7 @@ export class TaskingCompiler extends BaseCompiler {
             optionstasking[0] = '--force-c++';
             optionstasking[1] = '--pending-instantiations=200';
             optionstasking[2] = '-d';
-            const file = path.dirname(fileURLToPath(import.meta.url))+"\\..\\..\\tc49x.lsl";
-            console.log(file);
+            const file = path.dirname(fileURLToPath(import.meta.url)) + '\\..\\..\\tc49x.lsl';
             optionstasking[3] = file;
             optionstasking[4] = '--lsl-core=tc0';
             optionstasking[5] = '-o';
@@ -88,9 +86,9 @@ export class TaskingCompiler extends BaseCompiler {
             optionstasking.length = 8;
             const result2 = await this.exec(compilertasking, optionstasking, execOptions);
             if (result2.code !== 0) options[4] = "Linkerror: can't generate .exe file.";
-        } else if(this.filtersBinary && inputFilename.endsWith('.c')){
+        } else if (this.filtersBinary && inputFilename.endsWith('.c')) {
             optionstasking[0] = '-d';
-            const file = path.dirname(fileURLToPath(import.meta.url))+"\\..\\..\\tc49x.lsl";
+            const file = path.dirname(fileURLToPath(import.meta.url)) + '\\..\\..\\tc49x.lsl';
             optionstasking[1] = file;
             optionstasking[2] = '--lsl-core=tc0';
             optionstasking[3] = '-o';
