@@ -420,8 +420,8 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
     },
     modula2: {
         name: 'modula2',
-        monaco: 'pascal',
-        extensions: ['.m2'],
+        monaco: 'modula2',
+        extensions: ['.mod'],
         alias: [],
         logoUrl: null,
         logoUrlDark: null,
