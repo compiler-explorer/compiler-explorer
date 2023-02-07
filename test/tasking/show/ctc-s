@@ -1,0 +1,88 @@
+	; Module start
+	.compiler_version	"TASKING SmartCode v10.1r1 - TriCore C compiler Build 21121068 SN-09005096"
+	.compiler_invocation	"ctc --core=tc1.8 -s -o build/c_demo_source.asm c_demo.c"
+	.compiler_name		"ctc"
+	;source	'c_demo.c'
+
+	
+$TC18
+	
+	.sdecl	'.text.c_demo.printfhello',code
+	.sect	'.text.c_demo.printfhello'
+	.align	2
+	
+	.global	printfhello
+
+; c_demo.c	     1  #include <stdio.h>
+; c_demo.c	     2  void printfhello()
+; Function printfhello
+printfhello:	.type	func
+
+; c_demo.c	     3  {
+; c_demo.c	     4      printf("helloworld!!");
+	movh.a	a4,#@his(.1.str)
+	lea	a4,[a4]@los(.1.str)
+	j	printf
+	
+__printfhello_function_end:
+	.size	printfhello,__printfhello_function_end-printfhello
+	; End of function
+	
+	.sdecl	'.text.c_demo.main',code
+	.sect	'.text.c_demo.main'
+	.align	2
+	
+	.global	main
+
+; c_demo.c	     5  }
+; c_demo.c	     6  
+; c_demo.c	     7  int main( )
+; Function main
+main:	.type	func
+
+; c_demo.c	     8  {
+; c_demo.c	     9      int j = 0;
+; c_demo.c	    10      for(int i = 0; i<10;i++){
+	mov	d15,#0
+	mov.a	a15,#9
+.L2:
+
+; c_demo.c	    11         j += 100;
+	add	d15,d15,#100
+	loop	a15,.L2
+
+; c_demo.c	    12      }
+; c_demo.c	    13  
+; c_demo.c	    14      printfhello();
+	call	printfhello
+
+; c_demo.c	    15     
+; c_demo.c	    16     return j*4;
+; c_demo.c	    16  }
+
+	sha	d2,d15,#2
+
+
+	ret
+	
+__main_function_end:
+	.size	main,__main_function_end-main
+	; End of function
+	
+	.sdecl	'.rodata.c_demo..1.str',data,rom
+	.sect	'.rodata.c_demo..1.str'
+.1.str:	.type	object
+	.size	.1.str,13
+	.byte	104,101,108,108
+	.byte	111,119,111,114
+	.byte	108,100,33,33
+	.space	1
+	.calls	'printfhello','printf'
+	.calls	'main','printfhello'
+	.calls	'printfhello','',0
+	.extern	printf
+	.extern	__printf_noarg
+	.calls	'main','',0
+
+
+	; Module end
