@@ -117,6 +117,10 @@ lang-llvm:
   - lib/tooling/llvm-mca-tool.js
   - etc/config/llvm.*.properties
   - static/modes/llvm-ir-mode.ts
+lang-modula2:
+  - lib/compilers/gm2.js
+  - etc/config/modula2.*.properties
+  - static/modes/modula2-mode.ts
 lang-nim:
   - lib/compilers/nim.js
   - etc/config/nim.*.properties
