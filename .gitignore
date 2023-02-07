@@ -27,3 +27,6 @@ newrelic_agent.log
 
 # approval tests
 *.received.*
+
+# link file
+/tc49x.lsl
