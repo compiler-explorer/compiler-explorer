@@ -33,10 +33,10 @@ import * as monacoConfig from '../monaco-config';
 import {options as ceoptions} from '../options';
 import * as utils from '../utils';
 import * as fileSaver from 'file-saver';
-import {MonacoPane, Pane} from './pane';
+import {MonacoPane} from './pane';
 import {Hub} from '../hub';
 import {Container} from 'golden-layout';
-import {MonacoPaneState, PaneState} from './pane.interfaces';
+import {MonacoPaneState} from './pane.interfaces';
 import {CompilerService} from '../compiler-service';
 import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces';
 import {unwrap, unwrapString} from '../assert';
@@ -72,7 +72,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
     wrapTitle: JQuery;
     panelArgs: JQuery;
     panelStdin: JQuery;
-    ///hideable: JQuery;
 
     toggleArgs: JQuery;
     toggleStdin: JQuery;
@@ -230,7 +229,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         return unwrapString(this.optionsField.val());
     }
 
-    onToolInputChange(compilerId, toolId, input) {
+    onToolInputChange(compilerId: number, toolId: string, input: string) {
         if (this.compilerInfo.compilerId === compilerId && this.toolId === toolId) {
             this.monacoStdinField = input;
             this.onOptionsChange();
@@ -238,7 +237,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    onToolInputViewClosed(compilerId, toolId, input) {
+    onToolInputViewClosed(compilerId: number, toolId: string, input: string) {
         if (this.compilerInfo.compilerId === compilerId && this.toolId === toolId) {
             // Duplicate close messages have been seen, with the second having no value.
             // If we have a current value and the new value is empty, ignore the message.
@@ -311,8 +310,6 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.panelArgs = this.domRoot.find('.panel-args');
         this.panelStdin = this.domRoot.find('.panel-stdin');
 
-        ///this.hideable = this.domRoot.find('.hideable');
-
         this.initButtonsVisibility(state);
     }
 
@@ -338,19 +335,19 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.artifactBtn.addClass('d-none');
     }
 
-    showPanel(button, panel) {
+    showPanel(button: JQuery, panel: JQuery) {
         panel.removeClass('d-none');
         button.addClass('active');
         this.resize();
     }
 
-    hidePanel(button, panel) {
+    hidePanel(button: JQuery, panel: JQuery) {
         panel.addClass('d-none');
         button.removeClass('active');
         this.resize();
     }
 
-    togglePanel(button, panel) {
+    togglePanel(button: JQuery, panel: JQuery) {
         if (panel.hasClass('d-none')) {
             this.showPanel(button, panel);
         } else {
@@ -393,7 +390,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    clickableUrls(text) {
+    clickableUrls(text: string) {
         return text.replace(
             // URL detection regex grabbed from https://stackoverflow.com/a/3809435
             /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
@@ -410,7 +407,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         this.updateTitle();
     }
 
-    onCompileResult(id, compiler, result) {
+    override onCompileResult(id: number, compiler, result) {
         try {
             if (id !== this.compilerInfo.compilerId) return;
             if (compiler) this.compilerInfo.compilerName = compiler.name;
@@ -541,7 +538,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         }
     }
 
-    setEditorContent(content) {
+    setEditorContent(content: string) {
         if (!this.editor.getModel()) return;
         const editorModel = this.editor.getModel();
         const visibleRanges = this.editor.getVisibleRanges();
