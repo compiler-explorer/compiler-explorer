@@ -20,6 +20,7 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
     taskingAddress: RegExp;
     taskingMachineCode: RegExp;
     _elffilepath: string;
+    testcpppath: string;
 
     constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
@@ -50,6 +51,9 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
         let address = '';
 
         const elfParseTool = new elf_Parse(this._elffilepath);
+        if (this.testcpppath) {
+            elfParseTool._elf_examplepathcpp = this.testcpppath;
+        }
         elfParseTool.start();
 
         for (let line of asmLines) {
@@ -160,6 +164,9 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
         }
 
         const elfParseTool = new elf_Parse(this._elffilepath);
+        if (this.testcpppath) {
+            elfParseTool._elf_examplepathcpp = this.testcpppath;
+        }
         elfParseTool.start();
 
         let cnt = 0;

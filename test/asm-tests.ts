@@ -167,8 +167,12 @@ main:
 describe('Elf parse tooling', () => {
     let parser;
     const file = fileURLToPath(new URL('tasking\\cpp_demo.o', import.meta.url));
+
     before(() => {
         parser = new elf_Parse(file);
+        parser._elf_examplepathc = 'C:\\Users\\QXZ3F7O\\Documents\\work\\compiler-explorer\\test\\tasking\\cpp_demo.c';
+        parser._elf_examplepathcpp =
+            'C:\\Users\\QXZ3F7O\\Documents\\work\\compiler-explorer\\test\\tasking\\cpp_demo.cpp';
         parser.start();
     });
 
@@ -284,6 +288,7 @@ describe('Asm Parser tooling-tasking', () => {
     before(() => {
         parser = new AsmParserTasking();
         parser._elffilepath = file;
+        parser.testcpppath = 'C:\\Users\\QXZ3F7O\\Documents\\work\\compiler-explorer\\test\\tasking\\cpp_demo.cpp';
     });
 
     it('output.s-text and address)', () => {
@@ -365,6 +370,7 @@ describe('Function buttons', () => {
     const file = fileURLToPath(new URL('tasking\\example.o', import.meta.url));
     const elfparser = new AsmParserTasking();
     elfparser._elffilepath = file;
+    elfparser.testcpppath = 'C:\\Users\\QXZ3F7O\\Documents\\work\\compiler-explorer\\test\\tasking\\example.cpp';
     before(() => {
         parser = new elf_Parse(file);
         parser.start();
