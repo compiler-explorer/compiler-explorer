@@ -112,8 +112,8 @@ export type OutputState = StateWithTree & {
 
 export type ToolViewState = StateWithTree &
     ToolState & {
-        id: number; // CompilerID (TODO: Why is this not part of StateWithTree)
-        compilerName: string; // CompilerID (TODO: Why is this not part of StateWithTree)
+        id: number; // CompilerID (TODO(#4703): Why is this not part of StateWithTree)
+        compilerName: string; // Compiler Name (TODO(#4703): Why is this not part of StateWithTree)
         editorId: number; // EditorId
         toolId: string;
     };
