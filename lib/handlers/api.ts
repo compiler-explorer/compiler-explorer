@@ -26,22 +26,22 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
+import {CompilerInfo} from '../../types/compiler.interfaces';
+import {Language, LanguageKey} from '../../types/languages.interfaces';
+import {assert, unwrap} from '../assert';
 import {ClientStateNormalizer} from '../clientstate-normalizer';
+import {isString, unique} from '../common-utils';
 import {logger} from '../logger';
+import {ClientOptionsHandler} from '../options-handler';
+import {PropertyGetter} from '../properties.interfaces';
 import {BaseShortener, getShortenerTypeByKey} from '../shortener';
+import {StorageBase} from '../storage';
 import * as utils from '../utils';
 
 import {withAssemblyDocumentationProviders} from './assembly-documentation';
+import {CompileHandler} from './compile';
 import {FormattingHandler} from './formatting';
 import {getSiteTemplates} from './site-templates';
-import {StorageBase} from '../storage';
-import {PropertyGetter} from '../properties.interfaces';
-import {CompileHandler} from './compile';
-import {CompilerInfo, ICompiler} from '../../types/compiler.interfaces';
-import {Language, LanguageKey} from '../../types/languages.interfaces';
-import {ClientOptionsHandler} from '../options-handler';
-import {assert, unwrap} from '../assert';
-import {isString, unique} from '../common-utils';
 
 function methodNotAllowed(req, res) {
     res.send('Method Not Allowed');
