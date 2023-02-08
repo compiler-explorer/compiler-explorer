@@ -175,13 +175,8 @@
     "ci-test": "nyc npm run test ",
     "lint": "eslint . --fix",
     "lint-check": "eslint .",
-<<<<<<< HEAD
-    "lint-files": "eslint --fix",
-    "test": "mocha -b --timeout 20000",
-=======
     "lint-files": "eslint",
     "test": "mocha -b -r ts-node/register 'test/**/*.ts' 'test/**/*.js'",
->>>>>>> 31925e24682023a19d50a0355a8a89ec265bb47b
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
