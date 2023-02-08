@@ -24,6 +24,7 @@
 
 import $ from 'jquery';
 import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
+import {assert, unwrap} from '../assert';
 import {Settings} from '../settings';
 
 class SiteTemplatesWidget {
@@ -35,15 +36,21 @@ class SiteTemplatesWidget {
     constructor(siteTemplateScreenshots: any) {
         this.siteTemplateScreenshots = siteTemplateScreenshots;
         this.modal = $('#site-template-loader');
-        this.img = document.getElementById('site-template-preview') as HTMLImageElement;
+        const siteTemplatePreview = document.getElementById('site-template-preview');
+        if (siteTemplatePreview === null) {
+            // This can happen in embed mode
+            return;
+        }
+        assert(siteTemplatePreview instanceof HTMLImageElement);
+        this.img = siteTemplatePreview;
     }
     async getTemplates() {
         if (this.templatesConfig === null) {
-            this.templatesConfig = await new Promise((resolve, reject) => {
+            this.templatesConfig = await new Promise<SiteTemplatesType>((resolve, reject) => {
                 $.getJSON(window.location.origin + window.httpRoot + 'api/siteTemplates', resolve);
             });
         }
-        return this.templatesConfig as SiteTemplatesType;
+        return this.templatesConfig;
     }
     getCurrentTheme() {
         const theme = Settings.getStoredSettings()['theme'];
@@ -80,7 +87,7 @@ class SiteTemplatesWidget {
             li.addEventListener(
                 'mouseover',
                 () => {
-                    this.img.src = this.getAsset(li_copy.getAttribute('data-name') as string);
+                    this.img.src = this.getAsset(unwrap(li_copy.getAttribute('data-name')));
                 },
                 false
             );

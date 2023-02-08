@@ -181,6 +181,18 @@ if (defArgs.suppressConsoleLog) {
 
 const isDevMode = () => process.env.NODE_ENV !== 'production';
 
+function getFaviconFilename() {
+    if (isDevMode()) {
+        return 'favicon-dev.ico';
+    } else if (opts.env && opts.env.includes('beta')) {
+        return 'favicon-beta.ico';
+    } else if (opts.env && opts.env.includes('staging')) {
+        return 'favicon-staging.ico';
+    } else {
+        return 'favicon.ico';
+    }
+}
+
 const propHierarchy = [
     'defaults',
     defArgs.env,
@@ -776,7 +788,7 @@ async function main() {
             res.set('Content-Type', 'application/xml');
             res.render('sitemap');
         })
-        .use(sFavicon(utils.resolvePathFromAppRoot('static', 'favicon.ico')))
+        .use(sFavicon(utils.resolvePathFromAppRoot('static/favicons', getFaviconFilename())))
         .get('/client-options.js', (req, res) => {
             staticHeaders(res);
             res.set('Content-Type', 'application/javascript');

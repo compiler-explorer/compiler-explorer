@@ -56,7 +56,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // Hack alert: due to a variety of issues, sometimes we need to change
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
-const webjackJsHack = '.v16.';
+const webjackJsHack = '.v17.';
 const plugins = [
     new MonacoEditorWebpackPlugin({
         languages: [
@@ -67,6 +67,7 @@ const plugins = [
             'rust',
             'swift',
             'java',
+            'julia',
             'kotlin',
             'scala',
             'ruby',
@@ -77,6 +78,7 @@ const plugins = [
             'typescript',
             'solidity',
             'scheme',
+            'objective-c',
         ],
         filename: isDev ? '[name].worker.js' : `[name]${webjackJsHack}worker.[contenthash].js`,
     }),
@@ -91,7 +93,7 @@ const plugins = [
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
-        patterns: [{from: './static/favicon.ico', to: path.resolve(distPath, 'static', 'favicon.ico')}],
+        patterns: [{from: './static/favicons', to: path.resolve(distPath, 'static', 'favicons')}],
     }),
 ];
 
@@ -103,7 +105,7 @@ if (isDev) {
 export default {
     mode: isDev ? 'development' : 'production',
     entry: {
-        main: './static/main.js',
+        main: './static/main.ts',
         noscript: './static/noscript.ts',
     },
     output: {

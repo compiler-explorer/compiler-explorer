@@ -13,7 +13,10 @@ mixin outputoption(name, longdescription, shortdescription, defaultchecked)
         span=shortdescription
       input.d-none(type="checkbox" checked=defaultchecked)
 // If you modify this, update types/features/filters.interfaces.ts
-+outputoption('binary', 'Compile to binary and disassemble the output', 'Compile to binary', false)
++outputoption('binaryObject', 'Compile to binary object and disassemble the output', 'Compile to binary object', false)
+// the field needs to keep being "binary" and not "link" or something closer to the description as it is part of
+// our interface and we can't break it.
++outputoption('binary', 'Link to binary and disassemble the output', 'Link to binary', false)
 +outputoption('execute', 'Execute code and show its output', 'Execute the code', false)
 +outputoption('intel', 'Output disassembly in Intel syntax', 'Intel asm syntax', true)
 +outputoption('demangle', 'Demangle output', 'Demangle identifiers', true)

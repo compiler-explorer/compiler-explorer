@@ -99,7 +99,7 @@ parser.add_argument('-r', '--repository', type=str, help='Which repository to qu
 def create_file(args):
     repository_safe = "".join([c for c in args.repository if re.match(r'\w', c)])
     collaborators = get_collaborators(args)
-    skippable = set([collaborator['login'].lower() for collaborator in collaborators])
+    skippable = {collaborator['login'].lower() for collaborator in collaborators}
     # Remove people that are in CONTRIBUTORS for some reason or another
     skippable.discard('lefticus')
     skippable.discard('ubsan')

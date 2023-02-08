@@ -194,6 +194,7 @@ export class CompilerFinder {
         const ceToolsPath = props('ceToolsPath', './');
 
         const supportsBinary = !!props('supportsBinary', true);
+        const supportsBinaryObject = !!props('supportsBinaryObject', false);
         const interpreted = !!props('interpreted', false);
         const supportsExecute = (interpreted || supportsBinary) && !!props('supportsExecute', true);
         const executionWrapper = props('executionWrapper', '');
@@ -257,6 +258,7 @@ export class CompilerFinder {
             adarts: props('adarts', ''),
             supportsDemangle: !!demangler,
             supportsBinary,
+            supportsBinaryObject,
             interpreted,
             supportsExecute,
             executionWrapper,

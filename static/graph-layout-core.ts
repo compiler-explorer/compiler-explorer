@@ -655,12 +655,12 @@ export class GraphLayoutCore {
         // Throw everything away and do it all again, but smarter
         for (const edgeColumn of this.edgeColumns) {
             for (const intervalTree of edgeColumn.intervals) {
-                intervalTree.root = null as unknown as Node<EdgeSegment>;
+                intervalTree.clear();
             }
         }
         for (const edgeRow of this.edgeRows) {
             for (const intervalTree of edgeRow.intervals) {
-                intervalTree.root = null as unknown as Node<EdgeSegment>;
+                intervalTree.clear();
             }
         }
         // Edge kind is the primary heuristic for subrow/column assignment

@@ -35,6 +35,7 @@ import * as utils from '../utils';
 import {PaneRenaming} from '../widgets/pane-renaming';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
+import {unwrap} from '../assert';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.
@@ -69,12 +70,7 @@ export abstract class Pane<S> {
 
         this.hideable = this.domRoot.find('.hideable');
 
-        this.compilerInfo = {
-            compilerId: state.id,
-            compilerName: state.compilerName,
-            editorId: state.editorid,
-            treeId: state.treeid,
-        };
+        this.initializeCompilerInfo(state);
         this.topBar = this.domRoot.find('.top-bar');
 
         this.paneRenaming = new PaneRenaming(this, state);
@@ -89,6 +85,15 @@ export abstract class Pane<S> {
         this.registerStandardCallbacks();
         this.registerCallbacks();
         this.registerOpeningAnalyticsEvent();
+    }
+
+    protected initializeCompilerInfo(state: Record<string, any>) {
+        this.compilerInfo = {
+            compilerId: state.id,
+            compilerName: state.compilerName,
+            editorId: state.editorid,
+            treeId: state.treeid,
+        };
     }
 
     /**
@@ -296,8 +301,8 @@ export abstract class MonacoPane<E extends monaco.editor.IEditor, S> extends Pan
         _.defer(() => {
             const topBarHeight = utils.updateAndCalcTopBarHeight(this.domRoot, this.topBar, this.hideable);
             this.editor.layout({
-                width: this.domRoot.width() as number,
-                height: (this.domRoot.height() as number) - topBarHeight,
+                width: unwrap(this.domRoot.width()),
+                height: unwrap(this.domRoot.height()) - topBarHeight,
             });
         });
     }

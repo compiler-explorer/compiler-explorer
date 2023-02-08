@@ -31,7 +31,9 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {logger} from '../logger';
+import {assert} from '../assert';
+import {isString} from '../common-utils';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {IAsmParser} from './asm-parser.interfaces';
@@ -62,6 +64,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     binaryHideFuncRe: RegExp | null;
     maxAsmLines: number;
     asmOpcodeRe: RegExp;
+    relocationRe: RegExp;
+    relocDataSymNameRe: RegExp;
     lineRe: RegExp;
     labelRe: RegExp;
     destRe: RegExp;
@@ -78,7 +82,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     stdInLooking: RegExp;
     endBlock: RegExp;
     blockComments: RegExp;
-    constructor(compilerProps) {
+
+    constructor(compilerProps?: PropertyGetter) {
         super();
 
         this.labelFindNonMips = /[.A-Z_a-z][\w$.]*/g;
@@ -110,6 +115,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         if (compilerProps) {
             const binaryHideFuncReValue = compilerProps('binaryHideFuncRe');
             if (binaryHideFuncReValue) {
+                assert(isString(binaryHideFuncReValue));
                 this.binaryHideFuncRe = new RegExp(binaryHideFuncReValue);
             }
 
@@ -117,6 +123,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         }
 
         this.asmOpcodeRe = /^\s*(?<address>[\da-f]+):\s*(?<opcodes>([\da-f]{2} ?)+)\s*(?<disasm>.*)/;
+        this.relocationRe = /^\s*(?<address>[\da-f]+):\s*(?<relocname>(R_[\dA-Z_]+))\s*(?<relocdata>.*)/;
+        this.relocDataSymNameRe = /^(?<symname>[^\d-+][\w.]*)?\s*(?<addend_or_value>.*)$/;
         this.lineRe = /^(\/[^:]+):(?<line>\d+).*/;
 
         // labelRe is made very greedy as it's also used with demangled objdump
@@ -295,7 +303,9 @@ export class AsmParser extends AsmRegex implements IAsmParser {
     // Remove labels which do not have a definition.
     removeLabelsWithoutDefinition(asm, labelDefinitions) {
         for (const obj of asm) {
-            obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            if (obj.labels) {
+                obj.labels = obj.labels.filter(label => labelDefinitions[label.name]);
+            }
         }
     }
 
@@ -324,8 +334,8 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return labelsInLine;
     }
 
-    processAsm(asmResult, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
-        if (filters.binary) return this.processBinaryAsm(asmResult, filters);
+    processAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
+        if (filters.binary || filters.binaryObject) return this.processBinaryAsm(asmResult, filters);
 
         const startTime = process.hrtime.bigint();
 
@@ -599,7 +609,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         return !this.binaryHideFuncRe.test(func);
     }
 
-    processBinaryAsm(asmResult, filters): ParsedAsmResult {
+    processBinaryAsm(asmResult: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         const startTime = process.hrtime.bigint();
         const asm: ParsedAsmResultLine[] = [];
         const labelDefinitions: Record<string, number> = {};
@@ -637,6 +647,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
             }
             let match = line.match(this.lineRe);
             if (match) {
+                assert(match.groups);
                 if (dontMaskFilenames) {
                     source = {
                         file: utils.maskRootdir(match[1]),
@@ -686,6 +697,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
 
             match = line.match(this.asmOpcodeRe);
             if (match) {
+                assert(match.groups);
                 const address = parseInt(match.groups.address, 16);
                 const opcodes = (match.groups.opcodes || '').split(' ').filter(x => !!x);
                 const disassembly = ' ' + AsmRegex.filterAsmLine(match.groups.disasm, filters);
@@ -707,6 +719,20 @@ export class AsmParser extends AsmRegex implements IAsmParser {
                     text: disassembly,
                     source: source,
                     labels: labelsInLine,
+                });
+            }
+
+            match = line.match(this.relocationRe);
+            if (match) {
+                assert(match.groups);
+                const address = parseInt(match.groups.address, 16);
+                const relocname = match.groups.relocname;
+                const relocdata = match.groups.relocdata;
+                // value/addend matched but not used yet.
+                const match_value = relocdata.match(this.relocDataSymNameRe);
+                asm.push({
+                    text: `   ${relocname} ${relocdata}`,
+                    address: address,
                 });
             }
         }

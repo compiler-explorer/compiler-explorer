@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-const monaco = require('monaco-editor');
+import * as monaco from 'monaco-editor';
 
-function definition() {
+function definition(): monaco.languages.IMonarchLanguage {
     return {
         commands: ['-module', '-export', '-compile', '-record'],
 
@@ -86,7 +86,7 @@ function definition() {
                 [/[;.,]/, 'delimiter'],
             ],
 
-            whitespace: [[/\s/]],
+            whitespace: [[/\s/, 'whitespace']],
 
             comment: [[/%/, 'comment']],
 
@@ -105,7 +105,7 @@ function definition() {
     };
 }
 
-function configuration() {
+function configuration(): monaco.languages.LanguageConfiguration {
     return {
         comments: {
             lineComment: '%',
@@ -126,8 +126,8 @@ function configuration() {
         ],
         folding: {
             markers: {
-                start: '^\\s*\\%\\%region\\b',
-                end: '^\\s*\\%\\%endregion\\b',
+                start: /^\s*%%region\b/,
+                end: /^\s*%%endregion\b/,
             },
         },
     };

@@ -26,7 +26,7 @@ import {options} from './options';
 
 const prefix = options.localStoragePrefix ?? '';
 
-export function get(key: string, ifNotPresent: string): string {
+export function get<T>(key: string, ifNotPresent: T): string | T {
     try {
         return window.localStorage.getItem(prefix + key) ?? ifNotPresent;
     } catch (e) {

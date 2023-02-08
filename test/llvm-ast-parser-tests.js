@@ -47,7 +47,7 @@ describe('llvm-ast', function () {
     let astDumpNestedDecl1346;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
@@ -58,30 +58,30 @@ describe('llvm-ast', function () {
     });
 
     it('keeps fewer lines than the original', () => {
-        let origHeight = astDump.length;
-        let processed = astParser.processAst(cloneDeep(compilerOutput));
+        const origHeight = astDump.length;
+        const processed = astParser.processAst(cloneDeep(compilerOutput));
         processed.length.should.be.below(origHeight);
     });
 
     it('removes invalid slocs', () => {
-        let processed = astParser.processAst(cloneDeep(compilerOutput));
+        const processed = astParser.processAst(cloneDeep(compilerOutput));
         astDump.should.match(/<invalid sloc>/);
-        let fullText = processed.map(l => l.text).join('\n');
+        const fullText = processed.map(l => l.text).join('\n');
         fullText.should.not.match(/<invalid sloc>/);
     });
 
     it('keeps reasonable-sized output', () => {
         astDumpWithCTime.length.should.be.above(200);
 
-        let output = mockAstOutput(astDumpWithCTime);
-        let processed = astParser.processAst(output);
+        const output = mockAstOutput(astDumpWithCTime);
+        const processed = astParser.processAst(output);
         processed.length.should.be.below(200);
     });
 
     it('links some source lines', () => {
         should.exist(compilerOutput.stdout.find(l => l.text.match(/col:21, line:4:1/)));
         should.exist(compilerOutput.stdout.find(l => l.text.match(/line:3:5, col:18/)));
-        let processed = astParser.processAst(cloneDeep(compilerOutput));
+        const processed = astParser.processAst(cloneDeep(compilerOutput));
         should.exist(processed.find(l => l.source && 0 < l.source.from.line));
         processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.line.should.equal(4);
         processed.find(l => l.text.match(/col:21, line:4:1/)).source.to.col.should.equal(1);
@@ -96,8 +96,8 @@ describe('llvm-ast', function () {
 
     it('does not truncate nested declarations', () => {
         // See https://github.com/compiler-explorer/compiler-explorer/issues/1346
-        let output = mockAstOutput(astDumpNestedDecl1346);
-        let processed = astParser.processAst(output);
+        const output = mockAstOutput(astDumpNestedDecl1346);
+        const processed = astParser.processAst(output);
         processed.length.should.be.above(2);
         should.exist(processed.find(l => l.text.match(/CXXRecordDecl.*struct x/)));
         should.exist(processed.find(l => l.text.match(/TypedefDecl.*struct x/)));
@@ -114,7 +114,7 @@ describe('llvm-ast bug-3849a', function () {
     let compilerOutput;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
@@ -123,7 +123,7 @@ describe('llvm-ast bug-3849a', function () {
     });
 
     it('should have more than 2 lines', () => {
-        let processed = astParser.processAst(compilerOutput);
+        const processed = astParser.processAst(compilerOutput);
         processed.length.should.be.above(2);
     });
 });
@@ -135,7 +135,7 @@ describe('llvm-ast bug-3849b', function () {
     let compilerOutput;
 
     before(() => {
-        let fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
+        const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
         compilerProps = fakeProps.get.bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
@@ -144,7 +144,7 @@ describe('llvm-ast bug-3849b', function () {
     });
 
     it('should have not too many lines', () => {
-        let processed = astParser.processAst(compilerOutput);
+        const processed = astParser.processAst(compilerOutput);
         processed.length.should.be.above(200);
         processed.length.should.be.below(300);
     });

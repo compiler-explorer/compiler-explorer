@@ -42,6 +42,7 @@ import {Library, LibraryVersion} from '../options.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
 import {Lib} from '../widgets/libs-widget.interfaces';
+import {SourceAndFiles} from '../download-service';
 
 type ConformanceStatus = {
     allowCompile: boolean;
@@ -74,7 +75,7 @@ export class Conformance extends Pane<ConformanceViewState> {
     private source: string;
     private sourceNeedsExpanding: boolean;
     private compilerPickers: CompilerEntry[];
-    private expandedSource: string | null;
+    private expandedSourceAndFiles: SourceAndFiles | null;
     private currentLibs: Lib[];
     private status: ConformanceStatus;
     private readonly stateByLang: Record<string, ConformanceViewState>;
@@ -88,11 +89,11 @@ export class Conformance extends Pane<ConformanceViewState> {
     constructor(hub: Hub, container: Container, state: PaneState & ConformanceViewState) {
         super(hub, container, state);
         this.compilerService = hub.compilerService;
-        this.maxCompilations = (options.cvCompilerCountMax as number) || 6;
+        this.maxCompilations = options.cvCompilerCountMax;
         this.langId = state.langId || _.keys(options.languages)[0];
         this.source = state.source ?? '';
         this.sourceNeedsExpanding = true;
-        this.expandedSource = null;
+        this.expandedSourceAndFiles = null;
 
         this.status = {
             allowCompile: false,
@@ -222,7 +223,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 // Compiler id which is being used
                 compilerId: '',
                 // Options which are in use
-                options: (options.compileOptions as any)[this.langId],
+                options: options.compileOptions[this.langId],
             };
         }
         const newSelector = this.selectorTemplate.clone();
@@ -287,7 +288,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         const getCompilerConfig = () => {
             return Components.getCompilerWith(
                 this.compilerInfo.editorId ?? 0,
-                undefined as any,
+                undefined,
                 newCompilerEntry.optionsField?.val(),
                 newCompilerEntry.picker?.lastCompilerId ?? '',
                 this.langId,
@@ -352,15 +353,14 @@ export class Conformance extends Pane<ConformanceViewState> {
         this.saveState();
     }
 
-    expandSource(): Promise<string> {
-        if (this.sourceNeedsExpanding || !this.expandedSource) {
-            return this.compilerService.expand(this.source).then(expandedSource => {
-                this.expandedSource = expandedSource;
-                this.sourceNeedsExpanding = false;
-                return expandedSource;
-            });
+    async expandToFiles(): Promise<SourceAndFiles> {
+        if (this.sourceNeedsExpanding || !this.expandedSourceAndFiles) {
+            const expanded = await this.compilerService.expandToFiles(this.source);
+            this.expandedSourceAndFiles = expanded;
+            this.sourceNeedsExpanding = false;
+            return expanded;
         }
-        return Promise.resolve(this.expandedSource);
+        return Promise.resolve(this.expandedSourceAndFiles);
     }
 
     onEditorChange(editorId: number, newSource: string, langId: string): void {
@@ -421,9 +421,9 @@ export class Conformance extends Pane<ConformanceViewState> {
         // Hide previous status icons
         this.handleStatusIcon(compilerEntry.statusIcon, {code: 4});
 
-        this.expandSource().then(expandedSource => {
+        this.expandToFiles().then(expanded => {
             const request = {
-                source: expandedSource,
+                source: expanded.source,
                 compiler: compilerId,
                 options: {
                     userArguments: compilerEntry.optionsField.val() || '',
@@ -432,7 +432,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                     libraries: [] as CompileChildLibraries[],
                 },
                 lang: this.langId,
-                files: [],
+                files: expanded.files,
             };
 
             this.currentLibs.forEach(item => {
@@ -518,11 +518,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         let first = true;
         compilers.map(compiler => {
             if (compiler) {
-                const filteredLibraries = LibUtils.getSupportedLibraries(
-                    compiler.libsArr,
-                    langId,
-                    (compiler as any).remote
-                );
+                const filteredLibraries = LibUtils.getSupportedLibraries(compiler.libsArr, langId, compiler.remote);
 
                 if (first) {
                     libraries = _.extend({}, filteredLibraries);
@@ -540,7 +536,7 @@ export class Conformance extends Pane<ConformanceViewState> {
 
                             lib.versions = _.pick(lib.versions, (version, versionkey) => {
                                 return versionsInCommon.includes(versionkey);
-                            }) as Record<string, LibraryVersion>;
+                            }) as Record<string, LibraryVersion>; // TODO(jeremy-rifkin)
                         } else {
                             libraries[libKey] = false;
                         }
@@ -548,12 +544,12 @@ export class Conformance extends Pane<ConformanceViewState> {
 
                     libraries = _.omit(libraries, lib => {
                         return !lib || _.isEmpty(lib.versions);
-                    }) as Record<string, Library>;
+                    }) as Record<string, Library>; // TODO(jeremy-rifkin)
                 }
             }
         });
 
-        return libraries as CompilerLibs;
+        return libraries as CompilerLibs; // TODO(jeremy-rifkin)
     }
 
     getCurrentCompilersIds() {

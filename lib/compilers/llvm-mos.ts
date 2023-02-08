@@ -24,11 +24,12 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {ArtifactType} from '../../types/tool.interfaces';
 import * as utils from '../utils';
 
 import {ClangCompiler} from './clang';
@@ -38,7 +39,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         return 'llvmmos';
     }
 
-    constructor(compilerInfo, env) {
+    constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
         this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
@@ -62,6 +63,8 @@ export class LLVMMOSCompiler extends ClangCompiler {
         maxSize: number,
         intelAsm,
         demangle,
+        staticReloc: boolean,
+        dynamicReloc: boolean,
         filters: ParseFiltersAndOutputOptions,
     ) {
         if (!outputFilename.endsWith('.elf') && (await utils.fileExists(outputFilename + '.elf'))) {
@@ -69,7 +72,16 @@ export class LLVMMOSCompiler extends ClangCompiler {
         }
 
         intelAsm = false;
-        const res = await super.objdump(outputFilename, result, maxSize, intelAsm, demangle, filters);
+        const res = await super.objdump(
+            outputFilename,
+            result,
+            maxSize,
+            intelAsm,
+            demangle,
+            staticReloc,
+            dynamicReloc,
+            filters,
+        );
 
         if (this.compiler.exe.includes('nes')) {
             let nesFile = outputFilename;
@@ -78,9 +90,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             }
 
             if (await utils.fileExists(nesFile)) {
-                const file_buffer = await fs.readFile(nesFile);
-                const binary_base64 = file_buffer.toString('base64');
-                result.jsnesrom = binary_base64;
+                await this.addArtifactToResult(res, nesFile, ArtifactType.nesrom);
             }
         }
 

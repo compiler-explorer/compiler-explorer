@@ -34,6 +34,7 @@ import _ from 'underscore';
 import which from 'which';
 
 import {ICompiler} from '../../types/compiler.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
@@ -86,7 +87,7 @@ type ParsedRequest = {
     source: string;
     options: string[];
     backendOptions: Record<string, any>;
-    filters: Record<string, boolean>;
+    filters: ParseFiltersAndOutputOptions;
     bypassCache: boolean;
     tools: any;
     executionParameters: ExecutionParams;
@@ -123,7 +124,7 @@ export class CompileHandler {
 
     constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
         this.compilerEnv = compilationEnvironment;
-        this.textBanner = this.compilerEnv.ceProps('textBanner');
+        this.textBanner = this.compilerEnv.ceProps<string>('textBanner');
         this.proxy = Server.createProxyServer({});
         this.awsProps = awsProps;
         initialise(this.compilerEnv);
@@ -134,18 +135,30 @@ export class CompileHandler {
         // decoding middleware.
         this.proxy.on('proxyReq', (proxyReq, req) => {
             // TODO ideally I'd work out if this is "ok" - IncomingMessage doesn't have a body, but pragmatically the
-            //  object we get here does.
+            //  object we get here does (introduced by body-parser).
             const body = (req as any).body;
             if (!body || Object.keys(body).length === 0) {
                 return;
             }
-            const contentType = proxyReq.getHeader('Content-Type');
+            let contentType: string = proxyReq.getHeader('Content-Type') as string;
             let bodyData;
 
             if (contentType === 'application/json') {
                 bodyData = JSON.stringify(body);
             } else if (contentType === 'application/x-www-form-urlencoded') {
-                bodyData = body;
+                // Reshape the form body into what a json request looks like
+                contentType = 'application/json';
+                bodyData = JSON.stringify({
+                    lang: body.lang,
+                    compiler: body.compiler,
+                    source: body.source,
+                    options: body.userArguments,
+                    filters: Object.fromEntries(
+                        ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
+                            key => [key, body[key] === 'true'],
+                        ),
+                    ),
+                });
             } else {
                 Sentry.captureException(
                     new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
@@ -156,6 +169,7 @@ export class CompileHandler {
             try {
                 if (bodyData) {
                     proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+                    proxyReq.setHeader('Content-Type', contentType);
                     proxyReq.write(bodyData);
                 }
             } catch (e: any) {
@@ -322,7 +336,7 @@ export class CompileHandler {
         let source: string,
             options: string,
             backendOptions: Record<string, any> = {},
-            filters: Record<string, boolean>,
+            filters: ParseFiltersAndOutputOptions,
             bypassCache = false,
             tools;
         const execReqParams: ExecutionRequestParams = {};
@@ -365,10 +379,9 @@ export class CompileHandler {
             filters = compiler.getDefaultFilters();
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
-                filters = _.object(_.map(query.filters.split(','), filter => [filter, true])) as Record<
-                    string,
-                    boolean
-                >;
+                filters = _.object(
+                    _.map(query.filters.split(','), filter => [filter, true]),
+                ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
             _.each((query.addFilters || '').split(','), filter => {
@@ -567,13 +580,13 @@ export class CompileHandler {
                 },
                 error => {
                     if (typeof error === 'string') {
-                        logger.error('Error during compilation: ', {error});
+                        logger.error('Error during compilation 1: ', {error});
                     } else {
                         if (error.stack) {
-                            logger.error('Error during compilation: ', error);
+                            logger.error('Error during compilation 2: ', error);
                             Sentry.captureException(error);
                         } else if (error.code) {
-                            logger.error('Error during compilation: ', error.code);
+                            logger.error('Error during compilation 3: ', error.code);
                             if (typeof error.stderr === 'string') {
                                 error.stdout = utils.parseOutput(error.stdout);
                                 error.stderr = utils.parseOutput(error.stderr);
@@ -581,7 +594,7 @@ export class CompileHandler {
                             res.end(JSON.stringify(error));
                             return;
                         } else {
-                            logger.error('Error during compilation: ', error);
+                            logger.error('Error during compilation 4: ', error);
                         }
 
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;

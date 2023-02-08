@@ -29,6 +29,6 @@ import {definition} from './llvm-ir-mode';
 // TODO: write an actual MLIR monaco mode
 
 monaco.languages.register({id: 'mlir'});
-monaco.languages.setMonarchTokensProvider('mlir', definition() as any);
+monaco.languages.setMonarchTokensProvider('mlir', definition());
 
 export {};

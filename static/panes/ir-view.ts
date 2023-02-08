@@ -36,6 +36,7 @@ import {extendConfig} from '../monaco-config';
 import {applyColours} from '../colour';
 
 import {Hub} from '../hub';
+import {unwrap} from '../assert';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -94,7 +95,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     if (source !== null && source.file !== null) {
                         this.eventHub.emit(
                             'editorLinkLine',
-                            this.compilerInfo.editorId as number,
+                            unwrap(this.compilerInfo.editorId),
                             source.line,
                             -1,
                             -1,
@@ -196,7 +197,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
 
                 this.eventHub.emit(
                     'editorLinkLine',
-                    this.compilerInfo.editorId as number,
+                    unwrap(this.compilerInfo.editorId),
                     sourceLine,
                     sourceColumnBegin,
                     sourceColumnEnd,

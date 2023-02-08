@@ -27,7 +27,7 @@ import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
 import {CompilerInfo} from '../compiler.interfaces';
 import {BasicExecutionResult} from '../execution/execution.interfaces';
 import {ResultLine} from '../resultline/resultline.interfaces';
-import {ToolResult} from '../tool.interfaces';
+import {Artifact, ToolResult} from '../tool.interfaces';
 
 import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
 
@@ -98,10 +98,7 @@ export type CompilationResult = {
 
     forceBinaryView?: boolean;
 
-    bbcdiskimage?: string;
-    speccytape?: string;
-    miraclesms?: string;
-    jsnesrom?: string;
+    artifacts?: Artifact[];
 
     hints?: string[];
 
@@ -112,6 +109,8 @@ export type CompilationResult = {
     processExecutionResultTime?: number;
     objdumpTime?: number;
     parsingTime?: number;
+
+    source?: string; // todo: this is a crazy hack, we should get rid of it
 };
 
 export type ExecutionOptions = {
@@ -165,4 +164,9 @@ export type CustomInputForTool = {
     inputFilename: string;
     dirPath: string;
     outputFilename: string;
+};
+
+export type FiledataPair = {
+    filename: string;
+    contents: string;
 };

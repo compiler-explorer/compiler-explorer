@@ -60,15 +60,16 @@ export interface ComponentConfig<S> {
     componentState: S;
 }
 
-type StateWithLanguage = {lang: string};
-type StateWithEditor = {source: number};
-type StateWithTree = {tree: number};
-type StateWithId = {id: number};
-type EmptyState = Record<never, never>;
+export type StateWithLanguage = {lang: string};
+// TODO(#4490 The War of The Types) We should normalize state types
+export type StateWithEditor = {source: string | number};
+export type StateWithTree = {tree: number};
+export type StateWithId = {id: number};
+export type EmptyState = Record<never, never>;
 
 export type EmptyCompilerState = StateWithLanguage & StateWithEditor;
 export type PopulatedCompilerState = StateWithEditor & {
-    filters: CompilerOutputOptions;
+    filters: CompilerOutputOptions | undefined;
     options: unknown;
     compiler: string;
     libs?: unknown;
@@ -76,15 +77,25 @@ export type PopulatedCompilerState = StateWithEditor & {
 };
 export type CompilerForTreeState = StateWithLanguage & StateWithTree;
 
-export type EmptyExecutorState = StateWithLanguage & StateWithEditor;
+export type EmptyExecutorState = StateWithLanguage &
+    StateWithEditor & {
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
+    };
 export type PopulatedExecutorState = StateWithLanguage &
     StateWithEditor &
     StateWithTree & {
         compiler: string;
         libs: unknown;
         options: unknown;
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
     };
-export type ExecutorForTreeState = StateWithLanguage & StateWithTree;
+export type ExecutorForTreeState = StateWithLanguage &
+    StateWithTree & {
+        compilationPanelShown: boolean;
+        compilerOutShown: boolean;
+    };
 
 export type EmptyEditorState = Partial<StateWithId & StateWithLanguage>;
 export type PopulatedEditorState = StateWithId & {
@@ -95,12 +106,12 @@ export type PopulatedEditorState = StateWithId & {
 export type EmptyTreeState = Partial<StateWithId>;
 
 export type OutputState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerID
     editor: number; // EditorId
 };
 
 export type ToolViewState = StateWithTree & {
-    compiler: string;
+    compiler: number; // CompilerId
     editor: number; // EditorId
     toolId: string;
     args: unknown;

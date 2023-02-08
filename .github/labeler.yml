@@ -101,6 +101,9 @@ lang-mlir:
 lang-java:
   - lib/compilers/java.js
   - etc/config/java.*.properties
+lang-julia:
+  - lib/compilers/julia.js
+  - etc/config/julia.*.properties
 lang-kotlin:
   - lib/compilers/kotlin.js
   - etc/config/kotlin.*.properties
