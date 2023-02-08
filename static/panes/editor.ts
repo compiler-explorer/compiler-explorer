@@ -285,7 +285,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.updateButtons();
     }
 
-    setSource(newSource: string | undefined): void {
+    setSource(newSource: string): void {
         this.updateSource(newSource);
 
         if (window.compilerExplorerOptions.mobileViewer) {
@@ -293,7 +293,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         }
     }
 
-    onNewSource(editorId: number, newSource: string | undefined): void {
+    onNewSource(editorId: number, newSource: string): void {
         if (this.id === editorId) {
             this.setSource(newSource);
         }
@@ -1089,7 +1089,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         );
     }
 
-    updateSource(newSource: string | undefined): void {
+    updateSource(newSource: string): void {
         // Create something that looks like an edit operation for the whole text
         const operation = {
             range: this.editor.getModel()?.getFullModelRange(),

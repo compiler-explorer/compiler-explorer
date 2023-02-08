@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,17 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export type ToolState = {
-    compiler: number;
-    tree: number;
-    toolId: string;
-    monacoStdin?: string;
+type ToolState = {
+    toolId: any;
+    monacoStdin?: boolean;
     monacoEditorOpen?: boolean;
     monacoEditorHasBeenAutoOpened?: boolean;
     argsPanelShown?: boolean;
     stdinPanelShown?: boolean;
     args?: string;
     stdin?: string;
-    editor?: number;
     wrap?: boolean;
 };
