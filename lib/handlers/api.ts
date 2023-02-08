@@ -28,12 +28,20 @@ import _ from 'underscore';
 
 import {ClientStateNormalizer} from '../clientstate-normalizer';
 import {logger} from '../logger';
-import {getShortenerTypeByKey} from '../shortener';
+import {BaseShortener, getShortenerTypeByKey} from '../shortener';
 import * as utils from '../utils';
 
 import {withAssemblyDocumentationProviders} from './assembly-documentation';
 import {FormattingHandler} from './formatting';
 import {getSiteTemplates} from './site-templates';
+import {StorageBase} from '../storage';
+import {PropertyGetter} from '../properties.interfaces';
+import {CompileHandler} from './compile';
+import {CompilerInfo, ICompiler} from '../../types/compiler.interfaces';
+import {Language, LanguageKey} from '../../types/languages.interfaces';
+import {ClientOptionsHandler} from '../options-handler';
+import {assert, unwrap} from '../assert';
+import {isString, unique} from '../common-utils';
 
 function methodNotAllowed(req, res) {
     res.send('Method Not Allowed');
@@ -41,13 +49,23 @@ function methodNotAllowed(req, res) {
 }
 
 export class ApiHandler {
-    constructor(compileHandler, ceProps, storageHandler, urlShortenService) {
-        this.compilers = [];
-        this.languages = [];
-        this.usedLangIds = [];
-        this.options = null;
-        this.storageHandler = storageHandler;
-        /** @type {e.Router} */
+    private compilers: CompilerInfo[] = [];
+    private languages: Partial<Record<LanguageKey, Language>> = {};
+    private usedLangIds: LanguageKey[] = [];
+    private options: ClientOptionsHandler | null = null;
+    private readonly handle: express.Router;
+    private readonly shortener: BaseShortener;
+    private release = {
+        gitReleaseName: '',
+        releaseBuildNumber: '',
+    };
+
+    constructor(
+        compileHandler: CompileHandler,
+        ceProps: PropertyGetter,
+        private readonly storageHandler: StorageBase,
+        urlShortenService: string,
+    ) {
         this.handle = express.Router();
         const cacheHeader = `public, max-age=${ceProps('apiMaxAgeSecs', 24 * 60 * 60)}`;
         this.handle.use((req, res, next) => {
@@ -107,7 +125,7 @@ export class ApiHandler {
         this.handle
             .route('/formats')
             .get((req, res) => {
-                const all = Object.values(formatHandler.formatters).map(formatter => formatter.formatterInfo);
+                const all = formatHandler.getFormatterInfo();
                 res.send(all);
             })
             .all(methodNotAllowed);
@@ -124,15 +142,11 @@ export class ApiHandler {
         this.shortener = new shortenerType(storageHandler);
         this.handle.route('/shortener').post(this.shortener.handle.bind(this.shortener)).all(methodNotAllowed);
 
-        this.release = {
-            gitReleaseName: '',
-            releaseBuildNumber: '',
-        };
         this.handle.route('/version').get(this.handleReleaseName.bind(this)).all(methodNotAllowed);
         this.handle.route('/releaseBuild').get(this.handleReleaseBuild.bind(this)).all(methodNotAllowed);
     }
 
-    shortlinkInfoHandler(req, res, next) {
+    shortlinkInfoHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
         this.storageHandler
             .expandId(id)
@@ -157,12 +171,12 @@ export class ApiHandler {
             });
     }
 
-    handleLanguages(req, res) {
+    handleLanguages(req: express.Request, res: express.Response) {
         const availableLanguages = this.usedLangIds.map(val => {
             const lang = this.languages[val];
-            const newLangObj = Object.assign({}, lang);
+            const newLangObj: Language & {defaultCompiler?: string} = Object.assign({}, lang);
             if (this.options) {
-                newLangObj.defaultCompiler = this.options.options.defaultCompiler[lang.id];
+                newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
             }
             return newLangObj;
         });
@@ -170,13 +184,13 @@ export class ApiHandler {
         this.outputList(availableLanguages, 'Id', req, res);
     }
 
-    filterCompilerProperties(list, selectedFields) {
+    filterCompilerProperties(list: CompilerInfo[] | Language[], selectedFields: string[]) {
         return _.map(list, compiler => {
             return _.pick(compiler, selectedFields);
         });
     }
 
-    outputList(list, title, req, res) {
+    outputList(list: CompilerInfo[] | Language[], title: string, req: express.Request, res: express.Response) {
         if (req.accepts(['text', 'json']) === 'json') {
             if (req.query.fields === 'all') {
                 res.send(list);
@@ -192,6 +206,7 @@ export class ApiHandler {
                     'instructionSet',
                 ];
                 if (req.query.fields) {
+                    assert(isString(req.query.fields));
                     const filteredList = this.filterCompilerProperties(list, req.query.fields.split(','));
                     res.send(filteredList);
                 } else {
@@ -211,8 +226,8 @@ export class ApiHandler {
         );
     }
 
-    getLibrariesAsArray(languageId) {
-        const libsForLanguageObj = this.options.options.libs[languageId];
+    getLibrariesAsArray(languageId: LanguageKey) {
+        const libsForLanguageObj = unwrap(this.options).options.libs[languageId];
         if (!libsForLanguageObj) return [];
 
         return Object.keys(libsForLanguageObj).map(key => {
@@ -233,10 +248,10 @@ export class ApiHandler {
         });
     }
 
-    handleLangLibraries(req, res, next) {
+    handleLangLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             if (req.params.language) {
-                res.send(this.getLibrariesAsArray(req.params.language));
+                res.send(this.getLibrariesAsArray(req.params.language as LanguageKey));
             } else {
                 next({
                     statusCode: 404,
@@ -251,7 +266,7 @@ export class ApiHandler {
         }
     }
 
-    handleAllLibraries(req, res, next) {
+    handleAllLibraries(req: express.Request, res: express.Response, next: express.NextFunction) {
         if (this.options) {
             res.send(this.options.options.libs);
         } else {
@@ -262,37 +277,37 @@ export class ApiHandler {
         }
     }
 
-    handleCompilers(req, res) {
+    handleCompilers(req: express.Request, res: express.Response) {
         let filteredCompilers = this.compilers;
         if (req.params.language) {
-            filteredCompilers = this.compilers.filter(val => val.lang === req.params.language);
+            filteredCompilers = this.compilers.filter(compiler => compiler.lang === req.params.language);
         }
 
         this.outputList(filteredCompilers, 'Compiler Name', req, res);
     }
 
-    handleReleaseName(req, res) {
+    handleReleaseName(req: express.Request, res: express.Response) {
         res.send(this.release.gitReleaseName);
     }
 
-    handleReleaseBuild(req, res) {
+    handleReleaseBuild(req: express.Request, res: express.Response) {
         res.send(this.release.releaseBuildNumber);
     }
 
-    setCompilers(compilers) {
+    setCompilers(compilers: CompilerInfo[]) {
         this.compilers = compilers;
-        this.usedLangIds = _.uniq(_.pluck(this.compilers, 'lang'));
+        this.usedLangIds = unique(this.compilers.map(compiler => compiler.lang));
     }
 
-    setLanguages(languages) {
+    setLanguages(languages: Partial<Record<LanguageKey, Language>>) {
         this.languages = languages;
     }
 
-    setOptions(options) {
+    setOptions(options: ClientOptionsHandler) {
         this.options = options;
     }
 
-    setReleaseInfo(gitReleaseName, releaseBuildNumber) {
+    setReleaseInfo(gitReleaseName: string | undefined, releaseBuildNumber: string | undefined) {
         this.release = {
             gitReleaseName: gitReleaseName || '',
             releaseBuildNumber: releaseBuildNumber || '',

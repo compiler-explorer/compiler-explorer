@@ -105,7 +105,7 @@ export class StorageLocal extends StorageBase {
         throw new Error('Hash too small');
     }
 
-    async expandId(id) {
+    async expandId(id: string) {
         const expectedPath = path.join(this.storageFolder, id);
         logger.info(`Expanding local id ${id} to ${expectedPath}`);
         try {

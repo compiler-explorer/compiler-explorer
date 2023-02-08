@@ -36,11 +36,11 @@ export class FormattingHandler {
     public constructor(private ceProps: PropertyGetter) {
         const formatters = _.compact(ceProps('formatters', '').split(':'));
         for (const formatter of formatters) {
-            this.getFormatterInfo(formatter);
+            this.populateFormatterInfo(formatter);
         }
     }
 
-    private async getFormatterInfo(formatterName: string): Promise<void> {
+    private async populateFormatterInfo(formatterName: string): Promise<void> {
         const exe = this.ceProps<string>(`formatter.${formatterName}.exe`);
         const type = this.ceProps<string>(`formatter.${formatterName}.type`);
         if (!exe) {
@@ -76,6 +76,10 @@ export class FormattingHandler {
         } catch (err: unknown) {
             logger.warn(`Error while fetching tool info for ${exe}:`, {err});
         }
+    }
+
+    public getFormatterInfo() {
+        return Object.values(this.formatters).map(formatter => formatter.formatterInfo);
     }
 
     public async handle(req: express.Request, res: express.Response): Promise<void> {

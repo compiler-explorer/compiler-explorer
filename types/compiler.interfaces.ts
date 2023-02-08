@@ -24,7 +24,7 @@
 
 import {CompilerArguments} from '../lib/compiler-arguments';
 
-import {Language} from './languages.interfaces';
+import {Language, LanguageKey} from './languages.interfaces';
 import {Library} from './libraries/libraries.interfaces';
 import {Tool, ToolInfo} from './tool.interfaces';
 
@@ -77,7 +77,7 @@ export type CompilerInfo = {
     supportsLibraryCodeFilter?: boolean;
     executionWrapper: string;
     postProcess: string[];
-    lang: string;
+    lang: LanguageKey;
     group: string;
     groupName: string;
     $groups: string[];

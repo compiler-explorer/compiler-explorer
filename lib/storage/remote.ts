@@ -85,7 +85,7 @@ export class StorageRemote extends StorageBase {
         res.send({url: shortlink});
     }
 
-    async expandId(id) {
+    async expandId(id: string) {
         const resp = await this.get(`/api/shortlinkinfo/${id}`);
 
         if (resp.statusCode !== 200) throw new Error(`ID ${id} not present in remote storage`);

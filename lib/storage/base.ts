@@ -133,7 +133,7 @@ export abstract class StorageBase {
 
     abstract findUniqueSubhash(hash: string): Promise<any>;
 
-    abstract expandId(id): Promise<any>;
+    abstract expandId(id: string): Promise<{config: string; specialMetadata: any}>;
 
     abstract incrementViewCount(id): Promise<any>;
 }
