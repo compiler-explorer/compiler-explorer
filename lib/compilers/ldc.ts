@@ -63,10 +63,21 @@ export class LDCCompiler extends BaseCompiler {
         return [];
     }
 
+    override getOutputFilename(dirPath: string, outputFilebase: string, key?: any): string {
+        if (key && key.filters && key.filters.binary) {
+            return path.join(dirPath, 'output');
+        } else if (key && key.filters && key.filters.binaryObject) {
+            return path.join(dirPath, 'output.o');
+        } else {
+            return path.join(dirPath, 'output.s');
+        }
+    }
+
     override optionsForFilter(filters, outputFilename) {
-        let options = ['-gline-tables-only', '-of', this.filename(outputFilename)];
-        if (filters.intel && !filters.binary) options = options.concat('-x86-asm-syntax=intel');
-        if (!filters.binary) options = options.concat('-output-s');
+        const options = ['-gline-tables-only', '-of', this.filename(outputFilename)];
+        if (filters.intel && !filters.binary) options.push('-x86-asm-syntax=intel');
+        if (!filters.binary && !filters.binaryObject) options.push('-output-s');
+        else if (filters.binaryObject) options.push('-c');
         return options;
     }
 
