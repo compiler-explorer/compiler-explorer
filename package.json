@@ -106,6 +106,7 @@
     "@types/chai-as-promised": "^7.1.5",
     "@types/express": "^4.17.14",
     "@types/fs-extra": "^9.0.13",
+    "@types/jest": "^29.4.0",
     "@types/jquery": "^3.5.10",
     "@types/mocha": "^8.2.2",
     "@types/qs": "^6.9.7",
@@ -175,7 +176,7 @@
     "ci-test": "nyc npm run test ",
     "lint": "eslint . --fix",
     "lint-check": "eslint .",
-    "lint-files": "eslint",
+    "lint-files": "eslint ",
     "test": "mocha -b -r ts-node/register 'test/**/*.ts' 'test/**/*.js'",
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
@@ -193,7 +194,7 @@
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit --module esnext && tsc -p ./tsconfig.frontend.json --noEmit",
     "webpack": "webpack --node-env=production",
-    "mytest": "mocha test\\asm-tests.js --timeout 5000000"
+    "mytest": "mocha test\\asm-tests.ts --timeout 5000000"
   },
   "license": "BSD-2-Clause"
 }

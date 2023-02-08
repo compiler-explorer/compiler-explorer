@@ -5,6 +5,7 @@ import {
     ParsedAsmResultLine,
 } from '../../types/asmresult/asmresult.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {PropertyGetter} from '../properties.interfaces';
 import {elf_Parse} from '../tooling/tasking-elfparse-tool';
 import * as utils from '../utils';
 
@@ -20,7 +21,7 @@ export class AsmParserTasking extends AsmParser implements IAsmParser {
     taskingMachineCode: RegExp;
     _elffilepath: string;
 
-    constructor(compilerProps) {
+    constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
         this.taskingText = /^\s+(.sect|.sdecl)\s+'(.*)'.*/;
         this.taskingAddress = /(^(\d|\w)+)\s(\d|\w)+\s(\d|\w)+\s.*/;

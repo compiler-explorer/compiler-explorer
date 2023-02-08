@@ -181,9 +181,9 @@ describe('Elf parse tooling', () => {
     it('section .debug_line', () => {
         //read file
         const file1 = fileURLToPath(new URL('tasking\\testdemo1', import.meta.url));
-        let arr = fs.readFileSync(file1);
-        let strs = arr.toString();
-        let strarr = strs.split(' ');
+        const arr = fs.readFileSync(file1);
+        const strs = arr.toString();
+        const strarr = strs.split(' ');
 
         //0x
         for (let j = 0; j < strarr.length; j++) {
@@ -191,8 +191,8 @@ describe('Elf parse tooling', () => {
         }
 
         let i = 0;
-        let sections = parser._elf_debugLine;
-        for (let section of sections) {
+        const sections = parser._elf_debugLine;
+        for (const section of sections) {
             section.sh_offset.should.equal(Number.parseInt(strarr[i++]));
             section.sh_size.should.equal(Number.parseInt(strarr[i++]));
         }
@@ -202,9 +202,9 @@ describe('Elf parse tooling', () => {
     it('opcode number test', () => {
         //read file
         const file2 = fileURLToPath(new URL('tasking\\testdemo2', import.meta.url));
-        let arr = fs.readFileSync(file2);
-        let strs = arr.toString();
-        let strarr = strs.split(' ');
+        const arr = fs.readFileSync(file2);
+        const strs = arr.toString();
+        const strarr = strs.split(' ');
         const opcodearr = parser._elf_opcode_test;
         for (const [i, element] of opcodearr.entries()) {
             element.should.equal(Number.parseInt(strarr[i]));
@@ -215,15 +215,15 @@ describe('Elf parse tooling', () => {
     it('section group', () => {
         //read file
         const file3 = fileURLToPath(new URL('tasking\\testdemo3', import.meta.url));
-        let arr = fs.readFileSync(file3);
-        let strs = arr.toString();
-        let strarr = strs.split(' ');
+        const arr = fs.readFileSync(file3);
+        const strs = arr.toString();
+        const strarr = strs.split(' ');
         for (let j = 0; j < strarr.length; j++) {
             strarr[j] = '0x' + strarr[j];
         }
         let i = 0;
-        let elfgroup = parser._elf_group;
-        for (let section of elfgroup) {
+        const elfgroup = parser._elf_group;
+        for (const section of elfgroup) {
             section.sh_offset.should.equal(Number.parseInt(strarr[i++]));
             section.sh_size.should.equal(Number.parseInt(strarr[i++]));
         }
@@ -262,7 +262,7 @@ describe('Elf All Opcode', () => {
     it('All switch', () => {
         parser.start();
         parser._filecontent = parser._filecontent.slice(0, 2444);
-        let buf = Buffer.from([
+        const buf = Buffer.from([
             11, 1, 2, 6, 3, 221, 159, 171, 198, 192, 249, 198, 192, 159, 125, 4, 1, 5, 163, 224, 212, 185, 191, 134, 2,
             6, 7, 8, 9, 0, 1, 0, 6, 1, 0, 6, 2, 6, 0, 0, 0, 0, 6, 4, 6,
         ]);
@@ -363,7 +363,7 @@ describe('Asm Parser tooling-tasking', () => {
 describe('Function buttons', () => {
     let parser;
     const file = fileURLToPath(new URL('tasking\\example.o', import.meta.url));
-    let elfparser = new AsmParserTasking();
+    const elfparser = new AsmParserTasking();
     elfparser._elffilepath = file;
     before(() => {
         parser = new elf_Parse(file);
