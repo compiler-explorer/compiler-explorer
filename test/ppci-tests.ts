@@ -23,11 +23,12 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {PPCICompiler} from '../lib/compilers/ppci';
+import {LanguageKey} from '../types/languages.interfaces';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
-    c: {id: 'c'},
+    c: {id: 'c' as LanguageKey},
 };
 
 describe('PPCI', function () {

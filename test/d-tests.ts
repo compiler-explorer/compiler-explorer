@@ -24,11 +24,12 @@
 
 import {DMDCompiler} from '../lib/compilers/dmd';
 import {LDCCompiler} from '../lib/compilers/ldc';
+import {LanguageKey} from '../types/languages.interfaces';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
-    d: {id: 'd'},
+    d: {id: 'd' as LanguageKey},
 };
 
 describe('D', () => {

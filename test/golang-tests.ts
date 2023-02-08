@@ -24,11 +24,12 @@
 
 import {GolangCompiler} from '../lib/compilers/golang';
 import * as utils from '../lib/utils';
+import {LanguageKey} from '../types/languages.interfaces';
 
 import {fs, makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
-    go: {id: 'go'},
+    go: {id: 'go' as LanguageKey},
 };
 
 let ce;
