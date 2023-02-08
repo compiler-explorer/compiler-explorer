@@ -185,7 +185,7 @@ export class ApiHandler {
     }
 
     filterCompilerProperties(list: CompilerInfo[] | Language[], selectedFields: string[]) {
-        return _.map(list, compiler => {
+        return list.map(compiler => {
             return _.pick(compiler, selectedFields);
         });
     }
@@ -217,7 +217,12 @@ export class ApiHandler {
             return;
         }
 
-        const maxLength = _.max(_.pluck(_.pluck(list, 'id').concat([title]), 'length'));
+        const maxLength = Math.max(
+            ...list
+                .map(item => item.id)
+                .concat([title])
+                .map(item => item.length),
+        );
         res.set('Content-Type', 'text/plain');
         res.send(
             utils.padRight(title, maxLength) +
