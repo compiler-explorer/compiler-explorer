@@ -75,7 +75,7 @@ export type EventMap = {
     editorDisplayFlow: (editorId: number, flow: MessageWithLocation[]) => void;
     editorLinkLine: (editorId: number, lineNumber: number, colBegin: number, colEnd: number, reveal: boolean) => void;
     editorOpen: (editorId: number) => void;
-    editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean) => void;
+    editorSetDecoration: (editorId: number, lineNumber: number, reveal: boolean, column?: number) => void;
     executeResult: (executorId: number, compiler: any, result: any, language: Language) => void;
     executor: (
         executorId: number,
