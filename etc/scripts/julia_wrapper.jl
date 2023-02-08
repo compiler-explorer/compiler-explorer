@@ -13,6 +13,8 @@ Options:
 """
 
 using InteractiveUtils
+using Enzyme
+
 
 if first(ARGS) == "--"
     popfirst!(ARGS)

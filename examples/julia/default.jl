@@ -2,4 +2,8 @@ function square(x)
     return x * x
 end
 
-precompile(square, (Int32,))
+function dsquare(x)
+    return autodiff(square, Active(x))
+end
+
+precompile(dsquare, (Float32,))
