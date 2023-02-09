@@ -26,6 +26,7 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {Library} from '../../types/libraries/libraries.interfaces';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
@@ -41,14 +42,21 @@ export class ClangTidyTool extends BaseTool {
         this.addOptionsToToolArgs = false;
     }
 
-    async runTool(compilationInfo, inputFilepath, args, stdin, supportedLibraries) {
+    override async runTool(
+        compilationInfo: Record<any, any>,
+        inputFilepath: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, Library>,
+    ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
         const dir = path.dirname(sourcefile);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries);
-        const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries);
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries || {});
+        const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries || {});
 
-        let source;
+        let source = '';
+        args = args || [];
         const wantsFix = args.find(option => option.includes('-fix'));
         if (wantsFix) {
             args = args.filter(option => !option.includes('-header-filter='));
@@ -79,10 +87,10 @@ export class ClangTidyTool extends BaseTool {
 
         if (wantsFix) {
             const data = await fs.readFile(sourcefile);
-            const newsource = data.toString();
-            if (newsource !== source) {
+            const newSource = data.toString();
+            if (newSource !== source) {
                 result.sourcechanged = true;
-                result.newsource = newsource;
+                result.newsource = newSource;
             }
         }
 
