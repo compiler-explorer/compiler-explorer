@@ -2,6 +2,7 @@ import {execSync} from 'child_process';
 import {getHashDigest} from 'loader-utils';
 import * as pug from 'pug';
 import path from 'path';
+import type { LoaderContext } from 'webpack';
 
 // If you edit either cookies.pug or privacy.pug be aware this will trigger a popup on the users' next visit.
 // Knowing the last versions here helps us be aware when this happens. If you get an error here and you _haven't_
@@ -12,7 +13,7 @@ const expectedHashes = {
     privacy: 'dcc79570ddaf4bd8',
 };
 
-function _execGit(command) {
+function _execGit(command: string) {
     const gitResult = execSync(command);
     if (!gitResult) {
         throw new Error(`Failed to execute ${command}`);
@@ -20,7 +21,7 @@ function _execGit(command) {
     return gitResult.toString();
 }
 
-export default function(content) {
+export default function(this: LoaderContext<{useGit: boolean}>, content: Buffer) {
     const filePath = this.resourcePath;
     const filename = path.basename(filePath, '.pug');
     const options = this.getOptions();
@@ -34,13 +35,13 @@ export default function(content) {
         .split('\n')
         .map(line => line.match(/(?<hash>\w+) (?<description>.*)/))
         .filter(x => x)
-        .map(match => match.groups);
+        .map(match => match!.groups);
 
     const compiled = pug.compile(content.toString(), {filename: filePath});
 
     // When calculating the hash we ignore the hard-to-predict values like lastTime and lastCommit, else every time
     // we merge changes in policies to main we get a new hash after checking in, and that breaks the build.
-    const htmlTextForHash = compiled({gitChanges, lastTime:'some-last-time', lastCommit:'some-last-commit'});
+    const htmlTextForHash = compiled({gitChanges, lastTime: 'some-last-time', lastCommit: 'some-last-commit'});
     const hashDigest = getHashDigest(htmlTextForHash, 'sha256', 'hex', 16);
     const expectedHash = expectedHashes[filename];
     if (options.useGit && expectedHash !== undefined && expectedHash !== hashDigest) {

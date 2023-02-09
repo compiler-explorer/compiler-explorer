@@ -177,7 +177,7 @@ export default {
             },
             {
                 test: /\.pug$/,
-                loader: './etc/scripts/parsed_pug_file.js',
+                loader: './etc/scripts/parsed_pug_file.ts',
                 options: {
                     useGit: hasGit,
                 },
