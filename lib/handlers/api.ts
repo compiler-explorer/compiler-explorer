@@ -43,7 +43,7 @@ import {CompileHandler} from './compile';
 import {FormattingHandler} from './formatting';
 import {getSiteTemplates} from './site-templates';
 
-function methodNotAllowed(req, res) {
+function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');
     return res.status(405).end();
 }
