@@ -27,10 +27,10 @@ import express from 'express';
 import {ClientState} from '../clientstate';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
 import {logger} from '../logger';
+import {StorageBase} from '../storage';
 import * as utils from '../utils';
 
 import {ApiHandler} from './api';
-import {StorageBase} from '../storage';
 
 type HandlerConfig = {
     compileHandler: any;
