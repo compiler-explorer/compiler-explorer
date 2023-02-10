@@ -49,7 +49,7 @@ export class FakeCompiler implements ICompiler {
         );
         this.lang = {id: this.compiler.lang, name: `Language ${this.compiler.lang}`};
         this.info = info;
-        this.possibleArguments = new CompilerArguments();
+        this.possibleArguments = new CompilerArguments('fake-for-test');
     }
 
     initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean) {
