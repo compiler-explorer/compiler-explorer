@@ -33,6 +33,16 @@ describe('ASM CL parser', () => {
         const parser = new VcAsmParser();
         const result = parser.process('<Compilation failed>', {
             directives: true,
+            labels: false,
+            libraryCode: false,
+            commentOnly: false,
+            trim: false,
+            optOutput: false,
+            binary: false,
+            binaryObject: false,
+            execute: false,
+            demangle: false,
+            intel: false,
         });
 
         result.asm.should.deep.equal([

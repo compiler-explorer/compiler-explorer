@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ToolInfo} from '../../types/tool.interfaces';
-import {unwrap} from '../assert';
+import {assert} from '../assert';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import * as utils from '../utils';
