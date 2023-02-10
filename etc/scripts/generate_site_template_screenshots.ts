@@ -28,8 +28,8 @@
  * - This script requires puppeteer which is not installed by default (I install it globally)
  */
 
-const puppeteer = require("puppeteer");
-const fs = require("fs");
+import * as puppeteer from "puppeteer";
+import * as fs from "fs";
 
 const godbolt    = "https://godbolt.org";
 const output_dir = "../../views/resources/template_screenshots";
@@ -57,16 +57,16 @@ const defaultSettings = {
 };
 
 // utilities
-function sleep(ms) {
+function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function splitProperty(line) {
+function splitProperty(line: string) {
     return [line.substring(0, line.indexOf('=')), line.substring(line.indexOf('=') + 1)];
 }
 
-function partition(array, filter) {
-    const pass = [], fail = [];
+function partition<T>(array: T[], filter: (x: T) => boolean) {
+    const pass: T[] = [], fail: T[] = [];
     for(const item of array) {
         if(filter(item)) {
             pass.push(item);
@@ -77,8 +77,8 @@ function partition(array, filter) {
     return [pass, fail];
 }
 
-async function PromisePoolExecutor(jobs, max_concurrency) {
-    async function worker(iterator) {
+async function PromisePoolExecutor(jobs: (() => void)[], max_concurrency: number) {
+    async function worker(iterator: IterableIterator<[number, () => void]>) {
         for(const [_, job] of iterator) {
             await job();
         }
@@ -90,7 +90,7 @@ async function PromisePoolExecutor(jobs, max_concurrency) {
 
 // end utils
 
-async function generate_screenshot(url, output_path, settings) {
+async function generate_screenshot(url: string, output_path: string, settings) {
     const browser = await puppeteer.launch({
         dumpio: true,
         defaultViewport
@@ -107,7 +107,7 @@ async function generate_screenshot(url, output_path, settings) {
     //await page.click("#simplecook .btn.btn-primary.btn-sm.cook-do-consent");
     await page.evaluate(() => {
         for(let element of document.querySelectorAll(".float-link.link")){
-            element.parentNode.removeChild(element);
+            element.parentNode!.removeChild(element);
         }
     });
     await sleep(10000); // wait for things to settle
@@ -142,7 +142,7 @@ async function generate_screenshot(url, output_path, settings) {
     if(!fs.existsSync(output_dir)) {
         fs.mkdirSync(output_dir, { recursive: true });
     }
-    const jobs = [];
+    const jobs: (() => void)[] = [];
     for(const [name, data] of templates) {
         for(const [theme, colourScheme] of themes) {
             const path = `${output_dir}/${name}.${theme}.png`;
