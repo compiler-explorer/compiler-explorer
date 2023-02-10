@@ -379,7 +379,7 @@ describe('Function buttons', () => {
     });
 
     const filters = {
-        binary: false,
+        binaryObject: false,
         directives: false,
         libraryCode: false,
         trim: false,
@@ -450,7 +450,7 @@ describe('Function buttons', () => {
 8004e1b4 02 82                         mov         d2,d8
 8004e1b8 00 90                         ret
 `;
-        filters.binary = true;
+        filters.binaryObject = true;
         const output = elfparser.process(asm, filters);
         output.asm[0].text.should.equal('8004e15e 85 88 04 00  hello():         ld.w        d8,0x80000004');
     });
@@ -517,7 +517,7 @@ describe('Function buttons', () => {
 8004e1b8 00 90                         ret
 `;
         filters.libraryCode = true;
-        filters.binary = true;
+        filters.binaryObject = true;
         const output = elfparser.process(asm, filters);
         output.asm[2].text.should.equal('8004e106 91 00 00 f7  abort:           movh.a      a15,#0x7000');
     });
@@ -584,7 +584,7 @@ describe('Function buttons', () => {
 8004e1b8 00 90                         ret
 `;
         filters.libraryCode = false;
-        filters.binary = true;
+        filters.binaryObject = true;
         filters.directives = true;
         const output = elfparser.process(asm, filters);
         output.asm[0].text.should.equal('  ld.w        d8,0x80000004');
@@ -652,7 +652,7 @@ describe('Function buttons', () => {
 8004e1b8 00 90                         ret
 `;
         filters.libraryCode = false;
-        filters.binary = true;
+        filters.binaryObject = true;
         filters.directives = true;
         filters.trim = true;
         const output = elfparser.process(asm, filters);
