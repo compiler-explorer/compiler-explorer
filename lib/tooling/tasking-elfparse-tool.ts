@@ -108,8 +108,8 @@ export class elf_Parse {
         this._elf_debugLineMap = new Map<string, Map<string, number>>();
         this._elf_debugLine = [];
         this._elf_debugLineSet = new Set<string>();
-        this._elf_examplepathc = filename.slice(0, -1) + 'c';
-        this._elf_examplepathcpp = filename.slice(0, -1) + 'cpp';
+        this._elf_examplepathc = filename.replace('.o', '.c');
+        this._elf_examplepathcpp = filename.replace('.o', '.cpp');
         this._elf_RelaMap = new Map<string, Map<number, string>>();
         this._elf_SymTable = new Array<string>();
     }

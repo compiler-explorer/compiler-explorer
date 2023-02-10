@@ -2,8 +2,10 @@ import path from 'path';
 import {fileURLToPath} from 'url';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
+import {CompilerInfo} from '../../types/compiler.interfaces';
 import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import {CompilationEnvironment} from '../compilation-env';
 import {AsmParserTasking} from '../parsers/asm-parser-tasking';
 
 export class TaskingCompiler extends BaseCompiler {
@@ -14,7 +16,7 @@ export class TaskingCompiler extends BaseCompiler {
         return 'tasking';
     }
 
-    constructor(info, env) {
+    constructor(info: CompilerInfo, env: CompilationEnvironment) {
         super(info, env);
         this.asm = new AsmParserTasking(this.compilerProps);
         this.compiler.exe = this.compiler.exe.replace('cctc.exe', 'hldumptc.exe');
@@ -42,67 +44,47 @@ export class TaskingCompiler extends BaseCompiler {
 
         const index = compiler.indexOf('hldumptc.exe');
         const compilertasking = compiler.slice(0, index) + 'cctc.exe';
-        const length = 4;
-        const optionstasking: string[] = Array.from({length});
+        const length = 0;
+        let optionstasking: string[] = Array.from({length});
         if (options[4].endsWith('.cpp')) {
-            //cctc -g --core=tc1.8 --force-c++ --pending-instantiations=200 -c -O0 -o example.o  example.cpp
-            optionstasking[0] = '-g';
-            optionstasking[1] = '--core=tc1.8';
-            optionstasking[2] = '--force-c++';
-            optionstasking[3] = '--pending-instantiations=200';
-            optionstasking[4] = '-c';
-            optionstasking[5] = '-O0';
-            optionstasking[6] = '-o';
-            optionstasking[7] = options[4];
-            // optionstasking[7] = optionstasking[7].substring(0, optionstasking[7].length - 3);
-            const end = optionstasking[7].indexOf('.c');
-            optionstasking[7] = optionstasking[7].slice(0, end);
-            optionstasking[7] += '.o';
-            optionstasking[8] = options[4];
-            optionstasking.length = 9;
+            const cpppath: string = options[4].replace('.cpp', '.o');
+            optionstasking = [
+                '-g',
+                '--core=tc1.8',
+                '--force-c++',
+                '--pending-instantiations=200',
+                '-c',
+                '-O0',
+                '-o',
+                cpppath,
+                options[4],
+            ];
             options[4] = optionstasking[7];
         } else {
-            //cctc  --core=tc1.8 -c -o $(OUTPATH)/$@  $<
-            optionstasking[0] = '--core=tc1.8';
-            optionstasking[1] = '-c';
-            optionstasking[2] = '-g';
-            optionstasking[3] = '-o';
-            const end = options[4].indexOf('.c');
-            optionstasking[4] = options[4].slice(0, end);
-            optionstasking[4] += '.o';
-            optionstasking[5] = options[4];
+            const cpath = options[4].replace('.c', '.o');
+            optionstasking = ['--core=tc1.8', '-c', '-g', '-o', cpath, options[4]];
             options[4] = optionstasking[4];
         }
         const result1 = await this.exec(compilertasking, optionstasking, execOptions);
 
         if (this.filtersBinary && inputFilename.endsWith('.cpp')) {
-            //cctc
-            optionstasking[0] = '--force-c++';
-            optionstasking[1] = '--pending-instantiations=200';
-            optionstasking[2] = '-d';
             const file = path.dirname(fileURLToPath(import.meta.url)) + '\\..\\..\\tc49x.lsl';
-            optionstasking[3] = file;
-            optionstasking[4] = '--lsl-core=tc0';
-            optionstasking[5] = '-o';
-            const end = options[4].indexOf('.o');
-            optionstasking[6] = options[4].slice(0, end) + '.o';
-            optionstasking[7] = options[4];
-
-            optionstasking.length = 8;
+            const cpppath: string = options[4].replace('.cpp', '.o');
+            optionstasking = [
+                '--force-c++',
+                '--pending-instantiations=200',
+                file,
+                '--lsl-core=tc0',
+                '-o',
+                cpppath,
+                options[4],
+            ];
             const result2 = await this.exec(compilertasking, optionstasking, execOptions);
             if (result2.code !== 0) options[4] = "Linkerror: can't generate .exe file.";
         } else if (this.filtersBinary && inputFilename.endsWith('.c')) {
-            optionstasking[0] = '-d';
             const file = path.dirname(fileURLToPath(import.meta.url)) + '\\..\\..\\tc49x.lsl';
-            optionstasking[1] = file;
-            optionstasking[2] = '--lsl-core=tc0';
-            optionstasking[3] = '-o';
-            const end = options[4].indexOf('.o');
-            optionstasking[4] = options[4].slice(0, end) + '.o';
-            optionstasking[5] = options[4];
-
-            optionstasking.length = 6;
-
+            const cpath = options[4].replace('.c', '.o');
+            optionstasking = ['-d', file, '--lsl-core=tc0', '-o', cpath, options[4]];
             const result2 = await this.exec(compilertasking, optionstasking, execOptions);
             if (result2.code !== 0) options[4] = "Linkerror: can't generate .exe file.";
         }
