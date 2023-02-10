@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,16 +26,15 @@ import {fileExists} from '../utils';
 
 import {BaseTool} from './base-tool';
 
-export class ReadElfTool extends BaseTool {
+export class StringsTool extends BaseTool {
     static get key() {
-        return 'readelf-tool';
+        return 'strings-tool';
     }
 
-    async runTool(compilationInfo, inputFilename, args) {
-        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse('readelf requires an executable');
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (!compilationInfo.filters.binary) {
+            return this.createErrorResponse('Strings requires a binary output');
         }
-
         if (await fileExists(compilationInfo.executableFilename)) {
             return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
         } else {

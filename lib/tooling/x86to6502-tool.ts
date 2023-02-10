@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Team
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,39 +22,46 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
+import _ from 'underscore';
+
+import {AsmParser} from '../parsers/asm-parser';
 
 import {BaseTool} from './base-tool';
+import {ToolResult} from '../../types/tool.interfaces';
 
-export class OSACATool extends BaseTool {
+export class x86to6502Tool extends BaseTool {
     static get key() {
-        return 'osaca-tool';
+        return 'x86to6502-tool';
     }
 
-    async writeAsmFile(asmParser, asm, filters, destination) {
-        // Applying same filters as applied to compiler outpu
-        const filteredAsm = asmParser.process(asm, filters).asm.reduce(function (acc, line) {
-            return acc + line.text + '\n';
-        }, '');
-        return fs.writeFile(destination, filteredAsm);
-    }
-
-    async runTool(compilationInfo, inputFilepath, args) {
-        if (compilationInfo.filters.binary) {
-            return this.createErrorResponse('<cannot run analysis on binary>');
-        }
-
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.intel) {
-            return this.createErrorResponse('<cannot run analysis on Intel assembly>');
+            return new Promise<ToolResult>(resolve => {
+                resolve(this.createErrorResponse('<need AT&T notation assembly>'));
+            });
         }
 
-        const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
-        await this.writeAsmFile(
-            compilationInfo.asmParser,
-            compilationInfo.asm,
-            compilationInfo.filters,
-            rewrittenOutputFilename,
-        );
-        return super.runTool(compilationInfo, rewrittenOutputFilename, args);
+        if (compilationInfo.filters.binary) {
+            return new Promise<ToolResult>(resolve => {
+                resolve(this.createErrorResponse('<cannot run x86to6502 on binary>'));
+            });
+        }
+
+        const parser = new AsmParser();
+        const filters = Object.assign({}, compilationInfo.filters);
+
+        const result = parser.process(compilationInfo.asm, filters);
+
+        const asm = _.map(result.asm, obj => {
+            if (typeof obj.text !== 'string' || obj.text.trim() === '') {
+                return '';
+            } else if (/.*:/.test(obj.text)) {
+                return obj.text.replace(/^\s*/, '');
+            } else {
+                return obj.text.replace(/^\s*/, '\t');
+            }
+        }).join('\n');
+
+        return super.runTool(compilationInfo, undefined, args, asm);
     }
 }

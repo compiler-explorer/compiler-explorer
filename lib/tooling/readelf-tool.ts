@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,34 +22,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import fs from 'fs-extra';
+import {fileExists} from '../utils';
 
 import {BaseTool} from './base-tool';
 
-export class LLVMMcaTool extends BaseTool {
+export class ReadElfTool extends BaseTool {
     static get key() {
-        return 'llvm-mca-tool';
+        return 'readelf-tool';
     }
 
-    rewriteAsm(asm) {
-        return asm
-            .replace(/.hword\s/gim, '.short ')
-            .replace(/offset flat:/gim, '')
-            .replace(/ptr\s%fs/gim, 'PTR fs')
-            .replace(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, ''); // https://github.com/compiler-explorer/compiler-explorer/issues/1270
-    }
-
-    writeAsmFile(data, destination) {
-        return fs.writeFile(destination, this.rewriteAsm(data));
-    }
-
-    async runTool(compilationInfo, inputFilepath, args) {
-        if (compilationInfo.filters.binary) {
-            return this.createErrorResponse('<cannot run analysis on binary>');
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
+            return this.createErrorResponse('readelf requires an executable');
         }
 
-        const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
-        await this.writeAsmFile(compilationInfo.asm, rewrittenOutputFilename);
-        return super.runTool(compilationInfo, rewrittenOutputFilename, args);
+        if (await fileExists(compilationInfo.executableFilename)) {
+            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
+        } else {
+            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
+        }
     }
 }
