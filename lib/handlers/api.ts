@@ -174,7 +174,7 @@ export class ApiHandler {
     handleLanguages(req: express.Request, res: express.Response) {
         const availableLanguages = this.usedLangIds.map(val => {
             const lang = this.languages[val];
-            const newLangObj: Language & {defaultCompiler?: string} = Object.assign({}, lang);
+            const newLangObj: Language = Object.assign({}, lang);
             if (this.options) {
                 newLangObj.defaultCompiler = this.options.options.defaultCompiler[unwrap(lang).id];
             }
