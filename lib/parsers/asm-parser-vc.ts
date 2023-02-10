@@ -1,4 +1,4 @@
-// Copyright (c) 2018, 2021, Microsoft Corporation & Compiler Explorer Authors
+// Copyright (c) 2018, Microsoft Corporation
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,46 +22,62 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {assert} from '../assert';
 import {logger} from '../logger';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {AsmParser} from './asm-parser';
 import {AsmRegex} from './asmregex';
 
-export class Vc6AsmParser extends AsmParser {
-    constructor(compilerProps) {
+type Source = {file: string | null; line: number};
+type Line = {text: string; source: Source | null};
+type Label = {
+    lines: Line[];
+    name: string | undefined;
+    initialLine: number | undefined;
+    file: string | null | undefined;
+};
+
+type ResultObject = {
+    prefix: Line[];
+    functions: Label[];
+    postfix: Line | null;
+};
+
+export class VcAsmParser extends AsmParser {
+    private readonly asmBinaryParser: AsmParser;
+    private readonly filenameComment = /^; File (.+)/;
+    protected miscDirective = /^\s*(include|INCLUDELIB|TITLE|\.|THUMB|ARM64|TTL|END$)/;
+    private readonly localLabelDef = /^([$A-Z_a-z]+) =/;
+    private readonly lineNumberComment = /^; Line (\d+)/;
+    protected beginSegment =
+        /^(CONST|_BSS|\.?[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|\.?text(\$[A-Za-z]+)?)\s+SEGMENT|\s*AREA/;
+    protected endSegment = /^(CONST|_BSS|[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|text(\$[A-Za-z]+)?)\s+ENDS/;
+    private readonly beginFunction = /^; Function compile flags: /;
+    private readonly endProc = /^([$?@A-Z_a-z][\w$<>?@]*)?\s+ENDP/;
+    private readonly labelFind = /[$?@A-Z_a-z][\w$<>?@]*/g;
+
+    constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
         this.asmBinaryParser = new AsmParser(compilerProps);
-        this.miscDirective =
-            /^\s*(include|INCLUDELIB|TITLE|\.|else$|endif$|if @Version|FLAT|ASSUME|THUMB|ARM64|TTL|END$)/;
-        this.localLabelDef = /^([$A-Z_a-z]+) =/;
         this.commentOnly = /^;/;
-        this.filenameComment = /^; File (.+)/;
-        this.lineNumberComment = /^; Line (\d+)/;
-        this.beginSegment =
-            /^(CONST|_BSS|_DATA|_TLS|\.?[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|\.?text(\$[A-Za-z]+)?)\s+SEGMENT|\s*AREA/;
-        this.endSegment =
-            /^(CONST|_BSS|_DATA|_TLS|[prx]?data(\$[A-Za-z]+)?|CRT(\$[A-Za-z]+)?|_TEXT|text(\$[A-Za-z]+)?)\s+ENDS/;
-        this.beginFunction = /^; Function compile flags: /;
-        this.endProc = /^([$?@A-Z_a-z][\w$<>?@]*)?\s+ENDP/;
-        // on x86, we use the end of the segment to end a function
-        // on arm, we use ENDP
-        this.endFunction = /^(_TEXT\s+ENDS|\s+ENDP)/;
 
         this.labelDef = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+(PROC|=|D[BDQW])/;
         this.definesGlobal = /^\s*(PUBLIC|EXTRN|EXPORT)\s+/;
         this.definesFunction = /^\|?([$?@A-Z_a-z][\w$<>?@]*)\|?\s+PROC/;
-        this.labelFind = /[$?@A-Z_a-z][\w$<>?@]*/g;
         this.dataDefn = /^(\|?[$?@A-Z_a-z][\w$<>?@]*\|?)\sDC?[BDQW]\s|\s+DC?[BDQW]\s|\s+ORG/;
 
         // these are set to an impossible regex, because VC doesn't have inline assembly
         this.startAppBlock = this.startAsmNesting = /a^/;
-        this.endAppBLock = this.endAsmNesting = /a^/;
+        this.endAppBlock = this.endAsmNesting = /a^/;
         // same, but for CUDA
         this.cudaBeginDef = /a^/;
     }
 
-    hasOpcode(line) {
+    override hasOpcode(line: string) {
         // note: cl doesn't output leading labels
         // strip comments
         line = line.split(';', 1)[0];
@@ -81,14 +97,14 @@ export class Vc6AsmParser extends AsmParser {
         // check for miscellaneous directives
         if (this.miscDirective.test(line)) return false;
 
-        return !!this.hasOpcodeRe.test(line);
+        return this.hasOpcodeRe.test(line);
     }
 
-    labelFindFor() {
+    override labelFindFor() {
         return this.labelFind;
     }
 
-    processAsm(asm, filters) {
+    override processAsm(asm: string, filters: ParseFiltersAndOutputOptions): ParsedAsmResult {
         if (filters.binary || filters.binaryObject) {
             return this.asmBinaryParser.processAsm(asm, filters);
         }
@@ -115,27 +131,20 @@ export class Vc6AsmParser extends AsmParser {
 
         const stdInLooking = /<stdin>|^-$|example\.[^/]+$|<source>/;
 
-        // type source = {file: string option; line: int}
-        // type line = {line: string; source: source option}
-        // type func =
-        //   { lines: line array
-        //   ; name: string | undefined
-        //   ; initialLine: int
-        //   ; file: string option | undefined }
-        const resultObject = {
-            prefix: [], // line array
-            functions: [], // func array
-            postfix: null, // line?
+        const resultObject: ResultObject = {
+            prefix: [],
+            functions: [],
+            postfix: null,
         };
 
-        let currentFunction = null; // func option
-        let currentFile;
-        let currentLine;
+        let currentFunction: Label | null = null;
+        let currentFile: string | undefined | null;
+        let currentLine: number | undefined;
 
         let seenEnd = false;
 
-        const datadefLabels = [];
-        const datadefLabelsUsed = [];
+        const datadefLabels: string[] = [];
+        const datadefLabelsUsed: string[] = [];
 
         const createSourceFor = (hasopc, currentFile, currentLine) => {
             if (hasopc && (currentFile || currentLine)) {
@@ -160,15 +169,16 @@ export class Vc6AsmParser extends AsmParser {
         };
 
         const checkBeginFunction = line => {
-            if (this.definesFunction.test(line)) {
+            if (this.beginFunction.test(line)) {
                 currentFunction = {
                     lines: [],
                     initialLine: undefined,
                     name: undefined,
-                    file: currentFile,
+                    file: undefined,
                 };
                 resultObject.functions.push(currentFunction);
             }
+            return currentFunction;
         };
 
         const checkForDdefLabel = line => {
@@ -209,6 +219,7 @@ export class Vc6AsmParser extends AsmParser {
                     if (currentFile === undefined) {
                         logger.error('Somehow, we have a line number comment without a file comment: %s', line);
                     }
+                    assert(currentFunction);
                     if (currentFunction.initialLine === undefined) {
                         currentFunction.initialLine = tmp;
                     }
@@ -224,18 +235,20 @@ export class Vc6AsmParser extends AsmParser {
                 } else {
                     currentFile = tmp;
                 }
+                assert(currentFunction);
                 if (currentFunction.file === undefined) {
                     currentFunction.file = currentFile;
                 }
             }
 
-            checkBeginFunction(line);
+            currentFunction = checkBeginFunction(line);
 
             const functionName = line.match(this.definesFunction);
             if (functionName) {
                 if (asmLines.length === 0) {
                     continue;
                 }
+                assert(currentFunction);
                 currentFunction.name = functionName[1];
             }
 
@@ -272,7 +285,11 @@ export class Vc6AsmParser extends AsmParser {
         return this.resultObjectIntoArray(resultObject, filters, datadefLabelsUsed);
     }
 
-    resultObjectIntoArray(obj, filters, ddefLabelsUsed) {
+    resultObjectIntoArray(
+        obj: ResultObject,
+        filters: ParseFiltersAndOutputOptions,
+        ddefLabelsUsed: string[],
+    ): ParsedAsmResult {
         const collator = new Intl.Collator();
 
         obj.functions.sort((f1, f2) => {
@@ -298,17 +315,19 @@ export class Vc6AsmParser extends AsmParser {
                 //   - two compiler generated functions
                 // order by name
                 if (f1.initialLine === f2.initialLine) {
-                    return collator.compare(f1.name, f2.name);
+                    return collator.compare(f1.name || '', f2.name || '');
                 } else {
+                    assert(f1.initialLine !== undefined && f2.initialLine !== undefined);
                     return f1.initialLine - f2.initialLine;
                 }
             }
 
             // else, order by file
+            assert(typeof f1.file === 'string' && typeof f2.file === 'string');
             return collator.compare(f1.file, f2.file);
         });
 
-        const result = [];
+        const result: ParsedAsmResultLine[] = [];
         let lastLineWasWhitespace = true;
         const pushLine = line => {
             if (line.text.trim() === '') {
@@ -323,21 +342,21 @@ export class Vc6AsmParser extends AsmParser {
         };
 
         if (filters.labels) {
-            let currentDdef = false;
+            let currentDdef: string | undefined;
             let isUsed = false;
             for (const line of obj.prefix) {
                 const matches = line.text.match(this.dataDefn);
                 if (matches) {
                     if (matches[1]) {
                         currentDdef = matches[1];
-                        isUsed = ddefLabelsUsed.find(label => currentDdef === label);
+                        isUsed = !!ddefLabelsUsed.find(label => currentDdef === label);
                     }
 
                     if (isUsed) {
                         pushLine(line);
                     }
                 } else {
-                    currentDdef = false;
+                    currentDdef = undefined;
                     pushLine(line);
                 }
             }

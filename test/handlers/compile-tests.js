@@ -26,6 +26,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 
 import {CompileHandler, SetTestMode} from '../../lib/handlers/compile';
+import {fakeProps} from '../../lib/properties';
 import {chai, makeCompilationEnvironment} from '../utils';
 
 SetTestMode();
@@ -41,7 +42,7 @@ describe('Compiler tests', () => {
 
     before(() => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
-        compileHandler = new CompileHandler(compilationEnvironment);
+        compileHandler = new CompileHandler(compilationEnvironment, fakeProps({}));
 
         const textParser = bodyParser.text({type: () => true});
         const formParser = bodyParser.urlencoded({extended: false});

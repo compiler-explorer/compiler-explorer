@@ -77,7 +77,7 @@ class CompilerArgsApp {
             compiler: {
                 exe: this.executable,
             },
-            possibleArguments: new CompilerArguments(),
+            possibleArguments: new CompilerArguments('some-id'),
             execCompilerCached: async (command: string, args: string[]) => {
                 return executeDirect(command, args, {}, fn => fn);
             },

@@ -39,6 +39,7 @@ import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 import {getCompilerTypeByKey} from '../compilers';
 import {logger} from '../logger';
+import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
 
 import {
@@ -99,7 +100,7 @@ export class CompileHandler {
     private readonly compilerEnv: CompilationEnvironment;
     private readonly textBanner: string;
     private readonly proxy: Server;
-    private readonly awsProps: (name: string, def?: string) => string;
+    private readonly awsProps: PropertyGetter;
     private clientOptions: Record<string, any> | null = null;
     private readonly compileCounter: Counter<string> = new PromClient.Counter({
         name: 'ce_compilations_total',
@@ -122,7 +123,7 @@ export class CompileHandler {
         labelNames: ['language'],
     });
 
-    constructor(compilationEnvironment: CompilationEnvironment, awsProps: (name: string, def?: string) => string) {
+    constructor(compilationEnvironment: CompilationEnvironment, awsProps: PropertyGetter) {
         this.compilerEnv = compilationEnvironment;
         this.textBanner = this.compilerEnv.ceProps<string>('textBanner');
         this.proxy = Server.createProxyServer({});

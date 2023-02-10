@@ -110,17 +110,17 @@ export type OutputState = StateWithTree & {
     editor: number; // EditorId
 };
 
-export type ToolViewState = StateWithTree & {
-    compiler: number; // CompilerId
-    editor: number; // EditorId
-    toolId: string;
-    args: unknown;
-    monacoStdin: boolean;
-};
+export type ToolViewState = StateWithTree &
+    ToolState & {
+        id: number; // CompilerID (TODO(#4703): Why is this not part of StateWithTree)
+        compilerName: string; // Compiler Name (TODO(#4703): Why is this not part of StateWithTree)
+        editorId: number; // EditorId
+        toolId: string;
+    };
 
 export type EmptyToolInputViewState = EmptyState;
 export type PopulatedToolInputViewState = {
-    compilerId: string;
+    compilerId: number;
     toolId: string;
     toolName: string;
 };
