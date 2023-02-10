@@ -23,6 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+
 import {BaseTool} from './base-tool';
 
 export class RustFmtTool extends BaseTool {

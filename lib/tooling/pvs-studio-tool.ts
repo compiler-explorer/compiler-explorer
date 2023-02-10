@@ -26,14 +26,14 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ToolInfo} from '../../types/tool.interfaces';
+import {unwrap} from '../assert';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
 import {ToolEnv} from './base-tool.interface';
-import {ToolInfo} from '../../types/tool.interfaces';
-import {unwrap} from '../assert';
 
 export class PvsStudioTool extends BaseTool {
     static get key() {

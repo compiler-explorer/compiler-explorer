@@ -24,14 +24,14 @@
 
 import path from 'path';
 
+import {Library} from '../../types/libraries/libraries.interfaces';
+import {ToolInfo} from '../../types/tool.interfaces';
+import {unwrap} from '../assert';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
-import {ToolInfo} from '../../types/tool.interfaces';
 import {ToolEnv} from './base-tool.interface';
-import {Library} from '../../types/libraries/libraries.interfaces';
-import {unwrap} from '../assert';
 
 export class MicrosoftAnalysisTool extends BaseTool {
     static get key() {

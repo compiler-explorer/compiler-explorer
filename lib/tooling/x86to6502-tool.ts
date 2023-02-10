@@ -24,10 +24,10 @@
 
 import _ from 'underscore';
 
+import {ToolResult} from '../../types/tool.interfaces';
 import {AsmParser} from '../parsers/asm-parser';
 
 import {BaseTool} from './base-tool';
-import {ToolResult} from '../../types/tool.interfaces';
 
 export class x86to6502Tool extends BaseTool {
     static get key() {
