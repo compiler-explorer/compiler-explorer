@@ -452,3 +452,10 @@ export class ToitParser extends BaseParser {
         return compiler;
     }
 }
+
+export class JuliaParser extends BaseParser {
+    static override async parse(compiler) {
+        await JuliaParser.getOptions(compiler, '--help');
+        return compiler;
+    }
+}

@@ -19,21 +19,21 @@ Options:
 
 using InteractiveUtils
 
+if first(ARGS) == "--"
+    popfirst!(ARGS)
+end
+
 if length(ARGS) < 2
 	println(doc)
 	exit(1)
 end
 
-if length(ARGS) > 3 && ARGS[3] == "--help"
-	println(doc)
-end
-
-input_file = popfirst!(ARGS)
-output_path = popfirst!(ARGS)
 format = "native"
 debuginfo = :default
 optimize = false
 verbose = false
+show_help = false
+positional_ARGS = String[]
 
 for x in ARGS
 	if startswith(x, "--format=")
@@ -50,6 +50,19 @@ for x in ARGS
 	if x == "--verbose"
 		global verbose = true
 	end
+    if x == "--help" || x == "-h"
+        global show_help = true
+    end
+    if !startswith(x, "-")
+        push!(positional_ARGS, x)
+    end
+end
+
+input_file = popfirst!(positional_ARGS)
+output_path = popfirst!(positional_ARGS)
+
+if show_help
+    println(doc)
 end
 
 # Include user code into module
