@@ -56,12 +56,12 @@ const extract = (node: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI) 
             if (name.endsWith(pattern)) {
                 for (const mapping of mappings) {
                     result.push({
-                        name: name.replace(pattern, mapping).replace('<', '[').replace('>', ']'),
+                        name: name.replace(pattern, mapping).replaceAll('<', '[').replaceAll('>', ']'),
                         anchor,
                         description: description.html()!,
                         tooltip: operation,
                         stack: [stackBefore?.html(), stackAfter?.html()],
-                        format: format.map(x => x.replace('<', '[').replace('>', ']')),
+                        format: format.map(x => x.replaceAll('<', '[').replaceAll('>', ']')),
                     });
                 }
             }
