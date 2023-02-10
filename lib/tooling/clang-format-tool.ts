@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2019, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,57 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LanguageKey} from './languages.interfaces';
-import {ResultLine} from './resultline/resultline.interfaces';
+import path from 'path';
 
-export type ToolTypeKey = 'independent' | 'postcompilation';
+import fs from 'fs-extra';
 
-export type ToolInfo = {
-    id: string;
-    name?: string;
-    type?: ToolTypeKey;
-    exe: string;
-    exclude: string[];
-    includeKey?: string;
-    options: string[];
-    args?: string;
-    languageId?: LanguageKey;
-    stdinHint?: string;
-    monacoStdin?: string;
-    icon?: string;
-    darkIcon?: string;
-    compilerLanguage: LanguageKey;
-};
+import {ToolInfo} from '../../types/tool.interfaces';
 
-export type Tool = {
-    readonly tool: ToolInfo;
-    readonly id: string;
-    readonly type: string;
-};
+import {BaseTool} from './base-tool';
+import {ToolEnv} from './base-tool.interface';
 
-export enum ArtifactType {
-    download = 'application/octet-stream',
-    nesrom = 'nesrom',
-    bbcdiskimage = 'bbcdiskimage',
-    zxtape = 'zxtape',
-    smsrom = 'smsrom',
+export class ClangFormatTool extends BaseTool {
+    static get key() {
+        return 'clang-format-tool';
+    }
+
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
+        super(toolInfo, env);
+
+        this.addOptionsToToolArgs = false;
+    }
+
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath: string, args: string[], stdin: string) {
+        const sourcefile = inputFilepath;
+        const compilerExe = compilationInfo.compiler.exe;
+        const options = compilationInfo.options;
+        const dir = path.dirname(sourcefile);
+
+        let compileFlags = options.filter(option => option !== sourcefile);
+        if (!compilerExe.includes('clang++')) {
+            compileFlags = compileFlags.concat(this.tool.options);
+        }
+
+        await fs.writeFile(path.join(dir, 'compile_flags.txt'), compileFlags.join('\n'));
+        args.push('-style={' + stdin.trim().split('\n').join(',') + '}');
+        return await super.runTool(compilationInfo, sourcefile, args, stdin);
+    }
 }
-
-export type Artifact = {
-    content: string;
-    type: string;
-    name: string;
-    title: string;
-};
-
-export type ToolResult = {
-    id: string;
-    name?: string;
-    code: number;
-    languageId?: LanguageKey | 'stderr';
-    stderr: ResultLine[];
-    stdout: ResultLine[];
-    artifact?: Artifact;
-    sourcechanged?: boolean;
-    newsource?: string;
-};
