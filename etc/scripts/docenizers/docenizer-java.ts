@@ -14,20 +14,19 @@ const VARIADIC_MAPPINGS = {
     '<cond>': ['eq', 'ne'],
 };
 
-// interface InstructionInfo {
-//     name: string
-//     anchor: string
-//     tooltip: string
-//     format: string[]
-//     stack: [string | null, string | null]
-//     description: string
-// }
+type InstructionInfo = {
+    name: string
+    anchor: string
+    tooltip: string
+    format: string[]
+    stack: [string | null, string | null]
+    description: string
+}
 
-// extract: (node: cheerio.Cheerio<Element>, $: cheerio.CheerioAPI) => InstructionInfo[]
-const extract = (node, $) => {
+const extract = (node: cheerio.Cheerio<cheerio.Element>, $: cheerio.CheerioAPI) => {
     const anchorElement = node.find('div.titlepage > div > div > h3.title > a[name*="jvms-6.5"]').first();
     const nameElement = anchorElement.parent().find('span.emphasis > em');
-    const anchor = anchorElement.attr('name');
+    const anchor = anchorElement.attr('name')!;
     const name = nameElement.text();
 
     const [
@@ -50,20 +49,19 @@ const extract = (node, $) => {
         .toArray()
         .map(it => $(it));
 
-    // InstructionInfo[]
-    const result = [];
+    const result: InstructionInfo[] = [];
     const hasVariadicMapping = Object.keys(VARIADIC_MAPPINGS).some((pat) => name.endsWith(pat));
     if (hasVariadicMapping) {
         for (const [pattern, mappings] of Object.entries(VARIADIC_MAPPINGS)) {
             if (name.endsWith(pattern)) {
                 for (const mapping of mappings) {
                     result.push({
-                        name: name.replace(pattern, mapping).replace('<', '[').replace('>', ']'),
-                        anchor: anchor,
-                        description: description.html(),
+                        name: name.replace(pattern, mapping).replaceAll('<', '[').replaceAll('>', ']'),
+                        anchor,
+                        description: description.html()!,
                         tooltip: operation,
                         stack: [stackBefore?.html(), stackAfter?.html()],
-                        format: format.map(x => x.replace('<', '[').replace('>', ']')),
+                        format: format.map(x => x.replaceAll('<', '[').replaceAll('>', ']')),
                     });
                 }
             }
@@ -71,8 +69,8 @@ const extract = (node, $) => {
     } else {
         result.push({
             name,
-            anchor: anchor,
-            description: description.html(),
+            anchor,
+            description: description.html()!,
             tooltip: operation,
             stack: [stackBefore?.html(), stackAfter?.html()],
             format,
