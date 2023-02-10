@@ -5,16 +5,11 @@ Usage:
   julia_wrapper.jl --help
 
 Options:
-  -h --help           Show this screen.
-  --format=<fmt>      Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
-                      lowered	
-                      typed
-                      warntype
-                      llvm
-                      native
-  --debuginfo=<info>  Controls amount of generated metadata (One of "default", "none") [default: default]
-  --optimize=<opt>    Controls whether "llvm" or "typed" output should be optimized or not [default: true]
-  --verbose           Prints some process info
+  -h --help                Show this screen.
+  --format=<fmt>           Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
+  --debuginfo=<info>       Controls amount of generated metadata (One of "default", "none") [default: default]
+  --optimize={true*|false} Controls whether "llvm" or "typed" output should be optimized or not [default: true]
+  --verbose                Prints some process info
 """
 
 using InteractiveUtils

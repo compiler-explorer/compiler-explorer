@@ -454,6 +454,18 @@ export class ToitParser extends BaseParser {
 }
 
 export class JuliaParser extends BaseParser {
+    // Get help line from wrapper not Julia runtime
+    static override async getOptions(compiler, helpArg) {
+        const optionFinder = /^\s*(--?[\d+,<=>[\]a-z|-]*)\s*(.*)/i;
+        const result = await compiler.execCompilerCached(compiler.compiler.exe, [
+            compiler.compilerWrapperPath,
+            helpArg,
+        ]);
+        const options = result.code === 0 ? BaseParser.parseLines(result.stdout + result.stderr, optionFinder) : {};
+        compiler.possibleArguments.populateOptions(options);
+        return options;
+    }
+
     static override async parse(compiler) {
         await JuliaParser.getOptions(compiler, '--help');
         return compiler;
