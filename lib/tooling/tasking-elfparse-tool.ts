@@ -446,7 +446,7 @@ export class elf_Parse {
             }
         }
         if (signedInt && (byte & 0x40) !== 0 && bitsWritten < 64) {
-            // Sign extend
+            // bug...
             const signExtensionMask = 0xfffffffffffff << bitsWritten;
             result |= signExtensionMask;
         }

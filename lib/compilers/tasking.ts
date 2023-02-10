@@ -17,19 +17,23 @@ export class TaskingCompiler extends BaseCompiler {
     constructor(info, env) {
         super(info, env);
         this.asm = new AsmParserTasking(this.compilerProps);
-        const index = this.compiler.exe.indexOf('cctc.exe');
-        this.compiler.exe = this.compiler.exe.slice(0, index) + 'hldumptc.exe';
+        this.compiler.exe = this.compiler.exe.replace('cctc.exe', 'hldumptc.exe');
     }
 
     override optionsForFilter(filters, outputFilename) {
         //hldumptc -cc -FCdFHMNSY -is $(OUTPATH)/$< -o $(OUTPATH)/cppdemo.asm
-        if (filters.binary) this.filtersBinary = true;
+        if (filters.binaryObject) this.filtersBinary = true;
         else this.filtersBinary = false;
 
         return ['-cc', '-FCdFHMNSY', '-o', this.filename(outputFilename)];
     }
 
-    override async runCompiler(compiler, options, inputFilename, execOptions) {
+    override async runCompiler(
+        compiler: string,
+        options: string[],
+        inputFilename: string,
+        execOptions: ExecutionOptions,
+    ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
         }
@@ -38,7 +42,8 @@ export class TaskingCompiler extends BaseCompiler {
 
         const index = compiler.indexOf('hldumptc.exe');
         const compilertasking = compiler.slice(0, index) + 'cctc.exe';
-        const optionstasking = ['1', '2', '3', '4'];
+        const length = 4;
+        const optionstasking: string[] = Array.from({length});
         if (options[4].endsWith('.cpp')) {
             //cctc -g --core=tc1.8 --force-c++ --pending-instantiations=200 -c -O0 -o example.o  example.cpp
             optionstasking[0] = '-g';
@@ -108,7 +113,7 @@ export class TaskingCompiler extends BaseCompiler {
     }
 
     override preProcess(source: string, filters: CompilerOutputOptions): string {
-        if (filters.binary && !this.stubRe.test(source)) {
+        if (filters.binaryObject && !this.stubRe.test(source)) {
             source += `\n${this.stubText}\n`;
         }
         return source;
