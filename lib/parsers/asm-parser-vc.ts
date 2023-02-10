@@ -315,7 +315,7 @@ export class VcAsmParser extends AsmParser {
                 //   - two compiler generated functions
                 // order by name
                 if (f1.initialLine === f2.initialLine) {
-                    return collator.compare(f1.name ?? '', f2.name ?? '');
+                    return collator.compare(f1.name || '', f2.name || '');
                 } else {
                     assert(f1.initialLine !== undefined && f2.initialLine !== undefined);
                     return f1.initialLine - f2.initialLine;
