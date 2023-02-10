@@ -14,19 +14,13 @@ import {IAsmParser} from './asm-parser.interfaces';
 import {AsmRegex} from './asmregex';
 
 export class AsmParserTasking extends AsmParser implements IAsmParser {
-    taskingText: RegExp;
-    sourceTaskingTag2: RegExp;
-    TaskingFile: RegExp;
-    taskingAddress: RegExp;
+    taskingText: RegExp;;
     taskingMachineCode: RegExp;
     _elffilepath: string;
 
     constructor(compilerProps?: PropertyGetter) {
         super(compilerProps);
         this.taskingText = /^\s+(.sect|.sdecl)\s+'(.*)'.*/;
-        this.taskingAddress = /(^(\d|\w)+)\s(\d|\w)+\s(\d|\w)+\s.*/;
-        this.sourceTaskingTag2 = /^\s+(\d+):(.*)/;
-        this.TaskingFile = /^(C:\\Users\\QXZ3F7O\\AppData\\Local\\Temp\\)(.*)/;
         this.taskingMachineCode = /(^\w+)((?:\s*(?:\d|[a-f]){2}){2,4})\s+(.*:)?(\s*(.*)\s+(.*))/;
     }
 
