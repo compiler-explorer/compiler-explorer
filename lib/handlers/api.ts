@@ -49,11 +49,11 @@ function methodNotAllowed(req: express.Request, res: express.Response) {
 }
 
 export class ApiHandler {
-    private compilers: CompilerInfo[] = [];
-    private languages: Partial<Record<LanguageKey, Language>> = {};
+    public compilers: CompilerInfo[] = [];
+    public languages: Partial<Record<LanguageKey, Language>> = {};
     private usedLangIds: LanguageKey[] = [];
     private options: ClientOptionsHandler | null = null;
-    private readonly handle: express.Router;
+    public readonly handle: express.Router;
     private readonly shortener: BaseShortener;
     private release = {
         gitReleaseName: '',

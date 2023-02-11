@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,16 +22,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
+
 import {ClientState} from '../clientstate';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
 import {logger} from '../logger';
+import {StorageBase} from '../storage';
 import * as utils from '../utils';
 
 import {ApiHandler} from './api';
 
+type HandlerConfig = {
+    compileHandler: any;
+    clientOptionsHandler: any;
+    storageHandler: StorageBase;
+    ceProps: any;
+    opts: any;
+    defArgs: any;
+    renderConfig: any;
+    renderGoldenLayout: any;
+    staticHeaders: any;
+    contentPolicyHeader: any;
+};
+
 export class RouteAPI {
-    constructor(router, config) {
-        this.router = router;
+    renderGoldenLayout: any;
+    storageHandler: StorageBase;
+    apiHandler: ApiHandler;
+
+    constructor(private readonly router: express.Router, config: HandlerConfig) {
         this.renderGoldenLayout = config.renderGoldenLayout;
 
         this.storageHandler = config.storageHandler;
@@ -46,6 +65,8 @@ export class RouteAPI {
             );
 
             this.apiHandler.setReleaseInfo(config.defArgs.gitReleaseName, config.defArgs.releaseBuildNumber);
+        } else {
+            this.apiHandler = undefined as any;
         }
     }
 
@@ -59,7 +80,7 @@ export class RouteAPI {
             .get('/fromsimplelayout', this.simpleLayoutHandler.bind(this));
     }
 
-    storedCodeHandler(req, res, next) {
+    storedCodeHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
         const sessionid = parseInt(req.params.session);
         this.storageHandler
@@ -67,7 +88,7 @@ export class RouteAPI {
             .then(result => {
                 const config = JSON.parse(result.config);
 
-                let clientstate = false;
+                let clientstate: ClientState | null = null;
                 if (config.content) {
                     const normalizer = new ClientStateNormalizer();
                     normalizer.fromGoldenLayout(config);
@@ -92,7 +113,7 @@ export class RouteAPI {
             });
     }
 
-    storedStateHandler(req, res, next) {
+    storedStateHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
         this.storageHandler
             .expandId(id)
@@ -120,13 +141,13 @@ export class RouteAPI {
             });
     }
 
-    getGoldenLayoutFromClientState(state) {
+    getGoldenLayoutFromClientState(state: ClientState) {
         const goldenifier = new ClientStateGoldenifier();
         goldenifier.fromClientState(state);
         return goldenifier.golden;
     }
 
-    unstoredStateHandler(req, res) {
+    unstoredStateHandler(req: express.Request, res: express.Response) {
         const state = JSON.parse(Buffer.from(req.params.clientstatebase64, 'base64').toString());
         const config = this.getGoldenLayoutFromClientState(new ClientState(state));
         const metadata = this.getMetaDataFromLink(req, null, config);
@@ -134,7 +155,7 @@ export class RouteAPI {
         this.renderGoldenLayout(config, metadata, req, res);
     }
 
-    simpleLayoutHandler(req, res) {
+    simpleLayoutHandler(req: express.Request, res: express.Response) {
         const state = new ClientState();
         const session = state.findOrCreateSession(1);
         session.lang = req.query.lang;
@@ -146,13 +167,13 @@ export class RouteAPI {
         this.renderClientState(state, undefined, req, res);
     }
 
-    renderClientState(clientstate, metadata, req, res) {
+    renderClientState(clientstate: ClientState, metadata, req: express.Request, res: express.Response) {
         const config = this.getGoldenLayoutFromClientState(clientstate);
 
         this.renderGoldenLayout(config, metadata, req, res);
     }
 
-    storedStateHandlerResetLayout(req, res, next) {
+    storedStateHandlerResetLayout(req: express.Request, res: express.Response, next: express.NextFunction) {
         const id = req.params.id;
         this.storageHandler
             .expandId(id)
@@ -180,11 +201,11 @@ export class RouteAPI {
             });
     }
 
-    escapeLine(req, line) {
+    escapeLine(req: express.Request, line: string) {
         return line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    filterCode(req, code, lang) {
+    filterCode(req: express.Request, code: string, lang) {
         let lines = code.split('\n');
         if (lang.previewFilter !== null) {
             lines = lines.filter(line => !lang.previewFilter.test(line));
@@ -192,10 +213,10 @@ export class RouteAPI {
         return lines.map(line => this.escapeLine(req, line)).join('\n');
     }
 
-    getMetaDataFromLink(req, link, config) {
+    getMetaDataFromLink(req: express.Request, link: {config: string; specialMetadata: any} | null, config) {
         const metadata = {
-            ogDescription: null,
-            ogAuthor: null,
+            ogDescription: null as string | null,
+            ogAuthor: null as string | null,
             ogTitle: 'Compiler Explorer',
         };
 
