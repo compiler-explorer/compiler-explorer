@@ -268,7 +268,7 @@ export class ClientStateSession {
     id: number | false = false;
     language = '';
     source = '';
-    conformanceview: ClientStateConformanceView | null = null;
+    conformanceview: ClientStateConformanceView | false = false;
     compilers: any[] = [];
     executors: any[] = [];
     filename = undefined;
@@ -285,7 +285,7 @@ export class ClientStateSession {
             if (jsondata.conformanceview) {
                 this.conformanceview = new ClientStateConformanceView(jsondata.conformanceview);
             } else {
-                this.conformanceview = null;
+                this.conformanceview = false;
             }
         }
 
