@@ -49,13 +49,13 @@ export class ClientStateCompilerOptions {
 }
 
 export class ClientStateCompiler {
-    _internalid = undefined;
+    _internalid: any = undefined;
     id = '';
     options = '';
     filters: ClientStateCompilerOptions;
-    libs = [];
-    specialoutputs = [];
-    tools = [];
+    libs: any[] = [];
+    specialoutputs: any[] = [];
+    tools: any[] = [];
 
     constructor(jsondata?) {
         if (jsondata) {
@@ -108,7 +108,7 @@ export class ClientStateCompiler {
 export class ClientStateExecutor {
     compilerVisible = false;
     compilerOutputVisible = false;
-    arguments = [];
+    arguments: any[] = [];
     argumentsVisible = false;
     stdin = '';
     stdinVisible = false;
@@ -142,7 +142,7 @@ export class ClientStateExecutor {
 }
 
 export class ClientStateConformanceView {
-    libs = [];
+    libs: any[] = [];
     compilers: ClientStateCompiler[] = [];
 
     constructor(jsondata?) {
