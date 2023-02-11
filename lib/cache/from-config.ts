@@ -70,8 +70,9 @@ function createInternal(name: string, config: string): Cache {
     }
 }
 
-export function createCacheFromConfig(name: string, config: string): Cache {
+// Added some type casting to make cache-tests a little more typesafe
+export function createCacheFromConfig<TCache extends Cache = Cache>(name: string, config: string): TCache {
     const result = createInternal(name, config);
     logger.info(`Created cache ${name} of type ${result.details}`);
-    return result;
+    return result as TCache;
 }
