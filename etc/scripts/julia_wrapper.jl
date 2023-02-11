@@ -1,7 +1,7 @@
 doc = """Julia wrapper.
 
 Usage:
-  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--debuginfo=<info>] [--optimize] [--verbose]
+  julia_wrapper.jl <input_code> <output_path> [--format=<fmt>] [--debuginfo=<info>] [--optimize=<opt>] [--verbose]
   julia_wrapper.jl --help
 
 Options:
@@ -13,27 +13,27 @@ Options:
                       llvm
                       native
   --debuginfo=<info>  Controls amount of generated metadata (One of "default", "none") [default: default]
-  --optimize          Sets whether "llvm" or "typed" output should be optimized or not.
+  --optimize=<opt>    Controls whether "llvm" or "typed" output should be optimized or not [default: true]
   --verbose           Prints some process info
 """
 
 using InteractiveUtils
+
+if first(ARGS) == "--"
+    popfirst!(ARGS)
+end
 
 if length(ARGS) < 2
 	println(doc)
 	exit(1)
 end
 
-if length(ARGS) > 3 && ARGS[3] == "--help"
-	println(doc)
-end
-
-input_file = popfirst!(ARGS)
-output_path = popfirst!(ARGS)
 format = "native"
 debuginfo = :default
-optimize = false
+optimize = true
 verbose = false
+show_help = false
+positional_ARGS = String[]
 
 for x in ARGS
 	if startswith(x, "--format=")
@@ -44,12 +44,26 @@ for x in ARGS
 			global debuginfo = :none
 		end
 	end
-	if x == "--optimize"
-		global optimize = true
+	if startswith(x, "--optimize=")
+		# Do not error out if we can't parse the option
+		global optimize = something(tryparse(Bool, x[12:end]), true)
 	end
 	if x == "--verbose"
 		global verbose = true
 	end
+    if x == "--help" || x == "-h"
+        global show_help = true
+    end
+    if !startswith(x, "-")
+        push!(positional_ARGS, x)
+    end
+end
+
+input_file = popfirst!(positional_ARGS)
+output_path = popfirst!(positional_ARGS)
+
+if show_help
+    println(doc)
 end
 
 # Include user code into module

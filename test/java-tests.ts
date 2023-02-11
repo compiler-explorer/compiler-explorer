@@ -22,8 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {CompilationEnvironment} from '../lib/compilation-env';
 import {JavaCompiler} from '../lib/compilers';
 import * as utils from '../lib/utils';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces';
+import {CompilerInfo} from '../types/compiler.interfaces';
 
 import {fs, makeCompilationEnvironment} from './utils';
 
@@ -35,10 +38,10 @@ const info = {
     exe: null,
     remote: true,
     lang: languages.java.id,
-};
+} as unknown as CompilerInfo;
 
 describe('Basic compiler setup', function () {
-    let env;
+    let env: CompilationEnvironment;
 
     before(() => {
         env = makeCompilationEnvironment({languages});
@@ -53,9 +56,9 @@ describe('Basic compiler setup', function () {
         // it's not possible to determine the main class file before compilation/parsing
         const compiler = new JavaCompiler(info, env);
         if (process.platform === 'win32') {
-            compiler.getOutputFilename('/tmp/', 'Ignored.java').should.equal('\\tmp\\example.class');
+            compiler.getOutputFilename('/tmp/').should.equal('\\tmp\\example.class');
         } else {
-            compiler.getOutputFilename('/tmp/', 'Ignored.java').should.equal('/tmp/example.class');
+            compiler.getOutputFilename('/tmp/').should.equal('/tmp/example.class');
         }
     });
 
@@ -103,14 +106,14 @@ describe('Basic compiler setup', function () {
 });
 
 describe('javap parsing', () => {
-    let compiler;
-    let env;
+    let compiler: JavaCompiler;
+    let env: CompilationEnvironment;
     before(() => {
         env = makeCompilationEnvironment({languages});
         compiler = new JavaCompiler(info, env);
     });
 
-    function testJava(baseFolder, ...classNames) {
+    function testJava(baseFolder: string, ...classNames: string[]) {
         const compiler = new JavaCompiler(info, env);
 
         const asm = classNames.map(className => {
@@ -139,8 +142,10 @@ describe('javap parsing', () => {
             asm,
         };
 
-        const processed = compiler.processAsm(result).asm;
-        processed.should.deep.equal(expectedSegments);
+        const processed = compiler.processAsm(result);
+        processed.should.have.property('asm');
+        const asmSegments = (processed as {asm: ParsedAsmResultLine[]}).asm;
+        asmSegments.should.deep.equal(expectedSegments);
     }
 
     it('should handle errors', () => {

@@ -31,7 +31,7 @@ import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfa
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
 
-import {BaseParser} from './argument-parsers';
+import {JuliaParser} from './argument-parsers';
 
 export class JuliaCompiler extends BaseCompiler {
     private compilerWrapperPath: string;
@@ -96,7 +96,7 @@ export class JuliaCompiler extends BaseCompiler {
     }
 
     override getArgumentParser() {
-        return BaseParser;
+        return JuliaParser;
     }
 
     override fixExecuteParametersForInterpreting(executeParameters, outputFilename, key) {
@@ -120,16 +120,9 @@ export class JuliaCompiler extends BaseCompiler {
             execOptions.customCwd = dirPath;
         }
 
-        // compiler wrapper, then input should be first argument, not last
-        const wrapperOptions = options.filter(opt => opt !== inputFilename);
-
         const juliaOptions = [this.compilerWrapperPath, '--'];
-        if (options.includes('-h') || options.includes('--help')) {
-            juliaOptions.push('--help');
-        } else {
-            wrapperOptions.unshift(inputFilename, this.getOutputFilename(dirPath, this.outputFilebase));
-            juliaOptions.push(...wrapperOptions);
-        }
+        options.push(this.getOutputFilename(dirPath, this.outputFilebase));
+        juliaOptions.push(...options);
 
         const execResult = await this.exec(compiler, juliaOptions, execOptions);
         return {

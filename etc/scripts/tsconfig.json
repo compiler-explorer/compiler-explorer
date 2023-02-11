@@ -1,0 +1,7 @@
+{
+    "compilerOptions": {
+      "lib": ["es2021", "dom", "dom.iterable"],
+      "target": "es2021",
+      "moduleResolution": "nodenext"
+    }
+}

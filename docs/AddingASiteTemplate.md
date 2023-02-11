@@ -16,12 +16,12 @@ Below are instructions to generate site templates. Because it's a bit hacky feel
 so when a PR is made.
 
 Site template screenshots are generated with a hacky script located at
-[`etc/scripts/generate_site_template_screenshots.js`](../etc/scripts/generate_site_template_screenshots.js).
+[`etc/scripts/generate_site_template_screenshots.ts`](../etc/scripts/generate_site_template_screenshots.ts).
 
 To run the script, `cd` to the `etc/scripts/` directory and run
 
 ```bash
-npm i puppeteer --no-save && node generate_site_template_screenshots.js
+npm i puppeteer --no-save && npx ts-node-esm generate_site_template_screenshots.ts
 ```
 
 The script uses puppeteer and chrome to generate screenshots. The script will take a little while to run as it generates

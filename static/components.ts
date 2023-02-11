@@ -275,8 +275,9 @@ export function getOutput(compiler: number, editor: number, tree: number): Compo
 
 /** Get a tool view component with the given configuration. */
 export function getToolViewWith(
-    compiler: number,
-    editor: number,
+    compilerId: number,
+    compilerName: string,
+    editorId: number,
     toolId: string,
     args: string,
     monacoStdin: boolean,
@@ -286,8 +287,9 @@ export function getToolViewWith(
         type: 'component',
         componentName: TOOL_COMPONENT_NAME,
         componentState: {
-            compiler,
-            editor,
+            id: compilerId,
+            compilerName,
+            editorId,
             toolId,
             args,
             tree,
@@ -307,7 +309,7 @@ export function getToolInputView(): ComponentConfig<EmptyToolInputViewState> {
 
 /** Get a tool input view component with the given configuration. */
 export function getToolInputViewWith(
-    compilerId: string,
+    compilerId: number,
     toolId: string,
     toolName: string
 ): ComponentConfig<PopulatedToolInputViewState> {

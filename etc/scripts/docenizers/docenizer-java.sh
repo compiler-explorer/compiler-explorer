@@ -4,5 +4,4 @@ JVMS_PATH=$(pwd)/vendor/jvms.html
 
 [ -f "$JVMS_PATH" ] || curl https://docs.oracle.com/javase/specs/jvms/se18/html/jvms-6.html -o "$JVMS_PATH"
 
-$(pwd)/../find-node ../../../.node-bin
-$(cat ../../../.node-bin) docenizer-java.js > ../../../lib/asm-docs/generated/asm-docs-java.ts
+npx ts-node-esm docenizer-java.ts > ../../../lib/asm-docs/generated/asm-docs-java.ts
