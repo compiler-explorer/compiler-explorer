@@ -7,7 +7,12 @@ function square(a) {
 square(23);
 
 // Call function again to go from uninitialized -> pre-monomorphic -> monomorphic
-square(13);
+let iterationCount = 10;
+while (iterationCount--)
+{
+	square(iterationCount);
+}
+
 %OptimizeFunctionOnNextCall(square);
 square(71);
 
