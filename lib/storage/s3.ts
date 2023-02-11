@@ -162,7 +162,7 @@ export class StorageS3 extends StorageBase {
         };
     }
 
-    async expandId(id) {
+    async expandId(id: string) {
         // By just getting the item and not trying to update it, we save an update when the link does not exist
         // for which we have less resources allocated, but get one extra read (But we do have more reserved for it)
         const item = await this.dynamoDb
