@@ -167,7 +167,7 @@ export class MultifileFile {
     isIncluded = false;
     isOpen = false;
     isMainSource = false;
-    filename = '';
+    filename: string | undefined = '';
     content = '';
     editorId = -1;
     langId = 'c++';
@@ -271,7 +271,7 @@ export class ClientStateSession {
     conformanceview: ClientStateConformanceView | false = false;
     compilers: any[] = [];
     executors: any[] = [];
-    filename = undefined;
+    filename: string | undefined = undefined;
 
     constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
