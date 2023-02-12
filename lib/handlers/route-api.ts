@@ -24,15 +24,15 @@
 
 import express from 'express';
 
+import {assert} from '../assert';
 import {ClientState} from '../clientstate';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
+import {isString} from '../common-utils';
 import {logger} from '../logger';
 import {StorageBase} from '../storage';
 import * as utils from '../utils';
 
 import {ApiHandler} from './api';
-import {isString} from '../common-utils';
-import {assert} from '../assert';
 
 type HandlerConfig = {
     compileHandler: any;
