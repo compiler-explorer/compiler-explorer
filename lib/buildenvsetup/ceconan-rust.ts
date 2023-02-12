@@ -48,11 +48,15 @@ export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
     }
 
     getArchFromTriple(triple) {
-        const arr = triple.split('-');
-        if (arr && arr[0]) {
-            return arr[0];
+        if (triple && triple.split) {
+            const arr = triple.split('-');
+            if (arr && arr[0]) {
+                return arr[0];
+            } else {
+                return triple;
+            }
         } else {
-            return triple;
+            return '';
         }
     }
 
