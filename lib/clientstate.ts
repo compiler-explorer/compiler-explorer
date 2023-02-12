@@ -162,7 +162,7 @@ export class MultifileFile {
     isIncluded = false;
     isOpen = false;
     isMainSource = false;
-    filename = '';
+    filename: string | undefined = '';
     content = '';
     editorId = -1;
     langId = 'c++';

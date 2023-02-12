@@ -25,10 +25,8 @@
 import {ClientState, ClientStateCompiler, ClientStateConformanceView, ClientStateExecutor} from './clientstate';
 
 export class ClientStateNormalizer {
-    constructor() {
-        this.normalized = new ClientState();
-        this.rootContent = null;
-    }
+    normalized = new ClientState();
+    rootContent = null;
 
     fromGoldenLayoutContent(content) {
         if (!this.rootContent) this.rootContent = content;
@@ -246,7 +244,7 @@ export class ClientStateNormalizer {
 }
 
 class GoldenLayoutComponents {
-    createSourceComponent(session, customSessionId) {
+    createSourceComponent(session, customSessionId?) {
         const editor = {
             type: 'component',
             componentName: 'codeEditor',
@@ -260,14 +258,20 @@ class GoldenLayoutComponents {
         };
 
         if (session.filename) {
-            editor.title = session.filename;
-            editor.componentState.filename = session.filename;
+            return {
+                ...editor,
+                title: session.filename,
+                componentState: {
+                    ...editor.componentState,
+                    filename: session.filename,
+                },
+            };
+        } else {
+            return editor;
         }
-
-        return editor;
     }
 
-    createTreeComponent(tree, customTreeId) {
+    createTreeComponent(tree, customTreeId?) {
         const treeComponent = {
             type: 'component',
             componentName: 'tree',
@@ -291,7 +295,7 @@ class GoldenLayoutComponents {
         return treeComponent;
     }
 
-    createAstComponent(session, compilerIndex, customSessionId) {
+    createAstComponent(session, compilerIndex, customSessionId?) {
         return {
             type: 'component',
             componentName: 'ast',
@@ -304,7 +308,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createOptComponent(session, compilerIndex, customSessionId) {
+    createOptComponent(session, compilerIndex, customSessionId?) {
         return {
             type: 'component',
             componentName: 'opt',
@@ -317,7 +321,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createCfgComponent(session, compilerIndex, customSessionId) {
+    createCfgComponent(session, compilerIndex, customSessionId?) {
         return {
             type: 'component',
             componentName: 'opt',
@@ -334,7 +338,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createGccDumpComponent(session, compilerIndex, customSessionId) {
+    createGccDumpComponent(session, compilerIndex, customSessionId?) {
         return {
             type: 'component',
             componentName: 'gccdump',
@@ -347,7 +351,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createCompilerOutComponent(session, compilerIndex, customSessionId) {
+    createCompilerOutComponent(session, compilerIndex, customSessionId?) {
         return {
             type: 'component',
             componentName: 'output',
@@ -362,7 +366,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createToolComponent(session, compilerIndex, toolId, args, stdin, customSessionId) {
+    createToolComponent(session, compilerIndex, toolId, args, stdin, customSessionId?) {
         return {
             type: 'component',
             componentName: 'tool',
@@ -378,7 +382,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createConformanceViewComponent(session, conformanceview, customSessionId) {
+    createConformanceViewComponent(session, conformanceview, customSessionId?) {
         return {
             type: 'component',
             componentName: 'conformance',
@@ -397,7 +401,7 @@ class GoldenLayoutComponents {
         return {...filters};
     }
 
-    createCompilerComponent(session, compiler, customSessionId, idxCompiler) {
+    createCompilerComponent(session, compiler, customSessionId?, idxCompiler?) {
         return {
             type: 'component',
             componentName: 'compiler',
@@ -415,7 +419,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createCompilerComponentForTree(tree, compiler, customTreeId, idxCompiler) {
+    createCompilerComponentForTree(tree, compiler, customTreeId?, idxCompiler?) {
         return {
             type: 'component',
             componentName: 'compiler',
@@ -434,7 +438,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createExecutorComponent(session, executor, customSessionId) {
+    createExecutorComponent(session, executor, customSessionId?) {
         return {
             type: 'component',
             componentName: 'executor',
@@ -457,7 +461,7 @@ class GoldenLayoutComponents {
         };
     }
 
-    createExecutorComponentForTree(tree, executor, customTreeId) {
+    createExecutorComponentForTree(tree, executor, customTreeId?) {
         return {
             type: 'component',
             componentName: 'executor',
@@ -495,41 +499,35 @@ class GoldenLayoutComponents {
         };
     }
 
-    createSpecialOutputComponent(viewtype, session, idxCompiler, customSessionId) {
-        let component = null;
+    createSpecialOutputComponent(viewtype, session, idxCompiler, customSessionId?) {
         if (viewtype === 'ast') {
-            component = this.createAstComponent(session, idxCompiler + 1, customSessionId);
+            return this.createAstComponent(session, idxCompiler + 1, customSessionId);
         } else if (viewtype === 'opt') {
-            component = this.createOptComponent(session, idxCompiler + 1, customSessionId);
+            return this.createOptComponent(session, idxCompiler + 1, customSessionId);
         } else if (viewtype === 'cfg') {
-            component = this.createCfgComponent(session, idxCompiler + 1, customSessionId);
+            return this.createCfgComponent(session, idxCompiler + 1, customSessionId);
         } else if (viewtype === 'gccdump') {
-            component = this.createGccDumpComponent(session, idxCompiler + 1, customSessionId);
+            return this.createGccDumpComponent(session, idxCompiler + 1, customSessionId);
         } else if (viewtype === 'compilerOutput') {
-            component = this.createCompilerOutComponent(session, idxCompiler + 1, customSessionId);
+            return this.createCompilerOutComponent(session, idxCompiler + 1, customSessionId);
         }
-
-        return component;
     }
 
     createSpecialOutputComponentForTreeCompiler(viewtype, idxCompiler) {
-        let component = null;
         if (viewtype === 'ast') {
-            component = this.createAstComponent(null, idxCompiler + 1, false);
+            return this.createAstComponent(null, idxCompiler + 1, false);
         } else if (viewtype === 'opt') {
-            component = this.createOptComponent(null, idxCompiler + 1, false);
+            return this.createOptComponent(null, idxCompiler + 1, false);
         } else if (viewtype === 'cfg') {
-            component = this.createCfgComponent(null, idxCompiler + 1, false);
+            return this.createCfgComponent(null, idxCompiler + 1, false);
         } else if (viewtype === 'gccdump') {
-            component = this.createGccDumpComponent(null, idxCompiler + 1, false);
+            return this.createGccDumpComponent(null, idxCompiler + 1, false);
         } else if (viewtype === 'compilerOutput') {
-            component = this.createCompilerOutComponent(null, idxCompiler + 1, false);
+            return this.createCompilerOutComponent(null, idxCompiler + 1, false);
         }
-
-        return component;
     }
 
-    createToolComponentForTreeCompiler(tree, compilerIndex, toolId, args, stdin, customTreeId) {
+    createToolComponentForTreeCompiler(tree, compilerIndex, toolId, args, stdin, customTreeId?) {
         return {
             type: 'component',
             componentName: 'tool',
@@ -547,16 +545,13 @@ class GoldenLayoutComponents {
 }
 
 export class ClientStateGoldenifier extends GoldenLayoutComponents {
-    constructor() {
-        super();
-        this.golden = {};
-    }
+    golden: any = {};
 
     newEmptyStack(width) {
         return {
             type: 'stack',
             width: width,
-            content: [],
+            content: [] as any[],
         };
     }
 
@@ -681,7 +676,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             content: [
                 {
                     type: 'column',
-                    content: [],
+                    content: [] as any[],
                 },
             ],
         };
@@ -787,12 +782,12 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
         return gl;
     }
 
-    createPresentationModeComponents(session, customSessionId, customWidth) {
+    createPresentationModeComponents(session, customSessionId?, customWidth?) {
         const stack = {
             type: 'stack',
             width: customWidth || 50,
             activeItemIndex: 0,
-            content: [this.createSourceComponent(session, customSessionId)],
+            content: [this.createSourceComponent(session, customSessionId)] as any[],
         };
 
         for (let idxCompiler = 0; idxCompiler < session.compilers.length; idxCompiler++) {
@@ -818,10 +813,10 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
     }
 
     generatePresentationModeMobileViewerSlides(state) {
-        const slides = [];
+        const slides: any[] = [];
 
         if (state.trees.length > 0) {
-            for (var idxTree = 0; idxTree < state.trees.length; idxTree++) {
+            for (let idxTree = 0; idxTree < state.trees.length; idxTree++) {
                 const gl = this.getPresentationModeLayoutForTree(state, {
                     tree: idxTree,
                 });
@@ -831,7 +826,7 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
             return slides;
         }
 
-        for (var idxSession = 0; idxSession < state.sessions.length; idxSession++) {
+        for (let idxSession = 0; idxSession < state.sessions.length; idxSession++) {
             const gl = this.getPresentationModeLayoutForSource(state, {
                 session: idxSession,
                 compiler: 0,
@@ -1025,7 +1020,6 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                 for (const tool of compiler.tools) {
                     const stack = this.newToolStackFromCompiler(
                         session,
-                        compiler,
                         idxCompiler + 1,
                         tool.id,
                         tool.args,

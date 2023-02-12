@@ -24,7 +24,7 @@
 
 import express from 'express';
 
-import {assert} from '../assert';
+import {assert, unwrap} from '../assert';
 import {ClientState} from '../clientstate';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
 import {isString} from '../common-utils';
@@ -250,7 +250,7 @@ export class RouteAPI {
 
                     if (tree.isCMakeProject) {
                         const firstSource = tree.files.find(file => {
-                            return file.filename.startsWith('CMakeLists.txt');
+                            return unwrap(file.filename).startsWith('CMakeLists.txt');
                         });
 
                         if (firstSource) {
@@ -258,7 +258,7 @@ export class RouteAPI {
                         }
                     } else {
                         const firstSource = tree.files.find(file => {
-                            return file.filename.startsWith('example.');
+                            return unwrap(file.filename).startsWith('example.');
                         });
 
                         if (firstSource) {
