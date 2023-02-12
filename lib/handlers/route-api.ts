@@ -24,8 +24,10 @@
 
 import express from 'express';
 
+import {assert} from '../assert';
 import {ClientState} from '../clientstate';
 import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
+import {isString} from '../common-utils';
 import {logger} from '../logger';
 import {StorageBase} from '../storage';
 import * as utils from '../utils';
@@ -158,7 +160,9 @@ export class RouteAPI {
     simpleLayoutHandler(req: express.Request, res: express.Response) {
         const state = new ClientState();
         const session = state.findOrCreateSession(1);
-        session.lang = req.query.lang;
+        assert(isString(req.query.lang));
+        session.language = req.query.lang;
+        assert(isString(req.query.code));
         session.source = req.query.code;
         const compiler = session.findOrCreateCompiler(1);
         compiler.id = req.query.compiler;

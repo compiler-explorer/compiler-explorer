@@ -23,16 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 export class ClientStateCompilerOptions {
-    constructor(jsondata) {
-        this.binary = false;
-        this.commentOnly = true;
-        this.demangle = true;
-        this.directives = true;
-        this.execute = false;
-        this.intel = true;
-        this.labels = true;
-        this.trim = false;
+    binary = false;
+    commentOnly = true;
+    demangle = true;
+    directives = true;
+    execute = false;
+    intel = true;
+    labels = true;
+    trim = false;
 
+    constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
@@ -49,18 +49,20 @@ export class ClientStateCompilerOptions {
 }
 
 export class ClientStateCompiler {
-    constructor(jsondata) {
-        this._internalid = undefined;
+    _internalid: any = undefined;
+    id = '';
+    options = '';
+    filters: ClientStateCompilerOptions;
+    libs: any[] = [];
+    specialoutputs: any[] = [];
+    tools: any[] = [];
 
+    constructor(jsondata?) {
         if (jsondata) {
+            this.filters = undefined as any as ClientStateCompilerOptions;
             this.fromJsonData(jsondata);
         } else {
-            this.id = '';
-            this.options = '';
             this.filters = new ClientStateCompilerOptions();
-            this.libs = [];
-            this.specialoutputs = [];
-            this.tools = [];
         }
     }
 
@@ -99,15 +101,19 @@ export class ClientStateCompiler {
 }
 
 export class ClientStateExecutor {
-    constructor(jsondata) {
-        this.compilerVisible = false;
-        this.compilerOutputVisible = false;
-        this.arguments = [];
-        this.argumentsVisible = false;
-        this.stdin = '';
-        this.stdinVisible = false;
+    compilerVisible = false;
+    compilerOutputVisible = false;
+    arguments: any[] = [];
+    argumentsVisible = false;
+    stdin = '';
+    stdinVisible = false;
+    compiler: ClientStateCompiler;
+    wrap?: boolean;
 
+    constructor(jsondata?) {
         if (jsondata) {
+            // hack so TS doesn't think this.compiler is accessed before assignment below
+            this.compiler = undefined as any as ClientStateCompiler;
             this.fromJsonData(jsondata);
         } else {
             this.compiler = new ClientStateCompiler();
@@ -131,10 +137,10 @@ export class ClientStateExecutor {
 }
 
 export class ClientStateConformanceView {
-    constructor(jsondata) {
-        this.libs = [];
-        this.compilers = [];
+    libs: any[] = [];
+    compilers: ClientStateCompiler[] = [];
 
+    constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
@@ -151,16 +157,17 @@ export class ClientStateConformanceView {
 }
 
 export class MultifileFile {
-    constructor(jsondata) {
-        this.fileId = 0;
-        this.isIncluded = false;
-        this.isOpen = false;
-        this.isMainSource = false;
-        this.filename = '';
-        this.content = '';
-        this.editorId = -1;
-        this.langId = 'c++';
+    id: any = undefined;
+    fileId = 0;
+    isIncluded = false;
+    isOpen = false;
+    isMainSource = false;
+    filename = '';
+    content = '';
+    editorId = -1;
+    langId = 'c++';
 
+    constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
@@ -177,17 +184,17 @@ export class MultifileFile {
 }
 
 export class ClientStateTree {
-    constructor(jsondata) {
-        this.id = 1;
-        this.cmakeArgs = '';
-        this.customOutputFilename = '';
-        this.isCMakeProject = false;
-        this.compilerLanguageId = 'c++';
-        this.files = [];
-        this.newFileId = 1;
-        this.compilers = [];
-        this.executors = [];
+    id = 1;
+    cmakeArgs = '';
+    customOutputFilename = '';
+    isCMakeProject = false;
+    compilerLanguageId = 'c++';
+    files: MultifileFile[] = [];
+    newFileId = 1;
+    compilers: ClientStateCompiler[] = [];
+    executors: ClientStateExecutor[] = [];
 
+    constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
@@ -234,7 +241,7 @@ export class ClientStateTree {
         }
     }
 
-    findOrCreateCompiler(id) {
+    findOrCreateCompiler(id: number) {
         let foundCompiler;
         for (const compiler of this.compilers) {
             if (compiler._internalid === id) {
@@ -253,15 +260,15 @@ export class ClientStateTree {
 }
 
 export class ClientStateSession {
-    constructor(jsondata) {
-        this.id = false;
-        this.language = '';
-        this.source = '';
-        this.conformanceview = false;
-        this.compilers = [];
-        this.executors = [];
-        this.filename = undefined;
+    id: number | false = false;
+    language = '';
+    source = '';
+    conformanceview: ClientStateConformanceView | false = false;
+    compilers: any[] = [];
+    executors: any[] = [];
+    filename = undefined;
 
+    constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
@@ -295,7 +302,7 @@ export class ClientStateSession {
         }
     }
 
-    findOrCreateCompiler(id) {
+    findOrCreateCompiler(id: number) {
         let foundCompiler;
         for (const compiler of this.compilers) {
             if (compiler._internalid === id) {
@@ -327,10 +334,10 @@ export class ClientStateSession {
 }
 
 export class ClientState {
-    constructor(jsondata) {
-        this.sessions = [];
-        this.trees = [];
+    sessions: ClientStateSession[] = [];
+    trees: ClientStateTree[] = [];
 
+    constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);
     }
 
@@ -360,7 +367,7 @@ export class ClientState {
         return nextId;
     }
 
-    numberCompilersIfNeeded(session, startAt) {
+    numberCompilersIfNeeded(session: ClientStateSession, startAt?) {
         let id = startAt;
         let someIdsNeedNumbering = false;
 
@@ -384,7 +391,7 @@ export class ClientState {
         }
     }
 
-    findSessionById(id) {
+    findSessionById(id: number) {
         for (const session of this.sessions) {
             if (session.id === id) {
                 return session;
@@ -394,10 +401,9 @@ export class ClientState {
         return false;
     }
 
-    findTreeById(id) {
-        let tree = null;
+    findTreeById(id: number) {
         for (let idxTree = 0; idxTree < this.trees.length; idxTree++) {
-            tree = this.trees[idxTree];
+            const tree = this.trees[idxTree];
 
             if (tree.id === id) {
                 return tree;
@@ -407,7 +413,7 @@ export class ClientState {
         return false;
     }
 
-    findOrCreateSession(id) {
+    findOrCreateSession(id: number) {
         let session = this.findSessionById(id);
         if (session) return session;
 
@@ -418,7 +424,7 @@ export class ClientState {
         return session;
     }
 
-    findOrCreateTree(id) {
+    findOrCreateTree(id: number) {
         let tree = this.findTreeById(id);
         if (tree) return tree;
 
