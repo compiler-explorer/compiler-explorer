@@ -62,12 +62,7 @@ export class ClientStateCompiler {
             this.filters = undefined as any as ClientStateCompilerOptions;
             this.fromJsonData(jsondata);
         } else {
-            this.id = '';
-            this.options = '';
             this.filters = new ClientStateCompilerOptions();
-            this.libs = [];
-            this.specialoutputs = [];
-            this.tools = [];
         }
     }
 
