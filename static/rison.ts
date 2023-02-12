@@ -415,7 +415,9 @@ class Parser {
 
         // console.log('matched id', i, r.lastIndex);
 
-        if (m.length > 0) {
+        // eslint thinks this check is always truthy
+        // eslint-disable-next-line
+        if (m && m.length > 0) {
             const id = m[0];
             this.index = i + id.length;
             return id; // a string
