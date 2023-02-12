@@ -62,12 +62,7 @@ export class ClientStateCompiler {
             this.filters = undefined as any as ClientStateCompilerOptions;
             this.fromJsonData(jsondata);
         } else {
-            this.id = '';
-            this.options = '';
             this.filters = new ClientStateCompilerOptions();
-            this.libs = [];
-            this.specialoutputs = [];
-            this.tools = [];
         }
     }
 
@@ -271,7 +266,7 @@ export class ClientStateSession {
     conformanceview: ClientStateConformanceView | false = false;
     compilers: any[] = [];
     executors: any[] = [];
-    filename: string | undefined = undefined;
+    filename = undefined;
 
     constructor(jsondata?) {
         if (jsondata) this.fromJsonData(jsondata);

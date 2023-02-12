@@ -32,3 +32,7 @@ export function isString(x: any): x is string {
 export function keys<K extends string | number | symbol>(o: Partial<Record<K, any>>): K[] {
     return Object.keys(o) as K[];
 }
+
+export function unique<V>(arr: V[]): V[] {
+    return [...new Set(arr)];
+}

@@ -28,9 +28,10 @@ import {unwrap} from '../lib/assert';
 import {NimCompiler} from '../lib/compilers/nim';
 
 import {makeCompilationEnvironment, makeFakeCompilerInfo, should} from './utils';
+import {LanguageKey} from '../types/languages.interfaces';
 
 const languages = {
-    nim: {id: 'nim'},
+    nim: {id: 'nim' as LanguageKey},
 };
 
 describe('Nim', () => {

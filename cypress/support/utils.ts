@@ -1,4 +1,6 @@
-export function runFrontendTest(name) {
+import '../../static/global';
+
+export function runFrontendTest(name: string) {
     it(name, () => {
         cy.window().then(win => {
             return win.compilerExplorerFrontendTesting.run(name);
@@ -6,7 +8,7 @@ export function runFrontendTest(name) {
     });
 }
 
-export function stubConsoleOutput(win) {
+export function stubConsoleOutput(win: Cypress.AUTWindow) {
     cy.stub(win.console, 'log').as('consoleLog');
     cy.stub(win.console, 'warn').as('consoleWarn');
     cy.stub(win.console, 'error').as('consoleError');

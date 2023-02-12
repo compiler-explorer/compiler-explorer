@@ -41,7 +41,7 @@ export class StorageNull extends StorageBase {
         };
     }
 
-    async expandId() {
+    async expandId(id: string) {
         return {
             config: '{}',
             specialMetadata: null,
