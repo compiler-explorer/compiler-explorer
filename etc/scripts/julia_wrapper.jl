@@ -5,16 +5,11 @@ Usage:
   julia_wrapper.jl --help
 
 Options:
-  -h --help           Show this screen.
-  --format=<fmt>      Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
-                      lowered	
-                      typed
-                      warntype
-                      llvm
-                      native
-  --debuginfo=<info>  Controls amount of generated metadata (One of "default", "none") [default: default]
-  --optimize=<opt>    Controls whether "llvm" or "typed" output should be optimized or not [default: true]
-  --verbose           Prints some process info
+  -h --help                Show this screen.
+  --format=<fmt>           Set output format (One of "lowered", "typed", "warntype", "llvm", "native") [default: native]
+  --debuginfo=<info>       Controls amount of generated metadata (One of "default", "none") [default: default]
+  --optimize={true*|false} Controls whether "llvm" or "typed" output should be optimized or not [default: true]
+  --verbose                Prints some process info
 """
 
 using InteractiveUtils
@@ -23,48 +18,53 @@ if first(ARGS) == "--"
     popfirst!(ARGS)
 end
 
-if length(ARGS) < 2
-	println(doc)
-	exit(1)
-end
-
 format = "native"
 debuginfo = :default
 optimize = true
 verbose = false
 show_help = false
+arg_parser_error = false
 positional_ARGS = String[]
 
 for x in ARGS
-	if startswith(x, "--format=")
+	if     startswith(x, "--format=")
 		global format = x[10:end]
-	end
-	if startswith(x, "--debuginfo=")
+    elseif startswith(x, "--debuginfo=")
 		if x[13:end] == "none"
 			global debuginfo = :none
 		end
-	end
-	if startswith(x, "--optimize=")
+	elseif startswith(x, "--optimize=")
 		# Do not error out if we can't parse the option
 		global optimize = something(tryparse(Bool, x[12:end]), true)
-	end
-	if x == "--verbose"
+    elseif x == "--verbose"
 		global verbose = true
-	end
-    if x == "--help" || x == "-h"
+	elseif x == "--help" || x == "-h"
         global show_help = true
-    end
-    if !startswith(x, "-")
+    elseif !startswith(x, "-")
         push!(positional_ARGS, x)
+    else
+        global arg_parser_error = true
+        println("Unknown argument ", x)
     end
+end
+
+if show_help
+    println(doc)
+    exit(Int(arg_parser_error)) # exit(1) if failed to parse
+end
+
+if length(positional_ARGS) != 2
+    arg_parser_error = true
+    println("Expected two position args", positional_ARGS)
+end
+
+if arg_parser_error
+    println(doc)
+    exit(1)
 end
 
 input_file = popfirst!(positional_ARGS)
 output_path = popfirst!(positional_ARGS)
-
-if show_help
-    println(doc)
-end
 
 # Include user code into module
 m = Module(:Godbolt)
