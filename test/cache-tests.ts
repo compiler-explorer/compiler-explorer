@@ -22,9 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {AWSError} from 'aws-sdk/lib/core';
 import AWS from 'aws-sdk-mock';
 import temp from 'temp';
 
+import {BaseCache} from '../lib/cache/base';
 import {createCacheFromConfig} from '../lib/cache/from-config';
 import {InMemoryCache} from '../lib/cache/in-memory';
 import {MultiCache} from '../lib/cache/multi';
@@ -39,12 +41,12 @@ function newTempDir() {
     return temp.mkdirSync({prefix: 'compiler-explorer-cache-tests', dir: process.env.tmpDir});
 }
 
-function basicTests(factory) {
+function basicTests(factory: () => BaseCache) {
     it('should start empty', () => {
         const cache = factory();
         cache.stats().should.eql({hits: 0, puts: 0, gets: 0});
         return cache
-            .get('not a key', 'subsystem')
+            .get('not a key')
             .should.eventually.contain({hit: false})
             .then(x => {
                 cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
@@ -103,7 +105,7 @@ describe('In-memory caches', () => {
         return cache
             .put('a key', 'a value', 'bob')
             .then(() => {
-                const promises = [];
+                const promises: Promise<void>[] = [];
                 const oneK = ''.padEnd(1024);
                 for (let i = 0; i < 1024; i++) {
                     promises.push(cache.put(`key${i}`, oneK));
@@ -167,7 +169,7 @@ describe('On disk caches', () => {
         return cache
             .put('a key', 'a value', 'bob')
             .then(() => {
-                const promises = [];
+                const promises: Promise<void>[] = [];
                 const oneHundredK = ''.padEnd(1024 * 100);
                 for (let i = 0; i < 12; i++) {
                     promises.push(cache.put(`key${i}`, oneHundredK));
@@ -199,7 +201,7 @@ describe('On disk caches', () => {
 });
 
 const S3FS = {};
-let throwS3Error = null;
+let throwS3Error: AWSError | null = null;
 
 function setup() {
     beforeEach(() => {
@@ -211,9 +213,9 @@ function setup() {
             }
             const result = S3FS[params.Key];
             if (result) {
-                callback(null, {Body: result});
+                callback(undefined, {Body: result});
             } else {
-                const error = new Error('Not found');
+                const error = new Error('Not found') as AWSError;
                 error.code = 'NoSuchKey';
                 callback(error);
             }
@@ -221,7 +223,7 @@ function setup() {
         AWS.mock('S3', 'putObject', (params, callback) => {
             params.Bucket.should.equal('test.bucket');
             S3FS[params.Key] = params.Body;
-            callback(null, {});
+            callback(undefined, {});
         });
     });
     afterEach(() => {
@@ -234,18 +236,18 @@ describe('S3 tests', () => {
     basicTests(() => new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1'));
 
     it('should correctly handle errors', () => {
-        let err = null;
-        const cache = new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1', (e, op) => {
+        let err: Error | null = null;
+        const cache = new S3Cache('test', 'test.bucket', 'cache', 'uk-north-1', (e: Error, op) => {
             err = e;
             op.should.equal('read');
         });
-        throwS3Error = new Error('Some s3 error');
+        throwS3Error = new Error('Some s3 error') as AWSError;
         return cache
-            .get('doesntmatter', 'subsystem')
+            .get('doesntmatter')
             .should.eventually.contain({hit: false})
             .then(x => {
                 cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
-                err.toString().should.equal('Error: Some s3 error');
+                err!.toString().should.equal('Error: Some s3 error');
                 return x;
             });
     });
@@ -266,7 +268,7 @@ describe('Config tests', () => {
         (() => createCacheFromConfig('test', 'NotAType()')).should.throw();
     });
     it('should create in memory caches', () => {
-        const cache = createCacheFromConfig('test', 'InMemory(123)');
+        const cache = createCacheFromConfig<InMemoryCache>('test', 'InMemory(123)');
         cache.constructor.should.eql(InMemoryCache);
         cache.cacheMb.should.equal(123);
         (() => createCacheFromConfig('test', 'InMemory()')).should.throw();
@@ -275,7 +277,7 @@ describe('Config tests', () => {
     });
     it('should create on disk caches', () => {
         const tempDir = newTempDir();
-        const cache = createCacheFromConfig('test', `OnDisk(${tempDir},456)`);
+        const cache = createCacheFromConfig<OnDiskCache>('test', `OnDisk(${tempDir},456)`);
         cache.constructor.should.eql(OnDiskCache);
         cache.path.should.equal(tempDir);
         cache.cacheMb.should.equal(456);
@@ -284,7 +286,7 @@ describe('Config tests', () => {
         (() => createCacheFromConfig('test', 'OnDisk(/tmp/moo,456,blah)')).should.throw();
     });
     it('should create S3 caches', () => {
-        const cache = createCacheFromConfig('test', `S3(test.bucket,cache,uk-north-1)`);
+        const cache = createCacheFromConfig<S3Cache>('test', `S3(test.bucket,cache,uk-north-1)`);
         cache.constructor.should.eql(S3Cache);
         cache.path.should.equal('cache');
         cache.region.should.equal('uk-north-1');
@@ -294,17 +296,19 @@ describe('Config tests', () => {
     });
     it('should create multi caches', () => {
         const tempDir = newTempDir();
-        const cache = createCacheFromConfig(
+        const cache = createCacheFromConfig<MultiCache>(
             'multi',
             `InMemory(123);OnDisk(${tempDir},456);S3(test.bucket,cache,uk-north-1)`,
         );
         cache.constructor.should.eql(MultiCache);
-        cache.upstream.length.should.equal(3);
-        cache.upstream[0].constructor.should.eql(InMemoryCache);
-        cache.upstream[1].constructor.should.eql(OnDiskCache);
-        cache.upstream[2].constructor.should.eql(S3Cache);
-        cache.upstream[0].cacheName.should.eql('multi');
-        cache.upstream[1].cacheName.should.eql('multi');
-        cache.upstream[2].cacheName.should.eql('multi');
+
+        const upstream: BaseCache[] = (cache as any).upstream; // This isn't pretty. upstream is private.
+        upstream.length.should.equal(3);
+        upstream[0].constructor.should.eql(InMemoryCache);
+        upstream[1].constructor.should.eql(OnDiskCache);
+        upstream[2].constructor.should.eql(S3Cache);
+        upstream[0].cacheName.should.eql('multi');
+        upstream[1].cacheName.should.eql('multi');
+        upstream[2].cacheName.should.eql('multi');
     });
 });
