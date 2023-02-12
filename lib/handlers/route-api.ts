@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import express from 'express';
 import * as Sentry from '@sentry/node';
+import express from 'express';
 
 import {assert, unwrap} from '../assert';
 import {ClientState} from '../clientstate';

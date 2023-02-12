@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as Sentry from '@sentry/node';
 import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
-import * as Sentry from '@sentry/node';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {Language, LanguageKey} from '../../types/languages.interfaces';
