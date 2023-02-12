@@ -25,6 +25,7 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
+import * as Sentry from '@sentry/node';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {Language, LanguageKey} from '../../types/languages.interfaces';
@@ -164,6 +165,8 @@ export class ApiHandler {
             })
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}: `, err);
+                logger.warn('Exception value:', err);
+                Sentry.captureException(err);
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,

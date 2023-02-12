@@ -205,7 +205,7 @@ export class ClientStateNormalizer {
             session.conformanceview = new ClientStateConformanceView(component.componentState);
         } else if (component.componentName === 'tool') {
             this.addToolToCompiler(
-                component.componentState.compiler,
+                component.componentState.id,
                 component.componentState.editor,
                 component.componentState.toolId,
                 component.componentState.args,
