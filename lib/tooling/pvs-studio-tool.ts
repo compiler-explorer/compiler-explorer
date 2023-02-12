@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,28 +26,35 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import {ToolInfo} from '../../types/tool.interfaces';
+import {assert} from '../assert';
 import * as exec from '../exec';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
+import {ToolEnv} from './base-tool.interface';
 
 export class PvsStudioTool extends BaseTool {
     static get key() {
         return 'pvs-studio-tool';
     }
 
-    constructor(toolInfo, env) {
+    plogConverterPath: string;
+
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
         this.plogConverterPath = this.env.compilerProps('plogConverter', '/usr/bin/plog-converter');
 
         this.addOptionsToToolArgs = false;
     }
 
-    async runTool(compilationInfo, inputFilepath, args) {
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.code !== 0) {
             return this.createErrorResponse('Unable to start analysis due to compilation error.');
         }
+
+        assert(inputFilepath);
 
         const sourceDir = path.dirname(inputFilepath);
 
@@ -109,7 +116,7 @@ export class PvsStudioTool extends BaseTool {
         // Convert log to readable format
         const plogConverterOutputFilePath = path.join(sourceDir, 'pvs-studio-log.err');
 
-        const plogConverterArgs = [];
+        const plogConverterArgs: string[] = [];
         plogConverterArgs.push(
             '-t',
             'errorfile',
@@ -153,7 +160,7 @@ export class PvsStudioTool extends BaseTool {
         return result;
     }
 
-    getDefaultExecOptions() {
+    override getDefaultExecOptions() {
         const execOptions = super.getDefaultExecOptions();
         execOptions.env = {
             ...execOptions.env,

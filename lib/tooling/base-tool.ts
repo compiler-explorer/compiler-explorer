@@ -46,7 +46,7 @@ const toolCounter = new PromClient.Counter({
 
 export class BaseTool implements ITool {
     public readonly tool: ToolInfo;
-    private env: ToolEnv;
+    protected env: ToolEnv;
     protected addOptionsToToolArgs = true;
     public readonly id: string;
     public readonly type: string;

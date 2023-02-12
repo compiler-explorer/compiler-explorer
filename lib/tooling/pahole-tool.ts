@@ -1,4 +1,4 @@
-// Copyright (c) 2019, Compiler Explorer Team
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,45 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import _ from 'underscore';
-
-import {AsmParser} from '../parsers/asm-parser';
+import fs from 'fs-extra';
 
 import {BaseTool} from './base-tool';
 
-export class x86to6502Tool extends BaseTool {
+export class PaholeTool extends BaseTool {
     static get key() {
-        return 'x86to6502-tool';
+        return 'pahole-tool';
     }
 
-    runTool(compilationInfo, sourcefile, args) {
-        if (compilationInfo.filters.intel) {
-            return new Promise(resolve => {
-                resolve(this.createErrorResponse('<need AT&T notation assembly>'));
-            });
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
+            return this.createErrorResponse('Pahole requires a binary output');
         }
 
-        if (compilationInfo.filters.binary) {
-            return new Promise(resolve => {
-                resolve(this.createErrorResponse('<cannot run x86to6502 on binary>'));
-            });
+        if (await fs.pathExists(compilationInfo.executableFilename)) {
+            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
         }
-
-        const parser = new AsmParser();
-        const filters = Object.assign({}, compilationInfo.filters);
-
-        const result = parser.process(compilationInfo.asm, filters);
-
-        const asm = _.map(result.asm, obj => {
-            if (typeof obj.text !== 'string' || obj.text.trim() === '') {
-                return '';
-            } else if (/.*:/.test(obj.text)) {
-                return obj.text.replace(/^\s*/, '');
-            } else {
-                return obj.text.replace(/^\s*/, '\t');
-            }
-        }).join('\n');
-
-        return super.runTool(compilationInfo, false, args, asm);
+        return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
     }
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Team
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,46 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import _ from 'underscore';
+
+import {ToolResult} from '../../types/tool.interfaces';
+import {AsmParser} from '../parsers/asm-parser';
+
 import {BaseTool} from './base-tool';
 
-export class TestingTool extends BaseTool {
+export class x86to6502Tool extends BaseTool {
     static get key() {
-        return 'testing-tool';
+        return 'x86to6502-tool';
+    }
+
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (compilationInfo.filters.intel) {
+            return new Promise<ToolResult>(resolve => {
+                resolve(this.createErrorResponse('<need AT&T notation assembly>'));
+            });
+        }
+
+        if (compilationInfo.filters.binary) {
+            return new Promise<ToolResult>(resolve => {
+                resolve(this.createErrorResponse('<cannot run x86to6502 on binary>'));
+            });
+        }
+
+        const parser = new AsmParser();
+        const filters = Object.assign({}, compilationInfo.filters);
+
+        const result = parser.process(compilationInfo.asm, filters);
+
+        const asm = _.map(result.asm, obj => {
+            if (typeof obj.text !== 'string' || obj.text.trim() === '') {
+                return '';
+            } else if (/.*:/.test(obj.text)) {
+                return obj.text.replace(/^\s*/, '');
+            } else {
+                return obj.text.replace(/^\s*/, '\t');
+            }
+        }).join('\n');
+
+        return super.runTool(compilationInfo, undefined, args, asm);
     }
 }

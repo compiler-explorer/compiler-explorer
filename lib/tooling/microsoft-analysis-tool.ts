@@ -1,4 +1,4 @@
-// Copyright (c) 2022, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -24,23 +24,27 @@
 
 import path from 'path';
 
+import {Library} from '../../types/libraries/libraries.interfaces';
+import {ToolInfo} from '../../types/tool.interfaces';
+import {unwrap} from '../assert';
 import {logger} from '../logger';
 import * as utils from '../utils';
 
 import {BaseTool} from './base-tool';
+import {ToolEnv} from './base-tool.interface';
 
 export class MicrosoftAnalysisTool extends BaseTool {
     static get key() {
         return 'microsoft-analysis-tool';
     }
 
-    constructor(toolInfo, env) {
+    constructor(toolInfo: ToolInfo, env: ToolEnv) {
         super(toolInfo, env);
 
         this.addOptionsToToolArgs = false;
     }
 
-    async runCompilerTool(compilationInfo, inputFilepath, args, stdin /*, supportedLibraries*/) {
+    async runCompilerTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[], stdin?: string) {
         const execOptions = this.getDefaultExecOptions();
         if (inputFilepath) execOptions.customCwd = path.dirname(inputFilepath);
         execOptions.input = stdin;
@@ -72,11 +76,17 @@ export class MicrosoftAnalysisTool extends BaseTool {
         }
     }
 
-    async runTool(compilationInfo, inputFilepath, args, stdin, supportedLibraries) {
+    override async runTool(
+        compilationInfo: Record<any, any>,
+        inputFilepath?: string,
+        args?: string[],
+        stdin?: string,
+        supportedLibraries?: Record<string, Library>,
+    ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
-        const libOptions = super.getLibraryOptions(compilationInfo.libraries, supportedLibraries);
-        const includeflags = super.getIncludeArguments(compilationInfo.libraries, supportedLibraries);
+        const libOptions = super.getLibraryOptions(compilationInfo.libraries, unwrap(supportedLibraries));
+        const includeflags = super.getIncludeArguments(compilationInfo.libraries, unwrap(supportedLibraries));
 
         let compileFlags = utils.splitArguments(compilationInfo.compiler.options);
         compileFlags = compileFlags.concat(includeflags, libOptions);
@@ -93,6 +103,6 @@ export class MicrosoftAnalysisTool extends BaseTool {
             this.tool.options,
         );
 
-        return await this.runCompilerTool(compilationInfo, sourcefile, compileFlags);
+        return await this.runCompilerTool(compilationInfo, sourcefile, compileFlags, stdin);
     }
 }

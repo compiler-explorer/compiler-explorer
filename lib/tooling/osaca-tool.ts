@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,23 +22,42 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {fileExists} from '../utils';
+import fs from 'fs-extra';
+
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {AsmParser} from '../parsers/asm-parser';
 
 import {BaseTool} from './base-tool';
 
-export class StringsTool extends BaseTool {
+export class OSACATool extends BaseTool {
     static get key() {
-        return 'strings-tool';
+        return 'osaca-tool';
     }
 
-    async runTool(compilationInfo, inputFilename, args) {
-        if (!compilationInfo.filters.binary) {
-            return this.createErrorResponse('Strings requires a binary output');
+    async writeAsmFile(asmParser: AsmParser, asm: string, filters: ParseFiltersAndOutputOptions, destination: string) {
+        // Applying same filters as applied to compiler outpu
+        const filteredAsm = asmParser.process(asm, filters).asm.reduce(function (acc, line) {
+            return acc + line.text + '\n';
+        }, '');
+        return fs.writeFile(destination, filteredAsm);
+    }
+
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
+        if (compilationInfo.filters.binary) {
+            return this.createErrorResponse('<cannot run analysis on binary>');
         }
-        if (await fileExists(compilationInfo.executableFilename)) {
-            return super.runTool(compilationInfo, compilationInfo.executableFilename, args);
-        } else {
-            return super.runTool(compilationInfo, compilationInfo.outputFilename, args);
+
+        if (compilationInfo.filters.intel) {
+            return this.createErrorResponse('<cannot run analysis on Intel assembly>');
         }
+
+        const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
+        await this.writeAsmFile(
+            compilationInfo.asmParser,
+            compilationInfo.asm,
+            compilationInfo.filters,
+            rewrittenOutputFilename,
+        );
+        return super.runTool(compilationInfo, rewrittenOutputFilename, args);
     }
 }

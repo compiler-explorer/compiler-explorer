@@ -1,4 +1,4 @@
-// Copyright (c) 2020, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,35 +26,30 @@ import fs from 'fs-extra';
 
 import {BaseTool} from './base-tool';
 
-export class OSACATool extends BaseTool {
+export class LLVMMcaTool extends BaseTool {
     static get key() {
-        return 'osaca-tool';
+        return 'llvm-mca-tool';
     }
 
-    async writeAsmFile(asmParser, asm, filters, destination) {
-        // Applying same filters as applied to compiler outpu
-        const filteredAsm = asmParser.process(asm, filters).asm.reduce(function (acc, line) {
-            return acc + line.text + '\n';
-        }, '');
-        return fs.writeFile(destination, filteredAsm);
+    rewriteAsm(asm: string) {
+        return asm
+            .replace(/.hword\s/gim, '.short ')
+            .replace(/offset flat:/gim, '')
+            .replace(/ptr\s%fs/gim, 'PTR fs')
+            .replace(/^\s*\.(fnstart|eabi_attribute|fpu).*/gim, ''); // https://github.com/compiler-explorer/compiler-explorer/issues/1270
     }
 
-    async runTool(compilationInfo, inputFilepath, args) {
+    writeAsmFile(data: string, destination: string) {
+        return fs.writeFile(destination, this.rewriteAsm(data));
+    }
+
+    override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (compilationInfo.filters.binary) {
             return this.createErrorResponse('<cannot run analysis on binary>');
         }
 
-        if (compilationInfo.filters.intel) {
-            return this.createErrorResponse('<cannot run analysis on Intel assembly>');
-        }
-
-        const rewrittenOutputFilename = compilationInfo.outputFilename + '.osaca';
-        await this.writeAsmFile(
-            compilationInfo.asmParser,
-            compilationInfo.asm,
-            compilationInfo.filters,
-            rewrittenOutputFilename,
-        );
+        const rewrittenOutputFilename = compilationInfo.outputFilename + '.mca';
+        await this.writeAsmFile(compilationInfo.asm, rewrittenOutputFilename);
         return super.runTool(compilationInfo, rewrittenOutputFilename, args);
     }
 }

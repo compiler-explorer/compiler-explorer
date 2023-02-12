@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,6 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+
 import {BaseTool} from './base-tool';
 
 export class RustFmtTool extends BaseTool {
@@ -29,7 +31,7 @@ export class RustFmtTool extends BaseTool {
         return 'rustfmt-tool';
     }
 
-    convertResult(result, inputFilepath, exeDir) {
+    override convertResult(result: UnprocessedExecResult, inputFilepath?: string, exeDir?: string) {
         // Rustfmt outputs files to stdout with the format
         // <source>
         //

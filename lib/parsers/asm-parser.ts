@@ -749,7 +749,7 @@ export class AsmParser extends AsmRegex implements IAsmParser {
         };
     }
 
-    process(asm, filters) {
+    process(asm: string, filters: ParseFiltersAndOutputOptions) {
         return this.processAsm(asm, filters);
     }
 }
