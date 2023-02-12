@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as Sentry from '@sentry/node';
 import express from 'express';
 
 import {assert, unwrap} from '../assert';
@@ -108,6 +109,8 @@ export class RouteAPI {
             })
             .catch(err => {
                 logger.debug(`Exception thrown when expanding ${id}: `, err);
+                logger.warn('Exception value:', err);
+                Sentry.captureException(err);
                 next({
                     statusCode: 404,
                     message: `ID "${id}/${sessionid}" could not be found`,
@@ -197,7 +200,8 @@ export class RouteAPI {
             })
             .catch(err => {
                 logger.warn(`Exception thrown when expanding ${id}`);
-                logger.debug('Exception value:', err);
+                logger.warn('Exception value:', err);
+                Sentry.captureException(err);
                 next({
                     statusCode: 404,
                     message: `ID "${id}" could not be found`,
