@@ -1020,11 +1020,11 @@ export class ClientStateGoldenifier extends GoldenLayoutComponents {
                 for (const tool of compiler.tools) {
                     const stack = this.newToolStackFromCompiler(
                         session,
-                        compiler,
                         idxCompiler + 1,
                         tool.id,
                         tool.args,
                         tool.stdin,
+                        width,
                     );
                     this.golden.content[0].content.push(stack);
                 }
