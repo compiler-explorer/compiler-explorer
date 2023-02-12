@@ -31,6 +31,8 @@ import {StorageBase} from '../storage';
 import * as utils from '../utils';
 
 import {ApiHandler} from './api';
+import {isString} from '../common-utils';
+import {assert} from '../assert';
 
 type HandlerConfig = {
     compileHandler: any;
@@ -158,7 +160,9 @@ export class RouteAPI {
     simpleLayoutHandler(req: express.Request, res: express.Response) {
         const state = new ClientState();
         const session = state.findOrCreateSession(1);
-        session.lang = req.query.lang;
+        assert(isString(req.query.lang));
+        session.language = req.query.lang;
+        assert(isString(req.query.code));
         session.source = req.query.code;
         const compiler = session.findOrCreateCompiler(1);
         compiler.id = req.query.compiler;
