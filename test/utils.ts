@@ -41,6 +41,10 @@ export function makeCompilationEnvironment(options: Record<string, any>): Compil
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
 }
 
+export function makeFake<T>(val: Partial<T>): T {
+    return val as T;
+}
+
 export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
     return props as CompilerInfo;
 }
@@ -52,6 +56,20 @@ export function makeFakeParseFiltersAndOutputOptions(
 }
 
 export const should = chai.should();
+
+// This compbines a shoudl assert and a type guard
+// Example:
+//
+//  let a: null|number = 1;
+//  shouldExist(a);
+//  a.toString(); /* No longer need ! because of type guard
+//
+//  a = null;
+//  shouldExist(a); /* throws should.exist assertion
+export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
+    should.exist(value, message);
+    return true;
+}
 
 /***
  * Absolute path to the root of the tests
