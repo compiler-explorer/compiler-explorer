@@ -277,7 +277,7 @@ export function getOutput(compiler: number, editor: number, tree: number): Compo
 export function getToolViewWith(
     compilerId: number,
     compilerName: string,
-    editorId: number,
+    editorid: number,
     toolId: string,
     args: string,
     monacoStdin: boolean,
@@ -289,7 +289,7 @@ export function getToolViewWith(
         componentState: {
             id: compilerId,
             compilerName,
-            editorId,
+            editorid,
             toolId,
             args,
             tree,

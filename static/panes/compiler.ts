@@ -1162,7 +1162,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
 
     findTools(content: any, tools: ActiveTools[]): ActiveTools[] {
         if (content.componentName === 'tool') {
-            if (content.componentState.compiler === this.id) {
+            if (content.componentState.id === this.id) {
                 tools.push({
                     id: content.componentState.toolId,
                     args: content.componentState.args,
