@@ -45,7 +45,9 @@ export class DMDCompiler extends BaseCompiler {
     }
 
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string) {
-        return ['-g', '-of' + this.filename(outputFilename)];
+        let options = ['-g', '-of' + this.filename(outputFilename)];
+        if (filters.binaryObject) options = options.concat('-c');
+        return options;
     }
 
     override async execPostProcess(result, postProcesses, outputFilename, maxSize) {
