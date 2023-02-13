@@ -37,6 +37,7 @@ export {ClangCLCompiler} from './clangcl';
 export {ClangCudaCompiler} from './clang';
 export {ClangHipCompiler} from './clang';
 export {ClangIntelCompiler} from './clang';
+export {TaskingCompiler} from './tasking';
 export {CleanCompiler} from './clean';
 export {CppFrontCompiler} from './cppfront';
 export {CprocCompiler} from './cproc';

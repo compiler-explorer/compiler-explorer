@@ -3,4 +3,4 @@
 
 make prereqs
 npx lint-staged --verbose
-python3 ./etc/scripts/util/propscheck.py
+python ./etc/scripts/util/propscheck.py

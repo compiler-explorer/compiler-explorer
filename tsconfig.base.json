@@ -11,6 +11,7 @@
     "skipLibCheck": true,
     "strict": true,
     "noImplicitAny": false,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "strictPropertyInitialization":false
   }
 }

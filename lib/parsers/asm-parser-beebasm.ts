@@ -9,7 +9,6 @@ import {AsmParser} from './asm-parser';
 export class AsmParserBeebAsm extends AsmParser {
     constructor(compilerProps: PropertyGetter) {
         super(compilerProps);
-
         this.labelDef = /^(\.\w+)/i;
         this.asmOpcodeRe = /^\s*(?<address>[\dA-F]+)\s*(?<opcodes>([\dA-F]{2} ?)+)\s*(?<disasm>.*)/;
     }

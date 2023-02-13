@@ -135,17 +135,14 @@ export class CC65AsmParser extends AsmParser {
             match = line.match(this.justAsmRe);
             if (match) {
                 const asmtext = match[1];
-
                 if (filters.directives) {
                     const directiveMatch = asmtext.match(this.directiveRe);
                     if (directiveMatch) continue;
                 }
-
                 result.push({
                     text: '  ' + asmtext,
                     labels: this.extractLabels(asmtext, 3),
                 });
-
                 continue;
             }
         }

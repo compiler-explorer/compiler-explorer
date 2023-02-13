@@ -91,7 +91,7 @@ describe('Execution tests', () => {
                         okToCache: false,
                         stderr: '\nKilled - processing time exceeded',
                         stdout: '',
-                        timedOut: false,
+                        timedOut: true,
                     });
             });
             it('handles missing executables', () => {
