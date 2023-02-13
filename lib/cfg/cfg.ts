@@ -26,7 +26,6 @@ import _ from 'underscore';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {BaseCompiler} from '../base-compiler';
 import {makeDefaultedKeyedTypeGetter} from '../keyed-type';
 import {logger} from '../logger';
 
