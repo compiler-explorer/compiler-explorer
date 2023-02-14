@@ -24,24 +24,25 @@
 
 import AWS from 'aws-sdk-mock';
 
+import {unwrap} from '../../lib/assert';
 import * as properties from '../../lib/properties';
 import {StorageS3} from '../../lib/storage';
-import {should} from '../utils';
+
+type Handler = (q: any) => any;
 
 // NB!!! Anything using mocked AWS calls needs to be initialised in the `it(...)` block! If you initialise it in the
 // `describe()` top level code then it won't be mocked in time. We only mock and de-mock before/after else we end up
 // fighting over the global AWS mocking stuff. I hate mocha...there's probably a better way...
 function mockerise(service, method) {
-    const handlers = [];
+    const handlers: Handler[] = [];
 
     beforeEach(() => {
         AWS.mock(service, method, (q, callback) => {
-            const qh = handlers.shift();
-            should.exist(qh);
+            const qh = unwrap(handlers.shift());
             try {
-                callback(null, qh(q));
+                callback(undefined, qh(q));
             } catch (e) {
-                callback(e, null);
+                callback(e as any, undefined);
             }
         });
     });

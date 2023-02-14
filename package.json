@@ -172,9 +172,9 @@
   "scripts": {
     "ci-lint": "eslint --format github .",
     "ci-test": "nyc npm run test",
-    "lint": "eslint . --fix",
-    "lint-check": "eslint .",
-    "lint-files": "eslint",
+    "lint": "eslint --max-warnings=0 . --fix",
+    "lint-check": "eslint --max-warnings=0 .",
+    "lint-files": "eslint --max-warnings=0",
     "test": "mocha -b -r ts-node/register 'test/**/*.ts' 'test/**/*.js'",
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
