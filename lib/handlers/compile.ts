@@ -33,7 +33,7 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler} from '../../types/compiler.interfaces';
+import {CompilerInfo, ICompiler} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
@@ -185,7 +185,9 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler): Promise<ICompiler | null> {
+    async create(compiler: CompilerInfo): Promise<ICompiler | null> {
+        console.log("--------------------------->", compiler, compiler instanceof BaseCompiler);
+        console.trace();
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';

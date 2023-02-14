@@ -32,7 +32,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import {Language} from '../types/languages.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces';
 
 import {InstanceFetcher} from './aws';
 import {CompileHandler} from './handlers/compile';
@@ -40,6 +40,7 @@ import {logger} from './logger';
 import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler';
 import {CompilerProps, RawPropertiesGetter} from './properties';
 import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
+import { CompilerInfo, PreliminaryCompilerInfo } from '../types/compiler.interfaces';
 
 const sleep = promisify(setTimeout);
 
@@ -179,7 +180,7 @@ export class CompilerFinder {
         );
     }
 
-    async compilerConfigFor(langId: string, compilerId: string, parentProps: RawPropertiesGetter) {
+    async compilerConfigFor(langId: string, compilerId: string, parentProps: RawPropertiesGetter): Promise<PreliminaryCompilerInfo | null> {
         const base = `compiler.${compilerId}.`;
 
         function props(propName: string, defaultValue: undefined): PropertyValue;
@@ -209,7 +210,7 @@ export class CompilerFinder {
         const baseName = props('baseName', null);
         const semverVer = props('semver', '');
 
-        const name = props('name');
+        const name = props<string | undefined>('name');
 
         // If name set, display that as the name
         // If not, check if we have a baseName + semver and display that
@@ -235,13 +236,13 @@ export class CompilerFinder {
         })();
         const exe = props('exe', compilerId);
         const exePath = path.dirname(exe);
-        const compilerInfo = {
+        const compilerInfo: PreliminaryCompilerInfo = {
             id: compilerId,
             exe: exe,
             name: displayName,
             alias: _.filter(props('alias', '').split(':'), a => a !== ''),
             options: actualOptions,
-            versionFlag: props('versionFlag'),
+            versionFlag: props<string | undefined>('versionFlag'),
             versionRe: props('versionRe'),
             explicitVersion: props('explicitVersion'),
             compilerType: props('compilerType', ''),
@@ -264,7 +265,7 @@ export class CompilerFinder {
             executionWrapper,
             supportsLibraryCodeFilter: supportsLibraryCodeFilter,
             postProcess: props('postProcess', '').split('|'),
-            lang: langId,
+            lang: langId as LanguageKey,
             group: group,
             groupName: props('groupName', ''),
             includeFlag: props('includeFlag', '-isystem'),
@@ -311,7 +312,7 @@ export class CompilerFinder {
                 `Error in compiler.${compilerId}: ` +
                     'demanglerClassFile is no longer supported, please use demanglerType',
             );
-            return [];
+            return null;
         }
 
         logger.debug('Found compiler', compilerInfo);
@@ -322,7 +323,7 @@ export class CompilerFinder {
         return _.filter(props('supportsLibraries', '').split(':'), a => a !== '');
     }
 
-    async recurseGetCompilers(langId, compilerName, parentProps) {
+    async recurseGetCompilers(langId, compilerName, parentProps): Promise<(PreliminaryCompilerInfo | null)[]> {
         // Don't treat @ in paths as remote addresses if requested
         if (this.args.fetchCompilersFromRemote && compilerName.includes('@')) {
             const bits = compilerName.split('@');
@@ -346,7 +347,7 @@ export class CompilerFinder {
             return Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)));
         }
         if (compilerName === 'AWS') return this.fetchAws();
-        return this.compilerConfigFor(langId, compilerName, parentProps);
+        return [this.compilerConfigFor(langId, compilerName, parentProps)];
     }
 
     async getCompilers() {

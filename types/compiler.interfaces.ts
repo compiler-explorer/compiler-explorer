@@ -118,7 +118,12 @@ export type CompilerInfo = {
     nvdisasm?: string;
 };
 
+// Compiler information collected by the compiler-finder
+export type PreliminaryCompilerInfo = Omit<CompilerInfo, "version" | "fullVersion" | "remote" | "baseName" | "$groups" | "disabledFilters" | "optArg" | "removeEmptyGccDump" | "irArg" | "llvmOptArg" | "llvmOptModuleScopeArg" | "llvmOptNoDiscardValueNamesArg">;
+
 export interface ICompiler {
+    //compilerType: string;
+    //exe: string;
     possibleArguments: ICompilerArguments;
     lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
