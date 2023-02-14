@@ -26,10 +26,10 @@ import cloneDeep from 'lodash.clonedeep';
 
 import {LlvmAstParser} from '../lib/llvm-ast';
 import * as properties from '../lib/properties';
+import {PropertyValue} from '../lib/properties.interfaces';
 import * as utils from '../lib/utils';
 
 import {fs, should} from './utils';
-import {PropertyValue} from '../lib/properties.interfaces';
 
 const languages = {
     'c++': {id: 'c++'},
