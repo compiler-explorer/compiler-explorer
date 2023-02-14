@@ -28,9 +28,9 @@ import {LanguageKey} from '../types/languages.interfaces';
 
 import {makeCompilationEnvironment} from './utils';
 
-const languages: {analysis: {id: LanguageKey}} = {
+const languages = {
     analysis: {id: 'analysis'},
-};
+} as const;
 
 describe('LLVM-mca tool definition', () => {
     let ce, a;
