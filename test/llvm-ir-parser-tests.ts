@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Adrian Bibby Walther
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@ describe('llvm-ir parseMetaNode', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -106,7 +106,7 @@ describe('llvm-ir getSourceLineNumber', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -147,7 +147,7 @@ describe('llvm-ir getSourceColumn', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -189,7 +189,7 @@ describe('llvm-ir getFileName', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
@@ -228,7 +228,7 @@ describe('llvm-ir isLineLlvmDirective', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         llvmIrParser = new LlvmIrParser(compilerProps);
     });
