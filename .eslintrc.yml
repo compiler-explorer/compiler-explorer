@@ -45,15 +45,15 @@ rules:
   import/newline-after-import: error
   import/no-absolute-path: error
   # import/no-cycle: error # disabled for now, there's an import cycle between the base-compiler and demanglers
-  import/no-default-export: warn
-  import/no-deprecated: warn
+  import/no-default-export: error
+  import/no-deprecated: error
   import/no-mutable-exports: error
   import/no-named-as-default-member: off # Far too many things (express, morgan, fs) trip this
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
   import/order:
-    - warn
+    - error
     - alphabetize:
         order: asc
         caseInsensitive: true
@@ -104,17 +104,17 @@ rules:
   prefer-const:
     - error
     - destructuring: all
-  jsdoc/check-alignment: warn
-  jsdoc/check-param-names: warn
-  jsdoc/check-syntax: warn
+  jsdoc/check-alignment: error
+  jsdoc/check-param-names: error
+  jsdoc/check-syntax: error
   jsdoc/check-tag-names: off
-  jsdoc/check-types: warn
-  jsdoc/empty-tags: warn
-  jsdoc/newline-after-description: warn
-  jsdoc/require-hyphen-before-param-description: warn
-  jsdoc/valid-types: warn
+  jsdoc/check-types: error
+  jsdoc/empty-tags: error
+  jsdoc/newline-after-description: error
+  jsdoc/require-hyphen-before-param-description: error
+  jsdoc/valid-types: error
   no-multiple-empty-lines:
-    - warn
+    - error
     - max: 1
       maxBOF: 0
       maxEOF: 0
@@ -133,7 +133,7 @@ rules:
   sonarjs/prefer-object-literal: error
   sonarjs/prefer-single-boolean-return: error
   sort-imports:
-    - warn
+    - error
     - ignoreCase: true
       ignoreDeclarationSort: true
   unicorn/catch-error-name: off
