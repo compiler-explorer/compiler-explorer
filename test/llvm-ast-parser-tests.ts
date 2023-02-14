@@ -40,7 +40,7 @@ function mockAstOutput(astLines) {
 }
 
 describe('llvm-ast', function () {
-    let compilerProps: (prop: string) => PropertyValue;
+    let compilerProps;
     let astParser;
     let astDump;
     let compilerOutput;
@@ -49,7 +49,7 @@ describe('llvm-ast', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = (prop: string) => fakeProps.get('c++', prop);
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
         astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
