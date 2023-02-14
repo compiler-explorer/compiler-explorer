@@ -1,4 +1,4 @@
-// Copyright (c) 2021, Compiler Explorer Authors
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,6 +26,7 @@ import cloneDeep from 'lodash.clonedeep';
 
 import {LlvmAstParser} from '../lib/llvm-ast';
 import * as properties from '../lib/properties';
+import {PropertyValue} from '../lib/properties.interfaces';
 import * as utils from '../lib/utils';
 
 import {fs, should} from './utils';
@@ -48,7 +49,7 @@ describe('llvm-ast', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
         astDump = utils.splitLines(fs.readFileSync('test/ast/square.ast').toString());
@@ -115,7 +116,7 @@ describe('llvm-ast bug-3849a', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
         astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849a.ast').toString());
@@ -136,7 +137,7 @@ describe('llvm-ast bug-3849b', function () {
 
     before(() => {
         const fakeProps = new properties.CompilerProps(languages, properties.fakeProps({}));
-        compilerProps = fakeProps.get.bind(fakeProps, 'c++');
+        compilerProps = (fakeProps.get as any).bind(fakeProps, 'c++');
 
         astParser = new LlvmAstParser(compilerProps);
         astDump = utils.splitLines(fs.readFileSync('test/ast/bug-3849b.ast').toString());
