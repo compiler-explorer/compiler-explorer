@@ -401,7 +401,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monaco: 'kotlin',
         extensions: ['.kt'],
         alias: [],
-        logoUrl: 'kotlin.png',
+        logoUrl: 'kotlin.svg',
         logoUrlDark: null,
         formatter: null,
         previewFilter: null,
