@@ -41,10 +41,6 @@ export function makeCompilationEnvironment(options: Record<string, any>): Compil
     return new CompilationEnvironment(compilerProps, compilationQueue, options.doCache);
 }
 
-export function makeFake<T>(val: Partial<T>): T {
-    return val as T;
-}
-
 export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo {
     return props as CompilerInfo;
 }
@@ -61,8 +57,9 @@ export const should = chai.should();
 // Example:
 //
 //  let a: null|number = 1;
-//  shouldExist(a);
-//  a.toString(); /* No longer need ! because of type guard
+//  if(shouldExist(a)) {}
+//    a.should.equal(1); /* No longer need ! because of type guard
+//  }
 //
 //  a = null;
 //  shouldExist(a); /* throws should.exist assertion

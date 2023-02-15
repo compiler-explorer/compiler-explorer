@@ -30,13 +30,20 @@ import {CompilationEnvironment} from '../lib/compilation-env';
 import {Win32Compiler} from '../lib/compilers/win32';
 import * as exec from '../lib/exec';
 import {CompilerInfo} from '../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
 
-import {fs, makeCompilationEnvironment, makeFake, makeFakeCompilerInfo, path, should, shouldExist} from './utils';
+import {
+    fs,
+    makeCompilationEnvironment,
+    makeFakeCompilerInfo,
+    makeFakeParseFiltersAndOutputOptions,
+    path,
+    should,
+    shouldExist,
+} from './utils';
 
 const languages = {
     'c++': {id: 'c++'},
-};
+} as const;
 
 describe('Basic compiler invariants', function () {
     let ce: CompilationEnvironment;
@@ -189,7 +196,7 @@ describe('Compiler execution', function () {
 
     it('basecompiler should handle spaces in options correctly', () => {
         const userOptions = [];
-        const filters = makeFake<ParseFiltersAndOutputOptions>({});
+        const filters = makeFakeParseFiltersAndOutputOptions({});
         const backendOptions = {};
         const inputFilename = 'example.cpp';
         const outputFilename = 'example.s';
@@ -217,7 +224,7 @@ describe('Compiler execution', function () {
 
     it('win32 compiler should handle spaces in options correctly', () => {
         const userOptions = [];
-        const filters = makeFake<ParseFiltersAndOutputOptions>({});
+        const filters = makeFakeParseFiltersAndOutputOptions({});
         const backendOptions = {};
         const inputFilename = 'example.cpp';
         const outputFilename = 'example.s';
@@ -253,13 +260,13 @@ describe('Compiler execution', function () {
     it('buildenv compiler without target/march', () => {
         const buildenv = new BuildEnvSetupBase(noExecuteSupportCompilerInfo, ce);
         buildenv.getCompilerArch().should.equal(false);
-        (buildenv as any).compilerSupportsX86.should.equal(true);
+        buildenv.compilerSupportsX86.should.equal(true);
     });
 
     it('buildenv compiler without target/march but with options', () => {
         const buildenv = new BuildEnvSetupBase(someOptionsCompilerInfo, ce);
         buildenv.getCompilerArch().should.equal(false);
-        (buildenv as any).compilerSupportsX86.should.equal(true);
+        buildenv.compilerSupportsX86.should.equal(true);
     });
 
     it('should compile', async () => {
@@ -574,7 +581,7 @@ describe('Compiler execution', function () {
             true,
             false,
             false,
-            makeFake<ParseFiltersAndOutputOptions>({}),
+            makeFakeParseFiltersAndOutputOptions({}),
         );
         result.asm.should.deep.equal('<No output file output>');
     }

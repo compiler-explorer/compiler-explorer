@@ -22,30 +22,37 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LLVMmcaTool} from '../lib/compilers/llvm-mca';
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {LanguageKey} from '../types/languages.interfaces';
+import {CompilationEnvironment} from '../lib/compilation-env';
+import {AnalysisTool, LLVMmcaTool} from '../lib/compilers';
 
-import {makeCompilationEnvironment} from './utils';
+import {
+    makeCompilationEnvironment,
+    makeFakeCompilerInfo,
+    makeFakeParseFiltersAndOutputOptions,
+    shouldExist,
+} from './utils';
 
 const languages = {
     analysis: {id: 'analysis'},
 } as const;
 
 describe('LLVM-mca tool definition', () => {
-    let ce, a;
+    let ce: CompilationEnvironment;
+    let a: LLVMmcaTool;
 
     before(() => {
         ce = makeCompilationEnvironment({languages});
-        const info: Partial<CompilerInfo> = {
+        const info = makeFakeCompilerInfo({
             remote: true,
             lang: languages.analysis.id,
-        };
-        a = new LLVMmcaTool(info as CompilerInfo, ce);
+        });
+        a = new LLVMmcaTool(info, ce);
     });
 
     it('should have most filters disabled', () => {
-        a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);
+        if (shouldExist(a)) {
+            a.getInfo().disabledFilters.should.be.deep.equal(['labels', 'directives', 'commentOnly', 'trim']);
+        }
     });
 
     it('should default to most filters off', () => {
@@ -62,24 +69,22 @@ describe('LLVM-mca tool definition', () => {
     });
 
     it('should support "-o output-file" by default', () => {
-        const opts = a.optionsForFilter({commentOnly: false, labels: true}, 'output.txt');
+        const opts = a.optionsForFilter(
+            makeFakeParseFiltersAndOutputOptions({
+                commentOnly: false,
+                labels: true,
+            }),
+            'output.txt',
+        );
         opts.should.be.deep.equal(['-o', 'output.txt']);
     });
 
-    // CompilerInfo.disabledFilters is now typed as string[] which doesn't allow string
-    // Since CompilerInfo only a type (and not a class) I assume something in the
-    // BaseComiler/AnalsysTool/LLVMmcaTool was doing the splitting logic
-    //
-    // I see two  options here:
-    //   - Modify disableFilters type to be string|string[] and fix typing issue sother places
-    //   - Remove this test because it seems like the intent is to only support string[] (which is less complicated)
-    // it('should split if disabledFilters is a string', () => {
-    //     const info: Partial<CompilerInfo> = {
-    //         remote: true,
-    //         lang: 'analysis',
-    //         disabledFilters: 'labels,directives',
-    //     };
-    //     const a = new LLVMmcaTool(info as CompilerInfo, ce);
-    //     a.compiler.disabledFilters.should.be.deep.equal(['labels', 'directives']);
-    // });
+    it('should split if disabledFilters is a string', () => {
+        const info = makeFakeCompilerInfo({
+            remote: true,
+            lang: 'analysis',
+            disabledFilters: 'labels,directives' as any,
+        });
+        new AnalysisTool(info, ce).getInfo().disabledFilters.should.deep.equal(['labels', 'directives']);
+    });
 });
