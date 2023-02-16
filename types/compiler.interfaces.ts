@@ -29,7 +29,7 @@ import {Tool, ToolInfo} from './tool.interfaces';
 
 export type CompilerInfo = {
     id: string;
-    exe: string;
+    exe: string | null; // can be null for remote compilers
     name: string;
     version: string;
     fullVersion: string;
