@@ -206,7 +206,8 @@ export class CompileHandler {
                 compiler.exe = exe;
             } else {
                 // errors resolving to absolute path are not fatal for backwards compatibility sake
-                logger.error(`Unable to resolve '${compiler.exe}'`);
+                logger.warn(`Unable to resolve '${compiler.exe}'`);
+                return null;
             }
         }
 
