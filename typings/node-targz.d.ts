@@ -32,7 +32,7 @@ declare module 'node-targz' {
 
     export interface CompressOptions {
         source: string;
-        options: PackOptions | undefined;
+        options?: PackOptions | undefined;
         level: number | undefined;
         memLevel: number | undefined;
         destination: PathLike;
@@ -41,7 +41,7 @@ declare module 'node-targz' {
     export interface DecompressOptions {
         source: PathLike;
         destination: string;
-        options: ExtractOptions | undefined;
+        options?: ExtractOptions | undefined;
     }
 
     export function compress(options: CompressOptions, cb: Callback): void;
