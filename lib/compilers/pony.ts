@@ -28,6 +28,7 @@ import _ from 'underscore';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 export class PonyCompiler extends BaseCompiler {
@@ -68,7 +69,12 @@ export class PonyCompiler extends BaseCompiler {
         // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            unwrap(this.compiler.exe),
+            newOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }

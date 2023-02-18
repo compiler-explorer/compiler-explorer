@@ -35,6 +35,7 @@ import {
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
@@ -54,7 +55,7 @@ class DotNetCompiler extends BaseCompiler {
     constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
-        this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
+        this.sdkBaseDir = path.join(path.dirname(unwrap(compilerInfo.exe)), 'sdk');
         this.sdkVersion = fs.readdirSync(this.sdkBaseDir)[0];
 
         const parts = this.sdkVersion.split('.');

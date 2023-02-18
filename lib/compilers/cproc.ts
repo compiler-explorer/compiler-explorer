@@ -24,6 +24,7 @@
 
 import path from 'path';
 
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 export class CprocCompiler extends BaseCompiler {
@@ -35,7 +36,7 @@ export class CprocCompiler extends BaseCompiler {
         const execOptions = super.getDefaultExecOptions();
 
         // needed for finding the qbe program
-        const toolRoot = path.resolve(path.dirname(this.compiler.exe));
+        const toolRoot = path.resolve(path.dirname(unwrap(this.compiler.exe)));
         execOptions.env.PATH = execOptions.env.PATH + ':' + toolRoot;
         return execOptions;
     }

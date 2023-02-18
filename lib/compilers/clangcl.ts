@@ -26,6 +26,7 @@ import path from 'path';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 
 import {Win32Compiler} from './win32';
 
@@ -53,7 +54,12 @@ export class ClangCLCompiler extends Win32Compiler {
         // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            unwrap(this.compiler.exe),
+            newOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }

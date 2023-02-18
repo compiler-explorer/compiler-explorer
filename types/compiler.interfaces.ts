@@ -116,10 +116,25 @@ export type CompilerInfo = {
     llvmOptNoDiscardValueNamesArg: string[];
     cachedPossibleArguments?: any;
     nvdisasm?: string;
+    mtime?: any;
 };
 
 // Compiler information collected by the compiler-finder
-export type PreliminaryCompilerInfo = Omit<CompilerInfo, "version" | "fullVersion" | "remote" | "baseName" | "$groups" | "disabledFilters" | "optArg" | "removeEmptyGccDump" | "irArg" | "llvmOptArg" | "llvmOptModuleScopeArg" | "llvmOptNoDiscardValueNamesArg">;
+export type PreliminaryCompilerInfo = Omit<
+    CompilerInfo,
+    | 'version'
+    | 'fullVersion'
+    | 'remote'
+    | 'baseName'
+    | '$groups'
+    | 'disabledFilters'
+    | 'optArg'
+    | 'removeEmptyGccDump'
+    | 'irArg'
+    | 'llvmOptArg'
+    | 'llvmOptModuleScopeArg'
+    | 'llvmOptNoDiscardValueNamesArg'
+> & {version?: string};
 
 export interface ICompiler {
     //compilerType: string;
@@ -129,5 +144,5 @@ export interface ICompiler {
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
-    getInfo();
+    getInfo(): CompilerInfo;
 }

@@ -30,6 +30,7 @@ import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
@@ -94,8 +95,8 @@ export class z88dkCompiler extends BaseCompiler {
 
     override getDefaultExecOptions(): ExecutionOptions {
         const opts = super.getDefaultExecOptions();
-        opts.env.ZCCCFG = path.join(path.dirname(this.compiler.exe), '../share/z88dk/lib/config');
-        opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
+        opts.env.ZCCCFG = path.join(path.dirname(unwrap(this.compiler.exe)), '../share/z88dk/lib/config');
+        opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(unwrap(this.compiler.exe));
 
         return opts;
     }

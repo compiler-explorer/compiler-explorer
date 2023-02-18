@@ -29,6 +29,7 @@ import _ from 'underscore';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
@@ -194,7 +195,12 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompilerForASTOrIR(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompilerForASTOrIR(
+                unwrap(this.compiler.exe),
+                newOptions,
+                this.filename(inputFilename),
+                execOptions,
+            ),
         );
     }
 
@@ -205,7 +211,7 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompilerForASTOrIR(
-            this.compiler.exe,
+            unwrap(this.compiler.exe),
             newOptions,
             this.filename(inputFilename),
             execOptions,

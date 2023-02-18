@@ -26,6 +26,7 @@ import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 import {MrustcParser} from './argument-parsers';
@@ -52,7 +53,7 @@ export class MrustcCompiler extends BaseCompiler {
             '-o',
             outname,
             '-L',
-            path.join(path.dirname(this.compiler.exe), '..', 'output'),
+            path.join(path.dirname(unwrap(this.compiler.exe)), '..', 'output'),
         ];
     }
 

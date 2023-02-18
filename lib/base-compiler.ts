@@ -54,6 +54,7 @@ import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/librarie
 import {ResultLine} from '../types/resultline/resultline.interfaces';
 import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 
+import {unwrap} from './assert';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
 import * as cfg from './cfg/cfg';
@@ -194,13 +195,13 @@ export class BaseCompiler implements ICompiler {
             const isets = new InstructionSets();
             if (this.buildenvsetup) {
                 isets
-                    .getCompilerInstructionSetHint(this.buildenvsetup.compilerArch, this.compiler.exe)
+                    .getCompilerInstructionSetHint(this.buildenvsetup.compilerArch, unwrap(this.compiler.exe))
                     .then(res => (this.compiler.instructionSet = res))
                     .catch(() => {});
             } else {
                 const temp = new BuildEnvSetupBase(this.compiler, this.env);
                 isets
-                    .getCompilerInstructionSetHint(temp.compilerArch, this.compiler.exe)
+                    .getCompilerInstructionSetHint(temp.compilerArch, unwrap(this.compiler.exe))
                     .then(res => (this.compiler.instructionSet = res))
                     .catch(() => {});
             }
@@ -941,7 +942,7 @@ export class BaseCompiler implements ICompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompiler(unwrap(this.compiler.exe), newOptions, this.filename(inputFilename), execOptions),
         );
     }
 
@@ -1048,7 +1049,12 @@ export class BaseCompiler implements ICompiler {
         // A higher max output is needed for when the user includes headers
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            unwrap(this.compiler.exe),
+            newOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];
         }
@@ -1087,7 +1093,12 @@ export class BaseCompiler implements ICompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const compileStart = performance.now();
-        const output = await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions);
+        const output = await this.runCompiler(
+            unwrap(this.compiler.exe),
+            newOptions,
+            this.filename(inputFilename),
+            execOptions,
+        );
         const compileEnd = performance.now();
 
         if (output.timedOut) {
@@ -1190,7 +1201,7 @@ export class BaseCompiler implements ICompiler {
         rustcOptions.splice(options.indexOf('-o', 2));
         rustcOptions.push(inputFilename, '-o', outputFilename, `-Zunpretty=${unprettyOpt}`);
 
-        const output = await this.runCompiler(this.compiler.exe, rustcOptions, inputFilename, execOptions);
+        const output = await this.runCompiler(unwrap(this.compiler.exe), rustcOptions, inputFilename, execOptions);
         if (output.code !== 0) {
             return [{text: `Failed to run compiler to get Rust ${outputFriendlyName}`}];
         }
@@ -1793,7 +1804,7 @@ export class BaseCompiler implements ICompiler {
             rustMacroExpResult,
             toolsResult,
         ] = await Promise.all([
-            this.runCompiler(this.compiler.exe, options, inputFilenameSafe, execOptions),
+            this.runCompiler(unwrap(this.compiler.exe), options, inputFilenameSafe, execOptions),
             makeAst ? this.generateAST(inputFilename, options) : '',
             makePp ? this.generatePP(inputFilename, options, backendOptions.producePp) : '',
             makeIr ? this.generateIR(inputFilename, options, filters) : '',
@@ -2662,7 +2673,7 @@ but nothing was dumped. Possible causes are:
     }
 
     protected getArgumentParser(): any {
-        const exe = this.compiler.exe.toLowerCase();
+        const exe = unwrap(this.compiler.exe).toLowerCase();
         if (exe.includes('clang') || exe.includes('icpx') || exe.includes('icx')) {
             // check this first as "clang++" matches "g++"
             return ClangParser;

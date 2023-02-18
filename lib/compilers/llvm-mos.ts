@@ -30,6 +30,7 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces'
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
+import {unwrap} from '../assert';
 import * as utils from '../utils';
 
 import {ClangCompiler} from './clang';
@@ -42,7 +43,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
     constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
-        this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
+        this.toolchainPath = path.normalize(path.join(path.dirname(unwrap(this.compiler.exe)), '..'));
     }
 
     override getExtraCMakeArgs(key): string[] {
@@ -83,7 +84,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             filters,
         );
 
-        if (this.compiler.exe.includes('nes')) {
+        if (unwrap(this.compiler.exe).includes('nes')) {
             let nesFile = outputFilename;
             if (outputFilename.endsWith('.elf')) {
                 nesFile = outputFilename.substr(0, outputFilename.length - 4);

@@ -26,6 +26,7 @@ import path from 'path';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 
 import {RustCompiler} from './rust';
 
@@ -57,7 +58,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
     override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFilename: string, userOptions?: string[]) {
         // these options are direcly taken from rustc_codegen_gcc doc.
         // See https://github.com/antoyo/rustc_codegen_gcc
-        const toolroot = path.resolve(path.dirname(this.compiler.exe), '..');
+        const toolroot = path.resolve(path.dirname(unwrap(this.compiler.exe)), '..');
 
         let options = [
             '-C',

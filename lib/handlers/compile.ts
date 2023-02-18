@@ -33,7 +33,7 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {CompilerInfo, ICompiler} from '../../types/compiler.interfaces';
+import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
@@ -185,9 +185,9 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler: CompilerInfo): Promise<ICompiler | null> {
-        console.log("--------------------------->", compiler, compiler instanceof BaseCompiler);
-        console.trace();
+    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
+        //console.log("--------------------------->", compiler, compiler instanceof BaseCompiler);
+        //console.trace();
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -239,14 +239,14 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: ICompiler[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
             let compilersCreated = 0;
-            const createdCompilers = _.compact(await Promise.all(_.map(compilers, this.create, this)));
+            const createdCompilers = _.compact(await Promise.all(compilers.map(c => this.create(c))));
             for (const compiler of createdCompilers) {
                 const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};

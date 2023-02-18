@@ -31,6 +31,7 @@ import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
 import {SassAsmParser} from '../parsers/asm-parser-sass';
@@ -50,17 +51,17 @@ export class ClangCompiler extends BaseCompiler {
         super(info, env);
         this.compiler.supportsDeviceAsmView = true;
 
-        const asanSymbolizerPath = path.join(path.dirname(this.compiler.exe), 'llvm-symbolizer');
+        const asanSymbolizerPath = path.join(path.dirname(unwrap(this.compiler.exe)), 'llvm-symbolizer');
         if (fs.existsSync(asanSymbolizerPath)) {
             this.asanSymbolizerPath = asanSymbolizerPath;
         }
 
-        const offloadBundlerPath = path.join(path.dirname(this.compiler.exe), 'clang-offload-bundler');
+        const offloadBundlerPath = path.join(path.dirname(unwrap(this.compiler.exe)), 'clang-offload-bundler');
         if (fs.existsSync(offloadBundlerPath)) {
             this.offloadBundlerPath = offloadBundlerPath;
         }
 
-        const llvmDisassemblerPath = path.join(path.dirname(this.compiler.exe), 'llvm-dis');
+        const llvmDisassemblerPath = path.join(path.dirname(unwrap(this.compiler.exe)), 'llvm-dis');
         if (fs.existsSync(llvmDisassemblerPath)) {
             this.llvmDisassemblerPath = llvmDisassemblerPath;
         } else {
@@ -239,7 +240,10 @@ export class ClangIntelCompiler extends ClangCompiler {
         super(info, env);
 
         if (!this.offloadBundlerPath) {
-            const offloadBundlerPath = path.join(path.dirname(this.compiler.exe), '../bin-llvm/clang-offload-bundler');
+            const offloadBundlerPath = path.join(
+                path.dirname(unwrap(this.compiler.exe)),
+                '../bin-llvm/clang-offload-bundler',
+            );
             if (fs.existsSync(offloadBundlerPath)) {
                 this.offloadBundlerPath = path.resolve(offloadBundlerPath);
             }
@@ -248,14 +252,14 @@ export class ClangIntelCompiler extends ClangCompiler {
 
     override getDefaultExecOptions(): ExecutionOptions {
         const opts = super.getDefaultExecOptions();
-        opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
+        opts.env.PATH = process.env.PATH + path.delimiter + path.dirname(unwrap(this.compiler.exe));
 
         return opts;
     }
 
     override runExecutable(executable, executeParameters: ExecutableExecutionOptions, homeDir) {
         executeParameters.env = {
-            OCL_ICD_FILENAMES: path.resolve(path.dirname(this.compiler.exe) + '/../lib/x64/libintelocl.so'),
+            OCL_ICD_FILENAMES: path.resolve(path.dirname(unwrap(this.compiler.exe)) + '/../lib/x64/libintelocl.so'),
             ...executeParameters.env,
         };
         return super.runExecutable(executable, executeParameters, homeDir);

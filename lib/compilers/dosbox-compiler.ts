@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
@@ -75,8 +76,8 @@ export class DosboxCompiler extends BaseCompiler {
     }
 
     private getDosboxArgs(tempDir: string, compileArgs: string[]) {
-        const binPath = path.relative(this.root, path.dirname(this.compiler.exe));
-        const exeName = path.basename(this.compiler.exe).replace(/\.exe$/i, '');
+        const binPath = path.relative(this.root, path.dirname(unwrap(this.compiler.exe)));
+        const exeName = path.basename(unwrap(this.compiler.exe)).replace(/\.exe$/i, '');
         return [
             '-c',
             `mount c ${this.root}`,

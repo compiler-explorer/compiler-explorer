@@ -28,6 +28,7 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 
@@ -94,7 +95,7 @@ export class LDCCompiler extends BaseCompiler {
         const execOptions = this.getDefaultExecOptions();
         // TODO(#4654) generateAST expects to return a ResultLine[] not a string
         return this.loadASTOutput(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompiler(unwrap(this.compiler.exe), newOptions, this.filename(inputFilename), execOptions),
         ) as any;
     }
 

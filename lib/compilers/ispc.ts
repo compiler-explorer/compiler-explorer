@@ -27,6 +27,7 @@ import _ from 'underscore';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
 
@@ -73,7 +74,7 @@ export class ISPCCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompiler(unwrap(this.compiler.exe), newOptions, this.filename(inputFilename), execOptions),
         );
     }
 

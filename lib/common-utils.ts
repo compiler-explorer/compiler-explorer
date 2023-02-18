@@ -36,3 +36,10 @@ export function keys<K extends string | number | symbol>(o: Partial<Record<K, an
 export function unique<V>(arr: V[]): V[] {
     return [...new Set(arr)];
 }
+
+// One use of this function is turning a (T | null)[] into a T[]
+// arr.filter(x => x !== null) returns a (T | null)[] even though it is a T[]
+// Apparently the idiomatic solution is arr.filter((x): x is T => x !== null), but this is shorter
+export function remove<U, V extends U>(arr: U[], v: V): Exclude<U, V>[] {
+    return arr.filter(item => item !== v) as Exclude<U, V>[];
+}
