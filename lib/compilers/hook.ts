@@ -26,7 +26,7 @@ import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
+import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
