@@ -107,6 +107,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/jquery": "^3.5.10",
     "@types/mocha": "^8.2.2",
+    "@types/node-targz": "^0.2.0",
     "@types/qs": "^6.9.7",
     "@types/shell-quote": "^1.7.1",
     "@types/tar-fs": "^2.0.1",
