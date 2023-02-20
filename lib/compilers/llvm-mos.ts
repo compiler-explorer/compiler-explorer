@@ -43,7 +43,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
     constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
         this.externalparser = null;
-        this.toolchainPath = path.normalize(path.join(path.dirname(unwrap(this.compiler.exe)), '..'));
+        this.toolchainPath = path.normalize(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
     override getExtraCMakeArgs(key): string[] {
@@ -84,7 +84,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             filters,
         );
 
-        if (unwrap(this.compiler.exe).includes('nes')) {
+        if (this.compiler.exe.includes('nes')) {
             let nesFile = outputFilename;
             if (outputFilename.endsWith('.elf')) {
                 nesFile = outputFilename.substr(0, outputFilename.length - 4);

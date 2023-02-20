@@ -53,7 +53,7 @@ export class MrustcCompiler extends BaseCompiler {
             '-o',
             outname,
             '-L',
-            path.join(path.dirname(unwrap(this.compiler.exe)), '..', 'output'),
+            path.join(path.dirname(this.compiler.exe), '..', 'output'),
         ];
     }
 

@@ -195,12 +195,7 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompilerForASTOrIR(
-                unwrap(this.compiler.exe),
-                newOptions,
-                this.filename(inputFilename),
-                execOptions,
-            ),
+            await this.runCompilerForASTOrIR(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
         );
     }
 
@@ -211,7 +206,7 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         const output = await this.runCompilerForASTOrIR(
-            unwrap(this.compiler.exe),
+            this.compiler.exe,
             newOptions,
             this.filename(inputFilename),
             execOptions,

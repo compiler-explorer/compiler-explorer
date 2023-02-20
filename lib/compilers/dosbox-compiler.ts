@@ -76,8 +76,8 @@ export class DosboxCompiler extends BaseCompiler {
     }
 
     private getDosboxArgs(tempDir: string, compileArgs: string[]) {
-        const binPath = path.relative(this.root, path.dirname(unwrap(this.compiler.exe)));
-        const exeName = path.basename(unwrap(this.compiler.exe)).replace(/\.exe$/i, '');
+        const binPath = path.relative(this.root, path.dirname(this.compiler.exe));
+        const exeName = path.basename(this.compiler.exe).replace(/\.exe$/i, '');
         return [
             '-c',
             `mount c ${this.root}`,

@@ -45,7 +45,7 @@ export class Cc65Compiler extends BaseCompiler {
         super(compilerInfo, env);
 
         this.asm = new CC65AsmParser(this.compilerProps);
-        this.toolchainPath = path.resolve(path.dirname(unwrap(compilerInfo.exe)), '..');
+        this.toolchainPath = path.resolve(path.dirname(compilerInfo.exe), '..');
     }
 
     override getSharedLibraryPathsAsArguments(libraries, libDownloadPath?) {

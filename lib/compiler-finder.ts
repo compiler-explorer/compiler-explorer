@@ -144,7 +144,7 @@ export class CompilerFinder {
                                             if (!compiler.alias) compiler.alias = [];
                                             if (typeof compiler.alias == 'string') compiler.alias = [compiler.alias];
                                             // End fixup
-                                            compiler.exe = null;
+                                            compiler.exe = '/dev/null';
                                             compiler.remote = {
                                                 target: `${uriSchema}://${host}:${port}`,
                                                 path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),

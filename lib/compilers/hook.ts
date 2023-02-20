@@ -37,7 +37,7 @@ export class HookCompiler extends BaseCompiler {
 
     constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
         super(compilerInfo, env);
-        this.hook_home = path.resolve(path.join(path.dirname(unwrap(this.compiler.exe)), '..'));
+        this.hook_home = path.resolve(path.join(path.dirname(this.compiler.exe), '..'));
     }
 
     static get key(): string {

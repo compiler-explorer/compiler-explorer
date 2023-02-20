@@ -55,7 +55,7 @@ class DotNetCompiler extends BaseCompiler {
     constructor(compilerInfo: CompilerInfo, env) {
         super(compilerInfo, env);
 
-        this.sdkBaseDir = path.join(path.dirname(unwrap(compilerInfo.exe)), 'sdk');
+        this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');
         this.sdkVersion = fs.readdirSync(this.sdkBaseDir)[0];
 
         const parts = this.sdkVersion.split('.');
