@@ -48,6 +48,7 @@ import {
     CompileRequestTextBody,
     ExecutionRequestParams,
 } from './compile.interfaces';
+import {remove} from '../common-utils';
 
 temp.track();
 
@@ -186,8 +187,6 @@ export class CompileHandler {
     }
 
     async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
-        //console.log("--------------------------->", compiler, compiler instanceof BaseCompiler);
-        //console.trace();
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
@@ -246,7 +245,7 @@ export class CompileHandler {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
             let compilersCreated = 0;
-            const createdCompilers = _.compact(await Promise.all(compilers.map(c => this.create(c))));
+            const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
             for (const compiler of createdCompilers) {
                 const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};

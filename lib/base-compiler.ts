@@ -54,7 +54,6 @@ import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/librarie
 import {ResultLine} from '../types/resultline/resultline.interfaces';
 import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
 
-import {unwrap} from './assert';
 import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
 import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
 import * as cfg from './cfg/cfg';
