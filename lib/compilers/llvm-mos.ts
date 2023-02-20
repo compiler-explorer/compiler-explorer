@@ -30,7 +30,6 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces'
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
-import {unwrap} from '../assert';
 import * as utils from '../utils';
 
 import {ClangCompiler} from './clang';

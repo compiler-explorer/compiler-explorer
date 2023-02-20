@@ -28,7 +28,6 @@ import _ from 'underscore';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 export class PonyCompiler extends BaseCompiler {

@@ -31,7 +31,6 @@ import {CompilationResult} from '../../types/compilation/compilation.interfaces'
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65';
 import * as utils from '../utils';

@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 
 export class CprocCompiler extends BaseCompiler {

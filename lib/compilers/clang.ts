@@ -31,7 +31,6 @@ import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
 import {SassAsmParser} from '../parsers/asm-parser-sass';

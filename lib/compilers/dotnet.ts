@@ -35,7 +35,6 @@ import {
     UnprocessedExecResult,
 } from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';

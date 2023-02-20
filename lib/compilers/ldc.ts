@@ -28,7 +28,6 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 

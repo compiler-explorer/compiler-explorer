@@ -29,7 +29,6 @@ import _ from 'underscore';
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';

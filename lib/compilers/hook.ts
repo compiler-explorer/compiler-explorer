@@ -28,7 +28,6 @@ import {CompilationResult, ExecutionOptions} from '../../types/compilation/compi
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
 

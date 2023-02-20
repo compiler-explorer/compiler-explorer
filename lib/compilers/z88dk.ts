@@ -30,7 +30,6 @@ import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
-import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
