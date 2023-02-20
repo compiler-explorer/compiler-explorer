@@ -10,10 +10,7 @@
     "moduleResolution": "node",
     /* Code generation */
     "outDir": "./out/dist",
-    "paths": {
-      "node-targz": ["./typings/node-targz.d.ts"]
-    },
-    "typeRoots": ["./typings", "./node_modules/@types"],
+    "typeRoots": ["./node_modules/@types"],
     "types": ["mocha", "chai", "chai-http"],
     /* Other options */
     "allowJs": true

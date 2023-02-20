@@ -39,6 +39,8 @@ export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' |
 
 export interface SiteSettings {
     autoCloseBrackets: boolean;
+    autoCloseQuotes: boolean;
+    autoSurround: boolean;
     autoIndent: boolean;
     allowStoreCodeDebug: boolean;
     alwaysEnableAllSchemes: boolean;
@@ -258,6 +260,8 @@ export class Settings {
             ['.allowStoreCodeDebug', 'allowStoreCodeDebug', true],
             ['.alwaysEnableAllSchemes', 'alwaysEnableAllSchemes', false],
             ['.autoCloseBrackets', 'autoCloseBrackets', true],
+            ['.autoCloseQuotes', 'autoCloseQuotes', true],
+            ['.autoSurround', 'autoSurround', true],
             ['.autoIndent', 'autoIndent', true],
             ['.colourise', 'colouriseAsm', true],
             ['.compileOnChange', 'compileOnChange', true],
