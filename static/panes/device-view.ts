@@ -211,6 +211,18 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         }
     }
 
+    override getCurrentState(): DeviceAsmState & MonacoPaneState {
+        const state: DeviceAsmState & MonacoPaneState = {
+            ...super.getCurrentState(),
+            device: this.selectedDevice,
+        };
+
+        // note: this is disabled, because that overrides the selection again
+        // if (this.devices) state.devices = this.devices;
+
+        return state;
+    }
+
     onDeviceSelect(): void {
         this.selectedDevice = this.selectize.getValue() as string;
         this.updateState();
