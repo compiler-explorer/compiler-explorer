@@ -1,0 +1,9 @@
+{
+    "allowed_paths": [
+        {
+            "path": "Z:\\",
+            "rw": false
+        }
+    ],
+    "allowed_registry": []
+}
