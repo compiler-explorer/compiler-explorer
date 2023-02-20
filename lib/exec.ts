@@ -254,6 +254,11 @@ export function getCeWrapperOptions(
     options = {...options};
     const jailingOptions = [`--config=${getCeWrapperCfgFilePath(configName)}`];
 
+    if (options.customCwd) {
+        jailingOptions.push(`--home=${options.customCwd}`);
+        delete options.customCwd;
+    }
+
     if (options.timeoutMs) {
         const ExtraWallClockLeewayMs = 1000;
         jailingOptions.push(`--time_limit=${Math.round((options.timeoutMs + ExtraWallClockLeewayMs) / 1000)}`);
@@ -288,6 +293,10 @@ export function getSandboxCEWrapperOptions(command: string, args: string[], opti
     return getCeWrapperOptions('sandbox', command, args, options);
 }
 
+export function getExecuteCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
+    return getCeWrapperOptions('execute', command, args, options);
+}
+
 function sandboxNsjail(command, args, options) {
     logger.info('Sandbox execution via nsjail', {command, args});
     const nsOpts = getSandboxNsjailOptions(command, args, options);
@@ -301,6 +310,11 @@ function executeNsjail(command, args, options) {
 
 function sandboxCEWrapper(command, args, options) {
     const nsOpts = getSandboxCEWrapperOptions(command, args, options);
+    return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
+}
+
+function executeCEWrapper(command, args, options) {
+    const nsOpts = getExecuteCEWrapperOptions(command, args, options);
     return executeDirect(execProps<string>('cewrapper'), nsOpts.args, nsOpts.options, nsOpts.filenameTransform);
 }
 
@@ -563,6 +577,7 @@ const executeDispatchTable = {
     firejail: executeFirejail,
     nsjail: (command, args, options) =>
         needsWine(command) ? executeFirejail(command, args, options) : executeNsjail(command, args, options),
+    cewrapper: executeCEWrapper,
 };
 
 export async function execute(
