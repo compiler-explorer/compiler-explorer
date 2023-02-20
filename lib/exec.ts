@@ -182,7 +182,7 @@ export function getCeWrapperCfgFilePath(configName: string): string {
         logger.error(`Could not find '${propKey}'. Are you missing a definition?`);
         throw new Error(`Missing cewrapper execution config property key '${propKey}'`);
     }
-    return configPath;
+    return path.resolve(configPath);
 }
 
 export function getFirejailProfileFilePath(profileName: string): string {
@@ -285,7 +285,7 @@ export function getSandboxNsjailOptions(command: string, args: string[], options
 }
 
 export function getSandboxCEWrapperOptions(command: string, args: string[], options: ExecutionOptions): NsJailOptions {
-    return getCeWrapperOptions(execProps<string>('cewrapper'), command, args, options);
+    return getCeWrapperOptions('sandbox', command, args, options);
 }
 
 function sandboxNsjail(command, args, options) {
