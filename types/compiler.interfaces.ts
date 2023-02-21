@@ -105,8 +105,11 @@ export type CompilerInfo = {
         name?: string;
         preamble?: string;
     };
-    remote: any;
-    disabledFilters?: string[];
+    remote?: {
+        target: string;
+        path: string;
+    };
+    disabledFilters: string[];
     optArg?: string;
     externalparser: any;
     removeEmptyGccDump?: boolean;
@@ -122,16 +125,14 @@ export type CompilerInfo = {
 // Compiler information collected by the compiler-finder
 export type PreliminaryCompilerInfo = Omit<
     CompilerInfo,
-    'version' | 'fullVersion' | 'remote' | 'baseName' | '$groups'
+    'version' | 'fullVersion' | 'baseName' | '$groups' | 'disabledFilters'
 > & {version?: string};
 
 export interface ICompiler {
-    //compilerType: string;
-    //exe: string;
     possibleArguments: ICompilerArguments;
     lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);
-    //initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;
 }
