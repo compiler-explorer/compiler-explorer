@@ -27,7 +27,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
@@ -43,7 +43,7 @@ export class SPIRVCompiler extends BaseCompiler {
         return 'spirv';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new SPIRVAsmParser(this.compilerProps);

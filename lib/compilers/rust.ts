@@ -26,7 +26,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {unwrap} from '../assert';
@@ -43,7 +43,7 @@ export class RustCompiler extends BaseCompiler {
         return 'rust';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;

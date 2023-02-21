@@ -25,7 +25,7 @@
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
@@ -38,7 +38,7 @@ export class ISPCCompiler extends BaseCompiler {
         return 'ispc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];

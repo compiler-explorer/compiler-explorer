@@ -28,7 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {BuildResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmRaw} from '../parsers/asm-raw';
@@ -41,7 +41,7 @@ export class AssemblyCompiler extends BaseCompiler {
         return 'assembly';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new AsmRaw();
     }

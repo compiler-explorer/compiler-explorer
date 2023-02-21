@@ -33,11 +33,11 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
+import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
-import {FakeCompiler, getCompilerTypeByKey} from '../compilers';
+import {getCompilerTypeByKey} from '../compilers';
 import {logger} from '../logger';
 import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';

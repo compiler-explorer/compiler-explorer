@@ -127,9 +127,10 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
+    constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
-        this.compiler = compilerInfo as CompilerInfo; // we'll populate later
+        // By the end of construction / initialise() everything will be populated for CompilerInfo
+        this.compiler = compilerInfo as CompilerInfo;
         this.lang = languages[compilerInfo.lang];
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
@@ -150,10 +151,11 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.optArg) this.compiler.optArg = '';
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
 
-        if (!this.compiler.disabledFilters) this.compiler.disabledFilters = [];
+        if (!compilerInfo.disabledFilters) this.compiler.disabledFilters = [];
         else if (typeof (this.compiler.disabledFilters as any) === 'string') {
             // When first loaded from props it may be a string so we split it here
             // I'd like a better way to do this that doesn't involve type hacks
+            // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
 

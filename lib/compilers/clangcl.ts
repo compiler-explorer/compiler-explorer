@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 import {Win32Compiler} from './win32';
@@ -35,7 +35,7 @@ export class ClangCLCompiler extends Win32Compiler {
         return 'clang-cl';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.compiler.supportsIrView = true;

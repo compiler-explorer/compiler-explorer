@@ -26,7 +26,7 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
@@ -41,7 +41,7 @@ export class CrystalCompiler extends BaseCompiler {
 
     ccPath: string;
 
-    constructor(compiler: CompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env) {
         super(compiler, env);
         this.asm = new CrystalAsmParser();
         this.compiler.supportsIrView = true;

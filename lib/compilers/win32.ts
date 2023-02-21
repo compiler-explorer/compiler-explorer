@@ -28,7 +28,7 @@ import temp from 'temp';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs';
@@ -44,7 +44,7 @@ export class Win32Compiler extends BaseCompiler {
 
     binaryAsmParser: AsmParser;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.binaryAsmParser = new AsmParser(this.compilerProps);
