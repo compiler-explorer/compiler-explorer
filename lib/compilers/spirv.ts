@@ -33,6 +33,7 @@ import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
 import * as utils from '../utils';
+import {unwrap} from '../assert';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
@@ -72,7 +73,7 @@ export class SPIRVCompiler extends BaseCompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
+            options = options.concat(unwrap(this.compiler.optArg));
         }
 
         const libIncludes = this.getIncludeArguments(libraries);

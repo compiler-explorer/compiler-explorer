@@ -106,14 +106,14 @@ export type CompilerInfo = {
         preamble?: string;
     };
     remote: any;
-    disabledFilters: string[];
-    optArg: string;
+    disabledFilters?: string[];
+    optArg?: string;
     externalparser: any;
-    removeEmptyGccDump: boolean;
-    irArg: string[];
-    llvmOptArg: string[];
-    llvmOptModuleScopeArg: string[];
-    llvmOptNoDiscardValueNamesArg: string[];
+    removeEmptyGccDump?: boolean;
+    irArg?: string[];
+    llvmOptArg?: string[];
+    llvmOptModuleScopeArg?: string[];
+    llvmOptNoDiscardValueNamesArg?: string[];
     cachedPossibleArguments?: any;
     nvdisasm?: string;
     mtime?: any;
@@ -122,18 +122,7 @@ export type CompilerInfo = {
 // Compiler information collected by the compiler-finder
 export type PreliminaryCompilerInfo = Omit<
     CompilerInfo,
-    | 'version'
-    | 'fullVersion'
-    | 'remote'
-    | 'baseName'
-    | '$groups'
-    | 'disabledFilters'
-    | 'optArg'
-    | 'removeEmptyGccDump'
-    | 'irArg'
-    | 'llvmOptArg'
-    | 'llvmOptModuleScopeArg'
-    | 'llvmOptNoDiscardValueNamesArg'
+    'version' | 'fullVersion' | 'remote' | 'baseName' | '$groups'
 > & {version?: string};
 
 export interface ICompiler {
@@ -143,6 +132,6 @@ export interface ICompiler {
     lang: Language;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);
-    initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
+    //initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;
 }

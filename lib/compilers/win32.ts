@@ -35,6 +35,7 @@ import {MapFileReaderVS} from '../mapfiles/map-file-vs';
 import {AsmParser} from '../parsers/asm-parser';
 import {PELabelReconstructor} from '../pe32-support';
 import * as utils from '../utils';
+import {unwrap} from '../assert';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {
@@ -106,7 +107,7 @@ export class Win32Compiler extends BaseCompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
+            options = options.concat(unwrap(this.compiler.optArg));
         }
 
         const libIncludes = this.getIncludeArguments(libraries);

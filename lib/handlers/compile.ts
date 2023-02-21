@@ -37,7 +37,7 @@ import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../../types/comp
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
-import {getCompilerTypeByKey} from '../compilers';
+import {FakeCompiler, getCompilerTypeByKey} from '../compilers';
 import {logger} from '../logger';
 import {PropertyGetter} from '../properties.interfaces';
 import * as utils from '../utils';
@@ -190,7 +190,7 @@ export class CompileHandler {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
-        let compilerClass;
+        let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e) {

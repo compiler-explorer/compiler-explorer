@@ -42,7 +42,7 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {CompilerInfo, ICompiler} from '../types/compiler.interfaces';
+import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -80,6 +80,7 @@ import {PropertyGetter} from './properties.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import {ITool} from './tooling/base-tool.interface';
 import * as utils from './utils';
+import {unwrap} from './assert';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -126,9 +127,9 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env: CompilationEnvironment) {
         // Information about our compiler
-        this.compiler = compilerInfo;
+        this.compiler = compilerInfo as CompilerInfo; // we'll populate later
         this.lang = languages[compilerInfo.lang];
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
@@ -891,7 +892,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
+            options = options.concat(unwrap(this.compiler.optArg));
         }
 
         const libIncludes = this.getIncludeArguments(libraries);
@@ -1042,7 +1043,9 @@ export class BaseCompiler implements ICompiler {
 
     async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
-        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
+            .concat(unwrap(this.compiler.irArg));
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1078,9 +1081,11 @@ export class BaseCompiler implements ICompiler {
         // These options make Clang produce the pass dumps
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
-            .concat(this.compiler.llvmOptArg)
-            .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
-            .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : [])
+            .concat(unwrap(this.compiler.llvmOptArg))
+            .concat(llvmOptPipelineOptions.fullModule ? unwrap(this.compiler.llvmOptModuleScopeArg) : [])
+            .concat(
+                llvmOptPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.llvmOptNoDiscardValueNamesArg) : [],
+            )
             .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
         const execOptions = this.getDefaultExecOptions();

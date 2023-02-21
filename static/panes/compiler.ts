@@ -1152,7 +1152,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         if (filters.libraryCode && !this.compiler.supportsLibraryCodeFilter) {
             delete filters.libraryCode;
         }
-        this.compiler.disabledFilters.forEach(filter => {
+        unwrap(this.compiler.disabledFilters).forEach(filter => {
             if (filters[filter]) {
                 delete filters[filter];
             }
@@ -2556,13 +2556,13 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterLibraryCodeButton.prop('disabled', !this.compiler.supportsLibraryCodeFilter);
         formatFilterTitle(this.filterLibraryCodeButton, this.filterLibraryCodeTitle);
 
-        this.filterLabelsButton.prop('disabled', this.compiler.disabledFilters.includes('labels'));
+        this.filterLabelsButton.prop('disabled', unwrap(this.compiler.disabledFilters).includes('labels'));
         formatFilterTitle(this.filterLabelsButton, this.filterLabelsTitle);
-        this.filterDirectivesButton.prop('disabled', this.compiler.disabledFilters.includes('directives'));
+        this.filterDirectivesButton.prop('disabled', unwrap(this.compiler.disabledFilters).includes('directives'));
         formatFilterTitle(this.filterDirectivesButton, this.filterDirectivesTitle);
-        this.filterCommentsButton.prop('disabled', this.compiler.disabledFilters.includes('commentOnly'));
+        this.filterCommentsButton.prop('disabled', unwrap(this.compiler.disabledFilters).includes('commentOnly'));
         formatFilterTitle(this.filterCommentsButton, this.filterCommentsTitle);
-        this.filterTrimButton.prop('disabled', this.compiler.disabledFilters.includes('trim'));
+        this.filterTrimButton.prop('disabled', unwrap(this.compiler.disabledFilters).includes('trim'));
         formatFilterTitle(this.filterTrimButton, this.filterTrimTitle);
 
         if (this.flagsButton) {

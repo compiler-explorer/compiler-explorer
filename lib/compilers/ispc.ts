@@ -31,6 +31,7 @@ import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
 
 import {ISPCParser} from './argument-parsers';
+import {unwrap} from '../assert';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {
@@ -56,7 +57,7 @@ export class ISPCCompiler extends BaseCompiler {
     }
 
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
-        const newOptions = [...options, ...this.compiler.irArg, '-o', this.getIrOutputFilename(inputFilename)];
+        const newOptions = [...options, ...unwrap(this.compiler.irArg), '-o', this.getIrOutputFilename(inputFilename)];
         return super.generateIR(inputFilename, newOptions, filters);
     }
 
