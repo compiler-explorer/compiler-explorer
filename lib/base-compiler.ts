@@ -308,7 +308,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getRemote() {
-        if (this.compiler.exe === '/dev/null' && this.compiler.remote) return this.compiler.remote;
+        if (this.compiler.remote) return this.compiler.remote;
         return false;
     }
 
