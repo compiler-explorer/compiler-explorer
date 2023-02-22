@@ -380,7 +380,7 @@ export class CompilerFinder {
                 compilers.push(this.recurseGetCompilers(langId, exe, this.compilerProps));
             }
         }
-        return Promise.all(compilers);
+        return (await Promise.all(compilers)).flat();
     }
 
     ensureDistinct(compilers: CompilerInfo[]) {
@@ -451,7 +451,7 @@ export class CompilerFinder {
 
     async find() {
         const compilerList = await this.getCompilers();
-        const compilers = await this.compileHandler.setCompilers(compilerList.flat(), this.optionsHandler.get());
+        const compilers = await this.compileHandler.setCompilers(compilerList, this.optionsHandler.get());
         if (!compilers) {
             logger.error('#### No compilers found: no compilation will be done!');
             throw new Error('No compilers found due to error or no configuration');
