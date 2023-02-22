@@ -41,7 +41,7 @@ import {logger} from './logger';
 import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler';
 import {CompilerProps} from './properties';
 import {PropertyGetter} from './properties.interfaces';
-import {remove} from './common-utils';
+import {basic_comparator, remove} from './common-utils';
 
 const sleep = promisify(setTimeout);
 
@@ -456,15 +456,7 @@ export class CompilerFinder {
         const result = this.ensureDistinct(compilers);
         return {
             foundClash: result.foundClash,
-            compilers: result.compilers.sort((a, b) => {
-                if (a.name < b.name) {
-                    return -1;
-                } else if (a.name > b.name) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            }),
+            compilers: result.compilers.sort((a, b) => basic_comparator(a.name, b.name)),
         };
     }
 
