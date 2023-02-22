@@ -27,10 +27,6 @@ import express from 'express';
 import {ApiHandler} from '../../lib/handlers/api';
 import {StorageNull} from '../../lib/storage';
 import {chai} from '../utils';
-import { CompileHandler } from '../../lib/handlers/compile';
-import { CompilerProps } from '../../lib/properties';
-import { CompilerInfo } from '../../types/compiler.interfaces';
-import { Language, LanguageKey } from '../../types/languages.interfaces';
 
 const languages = {
     'c++': {
@@ -92,11 +88,11 @@ describe('API handling', () => {
         app = express();
         const apiHandler = new ApiHandler(
             {
-                handle: (res, req) => req.send('compile'),
-                handleCmake: (res, req) => req.send('cmake'),
-                handlePopularArguments: (res, req) => req.send('ok'),
-                handleOptimizationArguments: (res, req) => req.send('ok'),
-            } as Partial<CompileHandler> as CompileHandler,
+                handle: res => res.send('compile'),
+                handleCmake: res => res.send('cmake'),
+                handlePopularArguments: res => res.send('ok'),
+                handleOptimizationArguments: res => res.send('ok'),
+            },
             (key, def) => {
                 switch (key) {
                     case 'formatters': {
@@ -116,12 +112,12 @@ describe('API handling', () => {
                     }
                 }
             },
-            new StorageNull('/', {} as Partial<CompilerProps> as CompilerProps),
+            new StorageNull('/', {}),
             'default',
         );
         app.use('/api', apiHandler.handle);
-        apiHandler.setCompilers(compilers as Partial<CompilerInfo>[] as CompilerInfo[]);
-        apiHandler.setLanguages(languages as Partial<Record<LanguageKey, Partial<Language>>> as Partial<Record<LanguageKey, Language>>);
+        apiHandler.setCompilers(compilers);
+        apiHandler.setLanguages(languages);
     });
 
     it('should respond to plain text compiler requests', () => {

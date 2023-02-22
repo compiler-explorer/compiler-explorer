@@ -38,8 +38,7 @@ const languages = {
 };
 
 describe('Compiler tests', () => {
-    let app: express.Express;
-    let compileHandler: CompileHandler;
+    let app, compileHandler;
 
     before(() => {
         const compilationEnvironment = makeCompilationEnvironment({languages});
@@ -79,7 +78,7 @@ describe('Compiler tests', () => {
                             asm: [{text: 'ASMASMASM'}],
                         },
                     },
-                ], {})
+                ])
                 .then(() => {
                     return chai
                         .request(app)
@@ -114,7 +113,7 @@ describe('Compiler tests', () => {
                             asm: [{text: 'ASMASMASM'}],
                         },
                     },
-                ], {})
+                ])
                 .then(() => {
                     return chai
                         .request(app)
@@ -149,7 +148,7 @@ describe('Compiler tests', () => {
                             asm: [{text: 'ASMASMASM'}],
                         },
                     },
-                ], {})
+                ])
                 .then(() => {
                     return chai
                         .request(app)
@@ -184,7 +183,7 @@ describe('Compiler tests', () => {
                             asm: [{text: 'ASMASMASM'}],
                         },
                     },
-                ], {})
+                ])
                 .then(() => {
                     return chai
                         .request(app)
@@ -206,7 +205,7 @@ describe('Compiler tests', () => {
                 });
         });
 
-        function makeFakeJson(source, options, fakeResult?) {
+        function makeFakeJson(source, options, fakeResult) {
             return compileHandler
                 .setCompilers([
                     {
@@ -214,7 +213,7 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: fakeResult || {},
                     },
-                ], {})
+                ])
                 .then(() =>
                     chai
                         .request(app)
@@ -235,7 +234,7 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: fakeResult || {},
                     },
-                ], {})
+                ])
                 .then(() =>
                     chai
                         .request(app)
@@ -257,7 +256,7 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: fakeResult || {},
                     },
-                ], {})
+                ])
                 .then(() =>
                     chai
                         .request(app)
@@ -388,7 +387,7 @@ describe('Compiler tests', () => {
     });
 
     describe('Query API', () => {
-        function makeFakeQuery(source, query, fakeResult?) {
+        function makeFakeQuery(source, query, fakeResult) {
             return compileHandler
                 .setCompilers([
                     {
@@ -396,7 +395,7 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: fakeResult || {},
                     },
-                ], {})
+                ])
                 .then(() =>
                     chai
                         .request(app)
@@ -415,7 +414,7 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: {},
                     },
-                ], {})
+                ])
                 .then(() => chai.request(app).post('/fake-for-test/compile').set('Accept', 'application/json'))
                 .then(res => {
                     res.should.have.status(500);
@@ -503,7 +502,7 @@ describe('Compiler tests', () => {
                         exe: 'fake',
                         fakeResult: {code: 0, stdout: [], stderr: [], asm: [{text: 'LANG B but A'}]},
                     },
-                ], {})
+                ])
                 .then(() =>
                     chai.request(app).post(`/${compiler}/compile`).set('Accept', 'application/json').send({
                         lang: lang,

@@ -33,7 +33,7 @@ describe('Sources', () => {
         [
             {
                 urlpart: 'moose',
-                list: () => Promise.resolve([{file: "foo", lang: "bar", name: "baz"}] as Omit<SourceEntry, 'path'>[]),
+                list: () => Promise.resolve({moose: 'pig'}),
                 load: name => Promise.resolve({file: `File called ${name}`}),
             },
         ],
