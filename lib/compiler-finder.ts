@@ -421,7 +421,9 @@ export class CompilerFinder {
     }
 
     getExes() {
-        const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs => (exs as string).split(':'));
+        const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs =>
+            exs.split(':').filter(s => s !== ''),
+        );
         this.addNdkExes(langToCompilers);
         logger.info('Exes found:', langToCompilers);
         return langToCompilers;
@@ -441,7 +443,8 @@ export class CompilerFinder {
                         toolchains[index] = null;
                     }
                 }
-                langToCompilers[langId].push(toolchains);
+                // TODO: Something awful is going on with the type of toolchains here
+                langToCompilers[langId].push(toolchains.filter(x => x !== null));
             }
         }
     }
