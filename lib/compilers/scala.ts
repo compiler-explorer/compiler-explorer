@@ -24,7 +24,7 @@
 
 import Semver from 'semver';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {asSafeVer} from '../utils';
 
@@ -38,7 +38,7 @@ export class ScalaCompiler extends JavaCompiler {
 
     javaHome: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.javaHome = this.compilerProps<string>(`compiler.${this.compiler.id}.java_home`);
     }

@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -51,7 +51,7 @@ class DotNetCompiler extends BaseCompiler {
 
     private crossgen2VersionString: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.sdkBaseDir = path.join(path.dirname(compilerInfo.exe), 'sdk');

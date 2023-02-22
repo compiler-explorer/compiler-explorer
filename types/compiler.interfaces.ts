@@ -105,18 +105,28 @@ export type CompilerInfo = {
         name?: string;
         preamble?: string;
     };
-    remote: any;
+    remote?: {
+        target: string;
+        path: string;
+    };
     disabledFilters: string[];
-    optArg: string;
+    optArg?: string;
     externalparser: any;
-    removeEmptyGccDump: boolean;
-    irArg: string[];
-    llvmOptArg: string[];
-    llvmOptModuleScopeArg: string[];
-    llvmOptNoDiscardValueNamesArg: string[];
+    removeEmptyGccDump?: boolean;
+    irArg?: string[];
+    llvmOptArg?: string[];
+    llvmOptModuleScopeArg?: string[];
+    llvmOptNoDiscardValueNamesArg?: string[];
     cachedPossibleArguments?: any;
     nvdisasm?: string;
+    mtime?: any;
 };
+
+// Compiler information collected by the compiler-finder
+export type PreliminaryCompilerInfo = Omit<
+    CompilerInfo,
+    'version' | 'fullVersion' | 'baseName' | '$groups' | 'disabledFilters'
+> & {version?: string};
 
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
@@ -124,5 +134,5 @@ export interface ICompiler {
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
-    getInfo();
+    getInfo(): CompilerInfo;
 }

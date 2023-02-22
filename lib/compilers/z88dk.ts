@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ArtifactType} from '../../types/tool.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -40,7 +40,7 @@ export class z88dkCompiler extends BaseCompiler {
         return 'z88dk';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.outputFilebase = 'example';
         this.asm = new AsmParserZ88dk(this.compilerProps);

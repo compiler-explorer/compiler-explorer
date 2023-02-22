@@ -24,7 +24,7 @@
 
 import Semver from 'semver';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {DartAsmParser} from '../parsers/asm-parser-dart';
@@ -33,7 +33,7 @@ import * as utils from '../utils';
 import {BaseParser} from './argument-parsers';
 
 export class DartCompiler extends BaseCompiler {
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new DartAsmParser();
     }

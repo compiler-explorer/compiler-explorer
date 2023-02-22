@@ -28,7 +28,7 @@ import Path from 'path';
 import Semver from 'semver';
 
 import {CompilationInfo} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
@@ -44,7 +44,7 @@ export class NvccCompiler extends BaseCompiler {
 
     deviceAsmParser: SassAsmParser;
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsOptOutput = true;
         this.compiler.supportsDeviceAsmView = true;

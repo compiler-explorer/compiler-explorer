@@ -24,17 +24,18 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 import {Win32Compiler} from './win32';
+import {unwrap} from '../assert';
 
 export class ClangCLCompiler extends Win32Compiler {
     static override get key() {
         return 'clang-cl';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.compiler.supportsIrView = true;
@@ -47,7 +48,7 @@ export class ClangCLCompiler extends Win32Compiler {
         // These options make Clang produce an IR
         const newOptions = options
             .filter(option => option !== '/FA' && !option.startsWith('/Fa'))
-            .concat(this.compiler.irArg);
+            .concat(unwrap(this.compiler.irArg));
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers

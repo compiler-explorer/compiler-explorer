@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {propsFor} from '../properties';
@@ -40,7 +40,7 @@ export class CleanCompiler extends BaseCompiler {
 
     executionType: string;
 
-    constructor(compiler: CompilerInfo, env) {
+    constructor(compiler: PreliminaryCompilerInfo, env) {
         super(compiler, env);
         const execProps = propsFor('execution');
         this.executionType = execProps('executionType', 'none');

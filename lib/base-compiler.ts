@@ -42,7 +42,7 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
 } from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {CompilerInfo, ICompiler} from '../types/compiler.interfaces';
+import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces';
 import {
     BasicExecutionResult,
     ExecutableExecutionOptions,
@@ -80,6 +80,7 @@ import {PropertyGetter} from './properties.interfaces';
 import {getToolchainPath} from './toolchain-utils';
 import {ITool} from './tooling/base-tool.interface';
 import * as utils from './utils';
+import {unwrap} from './assert';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',
@@ -126,9 +127,10 @@ export class BaseCompiler implements ICompiler {
         labelNames: [],
     });
 
-    constructor(compilerInfo: CompilerInfo, env: CompilationEnvironment) {
+    constructor(compilerInfo: PreliminaryCompilerInfo & {disabledFilters?: string[]}, env: CompilationEnvironment) {
         // Information about our compiler
-        this.compiler = compilerInfo;
+        // By the end of construction / initialise() everything will be populated for CompilerInfo
+        this.compiler = compilerInfo as CompilerInfo;
         this.lang = languages[compilerInfo.lang];
         if (!this.lang) {
             throw new Error(`Missing language info for ${compilerInfo.lang}`);
@@ -149,10 +151,11 @@ export class BaseCompiler implements ICompiler {
         if (!this.compiler.optArg) this.compiler.optArg = '';
         if (!this.compiler.supportsOptOutput) this.compiler.supportsOptOutput = false;
 
-        if (!this.compiler.disabledFilters) this.compiler.disabledFilters = [];
+        if (!compilerInfo.disabledFilters) this.compiler.disabledFilters = [];
         else if (typeof (this.compiler.disabledFilters as any) === 'string') {
             // When first loaded from props it may be a string so we split it here
             // I'd like a better way to do this that doesn't involve type hacks
+            // TODO(jeremy-rifkin): branch may now be obsolete?
             this.compiler.disabledFilters = (this.compiler.disabledFilters as any).split(',');
         }
 
@@ -305,7 +308,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     getRemote() {
-        if (this.compiler.exe === null && this.compiler.remote) return this.compiler.remote;
+        if (this.compiler.remote) return this.compiler.remote;
         return false;
     }
 
@@ -891,7 +894,7 @@ export class BaseCompiler implements ICompiler {
         }
 
         if (this.compiler.supportsOptOutput && backendOptions.produceOptInfo) {
-            options = options.concat(this.compiler.optArg);
+            options = options.concat(unwrap(this.compiler.optArg));
         }
 
         const libIncludes = this.getIncludeArguments(libraries);
@@ -1042,7 +1045,9 @@ export class BaseCompiler implements ICompiler {
 
     async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         // These options make Clang produce an IR
-        const newOptions = options.filter(option => option !== '-fcolor-diagnostics').concat(this.compiler.irArg);
+        const newOptions = options
+            .filter(option => option !== '-fcolor-diagnostics')
+            .concat(unwrap(this.compiler.irArg));
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -1078,9 +1083,11 @@ export class BaseCompiler implements ICompiler {
         // These options make Clang produce the pass dumps
         const newOptions = options
             .filter(option => option !== '-fcolor-diagnostics')
-            .concat(this.compiler.llvmOptArg)
-            .concat(llvmOptPipelineOptions.fullModule ? this.compiler.llvmOptModuleScopeArg : [])
-            .concat(llvmOptPipelineOptions.noDiscardValueNames ? this.compiler.llvmOptNoDiscardValueNamesArg : [])
+            .concat(unwrap(this.compiler.llvmOptArg))
+            .concat(llvmOptPipelineOptions.fullModule ? unwrap(this.compiler.llvmOptModuleScopeArg) : [])
+            .concat(
+                llvmOptPipelineOptions.noDiscardValueNames ? unwrap(this.compiler.llvmOptNoDiscardValueNamesArg) : [],
+            )
             .concat(this.compiler.debugPatched ? ['-mllvm', '--debug-to-stdout'] : []);
 
         const execOptions = this.getDefaultExecOptions();

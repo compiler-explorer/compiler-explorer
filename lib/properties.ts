@@ -128,7 +128,7 @@ export function propsFor(base): PropertyGetter {
 //     return funcB();
 // }
 
-type LanguageDef = {
+export type LanguageDef = {
     id: string;
 };
 
@@ -191,6 +191,8 @@ export class CompilerProps {
     // const i = this.compilerProps(languages, property, undefined, (x) => ["foobar"]); // Record<LanguageKey, string[]>
     // const j = this.compilerProps(languages, property, 42, (x) => ["foobar"]);//Record<LanguageKey, number | string[]>
 
+    // TODO(jeremy-rifkin): I think the types could use some work here.
+    // Maybe this.compilerProps<number>(lang, property) should be number | undefined.
     // general overloads
     get(base: string, property: string, defaultValue?: undefined, fn?: undefined): PropertyValue;
     get<T extends PropertyValue>(
