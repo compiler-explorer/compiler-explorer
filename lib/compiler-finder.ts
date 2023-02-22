@@ -176,17 +176,20 @@ export class CompilerFinder {
     async fetchAws() {
         logger.info('Fetching instances from AWS');
         const instances = await this.awsInstances();
-        return (
-            await Promise.all(
-                instances.map(instance => {
-                    logger.info('Checking instance ' + instance.InstanceId);
-                    const address = this.awsProps('externalTestMode', false)
-                        ? instance.PublicDnsName
-                        : instance.PrivateDnsName;
-                    return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
-                }),
-            )
-        ).flat();
+        return remove(
+            (
+                await Promise.all(
+                    instances.map(instance => {
+                        logger.info('Checking instance ' + instance.InstanceId);
+                        const address = this.awsProps('externalTestMode', false)
+                            ? instance.PublicDnsName
+                            : instance.PrivateDnsName;
+                        return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
+                    }),
+                )
+            ).flat(),
+            null,
+        );
     }
 
     async compilerConfigFor(
@@ -198,7 +201,7 @@ export class CompilerFinder {
 
         const props: PropertyGetter = (propName: string, defaultValue?: any) => {
             const propsForCompiler = parentProps(langId, base + propName);
-            if (propsForCompiler !== undefined) return propsForCompiler as typeof defaultValue;
+            if (propsForCompiler !== undefined) return propsForCompiler;
             return parentProps(langId, propName, defaultValue);
         };
 
@@ -341,7 +344,7 @@ export class CompilerFinder {
         langId: string,
         compilerName: string,
         parentProps: CompilerProps['get'],
-    ): Promise<(PreliminaryCompilerInfo | null)[]> {
+    ): Promise<PreliminaryCompilerInfo[]> {
         // Don't treat @ in paths as remote addresses if requested
         if (this.args.fetchCompilersFromRemote && compilerName.includes('@')) {
             const bits = compilerName.split('@');
@@ -367,11 +370,11 @@ export class CompilerFinder {
             return (await Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)))).flat();
         }
         if (compilerName === 'AWS') return this.fetchAws();
-        return [await this.compilerConfigFor(langId, compilerName, parentProps)];
+        return remove([await this.compilerConfigFor(langId, compilerName, parentProps)], null);
     }
 
     async getCompilers() {
-        const compilers: Promise<(PreliminaryCompilerInfo | null)[]>[] = [];
+        const compilers: Promise<PreliminaryCompilerInfo[]>[] = [];
         for (const [langId, exs] of Object.entries(this.getExes())) {
             for (const exe of exs) {
                 compilers.push(this.recurseGetCompilers(langId, exe, this.compilerProps));
@@ -445,10 +448,7 @@ export class CompilerFinder {
 
     async find() {
         const compilerList = await this.getCompilers();
-        const compilers = await this.compileHandler.setCompilers(
-            remove(compilerList.flat(), null),
-            this.optionsHandler.get(),
-        );
+        const compilers = await this.compileHandler.setCompilers(compilerList.flat(), this.optionsHandler.get());
         if (!compilers) {
             logger.error('#### No compilers found: no compilation will be done!');
             throw new Error('No compilers found due to error or no configuration');
