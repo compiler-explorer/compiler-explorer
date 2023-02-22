@@ -25,6 +25,8 @@
 import path from 'path';
 import {fileURLToPath} from 'url';
 
+import winston from 'winston';
+
 import {logger, makeLogStream} from '../lib/logger';
 import * as utils from '../lib/utils';
 
@@ -373,8 +375,8 @@ describe('Anonymizes all kind of IPs', () => {
 
 describe('Logger functionality', () => {
     it('correctly logs streams split over lines', () => {
-        const logs = [];
-        const fakeLog = {log: (level, msg) => logs.push({level, msg})};
+        const logs: {level: string; msg: string}[] = [];
+        const fakeLog = {log: (level: string, msg: string) => logs.push({level, msg})} as any as winston.Logger;
         const infoStream = makeLogStream('info', fakeLog);
         infoStream.write('first\n');
         infoStream.write('part');
@@ -391,8 +393,8 @@ describe('Logger functionality', () => {
         ]);
     });
     it('correctly logs streams to the right destination', () => {
-        const logs = [];
-        const fakeLog = {log: (level, msg) => logs.push({level, msg})};
+        const logs: {level: string; msg: string}[] = [];
+        const fakeLog = {log: (level: string, msg: string) => logs.push({level, msg})} as any as winston.Logger;
         const infoStream = makeLogStream('warn', fakeLog);
         infoStream.write('ooh\n');
         logs.should.deep.equal([
