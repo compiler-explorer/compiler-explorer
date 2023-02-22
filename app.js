@@ -124,7 +124,8 @@ if (opts.tmpDir) {
     process.env.winTmp = path.join('/mnt', driveLetter, directoryPath);
 }
 
-const distPath = utils.resolvePathFromAppRoot('.');
+const __dirname = utils.resolvePathFromAppRoot('.');
+const distPath = path.resolve(__dirname, 'out', 'dist');
 
 const gitReleaseName = (() => {
     // Use the canned git_hash if provided
@@ -237,7 +238,7 @@ if (Object.keys(languages).length === 0) {
 
 const compilerProps = new props.CompilerProps(languages, ceProps);
 
-const staticPath = opts.webpackContent || path.join(distPath, 'static');
+const staticPath = opts.webpackContent || path.resolve(__dirname, 'out', 'webpack', 'static');
 const staticMaxAgeSecs = ceProps('staticMaxAgeSecs', 0);
 const maxUploadSize = ceProps('maxUploadSize', '1mb');
 const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
