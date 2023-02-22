@@ -24,6 +24,8 @@
 
 import './utils';
 import {CompilerFinder} from '../lib/compiler-finder';
+import {CompileHandler} from '../lib/handlers/compile';
+import {OptionHandlerArguments} from '../lib/options-handler';
 import * as properties from '../lib/properties';
 
 const languages = {
@@ -86,6 +88,13 @@ const supportsLibrariesOptions = {
     supportsLibraries: 'fmt:catch2.2101',
 };
 
+function fakeCompilerHandler(): CompileHandler {
+    return CompileHandler as any;
+}
+function fakeOptionHandlerArguments(): OptionHandlerArguments {
+    return {} as any;
+}
+
 describe('Compiler-finder', function () {
     let compilerProps;
 
@@ -118,36 +127,72 @@ describe('Compiler-finder', function () {
     });
 
     it('should not hang for undefined groups (Bug #860)', () => {
-        const finder = new CompilerFinder({}, compilerProps, properties.fakeProps({}), {}, optionsHandler);
+        const finder = new CompilerFinder(
+            fakeCompilerHandler(),
+            compilerProps,
+            properties.fakeProps({}),
+            fakeOptionHandlerArguments(),
+            optionsHandler,
+        );
         return finder.getCompilers().should.eventually.have.lengthOf(1);
     });
 
     it('should behave properly if no options are provided at all', async () => {
-        const finder = new CompilerFinder({}, noOptionsAtAllProps, properties.fakeProps({}), {}, optionsHandler);
+        const finder = new CompilerFinder(
+            fakeCompilerHandler(),
+            noOptionsAtAllProps,
+            properties.fakeProps({}),
+            fakeOptionHandlerArguments(),
+            optionsHandler,
+        );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('');
     });
 
     it('should behave properly if no base options are provided', async () => {
-        const finder = new CompilerFinder({}, noBaseOptionsProps, properties.fakeProps({}), {}, optionsHandler);
+        const finder = new CompilerFinder(
+            fakeCompilerHandler(),
+            noBaseOptionsProps,
+            properties.fakeProps({}),
+            fakeOptionHandlerArguments(),
+            optionsHandler,
+        );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('bar');
     });
 
     it('should behave properly if only base options are provided', async () => {
-        const finder = new CompilerFinder({}, onlyBaseOptionsProps, properties.fakeProps({}), {}, optionsHandler);
+        const finder = new CompilerFinder(
+            fakeCompilerHandler(),
+            onlyBaseOptionsProps,
+            properties.fakeProps({}),
+            fakeOptionHandlerArguments(),
+            optionsHandler,
+        );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('foo');
     });
 
     it('should behave properly if both options are provided', async () => {
-        const finder = new CompilerFinder({}, bothOptionsProps, properties.fakeProps({}), {}, optionsHandler);
+        const finder = new CompilerFinder(
+            fakeCompilerHandler(),
+            bothOptionsProps,
+            properties.fakeProps({}),
+            fakeOptionHandlerArguments(),
+            optionsHandler,
+        );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('foo bar');
     });
 
     it('should be able to filter libraries', async () => {
-        const finder = new CompilerFinder({}, libraryCompilerProps, properties.fakeProps({}), {}, optionsHandler);
+        const finder = new CompilerFinder(
+            fakeCompilerHandler(),
+            libraryCompilerProps,
+            properties.fakeProps({}),
+            fakeOptionHandlerArguments(),
+            optionsHandler,
+        );
         const compilers = await finder.getCompilers();
         const libsArr = compilers[0].libsArr;
         libsArr.should.deep.equal(['fmt', 'catch2.2101']);
