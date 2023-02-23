@@ -55,3 +55,6 @@ export function basic_comparator<T>(a: T, b: T) {
         return 0;
     }
 }
+
+// https://stackoverflow.com/questions/41253310/typescript-retrieve-element-type-information-from-array-type
+export type ElementType<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer T)[] ? T : never;
