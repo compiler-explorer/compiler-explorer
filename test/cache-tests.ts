@@ -34,7 +34,7 @@ import {NullCache} from '../lib/cache/null';
 import {OnDiskCache} from '../lib/cache/on-disk';
 import {S3Cache} from '../lib/cache/s3';
 
-import {fs, path} from './utils';
+import {fs, path, shouldExist} from './utils';
 
 function newTempDir() {
     temp.track(true);
@@ -247,7 +247,9 @@ describe('S3 tests', () => {
             .should.eventually.contain({hit: false})
             .then(x => {
                 cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
-                err!.toString().should.equal('Error: Some s3 error');
+                if (shouldExist(err)) {
+                    err.toString().should.equal('Error: Some s3 error');
+                }
                 return x;
             });
     });

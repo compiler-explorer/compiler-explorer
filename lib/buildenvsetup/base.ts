@@ -38,7 +38,7 @@ export class BuildEnvSetupBase {
     protected compilerOptionsArr: string[];
     public compilerArch: string | boolean;
     protected compilerTypeOrGCC: any;
-    protected compilerSupportsX86: boolean;
+    public compilerSupportsX86: boolean;
 
     constructor(compilerInfo, env) {
         this.compiler = compilerInfo;
