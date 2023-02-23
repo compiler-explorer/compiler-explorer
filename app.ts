@@ -404,7 +404,6 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        logger.info('---------------------->', process.env.IDLE_TIMEOUT);
         const timeout = (idleTimeout === undefined ? 300 : parseInt(idleTimeout)) * 1000;
         if (idleTimeout) {
             const exit = () => {
