@@ -264,7 +264,7 @@ function contentPolicyHeader(/*res*/) {
     // }
 }
 
-function measureEventLoopLag(delayMs) {
+function measureEventLoopLag(delayMs: number) {
     return new Promise<number>(resolve => {
         const start = process.hrtime.bigint();
         setTimeout(() => {
@@ -309,7 +309,7 @@ let pugRequireHandler: (path: string) => any = () => {
     logger.error('pug require handler not configured');
 };
 
-async function setupWebPackDevMiddleware(router) {
+async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
     /* eslint-disable node/no-unpublished-import,import/extensions, */
@@ -332,7 +332,7 @@ async function setupWebPackDevMiddleware(router) {
     pugRequireHandler = path => urljoin(httpRoot, 'static', path);
 }
 
-async function setupStaticMiddleware(router) {
+async function setupStaticMiddleware(router: express.Router) {
     const staticManifest = await fs.readJson(path.join(distPath, 'manifest.json'));
 
     if (staticUrl) {
@@ -357,7 +357,7 @@ async function setupStaticMiddleware(router) {
     };
 }
 
-function shouldRedactRequestData(data) {
+function shouldRedactRequestData(data: string) {
     try {
         const parsed = JSON.parse(data);
         return !parsed['allowStoreCodeDebug'];
@@ -368,7 +368,7 @@ function shouldRedactRequestData(data) {
 
 const googleShortUrlResolver = new ShortLinkResolver();
 
-function oldGoogleUrlHandler(req, res, next) {
+function oldGoogleUrlHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
     const id = req.params.id;
     const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
     googleShortUrlResolver
@@ -398,7 +398,7 @@ function oldGoogleUrlHandler(req, res, next) {
         });
 }
 
-function startListening(server) {
+function startListening(server: express.Express) {
     const ss = systemdSocket();
     let _port;
     if (ss) {
@@ -444,7 +444,7 @@ function startListening(server) {
     }
 }
 
-function setupSentry(sentryDsn) {
+function setupSentry(sentryDsn: string) {
     if (!sentryDsn) {
         logger.info('Not configuring sentry');
         return;
@@ -671,7 +671,7 @@ async function main() {
         );
     }
 
-    const embeddedHandler = function (req, res) {
+    const embeddedHandler = function (req: express.Request, res: express.Response) {
         staticHeaders(res);
         contentPolicyHeader();
         res.render(
@@ -688,7 +688,7 @@ async function main() {
 
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
-    morgan.token('gdpr_ip', req => (req.ip ? utils.anonymizeIp(req.ip) : ''));
+    morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
@@ -841,14 +841,14 @@ process.on('SIGINT', signalHandler('SIGINT'));
 process.on('SIGTERM', signalHandler('SIGTERM'));
 process.on('SIGQUIT', signalHandler('SIGQUIT'));
 
-function signalHandler(name) {
+function signalHandler(name: string) {
     return () => {
         logger.info(`stopping process: ${name}`);
         process.exit(0);
     };
 }
 
-function uncaughtHandler(err, origin) {
+function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
     logger.info(`stopping process: Uncaught exception: ${err}\nException origin: ${origin}`);
     // The app will exit naturally from here, but if we call `process.exit()` we may lose log lines.
     // see https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411
