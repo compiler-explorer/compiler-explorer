@@ -45,6 +45,7 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws';
 import * as normalizer from './lib/clientstate-normalizer';
+import {ElementType} from './lib/common-utils';
 import {CompilationEnvironment} from './lib/compilation-env';
 import {CompilationQueue} from './lib/compilation-queue';
 import {CompilerFinder} from './lib/compiler-finder';
@@ -108,7 +109,7 @@ if (opts.debug) logger.level = 'debug';
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
     // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
-    process.env.wsl = 'foobar';
+    process.env.wsl = 'true';
 }
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
@@ -257,7 +258,7 @@ function staticHeaders(res) {
     }
 }
 
-function contentPolicyHeader(/*res*/) {
+function contentPolicyHeader(res: express.Response) {
     // TODO: re-enable CSP
     // if (csp) {
     //     res.setHeader('Content-Security-Policy', csp);
@@ -317,8 +318,9 @@ async function setupWebPackDevMiddleware(router: express.Router) {
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
     /* eslint-enable */
+    type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
 
-    const webpackCompiler = webpack(webpackConfig as any);
+    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
     router.use(
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/static',
@@ -493,8 +495,8 @@ async function main() {
     let prevCompilers;
 
     if (opts.prediscovered) {
-        const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered);
-        initialCompilers = JSON.parse(prediscoveredCompilersJson.toString());
+        const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
+        initialCompilers = JSON.parse(prediscoveredCompilersJson);
         await compilerFinder.loadPrediscovered(initialCompilers);
     } else {
         const initialFindResults = await compilerFinder.find();
@@ -652,7 +654,7 @@ async function main() {
 
     function renderGoldenLayout(config, metadata, req, res) {
         staticHeaders(res);
-        contentPolicyHeader();
+        contentPolicyHeader(res);
 
         const embedded = req.query.embedded === 'true' ? true : false;
 
@@ -673,7 +675,7 @@ async function main() {
 
     const embeddedHandler = function (req: express.Request, res: express.Response) {
         staticHeaders(res);
-        contentPolicyHeader();
+        contentPolicyHeader(res);
         res.render(
             'embed',
             renderConfig(
@@ -753,7 +755,7 @@ async function main() {
         .use(compression())
         .get('/', (req, res) => {
             staticHeaders(res);
-            contentPolicyHeader();
+            contentPolicyHeader(res);
             res.render(
                 'index',
                 renderConfig(
@@ -770,7 +772,7 @@ async function main() {
         .get('/embed.html', embeddedHandler)
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
-            contentPolicyHeader();
+            contentPolicyHeader(res);
             res.render(
                 'embed',
                 renderConfig(
@@ -800,7 +802,7 @@ async function main() {
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
-            contentPolicyHeader();
+            contentPolicyHeader(res);
             res.render(
                 `bits/${sanitize(req.params.bits)}`,
                 renderConfig(
