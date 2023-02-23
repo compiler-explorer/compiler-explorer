@@ -55,7 +55,7 @@ export class ApiHandler {
     private usedLangIds: LanguageKey[] = [];
     private options: ClientOptionsHandler | null = null;
     public readonly handle: express.Router;
-    private readonly shortener: BaseShortener;
+    public readonly shortener: BaseShortener;
     private release = {
         gitReleaseName: '',
         releaseBuildNumber: '',

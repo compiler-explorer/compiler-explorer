@@ -51,7 +51,7 @@ export class NoScriptHandler {
 
     formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
 
-    /* the type for config makes the most sense to define in app.js or api.js */
+    /* the type for config makes the most sense to define in app.ts or api.ts */
     constructor(private readonly router: express.Router, config: any) {
         this.staticHeaders = config.staticHeaders;
         this.contentPolicyHeader = config.contentPolicyHeader;

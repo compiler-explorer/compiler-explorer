@@ -66,6 +66,7 @@ import {sources} from './lib/sources';
 import {loadSponsorsFromString} from './lib/sponsors';
 import {getStorageTypeByKey} from './lib/storage';
 import * as utils from './lib/utils';
+import {Language, LanguageKey} from './types/languages.interfaces';
 
 // Used by assert.ts
 global.ce_base_directory = __dirname; // eslint-disable-line unicorn/prefer-module
@@ -106,7 +107,8 @@ if (opts.debug) logger.level = 'debug';
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
-    process.env.wsl = true;
+    // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
+    process.env.wsl = 'foobar';
 }
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
@@ -214,22 +216,24 @@ props.initialize(configDir, propHierarchy);
 const ceProps = props.propsFor('compiler-explorer');
 defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
 
-let languages = allLanguages;
-if (defArgs.wantedLanguages) {
-    const filteredLangs = {};
-    const passedLangs = defArgs.wantedLanguages.split(',');
-    for (const wantedLang of passedLangs) {
-        for (const langId in languages) {
-            const lang = languages[langId];
-            if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
-                filteredLangs[lang.id] = lang;
+const languages = (() => {
+    if (defArgs.wantedLanguages) {
+        const filteredLangs: Partial<Record<LanguageKey, Language>> = {};
+        const passedLangs = defArgs.wantedLanguages.split(',');
+        for (const wantedLang of passedLangs) {
+            for (const lang of Object.values(allLanguages)) {
+                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
+                    filteredLangs[lang.id] = lang;
+                }
             }
         }
+        // Always keep cmake for IDE mode, just in case
+        filteredLangs[allLanguages.cmake.id] = allLanguages.cmake;
+        return filteredLangs;
+    } else {
+        return allLanguages;
     }
-    // Always keep cmake for IDE mode, just in case
-    filteredLangs[languages.cmake.id] = languages.cmake;
-    languages = filteredLangs;
-}
+})();
 
 if (Object.keys(languages).length === 0) {
     logger.error('Trying to start Compiler Explorer without a language');
@@ -261,7 +265,7 @@ function contentPolicyHeader(/*res*/) {
 }
 
 function measureEventLoopLag(delayMs) {
-    return new Promise(resolve => {
+    return new Promise<number>(resolve => {
         const start = process.hrtime.bigint();
         setTimeout(() => {
             const elapsed = process.hrtime.bigint() - start;
@@ -301,7 +305,7 @@ function setupEventLoopLagLogging() {
     }
 }
 
-let pugRequireHandler = () => {
+let pugRequireHandler: (path: string) => any = () => {
     logger.error('pug require handler not configured');
 };
 
@@ -314,7 +318,7 @@ async function setupWebPackDevMiddleware(router) {
     const {default: webpack} = await import('webpack');
     /* eslint-enable */
 
-    const webpackCompiler = webpack(webpackConfig);
+    const webpackCompiler = webpack(webpackConfig as any);
     router.use(
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/static',
@@ -371,7 +375,7 @@ function oldGoogleUrlHandler(req, res, next) {
         .resolve(googleUrl)
         .then(resultObj => {
             const parsed = new url.URL(resultObj.longUrl);
-            const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
+            const allowedRe = new RegExp(ceProps<string>('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
                 logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
                 return next({
@@ -400,7 +404,8 @@ function startListening(server) {
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (idleTimeout === undefined ? 300 : idleTimeout) * 1000;
+        logger.info('---------------------->', process.env.IDLE_TIMEOUT);
+        const timeout = (idleTimeout === undefined ? 300 : parseInt(idleTimeout)) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -490,7 +495,7 @@ async function main() {
 
     if (opts.prediscovered) {
         const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered);
-        initialCompilers = JSON.parse(prediscoveredCompilersJson);
+        initialCompilers = JSON.parse(prediscoveredCompilersJson.toString());
         await compilerFinder.loadPrediscovered(initialCompilers);
     } else {
         const initialFindResults = await compilerFinder.find();
@@ -538,7 +543,7 @@ async function main() {
     };
 
     const noscriptHandler = new NoScriptHandler(router, handlerConfig);
-    const routeApi = new RouteAPI(router, handlerConfig, noscriptHandler.renderNoScriptLayout);
+    const routeApi = new RouteAPI(router, handlerConfig);
 
     async function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -616,7 +621,7 @@ async function main() {
 
     loadSiteTemplates(configDir);
 
-    function renderConfig(extra, urlOptions) {
+    function renderConfig(extra, urlOptions?) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
         const filteredUrlOptions = _.mapObject(_.pick(urlOptions, urlOptionsAllowed), val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
@@ -648,7 +653,7 @@ async function main() {
 
     function renderGoldenLayout(config, metadata, req, res) {
         staticHeaders(res);
-        contentPolicyHeader(res);
+        contentPolicyHeader();
 
         const embedded = req.query.embedded === 'true' ? true : false;
 
@@ -669,7 +674,7 @@ async function main() {
 
     const embeddedHandler = function (req, res) {
         staticHeaders(res);
-        contentPolicyHeader(res);
+        contentPolicyHeader();
         res.render(
             'embed',
             renderConfig(
@@ -749,7 +754,7 @@ async function main() {
         .use(compression())
         .get('/', (req, res) => {
             staticHeaders(res);
-            contentPolicyHeader(res);
+            contentPolicyHeader();
             res.render(
                 'index',
                 renderConfig(
@@ -766,7 +771,7 @@ async function main() {
         .get('/embed.html', embeddedHandler)
         .get('/embed-ro', (req, res) => {
             staticHeaders(res);
-            contentPolicyHeader(res);
+            contentPolicyHeader();
             res.render(
                 'embed',
                 renderConfig(
@@ -796,7 +801,7 @@ async function main() {
         })
         .use('/bits/:bits(\\w+).html', (req, res) => {
             staticHeaders(res);
-            contentPolicyHeader(res);
+            contentPolicyHeader();
             res.render(
                 `bits/${sanitize(req.params.bits)}`,
                 renderConfig(

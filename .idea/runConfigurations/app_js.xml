@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="app.js" type="NodeJSConfigurationType" application-parameters="--language c++" nameIsGenerated="true" node-parameters="-r esm -r ts-node/register" path-to-js-file="app.js" working-dir="$PROJECT_DIR$">
+  <configuration default="false" name="app.ts" type="NodeJSConfigurationType" application-parameters="--language c++" nameIsGenerated="true" node-parameters="-r esm -r ts-node/register" path-to-js-file="app.ts" working-dir="$PROJECT_DIR$">
     <method v="2" />
   </configuration>
 </component>
