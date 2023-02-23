@@ -261,7 +261,7 @@ export class AsmEWAVRParser extends AsmParser {
     resultObjectIntoArray(
         obj: ResultObject,
         filters: ParseFiltersAndOutputOptions,
-        ddefLabels: Record<string, number>,
+        ddefLabels: Record<string, number>
     ): ParsedAsmResult {
         // NOTES on EWAVR function and labels:
         // - template functions are not mangled with type info.

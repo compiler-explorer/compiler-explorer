@@ -85,7 +85,7 @@ export class AssemblyCompiler extends BaseCompiler {
             'readelf',
             this.env.ceProps('readelf'),
             ['-h', objectFilename],
-            execOptions,
+            execOptions
         );
     }
 
@@ -150,8 +150,8 @@ export class AssemblyCompiler extends BaseCompiler {
                 key.backendOptions,
                 inputFilename,
                 outputFilename,
-                key.libraries,
-            ),
+                key.libraries
+            )
         );
 
         const execOptions = this.getDefaultExecOptions();

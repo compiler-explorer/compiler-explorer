@@ -42,7 +42,7 @@ export class MrustcCompiler extends BaseCompiler {
         // Craft the 'outname' to have the intermediate .c file writen in outputFilename.
         const outname = path.join(
             path.dirname(this.filename(outputFilename)),
-            path.basename(this.filename(outputFilename), '.c'),
+            path.basename(this.filename(outputFilename), '.c')
         );
 
         // Currently always targets a rlib, no binary support at the moment.
@@ -60,7 +60,7 @@ export class MrustcCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         // mrustc will always invoke a C compiler on its C output to create a final exec/object.
         // There's no easy way to disable this last step, so simply faking it with 'true' works.

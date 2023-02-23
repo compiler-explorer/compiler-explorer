@@ -39,7 +39,7 @@ export class PELabelReconstructor {
         asmLines: string[],
         dontLabelUnmappedAddresses: boolean,
         mapFileReader: MapFileReader,
-        needsReconstruction = true,
+        needsReconstruction = true
     ) {
         this.asmLines = asmLines;
         this.addressesToLabel = [];
@@ -110,7 +110,7 @@ export class PELabelReconstructor {
                             !this.mapFileReader.isWithinAddressSpace(
                                 unitAddressSpaces,
                                 info.addressInt,
-                                info.segmentLength,
+                                info.segmentLength
                             )
                         ) {
                             this.deleteLinesBetweenAddresses(info.addressInt, info.addressInt + info.segmentLength);

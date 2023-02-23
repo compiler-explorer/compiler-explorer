@@ -70,7 +70,7 @@ function standardDeviation(values: number[]): number {
 function sponsorIconSetsOk(
     sponsorAppearanceCount: Map<Sponsor, number>,
     totalAppearances: number,
-    maxStandardDeviation: number,
+    maxStandardDeviation: number
 ): boolean {
     const countsByShowEvery: Map<number, number[]> = new Map();
     for (const [icon, count] of sponsorAppearanceCount.entries()) {
@@ -89,7 +89,7 @@ export function makeIconSets(
     icons: Sponsor[],
     maxIcons: number,
     maxIters = 100,
-    maxStandardDeviation = 0.5,
+    maxStandardDeviation = 0.5
 ): Sponsor[][] {
     const result: Sponsor[][] = [];
     const sponsorAppearanceCount: Map<Sponsor, number> = new Map();

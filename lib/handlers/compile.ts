@@ -66,7 +66,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
         if (status.busy) {
             cyclesBusy++;
             logger.warn(
-                `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`,
+                `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`
             );
             return;
         }
@@ -157,13 +157,13 @@ export class CompileHandler {
                     options: body.userArguments,
                     filters: Object.fromEntries(
                         ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
-                            key => [key, body[key] === 'true'],
-                        ),
+                            key => [key, body[key] === 'true']
+                        )
                     ),
                 });
             } else {
                 Sentry.captureException(
-                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
+                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`)
                 );
                 proxyReq.write('Unexpected Content-Type');
             }
@@ -256,7 +256,7 @@ export class CompileHandler {
             if (this.awsProps) {
                 logger.info('Fetching possible arguments from storage');
                 await Promise.all(
-                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
+                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps))
                 );
             }
             this.compilersById = compilersById;
@@ -382,7 +382,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true]),
+                    _.map(query.filters.split(','), filter => [filter, true])
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
@@ -547,7 +547,7 @@ export class CompileHandler {
                 tools,
                 executionParameters,
                 libraries,
-                files,
+                files
             )
             .then(
                 result => {
@@ -602,7 +602,7 @@ export class CompileHandler {
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;
                     }
                     res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
-                },
+                }
             );
     }
 }

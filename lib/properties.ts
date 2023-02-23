@@ -252,7 +252,7 @@ export class CompilerProps {
         langs: string | LanguageDef[] | Record<string, any>,
         key: string,
         defaultValue?: PropertyValue,
-        fn?: (item: PropertyValue, language?: any) => unknown,
+        fn?: (item: PropertyValue, language?: any) => unknown
     ) {
         const map_fn = fn || _.identity;
         if (_.isEmpty(langs)) {

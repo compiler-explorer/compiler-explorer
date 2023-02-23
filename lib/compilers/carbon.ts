@@ -64,7 +64,7 @@ export class CarbonCompiler extends BaseCompiler {
                 libraryCode: false,
                 trim: false,
             },
-            options,
+            options
         );
     }
 

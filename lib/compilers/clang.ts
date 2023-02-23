@@ -145,7 +145,7 @@ export class ClangCompiler extends BaseCompiler {
             const unbundleResult: UnprocessedExecResult = await this.exec(
                 this.offloadBundlerPath,
                 ['-unbundle', '--type', 's', '--inputs', bundlefile, '--outputs', bcfile, '--targets', devicename],
-                env,
+                env
             );
             if (unbundleResult.code !== 0) {
                 return unbundleResult.stderr;

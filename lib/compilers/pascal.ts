@@ -115,7 +115,7 @@ export class FPCCompiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ) {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
@@ -152,7 +152,7 @@ export class FPCCompiler extends BaseCompiler {
             'program prog;\n' +
             'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
             'begin\n' +
-            'end.\n',
+            'end.\n'
         );
     }
 
@@ -186,7 +186,7 @@ export class FPCCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

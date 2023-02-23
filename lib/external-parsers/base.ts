@@ -59,7 +59,7 @@ export class ExternalParserBase implements IExternalParser {
 
     private async writeStarterScriptObjdump(
         buildfolder: string,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ): Promise<string> {
         const scriptFilepath = path.join(buildfolder, starterScriptName);
 
@@ -73,7 +73,7 @@ export class ExternalParserBase implements IExternalParser {
                 },
                 () => {
                     resolve(maskRootdir(scriptFilepath));
-                },
+                }
             );
         });
     }
@@ -92,7 +92,7 @@ export class ExternalParserBase implements IExternalParser {
     public async objdumpAndParseAssembly(
         buildfolder: string,
         objdumpArgs: string[],
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ): Promise<ParsedAsmResult> {
         objdumpArgs = objdumpArgs.map(v => {
             return maskRootdir(v);

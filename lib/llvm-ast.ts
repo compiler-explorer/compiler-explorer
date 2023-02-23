@@ -67,7 +67,7 @@ export class LlvmAstParser {
     // reused when only a column specified.
     parseSpan(
         line: string,
-        lastLineNo: number | null,
+        lastLineNo: number | null
     ):
         | {type: typeof LlvmAstParser.locTypes.SPAN; begin: Point; end: Point}
         | {type: typeof LlvmAstParser.locTypes.POINT; loc: Point}

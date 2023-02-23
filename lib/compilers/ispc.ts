@@ -74,7 +74,7 @@ export class ISPCCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions)
         );
     }
 

@@ -72,7 +72,7 @@ export class StorageS3 extends StorageBase {
         this.table = awsProps('storageDynamoTable');
         logger.info(
             `Using s3 storage solution on ${region}, bucket ${bucket}, ` +
-                `prefix ${this.prefix}, dynamo table ${this.table}`,
+                `prefix ${this.prefix}, dynamo table ${this.table}`
         );
         AWS.config.update({region: region});
         this.s3 = new S3Bucket(bucket, region);

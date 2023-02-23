@@ -56,7 +56,7 @@ export class KotlinCompiler extends JavaCompiler {
     override filterUserOptions(userOptions: string[]) {
         // filter options without extra arguments
         userOptions = (userOptions || []).filter(
-            option => option !== '-script' && option !== '-progressive' && !option.startsWith('-Xjavac'),
+            option => option !== '-script' && option !== '-progressive' && !option.startsWith('-Xjavac')
         );
 
         const oneArgForbiddenList = new Set([
