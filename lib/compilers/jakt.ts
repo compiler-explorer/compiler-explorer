@@ -52,7 +52,7 @@ export class JaktCompiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ) {
         const objdumpResult = await super.objdump(
             outputFilename,
@@ -62,7 +62,7 @@ export class JaktCompiler extends BaseCompiler {
             demangle,
             staticReloc,
             dynamicReloc,
-            filters,
+            filters
         );
 
         objdumpResult.languageId = 'asm';

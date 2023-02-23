@@ -55,12 +55,12 @@ export class LLVMCovTool extends BaseTool {
             const compilationResult = await this.exec(
                 compilationInfo.compiler.exe,
                 compilationArgs,
-                compilationExecOptions,
+                compilationExecOptions
             );
 
             if (compilationResult.code !== 0) {
                 return this.createErrorResponse(
-                    `<Compilation error>\n${compilationResult.stdout}\n${compilationResult.stderr}`,
+                    `<Compilation error>\n${compilationResult.stdout}\n${compilationResult.stderr}`
                 );
             }
 
@@ -79,11 +79,11 @@ export class LLVMCovTool extends BaseTool {
             const profdataResult = await this.exec(
                 profdataPath,
                 ['merge', '-sparse', './default.profraw', '-o', './' + generatedProfdataName],
-                runExecOptions,
+                runExecOptions
             );
             if (profdataResult.code !== 0) {
                 return this.createErrorResponse(
-                    `<llvm-profdata error>\n${profdataResult.stdout}\n${profdataResult.stderr}`,
+                    `<llvm-profdata error>\n${profdataResult.stdout}\n${profdataResult.stderr}`
                 );
             }
 
@@ -99,7 +99,7 @@ export class LLVMCovTool extends BaseTool {
                     '-compilation-dir=./',
                     ...args,
                 ],
-                runExecOptions,
+                runExecOptions
             );
             if (covResult.code === 0) {
                 return this.convertResult(covResult, inputFilepath, path.dirname(this.tool.exe));

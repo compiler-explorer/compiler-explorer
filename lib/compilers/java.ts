@@ -51,7 +51,7 @@ export class JavaCompiler extends BaseCompiler {
                 disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
                 ...compilerInfo,
             },
-            env,
+            env
         );
         this.javaRuntime = this.compilerProps<string>(`compiler.${this.compiler.id}.runtime`);
         this.mainRegex = /public static ?(.*?) void main\(java\.lang\.String\[]\)/;
@@ -105,7 +105,7 @@ export class JavaCompiler extends BaseCompiler {
                         ];
                     }
                     return oneResult;
-                }),
+                })
         );
 
         const merged: ParsedAsmResult = {asm: []};
@@ -178,7 +178,7 @@ export class JavaCompiler extends BaseCompiler {
                         return classFile;
                     }
                     return null;
-                }),
+                })
         );
 
         const candidates = results.filter(file => file !== null);

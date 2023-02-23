@@ -56,7 +56,7 @@ export function loadSiteTemplates(configDir: string) {
             .filter(l => l !== '')
             .map(splitProperty)
             .map(pair => [pair[0], pair[1].replace(/^https:\/\/godbolt.org\/#/, '')]),
-        ([name, _]) => name.startsWith('meta.'),
+        ([name, _]) => name.startsWith('meta.')
     );
     siteTemplates.meta = Object.fromEntries(meta);
     siteTemplates.templates = Object.fromEntries(templates);

@@ -55,7 +55,7 @@ export class ErlangCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        staticLibLinks: string[]
     ): string[] {
         options.push('-input', inputFilename);
         return options.concat(libIncludes, libOptions, libPaths, libLinks, userOptions, staticLibLinks);

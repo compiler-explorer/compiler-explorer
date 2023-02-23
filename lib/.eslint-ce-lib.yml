@@ -11,25 +11,23 @@ env:
   node: true
   es6: false
 rules:
-  # TODO: Disabled for now
-  #comma-dangle:
-  #  - error
-  #  - arrays: always-multiline
-  #    objects: always-multiline
-  #    imports: always-multiline
-  #    exports: always-multiline
-  #    functions: never
+  comma-dangle:
+    - error
+    - arrays: always-multiline
+      objects: always-multiline
+      imports: always-multiline
+      exports: always-multiline
+      functions: never
   eol-last:
     - error
     - always
   eqeqeq:
     - error
     - smart
-  # TODO: Disabled for now
-  #indent:
-  #  - error
-  #  - 4
-  #  - SwitchCase: 1
+  indent:
+    - error
+    - 4
+    - SwitchCase: 1
   max-len:
     - error
     - 120

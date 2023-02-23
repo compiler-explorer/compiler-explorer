@@ -260,7 +260,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     allDownloads.push(
                         this.getPackageUrl(libVerBuilds.id, lookupversion, hash).then(downloadUrl => {
                             return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
-                        }),
+                        })
                     );
                 } else {
                     logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);

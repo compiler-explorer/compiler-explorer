@@ -44,7 +44,7 @@ export class RacketCompiler extends BaseCompiler {
                 disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
                 ...info,
             },
-            env,
+            env
         );
         this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
     }
@@ -52,7 +52,7 @@ export class RacketCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        userOptions?: string[]
     ): string[] {
         // We currently always compile to bytecode first and then decompile.
         // Forcing `binary` on like this ensures `objdump` will be called for
@@ -74,7 +74,7 @@ export class RacketCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -103,7 +103,7 @@ export class RacketCompiler extends BaseCompiler {
         demangle: any,
         staticReloc,
         dynamicReloc,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ): Promise<any> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
         const execOptions: ExecutionOptions = {

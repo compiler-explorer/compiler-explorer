@@ -64,15 +64,15 @@ export class CompilationEnvironment {
         this.badOptions = new RegExp(this.ceProps('optionsForbiddenRe', deprecatedForbidden));
         this.cache = createCacheFromConfig(
             'default',
-            doCache === undefined || doCache ? this.ceProps('cacheConfig', '') : '',
+            doCache === undefined || doCache ? this.ceProps('cacheConfig', '') : ''
         );
         this.executableCache = createCacheFromConfig(
             'executable',
-            doCache === undefined || doCache ? this.ceProps('executableCacheConfig', '') : '',
+            doCache === undefined || doCache ? this.ceProps('executableCacheConfig', '') : ''
         );
         this.compilerCache = createCacheFromConfig(
             'compiler',
-            doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : '',
+            doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : ''
         );
         this.reportCacheEvery = this.ceProps('cacheReportEvery', 100);
         this.multiarch = null;

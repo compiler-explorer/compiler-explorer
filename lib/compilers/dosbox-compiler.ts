@@ -155,7 +155,7 @@ export class DosboxCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         return super.runCompiler(
             compiler,
@@ -167,7 +167,7 @@ export class DosboxCompiler extends BaseCompiler {
                 }
             }),
             inputFilename,
-            execOptions,
+            execOptions
         );
     }
 }

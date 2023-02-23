@@ -48,7 +48,7 @@ export class DartCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
 

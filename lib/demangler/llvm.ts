@@ -74,7 +74,7 @@ export class LLVMIRDemangler extends BaseDemangler {
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const translations = [...this.symbolstore!.listTranslations(), ...this.othersymbols.listTranslations()].filter(
-            elem => elem[0] !== elem[1],
+            elem => elem[0] !== elem[1]
         );
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);

@@ -91,7 +91,7 @@ export class PythonCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        staticLibLinks: string[]
     ) {
         return options.concat(
             [this.filename(inputFilename)],
@@ -100,7 +100,7 @@ export class PythonCompiler extends BaseCompiler {
             libPaths,
             libLinks,
             userOptions,
-            staticLibLinks,
+            staticLibLinks
         );
     }
 }

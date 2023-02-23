@@ -104,7 +104,7 @@ export abstract class StorageBase {
             .then(result => {
                 logger.info(
                     `Unique subhash '${result.uniqueSubHash}' ` +
-                        `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`,
+                        `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`
                 );
                 if (result.alreadyPresent) {
                     return result;
