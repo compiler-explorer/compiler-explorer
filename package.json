@@ -173,7 +173,7 @@
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 .",
     "lint-files": "eslint --max-warnings=0",
-    "test": "mocha -b -r ts-node/register 'test/**/*.ts' 'test/**/*.ts'",
+    "test": "mocha -b -r ts-node/register 'test/**/*.ts' 'test/**/*.js'",
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
