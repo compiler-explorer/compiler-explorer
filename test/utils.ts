@@ -53,6 +53,21 @@ export function makeFakeParseFiltersAndOutputOptions(
 
 export const should = chai.should();
 
+// This compbines a shoudl assert and a type guard
+// Example:
+//
+//  let a: null|number = 1;
+//  if(shouldExist(a)) {}
+//    a.should.equal(1); /* No longer need ! because of type guard
+//  }
+//
+//  a = null;
+//  shouldExist(a); /* throws should.exist assertion
+export function shouldExist<T>(value: T, message?: string): value is Exclude<T, null | undefined> {
+    should.exist(value, message);
+    return true;
+}
+
 /***
  * Absolute path to the root of the tests
  */
