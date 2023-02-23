@@ -51,7 +51,10 @@ describe('Basic compiler invariants', function () {
 
     const info: Partial<CompilerInfo> = {
         exe: '',
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: 'c++',
         ldPath: [],
     };
@@ -141,7 +144,10 @@ describe('Compiler execution', function () {
     let win32compiler: Win32Compiler;
 
     const executingCompilerInfo = makeFakeCompilerInfo({
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: 'c++',
         ldPath: [],
         libPath: [],
@@ -150,7 +156,10 @@ describe('Compiler execution', function () {
         options: '--hello-abc -I"/opt/some thing 1.0/include" -march="magic 8bit"',
     });
     const win32CompilerInfo = makeFakeCompilerInfo({
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: 'c++',
         ldPath: [],
         supportsExecute: true,
@@ -158,13 +167,19 @@ describe('Compiler execution', function () {
         options: '/std=c++17 /I"C:/program files (x86)/Company name/Compiler 1.2.3/include" /D "MAGIC=magic 8bit"',
     });
     const noExecuteSupportCompilerInfo = makeFakeCompilerInfo({
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: 'c++',
         ldPath: [],
         libPath: [],
     });
     const someOptionsCompilerInfo = makeFakeCompilerInfo({
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: 'c++',
         ldPath: [],
         libPath: [],

@@ -43,7 +43,10 @@ describe('LLVM-mca tool definition', () => {
     before(() => {
         ce = makeCompilationEnvironment({languages});
         const info = makeFakeCompilerInfo({
-            remote: true,
+            remote: {
+                target: 'foo',
+                path: 'bar',
+            },
             lang: languages.analysis.id,
         });
         a = new LLVMmcaTool(info, ce);
@@ -81,7 +84,10 @@ describe('LLVM-mca tool definition', () => {
 
     it('should split if disabledFilters is a string', () => {
         const info = makeFakeCompilerInfo({
-            remote: true,
+            remote: {
+                target: 'foo',
+                path: 'bar',
+            },
             lang: 'analysis',
             disabledFilters: 'labels,directives' as any,
         });
