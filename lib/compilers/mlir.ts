@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -35,21 +35,24 @@ export class MLIRCompiler extends BaseCompiler {
         return 'mlir';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
-        if (!compilerInfo.disabledFilters) {
-            compilerInfo.disabledFilters = [
-                'binary',
-                'execute',
-                'demangle',
-                'intel',
-                'labels',
-                'libraryCode',
-                'directives',
-                'commentOnly',
-                'trim',
-            ];
-        }
-        super(compilerInfo, env);
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                disabledFilters: [
+                    'binary',
+                    'execute',
+                    'demangle',
+                    'intel',
+                    'labels',
+                    'libraryCode',
+                    'directives',
+                    'commentOnly',
+                    'trim',
+                ],
+                ...compilerInfo,
+            },
+            env
+        );
     }
 
     override getCompilerResultLanguageId() {
@@ -71,7 +74,7 @@ export class MLIRCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        userOptions?: string[]
     ): any[] {
         return [];
     }

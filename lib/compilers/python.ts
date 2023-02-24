@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {AsmResultSource, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {resolvePathFromAppRoot} from '../utils';
@@ -37,7 +37,7 @@ export class PythonCompiler extends BaseCompiler {
         return 'python';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -91,7 +91,7 @@ export class PythonCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        staticLibLinks: string[]
     ) {
         return options.concat(
             [this.filename(inputFilename)],
@@ -100,7 +100,7 @@ export class PythonCompiler extends BaseCompiler {
             libPaths,
             libLinks,
             userOptions,
-            staticLibLinks,
+            staticLibLinks
         );
     }
 }

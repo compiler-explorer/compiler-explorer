@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
@@ -46,7 +46,7 @@ export class PascalWinCompiler extends BaseCompiler {
     dprFilename: string;
     pasUtils: PascalUtils;
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         info.supportsFiltersInBinary = true;
 
@@ -119,7 +119,7 @@ export class PascalWinCompiler extends BaseCompiler {
             'program prog;\n' +
             'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
             'begin\n' +
-            'end.\n',
+            'end.\n'
         );
     }
 
@@ -151,7 +151,7 @@ export class PascalWinCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

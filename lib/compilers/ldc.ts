@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import semverParser from 'semver';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
 
@@ -40,7 +40,7 @@ export class LDCCompiler extends BaseCompiler {
 
     asanSymbolizerPath: string;
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -105,7 +105,7 @@ export class LDCCompiler extends BaseCompiler {
         const execOptions = this.getDefaultExecOptions();
         // TODO(#4654) generateAST expects to return a ResultLine[] not a string
         return this.loadASTOutput(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions)
         ) as any;
     }
 

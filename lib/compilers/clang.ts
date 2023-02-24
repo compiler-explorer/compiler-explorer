@@ -28,7 +28,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -46,7 +46,7 @@ export class ClangCompiler extends BaseCompiler {
         return 'clang';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsDeviceAsmView = true;
 
@@ -145,7 +145,7 @@ export class ClangCompiler extends BaseCompiler {
             const unbundleResult: UnprocessedExecResult = await this.exec(
                 this.offloadBundlerPath,
                 ['-unbundle', '--type', 's', '--inputs', bundlefile, '--outputs', bcfile, '--targets', devicename],
-                env,
+                env
             );
             if (unbundleResult.code !== 0) {
                 return unbundleResult.stderr;
@@ -184,7 +184,7 @@ export class ClangCudaCompiler extends ClangCompiler {
         return 'clang-cuda';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.asm = new SassAsmParser();
@@ -219,7 +219,7 @@ export class ClangHipCompiler extends ClangCompiler {
         return 'clang-hip';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.asm = new AmdgpuAsmParser();
@@ -235,7 +235,7 @@ export class ClangIntelCompiler extends ClangCompiler {
         return 'clang-intel';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         if (!this.offloadBundlerPath) {

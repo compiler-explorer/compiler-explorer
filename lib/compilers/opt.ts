@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -33,7 +33,7 @@ export class OptCompiler extends BaseCompiler {
         return 'opt';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsLLVMOptPipelineView = true;
         this.compiler.llvmOptArg = ['-print-after-all', '-print-before-all'];

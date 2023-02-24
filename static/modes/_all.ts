@@ -48,6 +48,7 @@ import './ispc-mode';
 import './jakt-mode';
 import './llvm-ir-mode';
 import './mlir-mode';
+import './modula2-mode';
 import './nc-mode';
 import './nim-mode';
 import './ocaml-mode';

@@ -47,7 +47,7 @@ export class ClangTidyTool extends BaseTool {
         inputFilepath: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, Library>
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;

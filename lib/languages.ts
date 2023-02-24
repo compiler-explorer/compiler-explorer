@@ -429,6 +429,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    modula2: {
+        name: 'modula2',
+        monaco: 'modula2',
+        extensions: ['.mod'],
+        alias: [],
+        logoUrl: null,
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     nim: {
         name: 'Nim',
         monaco: 'nim',

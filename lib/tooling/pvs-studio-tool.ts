@@ -92,7 +92,7 @@ export class PvsStudioTool extends BaseTool {
             path.dirname(this.tool.exe) + '/pvs-studio',
             // TODO: expand this to switch() for all supported compilers:
             // visualcpp, clang, gcc, bcc, bcc_clang64, iar, keil5, keil5_gnu
-            '--preprocessor',
+            '--preprocessor'
         );
         if (compilationInfo.compiler.group.includes('clang')) args.push('clang');
         else args.push('gcc');
@@ -124,7 +124,7 @@ export class PvsStudioTool extends BaseTool {
             'FAIL:1,2,3;GA:1,2,3',
             '-o',
             plogConverterOutputFilePath,
-            'pvs-studio-log.log',
+            'pvs-studio-log.log'
         );
 
         const plogExecOptions = this.getDefaultExecOptions();

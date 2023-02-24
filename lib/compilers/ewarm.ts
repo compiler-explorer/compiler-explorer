@@ -24,7 +24,7 @@
 
 import temp from 'temp';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {AsmEWAVRParser} from '../parsers/asm-parser-ewavr';
@@ -34,7 +34,7 @@ export class EWARMCompiler extends BaseCompiler {
         return 'ewarm';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new AsmEWAVRParser(this.compilerProps);
     }

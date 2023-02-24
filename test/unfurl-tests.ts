@@ -22,12 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import express from 'express';
+
 import {RouteAPI} from '../lib/handlers/route-api';
 
 import {fs} from './utils';
 
 describe('Basic unfurls', () => {
-    const router = null;
+    const router = null as any as express.Router;
     let config;
     let routeApi;
 
@@ -52,7 +54,7 @@ describe('Basic unfurls', () => {
     });
 
     it('Too many editors to meta', async () => {
-        const prom = new Promise((resolve, reject) => {
+        const prom = new Promise<any>((resolve, reject) => {
             config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
             };
@@ -81,7 +83,7 @@ describe('Basic unfurls', () => {
     });
 
     it('Just one editor', async () => {
-        const prom = new Promise((resolve, reject) => {
+        const prom = new Promise<any>((resolve, reject) => {
             config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
             };
@@ -111,7 +113,7 @@ describe('Basic unfurls', () => {
     });
 
     it('Tree things', async () => {
-        const prom = new Promise((resolve, reject) => {
+        const prom = new Promise<any>((resolve, reject) => {
             config.renderGoldenLayout = (config, metadata) => {
                 resolve({metadata});
             };

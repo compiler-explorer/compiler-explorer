@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import {unwrap} from '../lib/assert';
 import * as properties from '../lib/properties';
 
 import {should} from './utils';
@@ -170,9 +171,10 @@ describe('Properties blob parsing', () => {
             'hello = test \n' +
             'etc=123\n' +
             'mybool=false\n',
+            '<test props>',
         );
-        props.hello.should.equal('test');
-        props.etc.should.equal(123);
-        props.mybool.should.equal(false);
+        unwrap(props.hello).should.equal('test');
+        unwrap(props.etc).should.equal(123);
+        unwrap(props.mybool).should.equal(false);
     });
 });

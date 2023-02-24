@@ -58,7 +58,7 @@ function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string,
 
 export function makeKeyedTypeGetter<T extends Keyable>(
     typeName: string,
-    objects: Record<string, T>,
+    objects: Record<string, T>
 ): (key: string) => T {
     const keyMap = makeKeyMap(typeName, objects);
 
@@ -74,7 +74,7 @@ export function makeKeyedTypeGetter<T extends Keyable>(
 export function makeDefaultedKeyedTypeGetter<T extends Keyable>(
     typeName: string,
     objects: Record<string, T>,
-    defaultObject: T,
+    defaultObject: T
 ): (key: string) => T {
     const keyMap = makeKeyMap(typeName, objects);
 

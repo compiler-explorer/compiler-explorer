@@ -24,7 +24,7 @@
 
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {unwrap} from '../assert';
@@ -58,7 +58,7 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         const goroot = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goroot`);
         const goarch = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goarch`);
@@ -176,7 +176,7 @@ export class GolangCompiler extends BaseCompiler {
         collisions: number,
         ins: string,
         args: string,
-        usedLabels: Record<string, boolean>,
+        usedLabels: Record<string, boolean>
     ): string {
         // Check if last argument is a decimal number.
         const match = args.match(DECIMAL_RE);

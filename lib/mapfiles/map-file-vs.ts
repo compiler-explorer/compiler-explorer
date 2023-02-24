@@ -79,7 +79,7 @@ export class MapFileReaderVS extends MapFileReader {
 
             const segment = this.getSegmentInfoAddressWithoutOffsetIsIn(
                 symbolObject.segment,
-                symbolObject.addressWithoutOffset,
+                symbolObject.addressWithoutOffset
             );
             if (segment && !segment.unitName) {
                 segment.unitName = matches[6];

@@ -37,7 +37,7 @@ import {fileExists, resolvePathFromAppRoot} from './utils';
 
 export class CompilerArguments implements ICompilerArguments {
     private readonly compilerId: string;
-    private possibleArguments: PossibleArguments = {};
+    public possibleArguments: PossibleArguments = {};
     private readonly maxPopularArguments = 5;
     private readonly storeSpecificArguments = false;
     private loadedFromFile = false;

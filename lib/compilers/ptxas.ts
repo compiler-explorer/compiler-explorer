@@ -25,7 +25,7 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -39,7 +39,7 @@ export class PtxAssembler extends BaseCompiler {
         return 'ptxas';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compileFilename = 'example.ptxas';
         this.asm = new SassAsmParser();
@@ -93,7 +93,7 @@ export class PtxAssembler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

@@ -27,7 +27,7 @@ import path from 'path';
 import _ from 'underscore';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
@@ -41,7 +41,7 @@ export class CLSPVCompiler extends BaseCompiler {
         return 'clspv';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.asm = new SPIRVAsmParser(this.compilerProps);
@@ -68,7 +68,7 @@ export class CLSPVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         const sourceDir = path.dirname(inputFilename);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);

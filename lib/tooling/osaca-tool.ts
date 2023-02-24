@@ -56,7 +56,7 @@ export class OSACATool extends BaseTool {
             compilationInfo.asmParser,
             compilationInfo.asm,
             compilationInfo.filters,
-            rewrittenOutputFilename,
+            rewrittenOutputFilename
         );
         return super.runTool(compilationInfo, rewrittenOutputFilename, args);
     }

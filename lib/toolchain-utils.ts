@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-export function getToolchainPath(compilerExe: string, compilerOptions?: string): string | false {
+export function getToolchainPath(compilerExe: string | null, compilerOptions?: string): string | false {
     const options = compilerOptions ? compilerOptions.split(' ') : [];
     const existingChain = options.find(elem => elem.includes('--gcc-toolchain='));
     if (existingChain) return existingChain.substring(16);

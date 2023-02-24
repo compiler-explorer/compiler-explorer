@@ -1,4 +1,4 @@
-// Copyright (c) 2018, Eugen Bulavin
+// Copyright (c) 2023, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,41 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import {GCCCompiler} from './gcc';
 
-import {PascalParser} from './argument-parsers';
-
-export class OCamlCompiler extends BaseCompiler {
-    static get key() {
-        return 'ocaml';
-    }
-
-    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
-        super(compilerInfo, env);
-        // override output base because ocaml's -S -o has different semantics.
-        // namely, it outputs a full binary exe to the supposed asm dump.
-        // with this override and optionsForFilter override, that pecularity..
-        // ..is bypassed entirely.
-        this.outputFilebase = 'example';
-    }
-
-    override getSharedLibraryPathsAsArguments() {
-        return [];
-    }
-
-    override optionsForFilter(filters: ParseFiltersAndOutputOptions, outputFileName: string) {
-        const options = ['-g'];
-        if (filters.binary) {
-            options.unshift('-o', outputFileName);
-        } else {
-            options.unshift('-S', '-c');
-        }
-        return options;
-    }
-
-    override getArgumentParser() {
-        return PascalParser;
+export class GM2Compiler extends GCCCompiler {
+    static override get key() {
+        return 'gm2';
     }
 }

@@ -30,7 +30,7 @@ import path from 'path';
 import temp from 'temp';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {unwrap} from '../assert';
 import {VcAsmParser} from '../parsers/asm-parser-vc';
 
@@ -41,7 +41,7 @@ export class WslVcCompiler extends Win32VcCompiler {
         return 'wsl-vc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new VcAsmParser();
     }

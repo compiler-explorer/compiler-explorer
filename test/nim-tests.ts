@@ -38,7 +38,10 @@ describe('Nim', () => {
     let ce;
     const info = {
         exe: '/dev/null',
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: languages.nim.id,
     };
 

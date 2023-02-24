@@ -32,7 +32,7 @@ const MAX_STATIC_AGE = propsFor('asm-docs')('staticMaxAgeSecs', 10);
 const onDocumentationProviderRequest = (
     provider: BaseAssemblyDocumentationProvider,
     request: express.Request,
-    response: express.Response,
+    response: express.Response
 ) => {
     // If the request had no opcode parameter, we should fail. This assumes
     // no assembly language has a __unknown_opcode instruction.

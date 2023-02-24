@@ -45,6 +45,7 @@ import urljoin from 'url-join';
 
 import * as aws from './lib/aws';
 import * as normalizer from './lib/clientstate-normalizer';
+import {ElementType} from './lib/common-utils';
 import {CompilationEnvironment} from './lib/compilation-env';
 import {CompilationQueue} from './lib/compilation-queue';
 import {CompilerFinder} from './lib/compiler-finder';
@@ -66,6 +67,7 @@ import {sources} from './lib/sources';
 import {loadSponsorsFromString} from './lib/sponsors';
 import {getStorageTypeByKey} from './lib/storage';
 import * as utils from './lib/utils';
+import {Language, LanguageKey} from './types/languages.interfaces';
 
 // Used by assert.ts
 global.ce_base_directory = __dirname; // eslint-disable-line unicorn/prefer-module
@@ -106,7 +108,8 @@ if (opts.debug) logger.level = 'debug';
 // AP: Detect if we're running under Windows Subsystem for Linux. Temporary modification
 // of process.env is allowed: https://nodejs.org/api/process.html#process_process_env
 if (process.platform === 'linux' && child_process.execSync('uname -a').toString().includes('Microsoft')) {
-    process.env.wsl = true;
+    // Node wants process.env is essentially a Record<key, string | undefined>. Any non-empty string should be fine.
+    process.env.wsl = 'true';
 }
 
 // AP: Allow setting of tmpDir (used in lib/base-compiler.js & lib/exec.js) through opts.
@@ -214,22 +217,24 @@ props.initialize(configDir, propHierarchy);
 const ceProps = props.propsFor('compiler-explorer');
 defArgs.wantedLanguages = ceProps('restrictToLanguages', defArgs.wantedLanguages);
 
-let languages = allLanguages;
-if (defArgs.wantedLanguages) {
-    const filteredLangs = {};
-    const passedLangs = defArgs.wantedLanguages.split(',');
-    for (const wantedLang of passedLangs) {
-        for (const langId in languages) {
-            const lang = languages[langId];
-            if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
-                filteredLangs[lang.id] = lang;
+const languages = (() => {
+    if (defArgs.wantedLanguages) {
+        const filteredLangs: Partial<Record<LanguageKey, Language>> = {};
+        const passedLangs = defArgs.wantedLanguages.split(',');
+        for (const wantedLang of passedLangs) {
+            for (const lang of Object.values(allLanguages)) {
+                if (lang.id === wantedLang || lang.name === wantedLang || lang.alias === wantedLang) {
+                    filteredLangs[lang.id] = lang;
+                }
             }
         }
+        // Always keep cmake for IDE mode, just in case
+        filteredLangs[allLanguages.cmake.id] = allLanguages.cmake;
+        return filteredLangs;
+    } else {
+        return allLanguages;
     }
-    // Always keep cmake for IDE mode, just in case
-    filteredLangs[languages.cmake.id] = languages.cmake;
-    languages = filteredLangs;
-}
+})();
 
 if (Object.keys(languages).length === 0) {
     logger.error('Trying to start Compiler Explorer without a language');
@@ -253,15 +258,15 @@ function staticHeaders(res) {
     }
 }
 
-function contentPolicyHeader(/*res*/) {
+function contentPolicyHeader(res: express.Response) {
     // TODO: re-enable CSP
     // if (csp) {
     //     res.setHeader('Content-Security-Policy', csp);
     // }
 }
 
-function measureEventLoopLag(delayMs) {
-    return new Promise(resolve => {
+function measureEventLoopLag(delayMs: number) {
+    return new Promise<number>(resolve => {
         const start = process.hrtime.bigint();
         setTimeout(() => {
             const elapsed = process.hrtime.bigint() - start;
@@ -301,11 +306,11 @@ function setupEventLoopLagLogging() {
     }
 }
 
-let pugRequireHandler = () => {
+let pugRequireHandler: (path: string) => any = () => {
     logger.error('pug require handler not configured');
 };
 
-async function setupWebPackDevMiddleware(router) {
+async function setupWebPackDevMiddleware(router: express.Router) {
     logger.info('  using webpack dev middleware');
 
     /* eslint-disable node/no-unpublished-import,import/extensions, */
@@ -313,8 +318,9 @@ async function setupWebPackDevMiddleware(router) {
     const {default: webpackConfig} = await import('./webpack.config.esm.js');
     const {default: webpack} = await import('webpack');
     /* eslint-enable */
+    type WebpackConfiguration = ElementType<Parameters<typeof webpack>[0]>;
 
-    const webpackCompiler = webpack(webpackConfig);
+    const webpackCompiler = webpack([webpackConfig as WebpackConfiguration]);
     router.use(
         webpackDevMiddleware(webpackCompiler, {
             publicPath: '/static',
@@ -328,7 +334,7 @@ async function setupWebPackDevMiddleware(router) {
     pugRequireHandler = path => urljoin(httpRoot, 'static', path);
 }
 
-async function setupStaticMiddleware(router) {
+async function setupStaticMiddleware(router: express.Router) {
     const staticManifest = await fs.readJson(path.join(distPath, 'manifest.json'));
 
     if (staticUrl) {
@@ -353,7 +359,7 @@ async function setupStaticMiddleware(router) {
     };
 }
 
-function shouldRedactRequestData(data) {
+function shouldRedactRequestData(data: string) {
     try {
         const parsed = JSON.parse(data);
         return !parsed['allowStoreCodeDebug'];
@@ -364,14 +370,14 @@ function shouldRedactRequestData(data) {
 
 const googleShortUrlResolver = new ShortLinkResolver();
 
-function oldGoogleUrlHandler(req, res, next) {
+function oldGoogleUrlHandler(req: express.Request, res: express.Response, next: express.NextFunction) {
     const id = req.params.id;
     const googleUrl = `https://goo.gl/${encodeURIComponent(id)}`;
     googleShortUrlResolver
         .resolve(googleUrl)
         .then(resultObj => {
             const parsed = new url.URL(resultObj.longUrl);
-            const allowedRe = new RegExp(ceProps('allowedShortUrlHostRe'));
+            const allowedRe = new RegExp(ceProps<string>('allowedShortUrlHostRe'));
             if (parsed.host.match(allowedRe) === null) {
                 logger.warn(`Denied access to short URL ${id} - linked to ${resultObj.longUrl}`);
                 return next({
@@ -394,13 +400,13 @@ function oldGoogleUrlHandler(req, res, next) {
         });
 }
 
-function startListening(server) {
+function startListening(server: express.Express) {
     const ss = systemdSocket();
     let _port;
     if (ss) {
         // ms (5 min default)
         const idleTimeout = process.env.IDLE_TIMEOUT;
-        const timeout = (idleTimeout === undefined ? 300 : idleTimeout) * 1000;
+        const timeout = (idleTimeout === undefined ? 300 : parseInt(idleTimeout)) * 1000;
         if (idleTimeout) {
             const exit = () => {
                 logger.info('Inactivity timeout reached, exiting.');
@@ -440,7 +446,7 @@ function startListening(server) {
     }
 }
 
-function setupSentry(sentryDsn) {
+function setupSentry(sentryDsn: string) {
     if (!sentryDsn) {
         logger.info('Not configuring sentry');
         return;
@@ -489,7 +495,7 @@ async function main() {
     let prevCompilers;
 
     if (opts.prediscovered) {
-        const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered);
+        const prediscoveredCompilersJson = await fs.readFile(opts.prediscovered, 'utf8');
         initialCompilers = JSON.parse(prediscoveredCompilersJson);
         await compilerFinder.loadPrediscovered(initialCompilers);
     } else {
@@ -538,7 +544,7 @@ async function main() {
     };
 
     const noscriptHandler = new NoScriptHandler(router, handlerConfig);
-    const routeApi = new RouteAPI(router, handlerConfig, noscriptHandler.renderNoScriptLayout);
+    const routeApi = new RouteAPI(router, handlerConfig);
 
     async function onCompilerChange(compilers) {
         if (JSON.stringify(prevCompilers) === JSON.stringify(compilers)) {
@@ -616,7 +622,7 @@ async function main() {
 
     loadSiteTemplates(configDir);
 
-    function renderConfig(extra, urlOptions) {
+    function renderConfig(extra, urlOptions?) {
         const urlOptionsAllowed = ['readOnly', 'hideEditorToolbars', 'language'];
         const filteredUrlOptions = _.mapObject(_.pick(urlOptions, urlOptionsAllowed), val => utils.toProperty(val));
         const allExtraOptions = _.extend({}, filteredUrlOptions, extra);
@@ -667,7 +673,7 @@ async function main() {
         );
     }
 
-    const embeddedHandler = function (req, res) {
+    const embeddedHandler = function (req: express.Request, res: express.Response) {
         staticHeaders(res);
         contentPolicyHeader(res);
         res.render(
@@ -684,7 +690,7 @@ async function main() {
 
     await (isDevMode() ? setupWebPackDevMiddleware(router) : setupStaticMiddleware(router));
 
-    morgan.token('gdpr_ip', req => (req.ip ? utils.anonymizeIp(req.ip) : ''));
+    morgan.token('gdpr_ip', (req: any) => (req.ip ? utils.anonymizeIp(req.ip) : ''));
 
     // Based on combined format, but: GDPR compliant IP, no timestamp & no unused fields for our usecase
     const morganFormat = isDevMode() ? 'dev' : ':gdpr_ip ":method :url" :status';
@@ -837,14 +843,14 @@ process.on('SIGINT', signalHandler('SIGINT'));
 process.on('SIGTERM', signalHandler('SIGTERM'));
 process.on('SIGQUIT', signalHandler('SIGQUIT'));
 
-function signalHandler(name) {
+function signalHandler(name: string) {
     return () => {
         logger.info(`stopping process: ${name}`);
         process.exit(0);
     };
 }
 
-function uncaughtHandler(err, origin) {
+function uncaughtHandler(err: Error, origin: NodeJS.UncaughtExceptionOrigin) {
     logger.info(`stopping process: Uncaught exception: ${err}\nException origin: ${origin}`);
     // The app will exit naturally from here, but if we call `process.exit()` we may lose log lines.
     // see https://github.com/winstonjs/winston/issues/1504#issuecomment-1033087411

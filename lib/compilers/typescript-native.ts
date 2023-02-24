@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -37,7 +37,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
     tscJit: string;
     tscSharedLib: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.compiler.supportsIntel = false;
@@ -69,7 +69,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ): Promise<CompilationResult> {
         // These options make Clang produce an IR
         const newOptions = ['--emit=mlir-llvm', inputFilename];
@@ -82,7 +82,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             this.tscJit,
             newOptions,
             this.filename(inputFilename),
-            execOptions,
+            execOptions
         );
         if (output.code !== 0) {
             return {
@@ -116,7 +116,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             this.tscJit,
             newOptions,
             this.filename(inputFilename),
-            execOptions,
+            execOptions
         );
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];

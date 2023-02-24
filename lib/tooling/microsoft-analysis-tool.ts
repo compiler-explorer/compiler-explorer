@@ -81,7 +81,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, Library>
     ) {
         const sourcefile = inputFilepath;
         const options = compilationInfo.options;
@@ -100,7 +100,7 @@ export class MicrosoftAnalysisTool extends BaseTool {
             '/analyze:external-',
             '/external:env:INCLUDE',
             '/external:W0',
-            this.tool.options,
+            this.tool.options
         );
 
         return await this.runCompilerTool(compilationInfo, sourcefile, compileFlags, stdin);

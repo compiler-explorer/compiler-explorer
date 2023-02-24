@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
@@ -44,12 +44,15 @@ export class JavaCompiler extends BaseCompiler {
     javaRuntime: string;
     mainRegex: RegExp;
 
-    constructor(compilerInfo: CompilerInfo, env) {
-        // Default is to disable all "cosmetic" filters
-        if (!compilerInfo.disabledFilters) {
-            compilerInfo.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
-        }
-        super(compilerInfo, env);
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                // Default is to disable all "cosmetic" filters
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                ...compilerInfo,
+            },
+            env
+        );
         this.javaRuntime = this.compilerProps<string>(`compiler.${this.compiler.id}.runtime`);
         this.mainRegex = /public static ?(.*?) void main\(java\.lang\.String\[]\)/;
     }
@@ -102,7 +105,7 @@ export class JavaCompiler extends BaseCompiler {
                         ];
                     }
                     return oneResult;
-                }),
+                })
         );
 
         const merged: ParsedAsmResult = {asm: []};
@@ -175,7 +178,7 @@ export class JavaCompiler extends BaseCompiler {
                         return classFile;
                     }
                     return null;
-                }),
+                })
         );
 
         const candidates = results.filter(file => file !== null);

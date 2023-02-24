@@ -58,6 +58,7 @@ export type LanguageKey =
     | 'llvm'
     | 'llvm_mir'
     | 'mlir'
+    | 'modula2'
     | 'nim'
     | 'ocaml'
     | 'objc'

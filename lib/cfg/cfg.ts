@@ -46,7 +46,7 @@ const parsers = makeDefaultedKeyedTypeGetter(
         ClangCFGParser,
         GccCFGParser,
     },
-    BaseCFGParser,
+    BaseCFGParser
 );
 const instructionSets = makeDefaultedKeyedTypeGetter('instruction set info provider', {}, BaseInstructionSetInfo);
 

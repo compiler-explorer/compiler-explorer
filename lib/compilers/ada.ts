@@ -25,7 +25,7 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
@@ -35,7 +35,7 @@ export class AdaCompiler extends BaseCompiler {
         return 'ada';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsGccDump = true;
         this.compiler.removeEmptyGccDump = true;
@@ -75,7 +75,7 @@ export class AdaCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries,
+        libraries
     ) {
         backendOptions = backendOptions || {};
 
@@ -111,14 +111,14 @@ export class AdaCompiler extends BaseCompiler {
             '-g',
             '-fdiagnostics-color=always',
             '-eS', // output commands to stdout, they are not errors
-            inputFilename,
+            inputFilename
         );
 
         if (!filters.execute && !filters.binary && !filters.binaryObject) {
             gnatmake_opts.push(
                 '-S', // Generate ASM
                 '-c', // Compile only
-                '-fverbose-asm', // Generate verbose ASM showing variables
+                '-fverbose-asm' // Generate verbose ASM showing variables
             );
 
             // produce assembly output in outputFilename
@@ -131,7 +131,7 @@ export class AdaCompiler extends BaseCompiler {
             }
         } else if (filters.binaryObject) {
             gnatmake_opts.push(
-                '-c', // Compile only
+                '-c' // Compile only
             );
 
             // produce assembly output in outputFilename
