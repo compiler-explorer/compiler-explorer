@@ -26,17 +26,21 @@ import child_process from 'child_process';
 
 import {WineVcCompiler} from '../lib/compilers/wine-vc';
 import {WslVcCompiler} from '../lib/compilers/wsl-vc';
+import {LanguageKey} from '../types/languages.interfaces';
 
-import {makeCompilationEnvironment} from './utils';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
 
 const languages = {
     'c++': {id: 'c++'},
 };
 
 const info = {
-    lang: languages['c++'].id,
-    exe: null,
-    remote: true,
+    lang: languages['c++'].id as LanguageKey,
+    exe: '/dev/null',
+    remote: {
+        target: 'foo',
+        path: 'bar',
+    },
 };
 
 describe('Paths', () => {
@@ -47,14 +51,14 @@ describe('Paths', () => {
     });
 
     it('Linux -> Wine path', () => {
-        const compiler = new WineVcCompiler(info, env);
+        const compiler = new WineVcCompiler(makeFakeCompilerInfo(info), env);
         compiler.filename('/tmp/123456/output.s').should.equal('Z:/tmp/123456/output.s');
     });
 
     it('Linux -> Windows path', function () {
         process.env.winTmp = '/mnt/c/tmp';
 
-        const compiler = new WslVcCompiler(info, env);
+        const compiler = new WslVcCompiler(makeFakeCompilerInfo(info), env);
         compiler.filename('/mnt/c/tmp/123456/output.s').should.equal('c:/tmp/123456/output.s');
     });
 });

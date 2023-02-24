@@ -71,8 +71,8 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob, name) {
-    const props = {};
+export function parseProperties(blob: string, name) {
+    const props: Record<string, PropertyValue> = {};
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
@@ -82,7 +82,7 @@ export function parseProperties(blob, name) {
             continue;
         }
         const prop = split[1].trim();
-        let val = split[2].trim();
+        let val: string | number | boolean = split[2].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
         if (!prop.endsWith('.version') && !prop.endsWith('.semver')) {

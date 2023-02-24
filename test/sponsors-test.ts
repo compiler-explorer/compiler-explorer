@@ -24,7 +24,9 @@
 
 import fs from 'fs';
 
+import {unwrap} from '../lib/assert';
 import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors';
+import {Sponsor} from '../lib/sponsors.interfaces';
 
 import {resolvePathFromTestRoot, should} from './utils';
 
@@ -48,22 +50,22 @@ describe('Sponsors', () => {
         should.equal(obj.statsId, undefined);
     });
     it('should make descriptions always one-sized arrays', () => {
-        parse({name: 'moo', description: 'desc'}).description.should.deep.eq(['desc']);
+        unwrap(parse({name: 'moo', description: 'desc'}).description).should.deep.eq(['desc']);
     });
     it('should pass through descriptions', () => {
-        parse({name: 'moo', description: ['desc1', 'desc2']}).description.should.deep.eq(['desc1', 'desc2']);
+        unwrap(parse({name: 'moo', description: ['desc1', 'desc2']}).description).should.deep.eq(['desc1', 'desc2']);
     });
     it('should pass through icons', () => {
-        parse({name: 'bob', icon: 'icon'}).icon.should.eq('icon');
+        unwrap(parse({name: 'bob', icon: 'icon'}).icon).should.eq('icon');
     });
     it('should pick icons over images', () => {
-        parse({name: 'bob', img: 'img', icon: 'icon'}).icon.should.eq('icon');
+        unwrap(parse({name: 'bob', img: 'img', icon: 'icon'}).icon).should.eq('icon');
     });
     it('should pick icons if not img', () => {
-        parse({name: 'bob', img: 'img'}).icon.should.eq('img');
+        unwrap(parse({name: 'bob', img: 'img'}).icon).should.eq('img');
     });
     it('should pick dark icons if specified', () => {
-        parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark.should.eq('icon_dark');
+        unwrap(parse({name: 'bob', icon: 'icon', icon_dark: 'icon_dark'}).icon_dark).should.eq('icon_dark');
     });
     it('should handle topIcons', () => {
         parse({name: 'bob', topIconShowEvery: 2}).topIconShowEvery.should.eq(2);
@@ -232,7 +234,7 @@ describe('Our specific sponsor file', () => {
         const expectedNumIcons = 3;
 
         const sponsors = loadSponsorsFromString(stringConfig);
-        const picks = [];
+        const picks: Sponsor[][] = [];
         for (let load = 0; load < numLoads; ++load) {
             picks.push(sponsors.pickTopIcons());
         }

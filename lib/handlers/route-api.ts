@@ -35,7 +35,7 @@ import * as utils from '../utils';
 
 import {ApiHandler} from './api';
 
-type HandlerConfig = {
+export type HandlerConfig = {
     compileHandler: any;
     clientOptionsHandler: any;
     storageHandler: StorageBase;
