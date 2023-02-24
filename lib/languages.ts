@@ -418,6 +418,17 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         previewFilter: null,
         monacoDisassembly: null,
     },
+    llvm_mir: {
+        name: 'LLVM MIR',
+        monaco: 'llvm-ir',
+        extensions: ['.mir'],
+        alias: [],
+        logoUrl: 'llvm.png',
+        logoUrlDark: null,
+        formatter: null,
+        previewFilter: null,
+        monacoDisassembly: null,
+    },
     modula2: {
         name: 'modula2',
         monaco: 'modula2',

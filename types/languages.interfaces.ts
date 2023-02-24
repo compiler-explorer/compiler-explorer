@@ -56,6 +56,7 @@ export type LanguageKey =
     | 'julia'
     | 'kotlin'
     | 'llvm'
+    | 'llvm_mir'
     | 'mlir'
     | 'modula2'
     | 'nim'
