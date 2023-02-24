@@ -25,7 +25,7 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -34,7 +34,7 @@ export class JaktCompiler extends BaseCompiler {
         return 'jakt';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
 
         this.outputFilebase = 'example';
@@ -52,7 +52,7 @@ export class JaktCompiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ) {
         const objdumpResult = await super.objdump(
             outputFilename,
@@ -62,7 +62,7 @@ export class JaktCompiler extends BaseCompiler {
             demangle,
             staticReloc,
             dynamicReloc,
-            filters,
+            filters
         );
 
         objdumpResult.languageId = 'asm';

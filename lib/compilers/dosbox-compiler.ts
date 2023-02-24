@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as exec from '../exec';
 import {logger} from '../logger';
@@ -37,7 +37,7 @@ export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;
     private readonly root: string;
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.dosbox = this.compilerProps<string>(`compiler.${this.compiler.id}.dosbox`);
@@ -155,7 +155,7 @@ export class DosboxCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         return super.runCompiler(
             compiler,
@@ -167,7 +167,7 @@ export class DosboxCompiler extends BaseCompiler {
                 }
             }),
             inputFilename,
-            execOptions,
+            execOptions
         );
     }
 }

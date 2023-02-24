@@ -51,7 +51,7 @@ export class NoScriptHandler {
 
     formDataParser: ReturnType<typeof bodyParser.urlencoded> | undefined;
 
-    /* the type for config makes the most sense to define in app.js or api.js */
+    /* the type for config makes the most sense to define in app.ts or api.ts */
     constructor(private readonly router: express.Router, config: any) {
         this.staticHeaders = config.staticHeaders;
         this.contentPolicyHeader = config.contentPolicyHeader;
@@ -87,8 +87,8 @@ export class NoScriptHandler {
                             embedded: false,
                             mobileViewer: isMobileViewer(req),
                         },
-                        req.query,
-                    ),
+                        req.query
+                    )
                 );
             })
             .get('/noscript/:language', (req, res) => {
@@ -183,8 +183,8 @@ export class NoScriptHandler {
                     clientstate: state,
                     storedStateId: req.params.id || false,
                 },
-                req.query,
-            ),
+                req.query
+            )
         );
     }
 }

@@ -33,7 +33,7 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler} from '../../types/compiler.interfaces';
+import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
@@ -48,6 +48,7 @@ import {
     CompileRequestTextBody,
     ExecutionRequestParams,
 } from './compile.interfaces';
+import {remove} from '../common-utils';
 
 temp.track();
 
@@ -65,7 +66,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
         if (status.busy) {
             cyclesBusy++;
             logger.warn(
-                `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`,
+                `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`
             );
             return;
         }
@@ -156,13 +157,13 @@ export class CompileHandler {
                     options: body.userArguments,
                     filters: Object.fromEntries(
                         ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
-                            key => [key, body[key] === 'true'],
-                        ),
+                            key => [key, body[key] === 'true']
+                        )
                     ),
                 });
             } else {
                 Sentry.captureException(
-                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
+                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`)
                 );
                 proxyReq.write('Unexpected Content-Type');
             }
@@ -185,11 +186,11 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler): Promise<ICompiler | null> {
+    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
-        let compilerClass;
+        let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e) {
@@ -237,14 +238,14 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: ICompiler[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
             let compilersCreated = 0;
-            const createdCompilers = _.compact(await Promise.all(_.map(compilers, this.create, this)));
+            const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
             for (const compiler of createdCompilers) {
                 const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};
@@ -255,7 +256,7 @@ export class CompileHandler {
             if (this.awsProps) {
                 logger.info('Fetching possible arguments from storage');
                 await Promise.all(
-                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
+                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps))
                 );
             }
             this.compilersById = compilersById;
@@ -381,7 +382,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true]),
+                    _.map(query.filters.split(','), filter => [filter, true])
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
@@ -546,7 +547,7 @@ export class CompileHandler {
                 tools,
                 executionParameters,
                 libraries,
-                files,
+                files
             )
             .then(
                 result => {
@@ -601,7 +602,7 @@ export class CompileHandler {
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;
                     }
                     res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
-                },
+                }
             );
     }
 }

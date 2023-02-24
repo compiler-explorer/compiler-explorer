@@ -143,7 +143,7 @@ export class BaseTool implements ITool {
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>,
+        supportedLibraries?: Record<string, Library>
     ) {
         if (this.tool.name) {
             toolCounter.inc({

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -31,7 +31,7 @@ export class CL430Compiler extends BaseCompiler {
         return 'cl430';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         // We need to have the same name for the C/C++ file as we expect for the output file
@@ -41,7 +41,7 @@ export class CL430Compiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        userOptions?: string[]
     ): string[] {
         return [
             // -g AKA --symdebug:dwarf generates too much noise for the default parser to deal with

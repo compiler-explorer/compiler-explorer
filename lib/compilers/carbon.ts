@@ -24,7 +24,7 @@
 
 import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {ResultLine} from '../../types/resultline/resultline.interfaces';
 import {unwrap} from '../assert';
@@ -37,7 +37,7 @@ export class CarbonCompiler extends BaseCompiler {
         return 'carbon';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -64,7 +64,7 @@ export class CarbonCompiler extends BaseCompiler {
                 libraryCode: false,
                 trim: false,
             },
-            options,
+            options
         );
     }
 

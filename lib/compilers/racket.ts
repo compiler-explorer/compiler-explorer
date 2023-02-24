@@ -25,7 +25,7 @@
 import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {logger} from '../logger';
@@ -37,19 +37,22 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info: CompilerInfo, env) {
-        // Disable output filters, as they currently don't do anything
-        if (!info.disabledFilters) {
-            info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
-        }
-        super(info, env);
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                // Disable output filters, as they currently don't do anything
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                ...info,
+            },
+            env
+        );
         this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
     }
 
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[],
+        userOptions?: string[]
     ): string[] {
         // We currently always compile to bytecode first and then decompile.
         // Forcing `binary` on like this ensures `objdump` will be called for
@@ -71,7 +74,7 @@ export class RacketCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -100,7 +103,7 @@ export class RacketCompiler extends BaseCompiler {
         demangle: any,
         staticReloc,
         dynamicReloc,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ): Promise<any> {
         // Decompile to assembly via `raco decompile` with `disassemble` package
         const execOptions: ExecutionOptions = {

@@ -27,7 +27,7 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
 import {BaseCompiler} from '../base-compiler';
@@ -40,7 +40,7 @@ export class ZigCompiler extends BaseCompiler {
         return 'zig';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
         this.compiler.supportsIrView = true;
@@ -108,7 +108,7 @@ export class ZigCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions: string[],
+        userOptions: string[]
     ): string[] {
         let options = [filters.execute ? 'build-exe' : 'build-obj'];
 
@@ -140,7 +140,7 @@ export class ZigCompiler extends BaseCompiler {
                 '--output',
                 this.filename(outputFilename),
                 '--output-h',
-                '/dev/null',
+                '/dev/null'
             );
         }
 

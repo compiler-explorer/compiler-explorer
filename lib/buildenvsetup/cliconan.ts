@@ -102,7 +102,7 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
             '-s', `compiler.libcxx=${libcxx}`,
             '-s', `arch=${arch}`,
             '-s', `stdver=${stdver}`,
-            '-s', `flagcollection=${flagcollection}`,
+            '-s', `flagcollection=${flagcollection}`
         );
 
         logger.info('Conan install: ', args);

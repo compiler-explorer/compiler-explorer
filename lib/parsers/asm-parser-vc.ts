@@ -288,7 +288,7 @@ export class VcAsmParser extends AsmParser {
     resultObjectIntoArray(
         obj: ResultObject,
         filters: ParseFiltersAndOutputOptions,
-        ddefLabelsUsed: string[],
+        ddefLabelsUsed: string[]
     ): ParsedAsmResult {
         const collator = new Intl.Collator();
 

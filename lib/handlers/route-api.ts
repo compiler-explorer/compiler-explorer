@@ -35,7 +35,7 @@ import * as utils from '../utils';
 
 import {ApiHandler} from './api';
 
-type HandlerConfig = {
+export type HandlerConfig = {
     compileHandler: any;
     clientOptionsHandler: any;
     storageHandler: StorageBase;
@@ -64,7 +64,7 @@ export class RouteAPI {
                 config.compileHandler,
                 config.ceProps,
                 config.storageHandler,
-                config.clientOptionsHandler.options.urlShortenService,
+                config.clientOptionsHandler.options.urlShortenService
             );
 
             this.apiHandler.setReleaseInfo(config.defArgs.gitReleaseName, config.defArgs.releaseBuildNumber);

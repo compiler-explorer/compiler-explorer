@@ -14,7 +14,7 @@
   "engines": {
     "node": ">=16"
   },
-  "main": "./app.js",
+  "main": "./app.ts",
   "esm": {
     "mode": "all",
     "cache": false
@@ -24,6 +24,7 @@
     "@fortawesome/fontawesome-free": "^6.2.1",
     "@sentry/browser": "^7.28.1",
     "@sentry/node": "^7.28.1",
+    "@types/morgan": "^1.9.4",
     "aws-sdk": "^2.1048.0",
     "big-integer": "^1.6.51",
     "body-parser": "^1.19.1",
@@ -100,8 +101,8 @@
     "@types/file-saver": "^2.0.5",
     "@types/fs-extra": "^9.0.13",
     "@types/http-proxy": "^1.17.9",
-    "@types/js-cookie": "^3.0.2",
     "@types/jquery": "^3.5.10",
+    "@types/js-cookie": "^3.0.2",
     "@types/mocha": "^8.2.2",
     "@types/node-targz": "^0.2.0",
     "@types/qs": "^6.9.7",
@@ -176,10 +177,10 @@
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
-    "dev": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js",
-    "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm -r ts-node/register app.js --debug",
-    "debug": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.js --debug",
-    "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm -r ts-node/register app.js",
+    "dev": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.ts",
+    "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm -r ts-node/register app.ts --debug",
+    "debug": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.ts --debug",
+    "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm -r ts-node/register app.ts",
     "codecov": "codecov --disable=gcov",
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",

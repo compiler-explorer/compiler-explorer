@@ -29,6 +29,7 @@ import _ from 'underscore';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
+import {unwrap} from '../assert';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
@@ -62,7 +63,9 @@ export class PonyCompiler extends BaseCompiler {
     }
 
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
-        const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(this.compiler.irArg);
+        const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
+            unwrap(this.compiler.irArg)
+        );
 
         const execOptions = this.getDefaultExecOptions();
         // A higher max output is needed for when the user includes headers
@@ -80,7 +83,7 @@ export class PonyCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

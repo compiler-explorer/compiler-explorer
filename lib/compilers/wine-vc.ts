@@ -25,7 +25,7 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {MapFileReaderVS} from '../mapfiles/map-file-vs';
@@ -39,7 +39,7 @@ export class WineVcCompiler extends BaseCompiler {
         return 'wine-vc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         info.supportsFiltersInBinary = true;
         super(info, env);
         this.asm = new VcAsmParser();

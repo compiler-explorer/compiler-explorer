@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 
 import {RustCompiler} from './rust';
@@ -34,7 +34,7 @@ export class RustcCgGCCCompiler extends RustCompiler {
         return 'rustc-cg-gcc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = false;
 

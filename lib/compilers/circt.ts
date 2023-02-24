@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -35,21 +35,24 @@ export class CIRCTCompiler extends BaseCompiler {
         return 'circt';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
-        if (!compilerInfo.disabledFilters) {
-            compilerInfo.disabledFilters = [
-                'binary',
-                'execute',
-                'demangle',
-                'intel',
-                'labels',
-                'libraryCode',
-                'directives',
-                'commentOnly',
-                'trim',
-            ];
-        }
-        super(compilerInfo, env);
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                disabledFilters: [
+                    'binary',
+                    'execute',
+                    'demangle',
+                    'intel',
+                    'labels',
+                    'libraryCode',
+                    'directives',
+                    'commentOnly',
+                    'trim',
+                ],
+                ...compilerInfo,
+            },
+            env
+        );
     }
 
     override getOutputFilename(dirPath: string): string {

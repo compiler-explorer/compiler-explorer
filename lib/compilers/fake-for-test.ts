@@ -45,7 +45,7 @@ export class FakeCompiler implements ICompiler {
                 lang: 'fake-lang',
                 options: '',
             },
-            info,
+            info
         );
         this.lang = {id: this.compiler.lang, name: `Language ${this.compiler.lang}`};
         this.info = info;
@@ -91,7 +91,7 @@ export class FakeCompiler implements ICompiler {
                     files: files,
                     options: options,
                 },
-            }),
+            })
         );
     }
 }

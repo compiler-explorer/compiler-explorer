@@ -25,7 +25,7 @@
 import path from 'path';
 
 import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 
@@ -38,7 +38,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         return 'avrgcc6502';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
 
         this.avrgccpath = this.compilerProps<string>(`compiler.${this.compiler.id}.avrgccpath`);
@@ -70,7 +70,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

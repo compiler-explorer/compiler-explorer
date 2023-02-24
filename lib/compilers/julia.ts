@@ -26,7 +26,7 @@ import path from 'path';
 
 import {ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import * as utils from '../utils';
@@ -40,7 +40,7 @@ export class JuliaCompiler extends BaseCompiler {
         return 'julia';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.demangler = '';
         this.demanglerClass = null;
@@ -108,7 +108,7 @@ export class JuliaCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions,
+        execOptions: ExecutionOptions
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

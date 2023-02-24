@@ -25,19 +25,20 @@
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {asSafeVer} from '../utils';
 
 import {ISPCParser} from './argument-parsers';
+import {unwrap} from '../assert';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {
         return 'ispc';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIrView = true;
         this.compiler.irArg = ['--emit-llvm-text'];
@@ -56,7 +57,7 @@ export class ISPCCompiler extends BaseCompiler {
     }
 
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
-        const newOptions = [...options, ...this.compiler.irArg, '-o', this.getIrOutputFilename(inputFilename)];
+        const newOptions = [...options, ...unwrap(this.compiler.irArg), '-o', this.getIrOutputFilename(inputFilename)];
         return super.generateIR(inputFilename, newOptions, filters);
     }
 
@@ -73,7 +74,7 @@ export class ISPCCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
+            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions)
         );
     }
 

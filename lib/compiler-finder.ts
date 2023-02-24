@@ -27,19 +27,21 @@ import https from 'https';
 import path from 'path';
 import {promisify} from 'util';
 
-import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import {Language} from '../types/languages.interfaces';
+import {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces';
 
+import {unwrap} from './assert';
 import {InstanceFetcher} from './aws';
 import {CompileHandler} from './handlers/compile';
 import {logger} from './logger';
 import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler';
-import {CompilerProps, RawPropertiesGetter} from './properties';
-import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
+import {CompilerProps} from './properties';
+import {PropertyGetter} from './properties.interfaces';
+import {basic_comparator, remove} from './common-utils';
 
 const sleep = promisify(setTimeout);
 
@@ -61,7 +63,7 @@ export class CompilerFinder {
         compilerProps: CompilerProps,
         awsProps: PropertyGetter,
         args: OptionHandlerArguments,
-        optionsHandler: ClientOptionsHandler,
+        optionsHandler: ClientOptionsHandler
     ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
@@ -78,7 +80,13 @@ export class CompilerFinder {
         return this.awsPoller.getInstances();
     }
 
-    async fetchRemote(host, port, uriBase, props, langId) {
+    async fetchRemote(
+        host: string,
+        port: number,
+        uriBase: string,
+        props: PropertyGetter,
+        langId: string | null
+    ): Promise<CompilerInfo[] | null> {
         const requestLib = port === 443 ? https : http;
         const uriSchema = port === 443 ? 'https' : 'http';
         const uri = urljoin(`${uriSchema}://${host}:${port}`, uriBase);
@@ -86,7 +94,7 @@ export class CompilerFinder {
         logger.info(`Fetching compilers from remote source ${uri}`);
         return this.retryPromise(
             () => {
-                return new Promise((resolve, reject) => {
+                return new Promise<CompilerInfo[]>((resolve, reject) => {
                     const request = requestLib
                         .get(
                             {
@@ -108,12 +116,12 @@ export class CompilerFinder {
                                     error = new Error(
                                         'Failed fetching remote compilers from ' +
                                             `${uriSchema}://${host}:${port}${apiPath}\n` +
-                                            `Status Code: ${statusCode}`,
+                                            `Status Code: ${statusCode}`
                                     );
                                 } else if (!contentType || !/^application\/json/.test(contentType)) {
                                     error = new Error(
                                         'Invalid content-type.\n' +
-                                            `Expected application/json but received ${contentType}`,
+                                            `Expected application/json but received ${contentType}`
                                     );
                                 }
                                 if (error) {
@@ -129,14 +137,14 @@ export class CompilerFinder {
                                 });
                                 res.on('end', () => {
                                     try {
-                                        const compilers = JSON.parse(str).map(compiler => {
+                                        const compilers = (JSON.parse(str) as CompilerInfo[]).map(compiler => {
                                             // Fix up old upstream implementations of Compiler Explorer
                                             // e.g. https://www.godbolt.ms
                                             // (see https://github.com/compiler-explorer/compiler-explorer/issues/1768)
                                             if (!compiler.alias) compiler.alias = [];
                                             if (typeof compiler.alias == 'string') compiler.alias = [compiler.alias];
                                             // End fixup
-                                            compiler.exe = null;
+                                            compiler.exe = '/dev/null';
                                             compiler.remote = {
                                                 target: `${uriSchema}://${host}:${port}`,
                                                 path: urljoin('/', uriBase, 'api/compiler', compiler.id, 'compile'),
@@ -149,7 +157,7 @@ export class CompilerFinder {
                                         reject(e);
                                     }
                                 });
-                            },
+                            }
                         )
                         .on('error', reject)
                         .on('timeout', () => reject('timeout'));
@@ -158,7 +166,7 @@ export class CompilerFinder {
             },
             `${host}:${port}`,
             props('proxyRetries', 5),
-            props('proxyRetryMs', 500),
+            props('proxyRetryMs', 500)
         ).catch(() => {
             logger.warn(`Unable to contact ${host}:${port}; skipping`);
             return [];
@@ -168,28 +176,34 @@ export class CompilerFinder {
     async fetchAws() {
         logger.info('Fetching instances from AWS');
         const instances = await this.awsInstances();
-        return Promise.all(
-            (instances.filter(instance => instance !== undefined) as AWS.EC2.Instance[]).map(instance => {
-                logger.info('Checking instance ' + instance.InstanceId);
-                const address = this.awsProps('externalTestMode', false)
-                    ? instance.PublicDnsName
-                    : instance.PrivateDnsName;
-                return this.fetchRemote(address, this.args.port, '', this.awsProps, null);
-            }),
+        return remove(
+            (
+                await Promise.all(
+                    instances.map(instance => {
+                        logger.info('Checking instance ' + instance.InstanceId);
+                        const address = this.awsProps('externalTestMode', false)
+                            ? instance.PublicDnsName
+                            : instance.PrivateDnsName;
+                        return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
+                    })
+                )
+            ).flat(),
+            null
         );
     }
 
-    async compilerConfigFor(langId: string, compilerId: string, parentProps: RawPropertiesGetter) {
+    async compilerConfigFor(
+        langId: string,
+        compilerId: string,
+        parentProps: CompilerProps['get']
+    ): Promise<PreliminaryCompilerInfo | null> {
         const base = `compiler.${compilerId}.`;
 
-        function props(propName: string, defaultValue: undefined): PropertyValue;
-        function props<T extends PropertyValue>(propName: string, defaultValue: Widen<T>): typeof defaultValue;
-        function props<T extends PropertyValue>(propName: string, defaultValue?: unknown): T;
-        function props(propName: string, defaultValue?: unknown) {
+        const props: PropertyGetter = (propName: string, defaultValue?: any) => {
             const propsForCompiler = parentProps(langId, base + propName);
             if (propsForCompiler !== undefined) return propsForCompiler;
             return parentProps(langId, propName, defaultValue);
-        }
+        };
 
         const ceToolsPath = props('ceToolsPath', './');
 
@@ -206,10 +220,10 @@ export class CompilerFinder {
         const demangler = demanglerProp ? path.normalize(demanglerProp.replace('${ceToolsPath}', ceToolsPath)) : '';
 
         const isSemVer = props('isSemVer', false);
-        const baseName = props('baseName', null);
+        const baseName = props<string | undefined>('baseName');
         const semverVer = props('semver', '');
 
-        const name = props('name');
+        const name = props<string>('name');
 
         // If name set, display that as the name
         // If not, check if we have a baseName + semver and display that
@@ -219,7 +233,7 @@ export class CompilerFinder {
 
         const baseOptions = props('baseOptions', '');
         const options = props('options', '');
-        const actualOptions = _.compact([baseOptions, options]).join(' ');
+        const actualOptions = [baseOptions, options].filter(x => x.length > 0).join(' ');
 
         const envVars = (() => {
             const envVarsString = props('envVars', '');
@@ -235,15 +249,17 @@ export class CompilerFinder {
         })();
         const exe = props('exe', compilerId);
         const exePath = path.dirname(exe);
-        const compilerInfo = {
+        const compilerInfo: PreliminaryCompilerInfo = {
             id: compilerId,
             exe: exe,
             name: displayName,
-            alias: _.filter(props('alias', '').split(':'), a => a !== ''),
+            alias: props('alias', '')
+                .split(':')
+                .filter(a => a !== ''),
             options: actualOptions,
-            versionFlag: props('versionFlag'),
-            versionRe: props('versionRe'),
-            explicitVersion: props('explicitVersion'),
+            versionFlag: props<string>('versionFlag'),
+            versionRe: props<string>('versionRe'),
+            explicitVersion: props<string>('explicitVersion'),
             compilerType: props('compilerType', ''),
             debugPatched: props('debugPatched', false),
             demangler: demangler,
@@ -264,7 +280,7 @@ export class CompilerFinder {
             executionWrapper,
             supportsLibraryCodeFilter: supportsLibraryCodeFilter,
             postProcess: props('postProcess', '').split('|'),
-            lang: langId,
+            lang: langId as LanguageKey,
             group: group,
             groupName: props('groupName', ''),
             includeFlag: props('includeFlag', '-isystem'),
@@ -300,84 +316,94 @@ export class CompilerFinder {
                 },
             },
             license: {
-                link: props('licenseLink'),
-                name: props('licenseName'),
-                preamble: props('licensePreamble'),
+                link: props<string>('licenseLink'),
+                name: props<string>('licenseName'),
+                preamble: props<string>('licensePreamble'),
             },
         };
 
         if (props('demanglerClassFile') !== undefined) {
             logger.error(
                 `Error in compiler.${compilerId}: ` +
-                    'demanglerClassFile is no longer supported, please use demanglerType',
+                    'demanglerClassFile is no longer supported, please use demanglerType'
             );
-            return [];
+            return null;
         }
 
         logger.debug('Found compiler', compilerInfo);
         return compilerInfo;
     }
 
-    getSupportedLibrariesArr(props) {
-        return _.filter(props('supportsLibraries', '').split(':'), a => a !== '');
+    getSupportedLibrariesArr(props: PropertyGetter) {
+        return props('supportsLibraries', '')
+            .split(':')
+            .filter(a => a !== '');
     }
 
-    async recurseGetCompilers(langId, compilerName, parentProps) {
+    async recurseGetCompilers(
+        langId: string,
+        compilerName: string,
+        parentProps: CompilerProps['get']
+    ): Promise<PreliminaryCompilerInfo[]> {
         // Don't treat @ in paths as remote addresses if requested
         if (this.args.fetchCompilersFromRemote && compilerName.includes('@')) {
             const bits = compilerName.split('@');
             const host = bits[0];
             const pathParts = bits[1].split('/');
-            const port = parseInt(pathParts.shift());
+            const port = parseInt(unwrap(pathParts.shift()));
             const path = pathParts.join('/');
-            return this.fetchRemote(host, port, path, this.ceProps, langId);
+            return (await this.fetchRemote(host, port, path, this.ceProps, langId)) || [];
         }
         if (compilerName.indexOf('&') === 0) {
-            const groupName = compilerName.substr(1);
+            const groupName = compilerName.substring(1);
 
-            const props = (langId, name, def) => {
+            const props: CompilerProps['get'] = (langId, name, def?): any => {
                 if (name === 'group') {
                     return groupName;
                 }
                 return this.compilerProps(langId, `group.${groupName}.${name}`, parentProps(langId, name, def));
             };
-            const exes = _.compact(this.compilerProps(langId, `group.${groupName}.compilers`, '').split(':'));
+            const exes = this.compilerProps(langId, `group.${groupName}.compilers`, '')
+                .split(':')
+                .filter(s => s !== '');
             logger.debug(`Processing compilers from group ${groupName}`);
-            return Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)));
+            return (await Promise.all(exes.map(compiler => this.recurseGetCompilers(langId, compiler, props)))).flat();
         }
         if (compilerName === 'AWS') return this.fetchAws();
-        return this.compilerConfigFor(langId, compilerName, parentProps);
+        return remove([await this.compilerConfigFor(langId, compilerName, parentProps)], null);
     }
 
     async getCompilers() {
-        const compilers: any[] = [];
-        _.each(this.getExes(), (exs, langId) => {
-            _.each(exs, exe => compilers.push(this.recurseGetCompilers(langId, exe, this.compilerProps)));
-        });
-        return Promise.all(compilers);
+        const compilers: Promise<PreliminaryCompilerInfo[]>[] = [];
+        for (const [langId, exs] of Object.entries(this.getExes())) {
+            for (const exe of exs) {
+                compilers.push(this.recurseGetCompilers(langId, exe, this.compilerProps));
+            }
+        }
+        return (await Promise.all(compilers)).flat();
     }
 
-    ensureDistinct(compilers: any[]) {
-        const ids: Record<string, any> = {};
+    ensureDistinct(compilers: CompilerInfo[]) {
+        const ids: Record<string, CompilerInfo[]> = {};
         let foundClash = false;
-        _.each(compilers, compiler => {
+        for (const compiler of compilers) {
             if (!ids[compiler.id]) ids[compiler.id] = [];
             ids[compiler.id].push(compiler);
-        });
-        _.each(ids, (list, id) => {
+        }
+        for (const [id, list] of Object.entries(ids)) {
             if (list.length !== 1) {
                 foundClash = true;
                 logger.error(
-                    `Compiler ID clash for '${id}' - used by ${_.map(list, o => `lang:${o.lang} name:${o.name}`).join(
-                        ', ',
-                    )}`,
+                    `Compiler ID clash for '${id}' - used by ${list
+                        .map(o => `lang:${o.lang} name:${o.name}`)
+                        .join(', ')}`
                 );
             }
-        });
+        }
         return {compilers, foundClash};
     }
 
-    async retryPromise(promiseFunc, name, maxFails, retryMs) {
+    async retryPromise<T>(promiseFunc: () => Promise<T>, name: string, maxFails: number, retryMs: number) {
         for (let fails = 0; fails < maxFails; ++fails) {
             try {
                 return await promiseFunc();
@@ -391,11 +417,12 @@ export class CompilerFinder {
                 }
             }
         }
+        return null;
     }
 
     getExes() {
         const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs =>
-            _.compact((exs as string).split(':')),
+            exs.split(':').filter(s => s !== '')
         );
         this.addNdkExes(langToCompilers);
         logger.info('Exes found:', langToCompilers);
@@ -404,7 +431,7 @@ export class CompilerFinder {
 
     addNdkExes(langToCompilers) {
         const ndkPaths = this.compilerProps(this.languages, 'androidNdk') as unknown as Record<string, string>;
-        _.each(ndkPaths, (ndkPath, langId) => {
+        for (const [langId, ndkPath] of Object.entries(ndkPaths)) {
             if (ndkPath) {
                 const toolchains = fs.readdirSync(`${ndkPath}/toolchains`);
                 for (const [version, index] of toolchains) {
@@ -416,26 +443,27 @@ export class CompilerFinder {
                         toolchains[index] = null;
                     }
                 }
+                // TODO: Something awful is going on with the type of toolchains here
                 langToCompilers[langId].push(toolchains.filter(x => x !== null));
             }
-        });
+        }
     }
 
     async find() {
         const compilerList = await this.getCompilers();
-        const compilers = await this.compileHandler.setCompilers(
-            compilerList.flat(Infinity),
-            this.optionsHandler.get(),
-        );
+        const compilers = await this.compileHandler.setCompilers(compilerList, this.optionsHandler.get());
         if (!compilers) {
             logger.error('#### No compilers found: no compilation will be done!');
             throw new Error('No compilers found due to error or no configuration');
         }
-        const result = this.ensureDistinct(_.compact(compilers));
-        return {foundClash: result.foundClash, compilers: _.sortBy(result.compilers, 'name')};
+        const result = this.ensureDistinct(compilers);
+        return {
+            foundClash: result.foundClash,
+            compilers: result.compilers.sort((a, b) => basic_comparator(a.name, b.name)),
+        };
     }
 
-    async loadPrediscovered(compilers) {
+    async loadPrediscovered(compilers: CompilerInfo[]) {
         for (const compiler of compilers) {
             const langId = compiler.lang;
 
@@ -455,11 +483,11 @@ export class CompilerFinder {
                 const fullOptions = this.optionsHandler.get();
 
                 const toolinstances = {};
-                _.each(compiler.tools, (v, toolId) => {
+                for (const toolId in compiler.tools) {
                     if (fullOptions.tools[langId][toolId]) {
                         toolinstances[toolId] = fullOptions.tools[langId][toolId];
                     }
-                });
+                }
                 compiler.tools = toolinstances;
             }
         }

@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {unwrap} from '../assert';
 import {BaseCompiler} from '../base-compiler';
@@ -41,7 +41,7 @@ export class NimCompiler extends BaseCompiler {
         return 'nim';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.compiler.supportsIntel = true;
     }
@@ -126,7 +126,7 @@ export class NimCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[],
+        staticLibLinks: string[]
     ) {
         return options.concat(
             libIncludes,
@@ -135,7 +135,7 @@ export class NimCompiler extends BaseCompiler {
             libLinks,
             userOptions,
             [this.filename(inputFilename)],
-            staticLibLinks,
+            staticLibLinks
         );
     }
 }

@@ -55,7 +55,7 @@ export function executeDirect(
     command: string,
     args: string[],
     options: ExecutionOptions,
-    filenameTransform?: FilenameTransformFunc,
+    filenameTransform?: FilenameTransformFunc
 ): Promise<UnprocessedExecResult> {
     options = options || {};
     const maxOutput = options.maxOutput || 1024 * 1024;
@@ -199,7 +199,7 @@ export function getNsJailOptions(
     configName: string,
     command: string,
     args: string[],
-    options: ExecutionOptions,
+    options: ExecutionOptions
 ): NsJailOptions {
     options = {...options};
     const jailingOptions = ['--config', getNsJailCfgFilePath(configName)];
@@ -369,7 +369,7 @@ const sandboxDispatchTable = {
 export async function sandbox(
     command: string,
     args: string[],
-    options: ExecutionOptions,
+    options: ExecutionOptions
 ): Promise<UnprocessedExecResult> {
     const type = execProps('sandboxType', 'firejail');
     const dispatchEntry = sandboxDispatchTable[type];
@@ -432,7 +432,7 @@ export function startWineInit() {
                     wine,
                     'cmd',
                 ],
-                {env: env, detached: true},
+                {env: env, detached: true}
             );
             logger.info(`firejailed pid=${wineServer.pid}`);
         } else {
@@ -484,7 +484,7 @@ export function startWineInit() {
                 }
             });
             wineServer.stderr.on('data', data =>
-                logger.info(`stderr output from wine server complex: ${data.toString().trim()}`),
+                logger.info(`stderr output from wine server complex: ${data.toString().trim()}`)
             );
             wineServer.on('error', e => {
                 logger.error(`WINE server complex exited with error ${e}`);
@@ -526,7 +526,7 @@ async function executeFirejail(command, args, options) {
     const firejail = execProps<string>('firejail');
     const baseOptions = withFirejailTimeout(
         ['--quiet', '--deterministic-exit-code', '--deterministic-shutdown'],
-        options,
+        options
     );
     if (needsWine(command)) {
         logger.debug('WINE execution via firejail', {command, args});
@@ -583,7 +583,7 @@ const executeDispatchTable = {
 export async function execute(
     command: string,
     args: string[],
-    options: ExecutionOptions,
+    options: ExecutionOptions
 ): Promise<UnprocessedExecResult> {
     const type = execProps('executionType', 'none');
     const dispatchEntry = executeDispatchTable[type];
