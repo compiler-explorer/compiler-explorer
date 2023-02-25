@@ -46,6 +46,7 @@ function passesMatch(before: string, after: string) {
     before = before.slice('IR Dump Before '.length);
     after = after.slice('IR Dump After '.length);
     // Observed to happen in clang 13+ for LoopDeletionPass
+    // Also for SimpleLoopUnswitchPass
     if (after.endsWith(' (invalidated)')) {
         after = after.slice(0, after.length - ' (invalidated)'.length);
     }
@@ -284,7 +285,10 @@ export class LlvmPassDumpParser {
                 if (name !== '<loop>') {
                     previousFunction = name;
                 }
-            } else {
+            } else if(!header.endsWith('(invalidated)')) {
+                // Issue #4195, before SimpleLoopUnswitchPass dumps just the loop but after can dump the full IR if the
+                // loop is invalidated. The next pass can also be loop-only and should be a loop in the same function
+                // so we preserve function name.
                 previousFunction = null;
             }
         }
