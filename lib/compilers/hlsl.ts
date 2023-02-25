@@ -24,8 +24,8 @@
 
 import path from 'path';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class HLSLCompiler extends BaseCompiler {
     static get key() {

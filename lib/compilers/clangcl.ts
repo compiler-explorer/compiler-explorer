@@ -24,11 +24,11 @@
 
 import path from 'path';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {Win32Compiler} from './win32';
-import {unwrap} from '../assert';
+import {Win32Compiler} from './win32.js';
+import {unwrap} from '../assert.js';
 
 export class ClangCLCompiler extends Win32Compiler {
     static override get key() {

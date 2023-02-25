@@ -24,10 +24,10 @@
 
 import path from 'path';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {RustCompiler} from './rust';
+import {RustCompiler} from './rust.js';
 
 export class RustcCgGCCCompiler extends RustCompiler {
     static override get key() {
