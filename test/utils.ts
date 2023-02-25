@@ -46,7 +46,7 @@ export function makeFakeCompilerInfo(props: Partial<CompilerInfo>): CompilerInfo
 }
 
 export function makeFakeParseFiltersAndOutputOptions(
-    options: Partial<ParseFiltersAndOutputOptions>,
+    options: Partial<ParseFiltersAndOutputOptions>
 ): ParseFiltersAndOutputOptions {
     return options as ParseFiltersAndOutputOptions;
 }

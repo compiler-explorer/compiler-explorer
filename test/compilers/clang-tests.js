@@ -54,7 +54,7 @@ describe('clang tests', () => {
     whereas
     i am host code
 # __CLANG_OFFLOAD_BUNDLE____END__ host-x86_64-unknown-linux-gnu
-`),
+`)
             ).to.deep.equal({
                 'host-x86_64-unknown-linux-gnu': '    whereas\n    i am host code\n',
                 'openmp-x86_64-unknown-linux-gnu': '    i am some\n    linux remote stuff\n',

@@ -125,8 +125,8 @@ describe('Multi caches', () => {
                 'test',
                 new InMemoryCache('test', 10),
                 new InMemoryCache('test', 20),
-                new InMemoryCache('test', 30),
-            ),
+                new InMemoryCache('test', 30)
+            )
     );
 
     it('should write through', () => {
@@ -300,7 +300,7 @@ describe('Config tests', () => {
         const tempDir = newTempDir();
         const cache = createCacheFromConfig<MultiCache>(
             'multi',
-            `InMemory(123);OnDisk(${tempDir},456);S3(test.bucket,cache,uk-north-1)`,
+            `InMemory(123);OnDisk(${tempDir},456);S3(test.bucket,cache,uk-north-1)`
         );
         cache.constructor.should.eql(MultiCache);
 

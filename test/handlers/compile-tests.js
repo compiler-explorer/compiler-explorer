@@ -222,7 +222,7 @@ describe('Compiler tests', () => {
                         .send({
                             options: options || {},
                             source: source || '',
-                        }),
+                        })
                 );
         }
 
@@ -244,7 +244,7 @@ describe('Compiler tests', () => {
                             options: options || {},
                             source: source || '',
                             files: files || [],
-                        }),
+                        })
                 );
         }
 
@@ -266,7 +266,7 @@ describe('Compiler tests', () => {
                             options: options || {},
                             source: source || '',
                             files: files || [],
-                        }),
+                        })
                 );
         }
 
@@ -279,7 +279,7 @@ describe('Compiler tests', () => {
                     stdout: [{text: 'Something from stdout'}],
                     stderr: [{text: 'Something from stderr'}],
                     asm: [{text: 'ASMASMASM'}],
-                },
+                }
             )
                 .then(res => {
                     res.should.have.status(200);
@@ -327,7 +327,7 @@ describe('Compiler tests', () => {
                         contents: 'Hello, World!\nHow are you?\n',
                     },
                 ],
-                {},
+                {}
             ).then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
@@ -355,7 +355,7 @@ describe('Compiler tests', () => {
                         filename: 'myresource.txt',
                         contents: 'Hello, World!\nHow are you?\n',
                     },
-                ],
+                ]
             ).then(res => {
                 res.should.have.status(200);
                 res.should.be.json;
@@ -402,7 +402,7 @@ describe('Compiler tests', () => {
                         .post('/fake-for-test/compile')
                         .query(query || {})
                         .set('Accept', 'application/json')
-                        .send(source || ''),
+                        .send(source || '')
                 );
         }
 
@@ -508,7 +508,7 @@ describe('Compiler tests', () => {
                         lang: lang,
                         options: {},
                         source: '',
-                    }),
+                    })
                 );
         }
 

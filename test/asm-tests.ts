@@ -62,30 +62,30 @@ describe('ASM regex base class', () => {
     it('should use up internal whitespace when asked', () => {
         AsmRegex.filterAsmLine(
             '     this    is    a line',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
+            makeFakeParseFiltersAndOutputOptions({trim: true})
         ).should.equal('  this is a line');
         AsmRegex.filterAsmLine('this    is    a line', makeFakeParseFiltersAndOutputOptions({trim: true})).should.equal(
-            'this is a line',
+            'this is a line'
         );
     });
     it('should keep whitespace in strings', () => {
         AsmRegex.filterAsmLine(
             'equs     "this    string"',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
+            makeFakeParseFiltersAndOutputOptions({trim: true})
         ).should.equal('equs "this    string"');
         AsmRegex.filterAsmLine(
             '     equs     "this    string"',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
+            makeFakeParseFiltersAndOutputOptions({trim: true})
         ).should.equal('  equs "this    string"');
         AsmRegex.filterAsmLine(
             'equs     "this    \\"  string  \\""',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
+            makeFakeParseFiltersAndOutputOptions({trim: true})
         ).should.equal('equs "this    \\"  string  \\""');
     });
     it('should not get upset by mismatched strings', () => {
         AsmRegex.filterAsmLine(
             'a   "string    \'yeah',
-            makeFakeParseFiltersAndOutputOptions({trim: true}),
+            makeFakeParseFiltersAndOutputOptions({trim: true})
         ).should.equal('a "string \'yeah');
     });
 });

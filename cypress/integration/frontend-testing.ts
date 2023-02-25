@@ -95,7 +95,7 @@ describe('Known good state test', () => {
                     stubConsoleOutput(win);
                     win.localStorage.clear();
                 },
-            },
+            }
         );
     });
 
