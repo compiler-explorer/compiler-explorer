@@ -39,13 +39,13 @@ describe('clang tests', () => {
 
     describe('device code...', async () => {
         const clang = new ClangCompiler(info, makeCompilationEnvironment({languages}));
-        it('Should return null for non-device code', () => {
-            expect(clang.splitDeviceCode('')).to.be.null;
-            expect(clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
+        it('Should return null for non-device code', async () => {
+            expect(await clang.splitDeviceCode('')).to.be.null;
+            expect(await clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
         });
-        it('should separate out bundles ', () => {
+        it('should separate out bundles ', async () => {
             expect(
-                clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
+                await clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
     i am some
     linux remote stuff
 # __CLANG_OFFLOAD_BUNDLE____END__ openmp-x86_64-unknown-linux-gnu

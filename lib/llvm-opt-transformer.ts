@@ -19,8 +19,8 @@
 
 import {Transform, TransformCallback} from 'stream';
 
-import * as R from 'ramda';
-import * as YAML from 'yamljs';
+import R from 'ramda';
+import YAML from 'yamljs';
 
 import {logger} from './logger.js';
 
