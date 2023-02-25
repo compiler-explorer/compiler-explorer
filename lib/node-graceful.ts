@@ -25,7 +25,7 @@ export class Graceful {
     };
     private static rejectionListener = (event: any) => {
         process.exitCode = 1;
-        Graceful.onDeadlyEvent('unhandledRejection', event)
+        Graceful.onDeadlyEvent('unhandledRejection', event);
     };
     private static signalsListeners: { [signal: string]: (event: any) => void } = {};
 
@@ -83,7 +83,7 @@ export class Graceful {
     }
 
     public static exit(code?: number | string, signal = 'SIGTERM') {
-        let exitSignal = typeof code === 'string' ? code : signal;
+        const exitSignal = typeof code === 'string' ? code : signal;
 
         if (typeof code === 'number') {
             process.exitCode = code;
@@ -96,7 +96,7 @@ export class Graceful {
         // console.log(signal, details);
         if (Graceful.isExiting) {
             if (Graceful.exitOnDouble) Graceful.killProcess(true);
-            return
+            return;
         }
 
         const listeners = Graceful.listeners.slice(0);
@@ -117,13 +117,13 @@ export class Graceful {
         }
 
         for (const listener of listeners) {
-            Graceful.invokeListener(listener, done, signal, details)
+            Graceful.invokeListener(listener, done, signal, details);
         }
     }
 
     private static invokeListener(listener: GracefulListener, done: () => void, signal: string, details?: object) {
         let invoked = false;
-        let listenerDone = () => {
+        const listenerDone = () => {
             if (!invoked) {
                 invoked = true;
                 done();
@@ -143,19 +143,19 @@ export class Graceful {
         if (Graceful.listeners.length && !Graceful.isRegistered) {
             for (const deadlySignal of Graceful.DEADLY_SIGNALS) {
                 const listener = () => Graceful.onDeadlyEvent(deadlySignal);
-                Graceful.signalsListeners[deadlySignal] = listener
+                Graceful.signalsListeners[deadlySignal] = listener;
                 process.on(deadlySignal as any, listener);
             }
-            Graceful.isRegistered = true
+            Graceful.isRegistered = true;
         } else if (!Graceful.listeners.length && Graceful.isRegistered) {
             for (const deadlySignal of Graceful.DEADLY_SIGNALS) {
-                const listener = Graceful.signalsListeners[deadlySignal]
+                const listener = Graceful.signalsListeners[deadlySignal];
                 if (listener) {
                     process.removeListener(deadlySignal, listener);
                     delete Graceful.signalsListeners[deadlySignal];
                 }
             }
-            Graceful.isRegistered = false
+            Graceful.isRegistered = false;
         }
     }
 
