@@ -26,12 +26,12 @@ import {fileURLToPath} from 'url';
 
 import _ from 'underscore';
 
-import {BaseCompiler} from '../lib/base-compiler';
-import {ClientOptionsHandler} from '../lib/options-handler';
-import * as properties from '../lib/properties';
-import {parseOutput} from '../lib/utils';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {ClientOptionsHandler} from '../lib/options-handler.js';
+import * as properties from '../lib/properties.js';
+import {parseOutput} from '../lib/utils.js';
 
-import {should} from './utils';
+import {should} from './utils.js';
 
 const languages = {
     fake: {

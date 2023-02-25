@@ -24,9 +24,9 @@
 
 import express from 'express';
 
-import {RouteAPI} from '../lib/handlers/route-api';
+import {RouteAPI} from '../lib/handlers/route-api.js';
 
-import {fs} from './utils';
+import {fs} from './utils.js';
 
 describe('Basic unfurls', () => {
     const router = null as any as express.Router;

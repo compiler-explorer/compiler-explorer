@@ -1,5 +1,5 @@
-import {unwrap} from '../lib/assert';
-import * as rison from '../static/rison';
+import {unwrap} from '../lib/assert.js';
+import * as rison from '../static/rison.js';
 
 // Copied from https://github.com/Nanonid/rison/blob/master/python/rison/tests.py
 const py_testcases = {

@@ -1,6 +1,4 @@
 recursive: true
 ignore: test/filter-tests.js
 require:
-  - esm
-  - ts-node/register
   - source-map-support/register

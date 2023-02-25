@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {unwrap} from '../lib/assert';
-import * as properties from '../lib/properties';
+import {unwrap} from '../lib/assert.js';
+import * as properties from '../lib/properties.js';
 
-import {should} from './utils';
+import {should} from './utils.js';
 
 const languages = {
     a: {id: 'a'},

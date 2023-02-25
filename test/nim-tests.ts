@@ -24,11 +24,11 @@
 
 import path from 'path';
 
-import {unwrap} from '../lib/assert';
-import {NimCompiler} from '../lib/compilers/nim';
-import {LanguageKey} from '../types/languages.interfaces';
+import {unwrap} from '../lib/assert.js';
+import {NimCompiler} from '../lib/compilers/nim.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {makeCompilationEnvironment, makeFakeCompilerInfo, should} from './utils';
+import {makeCompilationEnvironment, makeFakeCompilerInfo, should} from './utils.js';
 
 const languages = {
     nim: {id: 'nim' as LanguageKey},

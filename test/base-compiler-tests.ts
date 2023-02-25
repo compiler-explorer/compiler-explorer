@@ -24,12 +24,12 @@
 
 import {match, mock, restore, stub} from 'sinon';
 
-import {BaseCompiler} from '../lib/base-compiler';
-import {BuildEnvSetupBase} from '../lib/buildenvsetup';
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {Win32Compiler} from '../lib/compilers/win32';
-import * as exec from '../lib/exec';
-import {CompilerInfo} from '../types/compiler.interfaces';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {BuildEnvSetupBase} from '../lib/buildenvsetup/index.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {Win32Compiler} from '../lib/compilers/win32.js';
+import * as exec from '../lib/exec.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 
 import {
     fs,
@@ -39,7 +39,7 @@ import {
     path,
     should,
     shouldExist,
-} from './utils';
+} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},

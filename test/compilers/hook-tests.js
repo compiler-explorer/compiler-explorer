@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {HookCompiler} from '../../lib/compilers';
-import {makeCompilationEnvironment} from '../utils';
+import {HookCompiler} from '../../lib/compilers/index.js';
+import {makeCompilationEnvironment} from '../utils.js';
 
 describe('Hook compiler', () => {
     it('should return correct key', () => {

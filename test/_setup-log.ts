@@ -24,7 +24,7 @@
 
 // This file is not force-required: it must be loaded by mocha to get access
 // to `before`.
-import {suppressConsoleLog} from '../lib/logger';
+import {suppressConsoleLog} from '../lib/logger.js';
 
 if (typeof before === 'function') {
     // this hook will run once before any tests are executed
