@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {CppDemangler} from './cpp';
-export {DefaultDemangler} from './default';
-export {PascalDemangler} from './pascal';
-export {Win32Demangler} from './win32';
-export {NVHPCDemangler} from './nvhpc';
-export {LLVMWin32Demangler} from './win32-llvm';
+export {CppDemangler} from './cpp.js';
+export {DefaultDemangler} from './default.js';
+export {PascalDemangler} from './pascal.js';
+export {Win32Demangler} from './win32.js';
+export {NVHPCDemangler} from './nvhpc.js';
+export {LLVMWin32Demangler} from './win32-llvm.js';
