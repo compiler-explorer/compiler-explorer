@@ -60,7 +60,7 @@
     "p-queue": "^7.0.0",
     "path-browserify": "^1.0.1",
     "popper.js": "^1.16.1",
-    "profanities": "^2.14.0",
+    "profanities": "^3.0.1",
     "prom-client": "^14.0.1",
     "pug": "^3.0.2",
     "qs": "^6.11.0",

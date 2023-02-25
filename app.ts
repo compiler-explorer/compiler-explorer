@@ -70,7 +70,7 @@ import {getStorageTypeByKey} from './lib/storage/index.js';
 import {sources} from './lib/sources/index.js';
 
 // Used by assert.ts
-global.ce_base_directory = __dirname; // eslint-disable-line unicorn/prefer-module
+global.ce_base_directory = new URL('.', import.meta.url);
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({
