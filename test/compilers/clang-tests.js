@@ -31,7 +31,7 @@ describe('clang tests', () => {
     const languages = {'c++': {id: 'c++'}};
 
     const info = {
-        exe: null,
+        exe: '/dev/null',
         remote: true,
         lang: 'c++',
         ldPath: [],
