@@ -22,7 +22,7 @@ import {Transform, TransformCallback} from 'stream';
 import * as R from 'ramda';
 import * as YAML from 'yamljs';
 
-import {logger} from './logger';
+import {logger} from './logger.js';
 
 type Path = string;
 type OptType = 'Missed' | 'Passed' | 'Analysis';

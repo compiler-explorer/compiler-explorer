@@ -31,17 +31,17 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces';
-import {Language, LanguageKey} from '../types/languages.interfaces';
+import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
-import {unwrap} from './assert';
-import {InstanceFetcher} from './aws';
-import {CompileHandler} from './handlers/compile';
-import {logger} from './logger';
-import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler';
-import {CompilerProps} from './properties';
-import {PropertyGetter} from './properties.interfaces';
-import {basic_comparator, remove} from './common-utils';
+import {unwrap} from './assert.js';
+import {InstanceFetcher} from './aws.js';
+import {CompileHandler} from './handlers/compile.js';
+import {logger} from './logger.js';
+import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler.js';
+import {CompilerProps} from './properties.js';
+import type {PropertyGetter} from './properties.interfaces.js';
+import {basic_comparator, remove} from './common-utils.js';
 
 const sleep = promisify(setTimeout);
 

@@ -39,7 +39,7 @@ enum TraceFormat {
     Firefox,
 }
 
-function parse(err: Error) {
+export function parse(err: Error) {
     if (!err.stack) {
         return [];
     }
@@ -173,5 +173,3 @@ function parse(err: Error) {
             .filter(frame => frame !== undefined) as StackFrame[];
     }
 }
-
-export default {parse}; // eslint-disable-line import/no-default-export

@@ -29,7 +29,7 @@ import * as PromClient from 'prom-client';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {
+import type {
     BuildResult,
     BuildStep,
     CompilationCacheKey,
@@ -37,50 +37,50 @@ import {
     CompilationResult,
     CustomInputForTool,
     ExecutionOptions,
-} from '../types/compilation/compilation.interfaces';
-import {
+} from '../types/compilation/compilation.interfaces.js';
+import type {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
-} from '../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces';
-import {
+} from '../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import type {CompilerInfo, ICompiler, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
-} from '../types/execution/execution.interfaces';
-import {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
-import {Language} from '../types/languages.interfaces';
-import {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces';
-import {ResultLine} from '../types/resultline/resultline.interfaces';
-import {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces';
+} from '../types/execution/execution.interfaces.js';
+import type {CompilerOutputOptions, ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import type {Language} from '../types/languages.interfaces.js';
+import type {Library, LibraryVersion, SelectedLibraryVersion} from '../types/libraries/libraries.interfaces.js';
+import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
+import type {Artifact, ToolResult, ToolTypeKey} from '../types/tool.interfaces.js';
 
-import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup';
-import {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces';
-import * as cfg from './cfg/cfg';
-import {CompilationEnvironment} from './compilation-env';
-import {CompilerArguments} from './compiler-arguments';
-import {ClangParser, GCCParser} from './compilers/argument-parsers';
-import {BaseDemangler, getDemanglerTypeByKey} from './demangler';
-import {LLVMIRDemangler} from './demangler/llvm';
-import * as exec from './exec';
-import {getExternalParserByKey} from './external-parsers';
-import {ExternalParserBase} from './external-parsers/base';
-import {InstructionSets} from './instructionsets';
-import {languages} from './languages';
-import {LlvmAstParser} from './llvm-ast';
-import {LlvmIrParser} from './llvm-ir';
-import * as compilerOptInfo from './llvm-opt-transformer';
-import {logger} from './logger';
-import {getObjdumperTypeByKey} from './objdumper';
-import {Packager} from './packager';
-import {AsmParser} from './parsers/asm-parser';
-import {IAsmParser} from './parsers/asm-parser.interfaces';
-import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser';
-import {PropertyGetter} from './properties.interfaces';
-import {getToolchainPath} from './toolchain-utils';
-import {ITool} from './tooling/base-tool.interface';
-import * as utils from './utils';
-import {unwrap} from './assert';
+import {BuildEnvSetupBase, getBuildEnvTypeByKey} from './buildenvsetup/index.js';
+import type {BuildEnvDownloadInfo} from './buildenvsetup/buildenv.interfaces.js';
+import * as cfg from './cfg/cfg.js';
+import {CompilationEnvironment} from './compilation-env.js';
+import {CompilerArguments} from './compiler-arguments.js';
+import {ClangParser, GCCParser} from './compilers/argument-parsers.js';
+import {BaseDemangler, getDemanglerTypeByKey} from './demangler/index.js';
+import {LLVMIRDemangler} from './demangler/llvm.js';
+import * as exec from './exec.js';
+import {getExternalParserByKey} from './external-parsers/index.js';
+import {ExternalParserBase} from './external-parsers/base.js';
+import {InstructionSets} from './instructionsets.js';
+import {languages} from './languages.js';
+import {LlvmAstParser} from './llvm-ast.js';
+import {LlvmIrParser} from './llvm-ir.js';
+import * as compilerOptInfo from './llvm-opt-transformer.js';
+import {logger} from './logger.js';
+import {getObjdumperTypeByKey} from './objdumper/index.js';
+import {Packager} from './packager.js';
+import {AsmParser} from './parsers/asm-parser.js';
+import type {IAsmParser} from './parsers/asm-parser.interfaces.js';
+import {LlvmPassDumpParser} from './parsers/llvm-pass-dump-parser.js';
+import type {PropertyGetter} from './properties.interfaces.js';
+import {getToolchainPath} from './toolchain-utils.js';
+import type {ITool} from './tooling/base-tool.interface.js';
+import * as utils from './utils.js';
+import {unwrap} from './assert.js';
 
 const compilationTimeHistogram = new PromClient.Histogram({
     name: 'ce_base_compiler_compilation_duration_seconds',

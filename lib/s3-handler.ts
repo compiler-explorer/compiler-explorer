@@ -24,9 +24,9 @@
 
 import AWS from 'aws-sdk';
 
-import {GetResult} from '../types/cache.interfaces';
+import type {GetResult} from '../types/cache.interfaces.js';
 
-import {S3HandlerOptions} from './s3-handler.interfaces';
+import type {S3HandlerOptions} from './s3-handler.interfaces.js';
 
 const NoSuchKey = 'NoSuchKey';
 
