@@ -1,9 +1,5 @@
 {
-    "allowed_paths": [
-        {
-            "path": "Z:\\",
-            "rw": false
-        }
-    ],
+    "use_appcontainer": false,
+    "allowed_paths": [],
     "allowed_registry": []
 }
