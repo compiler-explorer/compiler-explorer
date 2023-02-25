@@ -430,7 +430,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
     },
     modula2: {
-        name: 'modula2',
+        name: 'Modula-2',
         monaco: 'modula2',
         extensions: ['.mod'],
         alias: [],
