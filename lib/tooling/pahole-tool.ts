@@ -24,7 +24,7 @@
 
 import fs from 'fs-extra';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class PaholeTool extends BaseTool {
     static get key() {
