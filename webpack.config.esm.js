@@ -127,6 +127,10 @@ export default {
         },
         modules: ['./static', './node_modules'],
         extensions: ['.ts', '.js'],
+        extensionAlias: {
+            '.js': ['.ts', '.js'],
+            '.mjs': ['.mts', '.mjs'],
+        },
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -177,7 +181,7 @@ export default {
             },
             {
                 test: /\.pug$/,
-                loader: './etc/scripts/parsed_pug_file.js',
+                loader: './etc/scripts/parsed-pug/parsed_pug_file.js',
                 options: {
                     useGit: hasGit,
                 },
