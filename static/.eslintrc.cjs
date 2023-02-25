@@ -1,4 +1,4 @@
-// Copyright (c) 2023, Compiler Explorer Authors
+// Copyright (c) 2022, Compiler Explorer Authors
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -22,10 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+// This file is in js due to #3514
 module.exports = {
     root: true,
     plugins: ['promise', 'requirejs'],
-    extends: ['./.eslint-ce-lib.yml'],
+    extends: ['./.eslint-ce-static.yml'],
     rules: {
         'promise/catch-or-return': 'off',
         'promise/no-new-statics': 'error',
@@ -38,7 +39,7 @@ module.exports = {
             files: ['*.ts'],
             plugins: ['import', '@typescript-eslint'],
             extends: [
-                './.eslint-ce-lib.yml',
+                './.eslint-ce-static.yml',
                 'plugin:@typescript-eslint/eslint-recommended',
                 'plugin:@typescript-eslint/recommended',
                 'plugin:import/recommended',
@@ -59,13 +60,14 @@ module.exports = {
             rules: {
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-unused-vars': 'off',
-                '@typescript-eslint/no-var-requires': 'error',
+                '@typescript-eslint/no-var-requires': 'off', // Needed for now, can't move some
                 '@typescript-eslint/no-explicit-any': 'off', // Too much js code still exists
-                '@typescript-eslint/ban-ts-comment': 'error',
-                // TODO: Disabled for now
-                //'@typescript-eslint/no-unnecessary-condition': 'error',
-                //'@typescript-eslint/no-unnecessary-type-assertion': 'error',
-                //'@typescript-eslint/prefer-includes': 'error',
+                '@typescript-eslint/ban-ts-comment': 'off', // We need some @ts-ignore at some points
+                '@typescript-eslint/no-unnecessary-condition': 'error',
+                '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+                '@typescript-eslint/prefer-includes': 'error',
+                'import/no-unresolved': 'off',
+                'node/no-missing-imports': 'off',
             },
         },
     ],

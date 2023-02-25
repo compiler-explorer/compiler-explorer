@@ -63,11 +63,11 @@ import {setupMetricsServer} from './lib/metrics-server.js';
 import {ClientOptionsHandler} from './lib/options-handler.js';
 import * as props from './lib/properties.js';
 import {ShortLinkResolver} from './lib/shortener/google.js';
+import {sources} from './lib/sources/index.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
+import {getStorageTypeByKey} from './lib/storage/index.js';
 import * as utils from './lib/utils.js';
 import type {Language, LanguageKey} from './types/languages.interfaces.js';
-import {getStorageTypeByKey} from './lib/storage/index.js';
-import {sources} from './lib/sources/index.js';
 
 // Used by assert.ts
 global.ce_base_directory = new URL('.', import.meta.url);
