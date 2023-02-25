@@ -64,15 +64,16 @@ export class CompilationQueue {
         const enqueueAsyncId = executionAsyncId();
         // If we're asked to enqueue a job when we're already in a async queued job context, just run it.
         // This prevents a deadlock.
-        if (this._running.has(enqueueAsyncId)) return job();
+        if (this._running.has(enqueueAsyncId)) return job() as PromiseLike<Result>;
         queueEnqueued.inc();
+        // @ts-ignore
         return this._queue.add(() => {
             queueDequeued.inc();
             const jobAsyncId = executionAsyncId();
             if (this._running.has(jobAsyncId)) throw new Error('somehow we entered the context twice');
             try {
                 this._running.add(jobAsyncId);
-                return job();
+                return job() as PromiseLike<Result>;
             } finally {
                 this._running.delete(jobAsyncId);
                 queueCompleted.inc();

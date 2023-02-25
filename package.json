@@ -6,6 +6,7 @@
     "email": "matt@godbolt.org",
     "url": "https://xania.org"
   },
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "compiler-explorer/compiler-explorer"
@@ -15,10 +16,6 @@
     "node": ">=16"
   },
   "main": "./app.ts",
-  "esm": {
-    "mode": "all",
-    "cache": false
-  },
   "dependencies": {
     "@flatten-js/interval-tree": "^1.0.20",
     "@fortawesome/fontawesome-free": "^6.2.1",
@@ -36,10 +33,9 @@
     "cross-env": "^7.0.3",
     "eslint-plugin-header": "^3.1.1",
     "eslint-plugin-prettier": "^4.2.1",
-    "esm": "^3.2.25",
     "express": "^4.17.2",
     "file-saver": "^2.0.5",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^11.1.0",
     "golden-layout": "^1.5.9",
     "http-proxy": "^1.18.1",
     "husky": "^8.0.1",
@@ -57,10 +53,10 @@
     "node-graceful": "^3.1.0",
     "node-targz": "^0.2.0",
     "nopt": "^5.0.0",
-    "p-queue": "^6.6.2",
+    "p-queue": "^7.3.4",
     "path-browserify": "^1.0.1",
     "popper.js": "^1.16.1",
-    "profanities": "^2.14.0",
+    "profanities": "^3.0.1",
     "prom-client": "^14.0.1",
     "pug": "^3.0.2",
     "qs": "^6.11.0",
@@ -99,7 +95,7 @@
     "@types/chai-as-promised": "^7.1.5",
     "@types/express": "^4.17.14",
     "@types/file-saver": "^2.0.5",
-    "@types/fs-extra": "^9.0.13",
+    "@types/fs-extra": "^11.0.1",
     "@types/http-proxy": "^1.17.9",
     "@types/jquery": "^3.5.10",
     "@types/js-cookie": "^3.0.2",
@@ -140,7 +136,7 @@
     "file-loader": "^6.2.0",
     "lint-staged": "^13.0.3",
     "mini-css-extract-plugin": "^2.4.5",
-    "mocha": "^8.4.0",
+    "mocha": "^10.2.0",
     "mock-fs": "^5.1.2",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "nock": "^13.2.1",
@@ -163,7 +159,6 @@
   },
   "mocha": {
     "require": [
-      "esm",
       "test/_setup"
     ]
   },
@@ -173,14 +168,14 @@
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 .",
     "lint-files": "eslint --max-warnings=0",
-    "test": "mocha -b -r ts-node/register 'test/**/*.ts' 'test/**/*.js'",
+    "test": "mocha -b 'test/**/*.ts' 'test/**/*.js'",
     "test-min": "mocha -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
-    "dev": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.ts",
-    "debugger": "cross-env NODE_ENV=DEV node --inspect -r esm -r ts-node/register app.ts --debug",
-    "debug": "cross-env NODE_ENV=DEV node -r esm -r ts-node/register app.ts --debug",
-    "start": "webpack && cross-env NODE_ENV=LOCAL node -r esm -r ts-node/register app.ts",
+    "dev": "cross-env NODE_ENV=DEV node -r ts-node/register app.ts",
+    "debugger": "cross-env NODE_ENV=DEV node --inspect -r ts-node/register app.ts --debug",
+    "debug": "cross-env NODE_ENV=DEV node -r ts-node/register app.ts --debug",
+    "start": "webpack && cross-env NODE_ENV=LOCAL node -r ts-node/register app.ts",
     "codecov": "codecov --disable=gcov",
     "sentry": "npx -p @sentry/cli sentry-cli",
     "update-browserslist": "npx browserslist@latest -- --update-db",

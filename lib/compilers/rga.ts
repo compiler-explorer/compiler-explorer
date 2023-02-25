@@ -24,7 +24,8 @@
 
 import path from 'path';
 
-import {readdir, readFile, rename, writeFile} from 'fs-extra';
+import pkg from 'fs-extra';
+const { readdir, readFile, rename, writeFile } = pkg;
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
