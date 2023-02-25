@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './utils';
+import './utils.js';
 import AWS from 'aws-sdk-mock';
 
-import * as aws from '../lib/aws';
+import * as aws from '../lib/aws.js';
 
 const instanceA = {
     State: {Name: 'running'},

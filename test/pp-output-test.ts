@@ -24,12 +24,12 @@
 
 import * as fs from 'fs';
 
-import {BaseCompiler} from '../lib/base-compiler';
-import {CompilationEnvironment} from '../lib/compilation-env';
-import * as properties from '../lib/properties';
-import {CompilerInfo} from '../types/compiler.interfaces';
+import {BaseCompiler} from '../lib/base-compiler.js';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import * as properties from '../lib/properties.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 
-import * as filterTests from './pp-output-cases/filter-tests';
+import * as filterTests from './pp-output-cases/filter-tests.js';
 
 //const makeFakeCompilerInfo = (id: string, lang: string, group: string, semver: string, isSemver: boolean) => {
 const makeFakeCompilerInfo = (id, lang, group, semver, isSemver): Partial<CompilerInfo> => {

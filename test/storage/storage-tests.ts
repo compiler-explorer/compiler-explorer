@@ -24,8 +24,8 @@
 
 import {replace, restore, stub} from 'sinon';
 
-import {StorageBase} from '../../lib/storage';
-import {should} from '../utils';
+import {StorageBase} from '../../lib/storage/index.js';
+import {should} from '../utils.js';
 
 describe('Hash tests', () => {
     afterEach(() => restore());
