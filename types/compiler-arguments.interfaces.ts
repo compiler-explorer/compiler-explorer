@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PropertyGetter} from '../lib/properties.interfaces';
+import {PropertyGetter} from '../lib/properties.interfaces.js';
 
 export type Specifically = {
     arg: string;

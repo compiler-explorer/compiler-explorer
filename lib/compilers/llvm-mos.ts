@@ -28,7 +28,7 @@ import path from 'path';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import type {ArtifactType} from '../../types/tool.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 import * as utils from '../utils.js';
 
 import {ClangCompiler} from './clang.js';
