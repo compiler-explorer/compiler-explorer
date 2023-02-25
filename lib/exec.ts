@@ -26,7 +26,6 @@ import child_process from 'child_process';
 import path from 'path';
 
 import fs from 'fs-extra';
-import Graceful from 'node-graceful';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
 
@@ -35,6 +34,7 @@ import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execut
 
 import {logger} from './logger.js';
 import {propsFor} from './properties.js';
+import {Graceful} from './node-graceful.js';
 
 type NsJailOptions = {
     args: string[];
