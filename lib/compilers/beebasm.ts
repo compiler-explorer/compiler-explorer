@@ -28,7 +28,7 @@ import fs from 'fs-extra';
 
 import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
-import type {ArtifactType} from '../../types/tool.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm.js';
 import * as utils from '../utils.js';
