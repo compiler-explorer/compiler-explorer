@@ -26,10 +26,10 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ToolInfo} from '../../types/tool.interfaces';
+import {ToolInfo} from '../../types/tool.interfaces.js';
 
-import {BaseTool} from './base-tool';
-import {ToolEnv} from './base-tool.interface';
+import {BaseTool} from './base-tool.js';
+import {ToolEnv} from './base-tool.interface.js';
 
 export class ClangQueryTool extends BaseTool {
     static get key() {

@@ -26,10 +26,10 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {Library} from '../../types/libraries/libraries.interfaces';
-import * as utils from '../utils';
+import {Library} from '../../types/libraries/libraries.interfaces.js';
+import * as utils from '../utils.js';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class ClangTidyTool extends BaseTool {
     static get key() {
