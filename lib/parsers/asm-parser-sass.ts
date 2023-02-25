@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PropertyGetter} from '../properties.interfaces';
+import {PropertyGetter} from '../properties.interfaces.js';
 
-import {AsmParser} from './asm-parser';
+import {AsmParser} from './asm-parser.js';
 
 export class SassAsmParser extends AsmParser {
     constructor(compilerProps?: PropertyGetter) {
