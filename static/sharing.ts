@@ -27,14 +27,14 @@ import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 import _ from 'underscore';
 import ClipboardJS from 'clipboard';
-import {set as localStorageSet} from './local';
-import {ga} from './analytics';
-import * as url from './url';
-import {options} from './options';
+import {set as localStorageSet} from './local.js';
+import {ga} from './analytics.js';
+import * as url from './url.js';
+import {options} from './options.js';
 
 import ClickEvent = JQuery.ClickEvent;
 import TriggeredEvent = JQuery.TriggeredEvent;
-import {Settings, SiteSettings} from './settings';
+import {Settings, SiteSettings} from './settings.js';
 
 const cloneDeep = require('lodash.clonedeep');
 

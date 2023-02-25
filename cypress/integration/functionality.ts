@@ -1,4 +1,4 @@
-import {runFrontendTest} from '../support/utils';
+import {runFrontendTest} from '../support/utils.js';
 
 describe('Motd testing', () => {
     before(() => {

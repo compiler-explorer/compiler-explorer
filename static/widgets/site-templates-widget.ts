@@ -23,9 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {SiteTemplatesType} from '../../types/features/site-templates.interfaces';
-import {assert, unwrap} from '../assert';
-import {Settings} from '../settings';
+import {SiteTemplatesType} from '../../types/features/site-templates.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {Settings} from '../settings.js';
 
 class SiteTemplatesWidget {
     modal: JQuery;

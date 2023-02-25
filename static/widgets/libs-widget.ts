@@ -23,11 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from '../options';
-import * as local from '../local';
-import {Library, LibraryVersion} from '../options.interfaces';
-import {Lib, WidgetState} from './libs-widget.interfaces';
-import {unwrapString} from '../assert';
+import {options} from '../options.js';
+import * as local from '../local.js';
+import {Library, LibraryVersion} from '../options.interfaces.js';
+import {Lib, WidgetState} from './libs-widget.interfaces.js';
+import {unwrapString} from '../assert.js';
 
 const FAV_LIBS_STORE_KEY = 'favlibs';
 

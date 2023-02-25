@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {options} from './options';
-import {LanguageLibs, Library} from './options.interfaces';
+import {options} from './options.js';
+import {LanguageLibs, Library} from './options.interfaces.js';
 
 const LIB_MATCH_RE = /([\w-]*)\.([\w-]*)/i;
 
