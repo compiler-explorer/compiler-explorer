@@ -30,7 +30,7 @@ import _ from 'underscore';
 import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
 import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
 import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
-import type {ArtifactType} from '../../types/tool.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
 import {BaseCompiler} from '../base-compiler.js';
 import {CC65AsmParser} from '../parsers/asm-parser-cc65.js';
 import * as utils from '../utils.js';
