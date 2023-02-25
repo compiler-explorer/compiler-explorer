@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {GetResult} from '../../types/cache.interfaces';
+import type {GetResult} from '../../types/cache.interfaces.js';
 
-import {BaseCache} from './base';
+import {BaseCache} from './base.js';
 
 // A write-through multiple cache.
 // Writes get pushed to all caches, but reads are serviced from the first cache that returns
