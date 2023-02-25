@@ -5,7 +5,7 @@ export interface IExternalParser {
     objdumpAndParseAssembly(
         buildfolder: string,
         objdumpArgs: string[],
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ): Promise<ParsedAsmResult>;
     parseAssembly(filepath: string, filters: ParseFiltersAndOutputOptions): Promise<ParsedAsmResult>;
 }

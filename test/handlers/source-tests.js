@@ -37,7 +37,7 @@ describe('Sources', () => {
                 load: name => Promise.resolve({file: `File called ${name}`}),
             },
         ],
-        res => res.setHeader('Yibble', 'boing'),
+        res => res.setHeader('Yibble', 'boing')
     );
     app.use('/source', handler.handle.bind(handler));
 

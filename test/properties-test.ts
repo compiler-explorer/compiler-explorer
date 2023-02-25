@@ -42,7 +42,7 @@ describe('Properties', () => {
             languages,
             properties.fakeProps({
                 foo: '1',
-            }),
+            })
         );
     });
 
@@ -171,7 +171,7 @@ describe('Properties blob parsing', () => {
             'hello = test \n' +
             'etc=123\n' +
             'mybool=false\n',
-            '<test props>',
+            '<test props>'
         );
         unwrap(props.hello).should.equal('test');
         unwrap(props.etc).should.equal(123);

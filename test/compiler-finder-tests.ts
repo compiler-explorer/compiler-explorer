@@ -124,7 +124,7 @@ describe('Compiler-finder', function () {
             compilerProps,
             properties.fakeProps({}),
             {} as any,
-            optionsHandler,
+            optionsHandler
         );
         return finder.getCompilers().should.eventually.have.lengthOf(1);
     });
@@ -135,7 +135,7 @@ describe('Compiler-finder', function () {
             noOptionsAtAllProps,
             properties.fakeProps({}),
             {} as any,
-            optionsHandler,
+            optionsHandler
         );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('');
@@ -147,7 +147,7 @@ describe('Compiler-finder', function () {
             noBaseOptionsProps,
             properties.fakeProps({}),
             {} as any,
-            optionsHandler,
+            optionsHandler
         );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('bar');
@@ -159,7 +159,7 @@ describe('Compiler-finder', function () {
             onlyBaseOptionsProps,
             properties.fakeProps({}),
             {} as any,
-            optionsHandler,
+            optionsHandler
         );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('foo');
@@ -171,7 +171,7 @@ describe('Compiler-finder', function () {
             bothOptionsProps,
             properties.fakeProps({}),
             {} as any,
-            optionsHandler,
+            optionsHandler
         );
         const compilers = await finder.getCompilers();
         compilers[0].options.should.equal('foo bar');
@@ -183,7 +183,7 @@ describe('Compiler-finder', function () {
             libraryCompilerProps,
             properties.fakeProps({}),
             {} as any,
-            optionsHandler,
+            optionsHandler
         );
         const compilers = await finder.getCompilers();
         const libsArr = compilers[0].libsArr;

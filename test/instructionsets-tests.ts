@@ -39,7 +39,7 @@ describe('InstructionSets', async () => {
         return isets
             .getCompilerInstructionSetHint(
                 false,
-                '/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-g++',
+                '/opt/compiler-explorer/arm64/gcc-12.1.0/aarch64-unknown-linux-gnu/bin/aarch64-unknown-linux-gnu-g++'
             )
             .should.eventually.equal('aarch64');
     });

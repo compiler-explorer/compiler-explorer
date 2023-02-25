@@ -203,7 +203,7 @@ describe('Pascal compiler output', () => {
             .parseOutput(
                 'Compiling /tmp/path/prog.dpr\noutput.pas(17) Fatal: There were 1 errors compiling module, stopping',
                 'output.pas',
-                '/tmp/path/',
+                '/tmp/path/'
             )
             .should.deep.equals([
                 {
@@ -318,7 +318,7 @@ describe('Tool output', () => {
         utils
             .parseOutput(
                 '/home/ubuntu/example.cpp:1:1: Fatal: There were 1 errors compiling module, stopping',
-                './example.cpp',
+                './example.cpp'
             )
             .should.deep.equals([
                 {

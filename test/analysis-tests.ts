@@ -77,7 +77,7 @@ describe('LLVM-mca tool definition', () => {
                 commentOnly: false,
                 labels: true,
             }),
-            'output.txt',
+            'output.txt'
         );
         opts.should.be.deep.equal(['-o', 'output.txt']);
     });
