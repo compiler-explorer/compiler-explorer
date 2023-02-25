@@ -24,12 +24,12 @@
 
 import $ from 'jquery';
 import EventEmitter from 'events';
-import {options} from '../options';
-import {Settings} from '../settings';
+import {options} from '../options.js';
+import {Settings} from '../settings.js';
 import {editor} from 'monaco-editor';
 import IEditor = editor.IEditor;
 
-import {FontScaleState} from './fontscale.interfaces';
+import {FontScaleState} from './fontscale.interfaces.js';
 
 function getDefaultFontScale() {
     return Settings.getStoredSettings().defaultFontScale ?? options.defaultFontScale;

@@ -24,8 +24,8 @@
 
 import $ from 'jquery';
 
-import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces';
-import {toggleEventListener} from '../utils';
+import {AlertAskOptions, AlertEnterTextOptions, AlertNotifyOptions} from './alert.interfaces.js';
+import {toggleEventListener} from '../utils.js';
 
 export class Alert {
     yesHandler: ((answer?: string | string[] | number) => void) | null = null;

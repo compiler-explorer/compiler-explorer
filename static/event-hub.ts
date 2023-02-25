@@ -25,8 +25,8 @@
 import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 
-import {type EventMap} from './event-map';
-import {type Hub} from './hub';
+import {type EventMap} from './event-map.js';
+import {type Hub} from './hub.js';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
