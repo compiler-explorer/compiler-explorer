@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {AnalysisTool} from './analysis-tool';
-import {BaseParser} from './argument-parsers';
+import {AnalysisTool} from './analysis-tool.js';
+import {BaseParser} from './argument-parsers.js';
 
 // Plain compiler, which just runs the tool and returns whatever the output was
 export class OSACATool extends AnalysisTool {

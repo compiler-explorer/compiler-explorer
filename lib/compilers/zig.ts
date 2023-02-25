@@ -27,11 +27,11 @@ import path from 'path';
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {asSafeVer} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
 export class ZigCompiler extends BaseCompiler {
     private readonly self_hosted_cli: boolean;

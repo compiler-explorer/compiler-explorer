@@ -26,11 +26,11 @@ import path from 'path';
 
 import {readdir, readFile, rename, writeFile} from 'fs-extra';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {logger} from '../logger';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
 
 interface ASICSelection {
     asic?: string;

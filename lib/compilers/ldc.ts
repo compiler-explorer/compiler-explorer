@@ -27,11 +27,11 @@ import path from 'path';
 import fs from 'fs-extra';
 import semverParser from 'semver';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
 
-import {LDCParser} from './argument-parsers';
+import {LDCParser} from './argument-parsers.js';
 
 export class LDCCompiler extends BaseCompiler {
     static get key() {

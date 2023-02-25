@@ -22,12 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
-
-import {AssemblyCompiler} from './assembly';
+import {AssemblyCompiler} from './assembly.js';
 
 export class NasmCompiler extends AssemblyCompiler {
     static override get key() {
