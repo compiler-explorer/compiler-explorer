@@ -26,15 +26,15 @@ import path from 'path';
 
 import approvals from 'approvals';
 
-import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {CC65AsmParser} from '../lib/parsers/asm-parser-cc65.js';
 import {AsmEWAVRParser} from '../lib/parsers/asm-parser-ewavr.js';
 import {SassAsmParser} from '../lib/parsers/asm-parser-sass.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 
 import {fs, resolvePathFromTestRoot} from './utils.js';
 
-approvals.mocha(resolvePathFromTestRoot("filter-cases"));
+approvals.mocha(resolvePathFromTestRoot('filter-cases'));
 
 function processAsm(filename, filters) {
     const file = fs.readFileSync(filename, 'utf8');

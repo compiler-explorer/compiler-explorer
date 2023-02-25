@@ -3,10 +3,12 @@
 // | Graceful process exit manager.                                       |
 // |----------------------------------------------------------------------|
 
-export type GracefulListener = (signal: string, details?: object)
-    => (void | any | Promise<any> | Promise<void> | Promise<Error>)
+export type GracefulListener = (
+    signal: string,
+    details?: object,
+) => void | any | Promise<any> | Promise<void> | Promise<Error>;
 
-export type GracefulSubscription = () => void
+export type GracefulSubscription = () => void;
 
 export class Graceful {
     private static DEADLY_SIGNALS = ['SIGTERM', 'SIGINT', 'SIGBREAK', 'SIGHUP'];
@@ -27,7 +29,7 @@ export class Graceful {
         process.exitCode = 1;
         Graceful.onDeadlyEvent('unhandledRejection', event);
     };
-    private static signalsListeners: { [signal: string]: (event: any) => void } = {};
+    private static signalsListeners: {[signal: string]: (event: any) => void} = {};
 
     public static get captureExceptions() {
         return Graceful._captureExceptions;
@@ -60,7 +62,7 @@ export class Graceful {
     }
 
     public static on(signal: 'exit', listener: GracefulListener): GracefulSubscription {
-        if (signal !== 'exit') throw new Error('Only supports \'exit\' signal');
+        if (signal !== 'exit') throw new Error("Only supports 'exit' signal");
 
         Graceful.listeners.push(listener);
 
@@ -69,7 +71,7 @@ export class Graceful {
     }
 
     public static off(signal: 'exit', listener: GracefulListener) {
-        if (signal !== 'exit') throw new Error('Only supports \'exit\' signal');
+        if (signal !== 'exit') throw new Error("Only supports 'exit' signal");
 
         const index = Graceful.listeners.indexOf(listener);
         if (index !== -1) Graceful.listeners.splice(index, 1);

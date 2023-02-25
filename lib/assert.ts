@@ -25,7 +25,7 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import { parse } from './stacktrace.js';
+import {parse} from './stacktrace.js';
 
 function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011

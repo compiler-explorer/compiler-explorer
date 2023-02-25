@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {VcAsmParser} from '../lib/parsers/asm-parser-vc.js';
+import {AsmParser} from '../lib/parsers/asm-parser.js';
 import {AsmRegex} from '../lib/parsers/asmregex.js';
 
 import {makeFakeParseFiltersAndOutputOptions} from './utils.js';
