@@ -27,16 +27,16 @@ import child_process from 'child_process';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CacheableValue} from '../types/cache.interfaces';
+import type {CacheableValue} from '../types/cache.interfaces.js';
 
-import {BaseCache} from './cache/base';
-import {Cache} from './cache/base.interfaces';
-import {createCacheFromConfig} from './cache/from-config';
-import {CompilationQueue, Job} from './compilation-queue';
-import {FormattingHandler} from './handlers/formatting';
-import {logger} from './logger';
-import {CompilerProps} from './properties';
-import {PropertyGetter} from './properties.interfaces';
+import {BaseCache} from './cache/base.js';
+import type {Cache} from './cache/base.interfaces.js';
+import {createCacheFromConfig} from './cache/from-config.js';
+import {CompilationQueue, Job} from './compilation-queue.js';
+import {FormattingHandler} from './handlers/formatting.js';
+import {logger} from './logger.js';
+import {CompilerProps} from './properties.js';
+import type {PropertyGetter} from './properties.interfaces.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;

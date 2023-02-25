@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {isString} from '../lib/common-utils';
-import stacktrace from '../lib/stacktrace';
+import { parse } from '../lib/stacktrace';
 
 // This file defines three assert utilities:
 // assert(condition, message?, extra_info...?): asserts condition
@@ -32,7 +32,7 @@ import stacktrace from '../lib/stacktrace';
 
 function get_diagnostic() {
     const e = new Error(); // eslint-disable-line unicorn/error-message
-    const trace = stacktrace.parse(e);
+    const trace = parse(e);
     if (trace.length >= 4) {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {

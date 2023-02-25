@@ -27,11 +27,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {LanguageKey} from '../types/languages.interfaces';
+import type {LanguageKey} from '../types/languages.interfaces.js';
 
-import {logger} from './logger';
-import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
-import {toProperty} from './utils';
+import {logger} from './logger.js';
+import type {PropertyGetter, PropertyValue, Widen} from './properties.interfaces.js';
+import {toProperty} from './utils.js';
 
 let properties: Record<string, Record<string, PropertyValue>> = {};
 

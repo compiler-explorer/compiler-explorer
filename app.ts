@@ -65,7 +65,7 @@ import * as props from './lib/properties.js';
 import {ShortLinkResolver} from './lib/shortener/google.js';
 import {loadSponsorsFromString} from './lib/sponsors.js';
 import * as utils from './lib/utils.js';
-import {Language, LanguageKey} from './types/languages.interfaces.js';
+import type {Language, LanguageKey} from './types/languages.interfaces.js';
 import {getStorageTypeByKey} from './lib/storage/index.js';
 import {sources} from './lib/sources/index.js';
 
