@@ -26,5 +26,6 @@ jobs:
         with:
           start: npm run dev
           wait-on: 'http://localhost:10240'
+          wait-on-timeout: 120
           config: screenshotOnRunFailure=false,video=false
           browser: ${{ matrix.browser }}
