@@ -27,10 +27,10 @@ import path from 'path';
 import fs from 'fs-extra';
 import LRU from 'lru-cache';
 
-import {GetResult} from '../../types/cache.interfaces';
-import {logger} from '../logger';
+import type {GetResult} from '../../types/cache.interfaces.js';
+import {logger} from '../logger.js';
 
-import {BaseCache} from './base';
+import {BaseCache} from './base.js';
 
 // With thanks to https://gist.github.com/kethinov/6658166
 function getAllFiles(root: string, dir?: string) {
