@@ -27,9 +27,9 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {StorageBase} from './base';
+import {StorageBase} from './base.js';
 
 const MIN_STORED_ID_LENGTH = 6;
 

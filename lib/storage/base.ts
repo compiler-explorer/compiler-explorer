@@ -24,9 +24,9 @@
 
 import * as express from 'express';
 
-import {logger} from '../logger';
-import {CompilerProps} from '../properties';
-import * as utils from '../utils';
+import {logger} from '../logger.js';
+import {CompilerProps} from '../properties.js';
+import * as utils from '../utils.js';
 
 // When it's import profanities from 'profanities'; ts says "Cannot find module 'profanities' or its corresponding type
 // declarations."
