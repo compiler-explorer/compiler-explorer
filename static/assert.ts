@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {isString} from '../lib/common-utils.js';
-import { parse } from '../lib/stacktrace.js';
+import {parse} from '../lib/stacktrace.js';
 
 // This file defines three assert utilities:
 // assert(condition, message?, extra_info...?): asserts condition

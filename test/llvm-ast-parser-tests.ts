@@ -25,8 +25,8 @@
 import cloneDeep from 'lodash.clonedeep';
 
 import {LlvmAstParser} from '../lib/llvm-ast.js';
-import * as properties from '../lib/properties.js';
 import {PropertyValue} from '../lib/properties.interfaces.js';
+import * as properties from '../lib/properties.js';
 import * as utils from '../lib/utils.js';
 
 import {fs, should} from './utils.js';

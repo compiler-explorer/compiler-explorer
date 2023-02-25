@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as express from 'express';
-import { profanities } from 'profanities';
+import {profanities} from 'profanities';
 
 import {logger} from '../logger.js';
 import {CompilerProps} from '../properties.js';
@@ -99,7 +99,7 @@ export abstract class StorageBase {
             .then(result => {
                 logger.info(
                     `Unique subhash '${result.uniqueSubHash}' ` +
-                        `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`
+                        `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`,
                 );
                 if (result.alreadyPresent) {
                     return result;

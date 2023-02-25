@@ -36,7 +36,7 @@ import {S3Cache} from '../lib/cache/s3.js';
 
 import {fs, path, shouldExist} from './utils.js';
 
-type AWSError = AWSSdk.AWSError
+type AWSError = AWSSdk.AWSError;
 
 function newTempDir() {
     temp.track(true);

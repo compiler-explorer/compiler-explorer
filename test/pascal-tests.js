@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import {FPCCompiler} from '../lib/compilers/pascal.js';
 import {PascalUtils} from '../lib/compilers/pascal-utils.js';
 import {PascalWinCompiler} from '../lib/compilers/pascal-win.js';
+import {FPCCompiler} from '../lib/compilers/pascal.js';
 import {PascalDemangler} from '../lib/demangler/index.js';
 import * as utils from '../lib/utils.js';
 
