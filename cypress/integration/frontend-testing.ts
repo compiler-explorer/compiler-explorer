@@ -1,5 +1,5 @@
 import {it} from 'mocha';
-import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils.js';
+import {assertNoConsoleOutput, stubConsoleOutput} from '../support/utils';
 
 const PANE_DATA_MAP = {
     executor: {name: 'Executor', selector: 'create-executor'},

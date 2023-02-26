@@ -6,8 +6,8 @@ plugins:
   - prettier
 extends:
   - ../.eslint-license-header.yml
-  - prettier
   - eslint:recommended
+  - prettier
 env:
   browser: true
   node: true
