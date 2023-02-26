@@ -317,8 +317,8 @@ export class VcAsmParser extends AsmParser {
                 if (f1.initialLine === f2.initialLine) {
                     return collator.compare(f1.name || '', f2.name || '');
                 } else {
-                    assert(f1.initialLine !== undefined && f2.initialLine !== undefined);
-                    return f1.initialLine - f2.initialLine;
+                    // NOTE: initialLine can be undefined here, that's ok
+                    return (f1.initialLine as number) - (f2.initialLine as number);
                 }
             }
 
