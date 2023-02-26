@@ -61,7 +61,7 @@ describe('LLVM IR Compiler', () => {
                     intel: false,
                     binary: false,
                 },
-                'output.s'
+                'output.s',
             )
             .should.eql(['-o', 'output.s']);
     });
@@ -73,7 +73,7 @@ describe('LLVM IR Compiler', () => {
                     intel: true,
                     binary: false,
                 },
-                'output.s'
+                'output.s',
             )
             .should.eql(['-o', 'output.s', '-x86-asm-syntax=intel']);
     });
@@ -85,7 +85,7 @@ describe('LLVM IR Compiler', () => {
                     intel: false,
                     binary: true,
                 },
-                'output.s'
+                'output.s',
             )
             .should.eql(['-o', 'output.s', '-filetype=obj']);
     });
@@ -97,7 +97,7 @@ describe('LLVM IR Compiler', () => {
                     intel: true,
                     binary: true,
                 },
-                'output.s'
+                'output.s',
             )
             .should.eql(['-o', 'output.s', '-filetype=obj']);
     });
@@ -111,7 +111,7 @@ describe('LLVM IR Compiler', () => {
                     intel: false,
                     binary: false,
                 },
-                'output.s'
+                'output.s',
             )
             .should.eql(['-o', 'output.s', '-S']);
     });

@@ -113,7 +113,7 @@ describe('API handling', () => {
                 }
             },
             new StorageNull('/', {}),
-            'default'
+            'default',
         );
         app.use('/api', apiHandler.handle);
         apiHandler.setCompilers(compilers);

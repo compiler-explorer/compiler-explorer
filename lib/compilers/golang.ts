@@ -176,7 +176,7 @@ export class GolangCompiler extends BaseCompiler {
         collisions: number,
         ins: string,
         args: string,
-        usedLabels: Record<string, boolean>
+        usedLabels: Record<string, boolean>,
     ): string {
         // Check if last argument is a decimal number.
         const match = args.match(DECIMAL_RE);

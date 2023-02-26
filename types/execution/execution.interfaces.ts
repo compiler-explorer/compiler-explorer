@@ -16,7 +16,7 @@ export type UnprocessedExecResult = {
 export type TypicalExecutionFunc = (
     executable: string,
     args: string[],
-    execOptions: object
+    execOptions: object,
 ) => Promise<UnprocessedExecResult>;
 
 export type BasicExecutionResult = {

@@ -62,7 +62,7 @@ export class Flags extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Flags
                 language: 'plaintext',
                 readOnly: false,
                 glyphMargin: true,
-            })
+            }),
         );
     }
 

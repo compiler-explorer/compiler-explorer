@@ -111,7 +111,7 @@ if (!opts.parser || !opts.exe) {
         'Usage: ' +
             'node -r esm -r ts-node/register compiler-args-app.ts ' +
             '--parser=<compilertype> --exe=<path> [--padding=<number>]\n' +
-            'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50'
+            'for example: --parser=clang --exe=/opt/compiler-explorer/clang-15.0.0/bin/clang++ --padding=50',
     );
     process.exit(1);
 } else {

@@ -67,7 +67,7 @@ describe('Live site checks', () => {
         });
         differences.should.be.eql(
             {},
-            'One or more defined libraries are not listed on their corresponding language libs property array'
+            'One or more defined libraries are not listed on their corresponding language libs property array',
         );
     });
 });

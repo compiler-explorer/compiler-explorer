@@ -462,7 +462,7 @@ interface StickyStackElement {
 function updateStickyStack(
     stickyStack: StickyStackElement[],
     token: string,
-    data: string | number
+    data: string | number,
 ): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));

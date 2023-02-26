@@ -55,7 +55,7 @@ export class HaskellStg extends MonacoPane<monaco.editor.IStandaloneCodeEditor, 
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 

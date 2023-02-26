@@ -51,7 +51,7 @@ export function get(base: string, property: string, defaultValue: undefined): Pr
 export function get<T extends PropertyValue>(
     base: string,
     property: string,
-    defaultValue: Widen<T>
+    defaultValue: Widen<T>,
 ): typeof defaultValue;
 export function get<T extends PropertyValue>(base: string, property: string, defaultValue?: unknown): T;
 export function get(base: string, property: string, defaultValue?: unknown): unknown {
@@ -199,7 +199,7 @@ export class CompilerProps {
         base: string,
         property: string,
         defaultValue: Widen<T>,
-        fn?: undefined
+        fn?: undefined,
     ): typeof defaultValue;
     get<T extends PropertyValue>(base: string, property: string, defaultValue?: PropertyValue, fn?: undefined): T;
     // fn overloads
@@ -207,52 +207,52 @@ export class CompilerProps {
         base: string,
         property: string,
         defaultValue?: undefined,
-        fn?: (item: PropertyValue, language?: any) => R
+        fn?: (item: PropertyValue, language?: any) => R,
     ): R;
     get<T extends PropertyValue, R>(
         base: string,
         property: string,
         defaultValue: Widen<T>,
-        fn?: (item: typeof defaultValue, language?: any) => R
+        fn?: (item: typeof defaultValue, language?: any) => R,
     ): R;
     // container base general overloads
     get(
         base: LanguageDef[] | Record<string, any>,
         property: string,
         defaultValue?: undefined,
-        fn?: undefined
+        fn?: undefined,
     ): Record<LanguageKey, PropertyValue>;
     get<T extends PropertyValue>(
         base: LanguageDef[] | Record<string, any>,
         property: string,
         defaultValue: Widen<T>,
-        fn?: undefined
+        fn?: undefined,
     ): Record<LanguageKey, typeof defaultValue>;
     get<T extends PropertyValue>(
         base: LanguageDef[] | Record<string, any>,
         property: string,
         defaultValue?: PropertyValue,
-        fn?: undefined
+        fn?: undefined,
     ): Record<LanguageKey, T>;
     // container base fn overloads
     get<R>(
         base: LanguageDef[] | Record<string, any>,
         property: string,
         defaultValue?: undefined,
-        fn?: (item: PropertyValue, language?: any) => R
+        fn?: (item: PropertyValue, language?: any) => R,
     ): Record<LanguageKey, R>;
     get<T extends PropertyValue, R>(
         base: LanguageDef[] | Record<string, any>,
         property: string,
         defaultValue: Widen<T>,
-        fn?: (item: typeof defaultValue, language?: any) => R
+        fn?: (item: typeof defaultValue, language?: any) => R,
     ): Record<LanguageKey, R>;
 
     get(
         langs: string | LanguageDef[] | Record<string, any>,
         key: string,
         defaultValue?: PropertyValue,
-        fn?: (item: PropertyValue, language?: any) => unknown
+        fn?: (item: PropertyValue, language?: any) => unknown,
     ) {
         const map_fn = fn || _.identity;
         if (_.isEmpty(langs)) {

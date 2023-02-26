@@ -173,7 +173,7 @@ describe('Execution tests', () => {
                 'sandbox',
                 '/path/to/compiler',
                 ['1', '2', '3'],
-                {}
+                {},
             );
             args.should.deep.equals([
                 '--config',
@@ -203,7 +203,7 @@ describe('Execution tests', () => {
                 'sandbox',
                 './exec',
                 ['/some/custom/cwd/file', '/not/custom/file'],
-                {customCwd: '/some/custom/cwd'}
+                {customCwd: '/some/custom/cwd'},
             );
             args.should.deep.equals([
                 '--config',
@@ -350,7 +350,7 @@ describe('Execution tests', () => {
                 {
                     customCwd: '/tmp/hellow/build',
                     appHome: '/tmp/hellow',
-                }
+                },
             );
 
             options.should.deep.equals({

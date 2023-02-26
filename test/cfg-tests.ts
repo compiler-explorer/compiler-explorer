@@ -33,7 +33,7 @@ async function DoCfgTest(cfgArg, filename) {
             compilerType: '',
             version: cfgArg,
         }),
-        contents.asm
+        contents.asm,
     );
     structure.should.deep.equal(contents.cfg);
 }

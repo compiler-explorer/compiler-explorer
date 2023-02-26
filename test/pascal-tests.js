@@ -349,7 +349,7 @@ describe('Pascal', () => {
                             asmLines.should.include('  .loc 1 13 0'),
                             asmLines.should.include('.Le0:'),
                             asmLines.should.include('  .cfi_endproc'),
-                        ])
+                        ]),
                     );
                 });
             });

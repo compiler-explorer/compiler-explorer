@@ -80,7 +80,7 @@ describe('option parser', () => {
     });
     it('handles non-option text', () => {
         return BaseParser.getOptions(
-            makeCompiler('-foo=123\nthis is a fish\n-badger=123')
+            makeCompiler('-foo=123\nthis is a fish\n-badger=123'),
         ).should.eventually.deep.equals({
             '-foo=123': {description: 'this is a fish', timesused: 0},
             '-badger=123': {description: '', timesused: 0},
@@ -99,7 +99,7 @@ describe('gcc parser', () => {
     });
     it('should handle options', () => {
         return GCCParser.parse(
-            makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all')
+            makeCompiler('-masm=intel\n-fdiagnostics-color=[blah]\n-fdump-tree-all'),
         ).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsGccDump.should.equals(true),
@@ -124,7 +124,7 @@ describe('clang parser', () => {
     });
     it('should handle options', () => {
         return ClangParser.parse(
-            makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics')
+            makeCompiler('-fno-crash-diagnostics\n-fsave-optimization-record\n-fcolor-diagnostics'),
         ).should.eventually.satisfy(result => {
             return Promise.all([
                 result.compiler.supportsOptOutput.should.equals(true),
@@ -151,7 +151,7 @@ describe('popular compiler arguments', () => {
 
     before(() => {
         compiler = makeCompiler(
-            '-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>'
+            '-fsave-optimization-record\n-x\n-g\n-fcolor-diagnostics\n-O<number> optimization level\n-std=<c++11,c++14,c++17z>',
         );
     });
 

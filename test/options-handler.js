@@ -88,7 +88,7 @@ const optionsProps = {
 if (process.platform === 'win32') {
     optionsProps['libs.fakelib.versions.twoPaths.path'] = optionsProps['libs.fakelib.versions.twoPaths.path'].replace(
         ':',
-        ';'
+        ';',
     );
     optionsProps['libs.fakelib.versions.twoPaths.libpath'] = optionsProps[
         'libs.fakelib.versions.twoPaths.libpath'
@@ -331,7 +331,7 @@ describe('Options handler', () => {
             should.equal(
                 compiler['$order'],
                 expectedOrder[compiler.group][compiler.id],
-                `group: ${compiler.group} id: ${compiler.id}`
+                `group: ${compiler.group} id: ${compiler.id}`,
             );
         });
         optionsHandler.setCompilers([]);

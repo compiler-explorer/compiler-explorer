@@ -72,7 +72,7 @@ describe('Basic compiler invariants', function () {
     it('should recognize cfg compilers', () => {
         compiler
             .isCfgCompiler(
-                'clang version 5.0.0 (https://github.com/asutton/clang.git 449c8c3e91355a3b2b6761e11d9fb5d3c125b791) (https://github.com/llvm-mirror/llvm.git 40b1e969f9cb2a0c697e247435193fb006ef1311)'
+                'clang version 5.0.0 (https://github.com/asutton/clang.git 449c8c3e91355a3b2b6761e11d9fb5d3c125b791) (https://github.com/llvm-mirror/llvm.git 40b1e969f9cb2a0c697e247435193fb006ef1311)',
             )
             .should.equal(true);
         compiler.isCfgCompiler('clang version 4.0.0 (tags/RELEASE_400/final 299826)').should.equal(true);
@@ -223,7 +223,7 @@ describe('Compiler execution', function () {
             backendOptions,
             inputFilename,
             outputFilename,
-            libraries
+            libraries,
         );
         args.should.deep.equal([
             '-g',
@@ -251,7 +251,7 @@ describe('Compiler execution', function () {
             backendOptions,
             inputFilename,
             outputFilename,
-            libraries
+            libraries,
         );
         win32args.should.deep.equal([
             '/nologo',
@@ -296,7 +296,7 @@ describe('Compiler execution', function () {
                 stdout: 'stdout',
                 stderr: 'stderr',
             },
-            undefined
+            undefined,
         );
         const result = await compiler.compile('source', 'options', {}, {}, false, [], {}, [], undefined);
         result.code.should.equal(0);
@@ -323,7 +323,7 @@ describe('Compiler execution', function () {
                 stdout: '',
                 stderr: 'oh noes',
             },
-            undefined
+            undefined,
         );
         const result = await compiler.compile('source', 'options', {}, {}, false, [], {}, [], undefined);
         result.code.should.equal(1);
@@ -350,7 +350,7 @@ describe('Compiler execution', function () {
                     ...fakeExecResults,
                     stdout: [{text: 'stdout'}],
                     stderr: [{text: 'stderr'}],
-                })
+                }),
             )
             .resolves();
         const uncachedResult = await compiler.compile(source, options, {}, {}, false, [], {}, [], undefined);
@@ -417,7 +417,7 @@ describe('Compiler execution', function () {
                 stdout: 'asm stdout',
                 stderr: 'asm stderr',
             },
-            0
+            0,
         );
         stubOutCallToExec(
             execStub,
@@ -429,7 +429,7 @@ describe('Compiler execution', function () {
                 stdout: 'binary stdout',
                 stderr: 'binary stderr',
             },
-            1
+            1,
         );
         execMock.expects('sandbox').withArgs(match.string, match.array, match.object).resolves({
             code: 0,
@@ -463,7 +463,7 @@ describe('Compiler execution', function () {
                 stdout: 'asm stdout',
                 stderr: 'asm stderr',
             },
-            0
+            0,
         );
         stubOutCallToExec(
             execStub,
@@ -475,7 +475,7 @@ describe('Compiler execution', function () {
                 stdout: 'binary stdout',
                 stderr: 'binary stderr',
             },
-            1
+            1,
         );
         execMock.expects('sandbox').withArgs(executionWrapper, match.array, match.object).resolves({
             code: 0,
@@ -499,7 +499,7 @@ describe('Compiler execution', function () {
                 stdout: 'asm stdout',
                 stderr: 'asm stderr',
             },
-            0
+            0,
         );
         stubOutCallToExec(
             execStub,
@@ -511,7 +511,7 @@ describe('Compiler execution', function () {
                 stdout: 'binary stdout',
                 stderr: 'binary stderr',
             },
-            1
+            1,
         );
         const result = await compilerNoExec.compile(
             'source',
@@ -522,7 +522,7 @@ describe('Compiler execution', function () {
             [],
             {},
             [],
-            undefined
+            undefined,
         );
         result.code.should.equal(0);
         result.execResult.didExecute.should.be.false;
@@ -549,7 +549,7 @@ describe('Compiler execution', function () {
                 stdout: 'stdout',
                 stderr: 'stderr',
             },
-            undefined
+            undefined,
         );
         execStub.onCall(1).callsFake((demangler, args, options) => {
             demangler.should.equal('demangler-exe');
@@ -596,7 +596,7 @@ describe('Compiler execution', function () {
             true,
             false,
             false,
-            makeFakeParseFiltersAndOutputOptions({})
+            makeFakeParseFiltersAndOutputOptions({}),
         );
         result.asm.should.deep.equal('<No output file output>');
     }

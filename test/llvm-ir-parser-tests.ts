@@ -72,7 +72,7 @@ describe('llvm-ir parseMetaNode', function () {
             .parseMetaNode(
                 '!44 = distinct !DISubprogram(name: "func<int, int>", ' +
                     'scope: !1, line: 7, isLocal: false, isDefinition: true, flags: ' +
-                    'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")'
+                    'DIFlagPrototyped, ceEmpty: "", ceTest: "a:b\\"c,d")',
             )
             .should.deep.equal({
                 metaType: 'Subprogram',

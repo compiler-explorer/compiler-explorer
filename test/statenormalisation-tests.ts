@@ -50,7 +50,7 @@ describe('Normalizing clientstate', () => {
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(
-            fs.readFileSync('test/state/andthekitchensink.json.normalized', {encoding: 'utf8'})
+            fs.readFileSync('test/state/andthekitchensink.json.normalized', {encoding: 'utf8'}),
         );
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
@@ -66,7 +66,7 @@ describe('Normalizing clientstate', () => {
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(
-            fs.readFileSync('test/state/conformanceview.json.normalized', {encoding: 'utf8'})
+            fs.readFileSync('test/state/conformanceview.json.normalized', {encoding: 'utf8'}),
         );
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
@@ -108,7 +108,7 @@ describe('Normalizing clientstate', () => {
         normalizer.fromGoldenLayout(data);
 
         const resultdata = JSON.parse(
-            fs.readFileSync('test/state/output-editor-id.normalized.json', {encoding: 'utf8'})
+            fs.readFileSync('test/state/output-editor-id.normalized.json', {encoding: 'utf8'}),
         );
 
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
@@ -196,7 +196,7 @@ describe('Trees', () => {
         const normalized = JSON.parse(JSON.stringify(normalizer.normalized));
 
         const resultdata = JSON.parse(
-            fs.readFileSync('test/state/tree-gl-outputpane.normalized.json', {encoding: 'utf8'})
+            fs.readFileSync('test/state/tree-gl-outputpane.normalized.json', {encoding: 'utf8'}),
         );
 
         normalized.should.deep.equal(resultdata);

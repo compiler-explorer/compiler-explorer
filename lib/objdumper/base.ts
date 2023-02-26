@@ -30,7 +30,7 @@ export abstract class BaseObjdumper {
         demangle?: boolean,
         intelAsm?: boolean,
         staticReloc?: boolean,
-        dynamicReloc?: boolean
+        dynamicReloc?: boolean,
     ) {
         const args = ['-d', outputFilename, '-l', ...this.widthOptions];
 

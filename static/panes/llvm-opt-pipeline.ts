@@ -86,7 +86,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             _.defer(() => {
                 state.sidebarWidth = parseInt(
                     unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
-                    10
+                    10,
                 );
                 state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
                 this.resize();
@@ -131,7 +131,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
         this.originalModel = monaco.editor.createModel('', 'llvm-ir');
         this.modifiedModel = monaco.editor.createModel('', 'llvm-ir');
@@ -167,7 +167,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.resizeStartX = e.clientX;
         this.resizeStartWidth = parseInt(
             unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
-            10
+            10,
         );
         this.resizeDragMoveBind = this.resizeDragMove.bind(this);
         this.resizeDragEndBind = this.resizeDragEnd.bind(this);
@@ -231,7 +231,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 this.editor
                     .getModel()
                     ?.original.setValue(
-                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`
+                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`,
                     );
                 this.editor.getModel()?.modified.setValue('');
             }

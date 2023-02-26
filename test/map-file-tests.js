@@ -105,7 +105,7 @@ describe('Code Segments', function () {
         const reader = new MapFileReaderVS('');
         reader.tryReadingCodeSegmentInfo(' 0002:00000000 00004c73H .text$mn                CODE');
         reader.tryReadingNamedAddress(
-            ' 0002:000007f0       _main                      004117f0 f   ConsoleApplication1.obj'
+            ' 0002:000007f0       _main                      004117f0 f   ConsoleApplication1.obj',
         );
 
         let info = reader.getSegmentInfoByStartingAddress('0002', 0);
@@ -150,7 +150,7 @@ describe('Symbol info', function () {
     it('VS-Map symbol test', function () {
         const reader = new MapFileReaderVS('');
         reader.tryReadingNamedAddress(
-            ' 0002:000006b0       ??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ 004116b0 f i ConsoleApplication1.obj'
+            ' 0002:000006b0       ??$__vcrt_va_start_verify_argument_type@QBD@@YAXXZ 004116b0 f i ConsoleApplication1.obj',
         );
         reader.namedAddresses.length.should.equal(1);
 
