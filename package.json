@@ -165,6 +165,7 @@
   "scripts": {
     "ci-lint": "eslint --format github .",
     "ci-test": "c8 npm run test",
+    "cypress": "cypress run",
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 .",
     "lint-files": "eslint --max-warnings=0",

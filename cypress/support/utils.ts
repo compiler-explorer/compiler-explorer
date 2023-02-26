@@ -1,4 +1,4 @@
-import '../../static/global.js';
+import '../../static/global';
 
 export function runFrontendTest(name: string) {
     it(name, () => {
