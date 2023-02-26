@@ -54,6 +54,7 @@
     "node-targz": "^0.2.0",
     "nopt": "^5.0.0",
     "p-queue": "^7.0.0",
+    "patch-package": "^6.5.1",
     "path-browserify": "^1.0.1",
     "popper.js": "^1.16.1",
     "profanities": "^3.0.1",
@@ -169,8 +170,8 @@
     "lint": "eslint --max-warnings=0 . --fix",
     "lint-check": "eslint --max-warnings=0 .",
     "lint-files": "eslint --max-warnings=0",
-    "test": "ts-node-esm ./node_modules/.bin/mocha -b 'test/**/*.ts' 'test/**/*.js'",
-    "test-min": "ts-node-esm ./node_modules/.bin/mocha -b --config .mocharc-min.yml",
+    "test": "ts-node-esm ./node_modules/mocha/bin/mocha.js -b 'test/**/*.ts' 'test/**/*.js'",
+    "test-min": "ts-node-esm ./node_modules/mocha/bin/mocha.js -b --config .mocharc-min.yml",
     "fix": "npm run lint && npm run format && npm run ts-check",
     "check": "npm run ts-check && npm run lint-check && npm run test-min -- --reporter min",
     "dev": "cross-env NODE_ENV=DEV ts-node-esm app.ts",
@@ -185,7 +186,8 @@
     "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
-    "webpack": "ts-node-esm ./node_modules/.bin/webpack-cli --node-env=production --config webpack.config.esm.ts"
+    "webpack": "ts-node-esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts",
+    "postinstall": "patch-package"
   },
   "license": "BSD-2-Clause"
 }

@@ -77,7 +77,7 @@ prebuild: prereqs
 
 .PHONY: run-only
 run-only: node-installed  ## Runs the site like it runs in production without building it
-	env NODE_ENV=production $(NODE) $(NODE_ARGS) -r esm ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
+	env NODE_ENV=production node_modules/bin/ts-node-esm $(NODE_ARGS) ./out/dist/app.js --webpackContent ./out/webpack/static $(EXTRA_ARGS)
 
 .PHONY: run
 run:  ## Runs the site like it runs in production

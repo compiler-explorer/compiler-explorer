@@ -1,3 +1,6 @@
 recursive: true
 require:
   - source-map-support/register
+node-option:
+  - experimental-specifier-resolution=node
+  - loader=ts-node/esm
