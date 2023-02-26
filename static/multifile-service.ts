@@ -185,7 +185,7 @@ export class MultifileService {
             },
             err => {
                 throw err;
-            }
+            },
         );
     }
 

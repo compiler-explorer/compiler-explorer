@@ -76,7 +76,7 @@ function definition(): monaco.languages.IMonarchLanguage {
         'uint8',
         'uniform',
         'unmasked',
-        'varying'
+        'varying',
     );
     return ispc;
 }

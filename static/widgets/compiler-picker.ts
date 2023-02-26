@@ -55,7 +55,7 @@ export class CompilerPicker {
         langId: string,
         compilerId: string,
         onCompilerChange: (x: string) => any,
-        compilerIsVisible?: (x: any) => any
+        compilerIsVisible?: (x: any) => any,
     ) {
         this.eventHub = hub.createEventHub();
         this.id = CompilerPicker.nextSelectorId++;

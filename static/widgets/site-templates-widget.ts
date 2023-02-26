@@ -89,7 +89,7 @@ class SiteTemplatesWidget {
                 () => {
                     this.img.src = this.getAsset(unwrap(li_copy.getAttribute('data-name')));
                 },
-                false
+                false,
             );
             li.addEventListener(
                 'click',
@@ -97,7 +97,7 @@ class SiteTemplatesWidget {
                     window.location.href =
                         window.location.origin + window.httpRoot + '#' + li_copy.getAttribute('data-data');
                 },
-                false
+                false,
             );
         }
         this.populated = true;

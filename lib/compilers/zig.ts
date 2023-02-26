@@ -108,7 +108,7 @@ export class ZigCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions: string[]
+        userOptions: string[],
     ): string[] {
         let options = [filters.execute ? 'build-exe' : 'build-obj'];
 
@@ -140,7 +140,7 @@ export class ZigCompiler extends BaseCompiler {
                 '--output',
                 this.filename(outputFilename),
                 '--output-h',
-                '/dev/null'
+                '/dev/null',
             );
         }
 

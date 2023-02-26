@@ -119,7 +119,7 @@ export class PascalWinCompiler extends BaseCompiler {
             'program prog;\n' +
             'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
             'begin\n' +
-            'end.\n'
+            'end.\n',
         );
     }
 
@@ -151,7 +151,7 @@ export class PascalWinCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

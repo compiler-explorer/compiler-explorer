@@ -205,8 +205,8 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         (window.compilerExplorerOptions && window.compilerExplorerOptions.mobileViewer),
                     glyphMargin: !options.embedded,
                 },
-                this.settings
-            )
+                this.settings,
+            ),
         );
 
         editor.getModel()?.setEOL(monaco.editor.EndOfLineSequence.LF);
@@ -239,7 +239,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 true,
                 true,
                 null,
-                false
+                false,
             );
 
             if (match !== this.decorations[decoration.name]) {
@@ -267,7 +267,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             this.id,
             this.lastChangeEmitted ?? '',
             this.currentLanguage?.id ?? '',
-            compilerId
+            compilerId,
         );
     }
 
@@ -699,7 +699,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         return Buffer.from(
             encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, v) => {
                 return String.fromCharCode(parseInt(v, 16));
-            })
+            }),
         ).toString('base64');
     }
 
@@ -720,7 +720,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 this.container.layoutManager.root.getComponentsByName('compiler'),
                 function (c) {
                     return c.id === compilerId;
-                }
+                },
             );
 
             if (glCompiler) {
@@ -805,7 +805,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 let knownCompiler = false;
 
                 const compilerExtInfo = unwrap(
-                    this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler)
+                    this.hub.compilerService.findCompiler(this.currentLanguage?.id ?? '', compiler.compiler),
                 );
                 const semver = this.cleanupSemVer(compilerExtInfo.semver);
                 let groupOrName = compilerExtInfo.baseName || compilerExtInfo.groupName || compilerExtInfo.name;
@@ -888,7 +888,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                 selectedToken.colEnd,
                 reveal,
                 this.getPaneName(),
-                this.id
+                this.id,
             );
         }
     }
@@ -950,7 +950,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         group: 'togglecompile',
                         alertClass: this.settings.compileOnChange ? 'notification-on' : 'notification-off',
                         dismissTime: 3000,
-                    }
+                    },
                 );
             },
         });
@@ -1085,7 +1085,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.alertSystem.ask(
             'Changes were made to the code',
             'Changes were made to the code while it was being processed. Overwrite changes?',
-            {yes: yes, no: undefined}
+            {yes: yes, no: undefined},
         );
     }
 
@@ -1311,7 +1311,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     this.container.layoutManager.root.getComponentsByName('compiler'),
                     function (c) {
                         return c.id === compilerId;
-                    }
+                    },
                 );
                 if (glCompiler) {
                     const selected = options.compilers.find(compiler => {
@@ -1411,7 +1411,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     getAllOutputAndErrors(
         result: CompilationResult,
         compilerName: string,
-        compilerId: number | string
+        compilerId: number | string,
     ): (ResultLine & {sourcePane: string})[] {
         const compilerTitle = compilerName + ' #' + compilerId;
         let all = this.addSource(result.stdout, compilerTitle);
@@ -1509,7 +1509,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                                                     f.line ?? 0,
                                                     f.column ?? 0,
                                                     f.endline ?? 0,
-                                                    f.endcolumn ?? 0
+                                                    f.endcolumn ?? 0,
                                                 ),
                                                 text: f.text,
                                             },
@@ -1519,11 +1519,11 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                                 },
                                 isPreferred: ind === 0,
                             };
-                        })
+                        }),
                     );
                 }
                 return diag;
-            })
+            }),
         );
 
         return {
@@ -1547,7 +1547,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                     },
                 };
             },
-            this
+            this,
         );
 
         this.updateDecorations();
@@ -1572,7 +1572,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         this.busyCompilers[compilerId] = false;
 
         const collectedOutput = this.collectOutputWidgets(
-            this.getAllOutputAndErrors(result, compiler.name, compilerId)
+            this.getAllOutputAndErrors(result, compiler.name, compilerId),
         );
 
         this.setDecorationTags(collectedOutput.widgets, String(compilerId));
@@ -1590,7 +1590,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             asm = asm.concat(
                 Object.values(result.devices).flatMap(device => {
                     return device.asm ?? [];
-                })
+                }),
             );
         }
 
@@ -1610,7 +1610,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
             let output = this.getAllOutputAndErrors(result, compiler.name, 'Execution ' + executorId);
             if (result.buildResult) {
                 output = output.concat(
-                    this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId)
+                    this.getAllOutputAndErrors(result.buildResult, compiler.name, 'Executor ' + executorId),
                 );
             }
             this.setDecorationTags(this.collectOutputWidgets(output).widgets, 'Executor ' + executorId);
@@ -1761,7 +1761,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                             ri.line ?? 0,
                             ri.column ?? 0,
                             (ri.endline || ri.line) ?? 0,
-                            (ri.endcolumn || ri.column) ?? 0
+                            (ri.endcolumn || ri.column) ?? 0,
                         ),
                         options: {
                             before: {
@@ -1783,7 +1783,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            _.compact(_.flatten(_.values(this.decorations)))
+            _.compact(_.flatten(_.values(this.decorations))),
         );
     }
 
@@ -1815,7 +1815,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
                         this.requestCompilation();
                     },
                     this.getSource(),
-                    this.currentLanguage
+                    this.currentLanguage,
                 );
             }
         });
@@ -1888,7 +1888,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
     updateEditorCode(): void {
         this.setSource(
             this.editorSourceByLang[this.currentLanguage?.id ?? ''] ||
-                languages[this.currentLanguage?.id ?? '']?.example
+                languages[this.currentLanguage?.id ?? '']?.example,
         );
     }
 
@@ -1903,7 +1903,7 @@ export class Editor extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Edit
         data: LanguageSelectData,
         escape: typeof escape_html,
         width: number,
-        height: number
+        height: number,
     ): string {
         let result =
             '<div class="d-flex" style="align-items: center">' +

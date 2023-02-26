@@ -575,7 +575,7 @@ export class GraphLayoutCore {
                                     prevSegment.start.row !== segment.start.row)
                             ) {
                                 throw Error(
-                                    "Adjacent horizontal or vertical segments don't share a common row or column"
+                                    "Adjacent horizontal or vertical segments don't share a common row or column",
                                 );
                             }
                             prevSegment.end = segment.end;

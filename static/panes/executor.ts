@@ -227,7 +227,7 @@ export class Executor extends Pane<ExecutorState> {
             this.currentLangId,
             this.compiler ? this.compiler.id : '',
             this.onCompilerChange.bind(this),
-            this.compilerIsVisible
+            this.compilerIsVisible,
         );
 
         this.initLibraries(state);
@@ -401,7 +401,7 @@ export class Executor extends Pane<ExecutorState> {
             this.hub.compilerService.expandToFiles(request.source).then((sourceAndFiles: SourceAndFiles) => {
                 request.source = sourceAndFiles.source;
                 request.files.push(...sourceAndFiles.files);
-            })
+            }),
         );
 
         const moreFiles: FiledataPair[] = [];
@@ -411,7 +411,7 @@ export class Executor extends Pane<ExecutorState> {
                 this.hub.compilerService.expandToFiles(file.contents).then((sourceAndFiles: SourceAndFiles) => {
                     file.contents = sourceAndFiles.source;
                     moreFiles.push(...sourceAndFiles.files);
-                })
+                }),
             );
         }
         request.files.push(...moreFiles);
@@ -505,7 +505,7 @@ export class Executor extends Pane<ExecutorState> {
         lineNum: number | undefined,
         column: number | undefined,
         addLineLinks: boolean,
-        filename: string | null
+        filename: string | null,
     ): void {
         const elem = $('<div/>').appendTo(container);
         if (addLineLinks && lineNum) {
@@ -522,7 +522,7 @@ export class Executor extends Pane<ExecutorState> {
                                 lineNum,
                                 column ?? 0,
                                 (column ?? 0) + 1,
-                                true
+                                true,
                             );
                         }
                         // do not bring user to the top of index.html
@@ -539,10 +539,10 @@ export class Executor extends Pane<ExecutorState> {
                                 lineNum,
                                 column ?? 0,
                                 (column ?? 0) + 1,
-                                false
+                                false,
                             );
                         }
-                    })
+                    }),
             );
         } else {
             elem.html(msg);
@@ -559,7 +559,7 @@ export class Executor extends Pane<ExecutorState> {
         output: ResultLine[],
         element: JQuery<HTMLElement>,
         ansiParser: AnsiToHtml,
-        addLineLinks: boolean
+        addLineLinks: boolean,
     ): JQuery<HTMLElement> {
         const outElem = $('<pre class="card"></pre>').appendTo(element);
         output.forEach(obj => {
@@ -575,7 +575,7 @@ export class Executor extends Pane<ExecutorState> {
                     lineNumber,
                     columnNumber,
                     addLineLinks,
-                    filename || null
+                    filename || null,
                 );
             }
         });
@@ -666,7 +666,7 @@ export class Executor extends Pane<ExecutorState> {
         result: CompilationResult,
         cached: boolean,
         wasRealReply: boolean,
-        timeTaken: number
+        timeTaken: number,
     ): void {
         ga.proxy('send', {
             hitType: 'event',
@@ -722,7 +722,7 @@ export class Executor extends Pane<ExecutorState> {
                     execStdout,
                     this.executionOutputSection,
                     this.normalAnsiToHtml,
-                    false
+                    false,
                 );
                 outElem.addClass('execution-stdout');
             }
@@ -910,8 +910,8 @@ export class Executor extends Pane<ExecutorState> {
             LibUtils.getSupportedLibraries(
                 this.compiler ? this.compiler.libsArr : [],
                 this.currentLangId,
-                this.compiler?.remote ?? null
-            )
+                this.compiler?.remote ?? null,
+            ),
         );
     }
 
@@ -1118,7 +1118,7 @@ export class Executor extends Pane<ExecutorState> {
             this.compiler,
             this.options,
             this.sourceEditorId ?? false,
-            this.sourceTreeId ?? false
+            this.sourceTreeId ?? false,
         );
     }
 
@@ -1201,7 +1201,7 @@ export class Executor extends Pane<ExecutorState> {
                 version: compilerVersion,
                 fullVersion: compilerFullVersion,
             },
-            compilerNotification
+            compilerNotification,
         );
     }
 
@@ -1300,7 +1300,7 @@ export class Executor extends Pane<ExecutorState> {
                 filteredLibraries = LibUtils.getSupportedLibraries(
                     this.compiler.libsArr,
                     this.currentLangId || '',
-                    this.compiler.remote ?? null
+                    this.compiler.remote ?? null,
                 );
             }
 
@@ -1329,7 +1329,7 @@ export class Executor extends Pane<ExecutorState> {
 
     getCurrentLangCompilers(): CompilerInfo[] {
         const allCompilers: Record<string, CompilerInfo> | undefined = this.hub.compilerService.getCompilersForLang(
-            this.currentLangId
+            this.currentLangId,
         );
         if (!allCompilers) return [];
 

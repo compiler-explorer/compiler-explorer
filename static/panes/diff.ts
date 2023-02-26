@@ -130,12 +130,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.lhs = new DiffStateObject(
             state.lhs,
             monaco.editor.createModel('', 'asm'),
-            state.lhsdifftype || DiffType.ASM
+            state.lhsdifftype || DiffType.ASM,
         );
         this.rhs = new DiffStateObject(
             state.rhs,
             monaco.editor.createModel('', 'asm'),
-            state.rhsdifftype || DiffType.ASM
+            state.rhsdifftype || DiffType.ASM,
         );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
@@ -318,7 +318,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         compiler: CompilerInfo | undefined,
         options: unknown,
         editorId: number,
-        treeId: number
+        treeId: number,
     ) {
         if (!compiler) return;
         options = options || '';

@@ -70,7 +70,7 @@ export class CompilerService {
 
     public processFromLangAndCompiler(
         langId: string | null,
-        compilerId: string
+        compilerId: string,
     ): {langId: string | null; compiler: CompilerInfo | null} | null {
         try {
             if (langId) {
@@ -172,7 +172,7 @@ export class CompilerService {
         reject: (reason?: any) => void,
         xhr: jqXHR,
         textStatus: ErrorTextStatus,
-        errorThrown: string
+        errorThrown: string,
     ) {
         let error = errorThrown;
         if (!error) {
@@ -408,7 +408,7 @@ export class CompilerService {
     public static handleCompilationStatus(
         statusLabel: JQuery | null,
         statusIcon: JQuery | null,
-        status: CompilationStatus
+        status: CompilationStatus,
     ) {
         if (statusLabel != null) {
             statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);

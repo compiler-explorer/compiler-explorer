@@ -123,7 +123,7 @@ export class HistoryWidget {
                         this.modal?.modal('hide');
                     },
                 };
-            })
+            }),
         );
     }
 

@@ -57,7 +57,7 @@ export class LibsWidget {
         dropdownButton: JQuery,
         state: WidgetState,
         onChangeCallback: () => void,
-        possibleLibs: CompilerLibs
+        possibleLibs: CompilerLibs,
     ) {
         this.dropdownButton = dropdownButton;
         if (compiler) {
@@ -448,7 +448,7 @@ export class LibsWidget {
                 this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(
                     true,
                     {},
-                    options.libs[this.currentLangId]
+                    options.libs[this.currentLangId],
                 );
             } else {
                 this.availableLibs[this.currentLangId][this.currentCompilerId] = $.extend(true, {}, possibleLibs);

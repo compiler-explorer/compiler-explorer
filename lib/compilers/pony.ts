@@ -64,7 +64,7 @@ export class PonyCompiler extends BaseCompiler {
 
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
-            unwrap(this.compiler.irArg)
+            unwrap(this.compiler.irArg),
         );
 
         const execOptions = this.getDefaultExecOptions();
@@ -83,7 +83,7 @@ export class PonyCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
