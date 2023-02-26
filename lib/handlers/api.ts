@@ -108,6 +108,11 @@ export class ApiHandler {
             .all(methodNotAllowed);
 
         this.handle
+            .route('/compilerRepository/:compiler/search')
+            .get(compileHandler.searchRepository.bind(compileHandler))
+            .all(methodNotAllowed);
+
+        this.handle
             .route('/popularArguments/:compiler')
             .post(compileHandler.handlePopularArguments.bind(compileHandler))
             .get(compileHandler.handlePopularArguments.bind(compileHandler))

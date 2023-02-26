@@ -33,7 +33,7 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
+import {ICompiler, PreliminaryCompilerInfo, isCompilerRepository} from '../../types/compiler.interfaces';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
 import {BaseCompiler} from '../base-compiler';
 import {CompilationEnvironment} from '../compilation-env';
@@ -435,6 +435,37 @@ export class CompileHandler {
             return res.sendStatus(404);
         }
         res.send(compiler.possibleArguments.getOptimizationArguments(this.getUsedOptions(req)));
+    }
+
+    /**
+     * Search the available revisions for a particular compiler repository.
+     * Supports pagination via offset and limit query params.
+     */
+    async searchRepository(req, res) {
+        const compiler = this.compilerFor(req);
+        if (!compiler || !isCompilerRepository(compiler)) {
+            return res.status(404).send({error: 'Compiler repository not found!'});
+        }
+
+        const query = req.query.q || '';
+        const offset = parseInt(req.query.offset || '0');
+        if (!Number.isSafeInteger(offset)) {
+            return res.status(400).send({error: 'Bad parameter: `offset`'});
+        }
+        let limit = parseInt(req.query.limit || '1000');
+        if (!Number.isSafeInteger(limit)) {
+            return res.status(400).send({error: 'Bad parameter: `limit`'});
+        }
+        limit = Math.max(0, Math.min(20, limit));
+
+        const { revisions, total } = await compiler.queryRevisions(query, limit, offset);
+
+        res.send({
+            results: revisions,
+            total: total,
+            limit,
+            offset,
+        });
     }
 
     getUsedOptions(req: express.Request) {

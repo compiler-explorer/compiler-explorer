@@ -75,6 +75,15 @@ export type CompilerInfo = {
     supportsGnatDebugViews?: boolean;
     supportsLibraryCodeFilter?: boolean;
     executionWrapper: string;
+    /**
+     * A compiler repository is an executable which can be used to run a large
+     * number revisions of a compiler.
+     *
+     * We display a revision picker in the UI for these types of compilers.
+     * The selected revision is prepended to the compiler options in compile
+     * requests.
+     */
+    isCompilerRepository?: boolean;
     postProcess: string[];
     lang: LanguageKey;
     group: string;
@@ -131,8 +140,31 @@ export type PreliminaryCompilerInfo = Omit<
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
     lang: Language;
+    isCompilerRepository: boolean;
     compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files);
     cmake(files, key);
     initialise(mtime: Date, clientOptions, isPrediscovered: boolean);
     getInfo(): CompilerInfo;
+}
+
+export interface QueryRevisionsResult {
+    revisions: string[];
+    total: number;
+}
+
+export interface ICompilerRepository extends ICompiler {
+    /**
+     * Queries the compiler repository for revisions matching the search query.
+     * A matching revision contains the substring `q`.
+     *
+     * @param q - substring to match
+     * @param limit - maximum number of matches
+     * @param offset - number of matches to skip
+     * @returns The matching revisions sorted in alphabetical order.
+     */
+    queryRevisions(q: string, limit: number, offset: number): Promise<QueryRevisionsResult>;
+}
+
+export function isCompilerRepository(object: ICompiler): object is ICompilerRepository {
+    return object.isCompilerRepository;
 }

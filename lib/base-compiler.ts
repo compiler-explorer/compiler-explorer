@@ -212,6 +212,10 @@ export class BaseCompiler implements ICompiler {
         this.packager = new Packager();
     }
 
+    get isCompilerRepository() {
+        return !!this.compiler.isCompilerRepository;
+    }
+
     copyAndFilterLibraries(allLibraries, filter) {
         const filterLibAndVersion = _.map(filter, lib => {
             const match = lib.match(/([\w-]*)\.([\w-]*)/i);
@@ -2223,6 +2227,7 @@ export class BaseCompiler implements ICompiler {
     }
 
     async compile(source, options, backendOptions, filters, bypassCache, tools, executionParameters, libraries, files) {
+        // TODO: Handle isCompilerRepository
         const optionsError = this.checkOptions(options);
         if (optionsError) throw optionsError;
         const sourceError = this.checkSource(source);

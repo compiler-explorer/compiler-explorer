@@ -38,6 +38,7 @@ import * as codeLensHandler from '../codelens-handler';
 import * as monacoConfig from '../monaco-config';
 import * as TimingWidget from '../widgets/timing-info-widget';
 import {CompilerPicker} from '../widgets/compiler-picker';
+import {CompilerRevisionPicker} from '../widgets/compiler-revision-picker';
 import {CompilerService} from '../compiler-service';
 import {SiteSettings} from '../settings';
 import * as LibUtils from '../lib-utils';
@@ -209,6 +210,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private needsCompile: boolean;
     private deviceViewOpen: boolean;
     private options: string;
+    private revision: string;
     private source: string;
     private assembly: Assembly[];
     private colours: string[];
@@ -257,6 +259,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private outputBtn: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private outputTextCount: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private outputErrorCount: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
+    private compilerRevisionPicker: CompilerRevisionPicker | JQuery<HTMLElement>;
     private optionsField: JQuery<HTMLElementTagNameMap[keyof HTMLElementTagNameMap]>;
     private initialOptionsFieldPlacehoder: JQuery<HTMLElement>;
     private prependOptions: JQuery<HTMLElement>;
@@ -371,6 +374,11 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.compiler?.id ?? '',
             this.onCompilerChange.bind(this)
         );
+        this.compilerRevisionPicker = new CompilerRevisionPicker(
+            this.domRoot,
+            this.onCompilerRevisionChange.bind(this)
+        );
+
         this.initLibraries(state);
         // MonacoPane's registerCallbacks is not called late enough either
         this.initCallbacks();
@@ -394,6 +402,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         } else {
             this.sourceEditorId = state.source || 1;
         }
+        this.revision = state.revision || '';
         this.options = state.options || (options.compileOptions[this.currentLangId ?? ''] ?? '');
 
         this.deviceViewOpen = !!state.deviceViewOpen;
@@ -459,6 +468,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.compiler = result?.compiler ?? null;
         this.currentLangId = result?.langId ?? null;
         this.updateLibraries();
+        this.updateCompilerRevisionPicker();
     }
 
     override close(): void {
@@ -1207,11 +1217,21 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
             this.needsCompile = true;
             return;
         }
+        if (!this.compiler) {
+            throw Error('compiler cannot be null');
+        }
 
         this.needsCompile = false;
         this.compileInfoLabel.text(' - Compiling...');
+
+        let userArguments = this.options;
+        if (this.compiler.isCompilerRepository) {
+            // Prepend/send the revision
+            userArguments = `${this.revision} ${this.options}`;
+        }
+
         const options: CompileRequestOptions = {
-            userArguments: this.options,
+            userArguments,
             compilerOptions: {
                 producePp: this.ppViewOpen ? this.ppOptions : null,
                 produceAst: this.astViewOpen,
@@ -2346,6 +2366,12 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.filterExecuteButton.toggle(options.supportsExecute);
         this.filterLibraryCodeButton.toggle(options.supportsLibraryCodeFilter);
 
+        this.compilerRevisionPicker = this.domRoot.find('.compiler-revision-picker');
+        this.compilerRevisionPicker.val(this.revision);
+        if (this.compilerRevisionPicker.length !== 1) {
+            throw new Error('.compiler-revision-picker not found');
+        }
+
         this.optionsField.val(this.options);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
@@ -2877,6 +2903,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         }
     }
 
+    onCompilerRevisionChange(revision: string): void {
+        if (this.revision !== revision) {
+            this.revision = revision;
+            this.updateState();
+            this.compile();
+            this.updateButtons();
+            this.sendCompiler();
+        }
+    }
+
     private htmlEncode(rawStr: string): string {
         return rawStr.replace(/[\u00A0-\u9999<>&]/g, function (i) {
             return '&#' + i.charCodeAt(0) + ';';
@@ -2949,6 +2985,16 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.resize();
     }
 
+    updateCompilerRevisionPicker(): void {
+        if (this.compilerRevisionPicker instanceof CompilerRevisionPicker) {
+            if (this.compiler?.isCompilerRepository) {
+                this.compilerRevisionPicker.update(this.compiler.id);
+            } else {
+                this.compilerRevisionPicker.update(null);
+            }
+        }
+    }
+
     onCompilerChange(value: string): void {
         this.compiler = this.compilerService.findCompiler(this.currentLangId ?? '', value);
 
@@ -2958,6 +3004,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.updateLibraries();
         this.updateState();
         this.updateCompilerUI();
+        this.updateCompilerRevisionPicker();
 
         this.undefer();
 

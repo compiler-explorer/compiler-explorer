@@ -28,6 +28,7 @@ export type CompilerState = WidgetState & {
     tree?: number;
     source?: number;
     compiler: string;
+    revision?: string;
     options?: string;
     flagsViewOpen?: boolean;
     deviceViewOpen?: boolean;

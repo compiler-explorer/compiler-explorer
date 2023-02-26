@@ -59,3 +59,32 @@ export const getFormattedCode = async (options: FormattingRequest) =>
         },
         body: JSON.stringify(_.pick(options, 'source', 'base', 'tabWidth', 'useSpaces')),
     });
+
+interface CompilerRepositorySearchRequest {
+    compilerId: string;
+    query: string;
+    limit?: number;
+    offset?: number;
+}
+
+interface CompilerRepositorySearchResponse {
+    results: string[];
+    total: number;
+    limit: number;
+    offset: number;
+}
+
+export async function searchCompilerRepository(
+    options: CompilerRepositorySearchRequest
+): Promise<TypedResponse<CompilerRepositorySearchResponse>> {
+    const searchParams = new URLSearchParams({q: options.query});
+    if (typeof options.limit === 'number') {
+        searchParams.set('limit', options.limit.toString());
+    }
+    if (typeof options.offset === 'number') {
+        searchParams.set('offset', options.offset.toString());
+    }
+    return await request<CompilerRepositorySearchResponse>(
+        `/compilerRepository/${options.compilerId}/search?${searchParams}`
+    );
+}

@@ -84,6 +84,16 @@ body {
     border-bottom-left-radius: 0;
 }
 
+.compiler-revision-picker {
+    flex-flow: row;
+    width: 100% !important;
+}
+
+.compiler-revision-picker .ts-wrapper {
+    flex-basis: 24em;
+    flex-grow: 0;
+}
+
 .function-picker {
     min-width: 14em;
     width: 99%;
