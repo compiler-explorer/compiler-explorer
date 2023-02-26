@@ -1,0 +1,4 @@
+diff --git a/node_modules/mocha/bin/mocha b/node_modules/mocha/bin/mocha.js
+similarity index 100%
+rename from node_modules/mocha/bin/mocha
+rename to node_modules/mocha/bin/mocha.js
