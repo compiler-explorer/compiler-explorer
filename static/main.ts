@@ -153,7 +153,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
         $('#privacy').on('click', (event, data) => {
             const modal = alertSystem.alert(
                 data && data.title ? data.title : 'Privacy policy',
-                policyDocuments.privacy.text
+                policyDocuments.privacy.text,
             );
             calcLocaleChangedDate(modal);
             // I can't remember why this check is here as it seems superfluous
@@ -229,7 +229,7 @@ function setupButtons(options: CompilerExplorerOptions, hub: Hub) {
                 const result = err.responseText || JSON.stringify(err);
                 alertSystem.alert(
                     'Compiler Explorer Sponsors',
-                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>'
+                    '<div>Unable to fetch sponsors:</div><div>' + result + '</div>',
                 );
             });
     });
@@ -266,7 +266,7 @@ function configFromEmbedded(embeddedUrl: string) {
                 '<a href="https://github.com/compiler-explorer/compiler-explorer/issues" style="color: black;">' +
                 'our github' +
                 '</a>.' +
-                '</div>'
+                '</div>',
         );
         throw new Error('Embed url decode error');
     }
@@ -349,7 +349,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                         'An error was encountered while decoding the URL, the last locally saved configuration will ' +
                             "be used if present.<br/><br/>Make sure the URL you're using hasn't been truncated, " +
                             'otherwise if you believe your URL is valid please let us know on ' +
-                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.'
+                            '<a href="https://github.com/compiler-explorer/compiler-explorer/issues">our github</a>.',
                     );
                 }
             }
@@ -373,7 +373,7 @@ function findConfig(defaultConfig: ConfigType, options: CompilerExplorerOptions)
                     hasHeaders: false,
                 },
             },
-            configFromEmbedded(window.location.hash.substring(1))
+            configFromEmbedded(window.location.hash.substring(1)),
         );
     }
 
@@ -539,7 +539,7 @@ function start() {
     if (hostnameParts.length > 0) {
         const subdomainPart = hostnameParts[0];
         const langBySubdomain = Object.values(options.languages).find(
-            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart)
+            lang => lang.id === subdomainPart || lang.alias.includes(subdomainPart),
         );
         if (langBySubdomain) {
             subLangId = langBySubdomain.id;
@@ -684,7 +684,7 @@ function start() {
                 hub.layout.eventHub.emit('modifySettings', {
                     enableCommunityAds: false,
                 });
-            }
+            },
         );
 
         // Don't try to update Version tree link

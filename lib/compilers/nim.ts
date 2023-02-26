@@ -126,7 +126,7 @@ export class NimCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[]
+        staticLibLinks: string[],
     ) {
         return options.concat(
             libIncludes,
@@ -135,7 +135,7 @@ export class NimCompiler extends BaseCompiler {
             libLinks,
             userOptions,
             [this.filename(inputFilename)],
-            staticLibLinks
+            staticLibLinks,
         );
     }
 }

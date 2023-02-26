@@ -135,7 +135,7 @@ export class Themer {
             () => {
                 this.eventHub.emit('themeChange', this.currentTheme);
             },
-            this
+            this,
         );
     }
 

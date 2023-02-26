@@ -49,14 +49,14 @@ export type EventMap = {
         compiler: CompilerInfo | null,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
     compileResult: (
         compilerId: number,
         compiler: CompilerInfo,
         result: CompilationResult,
-        language: Language | undefined
+        language: Language | undefined,
     ) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
@@ -82,7 +82,7 @@ export type EventMap = {
         compiler: any,
         options: string,
         editorId: boolean | number,
-        treeId: boolean | number
+        treeId: boolean | number,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
@@ -128,7 +128,7 @@ export type EventMap = {
         colEnd: number,
         reveal: boolean,
         sender: string,
-        editorId?: number
+        editorId?: number,
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;

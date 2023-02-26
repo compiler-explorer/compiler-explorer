@@ -161,7 +161,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             state,
             this.onLibsChanged.bind(this),
             // @ts-expect-error: Typescript does not detect that this is correct
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
+            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds]),
         );
         // No callback is done on initialization, so make sure we store the current libs
         this.currentLibs = this.libsWidget.get();
@@ -282,7 +282,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.hub,
             this.langId,
             config.compilerId,
-            onCompilerChange
+            onCompilerChange,
         );
 
         const getCompilerConfig = () => {
@@ -292,7 +292,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 newCompilerEntry.optionsField?.val(),
                 newCompilerEntry.picker?.lastCompilerId ?? '',
                 this.langId,
-                this.lastState?.libs
+                this.lastState?.libs,
             );
         };
 
@@ -320,7 +320,7 @@ export class Conformance extends Pane<ConformanceViewState> {
         compiler: CompilerInfo,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ): void {}
 
     setCompilationOptionsPopover(element: JQuery<HTMLElement> | null, content: string): void {
@@ -531,7 +531,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                         if (lib && libsInCommon.includes(libKey)) {
                             const versionsInCommon = _.intersection(
                                 Object.keys(lib.versions),
-                                Object.keys(filteredLibraries[libKey].versions)
+                                Object.keys(filteredLibraries[libKey].versions),
                             );
 
                             lib.versions = _.pick(lib.versions, (version, versionkey) => {
@@ -560,7 +560,7 @@ export class Conformance extends Pane<ConformanceViewState> {
                 })
                 .filter(compilerId => {
                     return compilerId !== '';
-                })
+                }),
         );
     }
 
@@ -570,7 +570,7 @@ export class Conformance extends Pane<ConformanceViewState> {
             this.langId,
             compilerIds.join('|'),
             // @ts-expect-error: This is actually ok
-            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds])
+            this.getOverlappingLibraries(Array.isArray(compilerIds) ? compilerIds : [compilerIds]),
         );
     }
 

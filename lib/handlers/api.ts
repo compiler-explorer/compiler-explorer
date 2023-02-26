@@ -65,7 +65,7 @@ export class ApiHandler {
         compileHandler: CompileHandler,
         ceProps: PropertyGetter,
         private readonly storageHandler: StorageBase,
-        urlShortenService: string
+        urlShortenService: string,
     ) {
         this.handle = express.Router();
         const cacheHeader = `public, max-age=${ceProps('apiMaxAgeSecs', 24 * 60 * 60)}`;
@@ -224,13 +224,13 @@ export class ApiHandler {
             ...list
                 .map(item => item.id)
                 .concat([title])
-                .map(item => item.length)
+                .map(item => item.length),
         );
         res.set('Content-Type', 'text/plain');
         res.send(
             utils.padRight(title, maxLength) +
                 ' | Name\n' +
-                list.map(lang => utils.padRight(lang.id, maxLength) + ' | ' + lang.name).join('\n')
+                list.map(lang => utils.padRight(lang.id, maxLength) + ' | ' + lang.name).join('\n'),
         );
     }
 

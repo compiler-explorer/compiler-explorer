@@ -64,12 +64,12 @@ const doFormatRequest = async (options: FormattingRequest) => {
 const getDocumentFormatter = (
     language: string,
     formatter: string,
-    isOneTrueStyle: boolean
+    isOneTrueStyle: boolean,
 ): monaco.languages.DocumentFormattingEditProvider => ({
     async provideDocumentFormattingEdits(
         model: monaco.editor.ITextModel,
         options: monaco.languages.FormattingOptions,
-        token: monaco.CancellationToken
+        token: monaco.CancellationToken,
     ): Promise<monaco.languages.TextEdit[]> {
         const settings = Settings.getStoredSettings();
         // If there is only one style, return __DefaultStyle.

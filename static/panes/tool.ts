@@ -138,7 +138,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                     highlightActiveIndentation: false,
                     indentation: false,
                 },
-            })
+            }),
         );
     }
 
@@ -394,7 +394,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         return text.replace(
             // URL detection regex grabbed from https://stackoverflow.com/a/3809435
             /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
-            '<a href="$1" target="_blank">$1</a>'
+            '<a href="$1" target="_blank">$1</a>',
         );
     }
 
@@ -470,7 +470,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                                 this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
                                 obj.tag ? obj.tag.line : obj.line,
                                 obj.tag ? obj.tag.column : 0,
-                                obj.tag ? obj.tag.flow : null
+                                obj.tag ? obj.tag.flow : null,
                             );
                         }
                     }
@@ -498,7 +498,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                                 new Blob([toolResult.artifact.content], {
                                     type: toolResult.artifact.type,
                                 }),
-                                toolResult.artifact.name
+                                toolResult.artifact.name,
                             );
                         }
                     });
