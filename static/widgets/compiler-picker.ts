@@ -30,6 +30,9 @@ import * as local from '../local';
 import {EventHub} from '../event-hub';
 import {Hub} from '../hub';
 import {CompilerService} from '../compiler-service';
+import { CompilerInfo } from '../../types/compiler.interfaces';
+import { unique } from '../../lib/common-utils';
+import { unwrap } from '../assert';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -49,11 +52,18 @@ export class CompilerPicker {
     lastLangId: string;
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
+    popoutButton: JQuery<HTMLElement>;
+    modal: JQuery<HTMLElement>;
+    modalArchitectures: JQuery<HTMLElement>;
+    options: (CompilerInfo & { $groups: string[]; })[];
+    groups: { value: string; label: string; }[];
+    modalCompilerTypes: JQuery<HTMLElement>;
+    modalCompilers: JQuery<HTMLElement>;
     constructor(
         domRoot: JQuery,
         hub: Hub,
-        langId: string,
-        compilerId: string,
+        readonly langId: string,
+        readonly compilerId: string,
         onCompilerChange: (x: string) => any,
         compilerIsVisible?: (x: any) => any,
     ) {
@@ -74,10 +84,15 @@ export class CompilerPicker {
             this.compilerIsVisible = () => true;
         }
 
+        this.modal = $('#compiler-picker-modal').clone(true);
+        this.modalArchitectures = this.modal.find(".architectures");
+        this.modalCompilerTypes = this.modal.find(".compiler-types");
+        this.modalCompilers = this.modal.find(".compilers");
+
         this.initialize(langId, compilerId);
     }
 
-    close() {
+    destroy() {
         // Quick note while I'm here: This function is never called. It probably should be. The conformance view
         // bypasses this function and does compilerEntry.picker.tomSelect.close(); manually. This function is the
         // only time this.tomSelect can be null, might be nice if we can get rid of that.
@@ -90,6 +105,10 @@ export class CompilerPicker {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
 
+        this.groups = this.getGroups(langId);
+        this.options = this.getOptions(langId, compilerId);
+        console.log("----------------------", this.groups, this.options);
+
         this.tomSelect = new TomSelect(this.domNode, {
             sortField: CompilerService.getSelectizerOrder(),
             valueField: 'id',
@@ -97,9 +116,9 @@ export class CompilerPicker {
             searchField: ['name'],
             placeholder: '🔍 Select a compiler...',
             optgroupField: '$groups',
-            optgroups: this.getGroups(langId),
+            optgroups: this.groups,
             lockOptgroupOrder: true,
-            options: this.getOptions(langId, compilerId),
+            options: this.options,
             items: compilerId ? [compilerId] : [],
             dropdownParent: 'body',
             closeAfterSelect: true,
@@ -137,6 +156,9 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
+                dropdown: () =>{
+                    return `<div class="compiler-picker-dropdown"><div class="compiler-picker-dropdown-popout" id="compiler-picker-dropdown-popout-${this.id}">Pop out <i class="fa-solid fa-arrow-up-right-from-square"></i></div></div>`;
+                }
             },
         });
 
@@ -175,16 +197,60 @@ export class CompilerPicker {
                 }
             }
         });
+
+        // setup modal / button
+        // text filter
+        // instructionset filters
+        const compilers = Object.values(this.compilerService.getCompilersForLang(langId) ?? {});
+        const instruction_sets = compilers.map(compiler => compiler.instructionSet);
+        this.modalArchitectures.empty();
+        this.modalArchitectures.append(...unique(instruction_sets.map(isa => `<span class="architecture">${isa}</span>`)).sort());
+        //
+        const compilerTypes = compilers.map(compiler => compiler.compilerCategory ?? "other");
+        console.log(compilerTypes);
+        console.log(compilers);
+        this.modalCompilerTypes.empty();
+        this.modalCompilerTypes.append(...unique(compilerTypes.map(type => `<span class="compiler-type">${type}</span>`)).sort());
+        // add the compiler entries / group headers themselves
+        this.modalCompilers.empty();
+        const group_map: Record<string, JQuery> = {};
+        for(const group of this.groups) {
+            const group_elem = $(`<div class="group"><div class="label">${group.label}</div></div>`);
+            group_elem.appendTo(this.modalCompilers);
+            group_map[group.value] = group_elem;
+        }
+        for(const compiler of this.options) {
+            for(const group of compiler.$groups) {
+                const compiler_elem = $(`<div class="compiler">${compiler.name}</div>`);
+                compiler_elem.appendTo(group_map[group]);
+            }
+        }
+
+        // TODO:
+        // - text search
+        // - filter isa
+        // - filter category
+        // - collapse group headers
+        // - filter special forks?
+
+        this.popoutButton = $(`#compiler-picker-dropdown-popout-${this.id}`);
+        this.popoutButton.on("click", () => {
+            unwrap(this.tomSelect).close();
+            this.modal.modal({});
+        });
     }
 
-    getOptions(langId: string, compilerId: string) {
+    getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
         const favorites = this.getFavorites();
         return Object.values(this.compilerService.getCompilersForLang(langId) ?? {})
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
-                e.$groups = [e.group];
-                if (favorites[e.id]) e.$groups.unshift(CompilerPicker.favoriteGroupName);
-                return e;
+                const $groups = [e.group];
+                if (favorites[e.id]) $groups.unshift(CompilerPicker.favoriteGroupName);
+                return {
+                    ...e,
+                    $groups
+                };
             });
     }
 

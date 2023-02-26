@@ -261,6 +261,7 @@ export class CompilerFinder {
             versionRe: props<string>('versionRe'),
             explicitVersion: props<string>('explicitVersion'),
             compilerType: props('compilerType', ''),
+            compilerCategory: props<string | undefined>('compilerCategory', undefined),
             debugPatched: props('debugPatched', false),
             demangler: demangler,
             demanglerType: props('demanglerType', ''),

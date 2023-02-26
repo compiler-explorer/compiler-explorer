@@ -230,7 +230,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
     private linkedFadeTimeoutId: NodeJS.Timeout | null;
     private toolsMenu: JQuery<HTMLElement> | null;
     private revealJumpStack: (monaco.editor.ICodeEditorViewState | null)[];
-    private compilerPicker: CompilerPicker | JQuery<HTMLElement>;
+    private compilerPickerElement: JQuery<HTMLElement>;
+    private compilerPicker: CompilerPicker;
     private compiler: CompilerInfo | null;
     private currentLangId: string | null;
     private filters: Toggles;
@@ -466,6 +467,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.eventHub.unsubscribe();
         this.eventHub.emit('compilerClose', this.id, this.sourceTreeId ?? 0);
         this.editor.dispose();
+        this.compilerPicker.destroy();
     }
 
     onCompiler(compilerId: number, compiler: unknown, options: string, editorId: number, treeId: number): void {}
@@ -2349,7 +2351,7 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         this.optionsField.val(this.options);
 
         this.shortCompilerName = this.domRoot.find('.short-compiler-name');
-        this.compilerPicker = this.domRoot.find('.compiler-picker');
+        this.compilerPickerElement = this.domRoot.find('.compiler-picker');
         this.setCompilerVersionPopover({version: '', fullVersion: ''}, '');
 
         this.topBar = this.domRoot.find('.top-bar');

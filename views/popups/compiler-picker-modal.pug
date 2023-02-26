@@ -1,0 +1,32 @@
+#compiler-picker-modal.modal.fade.gl_keep(tabindex="-1" role="dialog")
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        h5.modal-title Compilers
+        button.close(type="button" data-dismiss="modal" aria-hidden="true" aria-label="Close")
+          span(aria-hidden="true")
+            | &times;
+      .modal-body
+        .card
+          .card-body
+            .container
+              .row
+                .col-lg
+                  div(style='text-align: center')
+                    input.lib-search-input(value="" placeholder="Search text")
+                    button.btn.btn-primary.lib-search-button(type="button") Search
+              .row
+                .col-lg
+                  div.filters Instruction Sets:
+                    span.architectures
+              .row
+                .col-lg
+                  div.filters Categories:
+                    span.compiler-types
+              .row
+                .compilers-col.col-md
+                  h6 Results
+                  .compilers
+                //.libs-favorites-col.col-md
+                //  h6 Favorites
+                //  .favorites
