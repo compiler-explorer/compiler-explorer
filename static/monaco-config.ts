@@ -72,7 +72,7 @@ export function extendConfig<
                 vimInUse: settings.useVim,
                 fontLigatures: settings.editorsFLigatures,
             },
-            overrides,
+            overrides
         );
     }
     return _.extend({}, DEFAULT_MONACO_CONFIG, overrides);

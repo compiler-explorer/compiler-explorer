@@ -63,7 +63,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions,
+        filters: ParseFiltersAndOutputOptions
     ) {
         if (!outputFilename.endsWith('.elf') && (await utils.fileExists(outputFilename + '.elf'))) {
             outputFilename = outputFilename + '.elf';
@@ -78,7 +78,7 @@ export class LLVMMOSCompiler extends ClangCompiler {
             demangle,
             staticReloc,
             dynamicReloc,
-            filters,
+            filters
         );
 
         if (this.compiler.exe.includes('nes')) {
