@@ -93,23 +93,16 @@ export class BuildEnvSetupCliConan extends BuildEnvSetupBase {
 
         const args = ['install', '.'];
         if (this.remote) args.push('-r', this.remote);
+        // prettier-ignore
         args.push(
-            '-s',
-            'os=Linux',
-            '-s',
-            'build_type=Debug',
-            '-s',
-            `compiler=${this.compilerTypeOrGCC}`,
-            '-s',
-            `compiler.version=${this.compiler.id}`,
-            '-s',
-            `compiler.libcxx=${libcxx}`,
-            '-s',
-            `arch=${arch}`,
-            '-s',
-            `stdver=${stdver}`,
-            '-s',
-            `flagcollection=${flagcollection}`,
+            '-s', 'os=Linux',
+            '-s', 'build_type=Debug',
+            '-s', `compiler=${this.compilerTypeOrGCC}`,
+            '-s', `compiler.version=${this.compiler.id}`,
+            '-s', `compiler.libcxx=${libcxx}`,
+            '-s', `arch=${arch}`,
+            '-s', `stdver=${stdver}`,
+            '-s', `flagcollection=${flagcollection}`,
         );
 
         logger.info('Conan install: ', args);
