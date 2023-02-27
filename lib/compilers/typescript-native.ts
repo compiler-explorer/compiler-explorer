@@ -69,7 +69,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         // These options make Clang produce an IR
         const newOptions = ['--emit=mlir-llvm', inputFilename];
@@ -82,7 +82,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             this.tscJit,
             newOptions,
             this.filename(inputFilename),
-            execOptions
+            execOptions,
         );
         if (output.code !== 0) {
             return {
@@ -116,7 +116,7 @@ export class TypeScriptNativeCompiler extends BaseCompiler {
             this.tscJit,
             newOptions,
             this.filename(inputFilename),
-            execOptions
+            execOptions,
         );
         if (output.code !== 0) {
             return [{text: 'Failed to run compiler to get IR code'}];

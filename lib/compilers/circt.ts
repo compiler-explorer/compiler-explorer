@@ -50,7 +50,7 @@ export class CIRCTCompiler extends BaseCompiler {
                 ],
                 ...compilerInfo,
             },
-            env
+            env,
         );
     }
 

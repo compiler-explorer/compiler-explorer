@@ -51,7 +51,7 @@ export class MLIRCompiler extends BaseCompiler {
                 ],
                 ...compilerInfo,
             },
-            env
+            env,
         );
     }
 
@@ -74,7 +74,7 @@ export class MLIRCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[]
+        userOptions?: string[],
     ): any[] {
         return [];
     }

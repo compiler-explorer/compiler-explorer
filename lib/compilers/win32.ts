@@ -81,7 +81,7 @@ export class Win32Compiler extends BaseCompiler {
                 .map(([selectedLib, foundVersion]) => {
                     return foundVersion.liblink.filter(Boolean).map(lib => `"${lib}.lib"`);
                 })
-                .map(([selectedLib, foundVersion]) => selectedLib)
+                .map(([selectedLib, foundVersion]) => selectedLib),
         );
     }
 
@@ -97,7 +97,7 @@ export class Win32Compiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries
+        libraries,
     ) {
         let options = this.optionsForFilter(filters, outputFilename, userOptions);
         backendOptions = backendOptions || {};
@@ -133,7 +133,7 @@ export class Win32Compiler extends BaseCompiler {
             preLink,
             libPaths,
             libLinks,
-            staticlibLinks
+            staticlibLinks,
         );
     }
 

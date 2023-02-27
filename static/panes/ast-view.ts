@@ -116,7 +116,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 
@@ -153,7 +153,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     sourceLine,
                     colBegin,
                     colEnd,
-                    false
+                    false,
                 );
                 this.eventHub.emit(
                     'panesLinkLine',
@@ -162,7 +162,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
                     colBegin,
                     colEnd,
                     false,
-                    this.getPaneName()
+                    this.getPaneName(),
                 );
             }
         }
@@ -250,7 +250,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
     updateDecorations() {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            _.flatten(_.values(this.decorations))
+            _.flatten(_.values(this.decorations)),
         );
     }
 
@@ -265,7 +265,7 @@ export class Ast extends MonacoPane<monaco.editor.IStandaloneCodeEditor, AstStat
         colBegin: number,
         colEnd: number,
         revealLine: boolean,
-        sender: string
+        sender: string,
     ) {
         if (Number(compilerId) === this.compilerInfo.compilerId) {
             const lineNums: number[] = [];

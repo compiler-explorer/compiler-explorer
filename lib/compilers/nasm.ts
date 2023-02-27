@@ -37,7 +37,7 @@ export class NasmCompiler extends AssemblyCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries
+        libraries,
     ) {
         let options = super.prepareArguments(
             userOptions,
@@ -45,7 +45,7 @@ export class NasmCompiler extends AssemblyCompiler {
             backendOptions,
             inputFilename,
             outputFilename,
-            libraries
+            libraries,
         );
 
         let fmode;

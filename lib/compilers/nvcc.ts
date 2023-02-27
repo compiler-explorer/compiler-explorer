@@ -137,10 +137,10 @@ export class NvccCompiler extends BaseCompiler {
                                     okToCache: demangle,
                                     ...this.deviceAsmParser.process(asm, {...filters, binary: type === 'SASS'}),
                                 },
-                                {...filters, binary: type === 'SASS'}
+                                {...filters, binary: type === 'SASS'},
                             ),
                         });
-                    })
+                    }),
             );
             result.devices = devices;
         }

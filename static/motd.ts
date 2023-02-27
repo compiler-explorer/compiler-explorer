@@ -99,7 +99,7 @@ export function initialise(
     defaultLanguage: string,
     adsEnabled: boolean,
     onMotd: (res?: Motd) => void,
-    onHide: () => void
+    onHide: () => void,
 ) {
     if (!url) return;
     $.getJSON(url)

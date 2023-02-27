@@ -94,7 +94,7 @@ export class Alert {
             autoDismiss = true,
             dismissTime = 5000,
             onBeforeShow = () => {},
-        }: AlertNotifyOptions
+        }: AlertNotifyOptions,
     ) {
         const container = $('#notifications');
         const newElement = $(`

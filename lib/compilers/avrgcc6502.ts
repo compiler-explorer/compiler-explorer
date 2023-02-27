@@ -70,7 +70,7 @@ export class AvrGcc6502Compiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

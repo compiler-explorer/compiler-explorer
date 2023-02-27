@@ -41,7 +41,7 @@ export class CL430Compiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[]
+        userOptions?: string[],
     ): string[] {
         return [
             // -g AKA --symdebug:dwarf generates too much noise for the default parser to deal with

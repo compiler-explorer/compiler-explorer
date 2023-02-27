@@ -64,15 +64,15 @@ export class CompilationEnvironment {
         this.badOptions = new RegExp(this.ceProps('optionsForbiddenRe', deprecatedForbidden));
         this.cache = createCacheFromConfig(
             'default',
-            doCache === undefined || doCache ? this.ceProps('cacheConfig', '') : ''
+            doCache === undefined || doCache ? this.ceProps('cacheConfig', '') : '',
         );
         this.executableCache = createCacheFromConfig(
             'executable',
-            doCache === undefined || doCache ? this.ceProps('executableCacheConfig', '') : ''
+            doCache === undefined || doCache ? this.ceProps('executableCacheConfig', '') : '',
         );
         this.compilerCache = createCacheFromConfig(
             'compiler',
-            doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : ''
+            doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : '',
         );
         this.reportCacheEvery = this.ceProps('cacheReportEvery', 100);
         this.multiarch = null;
@@ -151,8 +151,21 @@ export class CompilationEnvironment {
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue<T>(job: Job<T>) {
-        return this.compilationQueue.enqueue(job);
+    enqueue<T>(job: Job<T>, silent?: boolean) {
+        const enqueue_time = performance.now();
+        return this.compilationQueue.enqueue(async () => {
+            const launch_time = performance.now();
+            const res = await job();
+            const finish_time = performance.now();
+            if (!silent) {
+                logger.info(
+                    `(compilation wall clock time: ${Math.round(finish_time - launch_time)} ms, queue time: ${
+                        launch_time - enqueue_time
+                    } ms)`,
+                );
+            }
+            return res;
+        });
     }
 
     findBadOptions(options: string[]) {

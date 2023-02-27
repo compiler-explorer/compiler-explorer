@@ -138,63 +138,63 @@ export class Hub {
             function (this: Hub, id: number) {
                 this.editorIds.add(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'editorClose',
             function (this: Hub, id: number) {
                 this.editorIds.remove(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'compilerOpen',
             function (this: Hub, id: number) {
                 this.compilerIds.add(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'compilerClose',
             function (this: Hub, id: number) {
                 this.compilerIds.remove(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'treeOpen',
             function (this: Hub, id: number) {
                 this.treeIds.add(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'treeClose',
             function (this: Hub, id: number) {
                 this.treeIds.remove(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'executorOpen',
             function (this: Hub, id: number) {
                 this.executorIds.add(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'executorClose',
             function (this: Hub, id: number) {
                 this.executorIds.remove(id);
             },
-            this
+            this,
         );
         layout.eventHub.on(
             'languageChange',
             function (this: Hub, editorId: number, langId: string) {
                 this.lastOpenedLangId = langId;
             },
-            this
+            this,
         );
 
         layout.init();
@@ -350,7 +350,7 @@ export class Hub {
                     {
                         type: 'row',
                     },
-                    this.layout.root
+                    this.layout.root,
                 );
                 this.layout.root.replaceChild(rootFirstItem, newRow);
                 newRow.addChild(rootFirstItem);
@@ -409,7 +409,7 @@ export class Hub {
 
     public toolInputViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof ToolInputView>[2]
+        state: ConstructorParameters<typeof ToolInputView>[2],
     ): ToolInputView {
         return new ToolInputView(this, container, state);
     }
@@ -420,14 +420,14 @@ export class Hub {
 
     public flagsViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof FlagsView>[2]
+        state: ConstructorParameters<typeof FlagsView>[2],
     ): FlagsView {
         return new FlagsView(this, container, state);
     }
 
     public ppViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof PreProcessorView>[2]
+        state: ConstructorParameters<typeof PreProcessorView>[2],
     ): PreProcessorView {
         return new PreProcessorView(this, container, state);
     }
@@ -442,69 +442,69 @@ export class Hub {
 
     public llvmOptPipelineFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof LLVMOptPipeline>[2]
+        state: ConstructorParameters<typeof LLVMOptPipeline>[2],
     ): LLVMOptPipeline {
         return new LLVMOptPipeline(this, container, state);
     }
 
     public deviceViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof DeviceView>[2]
+        state: ConstructorParameters<typeof DeviceView>[2],
     ): DeviceView {
         return new DeviceView(this, container, state);
     }
 
     public gnatDebugTreeViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof GnatDebugTreeView>[2]
+        state: ConstructorParameters<typeof GnatDebugTreeView>[2],
     ): GnatDebugTreeView {
         return new GnatDebugTreeView(this, container, state);
     }
 
     public gnatDebugViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof GnatDebugView>[2]
+        state: ConstructorParameters<typeof GnatDebugView>[2],
     ): GnatDebugView {
         return new GnatDebugView(this, container, state);
     }
 
     public rustMirViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof RustMirView>[2]
+        state: ConstructorParameters<typeof RustMirView>[2],
     ): RustMirView {
         return new RustMirView(this, container, state);
     }
 
     public rustMacroExpViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof RustMacroExpView>[2]
+        state: ConstructorParameters<typeof RustMacroExpView>[2],
     ): RustMacroExpView {
         return new RustMacroExpView(this, container, state);
     }
 
     public rustHirViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof RustHirView>[2]
+        state: ConstructorParameters<typeof RustHirView>[2],
     ): RustHirView {
         return new RustHirView(this, container, state);
     }
 
     public haskellCoreViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof HaskellCoreView>[2]
+        state: ConstructorParameters<typeof HaskellCoreView>[2],
     ): HaskellCoreView {
         return new HaskellCoreView(this, container, state);
     }
 
     public haskellStgViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof HaskellStgView>[2]
+        state: ConstructorParameters<typeof HaskellStgView>[2],
     ): HaskellStgView {
         return new HaskellStgView(this, container, state);
     }
     public haskellCmmViewFactory(
         container: GoldenLayout.Container,
-        state: ConstructorParameters<typeof HaskellCmmView>[2]
+        state: ConstructorParameters<typeof HaskellCmmView>[2],
     ): HaskellCmmView {
         return new HaskellCmmView(this, container, state);
     }

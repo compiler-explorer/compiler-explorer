@@ -141,7 +141,7 @@ export class GccDump extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Gcc
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
                 dropdownParent: 'body',
-            })
+            }),
         );
     }
 

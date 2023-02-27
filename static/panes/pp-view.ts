@@ -62,7 +62,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 
@@ -92,7 +92,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
                 'filter-headers': options['filter-headers'],
                 'clang-format': options['clang-format'],
             },
-            true
+            true,
         );
     }
 
@@ -136,7 +136,7 @@ export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewSt
         if (typeof results === 'object') {
             if (results.numberOfLinesFiltered > 0) {
                 this.editor.setValue(
-                    `/* <${results.numberOfLinesFiltered} lines filtered> */\n\n` + results.output.trimStart()
+                    `/* <${results.numberOfLinesFiltered} lines filtered> */\n\n` + results.output.trimStart(),
                 );
             } else {
                 this.editor.setValue(results.output.trimStart());

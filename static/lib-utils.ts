@@ -68,7 +68,7 @@ function copyAndFilterLibraries(allLibraries: LanguageLibs, filter: string[]) {
 export function getSupportedLibraries(
     supportedLibrariesArr: string[] | undefined,
     langId: string,
-    remote
+    remote,
 ): LanguageLibs {
     if (!remote) {
         const allLibs = options.libs[langId];

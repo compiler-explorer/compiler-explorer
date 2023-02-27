@@ -69,7 +69,7 @@ export class z88dkCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[]
+        staticLibLinks: string[],
     ) {
         return userOptions.concat(
             options,
@@ -78,7 +78,7 @@ export class z88dkCompiler extends BaseCompiler {
             libOptions,
             libPaths,
             libLinks,
-            staticLibLinks
+            staticLibLinks,
         );
     }
 
@@ -118,7 +118,7 @@ export class z88dkCompiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions
+        filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 

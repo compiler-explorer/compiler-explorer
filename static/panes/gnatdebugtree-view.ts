@@ -55,7 +55,7 @@ export class GnatDebugTree extends MonacoPane<monaco.editor.IStandaloneCodeEdito
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 

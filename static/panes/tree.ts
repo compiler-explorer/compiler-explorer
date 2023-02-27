@@ -375,7 +375,7 @@ export class Tree {
                         yesHtml: 'Delete',
                         noClass: 'btn-primary',
                         noHtml: 'Cancel',
-                    }
+                    },
                 );
             }
         });
@@ -438,7 +438,7 @@ export class Tree {
             'dragStart',
             () => {
                 this.domRoot.find('.add-pane').dropdown('toggle');
-            }
+            },
         );
 
         dragSource.on('click', () => {
@@ -522,7 +522,7 @@ export class Tree {
 
         this.toggleCMakeButton = new Toggles(
             this.domRoot.find('.options'),
-            state as unknown as Record<string, boolean>
+            state as unknown as Record<string, boolean>,
         );
 
         let drophereHideTimeout;
@@ -662,7 +662,7 @@ export class Tree {
                 'coloursForCompiler',
                 id,
                 this.lineColouring.getColoursForCompiler(id),
-                this.settings.colourScheme
+                this.settings.colourScheme,
             );
         }
 
@@ -671,7 +671,7 @@ export class Tree {
                 'coloursForEditor',
                 file.editorId,
                 this.lineColouring.getColoursForEditor(file.editorId),
-                this.settings.colourScheme
+                this.settings.colourScheme,
             );
         });
     }

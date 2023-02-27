@@ -55,7 +55,7 @@ export class GnatDebug extends MonacoPane<monaco.editor.IStandaloneCodeEditor, G
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 

@@ -325,7 +325,7 @@ export class LlvmPassDumpParser {
                         affectedFunction: fn,
                         machine,
                         lines,
-                    })
+                    }),
                 );
                 previousFunction = fn;
             } else {
@@ -374,7 +374,7 @@ export class LlvmPassDumpParser {
                             passesMatch(current_dump.header, next_dump.header),
                             '',
                             current_dump.header,
-                            next_dump.header
+                            next_dump.header,
                         );
                         assert(current_dump.machine === next_dump.machine);
                         pass.name = current_dump.header.slice('IR Dump Before '.length);
@@ -474,11 +474,11 @@ export class LlvmPassDumpParser {
     process(
         output: ResultLine[],
         _: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
     ) {
         // Crop out any junk before the pass dumps (e.g. warnings)
         const ir = output.slice(
-            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader))
+            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
         );
         const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);

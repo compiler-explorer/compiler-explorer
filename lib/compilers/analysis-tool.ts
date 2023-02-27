@@ -38,7 +38,7 @@ export class AnalysisTool extends BaseCompiler {
                 disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
                 ...info,
             },
-            env
+            env,
         );
     }
 

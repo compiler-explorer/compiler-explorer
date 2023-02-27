@@ -65,7 +65,7 @@ export class ToolInputView extends MonacoPane<monaco.editor.IStandaloneCodeEdito
                 language: 'plaintext',
                 readOnly: false,
                 glyphMargin: true,
-            })
+            }),
         );
     }
 

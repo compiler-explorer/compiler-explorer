@@ -96,7 +96,7 @@ export class RustCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[]
+        staticLibLinks: string[],
     ) {
         return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
             this.filename(inputFilename),

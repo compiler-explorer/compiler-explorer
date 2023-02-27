@@ -55,7 +55,7 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 

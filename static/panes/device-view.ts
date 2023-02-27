@@ -91,7 +91,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 
@@ -238,7 +238,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                 this.showDeviceAsmResults(devOutput.asm, languageId);
             } else {
                 this.showDeviceAsmResults(
-                    [{text: `<Device ${this.selectedDevice} has errors>`}].concat(devOutput.stderr)
+                    [{text: `<Device ${this.selectedDevice} has errors>`}].concat(devOutput.stderr),
                 );
             }
         } else {
@@ -277,7 +277,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         compiler: CompilerInfo | undefined,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ): void {
         if (id === this.compilerInfo.compilerId) {
             this.compilerInfo.compilerName = compiler ? compiler.name : '';
@@ -334,7 +334,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
                     -1,
                     0,
                     false,
-                    this.getPaneName()
+                    this.getPaneName(),
                 );
             }
         }
@@ -343,7 +343,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
     updateDecorations(): void {
         this.prevDecorations = this.editor.deltaDecorations(
             this.prevDecorations,
-            Object.values(this.decorations).flatMap(x => x)
+            Object.values(this.decorations).flatMap(x => x),
         );
     }
 
@@ -358,7 +358,7 @@ export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, D
         _colBegin: number,
         _colEnd: number,
         revealLine: boolean,
-        sender: string
+        sender: string,
     ): void {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (Number(compilerId) === this.compilerInfo.compilerId && this.deviceCode) {

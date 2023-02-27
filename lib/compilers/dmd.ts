@@ -55,7 +55,7 @@ export class DMDCompiler extends BaseCompiler {
         const lPath = path.basename(outputFilename);
         return this.handlePostProcessResult(
             result,
-            await this.exec(postProcesses[0], ['-l', lPath], {customCwd: dirPath, maxOutput: maxSize})
+            await this.exec(postProcesses[0], ['-l', lPath], {customCwd: dirPath, maxOutput: maxSize}),
         );
     }
 

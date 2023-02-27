@@ -86,8 +86,8 @@ export class NoScriptHandler {
                             embedded: false,
                             mobileViewer: isMobileViewer(req),
                         },
-                        req.query
-                    )
+                        req.query,
+                    ),
                 );
             })
             .get('/noscript/:language', (req, res) => {
@@ -182,8 +182,8 @@ export class NoScriptHandler {
                     clientstate: state,
                     storedStateId: req.params.id || false,
                 },
-                req.query
-            )
+                req.query,
+            ),
         );
     }
 }

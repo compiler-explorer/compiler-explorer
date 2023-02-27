@@ -59,7 +59,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
                 language: 'plaintext',
                 readOnly: true,
                 glyphMargin: true,
-            })
+            }),
         );
     }
 
@@ -127,7 +127,7 @@ export class Opt extends MonacoPane<monaco.editor.IStandaloneCodeEditor, OptStat
         const groupedResults = _.groupBy(
             /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */ // TODO
             results.filter(x => x.DebugLoc !== undefined),
-            x => x.DebugLoc.Line
+            x => x.DebugLoc.Line,
         );
 
         for (const [key, value] of Object.entries(groupedResults)) {

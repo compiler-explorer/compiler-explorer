@@ -346,7 +346,7 @@ export class Cfg extends Pane<CfgState> {
             const highlighted_asm_untrimmed = await monaco.editor.colorize(
                 raw_lines.join('\n'),
                 'asm',
-                MonacoConfig.extendConfig({})
+                MonacoConfig.extendConfig({}),
             );
             const highlighted_asm = await monaco.editor.colorize(
                 raw_lines
@@ -360,7 +360,7 @@ export class Cfg extends Pane<CfgState> {
                     })
                     .join('\n'),
                 'asm',
-                MonacoConfig.extendConfig({})
+                MonacoConfig.extendConfig({}),
             );
             const untrimmed_lines = highlighted_asm_untrimmed.split('<br/>');
             const lines = highlighted_asm.split('<br/>');
@@ -405,7 +405,7 @@ export class Cfg extends Pane<CfgState> {
         }
         for (const node of fn.nodes) {
             const fictitiousBlock = this.fictitiousBlockContainer.appendChild(
-                this.bbMap[node.id].cloneNode(true)
+                this.bbMap[node.id].cloneNode(true),
             ) as HTMLDivElement;
             const elem = $(fictitiousBlock);
             void fictitiousBlock.offsetHeight; // try to trigger a layout recompute
@@ -504,7 +504,7 @@ export class Cfg extends Pane<CfgState> {
             fn.nodes.length
         }`;
         this.estimatedPNGSize.innerHTML = `(~${size_to_human(
-            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO
+            this.layout.getWidth() * this.layout.getHeight() * 4 * EST_COMPRESSION_RATIO,
         )})`;
     }
 
