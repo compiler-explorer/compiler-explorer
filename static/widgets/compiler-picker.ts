@@ -33,6 +33,7 @@ import {CompilerService} from '../compiler-service';
 import {CompilerInfo} from '../../types/compiler.interfaces';
 import {unique} from '../../lib/common-utils';
 import {unwrap} from '../assert';
+import {CompilerPickerPopup} from './compiler-picker-popup';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -52,13 +53,7 @@ export class CompilerPicker {
     lastLangId: string;
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
-    popoutButton: JQuery<HTMLElement>;
-    modal: JQuery<HTMLElement>;
-    modalArchitectures: JQuery<HTMLElement>;
-    options: (CompilerInfo & {$groups: string[]})[];
-    groups: {value: string; label: string}[];
-    modalCompilerTypes: JQuery<HTMLElement>;
-    modalCompilers: JQuery<HTMLElement>;
+    popup: CompilerPickerPopup;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -84,10 +79,7 @@ export class CompilerPicker {
             this.compilerIsVisible = () => true;
         }
 
-        this.modal = $('#compiler-picker-modal').clone(true);
-        this.modalArchitectures = this.modal.find('.architectures');
-        this.modalCompilerTypes = this.modal.find('.compiler-types');
-        this.modalCompilers = this.modal.find('.compilers');
+        this.popup = new CompilerPickerPopup(this);
 
         this.initialize(langId, compilerId);
     }
@@ -98,12 +90,12 @@ export class CompilerPicker {
         this.tomSelect = null;
     }
 
-    initialize(langId: string, compilerId: string) {
+    private initialize(langId: string, compilerId: string) {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
 
-        this.groups = this.getGroups(langId);
-        this.options = this.getOptions(langId, compilerId);
+        const groups = this.getGroups(langId);
+        const options = this.getOptions(langId, compilerId);
 
         this.tomSelect = new TomSelect(this.domNode, {
             sortField: CompilerService.getSelectizerOrder(),
@@ -112,9 +104,9 @@ export class CompilerPicker {
             searchField: ['name'],
             placeholder: '🔍 Select a compiler...',
             optgroupField: '$groups',
-            optgroups: this.groups,
+            optgroups: groups,
             lockOptgroupOrder: true,
-            options: this.options,
+            options: options,
             items: compilerId ? [compilerId] : [],
             dropdownParent: 'body',
             closeAfterSelect: true,
@@ -202,146 +194,11 @@ export class CompilerPicker {
             }
         });
 
-        // setup modal / button
-        // text filter
-        // instructionset filters
-        const compilers = Object.values(this.compilerService.getCompilersForLang(langId) ?? {});
-        const instruction_sets = compilers.map(compiler => compiler.instructionSet);
-        this.modalArchitectures.empty();
-        this.modalArchitectures.append(
-            ...unique(instruction_sets.map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`)).sort(),
-        );
-        //
-        const compilerTypes = compilers.map(compiler => compiler.compilerCategory ?? 'other');
-        this.modalCompilerTypes.empty();
-        this.modalCompilerTypes.append(
-            ...unique(
-                compilerTypes.map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`),
-            ).sort(),
-        );
-        let isaFilters: string[] = [];
-        let categoryFilters: string[] = [];
-        const doCompilers = () => {
-            const filteredCompilers = this.options.filter(compiler => {
-                if (isaFilters.length > 0) {
-                    if (!isaFilters.includes(compiler.instructionSet)) {
-                        return false;
-                    }
-                }
-                if (categoryFilters.length > 0) {
-                    if (!categoryFilters.includes(compiler.compilerCategory ?? 'other')) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-            // figure out if there are any empty groups, these will be ignored
-            const groupCounts: Partial<Record<string, number>> = {};
-            for (const compiler of filteredCompilers) {
-                for (const group of compiler.$groups) {
-                    groupCounts[group] = (groupCounts[group] ?? 0) + 1;
-                }
-            }
-            // add the compiler entries / group headers themselves
-            this.modalCompilers.empty();
-            const groupMap: Record<string, JQuery> = {};
-            for (const group of this.groups) {
-                if ((groupCounts[group.value] ?? 0) > 0) {
-                    const group_elem = $(
-                        `
-                        <div class="group-wrapper">
-                            <div class="group">
-                                <div class="label">${group.label}</div>
-                            </div>
-                        </div>
-                        `,
-                    );
-                    group_elem.appendTo(this.modalCompilers);
-                    groupMap[group.value] = group_elem.find('.group');
-                }
-            }
-            for (const compiler of filteredCompilers) {
-                const isFavorited = compiler.$groups.includes(CompilerPicker.favoriteGroupName);
-                const extraClasses = isFavorited ? 'fas fa-star fav' : 'far fa-star';
-                for (const group of compiler.$groups) {
-                    const compiler_elem = $(
-                        `
-                        <div class="compiler d-flex" data-value="${compiler.id}">
-                            <div>${compiler.name}</div>
-                            <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
-                                <i class="${extraClasses}"></i>
-                            </div>
-                        </div>
-                        `,
-                    );
-                    compiler_elem.appendTo(groupMap[group]);
-                }
-            }
-            // group header click events
-            this.modalCompilers.find('.group').append('<div class="folded">&#8943;</div>');
-            this.modalCompilers.find('.group > .label').on('click', e => {
-                $(e.currentTarget).closest('.group').toggleClass('collapsed');
-            });
-            // favorite stars
-            this.modalCompilers.find('.compiler .toggle-fav').on('click', e => {
-                const compilerId = unwrap($(e.currentTarget).closest('.compiler').attr('data-value'));
-                const data = filteredCompilers.filter(c => c.id === compilerId)[0];
-                const isAddingNewFavorite = !data.$groups.includes(CompilerPicker.favoriteGroupName);
-                if (isAddingNewFavorite) {
-                    data.$groups.push(CompilerPicker.favoriteGroupName);
-                    this.addToFavorites(data.id);
-                } else {
-                    data.$groups.splice(data.$groups.indexOf(CompilerPicker.favoriteGroupName), 1);
-                    this.removeFromFavorites(data.id);
-                }
-                doCompilers();
-            });
-        };
-        doCompilers();
+        this.popup.setLang(groups, options, langId, compilerId);
 
-        // isa click events
-        $(this.modalArchitectures)
-            .find('.architecture')
-            .on('click', e => {
-                e.preventDefault();
-                const elem = $(e.currentTarget);
-                elem.toggleClass('active');
-                const isa = unwrap(elem.attr('data-value'));
-                if (isaFilters.includes(isa)) {
-                    isaFilters = isaFilters.filter(v => v !== isa);
-                } else {
-                    isaFilters.push(isa);
-                }
-                doCompilers();
-            });
-
-        // do category filters
-        $(this.modalCompilerTypes)
-            .find('.compiler-type')
-            .on('click', e => {
-                e.preventDefault();
-                const elem = $(e.currentTarget);
-                elem.toggleClass('active');
-                const category = unwrap(elem.attr('data-value'));
-                if (categoryFilters.includes(category)) {
-                    categoryFilters = categoryFilters.filter(v => v !== category);
-                } else {
-                    categoryFilters.push(category);
-                }
-                doCompilers();
-            });
-
-        // TODO:
-        // - text search
-        // - filter isa
-        // - filter category
-        // - collapse group headers
-        // - filter special forks?
-
-        this.popoutButton = $(`#compiler-picker-dropdown-popout-${this.id}`);
-        this.popoutButton.on('click', () => {
+        $(`#compiler-picker-dropdown-popout-${this.id}`).on('click', () => {
             unwrap(this.tomSelect).close();
-            this.modal.modal({});
+            this.popup.show();
         });
     }
 
