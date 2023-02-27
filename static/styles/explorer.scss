@@ -863,35 +863,58 @@ div.populararguments div.dropdown-menu {
         border-radius: 3px;
         margin: 0 0 0 3px;
         cursor: pointer;
+        &.active {
+            background: #007BFF;
+        }
     }
 
     .compilers-col {
         margin-top: 5px;
+        h6 {
+            margin-top: 15px;
+            font-size: 16px;
+        }
         .compilers {
             width: 650px;
-            display: flex;
-            height: fit-content;
-            flex-direction: column;
-            flex-wrap: wrap;
-            align-content: space-between;
-            .group {
-                width: 300px;
-                .label {
-                    background: #555555;
+            columns: 2 300px;
+            column-gap: 50px;
+            .group-wrapper {
+                display: inline-block;
+                .group {
+                    width: 300px;
+                    margin-bottom: 25px;
+                    .label {
+                        background: #555555;
+                        cursor: pointer;
+                    }
+                    .compiler {
+                        .toggle-fav {
+                            cursor: pointer;
+                        }
+                    }
+                    .folded {
+                        display: none;
+                        text-align: center;
+                    }
+                    &.collapsed {
+                        .compiler {
+                            display: none !important;
+                        }
+                        .folded {
+                            display: block !important;
+                        }
+                    }
+                    //&:before {
+                    //    content: " ";
+                    //    display: block;
+                    //    height: 0;
+                    //    margin: 0.5rem 0;
+                    //    overflow: hidden;
+                    //    border-top: 1px solid #e9ecef;
+                    //    //margin-left: -0.75rem;
+                    //    //margin-right: -0.75rem;
+                    //}
                 }
-                .compiler {
-
-                }
-                //&:before {
-                //    content: " ";
-                //    display: block;
-                //    height: 0;
-                //    margin: 0.5rem 0;
-                //    overflow: hidden;
-                //    border-top: 1px solid #e9ecef;
-                //    //margin-left: -0.75rem;
-                //    //margin-right: -0.75rem;
-                //}
             }
         }
     }
