@@ -174,7 +174,7 @@ export class CompilerPicker {
                     data.$groups.push(CompilerPicker.favoriteGroupName);
                     this.addToFavorites(data.id);
                 } else {
-                    data.$groups.splice(data.group.indexOf(CompilerPicker.favoriteGroupName), 1);
+                    data.$groups.splice(data.$groups.indexOf(CompilerPicker.favoriteGroupName), 1);
                     this.removeFromFavorites(data.id);
                 }
 
