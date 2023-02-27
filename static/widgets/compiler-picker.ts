@@ -246,7 +246,7 @@ export class CompilerPicker {
             this.modalCompilers.empty();
             const groupMap: Record<string, JQuery> = {};
             for (const group of this.groups) {
-                if (unwrap(groupCounts[group.value]) > 0) {
+                if ((groupCounts[group.value] ?? 0) > 0) {
                     const group_elem = $(
                         `
                         <div class="group-wrapper">
