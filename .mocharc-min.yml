@@ -1,4 +1,2 @@
 recursive: true
 ignore: test/filter-tests.js
-require:
-  - source-map-support/register

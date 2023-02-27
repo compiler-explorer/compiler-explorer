@@ -86,15 +86,15 @@ run:  ## Runs the site like it runs in production
 
 .PHONY: dev
 dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm $(NODE_ARGS) ./app.ts $(EXTRA_ARGS)
+	NODE_OPTIONS=$(NODE_ARGS) ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm -- ./app.ts $(EXTRA_ARGS)
 
 .PHONY: gpu-dev
 gpu-dev: prereqs ## Runs the site as a developer; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm $(NODE_ARGS) ./app.ts --env gpu $(EXTRA_ARGS)
+	NODE_OPTIONS=$(NODE_ARGS) ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm -- ./app.ts --env gpu $(EXTRA_ARGS)
 
 .PHONY: debug
 debug: prereqs ## Runs the site as a developer with full debugging; including live reload support and installation of git hooks
-	./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --inspect 9229 --exec $(shell pwd)/node_modules/.bin/ts-node-esm ./app.ts --debug $(EXTRA_ARGS)
+	NODE_OPTIONS="$(NODE_ARGS) --inspect 9229" ./node_modules/.bin/supervisor -w app.ts,lib,etc/config,static/tsconfig.json -e 'js|ts|node|properties|yaml' -n exit --exec $(shell pwd)/node_modules/.bin/ts-node-esm -- ./app.ts --debug $(EXTRA_ARGS)
 
 .PHONY:
 asm-docs:

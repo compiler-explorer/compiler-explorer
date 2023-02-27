@@ -54,7 +54,6 @@
     "node-targz": "^0.2.0",
     "nopt": "^5.0.0",
     "p-queue": "^7.0.0",
-    "patch-package": "^6.5.1",
     "path-browserify": "^1.0.1",
     "popper.js": "^1.16.1",
     "profanities": "^3.0.1",
@@ -138,7 +137,7 @@
     "file-loader": "^6.2.0",
     "lint-staged": "^13.0.3",
     "mini-css-extract-plugin": "^2.4.5",
-    "mocha": "^8.4.0",
+    "mocha": "^10.2.0",
     "mock-fs": "^5.1.2",
     "monaco-editor-webpack-plugin": "^7.0.1",
     "nock": "^13.2.1",
@@ -186,8 +185,7 @@
     "format-files": "prettier --write --ignore-unknown",
     "ts-compile": "tsc",
     "ts-check": "tsc -p ./tsconfig.backend.json --noEmit && tsc -p ./tsconfig.frontend.json --noEmit",
-    "webpack": "ts-node-esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts",
-    "postinstall": "patch-package"
+    "webpack": "ts-node-esm ./node_modules/webpack-cli/bin/cli.js --node-env=production --config webpack.config.esm.ts"
   },
   "license": "BSD-2-Clause"
 }
