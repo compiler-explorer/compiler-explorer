@@ -52,6 +52,10 @@ export class FakeCompiler implements ICompiler {
         this.possibleArguments = new CompilerArguments('fake-for-test');
     }
 
+    get isCompilerRepository(): boolean {
+        return false;
+    }
+
     initialise(mtime: Date, clientOptions: any, isPrediscovered: boolean) {
         throw new Error('Method not implemented.');
     }

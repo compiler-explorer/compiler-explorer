@@ -22,6 +22,19 @@ mixin newPaneButton(classId, text, title, icon)
               .argmenuitem
                 span.argtitle Detailed Compiler Flags
                 span.argdescription Open a new window to edit verbose compiler flags
+    .btn-group.btn-group-sm.w-100(role="group" aria-label="Compiler revision picker")
+      .input-group.compiler-revision-picker
+        select
+        .input-group-append
+          <!--- Navigate backward in revision history -->
+          button.compiler-revision-prev.btn.btn-sm.btn-light.btn-outline-secondary(type="button")
+            i.fa.fa-angle-left
+          <!--- Navigate forward in revision history -->
+          button.compiler-revision-next.btn.btn-sm.btn-light.btn-outline-secondary(type="button")
+            i.fa.fa-angle-right
+          <!--- Non-actionable branch icon -->
+          span.input-group-text
+            i.fa.fa-code-branch
     include ../../font-size
     .btn-group.btn-group-sm.filters(role="group")
       button.btn.btn-sm.btn-light.dropdown-toggle(type="button" title="Compiler output options" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Change how the compiler's output is generated")
