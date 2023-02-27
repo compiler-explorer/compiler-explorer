@@ -334,7 +334,7 @@ export class BaseCompiler implements ICompiler {
         const key = this.getCompilerCacheKey(compiler, args, options);
         let result = await this.env.compilerCacheGet(key as any);
         if (!result) {
-            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options));
+            result = await this.env.enqueue(async () => await exec.execute(compiler, args, options), true);
             if (result.okToCache) {
                 this.env
                     .compilerCachePut(key as any, result, undefined)
