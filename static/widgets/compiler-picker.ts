@@ -178,9 +178,6 @@ export class CompilerPicker {
                     this.removeFromFavorites(data.id);
                 }
 
-                this.tomSelect.updateOption(value, data);
-                this.tomSelect.refreshOptions(false);
-
                 if (clickedGroup !== CompilerPicker.favoriteGroupName) {
                     // If the user clicked on an option that wasn't in the top "Favorite" group, then we just added
                     // or removed a bunch of controls way up in the list. Find the new element top and adjust the scroll
@@ -194,7 +191,7 @@ export class CompilerPicker {
             }
         });
 
-        this.popup.setLang(groups, options, langId, compilerId);
+        this.popup.setLang(groups, options, langId);
 
         $(`#compiler-picker-dropdown-popout-${this.id}`).on('click', () => {
             unwrap(this.tomSelect).close();
@@ -253,6 +250,7 @@ export class CompilerPicker {
         const faves = this.getFavorites();
         faves[compilerId] = true;
         this.setFavorites(faves);
+        this.updateTomselectOption(compilerId);
         this.eventHub.emit('compilerFavoriteChange', this.id);
     }
 
@@ -260,6 +258,14 @@ export class CompilerPicker {
         const faves = this.getFavorites();
         delete faves[compilerId];
         this.setFavorites(faves);
+        this.updateTomselectOption(compilerId);
         this.eventHub.emit('compilerFavoriteChange', this.id);
+    }
+
+    updateTomselectOption(compilerId: string) {
+        if (this.tomSelect) {
+            this.tomSelect.updateOption(compilerId, this.tomSelect.options[compilerId]);
+            this.tomSelect.refreshOptions(false);
+        }
     }
 }
