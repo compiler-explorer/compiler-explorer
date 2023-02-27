@@ -125,10 +125,9 @@ export type CompilerInfo = {
 };
 
 // Compiler information collected by the compiler-finder
-export type PreliminaryCompilerInfo = Omit<
-    CompilerInfo,
-    'version' | 'fullVersion' | 'baseName' | 'disabledFilters'
-> & {version?: string};
+export type PreliminaryCompilerInfo = Omit<CompilerInfo, 'version' | 'fullVersion' | 'baseName' | 'disabledFilters'> & {
+    version?: string;
+};
 
 export interface ICompiler {
     possibleArguments: ICompilerArguments;
