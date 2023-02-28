@@ -28,16 +28,16 @@ import _ from 'underscore';
 import LRU from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
 
-import {options} from './options';
+import {options} from './options.js';
 
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces';
-import {CompilationStatus} from './compiler-service.interfaces';
-import {IncludeDownloads, SourceAndFiles} from './download-service';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilationStatus} from './compiler-service.interfaces.js';
+import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 

@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // setup analytics before anything else so we can capture any future errors in sentry
-import {ga as analytics} from './analytics';
+import {ga as analytics} from './analytics.js';
 
 import 'whatwg-fetch';
 import 'popper.js'; // eslint-disable-line requirejs/no-js-extension
@@ -40,28 +40,28 @@ import * as Sentry from '@sentry/browser';
 // We re-assign this
 let jsCookie = JsCookie;
 
-import {Sharing} from './sharing';
-import * as Components from './components';
-import * as url from './url';
-import {Hub} from './hub';
-import {Settings, SiteSettings} from './settings';
-import * as local from './local';
-import {Alert} from './widgets/alert';
-import * as themer from './themes';
-import * as motd from './motd';
-import {SimpleCook} from './widgets/simplecook';
-import {HistoryWidget} from './widgets/history-widget';
-import * as History from './history';
-import {Presentation} from './presentation';
-import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget';
-import {options} from './options';
-import {unwrap} from './assert';
+import {Sharing} from './sharing.js';
+import * as Components from './components.js';
+import * as url from './url.js';
+import {Hub} from './hub.js';
+import {Settings, SiteSettings} from './settings.js';
+import * as local from './local.js';
+import {Alert} from './widgets/alert.js';
+import * as themer from './themes.js';
+import * as motd from './motd.js';
+import {SimpleCook} from './widgets/simplecook.js';
+import {HistoryWidget} from './widgets/history-widget.js';
+import * as History from './history.js';
+import {Presentation} from './presentation.js';
+import {setupSiteTemplateWidgetButton} from './widgets/site-templates-widget.js';
+import {options} from './options.js';
+import {unwrap} from './assert.js';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
-import {CompilerExplorerOptions} from './global';
-import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces';
+import {Language, LanguageKey} from '../types/languages.interfaces.js';
+import {CompilerExplorerOptions} from './global.js';
+import {ComponentConfig, EmptyCompilerState, StateWithId, StateWithLanguage} from './components.interfaces.js';
 
-import * as utils from '../lib/common-utils';
+import * as utils from '../lib/common-utils.js';
 
 const logos = require.context('../views/resources/logos', false, /\.(png|svg)$/);
 

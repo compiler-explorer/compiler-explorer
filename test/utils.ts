@@ -28,11 +28,11 @@ import {fileURLToPath} from 'url';
 import chai from 'chai';
 import fs from 'fs-extra';
 
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {CompilationQueue} from '../lib/compilation-queue';
-import {CompilerProps, fakeProps} from '../lib/properties';
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {CompilationQueue} from '../lib/compilation-queue.js';
+import {CompilerProps, fakeProps} from '../lib/properties.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
 
 // TODO: Find proper type for options
 export function makeCompilationEnvironment(options: Record<string, any>): CompilationEnvironment {

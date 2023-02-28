@@ -3,9 +3,11 @@ plugins:
   - jsdoc
   - sonarjs
   - unicorn
+  - prettier
 extends:
   - ../.eslint-license-header.yml
   - eslint:recommended
+  - prettier
 env:
   browser: true
   node: true

@@ -27,13 +27,13 @@ import {
     AsmResultSource,
     ParsedAsmResult,
     ParsedAsmResultLine,
-} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {assert} from '../assert';
-import * as utils from '../utils';
+} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser';
-import {AsmRegex} from './asmregex';
+import {AsmParser} from './asm-parser.js';
+import {AsmRegex} from './asmregex.js';
 
 export class DartAsmParser extends AsmParser {
     constructor() {

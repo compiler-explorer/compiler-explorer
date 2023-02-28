@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ResultLine} from '../resultline/resultline.interfaces';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 // Pass name with before / after dump
 export type Pass = {

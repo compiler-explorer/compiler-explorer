@@ -27,18 +27,18 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
-} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
-import * as utils from '../utils';
+} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import * as utils from '../utils.js';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;

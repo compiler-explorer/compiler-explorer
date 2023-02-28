@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ClientState} from '../lib/clientstate';
-import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../lib/clientstate-normalizer.js';
+import {ClientState} from '../lib/clientstate.js';
 
-import {fs} from './utils';
+import {fs} from './utils.js';
 
 describe('Normalizing clientstate', () => {
     it('Should translate 2 compilers GL layout to clientstate', () => {

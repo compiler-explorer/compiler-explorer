@@ -2,12 +2,12 @@
   "extends": "./tsconfig.base.json",
   "files": ["app.ts", "compiler-args-app.ts"],
   "include": ["**/*.js", "**/*.ts"],
-  "exclude": ["out", "test", "etc", "examples", "static", "**/*.d.ts"],
+  "exclude": ["out", "test", "etc", "examples", "static", "**/*.d.ts", "cypress"],
   "compilerOptions": {
     /* Module resolution */
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     /* Code generation */
     "outDir": "./out/dist",
     "typeRoots": ["./node_modules/@types"],

@@ -24,9 +24,9 @@
 
 import _ from 'underscore';
 
-import {IRResultLine} from '../types/asmresult/asmresult.interfaces';
+import type {IRResultLine} from '../types/asmresult/asmresult.interfaces.js';
 
-import * as utils from './utils';
+import * as utils from './utils.js';
 
 export class LlvmIrParser {
     private maxIrLines: number;

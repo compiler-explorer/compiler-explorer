@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as utils from '../utils';
+import * as utils from '../utils.js';
 
-import {IAsmParser} from './asm-parser.interfaces';
+import {IAsmParser} from './asm-parser.interfaces.js';
 
 type InlineLabel = {name: string; range: {startCol: number; endCol: number}};
 type Source = {file: string; line: number};

@@ -26,15 +26,15 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
-import * as utils from '../utils';
+import type {ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
-import {JavaParser} from './argument-parsers';
+import {JavaParser} from './argument-parsers.js';
 
 export class JavaCompiler extends BaseCompiler {
     static get key() {

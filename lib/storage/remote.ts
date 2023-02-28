@@ -27,9 +27,9 @@ import {promisify} from 'util';
 import * as express from 'express';
 import request from 'request';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {StorageBase} from './base';
+import {StorageBase} from './base.js';
 
 export class StorageRemote extends StorageBase {
     static get key() {

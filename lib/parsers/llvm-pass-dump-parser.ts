@@ -28,10 +28,10 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineResults,
     Pass,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {assert} from '../assert';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert} from '../assert.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -285,7 +285,7 @@ export class LlvmPassDumpParser {
                 if (name !== '<loop>') {
                     previousFunction = name;
                 }
-            } else if(!header.endsWith('(invalidated)')) {
+            } else if (!header.endsWith('(invalidated)')) {
                 // Issue #4195, before SimpleLoopUnswitchPass dumps just the loop but after can dump the full IR if the
                 // loop is invalidated. The next pass can also be loop-only and should be a loop in the same function
                 // so we preserve function name.

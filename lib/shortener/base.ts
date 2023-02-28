@@ -24,7 +24,7 @@
 
 import * as express from 'express';
 
-import {StorageBase} from '../storage';
+import {StorageBase} from '../storage/index.js';
 
 export abstract class BaseShortener {
     constructor(protected storageHandler: StorageBase) {}

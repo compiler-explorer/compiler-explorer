@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import './utils';
-import {CompilerFinder} from '../lib/compiler-finder';
-import {ClientOptionsHandler} from '../lib/options-handler';
-import * as properties from '../lib/properties';
+import './utils.js';
+import {CompilerFinder} from '../lib/compiler-finder.js';
+import {ClientOptionsHandler} from '../lib/options-handler.js';
+import * as properties from '../lib/properties.js';
 
 const languages = {
     'a-lang': {

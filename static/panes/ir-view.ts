@@ -27,16 +27,16 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {IrState} from './ir-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {IrState} from './ir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {applyColours} from '../colour';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {applyColours} from '../colour.js';
 
-import {Hub} from '../hub';
-import {unwrap} from '../assert';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;

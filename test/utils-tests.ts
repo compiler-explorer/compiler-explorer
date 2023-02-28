@@ -27,10 +27,10 @@ import {fileURLToPath} from 'url';
 
 import winston from 'winston';
 
-import {logger, makeLogStream} from '../lib/logger';
-import * as utils from '../lib/utils';
+import {logger, makeLogStream} from '../lib/logger.js';
+import * as utils from '../lib/utils.js';
 
-import {fs} from './utils';
+import {fs} from './utils.js';
 
 describe('Splits lines', () => {
     it('handles empty input', () => {

@@ -25,19 +25,19 @@
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
 import $ from 'jquery';
-import * as colour from '../colour';
-import {ga} from '../analytics';
-import * as monacoConfig from '../monaco-config';
+import * as colour from '../colour.js';
+import {ga} from '../analytics.js';
+import * as monacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
 import GoldenLayout from 'golden-layout';
-import {Hub} from '../hub';
-import {MonacoPane} from './pane';
-import {DeviceAsmState} from './device-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {assert} from '../assert';
+import {Hub} from '../hub.js';
+import {MonacoPane} from './pane.js';
+import {DeviceAsmState} from './device-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert} from '../assert.js';
 
 export class DeviceAsm extends MonacoPane<monaco.editor.IStandaloneCodeEditor, DeviceAsmState> {
     private decorations: Record<'linkedCode', monaco.editor.IModelDeltaDecoration[]>;

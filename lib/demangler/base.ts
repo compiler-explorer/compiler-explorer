@@ -22,17 +22,17 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
-import {AsmRegex} from '../parsers/asmregex';
-import {SymbolStore} from '../symbol-store';
-import * as utils from '../utils';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import {AsmRegex} from '../parsers/asmregex.js';
+import {SymbolStore} from '../symbol-store.js';
+import * as utils from '../utils.js';
 
-import {PrefixTree} from './prefix-tree';
+import {PrefixTree} from './prefix-tree.js';
 
 export class BaseDemangler extends AsmRegex {
     demanglerExe: string;

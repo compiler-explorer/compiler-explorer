@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import * as utils from '../utils';
+import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser';
+import {AsmParser} from './asm-parser.js';
 
 export class SPIRVAsmParser extends AsmParser {
     parseOpString(asmLines) {

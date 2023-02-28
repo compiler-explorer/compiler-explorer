@@ -24,11 +24,11 @@
 
 import _ from 'underscore';
 
-import {unwrap} from '../lib/assert';
-import {languages} from '../lib/languages';
-import * as properties from '../lib/properties';
+import {unwrap} from '../lib/assert.js';
+import {languages} from '../lib/languages.js';
+import * as properties from '../lib/properties.js';
 
-import {fs} from './utils';
+import {fs} from './utils.js';
 
 describe('Live site checks', () => {
     let ceProps;

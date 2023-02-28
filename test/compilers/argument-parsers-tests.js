@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerArguments} from '../../lib/compiler-arguments';
-import {BaseParser, ClangParser, GCCParser, PascalParser} from '../../lib/compilers/argument-parsers';
-import {FakeCompiler} from '../../lib/compilers/fake-for-test';
-import {makeCompilationEnvironment, should} from '../utils';
+import {CompilerArguments} from '../../lib/compiler-arguments.js';
+import {BaseParser, ClangParser, GCCParser, PascalParser} from '../../lib/compilers/argument-parsers.js';
+import {FakeCompiler} from '../../lib/compilers/fake-for-test.js';
+import {makeCompilationEnvironment, should} from '../utils.js';
 
 const languages = {
     'c++': {id: 'c++'},

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+import {ParseFiltersAndOutputOptions} from '../types/features/filters.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 
 import {
     EmptyCompilerState,
@@ -103,7 +103,7 @@ import {
     LLVM_OPT_PIPELINE_VIEW_COMPONENT_NAME,
     EmptyLLVMOptPipelineViewState,
     PopulatedLLVMOptPipelineViewState,
-} from './components.interfaces';
+} from './components.interfaces.js';
 
 /** Get an empty compiler component. */
 export function getCompiler(editorId: number, lang: string): ComponentConfig<EmptyCompilerState> {

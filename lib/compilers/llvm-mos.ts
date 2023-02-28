@@ -24,15 +24,13 @@
 
 import path from 'path';
 
-import _ from 'underscore';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import * as utils from '../utils.js';
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import * as utils from '../utils';
-
-import {ClangCompiler} from './clang';
+import {ClangCompiler} from './clang.js';
 
 export class LLVMMOSCompiler extends ClangCompiler {
     static override get key() {

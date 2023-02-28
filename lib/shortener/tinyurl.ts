@@ -25,7 +25,7 @@
 import * as express from 'express';
 import request from 'request';
 
-import {BaseShortener} from './base';
+import {BaseShortener} from './base.js';
 
 export class TinyUrlShortener extends BaseShortener {
     override handle(req: express.Request, res: express.Response) {

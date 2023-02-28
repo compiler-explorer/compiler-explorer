@@ -52,6 +52,7 @@ rules:
   import/no-self-import: error
   import/no-useless-path-segments: error
   import/no-webpack-loader-syntax: error
+  import/no-unresolved: off # Doesn't like .js files
   import/order:
     - error
     - alphabetize:
@@ -121,6 +122,7 @@ rules:
   no-process-exit: off
   node/no-unsupported-features/es-syntax: off
   node/shebang: off
+  node/no-missing-import: off # Doesn't like .js imports of .interfaces.ts files
   promise/catch-or-return: error
   promise/no-new-statics: error
   promise/no-return-wrap: error

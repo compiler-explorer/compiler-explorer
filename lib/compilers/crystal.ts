@@ -26,13 +26,13 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import {CrystalAsmParser} from '../parsers/asm-parser-crystal';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CrystalAsmParser} from '../parsers/asm-parser-crystal.js';
 
-import {CrystalParser} from './argument-parsers';
+import {CrystalParser} from './argument-parsers.js';
 
 export class CrystalCompiler extends BaseCompiler {
     static get key() {

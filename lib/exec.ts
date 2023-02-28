@@ -26,15 +26,15 @@ import child_process from 'child_process';
 import path from 'path';
 
 import fs from 'fs-extra';
-import Graceful from 'node-graceful';
 import treeKill from 'tree-kill';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../types/compilation/compilation.interfaces';
-import {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces';
+import type {ExecutionOptions} from '../types/compilation/compilation.interfaces.js';
+import type {FilenameTransformFunc, UnprocessedExecResult} from '../types/execution/execution.interfaces.js';
 
-import {logger} from './logger';
-import {propsFor} from './properties';
+import {logger} from './logger.js';
+import {propsFor} from './properties.js';
+import {Graceful} from './node-graceful.js';
 
 type NsJailOptions = {
     args: string[];

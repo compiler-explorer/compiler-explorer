@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {Vc6AsmParser} from '../parsers/asm-parser-vc6';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {Vc6AsmParser} from '../parsers/asm-parser-vc6.js';
 
-import {VCParser} from './argument-parsers';
-import {Win32Compiler} from './win32';
+import {VCParser} from './argument-parsers.js';
+import {Win32Compiler} from './win32.js';
 
 export class Win32Vc6Compiler extends Win32Compiler {
     static override get key() {
