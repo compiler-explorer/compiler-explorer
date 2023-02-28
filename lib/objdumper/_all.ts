@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {BinutilsObjdumper} from './binutils';
-export {DefaultObjdumper} from './default';
-export {ElfToolChainObjdumper} from './elftoolchain';
-export {LlvmObjdumper} from './llvm';
-export {Da65Objdumper} from './da65';
+export {BinutilsObjdumper} from './binutils.js';
+export {DefaultObjdumper} from './default.js';
+export {ElfToolChainObjdumper} from './elftoolchain.js';
+export {LlvmObjdumper} from './llvm.js';
+export {Da65Objdumper} from './da65.js';

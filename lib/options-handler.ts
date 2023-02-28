@@ -29,15 +29,15 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 import _ from 'underscore';
 
-import {LanguageKey} from '../types/languages.interfaces';
-import {ToolTypeKey} from '../types/tool.interfaces';
+import type {LanguageKey} from '../types/languages.interfaces.js';
+import type {ToolTypeKey} from '../types/tool.interfaces.js';
 
-import {logger} from './logger';
-import {CompilerProps} from './properties';
-import {PropertyGetter, PropertyValue} from './properties.interfaces';
-import {Source} from './sources';
-import {BaseTool, getToolTypeByKey} from './tooling';
-import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils';
+import {logger} from './logger.js';
+import {CompilerProps} from './properties.js';
+import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
+import {Source} from './sources/index.js';
+import {BaseTool, getToolTypeByKey} from './tooling/index.js';
+import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 
 // TODO: There is surely a better name for this type. Used both here and in the compiler finder.
 export type OptionHandlerArguments = {

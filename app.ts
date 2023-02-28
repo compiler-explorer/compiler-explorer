@@ -43,34 +43,34 @@ import systemdSocket from 'systemd-socket';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import * as aws from './lib/aws';
-import * as normalizer from './lib/clientstate-normalizer';
-import {ElementType} from './lib/common-utils';
-import {CompilationEnvironment} from './lib/compilation-env';
-import {CompilationQueue} from './lib/compilation-queue';
-import {CompilerFinder} from './lib/compiler-finder';
-// import { policy as csp } from './lib/csp';
-import {startWineInit} from './lib/exec';
-import {CompileHandler} from './lib/handlers/compile';
-import * as healthCheck from './lib/handlers/health-check';
-import {NoScriptHandler} from './lib/handlers/noscript';
-import {RouteAPI} from './lib/handlers/route-api';
-import {loadSiteTemplates} from './lib/handlers/site-templates';
-import {SourceHandler} from './lib/handlers/source';
-import {languages as allLanguages} from './lib/languages';
-import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger';
-import {setupMetricsServer} from './lib/metrics-server';
-import {ClientOptionsHandler} from './lib/options-handler';
-import * as props from './lib/properties';
-import {ShortLinkResolver} from './lib/shortener/google';
-import {sources} from './lib/sources';
-import {loadSponsorsFromString} from './lib/sponsors';
-import {getStorageTypeByKey} from './lib/storage';
-import * as utils from './lib/utils';
-import {Language, LanguageKey} from './types/languages.interfaces';
+import * as aws from './lib/aws.js';
+import * as normalizer from './lib/clientstate-normalizer.js';
+import {ElementType} from './lib/common-utils.js';
+import {CompilationEnvironment} from './lib/compilation-env.js';
+import {CompilationQueue} from './lib/compilation-queue.js';
+import {CompilerFinder} from './lib/compiler-finder.js';
+// import { policy as csp } from './lib/csp.js';
+import {startWineInit} from './lib/exec.js';
+import {CompileHandler} from './lib/handlers/compile.js';
+import * as healthCheck from './lib/handlers/health-check.js';
+import {NoScriptHandler} from './lib/handlers/noscript.js';
+import {RouteAPI} from './lib/handlers/route-api.js';
+import {loadSiteTemplates} from './lib/handlers/site-templates.js';
+import {SourceHandler} from './lib/handlers/source.js';
+import {languages as allLanguages} from './lib/languages.js';
+import {logger, logToLoki, logToPapertrail, makeLogStream, suppressConsoleLog} from './lib/logger.js';
+import {setupMetricsServer} from './lib/metrics-server.js';
+import {ClientOptionsHandler} from './lib/options-handler.js';
+import * as props from './lib/properties.js';
+import {ShortLinkResolver} from './lib/shortener/google.js';
+import {sources} from './lib/sources/index.js';
+import {loadSponsorsFromString} from './lib/sponsors.js';
+import {getStorageTypeByKey} from './lib/storage/index.js';
+import * as utils from './lib/utils.js';
+import type {Language, LanguageKey} from './types/languages.interfaces.js';
 
 // Used by assert.ts
-global.ce_base_directory = __dirname; // eslint-disable-line unicorn/prefer-module
+global.ce_base_directory = new URL('.', import.meta.url);
 
 // Parse arguments from command line 'node ./app.js args...'
 const opts = nopt({

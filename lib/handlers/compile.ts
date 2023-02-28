@@ -33,22 +33,22 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
-import {getCompilerTypeByKey} from '../compilers';
-import {logger} from '../logger';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {getCompilerTypeByKey} from '../compilers/index.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
 import {
     CompileRequestJsonBody,
     CompileRequestQueryArgs,
     CompileRequestTextBody,
     ExecutionRequestParams,
-} from './compile.interfaces';
-import {remove} from '../common-utils';
+} from './compile.interfaces.js';
+import {remove} from '../common-utils.js';
 
 temp.track();
 

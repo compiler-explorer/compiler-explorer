@@ -24,9 +24,9 @@
 
 import LRU from 'lru-cache';
 
-import {GetResult} from '../../types/cache.interfaces';
+import type {GetResult} from '../../types/cache.interfaces.js';
 
-import {BaseCache} from './base';
+import {BaseCache} from './base.js';
 
 export class InMemoryCache extends BaseCache {
     readonly cacheMb: number;

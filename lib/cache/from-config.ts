@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {Cache} from './base.interfaces';
-import {InMemoryCache} from './in-memory';
-import {MultiCache} from './multi';
-import {NullCache} from './null';
-import {OnDiskCache} from './on-disk';
-import {S3Cache} from './s3';
+import {Cache} from './base.interfaces.js';
+import {InMemoryCache} from './in-memory.js';
+import {MultiCache} from './multi.js';
+import {NullCache} from './null.js';
+import {OnDiskCache} from './on-disk.js';
+import {S3Cache} from './s3.js';
 
 function paramInt(config: string, param: string): number {
     const result = parseInt(param);

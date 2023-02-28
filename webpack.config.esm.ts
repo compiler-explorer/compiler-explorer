@@ -33,7 +33,7 @@ import CssMinimizerPlugin from 'css-minimizer-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import MonacoEditorWebpackPlugin from 'monaco-editor-webpack-plugin';
 import TerserPlugin from 'terser-webpack-plugin';
-import {DefinePlugin, HotModuleReplacementPlugin} from 'webpack';
+import Webpack from 'webpack';
 import {WebpackManifestPlugin} from 'webpack-manifest-plugin';
 
 const __dirname = path.resolve(path.dirname(fileURLToPath(import.meta.url)));
@@ -89,7 +89,7 @@ const plugins = [
         fileName: path.resolve(distPath, 'manifest.json'),
         publicPath: '',
     }),
-    new DefinePlugin({
+    new Webpack.DefinePlugin({
         'window.PRODUCTION': JSON.stringify(!isDev),
     }),
     new CopyWebpackPlugin({
@@ -98,7 +98,7 @@ const plugins = [
 ];
 
 if (isDev) {
-    plugins.push(new HotModuleReplacementPlugin());
+    plugins.push(new Webpack.HotModuleReplacementPlugin());
 }
 
 // eslint-disable-next-line import/no-default-export
@@ -127,6 +127,10 @@ export default {
         },
         modules: ['./static', './node_modules'],
         extensions: ['.ts', '.js'],
+        extensionAlias: {
+            '.js': ['.ts', '.js'],
+            '.mjs': ['.mts', '.mjs'],
+        },
     },
     stats: 'normal',
     devtool: 'source-map',
@@ -177,7 +181,7 @@ export default {
             },
             {
                 test: /\.pug$/,
-                loader: './etc/scripts/parsed_pug_file.js',
+                loader: './etc/scripts/parsed-pug/parsed_pug_file.js',
                 options: {
                     useGit: hasGit,
                 },

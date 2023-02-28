@@ -77,7 +77,7 @@ export class CompilationQueue {
                 this._running.delete(jobAsyncId);
                 queueCompleted.inc();
             }
-        });
+        }) as PromiseLike<Result>; // TODO(supergrecko): investigate why this assert is needed
     }
 
     status(): {busy: boolean; pending: number; size: number} {

@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {assert, unwrap} from '../assert';
-import {logger} from '../logger';
-import * as utils from '../utils';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
-import {CppDemangler} from './cpp';
+import {CppDemangler} from './cpp.js';
 
 export class Win32Demangler extends CppDemangler {
     static override get key() {

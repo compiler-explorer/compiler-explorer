@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../../types/languages.interfaces';
+import {Language} from '../../types/languages.interfaces.js';
 
 export type EditorState = {
     filename?: string;

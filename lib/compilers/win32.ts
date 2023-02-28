@@ -27,15 +27,15 @@ import path from 'path';
 import temp from 'temp';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {MapFileReaderVS} from '../mapfiles/map-file-vs';
-import {AsmParser} from '../parsers/asm-parser';
-import {PELabelReconstructor} from '../pe32-support';
-import * as utils from '../utils';
-import {unwrap} from '../assert';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
+import {AsmParser} from '../parsers/asm-parser.js';
+import {PELabelReconstructor} from '../pe32-support.js';
+import * as utils from '../utils.js';
+import {unwrap} from '../assert.js';
 
 export class Win32Compiler extends BaseCompiler {
     static get key() {

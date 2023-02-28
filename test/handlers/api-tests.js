@@ -24,9 +24,9 @@
 
 import express from 'express';
 
-import {ApiHandler} from '../../lib/handlers/api';
-import {StorageNull} from '../../lib/storage';
-import {chai} from '../utils';
+import {ApiHandler} from '../../lib/handlers/api.js';
+import {StorageNull} from '../../lib/storage/index.js';
+import {chai} from '../utils.js';
 
 const languages = {
     'c++': {

@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces';
-import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces';
-import {CompilerInfo} from '../compiler.interfaces';
-import {BasicExecutionResult} from '../execution/execution.interfaces';
-import {ResultLine} from '../resultline/resultline.interfaces';
-import {Artifact, ToolResult} from '../tool.interfaces';
+import {BuildEnvDownloadInfo} from '../../lib/buildenvsetup/buildenv.interfaces.js';
+import {IAsmParser} from '../../lib/parsers/asm-parser.interfaces.js';
+import {CompilerInfo} from '../compiler.interfaces.js';
+import {BasicExecutionResult} from '../execution/execution.interfaces.js';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
+import {Artifact, ToolResult} from '../tool.interfaces.js';
 
-import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces';
+import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
 
 export type CompilationResult = {
     code: number;

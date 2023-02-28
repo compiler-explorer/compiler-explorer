@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class TestingTool extends BaseTool {
     static get key() {

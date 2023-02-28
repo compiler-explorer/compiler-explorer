@@ -27,15 +27,15 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {AstState} from './ast-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
-import * as colour from '../colour';
-import * as monacoConfig from '../monaco-config';
+import {MonacoPane} from './pane.js';
+import {AstState} from './ast-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import * as colour from '../colour.js';
+import * as monacoConfig from '../monaco-config.js';
 
-import {ga} from '../analytics';
-import {Hub} from '../hub';
-import {unwrap} from '../assert';
+import {ga} from '../analytics.js';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 
 type DecorationEntry = {
     linkedCode: any[];

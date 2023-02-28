@@ -26,16 +26,16 @@ import _ from 'underscore';
 import {Container} from 'golden-layout';
 import * as monaco from 'monaco-editor';
 
-import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces';
+import {MonacoPaneState, PaneCompilerState, PaneState} from './pane.interfaces.js';
 
-import {FontScale} from '../widgets/fontscale';
-import {Settings, SiteSettings} from '../settings';
-import * as utils from '../utils';
+import {FontScale} from '../widgets/fontscale.js';
+import {Settings, SiteSettings} from '../settings.js';
+import * as utils from '../utils.js';
 
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {EventHub} from '../event-hub';
-import {Hub} from '../hub';
-import {unwrap} from '../assert';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 
 /**
  * Basic container for a tool pane in Compiler Explorer.

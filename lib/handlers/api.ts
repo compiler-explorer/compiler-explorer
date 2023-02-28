@@ -27,22 +27,22 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {Language, LanguageKey} from '../../types/languages.interfaces';
-import {assert, unwrap} from '../assert';
-import {ClientStateNormalizer} from '../clientstate-normalizer';
-import {isString, unique} from '../common-utils';
-import {logger} from '../logger';
-import {ClientOptionsHandler} from '../options-handler';
-import {PropertyGetter} from '../properties.interfaces';
-import {BaseShortener, getShortenerTypeByKey} from '../shortener';
-import {StorageBase} from '../storage';
-import * as utils from '../utils';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {Language, LanguageKey} from '../../types/languages.interfaces.js';
+import {assert, unwrap} from '../assert.js';
+import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {isString, unique} from '../common-utils.js';
+import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import {BaseShortener, getShortenerTypeByKey} from '../shortener/index.js';
+import {StorageBase} from '../storage/index.js';
+import * as utils from '../utils.js';
 
-import {withAssemblyDocumentationProviders} from './assembly-documentation';
-import {CompileHandler} from './compile';
-import {FormattingHandler} from './formatting';
-import {getSiteTemplates} from './site-templates';
+import {withAssemblyDocumentationProviders} from './assembly-documentation.js';
+import {CompileHandler} from './compile.js';
+import {FormattingHandler} from './formatting.js';
+import {getSiteTemplates} from './site-templates.js';
 
 function methodNotAllowed(req: express.Request, res: express.Response) {
     res.send('Method Not Allowed');

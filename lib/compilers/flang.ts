@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {FortranCompiler} from './fortran';
+import {FortranCompiler} from './fortran.js';
 
 export class FlangCompiler extends FortranCompiler {
     static override get key() {

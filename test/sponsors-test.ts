@@ -24,11 +24,11 @@
 
 import fs from 'fs';
 
-import {unwrap} from '../lib/assert';
-import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors';
-import {Sponsor} from '../lib/sponsors.interfaces';
+import {unwrap} from '../lib/assert.js';
+import {Sponsor} from '../lib/sponsors.interfaces.js';
+import {loadSponsorsFromString, makeIconSets, parse} from '../lib/sponsors.js';
 
-import {resolvePathFromTestRoot, should} from './utils';
+import {resolvePathFromTestRoot, should} from './utils.js';
 
 describe('Sponsors', () => {
     it('should expand names to objects', () => {

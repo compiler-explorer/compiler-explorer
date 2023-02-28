@@ -26,12 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {logger} from '../logger';
-import {TurboCAsmParser} from '../parsers/asm-parser-turboc';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
+import {TurboCAsmParser} from '../parsers/asm-parser-turboc.js';
 
 export class DosboxCompiler extends BaseCompiler {
     private readonly dosbox: string;

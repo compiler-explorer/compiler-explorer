@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as monaco from 'monaco-editor';
-import {Themes} from './themes';
+import {Themes} from './themes.js';
 
 export type ColourScheme = 'rainbow' | 'rainbow2' | 'earth' | 'green-blue' | 'gray-shade' | 'rainbow-dark';
 

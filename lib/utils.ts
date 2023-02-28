@@ -32,8 +32,8 @@ import semverParser from 'semver';
 import {parse as quoteParse} from 'shell-quote';
 import _ from 'underscore';
 
-import {CacheableValue} from '../types/cache.interfaces';
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+import type {CacheableValue} from '../types/cache.interfaces.js';
+import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 const tabsRe = /\t/g;
 const lineRe = /\r?\n/;

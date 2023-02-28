@@ -24,9 +24,9 @@
 
 import AWS from 'aws-sdk';
 
-import {unwrap} from './assert';
-import {logger} from './logger';
-import {PropertyGetter} from './properties.interfaces';
+import {unwrap} from './assert.js';
+import {logger} from './logger.js';
+import type {PropertyGetter} from './properties.interfaces.js';
 
 export class InstanceFetcher {
     ec2: AWS.EC2;

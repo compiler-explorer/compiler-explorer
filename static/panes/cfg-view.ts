@@ -22,29 +22,29 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Pane} from './pane';
+import {Pane} from './pane.js';
 import * as monaco from 'monaco-editor';
 import $ from 'jquery';
 import _ from 'underscore';
 import * as fileSaver from 'file-saver';
 
-import {CfgState} from './cfg-view.interfaces';
-import {Hub} from '../hub';
+import {CfgState} from './cfg-view.interfaces.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces';
-import {ga} from '../analytics';
-import * as utils from '../utils';
+import {PaneState} from './pane.interfaces.js';
+import {ga} from '../analytics.js';
+import * as utils from '../utils.js';
 
 import {
     AnnotatedCfgDescriptor,
     AnnotatedNodeDescriptor,
     CfgDescriptor,
     CFGResult,
-} from '../../types/compilation/cfg.interfaces';
-import {GraphLayoutCore} from '../graph-layout-core';
-import * as MonacoConfig from '../monaco-config';
+} from '../../types/compilation/cfg.interfaces.js';
+import {GraphLayoutCore} from '../graph-layout-core.js';
+import * as MonacoConfig from '../monaco-config.js';
 import TomSelect from 'tom-select';
-import {assert, unwrap} from '../assert';
+import {assert, unwrap} from '../assert.js';
 
 const ColorTable = {
     red: '#FE5D5D',

@@ -24,7 +24,7 @@
 
 import GoldenLayout, {ContentItem} from 'golden-layout';
 
-import {CompilerService} from './compiler-service';
+import {CompilerService} from './compiler-service.js';
 import {
     AST_VIEW_COMPONENT_NAME,
     CFG_VIEW_COMPONENT_NAME,
@@ -52,35 +52,35 @@ import {
     TOOL_COMPONENT_NAME,
     TOOL_INPUT_VIEW_COMPONENT_NAME,
     TREE_COMPONENT_NAME,
-} from './components.interfaces';
-import {EventHub} from './event-hub';
-import {Editor} from './panes/editor';
-import {Tree} from './panes/tree';
-import {Compiler} from './panes/compiler';
-import {Executor} from './panes/executor';
-import {Output} from './panes/output';
-import {Tool} from './panes/tool';
-import {Diff} from './panes/diff';
-import {ToolInputView} from './panes/tool-input-view';
-import {Opt as OptView} from './panes/opt-view';
-import {Flags as FlagsView} from './panes/flags-view';
-import {PP as PreProcessorView} from './panes/pp-view';
-import {Ast as AstView} from './panes/ast-view';
-import {Ir as IrView} from './panes/ir-view';
-import {LLVMOptPipeline} from './panes/llvm-opt-pipeline';
-import {DeviceAsm as DeviceView} from './panes/device-view';
-import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view';
-import {RustMir as RustMirView} from './panes/rustmir-view';
-import {RustHir as RustHirView} from './panes/rusthir-view';
-import {HaskellCore as HaskellCoreView} from './panes/haskellcore-view';
-import {HaskellStg as HaskellStgView} from './panes/haskellstg-view';
-import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view';
-import {GccDump as GCCDumpView} from './panes/gccdump-view';
-import {Cfg as CfgView} from './panes/cfg-view';
-import {Conformance as ConformanceView} from './panes/conformance-view';
-import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view';
-import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view';
-import {IdentifierSet} from './identifier-set';
+} from './components.interfaces.js';
+import {EventHub} from './event-hub.js';
+import {Editor} from './panes/editor.js';
+import {Tree} from './panes/tree.js';
+import {Compiler} from './panes/compiler.js';
+import {Executor} from './panes/executor.js';
+import {Output} from './panes/output.js';
+import {Tool} from './panes/tool.js';
+import {Diff} from './panes/diff.js';
+import {ToolInputView} from './panes/tool-input-view.js';
+import {Opt as OptView} from './panes/opt-view.js';
+import {Flags as FlagsView} from './panes/flags-view.js';
+import {PP as PreProcessorView} from './panes/pp-view.js';
+import {Ast as AstView} from './panes/ast-view.js';
+import {Ir as IrView} from './panes/ir-view.js';
+import {LLVMOptPipeline} from './panes/llvm-opt-pipeline.js';
+import {DeviceAsm as DeviceView} from './panes/device-view.js';
+import {GnatDebug as GnatDebugView} from './panes/gnatdebug-view.js';
+import {RustMir as RustMirView} from './panes/rustmir-view.js';
+import {RustHir as RustHirView} from './panes/rusthir-view.js';
+import {HaskellCore as HaskellCoreView} from './panes/haskellcore-view.js';
+import {HaskellStg as HaskellStgView} from './panes/haskellstg-view.js';
+import {HaskellCmm as HaskellCmmView} from './panes/haskellcmm-view.js';
+import {GccDump as GCCDumpView} from './panes/gccdump-view.js';
+import {Cfg as CfgView} from './panes/cfg-view.js';
+import {Conformance as ConformanceView} from './panes/conformance-view.js';
+import {GnatDebugTree as GnatDebugTreeView} from './panes/gnatdebugtree-view.js';
+import {RustMacroExp as RustMacroExpView} from './panes/rustmacroexp-view.js';
+import {IdentifierSet} from './identifier-set.js';
 
 export class Hub {
     public readonly editorIds: IdentifierSet = new IdentifierSet();

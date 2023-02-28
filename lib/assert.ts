@@ -25,7 +25,7 @@
 import * as fs from 'fs';
 import path from 'path';
 
-import stacktrace from './stacktrace';
+import {parse} from './stacktrace.js';
 
 function check_path(parent: string, directory: string) {
     // https://stackoverflow.com/a/45242825/15675011
@@ -39,7 +39,7 @@ function check_path(parent: string, directory: string) {
 
 function get_diagnostic() {
     const e = new Error(); // eslint-disable-line unicorn/error-message
-    const trace = stacktrace.parse(e);
+    const trace = parse(e);
     if (trace.length >= 4) {
         const invoker_frame = trace[3];
         if (invoker_frame.fileName && invoker_frame.lineNumber) {

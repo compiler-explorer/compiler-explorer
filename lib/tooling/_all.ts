@@ -22,18 +22,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {ClangFormatTool} from './clang-format-tool';
-export {ClangQueryTool} from './clang-query-tool';
-export {ClangTidyTool} from './clang-tidy-tool';
-export {CompilerDropinTool} from './compiler-dropin-tool';
-export {LLVMMcaTool} from './llvm-mca-tool';
-export {LLVMCovTool} from './llvm-cov-tool';
-export {MicrosoftAnalysisTool} from './microsoft-analysis-tool';
-export {OSACATool} from './osaca-tool';
-export {PaholeTool} from './pahole-tool';
-export {PvsStudioTool} from './pvs-studio-tool';
-export {ReadElfTool} from './readelf-tool';
-export {RustFmtTool} from './rustfmt-tool';
-export {StringsTool} from './strings-tool';
-export {x86to6502Tool} from './x86to6502-tool';
-export {TestingTool} from './testing-tool';
+export {ClangFormatTool} from './clang-format-tool.js';
+export {ClangQueryTool} from './clang-query-tool.js';
+export {ClangTidyTool} from './clang-tidy-tool.js';
+export {CompilerDropinTool} from './compiler-dropin-tool.js';
+export {LLVMMcaTool} from './llvm-mca-tool.js';
+export {LLVMCovTool} from './llvm-cov-tool.js';
+export {MicrosoftAnalysisTool} from './microsoft-analysis-tool.js';
+export {OSACATool} from './osaca-tool.js';
+export {PaholeTool} from './pahole-tool.js';
+export {PvsStudioTool} from './pvs-studio-tool.js';
+export {ReadElfTool} from './readelf-tool.js';
+export {RustFmtTool} from './rustfmt-tool.js';
+export {StringsTool} from './strings-tool.js';
+export {x86to6502Tool} from './x86to6502-tool.js';
+export {TestingTool} from './testing-tool.js';

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {StorageBase} from './base';
+import {StorageBase} from './base.js';
 
 export class StorageNull extends StorageBase {
     static get key() {

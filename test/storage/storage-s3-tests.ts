@@ -24,9 +24,9 @@
 
 import AWS from 'aws-sdk-mock';
 
-import {unwrap} from '../../lib/assert';
-import * as properties from '../../lib/properties';
-import {StorageS3} from '../../lib/storage';
+import {unwrap} from '../../lib/assert.js';
+import * as properties from '../../lib/properties.js';
+import {StorageS3} from '../../lib/storage/index.js';
 
 type Handler = (q: any) => any;
 

@@ -29,22 +29,22 @@ import {Container} from 'golden-layout';
 import TomSelect from 'tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
-import {MonacoPane} from './pane';
-import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
-import * as utils from '../utils';
-import {Toggles} from '../widgets/toggles';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
+import * as utils from '../utils.js';
+import {Toggles} from '../widgets/toggles.js';
 
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
     LLVMOptPipelineResults,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {unwrap} from '../assert';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {unwrap} from '../assert.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 

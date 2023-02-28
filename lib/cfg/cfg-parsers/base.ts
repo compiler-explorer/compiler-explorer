@@ -24,8 +24,8 @@
 
 import _ from 'underscore';
 
-import {ResultLine} from '../../../types/resultline/resultline.interfaces';
-import {BaseInstructionSetInfo} from '../instruction-sets/base';
+import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
+import {BaseInstructionSetInfo} from '../instruction-sets/base.js';
 
 export class BaseCFGParser {
     static get key() {

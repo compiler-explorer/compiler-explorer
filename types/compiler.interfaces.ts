@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ICompilerArguments} from './compiler-arguments.interfaces';
-import {Language, LanguageKey} from './languages.interfaces';
-import {Library} from './libraries/libraries.interfaces';
-import {Tool, ToolInfo} from './tool.interfaces';
+import {ICompilerArguments} from './compiler-arguments.interfaces.js';
+import {Language, LanguageKey} from './languages.interfaces.js';
+import {Library} from './libraries/libraries.interfaces.js';
+import {Tool, ToolInfo} from './tool.interfaces.js';
 
 export type CompilerInfo = {
     id: string;

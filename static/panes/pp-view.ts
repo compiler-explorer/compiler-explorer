@@ -23,17 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {Toggles} from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles.js';
 import * as monaco from 'monaco-editor';
 import _ from 'underscore';
-import {MonacoPane} from './pane';
-import {ga} from '../analytics';
-import * as monacoConfig from '../monaco-config';
-import {PPViewState} from './pp-view.interfaces';
+import {MonacoPane} from './pane.js';
+import {ga} from '../analytics.js';
+import * as monacoConfig from '../monaco-config.js';
+import {PPViewState} from './pp-view.interfaces.js';
 import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {Hub} from '../hub';
-import {unwrap} from '../assert';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 
 export class PP extends MonacoPane<monaco.editor.IStandaloneCodeEditor, PPViewState> {
     options: any;

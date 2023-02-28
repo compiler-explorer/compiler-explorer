@@ -23,17 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from './options';
-import * as colour from './colour';
-import * as local from './local';
-import {themes, Themes} from './themes';
-import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
-import {Hub} from './hub';
-import {EventHub} from './event-hub';
-import {keys, isString} from '../lib/common-utils';
-import {assert, unwrapString} from './assert';
+import {options} from './options.js';
+import * as colour from './colour.js';
+import * as local from './local.js';
+import {themes, Themes} from './themes.js';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
+import {Hub} from './hub.js';
+import {EventHub} from './event-hub.js';
+import {keys, isString} from '../lib/common-utils.js';
+import {assert, unwrapString} from './assert.js';
 
-import {LanguageKey} from '../types/languages.interfaces';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 

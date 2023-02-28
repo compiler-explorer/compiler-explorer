@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LlvmIrParser} from '../lib/llvm-ir';
-import * as properties from '../lib/properties';
+import {LlvmIrParser} from '../lib/llvm-ir.js';
+import * as properties from '../lib/properties.js';
 
-import {chai} from './utils';
+import {chai} from './utils.js';
 
 const expect = chai.expect;
 

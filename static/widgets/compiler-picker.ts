@@ -25,15 +25,15 @@
 import $ from 'jquery';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics';
-import * as local from '../local';
-import {EventHub} from '../event-hub';
-import {Hub} from '../hub';
-import {CompilerService} from '../compiler-service';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {unique} from '../../lib/common-utils';
-import {unwrap} from '../assert';
-import {CompilerPickerPopup} from './compiler-picker-popup';
+import {ga} from '../analytics.js';
+import * as local from '../local.js';
+import {EventHub} from '../event-hub.js';
+import {Hub} from '../hub.js';
+import {CompilerService} from '../compiler-service.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
+import {unique} from '../../lib/common-utils.js';
+import {unwrap} from '../assert.js';
+import {CompilerPickerPopup} from './compiler-picker-popup.js';
 
 type Favourites = {
     [compilerId: string]: boolean;

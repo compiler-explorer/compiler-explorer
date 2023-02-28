@@ -23,8 +23,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import {assert} from 'chai';
-import {isValidAd} from '../motd';
-import {ITestable} from './frontend-testing.interfaces';
+import {isValidAd} from '../motd.js';
+import {ITestable} from './frontend-testing.interfaces.js';
 
 const stub = global.sinon.stub;
 

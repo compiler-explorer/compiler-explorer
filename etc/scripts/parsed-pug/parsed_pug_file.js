@@ -1,7 +1,7 @@
-import {execSync} from 'child_process';
-import {getHashDigest} from 'loader-utils';
-import * as pug from 'pug';
-import path from 'path';
+const { execSync } = require('child_process');
+const { getHashDigest } = require('loader-utils');
+const pug = require('pug');
+const path = require('path');
 
 // If you edit either cookies.pug or privacy.pug be aware this will trigger a popup on the users' next visit.
 // Knowing the last versions here helps us be aware when this happens. If you get an error here and you _haven't_
@@ -20,7 +20,7 @@ function _execGit(command) {
     return gitResult.toString();
 }
 
-export default function(content) {
+module.exports = function(content) {
     const filePath = this.resourcePath;
     const filename = path.basename(filePath, '.pug');
     const options = this.getOptions();
