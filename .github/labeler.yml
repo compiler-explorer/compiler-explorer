@@ -40,6 +40,9 @@ lang-clean:
   - lib/compilers/clean.js
   - etc/config/clean.*.properties
   - static/modes/clean-mode.ts
+lang-cobol:
+  - lib/compilers/cobol.js
+  - etc/config/cobol.*.properties
 lang-cppx:
   - etc/config/cppx?(_blue|_gold).*.properties
   - static/modes/cppx-blue-mode.ts
