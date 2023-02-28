@@ -76,6 +76,7 @@ export {MrustcCompiler} from './mrustc.js';
 export {NasmCompiler} from './nasm.js';
 export {NimCompiler} from './nim.js';
 export {NvccCompiler} from './nvcc.js';
+export {NvrtcCompiler} from './nvrtc.js';
 export {OCamlCompiler} from './ocaml.js';
 export {OptCompiler} from './opt.js';
 export {OSACATool} from './osaca.js';
