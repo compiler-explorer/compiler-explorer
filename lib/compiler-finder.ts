@@ -270,7 +270,7 @@ export class CompilerFinder {
             objdumperType: props('objdumperType', ''),
             intelAsm: props('intelAsm', ''),
             supportsAsmDocs: props('supportsAsmDocs', true),
-            instructionSet: props('instructionSet', ''),
+            instructionSet: props<string | number>('instructionSet', '').toString(),
             needsMulti: !!props('needsMulti', true),
             adarts: props('adarts', ''),
             supportsDemangle: !!demangler,
