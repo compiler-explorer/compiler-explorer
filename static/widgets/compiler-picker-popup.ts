@@ -71,7 +71,8 @@ export class CompilerPickerPopup {
     setupFilters() {
         // get available instruction sets
         const compilers = Object.values(this.compilerPicker.compilerService.getCompilersForLang(this.langId) ?? {});
-        const instruction_sets = compilers.map(compiler => compiler.instructionSet);
+        // If instructionSet is '', just label it unknown
+        const instruction_sets = compilers.map(compiler => compiler.instructionSet || 'other');
         this.modalArchitectures.empty();
         this.modalArchitectures.append(
             ...unique(instruction_sets)
@@ -141,7 +142,7 @@ export class CompilerPickerPopup {
             : undefined;
         const filteredCompilers = this.options.filter((compiler, i) => {
             if (this.isaFilters.length > 0) {
-                if (!this.isaFilters.includes(compiler.instructionSet)) {
+                if (!this.isaFilters.includes(compiler.instructionSet || 'other')) {
                     return false;
                 }
             }
