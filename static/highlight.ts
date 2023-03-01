@@ -23,10 +23,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 function regexExecAll(base_re: RegExp, s: string) {
-    const re = new RegExp(base_re.source, base_re.flags + "gd");
+    const re = new RegExp(base_re.source, base_re.flags + 'gd');
     let m: any;
     const matches: [number, number][] = [];
-    while((m = re.exec(s)) != null) {
+    while ((m = re.exec(s)) != null) {
         // TODO(jeremy-rifkin): Find a way to get TS to understand that m.indices is real
         matches.push([m.indices[0][0], m.indices[0][1] - m.indices[0][0]]);
     }
@@ -39,17 +39,17 @@ export function highlight(str: string, regexes: RegExp[]) {
     // lines of an interval tree.
     // [start, length]
     const intervals: [number, number][] = [];
-    for(const regex of regexes) {
+    for (const regex of regexes) {
         intervals.push(...regexExecAll(regex, str));
     }
     // sort
     intervals.sort((a, b) => a[0] - b[0]);
     // combine intervals
     let i = 0;
-    while(i < intervals.length - 1) {
+    while (i < intervals.length - 1) {
         const intervalA = intervals[i];
         const intervalB = intervals[i + 1];
-        if(intervalA[0] + intervalA[1] >= intervalB[0]) {
+        if (intervalA[0] + intervalA[1] >= intervalB[0]) {
             intervals.splice(i, 2, [intervalA[0], intervalB[0] + intervalB[1] - intervalA[0]]);
         } else {
             i++;
@@ -57,12 +57,17 @@ export function highlight(str: string, regexes: RegExp[]) {
     }
     // for each interval, highlight
     let offset = 0;
-    for(const [start, length] of intervals) {
+    for (const [start, length] of intervals) {
         const tagStart = '<span class="highlight">';
         const tagEnd = '</span>';
         const intervalStart = offset + start;
         const intervalEnd = offset + start + length;
-        str = str.slice(0, intervalStart) + tagStart + str.slice(intervalStart, intervalEnd) + tagEnd + str.slice(intervalEnd);
+        str =
+            str.slice(0, intervalStart) +
+            tagStart +
+            str.slice(intervalStart, intervalEnd) +
+            tagEnd +
+            str.slice(intervalEnd);
         offset += tagStart.length + tagEnd.length;
     }
     return str;

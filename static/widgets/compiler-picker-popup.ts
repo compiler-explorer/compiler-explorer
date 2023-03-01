@@ -30,8 +30,8 @@ import {CompilerInfo} from '../../types/compiler.interfaces';
 import {remove, unique} from '../../lib/common-utils';
 import {unwrap, unwrapString} from '../assert';
 import {CompilerPicker} from './compiler-picker';
-import { CompilerService } from '../compiler-service';
-import { highlight } from '../highlight';
+import {CompilerService} from '../compiler-service';
+import {highlight} from '../highlight';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
@@ -64,7 +64,7 @@ export class CompilerPickerPopup {
         this.langId = langId;
         this.setupFilters();
         this.sifter = new sifter.Sifter(options, {
-            diacritics: false
+            diacritics: false,
         });
     }
 
@@ -88,13 +88,13 @@ export class CompilerPickerPopup {
         // search box
         this.modalSearch.on('input', () => {
             const query = unwrapString(this.modalSearch.val()).trim();
-            if(query === '') {
+            if (query === '') {
                 this.searchResults = undefined;
             } else {
                 this.searchResults = this.sifter.search(query, {
-                    fields: ["name"],
-                    conjunction: "and",
-                    sort: CompilerService.getSelectizerOrder()
+                    fields: ['name'],
+                    conjunction: 'and',
+                    sort: CompilerService.getSelectizerOrder(),
                 });
             }
             this.fillCompilers();
@@ -134,7 +134,9 @@ export class CompilerPickerPopup {
     }
 
     fillCompilers() {
-        const filteredIndices = this.searchResults ? new Set(this.searchResults.items.map(item => item.id as number)) : undefined;
+        const filteredIndices = this.searchResults
+            ? new Set(this.searchResults.items.map(item => item.id as number))
+            : undefined;
         const filteredCompilers = this.options.filter((compiler, i) => {
             if (this.isaFilters.length > 0) {
                 if (!this.isaFilters.includes(compiler.instructionSet)) {
@@ -146,8 +148,8 @@ export class CompilerPickerPopup {
                     return false;
                 }
             }
-            if(filteredIndices) {
-                if(!filteredIndices.has(i)) {
+            if (filteredIndices) {
+                if (!filteredIndices.has(i)) {
                     return false;
                 }
             }
@@ -178,7 +180,12 @@ export class CompilerPickerPopup {
                 groupMap[group.value] = group_elem.find('.group');
             }
         }
-        const searchRegexes = this.searchResults ? remove(this.searchResults.tokens.map(token => token.regex), null) : undefined;
+        const searchRegexes = this.searchResults
+            ? remove(
+                  this.searchResults.tokens.map(token => token.regex),
+                  null,
+              )
+            : undefined;
         for (const compiler of filteredCompilers) {
             const isFavorited = compiler.$groups.includes(CompilerPicker.favoriteGroupName);
             const extraClasses = isFavorited ? 'fas fa-star fav' : 'far fa-star';
@@ -221,8 +228,8 @@ export class CompilerPickerPopup {
         // reflow the compilers to get any new favorites from the compiler picker dropdown and reset filters and whatnot
         this.isaFilters = [];
         this.categoryFilters = [];
-        this.modalSearch.val("");
-        this.modalSearch.trigger("input");
+        this.modalSearch.val('');
+        this.modalSearch.trigger('input');
         this.modal.find('.architectures .active, .compiler-types .active').toggleClass('active');
         this.fillCompilers();
         this.modal.modal({});
