@@ -24,13 +24,18 @@
 
 import $ from 'jquery';
 
+import * as sifter from '@orchidjs/sifter';
+
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {unique} from '../../lib/common-utils';
-import {unwrap} from '../assert';
+import {remove, unique} from '../../lib/common-utils';
+import {unwrap, unwrapString} from '../assert';
 import {CompilerPicker} from './compiler-picker';
+import { CompilerService } from '../compiler-service';
+import { highlight } from '../highlight';
 
 export class CompilerPickerPopup {
     modal: JQuery<HTMLElement>;
+    modalSearch: JQuery<HTMLElement>;
     modalArchitectures: JQuery<HTMLElement>;
     modalCompilerTypes: JQuery<HTMLElement>;
     modalCompilers: JQuery<HTMLElement>;
@@ -42,15 +47,15 @@ export class CompilerPickerPopup {
     isaFilters: string[];
     categoryFilters: string[];
 
+    sifter: sifter.Sifter;
+    searchResults: ReturnType<sifter.Sifter['search']> | undefined;
+
     constructor(private readonly compilerPicker: CompilerPicker) {
         this.modal = $('#compiler-picker-modal').clone(true);
+        this.modalSearch = this.modal.find('.compiler-search');
         this.modalArchitectures = this.modal.find('.architectures');
         this.modalCompilerTypes = this.modal.find('.compiler-types');
         this.modalCompilers = this.modal.find('.compilers');
-
-        // TODO:
-        // - text search
-        // - filter special forks?
     }
 
     setLang(groups: {value: string; label: string}[], options: (CompilerInfo & {$groups: string[]})[], langId: string) {
@@ -58,6 +63,9 @@ export class CompilerPickerPopup {
         this.options = options;
         this.langId = langId;
         this.setupFilters();
+        this.sifter = new sifter.Sifter(options, {
+            diacritics: false
+        });
     }
 
     setupFilters() {
@@ -76,6 +84,21 @@ export class CompilerPickerPopup {
                 compilerTypes.map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`),
             ).sort(),
         );
+
+        // search box
+        this.modalSearch.on('input', () => {
+            const query = unwrapString(this.modalSearch.val()).trim();
+            if(query === '') {
+                this.searchResults = undefined;
+            } else {
+                this.searchResults = this.sifter.search(query, {
+                    fields: ["name"],
+                    conjunction: "and",
+                    sort: CompilerService.getSelectizerOrder()
+                });
+            }
+            this.fillCompilers();
+        });
 
         // isa filters
         $(this.modalArchitectures)
@@ -111,7 +134,8 @@ export class CompilerPickerPopup {
     }
 
     fillCompilers() {
-        const filteredCompilers = this.options.filter(compiler => {
+        const filteredIndices = this.searchResults ? new Set(this.searchResults.items.map(item => item.id as number)) : undefined;
+        const filteredCompilers = this.options.filter((compiler, i) => {
             if (this.isaFilters.length > 0) {
                 if (!this.isaFilters.includes(compiler.instructionSet)) {
                     return false;
@@ -119,6 +143,11 @@ export class CompilerPickerPopup {
             }
             if (this.categoryFilters.length > 0) {
                 if (!this.categoryFilters.includes(compiler.compilerCategory ?? 'other')) {
+                    return false;
+                }
+            }
+            if(filteredIndices) {
+                if(!filteredIndices.has(i)) {
                     return false;
                 }
             }
@@ -149,6 +178,7 @@ export class CompilerPickerPopup {
                 groupMap[group.value] = group_elem.find('.group');
             }
         }
+        const searchRegexes = this.searchResults ? remove(this.searchResults.tokens.map(token => token.regex), null) : undefined;
         for (const compiler of filteredCompilers) {
             const isFavorited = compiler.$groups.includes(CompilerPicker.favoriteGroupName);
             const extraClasses = isFavorited ? 'fas fa-star fav' : 'far fa-star';
@@ -156,7 +186,7 @@ export class CompilerPickerPopup {
                 const compiler_elem = $(
                     `
                     <div class="compiler d-flex" data-value="${compiler.id}">
-                        <div>${compiler.name}</div>
+                        <div>${searchRegexes ? highlight(compiler.name, searchRegexes) : compiler.name}</div>
                         <div title="Click to mark or unmark as a favorite" class="ml-auto toggle-fav">
                             <i class="${extraClasses}"></i>
                         </div>
@@ -191,8 +221,15 @@ export class CompilerPickerPopup {
         // reflow the compilers to get any new favorites from the compiler picker dropdown and reset filters and whatnot
         this.isaFilters = [];
         this.categoryFilters = [];
+        this.modalSearch.val("");
+        this.modalSearch.trigger("input");
         this.modal.find('.architectures .active, .compiler-types .active').toggleClass('active');
         this.fillCompilers();
         this.modal.modal({});
+        //console.log(this.modalSearch[0]);
+        //window.setTimeout(() => {
+        //    console.log("go");
+        //    this.modalSearch[0].focus();
+        //}, 200);
     }
 }

@@ -848,8 +848,10 @@ div.populararguments div.dropdown-menu {
         overflow-y: scroll;
     }
 
-    .lib-search-button {
+    input.compiler-search {
         margin-left: 10px;
+        //outline: 0 !important;
+        padding: 5px 10px;
     }
 
     .filters {
@@ -888,6 +890,10 @@ div.populararguments div.dropdown-menu {
                         cursor: pointer;
                     }
                     .compiler {
+                        .highlight {
+                            background: rgba(255, 237, 40, 0.4);
+                            border-radius: 1px;
+                        }
                         .toggle-fav {
                             cursor: pointer;
                         }
