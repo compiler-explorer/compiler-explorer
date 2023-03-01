@@ -3,5 +3,4 @@ integer function square(x)
     implicit none
     integer, intent(in) :: x
     square = x * x
-    return
 end function square
