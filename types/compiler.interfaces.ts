@@ -42,7 +42,7 @@ export type CompilerInfo = {
     compilerType: string;
     // groups are more fine-grained, e.g. gcc x86-64, gcc arm, clang x86-64, ...
     // category is more broad: gcc, clang, msvc, ...
-    compilerCategory?: string;
+    compilerCategories?: string[];
     debugPatched: boolean;
     demangler: string;
     demanglerType: string;

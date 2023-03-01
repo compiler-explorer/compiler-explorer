@@ -27,7 +27,7 @@ import $ from 'jquery';
 import * as sifter from '@orchidjs/sifter';
 
 import {CompilerInfo} from '../../types/compiler.interfaces';
-import {remove, unique} from '../../lib/common-utils';
+import {intersection, remove, unique} from '../../lib/common-utils';
 import {unwrap, unwrapString} from '../assert';
 import {CompilerPicker} from './compiler-picker';
 import {CompilerService} from '../compiler-service';
@@ -74,15 +74,13 @@ export class CompilerPickerPopup {
         const instruction_sets = compilers.map(compiler => compiler.instructionSet);
         this.modalArchitectures.empty();
         this.modalArchitectures.append(
-            ...unique(instruction_sets.map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`)).sort(),
+            ...unique(instruction_sets).sort().map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`)
         );
         // get available compiler types
-        const compilerTypes = compilers.map(compiler => compiler.compilerCategory ?? 'other');
+        const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
         this.modalCompilerTypes.empty();
         this.modalCompilerTypes.append(
-            ...unique(
-                compilerTypes.map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`),
-            ).sort(),
+            ...unique(compilerTypes).sort().map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`)
         );
 
         // search box
@@ -144,7 +142,8 @@ export class CompilerPickerPopup {
                 }
             }
             if (this.categoryFilters.length > 0) {
-                if (!this.categoryFilters.includes(compiler.compilerCategory ?? 'other')) {
+                const categories = compiler.compilerCategories ?? ["other"];
+                if (intersection(this.categoryFilters, categories).length === 0) {
                     return false;
                 }
             }
