@@ -74,13 +74,17 @@ export class CompilerPickerPopup {
         const instruction_sets = compilers.map(compiler => compiler.instructionSet);
         this.modalArchitectures.empty();
         this.modalArchitectures.append(
-            ...unique(instruction_sets).sort().map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`)
+            ...unique(instruction_sets)
+                .sort()
+                .map(isa => `<span class="architecture" data-value=${isa}>${isa}</span>`),
         );
         // get available compiler types
         const compilerTypes = compilers.map(compiler => compiler.compilerCategories ?? ['other']).flat();
         this.modalCompilerTypes.empty();
         this.modalCompilerTypes.append(
-            ...unique(compilerTypes).sort().map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`)
+            ...unique(compilerTypes)
+                .sort()
+                .map(type => `<span class="compiler-type" data-value=${type}>${type}</span>`),
         );
 
         // search box
@@ -142,7 +146,7 @@ export class CompilerPickerPopup {
                 }
             }
             if (this.categoryFilters.length > 0) {
-                const categories = compiler.compilerCategories ?? ["other"];
+                const categories = compiler.compilerCategories ?? ['other'];
                 if (intersection(this.categoryFilters, categories).length === 0) {
                     return false;
                 }
