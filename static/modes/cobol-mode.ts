@@ -1149,7 +1149,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             root: [
                 // identifiers and keywords
                 [
-                    /[\-A-Za-z_$][\w$]*/,
+                    /[A-Za-z0-9][\w0-9$\-]*/,
                     {
                         cases: {
                             '@typeKeywords': 'keyword',
