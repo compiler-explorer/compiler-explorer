@@ -860,14 +860,10 @@ div.populararguments div.dropdown-menu {
 
     .architecture,
     .compiler-type {
-        background: #444;
         padding: 2px 5px;
         border-radius: 3px;
         margin: 0 0 0 3px;
         cursor: pointer;
-        &.active {
-            background: #007bff;
-        }
     }
 
     .compilers-col {
@@ -886,7 +882,6 @@ div.populararguments div.dropdown-menu {
                     width: 300px;
                     margin-bottom: 25px;
                     .label {
-                        background: #555555;
                         cursor: pointer;
                     }
                     .compiler {
