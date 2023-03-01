@@ -27,16 +27,16 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {IrState} from './ir-view.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {IrState} from './ir-view.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {applyColours} from '../colour';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {applyColours} from '../colour.js';
 
-import {Hub} from '../hub';
-import {unwrap} from '../assert';
+import {Hub} from '../hub.js';
+import {unwrap} from '../assert.js';
 
 export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState> {
     linkedFadeTimeoutId: NodeJS.Timeout | null = null;
@@ -64,7 +64,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 
@@ -99,7 +99,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                             source.line,
                             -1,
                             -1,
-                            true
+                            true,
                         );
                     }
                 }
@@ -112,7 +112,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         const onDidChangeCursorSelection = _.throttle(this.onDidChangeCursorSelection.bind(this), 500);
         const onColoursOnCompile = this.eventHub.mediateDependentCalls(
             this.onColours.bind(this),
-            this.onCompileResult.bind(this)
+            this.onCompileResult.bind(this),
         );
 
         this.paneRenaming.on('renamePane', this.updateState.bind(this));
@@ -201,7 +201,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     sourceLine,
                     sourceColumnBegin,
                     sourceColumnEnd,
-                    false
+                    false,
                 );
                 this.eventHub.emit(
                     'panesLinkLine',
@@ -210,7 +210,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     sourceColumnBegin,
                     sourceColumnEnd,
                     false,
-                    this.getPaneName()
+                    this.getPaneName(),
                 );
             }
         }
@@ -222,7 +222,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
         columnBegin: number,
         columnEnd: number,
         revealLinesInEditor: boolean,
-        sender: string
+        sender: string,
     ): void {
         if (compilerId !== this.compilerInfo.compilerId) return;
         const lineNumbers: number[] = [];
@@ -266,7 +266,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
                     isWholeLine: true,
                     inlineClassName: 'linked-code-decoration-column',
                 },
-            })
+            }),
         );
         this.decorations.linkedCode = [...linkedLineDecorations, ...directlyLinkedLineDecorations];
 
@@ -286,7 +286,7 @@ export class Ir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, IrState>
     updateDecorations(): void {
         this.previousDecorations = this.editor.deltaDecorations(
             this.previousDecorations,
-            _.flatten(_.values(this.decorations))
+            _.flatten(_.values(this.decorations)),
         );
     }
 

@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor} from '../types/compilation/cfg.interfaces';
+import {AnnotatedCfgDescriptor, AnnotatedNodeDescriptor} from '../types/compilation/cfg.interfaces.js';
 
 import IntervalTree, {Node} from '@flatten-js/interval-tree';
 
@@ -575,7 +575,7 @@ export class GraphLayoutCore {
                                     prevSegment.start.row !== segment.start.row)
                             ) {
                                 throw Error(
-                                    "Adjacent horizontal or vertical segments don't share a common row or column"
+                                    "Adjacent horizontal or vertical segments don't share a common row or column",
                                 );
                             }
                             prevSegment.end = segment.end;

@@ -25,7 +25,7 @@
 import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 
-import {SiteSettings} from './settings';
+import {SiteSettings} from './settings.js';
 
 const DEFAULT_MONACO_CONFIG = {
     fontFamily: 'Consolas, "Liberation Mono", Courier, monospace',
@@ -60,7 +60,7 @@ type EditorConstructionType<E extends EditorKinds> = E extends monaco.editor.ISt
  */
 export function extendConfig<
     E extends EditorKinds = monaco.editor.IStandaloneCodeEditor,
-    T = EditorConstructionType<E>
+    T = EditorConstructionType<E>,
 >(overrides: T, settings?: Pick<SiteSettings, 'editorsFFont' | 'autoIndent' | 'useVim' | 'editorsFLigatures'>): T {
     if (settings !== undefined) {
         return _.extend(
@@ -72,7 +72,7 @@ export function extendConfig<
                 vimInUse: settings.useVim,
                 fontLigatures: settings.editorsFLigatures,
             },
-            overrides
+            overrides,
         );
     }
     return _.extend({}, DEFAULT_MONACO_CONFIG, overrides);

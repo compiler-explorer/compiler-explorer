@@ -26,14 +26,14 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
-import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
-import * as utils from '../utils';
-import {unwrap} from '../assert';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
+import * as utils from '../utils.js';
+import {unwrap} from '../assert.js';
 
 export class SPIRVCompiler extends BaseCompiler {
     protected translatorPath: string;
@@ -58,7 +58,7 @@ export class SPIRVCompiler extends BaseCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries
+        libraries,
     ) {
         let options = this.optionsForFilter(filters, outputFilename);
         backendOptions = backendOptions || {};
@@ -66,7 +66,7 @@ export class SPIRVCompiler extends BaseCompiler {
         if (this.compiler.options) {
             const compilerOptions = _.filter(
                 utils.splitArguments(this.compiler.options),
-                option => option !== '-fno-crash-diagnostics'
+                option => option !== '-fno-crash-diagnostics',
             );
 
             options = options.concat(compilerOptions);
@@ -96,7 +96,7 @@ export class SPIRVCompiler extends BaseCompiler {
             libLinks,
             userOptions,
             [this.filename(inputFilename)],
-            staticLibLinks
+            staticLibLinks,
         );
     }
 
@@ -118,7 +118,7 @@ export class SPIRVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         const sourceDir = path.dirname(inputFilename);
         const bitcodeFilename = path.join(sourceDir, this.outputFilebase + '.bc');
@@ -166,7 +166,7 @@ export class SPIRVCompiler extends BaseCompiler {
         compiler: string,
         options: any[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -195,7 +195,7 @@ export class SPIRVCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompilerForASTOrIR(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions)
+            await this.runCompilerForASTOrIR(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
         );
     }
 
@@ -209,7 +209,7 @@ export class SPIRVCompiler extends BaseCompiler {
             this.compiler.exe,
             newOptions,
             this.filename(inputFilename),
-            execOptions
+            execOptions,
         );
         if (output.code !== 0) {
             logger.error('Failed to run compiler to get IR code');

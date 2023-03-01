@@ -24,22 +24,22 @@
 
 import _ from 'underscore';
 import $ from 'jquery';
-import {ga} from '../analytics';
-import * as AnsiToHtml from '../ansi-to-html';
-import {Toggles} from '../widgets/toggles';
-import * as Components from '../components';
+import {ga} from '../analytics.js';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {Toggles} from '../widgets/toggles.js';
+import * as Components from '../components.js';
 import * as monaco from 'monaco-editor';
-import * as monacoConfig from '../monaco-config';
-import {options as ceoptions} from '../options';
-import * as utils from '../utils';
+import * as monacoConfig from '../monaco-config.js';
+import {options as ceoptions} from '../options.js';
+import * as utils from '../utils.js';
 import * as fileSaver from 'file-saver';
-import {MonacoPane} from './pane';
-import {Hub} from '../hub';
+import {MonacoPane} from './pane.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {MonacoPaneState} from './pane.interfaces';
-import {CompilerService} from '../compiler-service';
-import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces';
-import {unwrap, unwrapString} from '../assert';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {CompilerService} from '../compiler-service.js';
+import {ComponentConfig, PopulatedToolInputViewState} from '../components.interfaces.js';
+import {unwrap, unwrapString} from '../assert.js';
 
 function makeAnsiToHtml(color?: string) {
     return new AnsiToHtml.Filter({
@@ -138,7 +138,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                     highlightActiveIndentation: false,
                     indentation: false,
                 },
-            })
+            }),
         );
     }
 
@@ -394,7 +394,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
         return text.replace(
             // URL detection regex grabbed from https://stackoverflow.com/a/3809435
             /(https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*))/,
-            '<a href="$1" target="_blank">$1</a>'
+            '<a href="$1" target="_blank">$1</a>',
         );
     }
 
@@ -470,7 +470,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                                 this.clickableUrls(this.normalAnsiToHtml.toHtml(obj.text)),
                                 obj.tag ? obj.tag.line : obj.line,
                                 obj.tag ? obj.tag.column : 0,
-                                obj.tag ? obj.tag.flow : null
+                                obj.tag ? obj.tag.flow : null,
                             );
                         }
                     }
@@ -498,7 +498,7 @@ export class Tool extends MonacoPane<monaco.editor.IStandaloneCodeEditor, ToolSt
                                 new Blob([toolResult.artifact.content], {
                                     type: toolResult.artifact.type,
                                 }),
-                                toolResult.artifact.name
+                                toolResult.artifact.name,
                             );
                         }
                     });

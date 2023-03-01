@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {MapFileReader, Segment} from './mapfiles/map-file';
+import {MapFileReader, Segment} from './mapfiles/map-file.js';
 
 export class PELabelReconstructor {
     public readonly asmLines: string[];
@@ -39,7 +39,7 @@ export class PELabelReconstructor {
         asmLines: string[],
         dontLabelUnmappedAddresses: boolean,
         mapFileReader: MapFileReader,
-        needsReconstruction = true
+        needsReconstruction = true,
     ) {
         this.asmLines = asmLines;
         this.addressesToLabel = [];
@@ -110,7 +110,7 @@ export class PELabelReconstructor {
                             !this.mapFileReader.isWithinAddressSpace(
                                 unitAddressSpaces,
                                 info.addressInt,
-                                info.segmentLength
+                                info.segmentLength,
                             )
                         ) {
                             this.deleteLinesBetweenAddresses(info.addressInt, info.addressInt + info.segmentLength);

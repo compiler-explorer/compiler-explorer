@@ -26,8 +26,8 @@ import * as Sentry from '@sentry/node';
 import express from 'express';
 import fs from 'fs-extra';
 
-import {CompilationQueue} from '../compilation-queue';
-import {logger} from '../logger';
+import {CompilationQueue} from '../compilation-queue.js';
+import {logger} from '../logger.js';
 
 export class HealthCheckHandler {
     public readonly handle: (req: any, res: any) => Promise<void>;

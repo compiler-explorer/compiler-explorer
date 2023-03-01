@@ -27,12 +27,12 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {NimParser} from './argument-parsers';
+import {NimParser} from './argument-parsers.js';
 
 const NimCommands = ['compile', 'compileToC', 'c', 'compileToCpp', 'cpp', 'cc', 'compileToOC', 'objc', 'js', 'check'];
 
@@ -126,7 +126,7 @@ export class NimCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[]
+        staticLibLinks: string[],
     ) {
         return options.concat(
             libIncludes,
@@ -135,7 +135,7 @@ export class NimCompiler extends BaseCompiler {
             libLinks,
             userOptions,
             [this.filename(inputFilename)],
-            staticLibLinks
+            staticLibLinks,
         );
     }
 }

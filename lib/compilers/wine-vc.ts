@@ -24,15 +24,15 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {MapFileReaderVS} from '../mapfiles/map-file-vs';
-import {VcAsmParser} from '../parsers/asm-parser-vc';
-import {PELabelReconstructor} from '../pe32-support';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {MapFileReaderVS} from '../mapfiles/map-file-vs.js';
+import {VcAsmParser} from '../parsers/asm-parser-vc.js';
+import {PELabelReconstructor} from '../pe32-support.js';
 
-import {VCParser} from './argument-parsers';
+import {VCParser} from './argument-parsers.js';
 
 export class WineVcCompiler extends BaseCompiler {
     static get key() {

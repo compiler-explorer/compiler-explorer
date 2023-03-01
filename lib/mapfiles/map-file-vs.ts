@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {MapFileReader} from './map-file';
+import {MapFileReader} from './map-file.js';
 
 export class MapFileReaderVS extends MapFileReader {
     regexVsNames = /^\s([\da-f]*):([\da-f]*)\s*([\w$.?@]*)\s*([\da-f]*)(\sf\si\s*|\sf\s*|\s*)([\w.:<>-]*)$/i;
@@ -79,7 +79,7 @@ export class MapFileReaderVS extends MapFileReader {
 
             const segment = this.getSegmentInfoAddressWithoutOffsetIsIn(
                 symbolObject.segment,
-                symbolObject.addressWithoutOffset
+                symbolObject.addressWithoutOffset,
             );
             if (segment && !segment.unitName) {
                 segment.unitName = matches[6];

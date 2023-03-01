@@ -24,9 +24,9 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
 export class FortranCompiler extends BaseCompiler {
     static get key() {
@@ -37,7 +37,7 @@ export class FortranCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

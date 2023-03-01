@@ -24,13 +24,13 @@
 
 import path from 'path';
 
-import {readdir, readFile, rename, writeFile} from 'fs-extra';
+import fs from 'fs-extra';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {logger} from '../logger';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
 
 interface ASICSelection {
     asic?: string;
@@ -105,7 +105,7 @@ Please supply an ASIC from the following options:`,
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -162,7 +162,7 @@ Please supply an ASIC from the following options:`,
         }
 
         try {
-            await writeFile(path.join(outputDir, spvTemp), dxcResult.stdout);
+            await fs.writeFile(path.join(outputDir, spvTemp), dxcResult.stdout);
         } catch (e) {
             const endTime = process.hrtime.bigint();
             return {
@@ -200,18 +200,18 @@ Please supply an ASIC from the following options:`,
         // architecture and appends the shader type (with underscore separators). Here,
         // we rename the generated file to the output file Compiler Explorer expects.
 
-        const files = await readdir(outputDir, {encoding: 'utf8'});
+        const files = await fs.readdir(outputDir, {encoding: 'utf8'});
         for (const file of files) {
             if (file.startsWith((asicSelection.asic as string) + '_output')) {
-                await rename(path.join(outputDir, file), outputFile);
+                await fs.rename(path.join(outputDir, file), outputFile);
 
                 registerAnalysisFile = path.join(outputDir, file.replace('output', 'livereg').replace('.s', '.txt'));
                 // The register analysis file contains a legend, and register liveness data
                 // for each line of disassembly. Interleave those lines into the final output
                 // as assembly comments.
-                const asm = await readFile(outputFile, 'utf8');
+                const asm = await fs.readFile(outputFile, 'utf8');
                 const asmLines = asm.split(/\r?\n/);
-                const analysis = await readFile(registerAnalysisFile, 'utf8');
+                const analysis = await fs.readFile(registerAnalysisFile, 'utf8');
                 const analysisLines = analysis.split(/\r?\n/);
 
                 // The first few lines of the register analysis are the legend. Emit those lines
@@ -246,7 +246,7 @@ Please supply an ASIC from the following options:`,
                     outputAsm.push(`; ${analysisLines[i + analysisOffset]}`, asmLines[i + asmOffset]);
                 }
 
-                await writeFile(outputFile, outputAsm.join('\n'));
+                await fs.writeFile(outputFile, outputAsm.join('\n'));
 
                 if (asicSelection.printASICs) {
                     rgaResult.stdout += `ISA compiled with the default AMD ASIC (Radeon RX 6800 series RDNA2).

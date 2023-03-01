@@ -27,14 +27,14 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {BuildResult} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmRaw} from '../parsers/asm-raw';
-import {fileExists} from '../utils';
+import type {BuildResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmRaw} from '../parsers/asm-raw.js';
+import {fileExists} from '../utils.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class AssemblyCompiler extends BaseCompiler {
     static get key() {
@@ -85,7 +85,7 @@ export class AssemblyCompiler extends BaseCompiler {
             'readelf',
             this.env.ceProps('readelf'),
             ['-h', objectFilename],
-            execOptions
+            execOptions,
         );
     }
 
@@ -150,8 +150,8 @@ export class AssemblyCompiler extends BaseCompiler {
                 key.backendOptions,
                 inputFilename,
                 outputFilename,
-                key.libraries
-            )
+                key.libraries,
+            ),
         );
 
         const execOptions = this.getDefaultExecOptions();

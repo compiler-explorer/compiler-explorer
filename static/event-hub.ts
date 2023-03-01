@@ -25,8 +25,8 @@
 import * as Sentry from '@sentry/browser';
 import GoldenLayout from 'golden-layout';
 
-import {type EventMap} from './event-map';
-import {type Hub} from './hub';
+import {type EventMap} from './event-map.js';
+import {type Hub} from './hub.js';
 
 export type EventHubCallback<T extends unknown[]> = (...args: T) => void;
 
@@ -91,7 +91,7 @@ export class EventHub {
 
     public mediateDependentCalls<T1 extends unknown[], T2 extends unknown[] = T1>(
         dependent: EventHubCallback<any>,
-        dependency: EventHubCallback<any>
+        dependency: EventHubCallback<any>,
     ): DependencyProxies<T1, T2> {
         let hasDependencyExecuted = false;
         let lastDependentArguments: unknown[] | null = null;

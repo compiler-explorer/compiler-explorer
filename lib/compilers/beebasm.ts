@@ -26,12 +26,12 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmParserBeebAsm} from '../parsers/asm-parser-beebasm.js';
+import * as utils from '../utils.js';
 
 export class BeebAsmCompiler extends BaseCompiler {
     static get key() {
@@ -56,7 +56,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();
@@ -89,7 +89,7 @@ export class BeebAsmCompiler extends BaseCompiler {
                 if (!hasBootOption) {
                     if (!result.hints) result.hints = [];
                     result.hints.push(
-                        'Try using the "-boot <filename>" option so you don\'t have to manually run your file'
+                        'Try using the "-boot <filename>" option so you don\'t have to manually run your file',
                     );
                 }
             }
@@ -99,7 +99,7 @@ export class BeebAsmCompiler extends BaseCompiler {
         if (hasNoSaveError) {
             if (!result.hints) result.hints = [];
             result.hints.push(
-                'You should SAVE your code to a file using\nSAVE "filename", start, end [, exec [, reload] ]'
+                'You should SAVE your code to a file using\nSAVE "filename", start, end [, exec [, reload] ]',
             );
         }
 

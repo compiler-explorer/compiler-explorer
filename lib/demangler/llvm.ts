@@ -22,14 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {LLVMOptPipelineResults} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {logger} from '../logger';
-import {SymbolStore} from '../symbol-store';
-import * as utils from '../utils';
+import {LLVMOptPipelineResults} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {logger} from '../logger.js';
+import {SymbolStore} from '../symbol-store.js';
+import * as utils from '../utils.js';
 
-import {BaseDemangler} from './base';
-import {PrefixTree} from './prefix-tree';
+import {BaseDemangler} from './base.js';
+import {PrefixTree} from './prefix-tree.js';
 
 export class LLVMIRDemangler extends BaseDemangler {
     llvmSymbolRE = /@([\w$.]+)/gi;
@@ -74,7 +74,7 @@ export class LLVMIRDemangler extends BaseDemangler {
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const translations = [...this.symbolstore!.listTranslations(), ...this.othersymbols.listTranslations()].filter(
-            elem => elem[0] !== elem[1]
+            elem => elem[0] !== elem[1],
         );
         if (translations.length > 0) {
             const tree = new PrefixTree(translations);

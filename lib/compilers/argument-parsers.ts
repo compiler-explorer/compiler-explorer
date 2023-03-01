@@ -27,9 +27,9 @@ import process from 'process';
 
 import _ from 'underscore';
 
-import {logger} from '../logger';
-import * as props from '../properties';
-import * as utils from '../utils';
+import {logger} from '../logger.js';
+import * as props from '../properties.js';
+import * as utils from '../utils.js';
 
 export class BaseParser {
     static hasSupport(options, forOption) {
@@ -180,7 +180,7 @@ export class ClangParser extends BaseParser {
             if (!path.isAbsolute(filename)) filename = path.join(process.cwd(), filename);
 
             this.mllvmOptions = new Set(
-                _.keys(await ClangParser.getOptions(compiler, `-mllvm --help-list-hidden ${filename} -c`, false))
+                _.keys(await ClangParser.getOptions(compiler, `-mllvm --help-list-hidden ${filename} -c`, false)),
             );
             this.setCompilerSettingsFromOptions(compiler, options);
             return compiler;

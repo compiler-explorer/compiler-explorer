@@ -23,19 +23,19 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {Toggles} from '../widgets/toggles';
+import {Toggles} from '../widgets/toggles.js';
 import _ from 'underscore';
-import {Pane} from './pane';
-import {ga} from '../analytics';
-import {updateAndCalcTopBarHeight} from '../utils';
+import {Pane} from './pane.js';
+import {ga} from '../analytics.js';
+import {updateAndCalcTopBarHeight} from '../utils.js';
 import {Container} from 'golden-layout';
-import {PaneState} from './pane.interfaces';
-import {Hub} from '../hub';
-import * as AnsiToHtml from '../ansi-to-html';
-import {OutputState} from './output.interfaces';
-import {FontScale} from '../widgets/fontscale';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {PaneState} from './pane.interfaces.js';
+import {Hub} from '../hub.js';
+import * as AnsiToHtml from '../ansi-to-html.js';
+import {OutputState} from './output.interfaces.js';
+import {FontScale} from '../widgets/fontscale.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 
 function makeAnsiToHtml(color?) {
     return new AnsiToHtml.Filter({

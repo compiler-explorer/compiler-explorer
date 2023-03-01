@@ -26,14 +26,14 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-import {ToolInfo} from '../../types/tool.interfaces';
-import {assert} from '../assert';
-import * as exec from '../exec';
-import {logger} from '../logger';
-import * as utils from '../utils';
+import {ToolInfo} from '../../types/tool.interfaces.js';
+import {assert} from '../assert.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
-import {BaseTool} from './base-tool';
-import {ToolEnv} from './base-tool.interface';
+import {BaseTool} from './base-tool.js';
+import {ToolEnv} from './base-tool.interface.js';
 
 export class PvsStudioTool extends BaseTool {
     static get key() {
@@ -92,7 +92,7 @@ export class PvsStudioTool extends BaseTool {
             path.dirname(this.tool.exe) + '/pvs-studio',
             // TODO: expand this to switch() for all supported compilers:
             // visualcpp, clang, gcc, bcc, bcc_clang64, iar, keil5, keil5_gnu
-            '--preprocessor'
+            '--preprocessor',
         );
         if (compilationInfo.compiler.group.includes('clang')) args.push('clang');
         else args.push('gcc');
@@ -124,7 +124,7 @@ export class PvsStudioTool extends BaseTool {
             'FAIL:1,2,3;GA:1,2,3',
             '-o',
             plogConverterOutputFilePath,
-            'pvs-studio-log.log'
+            'pvs-studio-log.log',
         );
 
         const plogExecOptions = this.getDefaultExecOptions();

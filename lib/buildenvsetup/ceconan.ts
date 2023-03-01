@@ -30,10 +30,10 @@ import request from 'request';
 import tar from 'tar-stream';
 import _ from 'underscore';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {BuildEnvSetupBase} from './base';
-import {BuildEnvDownloadInfo} from './buildenv.interfaces';
+import {BuildEnvSetupBase} from './base.js';
+import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 
 export type ConanBuildProperties = {
     os: string;
@@ -260,7 +260,7 @@ export class BuildEnvSetupCeConanDirect extends BuildEnvSetupBase {
                     allDownloads.push(
                         this.getPackageUrl(libVerBuilds.id, lookupversion, hash).then(downloadUrl => {
                             return this.downloadAndExtractPackage(libVerBuilds.id, lookupversion, dirPath, downloadUrl);
-                        })
+                        }),
                     );
                 } else {
                     logger.warn(`No build found for ${libVer} matching ${JSON.stringify(buildProperties)}`);

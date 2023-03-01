@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {AnalysisTool, LLVMmcaTool} from '../lib/compilers';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {AnalysisTool, LLVMmcaTool} from '../lib/compilers/index.js';
 
 import {
     makeCompilationEnvironment,
     makeFakeCompilerInfo,
     makeFakeParseFiltersAndOutputOptions,
     shouldExist,
-} from './utils';
+} from './utils.js';
 
 const languages = {
     analysis: {id: 'analysis'},

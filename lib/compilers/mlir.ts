@@ -24,11 +24,11 @@
 
 import path from 'path';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class MLIRCompiler extends BaseCompiler {
     static get key() {
@@ -51,7 +51,7 @@ export class MLIRCompiler extends BaseCompiler {
                 ],
                 ...compilerInfo,
             },
-            env
+            env,
         );
     }
 
@@ -74,7 +74,7 @@ export class MLIRCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[]
+        userOptions?: string[],
     ): any[] {
         return [];
     }

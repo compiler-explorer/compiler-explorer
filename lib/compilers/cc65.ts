@@ -27,13 +27,13 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CC65AsmParser} from '../parsers/asm-parser-cc65';
-import * as utils from '../utils';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CC65AsmParser} from '../parsers/asm-parser-cc65.js';
+import * as utils from '../utils.js';
 
 export class Cc65Compiler extends BaseCompiler {
     static get key() {
@@ -57,7 +57,7 @@ export class Cc65Compiler extends BaseCompiler {
         return _.union(
             [libPathFlag + libDownloadPath],
             this.compiler.libPath.map(path => libPathFlag + path),
-            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path)
+            this.getSharedLibraryPaths(libraries).map(path => libPathFlag + path),
         ) as string[];
     }
 
@@ -102,7 +102,7 @@ export class Cc65Compiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions
+        filters: ParseFiltersAndOutputOptions,
     ) {
         const res = await super.objdump(
             outputFilename,
@@ -112,7 +112,7 @@ export class Cc65Compiler extends BaseCompiler {
             demangle,
             staticReloc,
             dynamicReloc,
-            filters
+            filters,
         );
 
         const dirPath = path.dirname(outputFilename);

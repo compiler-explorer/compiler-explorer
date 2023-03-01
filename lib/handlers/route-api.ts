@@ -25,15 +25,15 @@
 import * as Sentry from '@sentry/node';
 import express from 'express';
 
-import {assert, unwrap} from '../assert';
-import {ClientState} from '../clientstate';
-import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer';
-import {isString} from '../common-utils';
-import {logger} from '../logger';
-import {StorageBase} from '../storage';
-import * as utils from '../utils';
+import {assert, unwrap} from '../assert.js';
+import {ClientState} from '../clientstate.js';
+import {ClientStateGoldenifier, ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {isString} from '../common-utils.js';
+import {logger} from '../logger.js';
+import {StorageBase} from '../storage/index.js';
+import * as utils from '../utils.js';
 
-import {ApiHandler} from './api';
+import {ApiHandler} from './api.js';
 
 export type HandlerConfig = {
     compileHandler: any;
@@ -64,7 +64,7 @@ export class RouteAPI {
                 config.compileHandler,
                 config.ceProps,
                 config.storageHandler,
-                config.clientOptionsHandler.options.urlShortenService
+                config.clientOptionsHandler.options.urlShortenService,
             );
 
             this.apiHandler.setReleaseInfo(config.defArgs.gitReleaseName, config.defArgs.releaseBuildNumber);

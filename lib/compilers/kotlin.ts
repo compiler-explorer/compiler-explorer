@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {KotlinParser} from './argument-parsers';
-import {JavaCompiler} from './java';
+import {KotlinParser} from './argument-parsers.js';
+import {JavaCompiler} from './java.js';
 
 export class KotlinCompiler extends JavaCompiler {
     static override get key() {
@@ -56,7 +56,7 @@ export class KotlinCompiler extends JavaCompiler {
     override filterUserOptions(userOptions: string[]) {
         // filter options without extra arguments
         userOptions = (userOptions || []).filter(
-            option => option !== '-script' && option !== '-progressive' && !option.startsWith('-Xjavac')
+            option => option !== '-script' && option !== '-progressive' && !option.startsWith('-Xjavac'),
         );
 
         const oneArgForbiddenList = new Set([

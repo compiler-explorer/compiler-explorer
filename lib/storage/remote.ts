@@ -27,9 +27,9 @@ import {promisify} from 'util';
 import * as express from 'express';
 import request from 'request';
 
-import {logger} from '../logger';
+import {logger} from '../logger.js';
 
-import {StorageBase} from './base';
+import {StorageBase} from './base.js';
 
 export class StorageRemote extends StorageBase {
     static get key() {
@@ -51,10 +51,10 @@ export class StorageRemote extends StorageBase {
 
         // Workaround for ts type shenanigans with defaulting to the last overload
         this.get = promisify((uri: string, options?: request.CoreOptions, callback?: request.RequestCallback) =>
-            req.get(uri, options, callback)
+            req.get(uri, options, callback),
         );
         this.post = promisify((uri: string, options?: request.CoreOptions, callback?: request.RequestCallback) =>
-            req.post(uri, options, callback)
+            req.post(uri, options, callback),
         );
     }
 

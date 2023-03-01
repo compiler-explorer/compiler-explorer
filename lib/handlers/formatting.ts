@@ -25,10 +25,10 @@
 import express from 'express';
 import _ from 'underscore';
 
-import * as exec from '../exec';
-import {BaseFormatter, getFormatterTypeByKey} from '../formatters';
-import {logger} from '../logger';
-import {PropertyGetter} from '../properties.interfaces';
+import * as exec from '../exec.js';
+import {BaseFormatter, getFormatterTypeByKey} from '../formatters/index.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
 
 export class FormattingHandler {
     private formatters: Record<string, BaseFormatter> = {};
@@ -64,8 +64,8 @@ export class FormattingHandler {
             const version = hasExplicitVersion
                 ? this.ceProps<string>(`formatter.${formatterName}.explicitVersion`)
                 : match
-                    ? match[0]
-                    : result.stdout;
+                ? match[0]
+                : result.stdout;
             this.formatters[formatterName] = new formatterClass({
                 name: this.ceProps(`formatter.${formatterName}.name`, exe),
                 exe,

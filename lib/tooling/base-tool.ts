@@ -27,16 +27,16 @@ import path from 'path';
 import PromClient from 'prom-client';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {ToolInfo, ToolResult} from '../../types/tool.interfaces';
-import * as exec from '../exec';
-import {logger} from '../logger';
-import {parseOutput} from '../utils';
+import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import {Library, SelectedLibraryVersion} from '../../types/libraries/libraries.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {ToolInfo, ToolResult} from '../../types/tool.interfaces.js';
+import * as exec from '../exec.js';
+import {logger} from '../logger.js';
+import {parseOutput} from '../utils.js';
 
-import {ITool, ToolEnv} from './base-tool.interface';
+import {ITool, ToolEnv} from './base-tool.interface.js';
 
 const toolCounter = new PromClient.Counter({
     name: 'tool_invocations_total',
@@ -143,7 +143,7 @@ export class BaseTool implements ITool {
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>
+        supportedLibraries?: Record<string, Library>,
     ) {
         if (this.tool.name) {
             toolCounter.inc({

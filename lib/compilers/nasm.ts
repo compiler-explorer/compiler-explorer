@@ -22,12 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import path from 'path';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import * as utils from '../utils';
-
-import {AssemblyCompiler} from './assembly';
+import {AssemblyCompiler} from './assembly.js';
 
 export class NasmCompiler extends AssemblyCompiler {
     static override get key() {
@@ -40,7 +37,7 @@ export class NasmCompiler extends AssemblyCompiler {
         backendOptions: Record<string, any>,
         inputFilename: string,
         outputFilename: string,
-        libraries
+        libraries,
     ) {
         let options = super.prepareArguments(
             userOptions,
@@ -48,7 +45,7 @@ export class NasmCompiler extends AssemblyCompiler {
             backendOptions,
             inputFilename,
             outputFilename,
-            libraries
+            libraries,
         );
 
         let fmode;

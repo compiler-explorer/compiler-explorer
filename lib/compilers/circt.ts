@@ -24,11 +24,10 @@
 
 import path from 'path';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class CIRCTCompiler extends BaseCompiler {
     static get key() {
@@ -51,7 +50,7 @@ export class CIRCTCompiler extends BaseCompiler {
                 ],
                 ...compilerInfo,
             },
-            env
+            env,
         );
     }
 

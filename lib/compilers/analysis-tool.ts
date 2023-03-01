@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 // Plain compiler, which just runs the tool and returns whatever the output was
 export class AnalysisTool extends BaseCompiler {
@@ -38,7 +38,7 @@ export class AnalysisTool extends BaseCompiler {
                 disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
                 ...info,
             },
-            env
+            env,
         );
     }
 

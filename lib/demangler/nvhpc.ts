@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {BaseDemangler} from './base';
-import {LLVMIRDemangler} from './llvm';
+import {BaseDemangler} from './base.js';
+import {LLVMIRDemangler} from './llvm.js';
 
 export class NVHPCDemangler extends BaseDemangler {
     llvmDemangler: LLVMIRDemangler;

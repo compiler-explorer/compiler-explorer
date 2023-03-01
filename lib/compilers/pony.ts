@@ -26,10 +26,10 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {unwrap} from '../assert';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {unwrap} from '../assert.js';
 
 export class PonyCompiler extends BaseCompiler {
     static get key() {
@@ -64,7 +64,7 @@ export class PonyCompiler extends BaseCompiler {
 
     override async generateIR(inputFilename: string, options: string[], filters: ParseFiltersAndOutputOptions) {
         const newOptions = _.filter(options, option => !['--pass', 'asm'].includes(option)).concat(
-            unwrap(this.compiler.irArg)
+            unwrap(this.compiler.irArg),
         );
 
         const execOptions = this.getDefaultExecOptions();
@@ -83,7 +83,7 @@ export class PonyCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

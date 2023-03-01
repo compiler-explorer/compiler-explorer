@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilerOutputOptions} from '../types/features/filters.interfaces';
-import {CfgState} from './panes/cfg-view.interfaces';
-import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces';
-import {GccDumpViewState} from './panes/gccdump-view.interfaces';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {CfgState} from './panes/cfg-view.interfaces.js';
+import {LLVMOptPipelineViewState} from './panes/llvm-opt-pipeline.interfaces.js';
+import {GccDumpViewState} from './panes/gccdump-view.interfaces.js';
 export const COMPILER_COMPONENT_NAME = 'compiler';
 export const EXECUTOR_COMPONENT_NAME = 'executor';
 export const EDITOR_COMPONENT_NAME = 'codeEditor';

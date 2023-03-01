@@ -27,15 +27,15 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
-import {PascalParser} from './argument-parsers';
-import {PascalUtils} from './pascal-utils';
+import {PascalParser} from './argument-parsers.js';
+import {PascalUtils} from './pascal-utils.js';
 
 export class FPCCompiler extends BaseCompiler {
     static get key() {
@@ -115,7 +115,7 @@ export class FPCCompiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions
+        filters: ParseFiltersAndOutputOptions,
     ) {
         const dirPath = path.dirname(outputFilename);
         const execBinary = this.getExecutableFilename(dirPath);
@@ -152,7 +152,7 @@ export class FPCCompiler extends BaseCompiler {
             'program prog;\n' +
             'uses ' + unitName + ' in \'' + unitPath + '\';\n' +
             'begin\n' +
-            'end.\n'
+            'end.\n',
         );
     }
 
@@ -186,7 +186,7 @@ export class FPCCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         if (!execOptions) {
             execOptions = this.getDefaultExecOptions();

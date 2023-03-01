@@ -33,22 +33,22 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
-import {getCompilerTypeByKey} from '../compilers';
-import {logger} from '../logger';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {getCompilerTypeByKey} from '../compilers/index.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
 import {
     CompileRequestJsonBody,
     CompileRequestQueryArgs,
     CompileRequestTextBody,
     ExecutionRequestParams,
-} from './compile.interfaces';
-import {remove} from '../common-utils';
+} from './compile.interfaces.js';
+import {remove} from '../common-utils.js';
 
 temp.track();
 
@@ -66,7 +66,7 @@ function initialise(compilerEnv: CompilationEnvironment) {
         if (status.busy) {
             cyclesBusy++;
             logger.warn(
-                `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`
+                `temp cleanup skipped, pending: ${status.pending}, waiting: ${status.size}, cycles: ${cyclesBusy}`,
             );
             return;
         }
@@ -157,13 +157,13 @@ export class CompileHandler {
                     options: body.userArguments,
                     filters: Object.fromEntries(
                         ['commentOnly', 'directives', 'libraryCode', 'labels', 'demangle', 'intel', 'execute'].map(
-                            key => [key, body[key] === 'true']
-                        )
+                            key => [key, body[key] === 'true'],
+                        ),
                     ),
                 });
             } else {
                 Sentry.captureException(
-                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`)
+                    new Error(`Unexpected Content-Type received by /compiler/:compiler/compile: ${contentType}`),
                 );
                 proxyReq.write('Unexpected Content-Type');
             }
@@ -256,7 +256,7 @@ export class CompileHandler {
             if (this.awsProps) {
                 logger.info('Fetching possible arguments from storage');
                 await Promise.all(
-                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps))
+                    createdCompilers.map(compiler => compiler.possibleArguments.loadFromStorage(this.awsProps)),
                 );
             }
             this.compilersById = compilersById;
@@ -382,7 +382,7 @@ export class CompileHandler {
             // If specified exactly, we'll take that with ?filters=a,b,c
             if (query.filters) {
                 filters = _.object(
-                    _.map(query.filters.split(','), filter => [filter, true])
+                    _.map(query.filters.split(','), filter => [filter, true]),
                 ) as any as ParseFiltersAndOutputOptions;
             }
             // Add a filter. ?addFilters=binary
@@ -547,7 +547,7 @@ export class CompileHandler {
                 tools,
                 executionParameters,
                 libraries,
-                files
+                files,
             )
             .then(
                 result => {
@@ -602,7 +602,7 @@ export class CompileHandler {
                         error = `Internal Compiler Explorer error: ${error.stack || error}`;
                     }
                     res.end(JSON.stringify({code: -1, stdout: [], stderr: [{text: error}]}));
-                }
+                },
             );
     }
 }

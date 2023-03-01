@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationResult} from '../types/compilation/compilation.interfaces';
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+import type {CompilationResult} from '../types/compilation/compilation.interfaces.js';
+import type {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
-import {PropertyGetter} from './properties.interfaces';
+import type {PropertyGetter} from './properties.interfaces.js';
 
 type Point = {
     line: number | null;
@@ -67,7 +67,7 @@ export class LlvmAstParser {
     // reused when only a column specified.
     parseSpan(
         line: string,
-        lastLineNo: number | null
+        lastLineNo: number | null,
     ):
         | {type: typeof LlvmAstParser.locTypes.SPAN; begin: Point; end: Point}
         | {type: typeof LlvmAstParser.locTypes.POINT; loc: Point}

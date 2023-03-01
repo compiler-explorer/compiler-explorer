@@ -24,8 +24,8 @@
 
 import path from 'path';
 
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
 
 export class HLSLCompiler extends BaseCompiler {
     static get key() {
@@ -42,7 +42,7 @@ export class HLSLCompiler extends BaseCompiler {
     override optionsForFilter(
         filters: ParseFiltersAndOutputOptions,
         outputFilename: string,
-        userOptions?: string[]
+        userOptions?: string[],
     ): string[] {
         return [
             '-Zi', // Embed debug information to get DXIL line associations

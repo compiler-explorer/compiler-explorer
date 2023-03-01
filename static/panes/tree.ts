@@ -23,23 +23,23 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service';
-import {LineColouring} from '../line-colouring';
-import * as utils from '../utils';
-import {Settings, SiteSettings} from '../settings';
-import {PaneRenaming} from '../widgets/pane-renaming';
-import {Hub} from '../hub';
-import {EventHub} from '../event-hub';
-import {Alert} from '../widgets/alert';
-import * as Components from '../components';
-import {ga} from '../analytics';
+import {MultifileFile, MultifileService, MultifileServiceState} from '../multifile-service.js';
+import {LineColouring} from '../line-colouring.js';
+import * as utils from '../utils.js';
+import {Settings, SiteSettings} from '../settings.js';
+import {PaneRenaming} from '../widgets/pane-renaming.js';
+import {Hub} from '../hub.js';
+import {EventHub} from '../event-hub.js';
+import {Alert} from '../widgets/alert.js';
+import * as Components from '../components.js';
+import {ga} from '../analytics.js';
 import TomSelect from 'tom-select';
-import {Toggles} from '../widgets/toggles';
-import {options} from '../options';
+import {Toggles} from '../widgets/toggles.js';
+import {options} from '../options.js';
 import {saveAs} from 'file-saver';
 import {Container} from 'golden-layout';
 import _ from 'underscore';
-import {assert, unwrap, unwrapString} from '../assert';
+import {assert, unwrap, unwrapString} from '../assert.js';
 
 const languages = options.languages;
 
@@ -375,7 +375,7 @@ export class Tree {
                         yesHtml: 'Delete',
                         noClass: 'btn-primary',
                         noHtml: 'Cancel',
-                    }
+                    },
                 );
             }
         });
@@ -438,7 +438,7 @@ export class Tree {
             'dragStart',
             () => {
                 this.domRoot.find('.add-pane').dropdown('toggle');
-            }
+            },
         );
 
         dragSource.on('click', () => {
@@ -522,7 +522,7 @@ export class Tree {
 
         this.toggleCMakeButton = new Toggles(
             this.domRoot.find('.options'),
-            state as unknown as Record<string, boolean>
+            state as unknown as Record<string, boolean>,
         );
 
         let drophereHideTimeout;
@@ -662,7 +662,7 @@ export class Tree {
                 'coloursForCompiler',
                 id,
                 this.lineColouring.getColoursForCompiler(id),
-                this.settings.colourScheme
+                this.settings.colourScheme,
             );
         }
 
@@ -671,7 +671,7 @@ export class Tree {
                 'coloursForEditor',
                 file.editorId,
                 this.lineColouring.getColoursForEditor(file.editorId),
-                this.settings.colourScheme
+                this.settings.colourScheme,
             );
         });
     }

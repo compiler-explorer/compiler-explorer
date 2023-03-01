@@ -26,15 +26,15 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces';
-import {parseRustOutput} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {BasicExecutionResult, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import type {BuildEnvDownloadInfo} from '../buildenvsetup/buildenv.interfaces.js';
+import {parseRustOutput} from '../utils.js';
 
-import {RustParser} from './argument-parsers';
+import {RustParser} from './argument-parsers.js';
 
 export class RustCompiler extends BaseCompiler {
     linker: string;
@@ -96,7 +96,7 @@ export class RustCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[]
+        staticLibLinks: string[],
     ) {
         return options.concat(userOptions, libIncludes, libOptions, libPaths, libLinks, staticLibLinks, [
             this.filename(inputFilename),

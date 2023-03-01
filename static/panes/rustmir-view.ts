@@ -27,13 +27,13 @@ import _ from 'underscore';
 import * as monaco from 'monaco-editor';
 import {Container} from 'golden-layout';
 
-import {MonacoPane} from './pane';
-import {MonacoPaneState} from './pane.interfaces';
-import {RustMirState} from './rustmir-view.interfaces';
+import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {RustMirState} from './rustmir-view.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
 
 export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, RustMirState> {
     constructor(hub: Hub, container: Container, state: RustMirState & MonacoPaneState) {
@@ -55,7 +55,7 @@ export class RustMir extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Rus
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
     }
 

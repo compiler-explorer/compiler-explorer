@@ -3,6 +3,7 @@ plugins:
   - jsdoc
   - sonarjs
   - unicorn
+  - prettier
 extends:
   - ../.eslint-license-header.yml
   - eslint:recommended
@@ -17,7 +18,7 @@ rules:
       objects: always-multiline
       imports: always-multiline
       exports: always-multiline
-      functions: never
+      functions: always-multiline
   eol-last:
     - error
     - always
@@ -25,9 +26,9 @@ rules:
     - error
     - smart
   indent:
-    - error
-    - 4
-    - SwitchCase: 1
+    - off
+    #- 4
+    #- SwitchCase: 1
   max-len:
     - error
     - 120

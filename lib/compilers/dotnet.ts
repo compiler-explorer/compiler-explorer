@@ -27,18 +27,18 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {
     BasicExecutionResult,
     ExecutableExecutionOptions,
     UnprocessedExecResult,
-} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import * as exec from '../exec';
-import {DotNetAsmParser} from '../parsers/asm-parser-dotnet';
-import * as utils from '../utils';
+} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as exec from '../exec.js';
+import {DotNetAsmParser} from '../parsers/asm-parser-dotnet.js';
+import * as utils from '../utils.js';
 
 class DotNetCompiler extends BaseCompiler {
     private readonly sdkBaseDir: string;
@@ -164,7 +164,7 @@ class DotNetCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         const programDir = path.dirname(inputFilename);
         const nugetConfigPath = path.join(programDir, 'nuget.config');
@@ -196,7 +196,7 @@ class DotNetCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ): Promise<CompilationResult> {
         const crossgen2Options: string[] = [];
         const configurableOptions = this.configurableOptions;
@@ -232,7 +232,7 @@ class DotNetCompiler extends BaseCompiler {
             this.clrBuildDir,
             programDllPath,
             crossgen2Options,
-            this.getOutputFilename(programDir, this.outputFilebase)
+            this.getOutputFilename(programDir, this.outputFilebase),
         );
 
         if (crossgen2Result.code !== 0) {
@@ -250,7 +250,7 @@ class DotNetCompiler extends BaseCompiler {
         executable: string,
         maxSize: number | undefined,
         executeParameters: ExecutableExecutionOptions,
-        homeDir: string | undefined
+        homeDir: string | undefined,
     ): Promise<BasicExecutionResult> {
         const programDir = path.dirname(executable);
         const programOutputPath = path.join(programDir, 'bin', this.buildConfig, this.targetFramework);
@@ -307,7 +307,7 @@ class DotNetCompiler extends BaseCompiler {
         bclPath: string,
         dllPath: string,
         options: string[],
-        outputPath: string
+        outputPath: string,
     ) {
         await this.ensureCrossgen2Version(execOptions);
 
@@ -334,7 +334,7 @@ class DotNetCompiler extends BaseCompiler {
 
         await fs.writeFile(
             outputPath,
-            `${this.crossgen2VersionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`
+            `${this.crossgen2VersionString}\n\n${result.stdout.map(o => o.text).reduce((a, n) => `${a}\n${n}`, '')}`,
         );
 
         return result;

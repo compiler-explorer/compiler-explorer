@@ -23,17 +23,17 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import $ from 'jquery';
-import {options} from './options';
-import * as colour from './colour';
-import * as local from './local';
-import {themes, Themes} from './themes';
-import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour';
-import {Hub} from './hub';
-import {EventHub} from './event-hub';
-import {keys, isString} from '../lib/common-utils';
-import {assert, unwrapString} from './assert';
+import {options} from './options.js';
+import * as colour from './colour.js';
+import * as local from './local.js';
+import {themes, Themes} from './themes.js';
+import {AppTheme, ColourScheme, ColourSchemeInfo} from './colour.js';
+import {Hub} from './hub.js';
+import {EventHub} from './event-hub.js';
+import {keys, isString} from '../lib/common-utils.js';
+import {assert, unwrapString} from './assert.js';
 
-import {LanguageKey} from '../types/languages.interfaces';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
 export type FormatBase = 'Google' | 'LLVM' | 'Mozilla' | 'Chromium' | 'WebKit' | 'Microsoft' | 'GNU';
 
@@ -208,7 +208,7 @@ export class Settings {
         private root: JQuery,
         private settings: SiteSettings,
         private onChange: (siteSettings: SiteSettings) => void,
-        private subLangId: string | undefined
+        private subLangId: string | undefined,
     ) {
         this.eventHub = hub.createEventHub();
         this.settings = settings;
@@ -297,7 +297,7 @@ export class Settings {
             name: Name,
             populate: {label: string; desc: string}[],
             defaultValue: SiteSettings[Name],
-            component = Select
+            component = Select,
         ) => {
             const instance = new component(this.root.find(selector), name, populate);
             this.add(instance, defaultValue);
@@ -348,7 +348,7 @@ export class Settings {
             'defaultFontScale',
             fontScales,
             defaultFontScale,
-            NumericSelect
+            NumericSelect,
         ).elem;
         defaultFontScaleSelector.on('change', e => {
             assert(e.target instanceof HTMLSelectElement);
@@ -393,14 +393,14 @@ export class Settings {
                 min: 1,
                 max: 80,
             }),
-            4
+            4,
         );
     }
 
     private addTextBoxes() {
         this.add(
             new Textbox(this.root.find('.editorsFFont'), 'editorsFFont'),
-            'Consolas, "Liberation Mono", Courier, monospace'
+            'Consolas, "Liberation Mono", Courier, monospace',
         );
     }
 
@@ -470,12 +470,12 @@ export class Settings {
         assert(
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(oldScheme) || oldScheme === undefined || oldScheme == null,
-            'Unexpected value received from colourSchemeSelect.val()'
+            'Unexpected value received from colourSchemeSelect.val()',
         );
         assert(
             // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
             isString(newTheme) || newTheme === undefined || newTheme == null,
-            'Unexpected value received from colourSchemeSelect.val()'
+            'Unexpected value received from colourSchemeSelect.val()',
         );
 
         this.fillColourSchemeSelector(colourSchemeSelect, newTheme);

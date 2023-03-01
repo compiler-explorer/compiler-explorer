@@ -27,7 +27,7 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {Language, LanguageKey} from '../types/languages.interfaces';
+import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
 type DefKeys =
     | 'name'
@@ -430,7 +430,7 @@ const definitions: Record<LanguageKey, LanguageDefinition> = {
         monacoDisassembly: null,
     },
     modula2: {
-        name: 'modula2',
+        name: 'Modula-2',
         monaco: 'modula2',
         extensions: ['.mod'],
         alias: [],

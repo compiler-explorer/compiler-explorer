@@ -27,15 +27,15 @@ import Path from 'path';
 
 import Semver from 'semver';
 
-import {CompilationInfo} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import {SassAsmParser} from '../parsers/asm-parser-sass';
-import {asSafeVer} from '../utils';
+import type {CompilationInfo} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {SassAsmParser} from '../parsers/asm-parser-sass.js';
+import {asSafeVer} from '../utils.js';
 
-import {ClangParser} from './argument-parsers';
+import {ClangParser} from './argument-parsers.js';
 
 export class NvccCompiler extends BaseCompiler {
     static get key() {
@@ -137,10 +137,10 @@ export class NvccCompiler extends BaseCompiler {
                                     okToCache: demangle,
                                     ...this.deviceAsmParser.process(asm, {...filters, binary: type === 'SASS'}),
                                 },
-                                {...filters, binary: type === 'SASS'}
+                                {...filters, binary: type === 'SASS'},
                             ),
                         });
-                    })
+                    }),
             );
             result.devices = devices;
         }

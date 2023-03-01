@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {logger} from '../logger';
-import {maskRootdir} from '../utils';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {TypicalExecutionFunc, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {logger} from '../logger.js';
+import {maskRootdir} from '../utils.js';
 
-import {IExternalParser} from './external-parser.interface';
+import {IExternalParser} from './external-parser.interface.js';
 
 const starterScriptName = 'dump-and-parse.sh';
 
@@ -59,7 +59,7 @@ export class ExternalParserBase implements IExternalParser {
 
     private async writeStarterScriptObjdump(
         buildfolder: string,
-        filters: ParseFiltersAndOutputOptions
+        filters: ParseFiltersAndOutputOptions,
     ): Promise<string> {
         const scriptFilepath = path.join(buildfolder, starterScriptName);
 
@@ -73,7 +73,7 @@ export class ExternalParserBase implements IExternalParser {
                 },
                 () => {
                     resolve(maskRootdir(scriptFilepath));
-                }
+                },
             );
         });
     }
@@ -92,7 +92,7 @@ export class ExternalParserBase implements IExternalParser {
     public async objdumpAndParseAssembly(
         buildfolder: string,
         objdumpArgs: string[],
-        filters: ParseFiltersAndOutputOptions
+        filters: ParseFiltersAndOutputOptions,
     ): Promise<ParsedAsmResult> {
         objdumpArgs = objdumpArgs.map(v => {
             return maskRootdir(v);

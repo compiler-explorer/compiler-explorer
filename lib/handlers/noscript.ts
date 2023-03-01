@@ -24,17 +24,16 @@
 
 import bodyParser from 'body-parser';
 import express from 'express';
-import _ from 'underscore';
 
-import {assert} from '../assert';
-import {ClientState} from '../clientstate';
-import {ClientStateNormalizer} from '../clientstate-normalizer';
-import {isString} from '../common-utils';
-import {logger} from '../logger';
-import {ClientOptionsHandler} from '../options-handler';
-import {StorageBase} from '../storage';
+import {assert} from '../assert.js';
+import {ClientState} from '../clientstate.js';
+import {ClientStateNormalizer} from '../clientstate-normalizer.js';
+import {isString} from '../common-utils.js';
+import {logger} from '../logger.js';
+import {ClientOptionsHandler} from '../options-handler.js';
+import {StorageBase} from '../storage/index.js';
 
-import {CompileHandler} from './compile';
+import {CompileHandler} from './compile.js';
 
 function isMobileViewer(req: express.Request) {
     return req.header('CloudFront-Is-Mobile-Viewer') === 'true';
@@ -87,8 +86,8 @@ export class NoScriptHandler {
                             embedded: false,
                             mobileViewer: isMobileViewer(req),
                         },
-                        req.query
-                    )
+                        req.query,
+                    ),
                 );
             })
             .get('/noscript/:language', (req, res) => {
@@ -183,8 +182,8 @@ export class NoScriptHandler {
                     clientstate: state,
                     storedStateId: req.params.id || false,
                 },
-                req.query
-            )
+                req.query,
+            ),
         );
     }
 }

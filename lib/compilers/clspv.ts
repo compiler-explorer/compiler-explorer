@@ -24,15 +24,13 @@
 
 import path from 'path';
 
-import _ from 'underscore';
-
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
-import {SPIRVAsmParser} from '../parsers/asm-parser-spirv';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import {SPIRVAsmParser} from '../parsers/asm-parser-spirv.js';
+import * as utils from '../utils.js';
 
 export class CLSPVCompiler extends BaseCompiler {
     disassemblerPath: any;
@@ -68,7 +66,7 @@ export class CLSPVCompiler extends BaseCompiler {
         compiler: string,
         options: string[],
         inputFilename: string,
-        execOptions: ExecutionOptions
+        execOptions: ExecutionOptions,
     ) {
         const sourceDir = path.dirname(inputFilename);
         const spvBinFilename = this.getPrimaryOutputFilename(sourceDir, this.outputFilebase);

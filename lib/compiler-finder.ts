@@ -31,17 +31,17 @@ import fs from 'fs-extra';
 import _ from 'underscore';
 import urljoin from 'url-join';
 
-import {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces';
-import {Language, LanguageKey} from '../types/languages.interfaces';
+import type {CompilerInfo, PreliminaryCompilerInfo} from '../types/compiler.interfaces.js';
+import type {Language, LanguageKey} from '../types/languages.interfaces.js';
 
-import {unwrap} from './assert';
-import {InstanceFetcher} from './aws';
-import {CompileHandler} from './handlers/compile';
-import {logger} from './logger';
-import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler';
-import {CompilerProps} from './properties';
-import {PropertyGetter} from './properties.interfaces';
-import {basic_comparator, remove} from './common-utils';
+import {unwrap} from './assert.js';
+import {InstanceFetcher} from './aws.js';
+import {CompileHandler} from './handlers/compile.js';
+import {logger} from './logger.js';
+import {ClientOptionsHandler, OptionHandlerArguments} from './options-handler.js';
+import {CompilerProps} from './properties.js';
+import type {PropertyGetter} from './properties.interfaces.js';
+import {basic_comparator, remove} from './common-utils.js';
 
 const sleep = promisify(setTimeout);
 
@@ -63,7 +63,7 @@ export class CompilerFinder {
         compilerProps: CompilerProps,
         awsProps: PropertyGetter,
         args: OptionHandlerArguments,
-        optionsHandler: ClientOptionsHandler
+        optionsHandler: ClientOptionsHandler,
     ) {
         this.compilerProps = compilerProps.get.bind(compilerProps);
         this.ceProps = compilerProps.ceProps;
@@ -85,7 +85,7 @@ export class CompilerFinder {
         port: number,
         uriBase: string,
         props: PropertyGetter,
-        langId: string | null
+        langId: string | null,
     ): Promise<CompilerInfo[] | null> {
         const requestLib = port === 443 ? https : http;
         const uriSchema = port === 443 ? 'https' : 'http';
@@ -116,12 +116,12 @@ export class CompilerFinder {
                                     error = new Error(
                                         'Failed fetching remote compilers from ' +
                                             `${uriSchema}://${host}:${port}${apiPath}\n` +
-                                            `Status Code: ${statusCode}`
+                                            `Status Code: ${statusCode}`,
                                     );
                                 } else if (!contentType || !/^application\/json/.test(contentType)) {
                                     error = new Error(
                                         'Invalid content-type.\n' +
-                                            `Expected application/json but received ${contentType}`
+                                            `Expected application/json but received ${contentType}`,
                                     );
                                 }
                                 if (error) {
@@ -157,7 +157,7 @@ export class CompilerFinder {
                                         reject(e);
                                     }
                                 });
-                            }
+                            },
                         )
                         .on('error', reject)
                         .on('timeout', () => reject('timeout'));
@@ -166,7 +166,7 @@ export class CompilerFinder {
             },
             `${host}:${port}`,
             props('proxyRetries', 5),
-            props('proxyRetryMs', 500)
+            props('proxyRetryMs', 500),
         ).catch(() => {
             logger.warn(`Unable to contact ${host}:${port}; skipping`);
             return [];
@@ -185,17 +185,17 @@ export class CompilerFinder {
                             ? instance.PublicDnsName
                             : instance.PrivateDnsName;
                         return this.fetchRemote(unwrap(address), this.args.port, '', this.awsProps, null);
-                    })
+                    }),
                 )
             ).flat(),
-            null
+            null,
         );
     }
 
     async compilerConfigFor(
         langId: string,
         compilerId: string,
-        parentProps: CompilerProps['get']
+        parentProps: CompilerProps['get'],
     ): Promise<PreliminaryCompilerInfo | null> {
         const base = `compiler.${compilerId}.`;
 
@@ -325,7 +325,7 @@ export class CompilerFinder {
         if (props('demanglerClassFile') !== undefined) {
             logger.error(
                 `Error in compiler.${compilerId}: ` +
-                    'demanglerClassFile is no longer supported, please use demanglerType'
+                    'demanglerClassFile is no longer supported, please use demanglerType',
             );
             return null;
         }
@@ -343,7 +343,7 @@ export class CompilerFinder {
     async recurseGetCompilers(
         langId: string,
         compilerName: string,
-        parentProps: CompilerProps['get']
+        parentProps: CompilerProps['get'],
     ): Promise<PreliminaryCompilerInfo[]> {
         // Don't treat @ in paths as remote addresses if requested
         if (this.args.fetchCompilersFromRemote && compilerName.includes('@')) {
@@ -396,7 +396,7 @@ export class CompilerFinder {
                 logger.error(
                     `Compiler ID clash for '${id}' - used by ${list
                         .map(o => `lang:${o.lang} name:${o.name}`)
-                        .join(', ')}`
+                        .join(', ')}`,
                 );
             }
         }
@@ -422,7 +422,7 @@ export class CompilerFinder {
 
     getExes() {
         const langToCompilers = this.compilerProps(this.languages, 'compilers', '', exs =>
-            exs.split(':').filter(s => s !== '')
+            exs.split(':').filter(s => s !== ''),
         );
         this.addNdkExes(langToCompilers);
         logger.info('Exes found:', langToCompilers);

@@ -22,15 +22,15 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
 
-import {BaseParser} from './argument-parsers';
+import {BaseParser} from './argument-parsers.js';
 
 export class CarbonCompiler extends BaseCompiler {
     static get key() {
@@ -64,7 +64,7 @@ export class CarbonCompiler extends BaseCompiler {
                 libraryCode: false,
                 trim: false,
             },
-            options
+            options,
         );
     }
 

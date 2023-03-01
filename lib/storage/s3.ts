@@ -27,12 +27,12 @@ import assert from 'assert';
 import AWS from 'aws-sdk';
 import _ from 'underscore';
 
-import {unwrap} from '../assert';
-import {logger} from '../logger';
-import {S3Bucket} from '../s3-handler';
-import {anonymizeIp} from '../utils';
+import {unwrap} from '../assert.js';
+import {logger} from '../logger.js';
+import {S3Bucket} from '../s3-handler.js';
+import {anonymizeIp} from '../utils.js';
 
-import {StorageBase} from './base';
+import {StorageBase} from './base.js';
 
 /*
  * NEVER CHANGE THIS VALUE
@@ -72,7 +72,7 @@ export class StorageS3 extends StorageBase {
         this.table = awsProps('storageDynamoTable');
         logger.info(
             `Using s3 storage solution on ${region}, bucket ${bucket}, ` +
-                `prefix ${this.prefix}, dynamo table ${this.table}`
+                `prefix ${this.prefix}, dynamo table ${this.table}`,
         );
         AWS.config.update({region: region});
         this.s3 = new S3Bucket(bucket, region);

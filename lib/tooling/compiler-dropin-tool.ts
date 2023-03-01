@@ -24,12 +24,12 @@
 
 import _ from 'underscore';
 
-import {Library} from '../../types/libraries/libraries.interfaces';
-import {ToolResult} from '../../types/tool.interfaces';
-import {getToolchainPath} from '../toolchain-utils';
-import * as utils from '../utils';
+import {Library} from '../../types/libraries/libraries.interfaces.js';
+import {ToolResult} from '../../types/tool.interfaces.js';
+import {getToolchainPath} from '../toolchain-utils.js';
+import * as utils from '../utils.js';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class CompilerDropinTool extends BaseTool {
     static get key() {
@@ -104,7 +104,7 @@ export class CompilerDropinTool extends BaseTool {
         inputFilepath?: string,
         args?: string[],
         stdin?: string,
-        supportedLibraries?: Record<string, Library>
+        supportedLibraries?: Record<string, Library>,
     ): Promise<ToolResult> {
         const sourcefile = inputFilepath;
 

@@ -24,14 +24,14 @@
 
 import _ from 'underscore';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
-import {ClangParser} from './argument-parsers';
+import {ClangParser} from './argument-parsers.js';
 
 // Each arch has a list of jump instructions in
 // Go source src/cmd/asm/internal/arch.
@@ -176,7 +176,7 @@ export class GolangCompiler extends BaseCompiler {
         collisions: number,
         ins: string,
         args: string,
-        usedLabels: Record<string, boolean>
+        usedLabels: Record<string, boolean>,
     ): string {
         // Check if last argument is a decimal number.
         const match = args.match(DECIMAL_RE);

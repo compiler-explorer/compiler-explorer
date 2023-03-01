@@ -24,9 +24,8 @@
 
 import _ from 'underscore';
 
-import {ICompiler} from '../../types/compiler.interfaces';
-import {Language} from '../../types/languages.interfaces';
-import {CompilerArguments} from '../compiler-arguments';
+import type {ICompiler} from '../../types/compiler.interfaces.js';
+import {CompilerArguments} from '../compiler-arguments.js';
 
 export class FakeCompiler implements ICompiler {
     public possibleArguments: CompilerArguments;
@@ -45,7 +44,7 @@ export class FakeCompiler implements ICompiler {
                 lang: 'fake-lang',
                 options: '',
             },
-            info
+            info,
         );
         this.lang = {id: this.compiler.lang, name: `Language ${this.compiler.lang}`};
         this.info = info;
@@ -91,7 +90,7 @@ export class FakeCompiler implements ICompiler {
                     files: files,
                     options: options,
                 },
-            })
+            }),
         );
     }
 }

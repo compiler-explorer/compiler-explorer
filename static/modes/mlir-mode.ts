@@ -24,7 +24,7 @@
 
 import * as monaco from 'monaco-editor';
 
-import {definition} from './llvm-ir-mode';
+import {definition} from './llvm-ir-mode.js';
 
 // TODO: write an actual MLIR monaco mode
 

@@ -25,13 +25,13 @@
 import Semver from 'semver';
 import _ from 'underscore';
 
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {asSafeVer} from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {asSafeVer} from '../utils.js';
 
-import {ISPCParser} from './argument-parsers';
-import {unwrap} from '../assert';
+import {ISPCParser} from './argument-parsers.js';
+import {unwrap} from '../assert.js';
 
 export class ISPCCompiler extends BaseCompiler {
     static get key() {
@@ -74,7 +74,7 @@ export class ISPCCompiler extends BaseCompiler {
         execOptions.maxOutput = 1024 * 1024 * 1024;
 
         return this.llvmAst.processAst(
-            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions)
+            await this.runCompiler(this.compiler.exe, newOptions, this.filename(inputFilename), execOptions),
         );
     }
 

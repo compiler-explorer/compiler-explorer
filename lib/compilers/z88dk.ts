@@ -24,16 +24,14 @@
 
 import path from 'path';
 
-import fs from 'fs-extra';
-
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ArtifactType} from '../../types/tool.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
-import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk';
-import * as utils from '../utils';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ArtifactType} from '../../types/tool.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
+import {AsmParserZ88dk} from '../parsers/asm-parser-z88dk.js';
+import * as utils from '../utils.js';
 
 export class z88dkCompiler extends BaseCompiler {
     static get key() {
@@ -71,7 +69,7 @@ export class z88dkCompiler extends BaseCompiler {
         libPaths: string[],
         libLinks: string[],
         userOptions: string[],
-        staticLibLinks: string[]
+        staticLibLinks: string[],
     ) {
         return userOptions.concat(
             options,
@@ -80,7 +78,7 @@ export class z88dkCompiler extends BaseCompiler {
             libOptions,
             libPaths,
             libLinks,
-            staticLibLinks
+            staticLibLinks,
         );
     }
 
@@ -120,7 +118,7 @@ export class z88dkCompiler extends BaseCompiler {
         demangle,
         staticReloc: boolean,
         dynamicReloc: boolean,
-        filters: ParseFiltersAndOutputOptions
+        filters: ParseFiltersAndOutputOptions,
     ) {
         outputFilename = this.getObjdumpOutputFilename(outputFilename);
 

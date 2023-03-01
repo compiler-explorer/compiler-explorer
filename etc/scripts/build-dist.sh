@@ -45,7 +45,7 @@ echo "branch=${GITHUB_REF#refs/heads/}" >> "${GITHUB_OUTPUT}"
 echo "release_name=${RELEASE_NAME}" >> "${GITHUB_OUTPUT}"
 
 # Run to make sure we haven't just made something that won't work
-node -r esm ./app.js --version --dist
+../../node_modules/.bin/ts-node-esm ./app.js --version --dist
 
 rm -rf "${ROOT}/out/dist-bin"
 mkdir -p "${ROOT}/out/dist-bin"

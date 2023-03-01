@@ -24,15 +24,15 @@
 
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {makeDefaultedKeyedTypeGetter} from '../keyed-type';
-import {logger} from '../logger';
+import type {CompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {makeDefaultedKeyedTypeGetter} from '../keyed-type.js';
+import {logger} from '../logger.js';
 
-import {BaseCFGParser} from './cfg-parsers/base';
-import {ClangCFGParser} from './cfg-parsers/clang';
-import {GccCFGParser} from './cfg-parsers/gcc';
-import {BaseInstructionSetInfo, InstructionType} from './instruction-sets/base';
+import {BaseCFGParser} from './cfg-parsers/base.js';
+import {ClangCFGParser} from './cfg-parsers/clang.js';
+import {GccCFGParser} from './cfg-parsers/gcc.js';
+import {BaseInstructionSetInfo, InstructionType} from './instruction-sets/base.js';
 
 // TODO(jeremy-rifkin):
 // I've done some work to split out the compiler / instruction set logic
@@ -46,7 +46,7 @@ const parsers = makeDefaultedKeyedTypeGetter(
         ClangCFGParser,
         GccCFGParser,
     },
-    BaseCFGParser
+    BaseCFGParser,
 );
 const instructionSets = makeDefaultedKeyedTypeGetter('instruction set info provider', {}, BaseInstructionSetInfo);
 

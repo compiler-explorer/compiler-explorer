@@ -27,16 +27,16 @@ import child_process from 'child_process';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {CacheableValue} from '../types/cache.interfaces';
+import type {CacheableValue} from '../types/cache.interfaces.js';
 
-import {BaseCache} from './cache/base';
-import {Cache} from './cache/base.interfaces';
-import {createCacheFromConfig} from './cache/from-config';
-import {CompilationQueue, Job} from './compilation-queue';
-import {FormattingHandler} from './handlers/formatting';
-import {logger} from './logger';
-import {CompilerProps} from './properties';
-import {PropertyGetter} from './properties.interfaces';
+import {BaseCache} from './cache/base.js';
+import type {Cache} from './cache/base.interfaces.js';
+import {createCacheFromConfig} from './cache/from-config.js';
+import {CompilationQueue, Job} from './compilation-queue.js';
+import {FormattingHandler} from './handlers/formatting.js';
+import {logger} from './logger.js';
+import {CompilerProps} from './properties.js';
+import type {PropertyGetter} from './properties.interfaces.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -64,15 +64,15 @@ export class CompilationEnvironment {
         this.badOptions = new RegExp(this.ceProps('optionsForbiddenRe', deprecatedForbidden));
         this.cache = createCacheFromConfig(
             'default',
-            doCache === undefined || doCache ? this.ceProps('cacheConfig', '') : ''
+            doCache === undefined || doCache ? this.ceProps('cacheConfig', '') : '',
         );
         this.executableCache = createCacheFromConfig(
             'executable',
-            doCache === undefined || doCache ? this.ceProps('executableCacheConfig', '') : ''
+            doCache === undefined || doCache ? this.ceProps('executableCacheConfig', '') : '',
         );
         this.compilerCache = createCacheFromConfig(
             'compiler',
-            doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : ''
+            doCache === undefined || doCache ? this.ceProps('compilerCacheConfig', '') : '',
         );
         this.reportCacheEvery = this.ceProps('cacheReportEvery', 100);
         this.multiarch = null;
@@ -151,8 +151,21 @@ export class CompilationEnvironment {
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue<T>(job: Job<T>) {
-        return this.compilationQueue.enqueue(job);
+    enqueue<T>(job: Job<T>, silent?: boolean) {
+        const enqueue_time = performance.now();
+        return this.compilationQueue.enqueue(async () => {
+            const launch_time = performance.now();
+            const res = await job();
+            const finish_time = performance.now();
+            if (!silent) {
+                logger.info(
+                    `(compilation wall clock time: ${Math.round(finish_time - launch_time)} ms, queue time: ${
+                        launch_time - enqueue_time
+                    } ms)`,
+                );
+            }
+            return res;
+        });
     }
 
     findBadOptions(options: string[]) {

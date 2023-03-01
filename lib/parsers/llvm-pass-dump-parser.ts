@@ -28,10 +28,10 @@ import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineResults,
     Pass,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {assert} from '../assert';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {assert} from '../assert.js';
 
 // Note(jeremy-rifkin):
 // For now this filters out a bunch of metadata we aren't interested in
@@ -46,6 +46,7 @@ function passesMatch(before: string, after: string) {
     before = before.slice('IR Dump Before '.length);
     after = after.slice('IR Dump After '.length);
     // Observed to happen in clang 13+ for LoopDeletionPass
+    // Also for SimpleLoopUnswitchPass
     if (after.endsWith(' (invalidated)')) {
         after = after.slice(0, after.length - ' (invalidated)'.length);
     }
@@ -284,7 +285,10 @@ export class LlvmPassDumpParser {
                 if (name !== '<loop>') {
                     previousFunction = name;
                 }
-            } else {
+            } else if (!header.endsWith('(invalidated)')) {
+                // Issue #4195, before SimpleLoopUnswitchPass dumps just the loop but after can dump the full IR if the
+                // loop is invalidated. The next pass can also be loop-only and should be a loop in the same function
+                // so we preserve function name.
                 previousFunction = null;
             }
         }
@@ -321,7 +325,7 @@ export class LlvmPassDumpParser {
                         affectedFunction: fn,
                         machine,
                         lines,
-                    })
+                    }),
                 );
                 previousFunction = fn;
             } else {
@@ -370,7 +374,7 @@ export class LlvmPassDumpParser {
                             passesMatch(current_dump.header, next_dump.header),
                             '',
                             current_dump.header,
-                            next_dump.header
+                            next_dump.header,
                         );
                         assert(current_dump.machine === next_dump.machine);
                         pass.name = current_dump.header.slice('IR Dump Before '.length);
@@ -470,11 +474,11 @@ export class LlvmPassDumpParser {
     process(
         output: ResultLine[],
         _: ParseFiltersAndOutputOptions,
-        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions
+        llvmOptPipelineOptions: LLVMOptPipelineBackendOptions,
     ) {
         // Crop out any junk before the pass dumps (e.g. warnings)
         const ir = output.slice(
-            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader))
+            output.findIndex(line => line.text.match(this.irDumpHeader) || line.text.match(this.machineCodeDumpHeader)),
         );
         const preprocessed_lines = this.applyIrFilters(ir, llvmOptPipelineOptions);
         return this.breakdownOutput(preprocessed_lines, llvmOptPipelineOptions);

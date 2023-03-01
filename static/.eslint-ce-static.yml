@@ -3,9 +3,11 @@ plugins:
   - jsdoc
   - sonarjs
   - unicorn
+  - prettier
 extends:
   - ../.eslint-license-header.yml
   - eslint:recommended
+  - prettier
 env:
   browser: true
   node: true
@@ -17,7 +19,7 @@ rules:
       objects: always-multiline
       imports: always-multiline
       exports: always-multiline
-      functions: never
+      functions: always-multiline
   eol-last:
     - error
     - always

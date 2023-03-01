@@ -1,1 +1,1 @@
-export {CEAsmParser} from './ce-asm-parser';
+export {CEAsmParser} from './ce-asm-parser.js';

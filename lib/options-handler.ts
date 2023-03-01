@@ -29,15 +29,15 @@ import fs from 'fs-extra';
 import semverParser from 'semver';
 import _ from 'underscore';
 
-import {LanguageKey} from '../types/languages.interfaces';
-import {ToolTypeKey} from '../types/tool.interfaces';
+import type {LanguageKey} from '../types/languages.interfaces.js';
+import type {ToolTypeKey} from '../types/tool.interfaces.js';
 
-import {logger} from './logger';
-import {CompilerProps} from './properties';
-import {PropertyGetter, PropertyValue} from './properties.interfaces';
-import {Source} from './sources';
-import {BaseTool, getToolTypeByKey} from './tooling';
-import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils';
+import {logger} from './logger.js';
+import {CompilerProps} from './properties.js';
+import type {PropertyGetter, PropertyValue} from './properties.interfaces.js';
+import {Source} from './sources/index.js';
+import {BaseTool, getToolTypeByKey} from './tooling/index.js';
+import {asSafeVer, getHash, splitArguments, splitIntoArray} from './utils.js';
 
 // TODO: There is surely a better name for this type. Used both here and in the compiler finder.
 export type OptionHandlerArguments = {
@@ -138,7 +138,7 @@ export class ClientOptionsHandler {
             fileSources.map(source => {
                 return {name: source.name, urlpart: source.urlpart};
             }),
-            'name'
+            'name',
         );
 
         /***
@@ -239,7 +239,7 @@ export class ClientOptionsHandler {
                                 args: this.compilerProps<string>(lang, toolBaseName + '.args'),
                                 languageId: this.compilerProps<string>(
                                     lang,
-                                    toolBaseName + '.languageId'
+                                    toolBaseName + '.languageId',
                                 ) as LanguageKey,
                                 stdinHint: this.compilerProps<string>(lang, toolBaseName + '.stdinHint'),
                                 monacoStdin: this.compilerProps<string>(lang, toolBaseName + '.monacoStdin'),
@@ -250,7 +250,7 @@ export class ClientOptionsHandler {
                             {
                                 ceProps: this.ceProps,
                                 compilerProps: propname => this.compilerProps(lang, propname),
-                            }
+                            },
                         );
                     } else {
                         logger.warn(`Unable to stat ${toolBaseName} tool binary`);
@@ -311,18 +311,18 @@ export class ClientOptionsHandler {
                                 version: this.compilerProps<string>(lang, libVersionName + '.version'),
                                 staticliblink: splitIntoArray(
                                     this.compilerProps<string>(lang, libVersionName + '.staticliblink'),
-                                    libraries[lang][lib].staticliblink
+                                    libraries[lang][lib].staticliblink,
                                 ),
                                 alias: splitIntoArray(this.compilerProps<string>(lang, libVersionName + '.alias')),
                                 dependencies: splitIntoArray(
                                     this.compilerProps<string>(lang, libVersionName + '.dependencies'),
-                                    libraries[lang][lib].dependencies
+                                    libraries[lang][lib].dependencies,
                                 ),
                                 path: [],
                                 libpath: [],
                                 liblink: splitIntoArray(
                                     this.compilerProps<string>(lang, libVersionName + '.liblink'),
-                                    libraries[lang][lib].liblink
+                                    libraries[lang][lib].liblink,
                                 ),
                                 // Library options might get overridden later
                                 options: libraries[lang][lib].options,
@@ -365,7 +365,7 @@ export class ClientOptionsHandler {
                 // TODO: A and B don't contain any property called semver here. It's probably leftover from old code
                 // and should be removed in the future.
                 versions.sort((a, b) =>
-                    semverParser.compare(asSafeVer((a as any).semver), asSafeVer((b as any).semver), true)
+                    semverParser.compare(asSafeVer((a as any).semver), asSafeVer((b as any).semver), true),
                 );
                 let order = 0;
                 // Set $order to index on array. As group is an array, iteration order is guaranteed.

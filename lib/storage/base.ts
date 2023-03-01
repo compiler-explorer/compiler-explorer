@@ -23,16 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import * as express from 'express';
+import {profanities} from 'profanities';
 
-import {logger} from '../logger';
-import {CompilerProps} from '../properties';
-import * as utils from '../utils';
-
-// When it's import profanities from 'profanities'; ts says "Cannot find module 'profanities' or its corresponding type
-// declarations."
-// Updating profanities to v3 requires ESM modules
-// eslint-disable-next-line @typescript-eslint/no-var-requires, unicorn/prefer-module
-const profanities = require('profanities');
+import {logger} from '../logger.js';
+import {CompilerProps} from '../properties.js';
+import * as utils from '../utils.js';
 
 const FILE_HASH_VERSION = 'Compiler Explorer Config Hasher 2';
 /* How long a string to check for possible unusable hashes (Profanities or confusing text)
@@ -104,7 +99,7 @@ export abstract class StorageBase {
             .then(result => {
                 logger.info(
                     `Unique subhash '${result.uniqueSubHash}' ` +
-                        `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`
+                        `(${result.alreadyPresent ? 'was already present' : 'newly-created'})`,
                 );
                 if (result.alreadyPresent) {
                     return result;

@@ -27,13 +27,13 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {PreliminaryCompilerInfo} from '../../types/compiler.interfaces';
-import {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu';
-import {SassAsmParser} from '../parsers/asm-parser-sass';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions, UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AmdgpuAsmParser} from '../parsers/asm-parser-amdgpu.js';
+import {SassAsmParser} from '../parsers/asm-parser-sass.js';
 
 const offloadRegexp = /^#\s+__CLANG_OFFLOAD_BUNDLE__(__START__|__END__)\s+(.*)$/gm;
 
@@ -145,7 +145,7 @@ export class ClangCompiler extends BaseCompiler {
             const unbundleResult: UnprocessedExecResult = await this.exec(
                 this.offloadBundlerPath,
                 ['-unbundle', '--type', 's', '--inputs', bundlefile, '--outputs', bcfile, '--targets', devicename],
-                env
+                env,
             );
             if (unbundleResult.code !== 0) {
                 return unbundleResult.stderr;

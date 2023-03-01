@@ -28,12 +28,12 @@ import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {ICompilerArguments, PossibleArguments} from '../types/compiler-arguments.interfaces';
+import type {ICompilerArguments, PossibleArguments} from '../types/compiler-arguments.interfaces.js';
 
-import {logger} from './logger';
-import {PropertyGetter} from './properties.interfaces';
-import {S3Bucket} from './s3-handler';
-import {fileExists, resolvePathFromAppRoot} from './utils';
+import {logger} from './logger.js';
+import type {PropertyGetter} from './properties.interfaces.js';
+import {S3Bucket} from './s3-handler.js';
+import {fileExists, resolvePathFromAppRoot} from './utils.js';
 
 export class CompilerArguments implements ICompilerArguments {
     private readonly compilerId: string;
