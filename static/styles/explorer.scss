@@ -864,6 +864,7 @@ div.populararguments div.dropdown-menu {
         border-radius: 3px;
         margin: 0 0 0 3px;
         cursor: pointer;
+        user-select: none;
     }
 
     .compilers-col {
