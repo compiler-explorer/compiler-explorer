@@ -19,7 +19,7 @@
 
 import {Transform, TransformCallback, TransformOptions} from 'stream';
 
-import YAML from 'yamljs';
+import yaml from 'yaml';
 
 import {logger} from './logger.js';
 
@@ -98,7 +98,7 @@ export class LLVMOptTransformer extends Transform {
             if (found) {
                 const [head, tail] = splitAt(endpos, this._buffer);
                 const optTypeMatch = head.match(optTypeMatcher);
-                const opt = YAML.parse(head);
+                const opt = yaml.parse(head, {logLevel: 'error'});
                 const strOpt = JSON.stringify(opt);
                 if (!this._prevOpts.has(strOpt)) {
                     this._prevOpts.add(strOpt);
