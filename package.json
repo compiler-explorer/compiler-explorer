@@ -60,7 +60,6 @@
     "prom-client": "^14.0.1",
     "pug": "^3.0.2",
     "qs": "^6.11.0",
-    "ramda": "^0.23.0",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
     "sanitize-filename": "^1.6.3",

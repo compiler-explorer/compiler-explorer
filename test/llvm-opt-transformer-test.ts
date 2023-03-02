@@ -17,8 +17,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
 import * as stream from 'stream';
+
+import {LLVMOptTransformer} from '../lib/llvm-opt-transformer.js';
 
 describe('LLVM opt transformer', () => {
     it('should work', async () => {
