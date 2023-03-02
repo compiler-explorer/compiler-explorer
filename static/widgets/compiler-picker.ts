@@ -157,7 +157,7 @@ export class CompilerPicker {
             },
         });
 
-        this.tomSelect.on("dropdown_open", () => {
+        this.tomSelect.on('dropdown_open', () => {
             // Prevent overflowing the window
             const dropdown = unwrap(this.tomSelect).dropdown_content;
             dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
