@@ -43,7 +43,6 @@ export class CompilerPicker {
     static readonly favoriteGroupName = '__favorites__';
     static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
-    domRoot: JQuery;
     domNode: HTMLSelectElement;
     eventHub: EventHub;
     id: number;
@@ -156,6 +155,12 @@ export class CompilerPicker {
                         </div>`;
                 },
             },
+        });
+
+        this.tomSelect.on("dropdown_open", () => {
+            // Prevent overflowing the window
+            const dropdown = unwrap(this.tomSelect).dropdown_content;
+            dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
         });
 
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {

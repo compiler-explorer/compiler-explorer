@@ -547,9 +547,9 @@ input.vim-check {
     height: 20px;
 }
 
-/* While we find a better solution, lets up this a bit */
 .compiler-picker-dropdown .ts-dropdown-content {
-    max-height: 600px !important;
+    // Default max-height, the compiler picker will override this to prevent overflowing the window
+    max-height: 600px;
 }
 
 .compiler-picker-dropdown .ts-dropdown-content .option {
