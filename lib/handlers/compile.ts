@@ -239,7 +239,6 @@ export class CompileHandler {
     }
 
     async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: Record<string, any>) {
-        //console.log("------------------------------------------>", compilers.map(compiler => compiler.compilerType));
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {

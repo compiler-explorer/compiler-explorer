@@ -57,8 +57,8 @@ export class CompilerPicker {
     constructor(
         domRoot: JQuery,
         hub: Hub,
-        readonly langId: string,
-        readonly compilerId: string,
+        langId: string,
+        compilerId: string,
         onCompilerChange: (x: string) => any,
         compilerIsVisible?: (x: any) => any,
     ) {
