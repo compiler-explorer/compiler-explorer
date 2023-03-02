@@ -1129,11 +1129,11 @@ function definition(): monaco.languages.IMonarchLanguage {
             'WRAP',
             'WRITE',
             'X',
-            'X\"91\"',
-            'X\"E4\"',
-            'X\"E5\"',
-            'X\"F4\"',
-            'X\"F5',
+            'X"91"',
+            'X"E4"',
+            'X"E5"',
+            'X"F4"',
+            'X"F5"',
             'Y',
             'YEAR-TO-YYYY',
             'YYYYDDD',
@@ -1149,7 +1149,7 @@ function definition(): monaco.languages.IMonarchLanguage {
             root: [
                 // identifiers and keywords
                 [
-                    /[A-Za-z][\w0-9$\-]*/,
+                    /[A-Za-z][\w0-9$-]*/,
                     {
                         cases: {
                             '@typeKeywords': 'keyword',
@@ -1160,7 +1160,7 @@ function definition(): monaco.languages.IMonarchLanguage {
                 ],
                 {include: '@whitespace'},
                 [/@numbers/, 'number'],
-                [/[\.+\-*/=<>]/, 'operators'],
+                [/[.+\-*/=<>]/, 'operators'],
                 [/(")(.*)(")/, ['string', 'string', 'string']],
                 [/(')(.*)(')/, ['string', 'string', 'string']],
             ],
@@ -1171,7 +1171,7 @@ function definition(): monaco.languages.IMonarchLanguage {
 
             whitespace: [
                 [/.{6}\*.*$/, 'comment'],
-                [/[ \t\r\n]+/, 'white']
+                [/[ \t\r\n]+/, 'white'],
             ],
         },
     };
