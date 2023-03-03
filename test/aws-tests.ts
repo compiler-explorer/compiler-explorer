@@ -23,7 +23,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 import './utils.js';
-import AWS from 'aws-sdk-mock';
+import {DescribeInstancesCommand, EC2} from '@aws-sdk/client-ec2';
+import {GetParametersCommand, SSM} from '@aws-sdk/client-ssm';
+import {mockClient} from 'aws-sdk-client-mock';
 
 import * as aws from '../lib/aws.js';
 
@@ -60,9 +62,13 @@ const instanceD = {
     ],
 };
 
+const mockEC2 = mockClient(EC2);
+const mockSSM = mockClient(SSM);
+
 function setup() {
     beforeEach(() => {
-        AWS.mock('EC2', 'describeInstances', {
+        mockEC2.reset();
+        mockEC2.on(DescribeInstancesCommand).resolves({
             Reservations: [
                 {
                     Instances: [instanceA, instanceB, instanceC, instanceD],
@@ -70,7 +76,8 @@ function setup() {
             ],
         });
 
-        AWS.mock('SSM', 'getParameters', {
+        mockSSM.reset();
+        mockSSM.on(GetParametersCommand).resolves({
             Parameters: [
                 {
                     Name: '/compiler-explorer/configValue',
@@ -83,7 +90,10 @@ function setup() {
             ],
         });
     });
-    afterEach(() => AWS.restore());
+    afterEach(() => {
+        mockEC2.restore();
+        mockSSM.restore();
+    });
 }
 
 describe('AWS instance fetcher tests', () => {
