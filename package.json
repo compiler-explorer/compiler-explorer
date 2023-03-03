@@ -60,7 +60,6 @@
     "prom-client": "^14.0.1",
     "pug": "^3.0.2",
     "qs": "^6.11.0",
-    "ramda": "^0.23.0",
     "request": "^2.88.2",
     "response-time": "^2.3.2",
     "sanitize-filename": "^1.6.3",
@@ -84,8 +83,7 @@
     "winston-loki": "^6.0.3",
     "winston-papertrail": "^1.0.5",
     "winston-transport": "^4.4.1",
-    "yaml": "^1.10.2",
-    "yamljs": "^0.3.0"
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.16.5",
