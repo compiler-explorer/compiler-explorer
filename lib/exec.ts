@@ -255,8 +255,13 @@ export function getCeWrapperOptions(
     const jailingOptions = ['-v', `--config=${getCeWrapperCfgFilePath(configName)}`];
 
     if (options.customCwd) {
-        jailingOptions.push(`--home=${options.customCwd}`);
-        delete options.customCwd;
+        if (options.appHome) {
+            jailingOptions.push(`--home=${options.appHome}`);
+        } else {
+            jailingOptions.push(`--home=${options.customCwd}`);
+        }
+
+        // note: keep the customCwd in options, dont delete
     }
 
     if (options.timeoutMs) {
