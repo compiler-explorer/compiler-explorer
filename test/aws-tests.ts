@@ -62,10 +62,8 @@ const instanceD = {
     ],
 };
 
-const mockEC2 = mockClient(EC2);
-const mockSSM = mockClient(SSM);
-
-function setup() {
+describe('AWS instance fetcher tests', () => {
+    const mockEC2 = mockClient(EC2);
     beforeEach(() => {
         mockEC2.reset();
         mockEC2.on(DescribeInstancesCommand).resolves({
@@ -75,29 +73,7 @@ function setup() {
                 },
             ],
         });
-
-        mockSSM.reset();
-        mockSSM.on(GetParametersCommand).resolves({
-            Parameters: [
-                {
-                    Name: '/compiler-explorer/configValue',
-                    Value: 'fromAws',
-                },
-                {
-                    Name: '/compiler-explorer/onlyOnAws',
-                    Value: 'bibble',
-                },
-            ],
-        });
     });
-    afterEach(() => {
-        mockEC2.restore();
-        mockSSM.restore();
-    });
-}
-
-describe('AWS instance fetcher tests', () => {
-    setup();
     it('Fetches Bob', () => {
         const fakeProps = {
             region: 'not-a-region',
@@ -120,7 +96,22 @@ describe('AWS instance fetcher tests', () => {
 });
 
 describe('AWS config tests', () => {
-    setup();
+    const mockSSM = mockClient(SSM);
+    beforeEach(() => {
+        mockSSM.reset();
+        mockSSM.on(GetParametersCommand).resolves({
+            Parameters: [
+                {
+                    Name: '/compiler-explorer/configValue',
+                    Value: 'fromAws',
+                },
+                {
+                    Name: '/compiler-explorer/onlyOnAws',
+                    Value: 'bibble',
+                },
+            ],
+        });
+    });
     it("Doesn't fetch unless region is configured", () => {
         const fakeProps = {
             region: '',

@@ -32,14 +32,13 @@ import {mockClient} from 'aws-sdk-client-mock';
 import * as properties from '../../lib/properties.js';
 import {StorageS3} from '../../lib/storage/index.js';
 
-const mockDynamoDb = mockClient(DynamoDB);
-const mockS3 = mockClient(S3);
-beforeEach(() => {
-    mockDynamoDb.reset();
-    mockS3.reset();
-});
-
 describe('Find unique subhash tests', () => {
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const compilerProps = properties.fakeProps({});
     const httpRootDir = '/';
     const awsProps = properties.fakeProps({
@@ -109,6 +108,12 @@ describe('Find unique subhash tests', () => {
 });
 
 describe('Stores to s3', () => {
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
@@ -149,6 +154,12 @@ describe('Stores to s3', () => {
 });
 
 describe('Retrieves from s3', () => {
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
@@ -189,6 +200,12 @@ describe('Retrieves from s3', () => {
 });
 
 describe('Updates counts in s3', async () => {
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
