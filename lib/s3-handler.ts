@@ -22,13 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { S3 } from '@aws-sdk/client-s3';
+import { S3, NoSuchKey } from '@aws-sdk/client-s3';
 
 import type {GetResult} from '../types/cache.interfaces.js';
 
 import type {S3HandlerOptions} from './s3-handler.interfaces.js';
-
-const NoSuchKey = 'NoSuchKey';
 
 export class S3Bucket {
     private readonly instance: S3;
@@ -46,7 +44,7 @@ export class S3Bucket {
             const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`});
             return {hit: true, data: await result.Body?.transformToString()};
         } catch (x: any) {
-            if (x.code === NoSuchKey) return {hit: false};
+            if (x instanceof NoSuchKey) return {hit: false};
             throw x;
         }
     }
@@ -55,7 +53,7 @@ export class S3Bucket {
         try {
             await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`});
         } catch (x: any) {
-            if (x.code === NoSuchKey) return false;
+            if (x instanceof NoSuchKey)  return false;
             throw x;
         }
         return true;

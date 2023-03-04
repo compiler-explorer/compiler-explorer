@@ -24,7 +24,7 @@
 
 import {Readable} from 'stream';
 
-import {GetObjectCommand, PutObjectCommand, S3} from '@aws-sdk/client-s3';
+import {GetObjectCommand, NoSuchKey, PutObjectCommand, S3} from '@aws-sdk/client-s3';
 import {sdkStreamMixin} from '@aws-sdk/util-stream-node';
 import {AwsClientStub, AwsError, AwsStub, mockClient} from 'aws-sdk-client-mock';
 import temp from 'temp';
@@ -213,9 +213,7 @@ function setup(mockS3: AwsClientStub<S3>) {
             stream.push(null);
             return {Body: sdkStreamMixin(stream)};
         }
-        const error = new Error('Not found') as AwsError;
-        error.Code = 'NoSuchKey';
-        throw error;
+        throw new NoSuchKey({message: 'No such key', $metadata: {}});
     });
     mockS3.on(PutObjectCommand, {Bucket: 'test.bucket'}).callsFake(params => {
         S3FS[params.Key] = params.Body;
