@@ -41,7 +41,7 @@ lang-clean:
   - etc/config/clean.*.properties
   - static/modes/clean-mode.ts
 lang-cobol:
-  - lib/compilers/cobol.js
+  - lib/compilers/gnucobol.js
   - etc/config/cobol.*.properties
   - static/modes/cobol-mode.ts
 lang-cppx:
