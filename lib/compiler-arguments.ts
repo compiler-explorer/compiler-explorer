@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
@@ -79,8 +78,6 @@ export class CompilerArguments implements ICompilerArguments {
         const prefix = awsProps('storagePrefixArgStats', '');
 
         if (region && bucket && prefix && this.compilerId) {
-            AWS.config.update({region: region});
-
             const s3 = new S3Bucket(bucket, region);
             const result = await s3.get(this.compilerId + '.json', prefix);
             if (result.hit) {
