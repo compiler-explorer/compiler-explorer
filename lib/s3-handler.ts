@@ -42,7 +42,8 @@ export class S3Bucket {
     async get(key: string, path: string): Promise<GetResult> {
         try {
             const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`});
-            return {hit: true, data: await result.Body?.transformToString()};
+            if (!result.Body) return {hit:false};
+            return {hit: true, data: Buffer.from(await result.Body.transformToByteArray())};
         } catch (x: any) {
             if (x instanceof NoSuchKey) return {hit: false};
             throw x;

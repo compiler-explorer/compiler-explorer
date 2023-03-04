@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Local instance" type="NodeJSConfigurationType" path-to-node="/opt/compiler-explorer/node/bin/node" node-parameters="--loader ts-node/esm" path-to-js-file="app.ts" working-dir="$PROJECT_DIR$">
+    <method v="2" />
+  </configuration>
+</component>

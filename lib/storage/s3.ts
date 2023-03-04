@@ -171,7 +171,7 @@ export class StorageS3 extends StorageBase {
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);
         const metadata = attributes.named_metadata ? attributes.named_metadata.M : null;
         return {
-            config: result.data.toString(),
+            config: unwrap(result.data).toString(),
             specialMetadata: metadata,
         };
     }
