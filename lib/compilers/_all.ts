@@ -103,6 +103,7 @@ export {VBCompiler} from './dotnet.js';
 export {Win32Compiler} from './win32.js';
 export {Win32Vc6Compiler} from './win32-vc6.js';
 export {Win32VcCompiler} from './win32-vc.js';
+export {Win32MingW} from './win32-mingw.js';
 export {WineVcCompiler} from './wine-vc.js';
 export {WslVcCompiler} from './wsl-vc.js';
 export {ZigCC} from './zigcc.js';
