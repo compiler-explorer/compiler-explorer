@@ -547,13 +547,22 @@ input.vim-check {
     height: 20px;
 }
 
-/* While we find a better solution, lets up this a bit */
-.compiler-picker .ts-dropdown-content {
-    max-height: 300px !important;
+.compiler-picker-dropdown .ts-dropdown-content {
+    // Default max-height, the compiler picker will override this to prevent overflowing the window
+    max-height: 600px;
 }
 
-.compiler-picker .ts-dropdown-content .option {
+.compiler-picker-dropdown .ts-dropdown-content .option {
     padding: 0 10px;
+}
+
+.compiler-picker-dropdown .compiler-picker-dropdown-popout {
+    padding: 10px;
+    text-align: center;
+    border-top: 1px solid #555555;
+    border-bottom: 1px solid #555555;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 .compiler-options-popover {
@@ -832,6 +841,85 @@ div.populararguments div.dropdown-menu {
 
 #library-selection.mobile .libs-favorites-col {
     display: none;
+}
+
+#compiler-picker-modal {
+    .modal-body {
+        overflow-y: scroll;
+    }
+
+    input.compiler-search {
+        margin-left: 10px;
+        //outline: 0 !important;
+        padding: 5px 10px;
+    }
+
+    .filters {
+        margin-top: 10px;
+    }
+
+    .architecture,
+    .compiler-type {
+        padding: 2px 5px;
+        border-radius: 3px;
+        margin: 0 0 0 3px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .compilers-col {
+        margin-top: 5px;
+        h6 {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        .compilers {
+            width: 650px;
+            columns: 2 300px;
+            column-gap: 50px;
+            .group-wrapper {
+                display: inline-block;
+                .group {
+                    width: 300px;
+                    margin-bottom: 25px;
+                    .label {
+                        cursor: pointer;
+                    }
+                    .compiler {
+                        .highlight {
+                            background: rgba(255, 237, 40, 0.4);
+                            border-radius: 1px;
+                        }
+                        .toggle-fav {
+                            cursor: pointer;
+                        }
+                    }
+                    .folded {
+                        display: none;
+                        text-align: center;
+                    }
+                    &.collapsed {
+                        .compiler {
+                            display: none !important;
+                        }
+                        .folded {
+                            display: block !important;
+                        }
+                    }
+                    //&:before {
+                    //    content: " ";
+                    //    display: block;
+                    //    height: 0;
+                    //    margin: 0.5rem 0;
+                    //    overflow: hidden;
+                    //    border-top: 1px solid #e9ecef;
+                    //    //margin-left: -0.75rem;
+                    //    //margin-right: -0.75rem;
+                    //}
+                }
+            }
+        }
+    }
 }
 
 #timing-info .modal-content {
