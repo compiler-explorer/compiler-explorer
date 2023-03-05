@@ -91,7 +91,7 @@ def match_and_update(line: Line, expr, s: set, split=':'):
 
 
 def check_suspicious_path_and_add(line: Line, m, s):
-    if m and not m.group(2).startswith('/opt/compiler-explorer'):
+    if m and not m.group(2).startswith('/opt/compiler-explorer') and not m.group(2).startswith('Z:/compilers'):
         s.add(Line(line.number, m.group(2)))
 
 
