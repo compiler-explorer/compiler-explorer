@@ -252,7 +252,7 @@ export function getCeWrapperOptions(
     options: ExecutionOptions,
 ): NsJailOptions {
     options = {...options};
-    const jailingOptions = ['-v', `--config=${getCeWrapperCfgFilePath(configName)}`];
+    const jailingOptions = [`--config=${getCeWrapperCfgFilePath(configName)}`];
 
     if (options.customCwd) {
         if (options.appHome) {
