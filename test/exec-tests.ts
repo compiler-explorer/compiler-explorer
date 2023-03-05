@@ -265,7 +265,6 @@ describe('Execution tests', () => {
             });
 
             options.args.should.deep.equals([
-                '-v',
                 '--config=' + path.resolve('etc/cewrapper/user-execution.json'),
                 '--time_limit=1',
                 '/path/to/something',
