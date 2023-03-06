@@ -33,7 +33,7 @@ export class ReadElfTool extends BaseTool {
 
     override async runTool(compilationInfo: Record<any, any>, inputFilepath?: string, args?: string[]) {
         if (!compilationInfo.filters.binary && !compilationInfo.filters.binaryObject) {
-            return this.createErrorResponse('readelf requires an executable');
+            return this.createErrorResponse(`${this.tool.name ? this.tool.name : 'readelf'} requires an executable`);
         }
 
         if (await fileExists(compilationInfo.executableFilename)) {
