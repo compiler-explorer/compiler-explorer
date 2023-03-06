@@ -48,7 +48,7 @@ class DotNetCompiler extends BaseCompiler {
     private readonly clrBuildDir: string;
     private readonly langVersion: string;
     private readonly crossgen2Path: string;
-    private readonly majorVersion: number;
+    private readonly sdkMajorVersion: number;
 
     private crossgen2VersionString: string;
 
@@ -60,7 +60,7 @@ class DotNetCompiler extends BaseCompiler {
 
         const parts = this.sdkVersion.split('.');
         this.targetFramework = `net${parts[0]}.${parts[1]}`;
-        this.majorVersion = Number(parts[0]);
+        this.sdkMajorVersion = Number(parts[0]);
 
         this.buildConfig = this.compilerProps<string>(`compiler.${this.compiler.id}.buildConfig`);
         this.clrBuildDir = this.compilerProps<string>(`compiler.${this.compiler.id}.clrDir`);
@@ -317,8 +317,8 @@ class DotNetCompiler extends BaseCompiler {
             '-r', path.join(bclPath, '/'),
             dllPath,
             '-o', 'CompilerExplorer.r2r.dll',
-            '--codegenopt', (this.majorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*'),
-            '--codegenopt', (this.majorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1'),
+            '--codegenopt', (this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*'),
+            '--codegenopt', (this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1'),
             '--parallelism', '1',
             '--inputbubble',
             '--compilebubblegenerics',
