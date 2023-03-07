@@ -212,6 +212,11 @@ export class CompilerPickerPopup {
         this.modalCompilers.find('.group > .label').on('click', e => {
             $(e.currentTarget).closest('.group').toggleClass('collapsed');
         });
+        // compiler click events
+        this.modalCompilers.find('.compiler').on('click', e => {
+            this.compilerPicker.selectCompiler(unwrap(e.currentTarget.getAttribute("data-value")));
+            this.hide();
+        });
         // favorite stars
         this.modalCompilers.find('.compiler .toggle-fav').on('click', e => {
             const compilerId = unwrap($(e.currentTarget).closest('.compiler').attr('data-value'));
@@ -242,5 +247,9 @@ export class CompilerPickerPopup {
         //    console.log("go");
         //    this.modalSearch[0].focus();
         //}, 200);
+    }
+
+    hide() {
+        this.modal.modal('hide');
     }
 }

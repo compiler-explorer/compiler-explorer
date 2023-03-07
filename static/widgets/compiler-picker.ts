@@ -116,14 +116,14 @@ export class CompilerPicker {
                 // Typing here needs improvement later anyway.
                 /* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */
                 if (val) {
+                    const compilerId = val as any as string;
                     ga.proxy('send', {
                         hitType: 'event',
                         eventCategory: 'SelectCompiler',
-                        eventAction: val,
+                        eventAction: compilerId,
                     });
-                    const str = val as any as string;
-                    this.onCompilerChange(str);
-                    this.lastCompilerId = str;
+                    this.onCompilerChange(compilerId);
+                    this.lastCompilerId = compilerId;
                 }
             },
             duplicates: true,
@@ -271,6 +271,12 @@ export class CompilerPicker {
         if (this.tomSelect) {
             this.tomSelect.updateOption(compilerId, this.tomSelect.options[compilerId]);
             this.tomSelect.refreshOptions(false);
+        }
+    }
+
+    selectCompiler(compilerId: string) {
+        if(this.tomSelect) {
+            this.tomSelect.addItem(compilerId);
         }
     }
 }
