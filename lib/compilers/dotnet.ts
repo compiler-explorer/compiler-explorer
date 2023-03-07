@@ -319,7 +319,6 @@ class DotNetCompiler extends BaseCompiler {
             '-o', 'CompilerExplorer.r2r.dll',
             '--codegenopt', (this.sdkMajorVersion < 7 ? 'NgenDisasm=*' : 'JitDisasm=*'),
             '--codegenopt', (this.sdkMajorVersion < 8 ? 'JitDiffableDasm=1' : 'JitDisasmDiffable=1'),
-            '--parallelism', '1',
             '--inputbubble',
             '--compilebubblegenerics',
         ].concat(options);
