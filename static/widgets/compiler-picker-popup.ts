@@ -56,6 +56,10 @@ export class CompilerPickerPopup {
         this.modalArchitectures = this.modal.find('.architectures');
         this.modalCompilerTypes = this.modal.find('.compiler-types');
         this.modalCompilers = this.modal.find('.compilers');
+
+        this.modal.on('shown.bs.modal', () => {
+            this.modalSearch[0].focus();
+        });
     }
 
     setLang(groups: {value: string; label: string}[], options: (CompilerInfo & {$groups: string[]})[], langId: string) {
@@ -242,11 +246,6 @@ export class CompilerPickerPopup {
         this.modal.find('.architectures .active, .compiler-types .active').toggleClass('active');
         this.fillCompilers();
         this.modal.modal({});
-        //console.log(this.modalSearch[0]);
-        //window.setTimeout(() => {
-        //    console.log("go");
-        //    this.modalSearch[0].focus();
-        //}, 200);
     }
 
     hide() {
