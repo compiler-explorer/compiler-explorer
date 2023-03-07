@@ -621,19 +621,3 @@ textarea.form-control {
         }
     }
 }
-
-#compiler-picker-modal {
-    .architecture,
-    .compiler-type {
-        background: #444;
-        &.active {
-            background: #007bff;
-        }
-    }
-
-    .compilers-col .group-wrapper .group {
-        .label {
-            background: #555555;
-        }
-    }
-}

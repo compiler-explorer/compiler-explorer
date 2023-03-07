@@ -30,10 +30,6 @@ import * as local from '../local.js';
 import {EventHub} from '../event-hub.js';
 import {Hub} from '../hub.js';
 import {CompilerService} from '../compiler-service.js';
-import {CompilerInfo} from '../../types/compiler.interfaces.js';
-import {unique} from '../../lib/common-utils.js';
-import {unwrap} from '../assert.js';
-import {CompilerPickerPopup} from './compiler-picker-popup.js';
 
 type Favourites = {
     [compilerId: string]: boolean;
@@ -43,6 +39,7 @@ export class CompilerPicker {
     static readonly favoriteGroupName = '__favorites__';
     static readonly favoriteStoreKey = 'favCompilerIds';
     static nextSelectorId = 1;
+    domRoot: JQuery;
     domNode: HTMLSelectElement;
     eventHub: EventHub;
     id: number;
@@ -52,7 +49,6 @@ export class CompilerPicker {
     lastLangId: string;
     lastCompilerId: string;
     compilerIsVisible: (any) => any; // TODO => bool probably
-    popup: CompilerPickerPopup;
     constructor(
         domRoot: JQuery,
         hub: Hub,
@@ -78,23 +74,21 @@ export class CompilerPicker {
             this.compilerIsVisible = () => true;
         }
 
-        this.popup = new CompilerPickerPopup(this);
-
         this.initialize(langId, compilerId);
     }
 
-    destroy() {
+    close() {
+        // Quick note while I'm here: This function is never called. It probably should be. The conformance view
+        // bypasses this function and does compilerEntry.picker.tomSelect.close(); manually. This function is the
+        // only time this.tomSelect can be null, might be nice if we can get rid of that.
         this.eventHub.unsubscribe();
         if (this.tomSelect) this.tomSelect.destroy();
         this.tomSelect = null;
     }
 
-    private initialize(langId: string, compilerId: string) {
+    initialize(langId: string, compilerId: string) {
         this.lastLangId = langId;
         this.lastCompilerId = compilerId;
-
-        const groups = this.getGroups(langId);
-        const options = this.getOptions(langId, compilerId);
 
         this.tomSelect = new TomSelect(this.domNode, {
             sortField: CompilerService.getSelectizerOrder(),
@@ -103,9 +97,9 @@ export class CompilerPicker {
             searchField: ['name'],
             placeholder: '🔍 Select a compiler...',
             optgroupField: '$groups',
-            optgroups: groups,
+            optgroups: this.getGroups(langId),
             lockOptgroupOrder: true,
-            options: options,
+            options: this.getOptions(langId, compilerId),
             items: compilerId ? [compilerId] : [],
             dropdownParent: 'body',
             closeAfterSelect: true,
@@ -143,24 +137,7 @@ export class CompilerPicker {
                         '</div>'
                     );
                 },
-                dropdown: () => {
-                    return `
-                        <div class="compiler-picker-dropdown">
-                            <div
-                                class="compiler-picker-dropdown-popout"
-                                id="compiler-picker-dropdown-popout-${this.id}"
-                            >
-                                Pop out <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                            </div>
-                        </div>`;
-                },
             },
-        });
-
-        this.tomSelect.on('dropdown_open', () => {
-            // Prevent overflowing the window
-            const dropdown = unwrap(this.tomSelect).dropdown_content;
-            dropdown.style.maxHeight = `${window.innerHeight - dropdown.getBoundingClientRect().top - 10}px`;
         });
 
         $(this.tomSelect.dropdown_content).on('click', '.toggle-fav', evt => {
@@ -179,9 +156,12 @@ export class CompilerPicker {
                     data.$groups.push(CompilerPicker.favoriteGroupName);
                     this.addToFavorites(data.id);
                 } else {
-                    data.$groups.splice(data.$groups.indexOf(CompilerPicker.favoriteGroupName), 1);
+                    data.$groups.splice(data.group.indexOf(CompilerPicker.favoriteGroupName), 1);
                     this.removeFromFavorites(data.id);
                 }
+
+                this.tomSelect.updateOption(value, data);
+                this.tomSelect.refreshOptions(false);
 
                 if (clickedGroup !== CompilerPicker.favoriteGroupName) {
                     // If the user clicked on an option that wasn't in the top "Favorite" group, then we just added
@@ -195,26 +175,16 @@ export class CompilerPicker {
                 }
             }
         });
-
-        this.popup.setLang(groups, options, langId);
-
-        $(`#compiler-picker-dropdown-popout-${this.id}`).on('click', () => {
-            unwrap(this.tomSelect).close();
-            this.popup.show();
-        });
     }
 
-    getOptions(langId: string, compilerId: string): (CompilerInfo & {$groups: string[]})[] {
+    getOptions(langId: string, compilerId: string) {
         const favorites = this.getFavorites();
         return Object.values(this.compilerService.getCompilersForLang(langId) ?? {})
             .filter(e => (this.compilerIsVisible(e) && !e.hidden) || e.id === compilerId)
             .map(e => {
-                const $groups = [e.group];
-                if (favorites[e.id]) $groups.unshift(CompilerPicker.favoriteGroupName);
-                return {
-                    ...e,
-                    $groups,
-                };
+                e.$groups = [e.group];
+                if (favorites[e.id]) e.$groups.unshift(CompilerPicker.favoriteGroupName);
+                return e;
             });
     }
 
@@ -255,7 +225,6 @@ export class CompilerPicker {
         const faves = this.getFavorites();
         faves[compilerId] = true;
         this.setFavorites(faves);
-        this.updateTomselectOption(compilerId);
         this.eventHub.emit('compilerFavoriteChange', this.id);
     }
 
@@ -263,14 +232,6 @@ export class CompilerPicker {
         const faves = this.getFavorites();
         delete faves[compilerId];
         this.setFavorites(faves);
-        this.updateTomselectOption(compilerId);
         this.eventHub.emit('compilerFavoriteChange', this.id);
-    }
-
-    updateTomselectOption(compilerId: string) {
-        if (this.tomSelect) {
-            this.tomSelect.updateOption(compilerId, this.tomSelect.options[compilerId]);
-            this.tomSelect.refreshOptions(false);
-        }
     }
 }
