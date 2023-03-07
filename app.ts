@@ -249,8 +249,8 @@ const extraBodyClass = ceProps('extraBodyClass', isDevMode() ? 'dev' : '');
 const storageSolution = compilerProps.ceProps('storageSolution', 'local');
 const httpRoot = urljoin(ceProps('httpRoot', '/'), '/');
 
-const staticUrl = ceProps('staticUrl');
-const staticRoot = urljoin(staticUrl || urljoin(httpRoot, 'static'), '/');
+const staticUrl = ceProps('staticUrl', urljoin(httpRoot, 'static'));
+const staticRoot = urljoin(staticUrl, '/');
 
 function staticHeaders(res) {
     if (staticMaxAgeSecs) {
