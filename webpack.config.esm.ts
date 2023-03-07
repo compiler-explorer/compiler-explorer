@@ -57,7 +57,7 @@ const hasGit = fs.existsSync(path.resolve(__dirname, '.git'));
 // the name here. Mostly it's things like webpack changes that affect
 // how minification is done, even though that's supposed not to matter.
 const webjackJsHack = '.v19.';
-const plugins = [
+const plugins: Webpack.WebpackPluginInstance[] = [
     new MonacoEditorWebpackPlugin({
         languages: [
             'cpp',
