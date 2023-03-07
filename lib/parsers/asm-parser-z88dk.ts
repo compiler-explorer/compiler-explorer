@@ -1,4 +1,9 @@
-import {AsmResultLabel, AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {
+    AsmResultLabel,
+    AsmResultSource,
+    ParsedAsmResult,
+    ParsedAsmResultLine,
+} from '../../types/asmresult/asmresult.interfaces.js';
 import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 import {assert} from '../assert.js';
 import {PropertyGetter} from '../properties.interfaces.js';
