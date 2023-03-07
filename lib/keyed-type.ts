@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Keyable} from './keyed-type.interfaces';
-import {logger} from './logger';
+import type {Keyable} from './keyed-type.interfaces.js';
+import {logger} from './logger.js';
 
 function makeKeyMap<T extends Keyable>(typeName: string, objects: Record<string, T>): Record<string, T> {
     const keyToNameMap: Record<string, string> = {};

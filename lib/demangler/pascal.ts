@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces';
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {SymbolStore} from '../symbol-store';
+import type {ParsedAsmResult} from '../../types/asmresult/asmresult.interfaces.js';
+import type {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {SymbolStore} from '../symbol-store.js';
 
-import {BaseDemangler} from './base';
+import {BaseDemangler} from './base.js';
 
 export class PascalDemangler extends BaseDemangler {
     static get key() {

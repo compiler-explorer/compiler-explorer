@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {PPCICompiler} from '../lib/compilers/ppci';
-import {LanguageKey} from '../types/languages.interfaces';
+import {PPCICompiler} from '../lib/compilers/ppci.js';
+import {LanguageKey} from '../types/languages.interfaces.js';
 
-import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils';
+import {makeCompilationEnvironment, makeFakeCompilerInfo} from './utils.js';
 
 const languages = {
     c: {id: 'c' as LanguageKey},
@@ -35,7 +35,10 @@ describe('PPCI', function () {
     let ce;
     const info = {
         exe: '/dev/null',
-        remote: true,
+        remote: {
+            target: 'foo',
+            path: 'bar',
+        },
         lang: languages.c.id,
     };
 

@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {ClangCompiler} from '../../lib/compilers';
-import {chai, makeCompilationEnvironment} from '../utils';
+import {ClangCompiler} from '../../lib/compilers/index.js';
+import {chai, makeCompilationEnvironment} from '../utils.js';
 
 const expect = chai.expect;
 
@@ -31,7 +31,7 @@ describe('clang tests', () => {
     const languages = {'c++': {id: 'c++'}};
 
     const info = {
-        exe: null,
+        exe: 'foobar',
         remote: true,
         lang: 'c++',
         ldPath: [],
@@ -39,13 +39,13 @@ describe('clang tests', () => {
 
     describe('device code...', async () => {
         const clang = new ClangCompiler(info, makeCompilationEnvironment({languages}));
-        it('Should return null for non-device code', () => {
-            expect(clang.splitDeviceCode('')).to.be.null;
-            expect(clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
+        it('Should return null for non-device code', async () => {
+            expect(await clang.splitDeviceCode('')).to.be.null;
+            expect(await clang.splitDeviceCode('mov eax, 00h\nadd r0, r0, #1\n')).to.be.null;
         });
-        it('should separate out bundles ', () => {
+        it('should separate out bundles ', async () => {
             expect(
-                clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
+                await clang.splitDeviceCode(`# __CLANG_OFFLOAD_BUNDLE____START__ openmp-x86_64-unknown-linux-gnu
     i am some
     linux remote stuff
 # __CLANG_OFFLOAD_BUNDLE____END__ openmp-x86_64-unknown-linux-gnu

@@ -22,19 +22,21 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {AWSError} from 'aws-sdk/lib/core';
+import type * as AWSSdk from 'aws-sdk';
 import AWS from 'aws-sdk-mock';
 import temp from 'temp';
 
-import {BaseCache} from '../lib/cache/base';
-import {createCacheFromConfig} from '../lib/cache/from-config';
-import {InMemoryCache} from '../lib/cache/in-memory';
-import {MultiCache} from '../lib/cache/multi';
-import {NullCache} from '../lib/cache/null';
-import {OnDiskCache} from '../lib/cache/on-disk';
-import {S3Cache} from '../lib/cache/s3';
+import {BaseCache} from '../lib/cache/base.js';
+import {createCacheFromConfig} from '../lib/cache/from-config.js';
+import {InMemoryCache} from '../lib/cache/in-memory.js';
+import {MultiCache} from '../lib/cache/multi.js';
+import {NullCache} from '../lib/cache/null.js';
+import {OnDiskCache} from '../lib/cache/on-disk.js';
+import {S3Cache} from '../lib/cache/s3.js';
 
-import {fs, path} from './utils';
+import {fs, path, shouldExist} from './utils.js';
+
+type AWSError = AWSSdk.AWSError;
 
 function newTempDir() {
     temp.track(true);
@@ -247,7 +249,9 @@ describe('S3 tests', () => {
             .should.eventually.contain({hit: false})
             .then(x => {
                 cache.stats().should.eql({hits: 0, puts: 0, gets: 1});
-                err!.toString().should.equal('Error: Some s3 error');
+                if (shouldExist(err)) {
+                    err.toString().should.equal('Error: Some s3 error');
+                }
                 return x;
             });
     });

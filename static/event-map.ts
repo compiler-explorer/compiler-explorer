@@ -22,16 +22,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {Language} from '../types/languages.interfaces';
-import {CompilerOutputOptions} from '../types/features/filters.interfaces';
-import {MessageWithLocation} from '../types/resultline/resultline.interfaces';
-import {SiteSettings} from './settings';
-import {Theme} from './themes';
-import {PPOptions} from './panes/pp-view.interfaces';
-import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces';
-import {Motd} from './motd.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {CompilationResult} from '../types/compilation/compilation.interfaces';
+import {Language} from '../types/languages.interfaces.js';
+import {CompilerOutputOptions} from '../types/features/filters.interfaces.js';
+import {MessageWithLocation} from '../types/resultline/resultline.interfaces.js';
+import {SiteSettings} from './settings.js';
+import {Theme} from './themes.js';
+import {PPOptions} from './panes/pp-view.interfaces.js';
+import {GccDumpFiltersState, GccDumpViewSelectedPass} from './panes/gccdump-view.interfaces.js';
+import {Motd} from './motd.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilationResult} from '../types/compilation/compilation.interfaces.js';
 
 // This list comes from executing
 // grep -rPo "eventHub\.(on|emit)\('.*'," static/ | cut -d "'" -f2 | sort | uniq
@@ -49,14 +49,14 @@ export type EventMap = {
         compiler: CompilerInfo | null,
         options: string,
         editorId: number,
-        treeId: number
+        treeId: number,
     ) => void;
     compilerClose: (compilerId: number, treeId: boolean | number) => void;
     compileResult: (
         compilerId: number,
         compiler: CompilerInfo,
         result: CompilationResult,
-        language: Language | undefined
+        language: Language | undefined,
     ) => void;
     compilerFavoriteChange: (compilerId: number) => void;
     compilerFlagsChange: (compilerId: number, options: string) => void;
@@ -82,7 +82,7 @@ export type EventMap = {
         compiler: any,
         options: string,
         editorId: boolean | number,
-        treeId: boolean | number
+        treeId: boolean | number,
     ) => void;
     executorClose: (executorId: number) => void;
     executorOpen: (executorId: number, editorId: boolean | number) => void;
@@ -128,7 +128,7 @@ export type EventMap = {
         colEnd: number,
         reveal: boolean,
         sender: string,
-        editorId?: number
+        editorId?: number,
     ) => void;
     ppViewClosed: (compilerId: number) => void;
     ppViewOpened: (compilerId: number) => void;

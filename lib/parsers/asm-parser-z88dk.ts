@@ -1,16 +1,11 @@
-import {
-    AsmResultLabel,
-    AsmResultSource,
-    ParsedAsmResult,
-    ParsedAsmResultLine,
-} from '../../types/asmresult/asmresult.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {assert} from '../assert';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {AsmResultLabel, AsmResultSource, ParsedAsmResult, ParsedAsmResultLine} from '../../types/asmresult/asmresult.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {assert} from '../assert.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
-import {AsmParser} from './asm-parser';
-import {AsmRegex} from './asmregex';
+import {AsmParser} from './asm-parser.js';
+import {AsmRegex} from './asmregex.js';
 
 export class AsmParserZ88dk extends AsmParser {
     constructor(compilerProps: PropertyGetter) {

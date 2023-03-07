@@ -24,11 +24,11 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {logger} from '../logger';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {logger} from '../logger.js';
 
 export class RacketCompiler extends BaseCompiler {
     private raco: string;
@@ -37,12 +37,15 @@ export class RacketCompiler extends BaseCompiler {
         return 'racket';
     }
 
-    constructor(info: CompilerInfo, env) {
-        // Disable output filters, as they currently don't do anything
-        if (!info.disabledFilters) {
-            info.disabledFilters = ['labels', 'directives', 'commentOnly', 'trim'];
-        }
-        super(info, env);
+    constructor(info: PreliminaryCompilerInfo, env) {
+        super(
+            {
+                // Disable output filters, as they currently don't do anything
+                disabledFilters: ['labels', 'directives', 'commentOnly', 'trim'],
+                ...info,
+            },
+            env,
+        );
         this.raco = this.compilerProps<string>(`compiler.${this.compiler.id}.raco`);
     }
 

@@ -24,7 +24,7 @@
 
 import yaml from 'yaml';
 
-import {Level, Sponsor, Sponsors} from './sponsors.interfaces';
+import type {Level, Sponsor, Sponsors} from './sponsors.interfaces.js';
 
 export function parse(mapOrString: Record<string, any> | string): Sponsor {
     if (typeof mapOrString == 'string') mapOrString = {name: mapOrString};

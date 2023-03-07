@@ -24,9 +24,9 @@
 
 import _ from 'underscore';
 
-import {ResultLine} from '../../../types/resultline/resultline.interfaces';
+import type {ResultLine} from '../../../types/resultline/resultline.interfaces.js';
 
-import {BaseCFGParser} from './base';
+import {BaseCFGParser} from './base.js';
 
 export class GccCFGParser extends BaseCFGParser {
     static override get key() {

@@ -66,6 +66,8 @@ module.exports = {
                 '@typescript-eslint/no-unnecessary-condition': 'error',
                 '@typescript-eslint/no-unnecessary-type-assertion': 'error',
                 '@typescript-eslint/prefer-includes': 'error',
+                'import/no-unresolved': 'off',
+                'node/no-missing-imports': 'off',
             },
         },
     ],

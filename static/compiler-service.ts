@@ -28,16 +28,16 @@ import _ from 'underscore';
 import LRU from 'lru-cache';
 import {EventEmitter} from 'golden-layout';
 
-import {options} from './options';
+import {options} from './options.js';
 
-import {ResultLine} from '../types/resultline/resultline.interfaces';
+import {ResultLine} from '../types/resultline/resultline.interfaces.js';
 
 import jqXHR = JQuery.jqXHR;
 import ErrorTextStatus = JQuery.Ajax.ErrorTextStatus;
-import {CompilerInfo} from '../types/compiler.interfaces';
-import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces';
-import {CompilationStatus} from './compiler-service.interfaces';
-import {IncludeDownloads, SourceAndFiles} from './download-service';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
+import {CompilationResult, FiledataPair} from '../types/compilation/compilation.interfaces.js';
+import {CompilationStatus} from './compiler-service.interfaces.js';
+import {IncludeDownloads, SourceAndFiles} from './download-service.js';
 
 const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 
@@ -70,7 +70,7 @@ export class CompilerService {
 
     public processFromLangAndCompiler(
         langId: string | null,
-        compilerId: string
+        compilerId: string,
     ): {langId: string | null; compiler: CompilerInfo | null} | null {
         try {
             if (langId) {
@@ -172,7 +172,7 @@ export class CompilerService {
         reject: (reason?: any) => void,
         xhr: jqXHR,
         textStatus: ErrorTextStatus,
-        errorThrown: string
+        errorThrown: string,
     ) {
         let error = errorThrown;
         if (!error) {
@@ -408,7 +408,7 @@ export class CompilerService {
     public static handleCompilationStatus(
         statusLabel: JQuery | null,
         statusIcon: JQuery | null,
-        status: CompilationStatus
+        status: CompilationStatus,
     ) {
         if (statusLabel != null) {
             statusLabel.toggleClass('error', status.code === 3).toggleClass('warning', status.code === 2);

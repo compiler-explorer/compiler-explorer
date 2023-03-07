@@ -28,9 +28,9 @@
 // Converted to typescript by MarkusJx
 
 import _ from 'underscore';
-import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces';
-import {assert, unwrap} from './assert';
-import {isString} from '../lib/common-utils';
+import {AnsiToHtmlOptions, ColorCodes} from './ansi-to-html.interfaces.js';
+import {assert, unwrap} from './assert.js';
+import {isString} from '../lib/common-utils.js';
 
 const defaults: AnsiToHtmlOptions = {
     fg: '#FFF',
@@ -462,7 +462,7 @@ interface StickyStackElement {
 function updateStickyStack(
     stickyStack: StickyStackElement[],
     token: string,
-    data: string | number
+    data: string | number,
 ): StickyStackElement[] {
     if (token !== 'text') {
         stickyStack = stickyStack.filter(notCategory(categoryForCode(data)));

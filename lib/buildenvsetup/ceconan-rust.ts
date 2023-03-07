@@ -24,7 +24,7 @@
 
 import _ from 'underscore';
 
-import {BuildEnvSetupCeConanDirect} from './ceconan';
+import {BuildEnvSetupCeConanDirect} from './ceconan.js';
 
 export class BuildEnvSetupCeConanRustDirect extends BuildEnvSetupCeConanDirect {
     static override get key() {

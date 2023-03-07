@@ -27,11 +27,11 @@ import path from 'path';
 
 import _ from 'underscore';
 
-import {LanguageKey} from '../types/languages.interfaces';
+import type {LanguageKey} from '../types/languages.interfaces.js';
 
-import {logger} from './logger';
-import {PropertyGetter, PropertyValue, Widen} from './properties.interfaces';
-import {toProperty} from './utils';
+import {logger} from './logger.js';
+import type {PropertyGetter, PropertyValue, Widen} from './properties.interfaces.js';
+import {toProperty} from './utils.js';
 
 let properties: Record<string, Record<string, PropertyValue>> = {};
 
@@ -71,8 +71,8 @@ export function get(base: string, property: string, defaultValue?: unknown): unk
 
 export type RawPropertiesGetter = typeof get;
 
-export function parseProperties(blob, name) {
-    const props = {};
+export function parseProperties(blob: string, name) {
+    const props: Record<string, PropertyValue> = {};
     for (const [index, lineOrig] of blob.split('\n').entries()) {
         const line = lineOrig.replace(/#.*/, '').trim();
         if (!line) continue;
@@ -82,7 +82,7 @@ export function parseProperties(blob, name) {
             continue;
         }
         const prop = split[1].trim();
-        let val = split[2].trim();
+        let val: string | number | boolean = split[2].trim();
         // hack to avoid applying toProperty to version properties
         // so that they're not parsed as numbers
         if (!prop.endsWith('.version') && !prop.endsWith('.semver')) {
@@ -128,7 +128,7 @@ export function propsFor(base): PropertyGetter {
 //     return funcB();
 // }
 
-type LanguageDef = {
+export type LanguageDef = {
     id: string;
 };
 
@@ -191,6 +191,8 @@ export class CompilerProps {
     // const i = this.compilerProps(languages, property, undefined, (x) => ["foobar"]); // Record<LanguageKey, string[]>
     // const j = this.compilerProps(languages, property, 42, (x) => ["foobar"]);//Record<LanguageKey, number | string[]>
 
+    // TODO(jeremy-rifkin): I think the types could use some work here.
+    // Maybe this.compilerProps<number>(lang, property) should be number | undefined.
     // general overloads
     get(base: string, property: string, defaultValue?: undefined, fn?: undefined): PropertyValue;
     get<T extends PropertyValue>(

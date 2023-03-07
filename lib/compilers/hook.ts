@@ -24,17 +24,17 @@
 
 import path from 'path';
 
-import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {BasicExecutionResult, ExecutableExecutionOptions} from '../../types/execution/execution.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
+import type {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ExecutableExecutionOptions} from '../../types/execution/execution.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
 
 export class HookCompiler extends BaseCompiler {
     private readonly hook_home: string;
 
-    constructor(compilerInfo: CompilerInfo & Record<string, any>, env: CompilationEnvironment) {
+    constructor(compilerInfo: PreliminaryCompilerInfo & Record<string, any>, env: CompilationEnvironment) {
         super(compilerInfo, env);
         this.hook_home = path.resolve(path.join(path.dirname(this.compiler.exe), '..'));
     }

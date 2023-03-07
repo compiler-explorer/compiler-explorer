@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {UnprocessedExecResult} from '../../types/execution/execution.interfaces';
+import {UnprocessedExecResult} from '../../types/execution/execution.interfaces.js';
 
-import {BaseTool} from './base-tool';
+import {BaseTool} from './base-tool.js';
 
 export class RustFmtTool extends BaseTool {
     static get key() {

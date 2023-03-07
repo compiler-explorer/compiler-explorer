@@ -24,7 +24,7 @@
 
 import * as express from 'express';
 
-import {BaseShortener} from './base';
+import {BaseShortener} from './base.js';
 
 export class DefaultShortener extends BaseShortener {
     override handle(req: express.Request, res: express.Response) {

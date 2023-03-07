@@ -24,14 +24,14 @@
 
 import _ from 'underscore';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {unwrap} from '../assert';
-import {BaseCompiler} from '../base-compiler';
-import * as utils from '../utils';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import type {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {unwrap} from '../assert.js';
+import {BaseCompiler} from '../base-compiler.js';
+import * as utils from '../utils.js';
 
-import {ClangParser} from './argument-parsers';
+import {ClangParser} from './argument-parsers.js';
 
 // Each arch has a list of jump instructions in
 // Go source src/cmd/asm/internal/arch.
@@ -58,7 +58,7 @@ export class GolangCompiler extends BaseCompiler {
         return 'golang';
     }
 
-    constructor(compilerInfo: CompilerInfo, env) {
+    constructor(compilerInfo: PreliminaryCompilerInfo, env) {
         super(compilerInfo, env);
         const goroot = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goroot`);
         const goarch = this.compilerProps<string | undefined>(`compiler.${this.compiler.id}.goarch`);

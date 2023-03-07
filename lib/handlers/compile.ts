@@ -33,21 +33,22 @@ import temp from 'temp';
 import _ from 'underscore';
 import which from 'which';
 
-import {ICompiler} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {CompilationEnvironment} from '../compilation-env';
-import {getCompilerTypeByKey} from '../compilers';
-import {logger} from '../logger';
-import {PropertyGetter} from '../properties.interfaces';
-import * as utils from '../utils';
+import {ICompiler, PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {CompilationEnvironment} from '../compilation-env.js';
+import {getCompilerTypeByKey} from '../compilers/index.js';
+import {logger} from '../logger.js';
+import {PropertyGetter} from '../properties.interfaces.js';
+import * as utils from '../utils.js';
 
 import {
     CompileRequestJsonBody,
     CompileRequestQueryArgs,
     CompileRequestTextBody,
     ExecutionRequestParams,
-} from './compile.interfaces';
+} from './compile.interfaces.js';
+import {remove} from '../common-utils.js';
 
 temp.track();
 
@@ -185,11 +186,11 @@ export class CompileHandler {
         });
     }
 
-    async create(compiler): Promise<ICompiler | null> {
+    async create(compiler: PreliminaryCompilerInfo): Promise<ICompiler | null> {
         const isPrediscovered = !!compiler.version;
 
         const type = compiler.compilerType || 'default';
-        let compilerClass;
+        let compilerClass: ReturnType<typeof getCompilerTypeByKey>;
         try {
             compilerClass = getCompilerTypeByKey(type);
         } catch (e) {
@@ -237,14 +238,14 @@ export class CompileHandler {
         }
     }
 
-    async setCompilers(compilers: ICompiler[], clientOptions: Record<string, any>) {
+    async setCompilers(compilers: PreliminaryCompilerInfo[], clientOptions: Record<string, any>) {
         // Be careful not to update this.compilersById until we can replace it entirely.
         const compilersById = {};
         try {
             this.clientOptions = clientOptions;
             logger.info('Creating compilers: ' + compilers.length);
             let compilersCreated = 0;
-            const createdCompilers = _.compact(await Promise.all(_.map(compilers, this.create, this)));
+            const createdCompilers = remove(await Promise.all(compilers.map(c => this.create(c))), null);
             for (const compiler of createdCompilers) {
                 const langId = compiler.getInfo().lang;
                 if (!compilersById[langId]) compilersById[langId] = {};

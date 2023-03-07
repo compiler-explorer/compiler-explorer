@@ -22,11 +22,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-export {Amd64DocumentationProvider} from './amd64';
-export {Arm32DocumentationProvider} from './arm32';
-export {AvrDocumentationProvider} from './avr';
-export {EvmDocumentationProvider} from './evm';
-export {JavaDocumentationProvider} from './java';
-export {LLVMDocumentationProvider} from './llvm';
-export {Mos6502DocumentationProvider} from './mos6502';
-export {PythonDocumentationProvider} from './python';
+export {Amd64DocumentationProvider} from './amd64.js';
+export {Arm32DocumentationProvider} from './arm32.js';
+export {AvrDocumentationProvider} from './avr.js';
+export {EvmDocumentationProvider} from './evm.js';
+export {JavaDocumentationProvider} from './java.js';
+export {LLVMDocumentationProvider} from './llvm.js';
+export {Mos6502DocumentationProvider} from './mos6502.js';
+export {PythonDocumentationProvider} from './python.js';

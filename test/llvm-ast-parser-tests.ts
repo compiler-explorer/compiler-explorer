@@ -24,12 +24,12 @@
 
 import cloneDeep from 'lodash.clonedeep';
 
-import {LlvmAstParser} from '../lib/llvm-ast';
-import * as properties from '../lib/properties';
-import {PropertyValue} from '../lib/properties.interfaces';
-import * as utils from '../lib/utils';
+import {LlvmAstParser} from '../lib/llvm-ast.js';
+import {PropertyValue} from '../lib/properties.interfaces.js';
+import * as properties from '../lib/properties.js';
+import * as utils from '../lib/utils.js';
 
-import {fs, should} from './utils';
+import {fs, should} from './utils.js';
 
 const languages = {
     'c++': {id: 'c++'},

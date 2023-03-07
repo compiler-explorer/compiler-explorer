@@ -22,10 +22,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {unwrap} from '../assert';
-import * as utils from '../utils';
+import {unwrap} from '../assert.js';
+import * as utils from '../utils.js';
 
-import {Win32Demangler} from './win32';
+import {Win32Demangler} from './win32.js';
 
 export class LLVMWin32Demangler extends Win32Demangler {
     static override get key() {

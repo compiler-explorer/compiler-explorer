@@ -22,13 +22,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import {CompilationEnvironment} from '../lib/compilation-env';
-import {JavaCompiler} from '../lib/compilers';
-import * as utils from '../lib/utils';
-import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces';
-import {CompilerInfo} from '../types/compiler.interfaces';
+import {CompilationEnvironment} from '../lib/compilation-env.js';
+import {JavaCompiler} from '../lib/compilers/index.js';
+import * as utils from '../lib/utils.js';
+import {ParsedAsmResultLine} from '../types/asmresult/asmresult.interfaces.js';
+import {CompilerInfo} from '../types/compiler.interfaces.js';
 
-import {fs, makeCompilationEnvironment} from './utils';
+import {fs, makeCompilationEnvironment} from './utils.js';
 
 const languages = {
     java: {id: 'java'},

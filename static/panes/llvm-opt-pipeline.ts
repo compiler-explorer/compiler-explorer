@@ -29,22 +29,22 @@ import {Container} from 'golden-layout';
 import TomSelect from 'tom-select';
 import scrollIntoView from 'scroll-into-view-if-needed';
 
-import {MonacoPane} from './pane';
-import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces';
-import {MonacoPaneState} from './pane.interfaces';
+import {MonacoPane} from './pane.js';
+import {LLVMOptPipelineViewState} from './llvm-opt-pipeline.interfaces.js';
+import {MonacoPaneState} from './pane.interfaces.js';
 
-import {ga} from '../analytics';
-import {extendConfig} from '../monaco-config';
-import {Hub} from '../hub';
-import * as utils from '../utils';
-import {Toggles} from '../widgets/toggles';
+import {ga} from '../analytics.js';
+import {extendConfig} from '../monaco-config.js';
+import {Hub} from '../hub.js';
+import * as utils from '../utils.js';
+import {Toggles} from '../widgets/toggles.js';
 
 import {
     LLVMOptPipelineBackendOptions,
     LLVMOptPipelineOutput,
     LLVMOptPipelineResults,
-} from '../../types/compilation/llvm-opt-pipeline-output.interfaces';
-import {unwrap} from '../assert';
+} from '../../types/compilation/llvm-opt-pipeline-output.interfaces.js';
+import {unwrap} from '../assert.js';
 
 const MIN_SIDEBAR_WIDTH = 100;
 
@@ -86,7 +86,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
             _.defer(() => {
                 state.sidebarWidth = parseInt(
                     unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
-                    10
+                    10,
                 );
                 state.sidebarWidth = Math.max(state.sidebarWidth, MIN_SIDEBAR_WIDTH);
                 this.resize();
@@ -131,7 +131,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 readOnly: true,
                 glyphMargin: true,
                 lineNumbersMinChars: 3,
-            })
+            }),
         );
         this.originalModel = monaco.editor.createModel('', 'llvm-ir');
         this.modifiedModel = monaco.editor.createModel('', 'llvm-ir');
@@ -167,7 +167,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
         this.resizeStartX = e.clientX;
         this.resizeStartWidth = parseInt(
             unwrap(document.defaultView).getComputedStyle(this.passesColumn.get()[0]).width,
-            10
+            10,
         );
         this.resizeDragMoveBind = this.resizeDragMove.bind(this);
         this.resizeDragEndBind = this.resizeDragEnd.bind(this);
@@ -231,7 +231,7 @@ export class LLVMOptPipeline extends MonacoPane<monaco.editor.IStandaloneDiffEdi
                 this.editor
                     .getModel()
                     ?.original.setValue(
-                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`
+                        `<An error occurred while generating the optimization pipeline output: ${output.error}>`,
                     );
                 this.editor.getModel()?.modified.setValue('');
             }

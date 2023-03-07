@@ -24,17 +24,17 @@
 
 import temp from 'temp';
 
-import {CompilerInfo} from '../../types/compiler.interfaces';
-import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces';
-import {BaseCompiler} from '../base-compiler';
-import {AsmEWAVRParser} from '../parsers/asm-parser-ewavr';
+import type {PreliminaryCompilerInfo} from '../../types/compiler.interfaces.js';
+import type {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
+import {BaseCompiler} from '../base-compiler.js';
+import {AsmEWAVRParser} from '../parsers/asm-parser-ewavr.js';
 
 export class EWARMCompiler extends BaseCompiler {
     static get key() {
         return 'ewarm';
     }
 
-    constructor(info: CompilerInfo, env) {
+    constructor(info: PreliminaryCompilerInfo, env) {
         super(info, env);
         this.asm = new AsmEWAVRParser(this.compilerProps);
     }

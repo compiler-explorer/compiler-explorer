@@ -26,15 +26,15 @@ import $ from 'jquery';
 import * as monaco from 'monaco-editor';
 import TomSelect from 'tom-select';
 
-import {ga} from '../analytics';
-import {Hub} from '../hub';
+import {ga} from '../analytics.js';
+import {Hub} from '../hub.js';
 import {Container} from 'golden-layout';
-import {MonacoPane} from './pane';
-import {MonacoPaneState} from './pane.interfaces';
-import {DiffState, DiffType} from './diff.interfaces';
-import {ResultLine} from '../../types/resultline/resultline.interfaces';
-import {CompilationResult} from '../../types/compilation/compilation.interfaces';
-import {CompilerInfo} from '../../types/compiler.interfaces';
+import {MonacoPane} from './pane.js';
+import {MonacoPaneState} from './pane.interfaces.js';
+import {DiffState, DiffType} from './diff.interfaces.js';
+import {ResultLine} from '../../types/resultline/resultline.interfaces.js';
+import {CompilationResult} from '../../types/compilation/compilation.interfaces.js';
+import {CompilerInfo} from '../../types/compiler.interfaces.js';
 
 class DiffStateObject {
     // can be undefined if there are no compilers / executors
@@ -130,12 +130,12 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         this.lhs = new DiffStateObject(
             state.lhs,
             monaco.editor.createModel('', 'asm'),
-            state.lhsdifftype || DiffType.ASM
+            state.lhsdifftype || DiffType.ASM,
         );
         this.rhs = new DiffStateObject(
             state.rhs,
             monaco.editor.createModel('', 'asm'),
-            state.rhsdifftype || DiffType.ASM
+            state.rhsdifftype || DiffType.ASM,
         );
         this.editor.setModel({original: this.lhs.model, modified: this.rhs.model});
 
@@ -318,7 +318,7 @@ export class Diff extends MonacoPane<monaco.editor.IStandaloneDiffEditor, DiffSt
         compiler: CompilerInfo | undefined,
         options: unknown,
         editorId: number,
-        treeId: number
+        treeId: number,
     ) {
         if (!compiler) return;
         options = options || '';

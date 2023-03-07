@@ -1,4 +1,4 @@
-import {ResultLine} from '../resultline/resultline.interfaces';
+import {ResultLine} from '../resultline/resultline.interfaces.js';
 
 export type FilenameTransformFunc = (filename: string) => string;
 

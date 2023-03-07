@@ -27,10 +27,10 @@ import path from 'path';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
-import {logger} from '../logger';
-import * as utils from '../utils';
+import {logger} from '../logger.js';
+import * as utils from '../utils.js';
 
-import {BuildEnvDownloadInfo} from './buildenv.interfaces';
+import type {BuildEnvDownloadInfo} from './buildenv.interfaces.js';
 
 export class BuildEnvSetupBase {
     protected compiler: any;
@@ -38,7 +38,7 @@ export class BuildEnvSetupBase {
     protected compilerOptionsArr: string[];
     public compilerArch: string | boolean;
     protected compilerTypeOrGCC: any;
-    protected compilerSupportsX86: boolean;
+    public compilerSupportsX86: boolean;
 
     constructor(compilerInfo, env) {
         this.compiler = compilerInfo;
