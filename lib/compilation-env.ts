@@ -151,21 +151,8 @@ export class CompilationEnvironment {
         return this.executableCache.put(key, fs.readFileSync(filepath));
     }
 
-    enqueue<T>(job: Job<T>, silent?: boolean) {
-        const enqueue_time = performance.now();
-        return this.compilationQueue.enqueue(async () => {
-            const launch_time = performance.now();
-            const res = await job();
-            const finish_time = performance.now();
-            if (!silent) {
-                logger.info(
-                    `(compilation wall clock time: ${Math.round(finish_time - launch_time)} ms, queue time: ${
-                        launch_time - enqueue_time
-                    } ms)`,
-                );
-            }
-            return res;
-        });
+    enqueue<T>(job: Job<T>) {
+        return this.compilationQueue.enqueue(job);
     }
 
     findBadOptions(options: string[]) {
