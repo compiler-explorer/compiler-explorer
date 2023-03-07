@@ -284,7 +284,7 @@ export class Executor extends Pane<ExecutorState> {
     close(): void {
         this.eventHub.unsubscribe();
         if (this.compilerPicker instanceof CompilerPicker) {
-            this.compilerPicker.destroy();
+            this.compilerPicker.close();
         }
 
         this.eventHub.emit('executorClose', this.id);
