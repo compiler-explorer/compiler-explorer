@@ -843,6 +843,25 @@ div.populararguments div.dropdown-menu {
     display: none;
 }
 
+@media (max-width: 830px) {
+    #compiler-picker-modal {
+        .compilers-row {
+            flex-direction: column-reverse;
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    #compiler-picker-modal {
+        .compilers-col {
+            .compilers {
+                width: 300px !important;
+                columns: 1 300px !important;
+            }
+        }
+    }
+}
+
 #compiler-picker-modal {
     .modal-body {
         overflow-y: scroll;
@@ -876,7 +895,13 @@ div.populararguments div.dropdown-menu {
         .compilers {
             width: 650px;
             columns: 2 300px;
-            column-gap: 50px;
+            column-gap: 40px;
+        }
+        .favorites {
+            margin-left: 10px;
+        }
+        .compilers,
+        .favorites {
             .group-wrapper {
                 display: inline-block;
                 .group {

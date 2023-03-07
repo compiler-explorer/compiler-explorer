@@ -38,7 +38,9 @@ export class CompilerPickerPopup {
     modalSearch: JQuery<HTMLElement>;
     modalArchitectures: JQuery<HTMLElement>;
     modalCompilerTypes: JQuery<HTMLElement>;
+    compilersRow: JQuery<HTMLElement>;
     modalCompilers: JQuery<HTMLElement>;
+    modalFavorites: JQuery<HTMLElement>;
 
     groups: {value: string; label: string}[];
     options: (CompilerInfo & {$groups: string[]})[];
@@ -55,7 +57,9 @@ export class CompilerPickerPopup {
         this.modalSearch = this.modal.find('.compiler-search');
         this.modalArchitectures = this.modal.find('.architectures');
         this.modalCompilerTypes = this.modal.find('.compiler-types');
+        this.compilersRow = this.modal.find('.compilers-row');
         this.modalCompilers = this.modal.find('.compilers');
+        this.modalFavorites = this.modal.find('.favorites');
 
         this.modal.on('shown.bs.modal', () => {
             this.modalSearch[0].focus();
@@ -172,9 +176,10 @@ export class CompilerPickerPopup {
         }
         // add the compiler entries / group headers themselves
         this.modalCompilers.empty();
+        this.modalFavorites.empty();
         const groupMap: Record<string, JQuery> = {};
         for (const group of this.groups) {
-            if ((groupCounts[group.value] ?? 0) > 0) {
+            if ((groupCounts[group.value] ?? 0) > 0 || group.value == CompilerPicker.favoriteGroupName) {
                 const group_elem = $(
                     `
                     <div class="group-wrapper">
@@ -184,7 +189,11 @@ export class CompilerPickerPopup {
                     </div>
                     `,
                 );
-                group_elem.appendTo(this.modalCompilers);
+                if(group.value == CompilerPicker.favoriteGroupName) {
+                    group_elem.appendTo(this.modalFavorites);
+                } else {
+                    group_elem.appendTo(this.modalCompilers);
+                }
                 groupMap[group.value] = group_elem.find('.group');
             }
         }
@@ -212,17 +221,17 @@ export class CompilerPickerPopup {
             }
         }
         // group header click events
-        this.modalCompilers.find('.group').append('<div class="folded">&#8943;</div>');
-        this.modalCompilers.find('.group > .label').on('click', e => {
+        this.compilersRow.find('.group').append('<div class="folded">&#8943;</div>');
+        this.compilersRow.find('.group > .label').on('click', e => {
             $(e.currentTarget).closest('.group').toggleClass('collapsed');
         });
         // compiler click events
-        this.modalCompilers.find('.compiler').on('click', e => {
+        this.compilersRow.find('.compiler').on('click', e => {
             this.compilerPicker.selectCompiler(unwrap(e.currentTarget.getAttribute("data-value")));
             this.hide();
         });
         // favorite stars
-        this.modalCompilers.find('.compiler .toggle-fav').on('click', e => {
+        this.compilersRow.find('.compiler .toggle-fav').on('click', e => {
             const compilerId = unwrap($(e.currentTarget).closest('.compiler').attr('data-value'));
             const data = filteredCompilers.filter(c => c.id === compilerId)[0];
             const isAddingNewFavorite = !data.$groups.includes(CompilerPicker.favoriteGroupName);
