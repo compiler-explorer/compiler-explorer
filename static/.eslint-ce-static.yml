@@ -27,9 +27,9 @@ rules:
     - error
     - smart
   indent:
-    - off
-    #- 4
-    #- SwitchCase: 1
+    - error
+    - 4
+    - SwitchCase: 1
   max-len:
     - error
     - 120
