@@ -37,6 +37,7 @@ import {FormattingHandler} from './handlers/formatting.js';
 import {logger} from './logger.js';
 import {CompilerProps} from './properties.js';
 import type {PropertyGetter} from './properties.interfaces.js';
+import {unwrap} from './assert.js';
 
 export class CompilationEnvironment {
     ceProps: PropertyGetter;
@@ -114,7 +115,7 @@ export class CompilationEnvironment {
             this.cache.report();
         }
         if (!result.hit) return null;
-        return JSON.parse(result.data);
+        return JSON.parse(unwrap(result.data).toString());
     }
 
     async cachePut(object: CacheableValue, result: object, creator: string | undefined) {
@@ -129,7 +130,7 @@ export class CompilationEnvironment {
             logger.info(`Cache ${JSON.stringify(object)} hash ${key} ${result.hit ? 'hit' : 'miss'}`);
         }
         if (!result.hit) return null;
-        return JSON.parse(result.data);
+        return JSON.parse(unwrap(result.data).toString());
     }
 
     async compilerCachePut(object: CacheableValue, result: object, creator: string | undefined) {
@@ -142,7 +143,7 @@ export class CompilationEnvironment {
         const result = await this.executableCache.get(key);
         if (!result.hit) return null;
         const filepath = destinationFolder + '/' + key;
-        await fs.writeFile(filepath, result.data);
+        await fs.writeFile(filepath, unwrap(result.data));
         return filepath;
     }
 

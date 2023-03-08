@@ -24,7 +24,6 @@
 
 import path from 'path';
 
-import AWS from 'aws-sdk';
 import fs from 'fs-extra';
 import _ from 'underscore';
 
@@ -34,6 +33,7 @@ import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
 import {S3Bucket} from './s3-handler.js';
 import {fileExists, resolvePathFromAppRoot} from './utils.js';
+import {unwrap} from './assert.js';
 
 export class CompilerArguments implements ICompilerArguments {
     private readonly compilerId: string;
@@ -79,12 +79,10 @@ export class CompilerArguments implements ICompilerArguments {
         const prefix = awsProps('storagePrefixArgStats', '');
 
         if (region && bucket && prefix && this.compilerId) {
-            AWS.config.update({region: region});
-
             const s3 = new S3Bucket(bucket, region);
             const result = await s3.get(this.compilerId + '.json', prefix);
             if (result.hit) {
-                const stats = JSON.parse(result.data.toString());
+                const stats = JSON.parse(unwrap(result.data).toString());
                 _.each(stats, (times, arg) => {
                     this.addOptionToStatistics(arg, times);
                 });

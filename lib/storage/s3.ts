@@ -24,7 +24,7 @@
 
 import assert from 'assert';
 
-import AWS from 'aws-sdk';
+import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import _ from 'underscore';
 
 import {unwrap} from '../assert.js';
@@ -62,7 +62,7 @@ export class StorageS3 extends StorageBase {
     protected readonly prefix: string;
     protected readonly table: string;
     protected readonly s3: S3Bucket;
-    protected readonly dynamoDb: AWS.DynamoDB;
+    protected readonly dynamoDb: DynamoDB;
 
     constructor(httpRootDir, compilerProps, awsProps) {
         super(httpRootDir, compilerProps);
@@ -74,9 +74,8 @@ export class StorageS3 extends StorageBase {
             `Using s3 storage solution on ${region}, bucket ${bucket}, ` +
                 `prefix ${this.prefix}, dynamo table ${this.table}`,
         );
-        AWS.config.update({region: region});
         this.s3 = new S3Bucket(bucket, region);
-        this.dynamoDb = new AWS.DynamoDB();
+        this.dynamoDb = new DynamoDB({region: region});
     }
 
     async storeItem(item, req) {
@@ -91,21 +90,19 @@ export class StorageS3 extends StorageBase {
         now.setSeconds(0, 0);
         try {
             await Promise.all([
-                this.dynamoDb
-                    .putItem({
-                        TableName: this.table,
-                        Item: {
-                            prefix: {S: item.prefix},
-                            unique_subhash: {S: item.uniqueSubHash},
-                            full_hash: {S: item.fullHash},
-                            stats: {
-                                M: {clicks: {N: '0'}},
-                            },
-                            creation_ip: {S: ip},
-                            creation_date: {S: now.toISOString()},
+                this.dynamoDb.putItem({
+                    TableName: this.table,
+                    Item: {
+                        prefix: {S: item.prefix},
+                        unique_subhash: {S: item.uniqueSubHash},
+                        full_hash: {S: item.fullHash},
+                        stats: {
+                            M: {clicks: {N: '0'}},
                         },
-                    })
-                    .promise(),
+                        creation_ip: {S: ip},
+                        creation_date: {S: now.toISOString()},
+                    },
+                }),
                 this.s3.put(item.fullHash, item.config, this.prefix, {}),
             ]);
             return item;
@@ -117,14 +114,12 @@ export class StorageS3 extends StorageBase {
 
     async findUniqueSubhash(hash) {
         const prefix = hash.substring(0, PREFIX_LENGTH);
-        const data = await this.dynamoDb
-            .query({
-                TableName: this.table,
-                ProjectionExpression: 'unique_subhash, full_hash',
-                KeyConditionExpression: 'prefix = :prefix',
-                ExpressionAttributeValues: {':prefix': {S: prefix}},
-            })
-            .promise();
+        const data = await this.dynamoDb.query({
+            TableName: this.table,
+            ProjectionExpression: 'unique_subhash, full_hash',
+            KeyConditionExpression: 'prefix = :prefix',
+            ExpressionAttributeValues: {':prefix': {S: prefix}},
+        });
         const subHashes = _.chain(data.Items).pluck('unique_subhash').pluck('S').value();
         const fullHashes = _.chain(data.Items).pluck('full_hash').pluck('S').value();
         for (let i = MIN_STORED_ID_LENGTH; i < hash.length - 1; i++) {
@@ -165,13 +160,10 @@ export class StorageS3 extends StorageBase {
     async expandId(id: string) {
         // By just getting the item and not trying to update it, we save an update when the link does not exist
         // for which we have less resources allocated, but get one extra read (But we do have more reserved for it)
-        const item = await this.dynamoDb
-            .getItem({
-                TableName: this.table,
-                Key: this.getKeyStruct(id),
-            })
-            .promise();
-
+        const item = await this.dynamoDb.getItem({
+            TableName: this.table,
+            Key: this.getKeyStruct(id),
+        });
         const attributes = item.Item;
         if (!attributes) throw new Error(`ID ${id} not present in links table`);
         const result = await this.s3.get(unwrap(attributes.full_hash.S), this.prefix);
@@ -179,24 +171,22 @@ export class StorageS3 extends StorageBase {
         if (!result.hit) throw new Error(`ID ${id} not present in storage`);
         const metadata = attributes.named_metadata ? attributes.named_metadata.M : null;
         return {
-            config: result.data.toString(),
+            config: unwrap(result.data).toString(),
             specialMetadata: metadata,
         };
     }
 
     async incrementViewCount(id) {
         try {
-            await this.dynamoDb
-                .updateItem({
-                    TableName: this.table,
-                    Key: this.getKeyStruct(id),
-                    UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
-                    ExpressionAttributeValues: {
-                        ':inc': {N: '1'},
-                    },
-                    ReturnValues: 'NONE',
-                })
-                .promise();
+            await this.dynamoDb.updateItem({
+                TableName: this.table,
+                Key: this.getKeyStruct(id),
+                UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
+                ExpressionAttributeValues: {
+                    ':inc': {N: '1'},
+                },
+                ReturnValues: 'NONE',
+            });
         } catch (err) {
             // Swallow up errors
             logger.error(`Error when incrementing view count for ${id}`, err);

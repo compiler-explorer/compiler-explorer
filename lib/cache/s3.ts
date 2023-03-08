@@ -30,6 +30,7 @@ import {S3Bucket} from '../s3-handler.js';
 import type {S3HandlerOptions} from '../s3-handler.interfaces.js';
 
 import {BaseCache} from './base.js';
+import {StorageClass} from '@aws-sdk/client-s3';
 
 function messageFor(e) {
     return e.message || e.toString();
@@ -66,7 +67,7 @@ export class S3Cache extends BaseCache {
     override async putInternal(key: string, value: Buffer, creator?: string): Promise<void> {
         const options: S3HandlerOptions = {
             metadata: creator ? {CreatedBy: creator} : {},
-            redundancy: 'REDUCED_REDUNDANCY',
+            redundancy: StorageClass.REDUCED_REDUNDANCY,
         };
         try {
             await this.s3.put(key, value, this.path, options);
