@@ -70,9 +70,13 @@ import {SourceAndFiles} from '../download-service.js';
 
 const toolIcons = require.context('../../views/resources/logos', false, /\.(png|svg)$/);
 
-const OpcodeCache = new LruCache({
-    max: 64 * 1024,
-    length: function (n) {
+type CachedOpcode = {
+    found: boolean;
+    data: AssemblyInstructionInfo | string;
+};
+const OpcodeCache = new LruCache<string, CachedOpcode>({
+    maxSize: 64 * 1024,
+    sizeCalculation: function (n) {
         return JSON.stringify(n).length;
     },
 });
@@ -3329,8 +3333,8 @@ export class Compiler extends MonacoPane<monaco.editor.IStandaloneCodeEditor, Co
         const cacheName = `asm/${instructionSet}/${opcode}`;
         const cached = OpcodeCache.get(cacheName);
         if (cached) {
-            if (cached.found) return cached.data;
-            throw new Error(cached.data);
+            if (cached.found) return cached.data as AssemblyInstructionInfo;
+            throw new Error(cached.data as string);
         }
 
         const response = await getAssemblyDocumentation({opcode, instructionSet});

@@ -43,22 +43,22 @@ function getAllFiles(root: string, dir?: string) {
     }, []);
 }
 
+type CacheEntry = {path: string; size: number};
+
 export class OnDiskCache extends BaseCache {
     readonly path: string;
     readonly cacheMb: number;
-    private readonly cache: LRU;
+    private readonly cache: LRU<string, CacheEntry>;
 
     constructor(cacheName: string, path: string, cacheMb: number) {
         super(cacheName, `OnDiskCache(${path}, ${cacheMb}mb)`, 'disk');
         this.path = path;
         this.cacheMb = cacheMb;
         this.cache = new LRU({
-            max: cacheMb * 1024 * 1024,
-            length: n => n.size,
+            maxSize: cacheMb * 1024 * 1024,
+            sizeCalculation: n => n.size,
             noDisposeOnSet: true,
-            dispose: (key, n) => {
-                fs.unlink(n.path, () => {});
-            },
+            dispose: value => fs.unlink(value.path, () => {}),
         });
         fs.mkdirSync(path, {recursive: true});
         const info = getAllFiles(path).map(({name, fullPath}) => {
@@ -81,8 +81,8 @@ export class OnDiskCache extends BaseCache {
 
     override statString(): string {
         return (
-            `${super.statString()}, LRU has ${this.cache.itemCount} item(s) ` +
-            `totalling ${this.cache.length} bytes on disk`
+            `${super.statString()}, LRU has ${this.cache.size} item(s) ` +
+            `totalling ${this.cache.calculatedSize} bytes on disk`
         );
     }
 
@@ -105,6 +105,6 @@ export class OnDiskCache extends BaseCache {
             size: value.length,
         };
         await fs.writeFile(info.path, value);
-        return this.cache.set(key, info);
+        this.cache.set(key, info);
     }
 }
