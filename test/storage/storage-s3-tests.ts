@@ -22,38 +22,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import AWS from 'aws-sdk-mock';
+import {Readable} from 'stream';
 
-import {unwrap} from '../../lib/assert.js';
+import {DynamoDB, GetItemCommand, PutItemCommand, QueryCommand, UpdateItemCommand} from '@aws-sdk/client-dynamodb';
+import {GetObjectCommand, PutObjectCommand, S3} from '@aws-sdk/client-s3';
+import {sdkStreamMixin} from '@aws-sdk/util-stream-node';
+import {mockClient} from 'aws-sdk-client-mock';
+
 import * as properties from '../../lib/properties.js';
 import {StorageS3} from '../../lib/storage/index.js';
 
-type Handler = (q: any) => any;
-
-// NB!!! Anything using mocked AWS calls needs to be initialised in the `it(...)` block! If you initialise it in the
-// `describe()` top level code then it won't be mocked in time. We only mock and de-mock before/after else we end up
-// fighting over the global AWS mocking stuff. I hate mocha...there's probably a better way...
-function mockerise(service, method) {
-    const handlers: Handler[] = [];
-
-    beforeEach(() => {
-        AWS.mock(service, method, (q, callback) => {
-            const qh = unwrap(handlers.shift());
-            try {
-                callback(undefined, qh(q));
-            } catch (e) {
-                callback(e as any, undefined);
-            }
-        });
-    });
-    afterEach(() => {
-        AWS.restore(service, method);
-    });
-    return handlers;
-}
-
 describe('Find unique subhash tests', () => {
-    const dynamoDbQueryHandlers = mockerise('DynamoDB', 'query');
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const compilerProps = properties.fakeProps({});
     const httpRootDir = '/';
     const awsProps = properties.fakeProps({
@@ -64,10 +49,7 @@ describe('Find unique subhash tests', () => {
     });
     it('works when empty', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        dynamoDbQueryHandlers.push(q => {
-            q.TableName.should.equal('table');
-            return {};
-        });
+        mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({});
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
             alreadyPresent: false,
             prefix: 'ABCDEF',
@@ -76,33 +58,30 @@ describe('Find unique subhash tests', () => {
     });
     it('works when not empty', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        dynamoDbQueryHandlers.push(() => {
-            return {
-                Items: [
-                    {
-                        full_hash: {S: 'ZZVZT'},
-                        unique_subhash: {S: 'ZZVZT'},
-                    },
-                ],
-            };
+        mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({
+            Items: [
+                {
+                    full_hash: {S: 'ZZVZT'},
+                    unique_subhash: {S: 'ZZVZT'},
+                },
+            ],
         });
+
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
             alreadyPresent: false,
             prefix: 'ABCDEF',
             uniqueSubHash: 'ABCDEFGHI',
         });
     });
-    it("works when there' a collision", () => {
+    it("works when there's a collision", () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        dynamoDbQueryHandlers.push(() => {
-            return {
-                Items: [
-                    {
-                        full_hash: {S: 'ABCDEFGHIZZ'},
-                        unique_subhash: {S: 'ABCDEFGHI'},
-                    },
-                ],
-            };
+        mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({
+            Items: [
+                {
+                    full_hash: {S: 'ABCDEFGHIZZ'},
+                    unique_subhash: {S: 'ABCDEFGHI'},
+                },
+            ],
         });
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
             alreadyPresent: false,
@@ -112,15 +91,13 @@ describe('Find unique subhash tests', () => {
     });
     it('finds an existing match', () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        dynamoDbQueryHandlers.push(() => {
-            return {
-                Items: [
-                    {
-                        full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
-                        unique_subhash: {S: 'ABCDEFGHI'},
-                    },
-                ],
-            };
+        mockDynamoDb.on(QueryCommand, {TableName: 'table'}).resolves({
+            Items: [
+                {
+                    full_hash: {S: 'ABCDEFGHIJKLMNOPQRSTUV'},
+                    unique_subhash: {S: 'ABCDEFGHI'},
+                },
+            ],
         });
         return storage.findUniqueSubhash('ABCDEFGHIJKLMNOPQRSTUV').should.eventually.deep.equal({
             alreadyPresent: true,
@@ -131,8 +108,12 @@ describe('Find unique subhash tests', () => {
 });
 
 describe('Stores to s3', () => {
-    const dynamoDbPutItemHandlers = mockerise('DynamoDB', 'putItem');
-    const s3PutObjectHandlers = mockerise('S3', 'putObject');
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
@@ -141,7 +122,7 @@ describe('Stores to s3', () => {
         storagePrefix: 'prefix',
         storageDynamoTable: 'table',
     });
-    it('and works ok', () => {
+    it('and works ok', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
         const object = {
             prefix: 'ABCDEF',
@@ -149,38 +130,36 @@ describe('Stores to s3', () => {
             fullHash: 'ABCDEFGHIJKLMNOP',
             config: 'yo',
         };
-
-        const ran = {s3: false, dynamo: false};
-        s3PutObjectHandlers.push(q => {
-            q.Bucket.should.equal('bucket');
-            q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
-            q.Body.should.equal('yo');
-            ran.s3 = true;
-            return {};
-        });
-        dynamoDbPutItemHandlers.push(q => {
-            q.TableName.should.equals('table');
-            q.Item.should.deep.equals({
-                prefix: {S: 'ABCDEF'},
-                unique_subhash: {S: 'ABCDEFG'},
-                full_hash: {S: 'ABCDEFGHIJKLMNOP'},
-                stats: {M: {clicks: {N: '0'}}},
-                creation_ip: {S: 'localhost'},
-                // Cheat the date
-                creation_date: {S: q.Item.creation_date.S},
-            });
-            ran.dynamo = true;
-            return {};
-        });
-        return storage.storeItem(object, {get: () => 'localhost'}).then(() => {
-            ran.should.deep.equal({s3: true, dynamo: true});
-        });
+        await storage.storeItem(object, {get: () => 'localhost'});
+        mockS3
+            .commandCalls(PutObjectCommand, {
+                Bucket: 'bucket',
+                Key: 'prefix/ABCDEFGHIJKLMNOP',
+                Body: 'yo',
+            })
+            .should.have.lengthOf(1);
+        mockDynamoDb
+            .commandCalls(PutItemCommand, {
+                TableName: 'table',
+                Item: {
+                    prefix: {S: 'ABCDEF'},
+                    unique_subhash: {S: 'ABCDEFG'},
+                    full_hash: {S: 'ABCDEFGHIJKLMNOP'},
+                    stats: {M: {clicks: {N: '0'}}},
+                    creation_ip: {S: 'localhost'},
+                },
+            })
+            .should.have.lengthOf(1);
     });
 });
 
 describe('Retrieves from s3', () => {
-    const dynamoDbGetItemHandlers = mockerise('DynamoDB', 'getItem');
-    const s3GetObjectHandlers = mockerise('S3', 'getObject');
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
@@ -191,38 +170,42 @@ describe('Retrieves from s3', () => {
     });
     it('fetches in the happy path', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        const ran = {s3: false, dynamo: false};
-        dynamoDbGetItemHandlers.push(q => {
-            q.TableName.should.equals('table');
-            q.Key.should.deep.equals({
-                prefix: {S: 'ABCDEF'},
-                unique_subhash: {S: 'ABCDEF'},
-            });
-            ran.dynamo = true;
-            return {Item: {full_hash: {S: 'ABCDEFGHIJKLMNOP'}}};
-        });
-        s3GetObjectHandlers.push(q => {
-            q.Bucket.should.equal('bucket');
-            q.Key.should.equal('prefix/ABCDEFGHIJKLMNOP');
-            ran.s3 = true;
-            return {
-                Body: 'I am a monkey',
-            };
-        });
+        mockDynamoDb
+            .on(GetItemCommand, {
+                TableName: 'table',
+                Key: {
+                    prefix: {S: 'ABCDEF'},
+                    unique_subhash: {S: 'ABCDEF'},
+                },
+            })
+            .resolves({Item: {full_hash: {S: 'ABCDEFGHIJKLMNOP'}}});
+        const stream = new Readable();
+        stream.push('I am a monkey');
+        stream.push(null);
+        mockS3
+            .on(GetObjectCommand, {
+                Bucket: 'bucket',
+                Key: 'prefix/ABCDEFGHIJKLMNOP',
+            })
+            .resolves({Body: sdkStreamMixin(stream)});
 
         const result = await storage.expandId('ABCDEF');
-        ran.should.deep.equal({s3: true, dynamo: true});
         result.should.deep.equal({config: 'I am a monkey', specialMetadata: null});
     });
     it('should handle failures', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        for (let i = 0; i < 10; ++i) dynamoDbGetItemHandlers.push(() => ({}));
+        mockDynamoDb.on(GetItemCommand).resolves({});
         return storage.expandId('ABCDEF').should.be.rejectedWith(Error, 'ID ABCDEF not present in links table');
     });
 });
 
 describe('Updates counts in s3', async () => {
-    const dynamoDbUpdateItemHandlers = mockerise('DynamoDB', 'updateItem');
+    const mockDynamoDb = mockClient(DynamoDB);
+    const mockS3 = mockClient(S3);
+    beforeEach(() => {
+        mockDynamoDb.reset();
+        mockS3.reset();
+    });
     const httpRootDir = '/';
     const compilerProps = properties.fakeProps({});
     const awsProps = properties.fakeProps({
@@ -233,9 +216,9 @@ describe('Updates counts in s3', async () => {
     });
     it('should increment for simple cases', async () => {
         const storage = new StorageS3(httpRootDir, compilerProps, awsProps);
-        let called = false;
-        dynamoDbUpdateItemHandlers.push(q => {
-            q.should.deep.equals({
+        await storage.incrementViewCount('ABCDEF');
+        mockDynamoDb
+            .commandCalls(UpdateItemCommand, {
                 ExpressionAttributeValues: {':inc': {N: '1'}},
                 Key: {
                     prefix: {S: 'ABCDEF'},
@@ -244,10 +227,7 @@ describe('Updates counts in s3', async () => {
                 ReturnValues: 'NONE',
                 TableName: 'table',
                 UpdateExpression: 'SET stats.clicks = stats.clicks + :inc',
-            });
-            called = true;
-        });
-        await storage.incrementViewCount('ABCDEF');
-        called.should.be.true;
+            })
+            .should.have.lengthOf(1);
     });
 });

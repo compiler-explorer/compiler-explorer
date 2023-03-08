@@ -22,40 +22,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import AWS from 'aws-sdk';
+import { S3, NoSuchKey } from '@aws-sdk/client-s3';
 
 import type {GetResult} from '../types/cache.interfaces.js';
 
 import type {S3HandlerOptions} from './s3-handler.interfaces.js';
 
-const NoSuchKey = 'NoSuchKey';
-
 export class S3Bucket {
-    private readonly instance: AWS.S3;
+    private readonly instance: S3;
     readonly bucket: string;
     readonly region: string;
 
     constructor(bucket: string, region: string) {
-        this.instance = new AWS.S3({region});
+        this.instance = new S3({region});
         this.bucket = bucket;
         this.region = region;
     }
 
     async get(key: string, path: string): Promise<GetResult> {
         try {
-            const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`}).promise();
-            return {hit: true, data: result.Body};
+            const result = await this.instance.getObject({Bucket: this.bucket, Key: `${path}/${key}`});
+            if (!result.Body) return {hit:false};
+            return {hit: true, data: Buffer.from(await result.Body.transformToByteArray())};
         } catch (x: any) {
-            if (x.code === NoSuchKey) return {hit: false};
+            if (x instanceof NoSuchKey) return {hit: false};
             throw x;
         }
     }
 
     async delete(key, path): Promise<boolean> {
         try {
-            await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`}).promise();
+            await this.instance.deleteObject({Bucket: this.bucket, Key: `${path}/${key}`});
         } catch (x: any) {
-            if (x.code === NoSuchKey) return false;
+            if (x instanceof NoSuchKey)  return false;
             throw x;
         }
         return true;
@@ -69,7 +68,6 @@ export class S3Bucket {
                 Body: value,
                 StorageClass: options.redundancy || 'STANDARD',
                 Metadata: options.metadata || {},
-            })
-            .promise();
+            });
     }
 }
