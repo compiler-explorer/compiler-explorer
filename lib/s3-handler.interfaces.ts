@@ -22,9 +22,9 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import type * as AWS from 'aws-sdk';
+import {StorageClass} from '@aws-sdk/client-s3';
 
 export type S3HandlerOptions = {
-    redundancy?: AWS.S3.StorageClass;
-    metadata?: AWS.S3.Metadata;
+    redundancy?: StorageClass;
+    metadata?: Record<string, string>;
 };
