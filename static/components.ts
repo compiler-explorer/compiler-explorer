@@ -256,6 +256,7 @@ export function getTree(id?: number): ComponentConfig<EmptyTreeState> {
         componentName: TREE_COMPONENT_NAME,
         componentState: {
             id,
+            cmakeArgs: '-DCMAKE_BUILD_TYPE=Debug',
         },
     };
 }

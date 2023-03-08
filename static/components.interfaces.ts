@@ -103,7 +103,8 @@ export type PopulatedEditorState = StateWithId & {
     options: unknown;
 };
 
-export type EmptyTreeState = Partial<StateWithId>;
+type CmakeArgsState = {cmakeArgs: string};
+export type EmptyTreeState = Partial<StateWithId & CmakeArgsState>;
 
 export type OutputState = StateWithTree & {
     compiler: number; // CompilerID
