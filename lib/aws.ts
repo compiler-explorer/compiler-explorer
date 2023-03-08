@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import { EC2, Instance } from '@aws-sdk/client-ec2';
-import { SSM } from '@aws-sdk/client-ssm';
+import {EC2, Instance} from '@aws-sdk/client-ec2';
+import {SSM} from '@aws-sdk/client-ssm';
 import {unwrap} from './assert.js';
 import {logger} from './logger.js';
 import type {PropertyGetter} from './properties.interfaces.js';
