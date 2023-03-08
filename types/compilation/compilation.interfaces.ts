@@ -34,6 +34,7 @@ import {LLVMOptPipelineOutput} from './llvm-opt-pipeline-output.interfaces.js';
 export type CompilationResult = {
     code: number;
     timedOut: boolean;
+    okToCache?: boolean;
     buildResult?: BuildResult;
     buildsteps?: BuildStep[];
     inputFilename?: string;

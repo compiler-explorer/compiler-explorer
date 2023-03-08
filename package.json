@@ -51,7 +51,7 @@
     "jszip": "^3.7.1",
     "lodash": "^4.17.21",
     "lodash.clonedeep": "^4.5.0",
-    "lru-cache": "^5.1.1",
+    "lru-cache": "^7.18.3",
     "lz-string": "^1.4.4",
     "monaco-editor": "^0.34.1",
     "monaco-vim": "^0.3.5",

@@ -44,14 +44,14 @@ const ASCII_COLORS_RE = new RegExp(/\x1B\[[\d;]*m(.\[K)?/g);
 export class CompilerService {
     private readonly base = window.httpRoot;
     private allowStoreCodeDebug: boolean;
-    cache: LRU;
+    cache: LRU<string, CompilationResult>;
     private readonly compilersByLang: Record<string, Record<string, CompilerInfo>>;
 
     constructor(eventHub: EventEmitter) {
         this.allowStoreCodeDebug = true;
         this.cache = new LRU({
-            max: 200 * 1024,
-            length: n => JSON.stringify(n).length,
+            maxSize: 200 * 1024,
+            sizeCalculation: n => JSON.stringify(n).length,
         });
 
         this.compilersByLang = {};

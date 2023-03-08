@@ -30,19 +30,19 @@ import {BaseCache} from './base.js';
 
 export class InMemoryCache extends BaseCache {
     readonly cacheMb: number;
-    private readonly cache: LRU;
+    private readonly cache: LRU<string, Buffer>;
 
     constructor(cacheName: string, cacheMb: number) {
         super(cacheName, `InMemoryCache(${cacheMb}Mb)`, 'memory');
         this.cacheMb = cacheMb;
         this.cache = new LRU({
-            max: cacheMb * 1024 * 1024,
-            length: n => n.length,
+            maxSize: cacheMb * 1024 * 1024,
+            sizeCalculation: n => n.length,
         });
     }
 
     override statString(): string {
-        return `${super.statString()}, LRU has ${this.cache.itemCount} item(s) totalling ${this.cache.length} bytes`;
+        return `${super.statString()}, LRU has ${this.cache.size} item(s) totalling ${this.cache.calculatedSize} bytes`;
     }
 
     override async getInternal(key: string): Promise<GetResult> {
