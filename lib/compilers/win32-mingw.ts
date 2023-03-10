@@ -24,7 +24,7 @@
 
 import path from 'path';
 
-import {ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
 
 import {GCCCompiler} from './gcc.js';
 
@@ -33,12 +33,21 @@ export class Win32MingW extends GCCCompiler {
         return 'win32-mingw';
     }
 
+    getExtraPaths(): string[] {
+        return [path.normalize(path.dirname(this.compiler.exe))];
+    }
+
     override getDefaultExecOptions(): ExecutionOptions {
         const options = super.getDefaultExecOptions();
         if (!options.env) options.env = {};
         if (!options.env.PATH) options.env.PATH = '';
-        options.env.PATH = options.env.PATH + path.delimiter + path.dirname(this.compiler.exe);
+        options.env.PATH = this.getExtraPaths().join(path.delimiter);
 
         return options;
+    }
+
+    override async handleExecution(key, executeParameters): Promise<CompilationResult> {
+        const execOptions = this.getDefaultExecOptions();
+        return super.handleExecution(key, {...executeParameters, env: execOptions.env});
     }
 }
