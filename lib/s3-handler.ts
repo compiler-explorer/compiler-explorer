@@ -28,13 +28,21 @@ import type {GetResult} from '../types/cache.interfaces.js';
 
 import type {S3HandlerOptions} from './s3-handler.interfaces.js';
 
+const clientsByRegion: Map<string, S3> = new Map();
+
 export class S3Bucket {
     private readonly instance: S3;
     readonly bucket: string;
     readonly region: string;
 
     constructor(bucket: string, region: string) {
-        this.instance = new S3({region});
+        const maybeInstance = clientsByRegion.get(region);
+        if (maybeInstance) {
+            this.instance = maybeInstance;
+        } else {
+            this.instance = new S3({region});
+            clientsByRegion.set(region, this.instance);
+        }
         this.bucket = bucket;
         this.region = region;
     }
