@@ -25,6 +25,7 @@
 import path from 'path';
 
 import {CompilationResult, ExecutionOptions} from '../../types/compilation/compilation.interfaces.js';
+import {ParseFiltersAndOutputOptions} from '../../types/features/filters.interfaces.js';
 
 import {GCCCompiler} from './gcc.js';
 
@@ -35,6 +36,18 @@ export class Win32MingW extends GCCCompiler {
 
     getExtraPaths(): string[] {
         return [path.normalize(path.dirname(this.compiler.exe))];
+    }
+
+    override optionsForFilter(
+        filters: ParseFiltersAndOutputOptions,
+        outputFilename: string,
+        userOptions?: string[],
+    ): string[] {
+        if (filters.binary) {
+            filters.dontMaskFilenames = true;
+        }
+
+        return super.optionsForFilter(filters, outputFilename, userOptions);
     }
 
     override getDefaultExecOptions(): ExecutionOptions {
